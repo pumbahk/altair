@@ -175,13 +175,6 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         max_product_quantity = stock_type.max_product_quantity
         min_quantity = stock_type.min_quantity
         max_quantity = stock_type.max_quantity
-
-        total_quantity_per_stock_type = 0
-        for target_stock in stock_type.stocks:
-            for target_item in target_stock.product_items:
-                if target_item.id in stock_for_product_item:
-                    total_quantity_per_stock_type = total_quantity_per_stock_type + stock_for_product_item[target_item.id].quantity
-
         # ユーザ毎の最大購入枚数があれば、それを加味する...
         if max_quantity_per_user is not None:
             max_quantity = max(max_quantity, max_quantity_per_user)
@@ -267,8 +260,6 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                         )
                     )
                 )
-
-        event = sales_segment.performance.event
         retval.append(dict(
             id=stock_type.id,
             name=stock_type.name,
@@ -277,7 +268,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             stocks=stocks_for_stock_type[stock_type.id],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
-            availability_text=h.get_availability_text(actual_availability_for_stock_type, total_quantity_per_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent),
+            availability_text=h.get_availability_text(actual_availability_for_stock_type),
             quantity_only=stock_type.quantity_only,
             seat_choice=sales_segment.seat_choice,
             products=product_dicts,
