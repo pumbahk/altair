@@ -49,7 +49,7 @@
                             </Grid.RowDefinitions>
                             <WrapPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock FontSize="20pt" HorizontalAlignment="Center">
-                            １枚だけ発見する際には「１枚だけ発券」を                                </TextBlock>
+                            １枚だけ発券する際には「１枚だけ発券」を                                </TextBlock>
                                 <TextBlock FontSize="20pt" HorizontalAlignment="Center">
                             同じ受付番号のものをまとめて発券する場合には「まとめて発券」を選んでください。
                                 </TextBlock>
