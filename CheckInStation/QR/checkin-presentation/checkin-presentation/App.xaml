@@ -20,8 +20,6 @@
                 <ResourceDictionary Source="Styles\Base\Themes.Text.xaml" />
                 <ResourceDictionary Source="Styles\Base\Themes.Window.xaml" />
                 <ResourceDictionary Source="Styles\Base\Styles.xaml"/>
-                <!-- <ResourceDictionary Source="Styles\Eagles\Styles.xaml"/> -->
-                <ResourceDictionary Source="Styles\TicketStar\Styles.xaml"/>
                 <ResourceDictionary Source="Styles\Individual.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
