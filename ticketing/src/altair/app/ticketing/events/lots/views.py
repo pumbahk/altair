@@ -653,8 +653,9 @@ class LotEntries(BaseView):
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
-        reject_entries = []
-        reset_entries = []
+        elect_entries = set()
+        reject_entries = set()
+        reset_entries = set()
         reader = csv.DictReader(file)
         for i, row in enumerate(reader):
             keys = [unicode(k.decode(encoding)) for k in row.keys()]
@@ -679,23 +680,26 @@ class LotEntries(BaseView):
                 raise CSVFileParserError(entry_no=entry_no)
 
             if status == u'当選予定':
+                if entry_no in elect_entries:
+                    raise CSVFileParserError(entry_no=u"申込番号({entry_no})に複数の当選予定があります".format(entry_no=entry_no))
+                elect_entries.add(entry_no)
                 elect_wishes.append((entry_no, wish_order))
             elif status == u'落選予定':
-                reject_entries.append(entry_no)
+                reject_entries.add(entry_no)
             elif status == u'申込':
-                reset_entries.append(entry_no)
+                reset_entries.add(entry_no)
         """
         落選予定/申込のentry_noに当選予定のentry_noがあったら削る
           - 当選予定はentry_no + wish_order
           - 落選予定/申込はentry_no
           の単位で処理するのでこのようになる
         """
-        for entry_no, wish_order in elect_wishes:
+        for entry_no in elect_entries:
             if entry_no in reject_entries:
                  reject_entries.remove(entry_no)
             if entry_no in reset_entries:
                  reset_entries.remove(entry_no)
-        return elect_wishes, reject_entries, reset_entries
+        return elect_wishes, list(reject_entries), list(reset_entries)
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
