@@ -189,7 +189,10 @@ class ReportSettings(BaseView):
             for report_recipient_id in f.recipients.data
             ]
         if f.email.data:
-            new_recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+            rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
+            if not rr:
+                rr = ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id)
+            new_recipients.append(rr)
         if report_setting is None:
             report_setting = ReportSetting()
 
