@@ -22,12 +22,12 @@ class TicketCoverDictBuilder(object):
     def __init__(self, formatter):
         self.formatter = formatter
         self.ticket_dict_builder = TicketDictBuilder(formatter)
-    
+
     def build_dict_from_order_total_information(self, order, retval=None):
         retval = retval or {}
         flowline = etree.tostring(etree.Element("{{{}}}flowLine".format(SVG_NAMESPACE)))
         retval.update({
-                u'合計金額': u"{total_amount} 円".format(total_amount=int(order.total_amount)), 
+                u'合計金額': u"{total_amount} 円".format(total_amount=int(order.total_amount)),
                 u"合計枚数": sum(op.quantity for op in order.ordered_products),
                 u"座席詳細": "",  #<tbreak/>
                 u"商品詳細": flowline.join(u"  {op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),
@@ -46,9 +46,9 @@ class TicketCoverDictBuilder(object):
                     })
         else:
             retval.update({
-                    u'住所': u"-", 
-                    u"氏名": u"-", 
-                    u"電話番号": u"-", 
+                    u'住所': u"-",
+                    u"氏名": u"-",
+                    u"電話番号": u"-",
                     u"メールアドレス": u"-"
                     })
         return retval
@@ -84,6 +84,7 @@ class TicketDictListBuilder(object):
         else: #BC
             for seat in ordered_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
+                d = builder.build_dict_from_stock(ordered_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
@@ -91,10 +92,10 @@ class TicketDictListBuilder(object):
 
     def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
         builder = self.builder
-        extra = builder.build_basic_dict_from_carted_product_item(carted_product_item, 
-                                                               payment_delivery_method_pair=payment_delivery_method_pair, 
-                                                               ordered_product_item_attributes=ordered_product_item_attributes, 
-                                                               user_profile=user_profile, 
+        extra = builder.build_basic_dict_from_carted_product_item(carted_product_item,
+                                                               payment_delivery_method_pair=payment_delivery_method_pair,
+                                                               ordered_product_item_attributes=ordered_product_item_attributes,
+                                                               user_profile=user_profile,
                                                                now=now
                                                                )
         retval = []
@@ -108,6 +109,7 @@ class TicketDictListBuilder(object):
         else:
             for seat in carted_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
@@ -173,10 +175,10 @@ class TicketDictBuilder(object):
             }
 
         data.update({
-            u'住所': u"{shipping.zip}{shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address), 
+            u'住所': u"{shipping.zip}{shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address),
             u"氏名": shipping_address.full_name,
             u"氏名カナ": shipping_address.full_name_kana,
-            u"電話番号": shipping_address.tel_1, 
+            u"電話番号": shipping_address.tel_1,
             u"メールアドレス": shipping_address.email_1 or shipping_address.email_2
         })
 
@@ -261,26 +263,26 @@ class TicketDictBuilder(object):
             u'パフォーマンス名': performance.name,
             u'対戦名': performance.name,
             u'公演コード': performance.code,
-            u'開催日': safe_format(self.formatter.format_date, performance.start_on), 
+            u'開催日': safe_format(self.formatter.format_date, performance.start_on),
             u'開催日s': safe_format(self.formatter.format_date_short, performance.start_on),
-            u'開場時刻': safe_format(self.formatter.format_time, performance.open_on), 
+            u'開場時刻': safe_format(self.formatter.format_time, performance.open_on),
             u'開場時刻s': safe_format(self.formatter.format_time_short, performance.open_on),
-            u'開始時刻': safe_format(self.formatter.format_time, performance.start_on), 
+            u'開始時刻': safe_format(self.formatter.format_time, performance.start_on),
             u'開始時刻s': safe_format(self.formatter.format_time_short, performance.start_on),
-            u'終了時刻': safe_format(self.formatter.format_time, performance.end_on), 
+            u'終了時刻': safe_format(self.formatter.format_time, performance.end_on),
             u'終了時刻s': safe_format(self.formatter.format_time_short, performance.end_on),
-            u"公演名略称": performance.abbreviated_title if performance.abbreviated_title else u"", 
-            u"公演名副題": performance.subtitle if performance.subtitle else u"", 
-            u"公演名備考": performance.note if performance.note else u"", 
+            u"公演名略称": performance.abbreviated_title if performance.abbreviated_title else u"",
+            u"公演名副題": performance.subtitle if performance.subtitle else u"",
+            u"公演名備考": performance.note if performance.note else u"",
             })
         return self.build_dict_from_performance_setting(setting, retval=retval)
-        
+
     def build_dict_from_performance_setting(self, setting, retval=None):
         retval = {} if retval is None else retval
         if setting is None:
             return retval
 
-        retval.update({ 
+        retval.update({
                 })
         return retval
 
@@ -299,14 +301,13 @@ class TicketDictBuilder(object):
             u'会場名': venue.name,
             })
         return retval
-        
+
     def build_dict_from_seat(self, seat, retval=None, ticket_number_issuer=None):
         retval = {} if retval is None else retval
         if seat is None:
             retval["seat"] = {}
             retval[u"席番"] = self.empty_text
             return retval
-        retval = self.build_dict_from_stock(seat.stock, retval=retval)
         retval = self.build_dict_from_venue(seat.venue, retval=retval)
         retval.update({
             u'seat': {
@@ -379,15 +380,15 @@ class TicketDictBuilder(object):
             })
         # ## 不足分
         # retval.update({
-        #     u"席番": u"{{席番}}", 
+        #     u"席番": u"{{席番}}",
         #     u'注文番号': u"{{注文番号}}",
         #     u'注文日時': u"{{注文日時}}",
         #     u'注文日時s': u"{{注文日時s}}",
         #     u'受付番号': u"{{注文番号}}",
         #     u'受付日時': u"{{受付日時}}",
         #     u'受付日時s': u"{{受付日時s}}",
-        #     u'予約番号': u"{{予約番号}}", 
-        #     u'発券番号': u"{{発券番号}}", 
+        #     u'予約番号': u"{{予約番号}}",
+        #     u'発券番号': u"{{発券番号}}",
         #     u"公演コード": u"xxx"
         # })
         return retval
@@ -397,7 +398,7 @@ class TicketDictBuilder(object):
             retval[u"aux"] = {}
             return retval
         retval.update({
-                u'aux': dict(ticket_bundle.attributes), 
+                u'aux': dict(ticket_bundle.attributes),
                 })
         return retval
 
@@ -456,7 +457,7 @@ class TicketDictBuilder(object):
         if u"memo_on_order3" in attributes:
             retval[u"予約時補助文言3"] = attributes["memo_on_order3"]
         return retval
-        
+
     def build_dict_from_payment_delivery_method_pair(self, payment_delivery_method_pair, retval=None):
         retval = retval or {}
         if payment_delivery_method_pair is None:
@@ -476,7 +477,7 @@ class TicketDictBuilder(object):
                 u'paymentMethod': {
                     u'name': payment_method.name,
                     u'fee': payment_method.fee,
-                    u'fee_type': payment_method.fee_type, 
+                    u'fee_type': payment_method.fee_type,
                     u'plugin_id': payment_method.payment_plugin_id
                     },
                 })
@@ -491,7 +492,7 @@ class TicketDictBuilder(object):
                 u'deliveryMethod': {
                     u'name': delivery_method.name,
                     u'fee': delivery_method.fee,
-                    u'fee_type': delivery_method.fee_type, 
+                    u'fee_type': delivery_method.fee_type,
                     u'plugin_id': delivery_method.delivery_plugin_id
                     },
                 })
@@ -504,9 +505,9 @@ class TicketDictBuilder(object):
             return extra
 
         product_item = ordered_product_item.product_item
-        ordered_product = ordered_product_item.ordered_product 
+        ordered_product = ordered_product_item.ordered_product
         order = ordered_product.order
-        
+
         extra = self.build_dict_from_order(order, user_profile=user_profile, retval=extra)
         extra = self.build_dict_from_product_item(product_item, retval=extra)
 
@@ -531,10 +532,10 @@ class TicketDictBuilder(object):
         d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
         d[u'serial'] = ordered_product_item_token.serial
         d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
+        d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
         if ordered_product_item_token.seat is not None:
             d = self.build_dict_from_seat(ordered_product_item_token.seat, retval=d, ticket_number_issuer=ticket_number_issuer)
         else:
-            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
         d.update(extra)
         return d
@@ -572,7 +573,7 @@ class TicketDictBuilder(object):
             u'発券日時s': u'\ufeff{{発券日時s}}\ufeff',
             })
         return retval
-        
+
 
     def build_basic_dict_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, user_profile=None, ordered_product_item_attributes=None, now=None):
         product_item = carted_product_item.product_item

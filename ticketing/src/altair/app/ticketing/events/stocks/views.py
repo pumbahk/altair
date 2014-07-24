@@ -41,7 +41,7 @@ class Stocks(BaseView):
 
         try:
             for post_seat in post_data.get('seats'):
-                f = AllocateSeatForm(MultiDict(post_seat))
+                f = AllocateSeatForm(MultiDict(post_seat), stocks=post_data.get('stocks'))
                 if not f.validate():
                     raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(),[]))
 
