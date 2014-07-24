@@ -73,7 +73,7 @@ def main(argv=sys.argv):
             event_id=report_setting.event_id,
             performance_id=report_setting.performance_id,
             report_type=report_setting.report_type,
-            recipient=report_setting.recipient,
+            recipient=report_setting.format_emails(),
             subject=u'dummy',
         )
         if limited_from:
@@ -136,7 +136,7 @@ def main(argv=sys.argv):
             logging.error('event/performance not found (report_setting_id=%s)' % report_setting.id)
             continue
 
-        sendmail(settings, report_setting.recipient, u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
+        sendmail(settings, report_setting.format_emails(), u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
         i += 1
 
     logger.info('end send_sales_report batch (sent=%s)' % i)

@@ -3,14 +3,14 @@
 import logging
 
 from wtforms import Form, TextField, SelectField, HiddenField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 from wtforms.compat import iteritems
 
 from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate, MultipleEmail,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
-    OurTimeField, zero_as_none, after1900)
-from altair.app.ticketing.core.models import Operator, ReportSetting, SalesSegment, Performance, Event
+    OurTimeField, PHPCompatibleSelectMultipleField, zero_as_none, after1900)
+from altair.app.ticketing.core.models import Operator, ReportSetting, ReportRecipient, SalesSegment, Performance, Event
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum
 
 DETAIL_REPORT_SALES_SEGMENTS_LIMIT = 60
@@ -34,7 +34,7 @@ class SalesReportForm(OurForm):
         if formdata and not 'need_total' in formdata:
             self.need_total.data = True
         if formdata and 'recipient' in formdata:
-            self.recipient.data = ','.join([email.strip() for email in self.recipient.data.split(',')])
+            self.recipient.data = ', '.join([email.strip() for email in self.recipient.data.split(',')])
 
     def _get_translations(self):
         return Translations()
@@ -128,13 +128,12 @@ class ReportSettingForm(OurForm):
         self.context = context
 
         if hasattr(context, 'organization') and context.organization.id:
-            operators = Operator.query.filter_by(organization_id=context.organization.id).all()
-            self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
-        if formdata and 'email' in formdata:
-            self.email.data = ','.join([e.strip() for e in self.email.data.split(',')])
+            org_recipients = ReportRecipient.query.filter_by(organization_id=context.organization.id).all()
+            self.recipients.choices = [(r.id, u'{} <{}>'.format(r.name, r.email)) for r in org_recipients]
         if obj:
             self.report_hour.data = int(obj.time[0:2] or 0)
             self.report_minute.data = int(obj.time[2:4] or 0)
+            self.recipients.data = [r.id for r in obj.recipients]
         self.time.data = self.format_report_time()
 
     def _get_translations(self):
@@ -149,8 +148,8 @@ class ReportSettingForm(OurForm):
     performance_id = HiddenField(
         validators=[Optional()],
     )
-    operator_id = SelectField(
-        label=u'オペレータ',
+    recipients = PHPCompatibleSelectMultipleField(
+        label=u'送信先',
         validators=[Optional()],
         choices=[],
         coerce=lambda v: None if not v else int(v)
@@ -166,7 +165,7 @@ class ReportSettingForm(OurForm):
         label=u'メールアドレス',
         validators=[
             Optional(),
-            MultipleEmail()
+            Email()
         ]
     )
     frequency = SelectField(
@@ -239,12 +238,15 @@ class ReportSettingForm(OurForm):
         report_time = report_time[0:3] + '0'
         return report_time
 
-    def validate_operator_id(form, field):
+    def validate_recipients(form, field):
         if field.data:
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.format_report_time(),
-                ReportSetting.operator_id==field.data
+            ).join(
+                ReportSetting.recipients
+            ).filter(
+                ReportRecipient.id.in_(field.data)
             )
             if form.id.data:
                 query = query.filter(ReportSetting.id!=form.id.data)
@@ -255,14 +257,17 @@ class ReportSettingForm(OurForm):
             if form.day_of_week.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
-                raise ValidationError(u'既に登録済みのオペレーターです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_email(form, field):
         if field.data:
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.format_report_time(),
-                ReportSetting.email==form.email.data
+            ).join(
+                ReportSetting.recipients
+            ).filter(
+                ReportRecipient.email==field.data
             )
             if form.id.data:
                 query = query.filter(ReportSetting.id!=form.id.data)
@@ -273,7 +278,7 @@ class ReportSettingForm(OurForm):
             if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
-                raise ValidationError(u'既に登録済みのメールアドレスです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_frequency(form, field):
         if field.data:
@@ -307,12 +312,7 @@ class ReportSettingForm(OurForm):
     def validate(self):
         status = super(ReportSettingForm, self).validate()
         if status:
-            # operator_id or email のどちらか必須
-            email_length = len(self.email.data) if self.email.data else 0
-            if not self.operator_id.data and email_length == 0:
-                self.operator_id.errors.append(u'オペレーター、またはメールアドレスのいずれかを入力してください')
-                status = False
-            if self.operator_id.data and email_length > 0:
-                self.operator_id.errors.append(u'オペレーター、メールアドレスの両方を入力することはできません')
+            if not self.recipients.data and not self.email.data:
+                self.recipients.errors.append(u'送信先を選択または入力してください')
                 status = False
         return status

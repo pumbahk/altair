@@ -157,9 +157,11 @@ class LotEntryReporterTests(unittest.TestCase):
     def test_create_report_mail(self):
         from pyramid_mailer import get_mailer
         from datetime import datetime
+        from altair.app.ticketing.core.models import Organization, ReportRecipient
         request = testing.DummyRequest()
         sender = u"sender@example.com"
         mailer = get_mailer(request)
+        organization = Organization(id="1", short_name="testing")
         lot = testing.DummyModel(
             id=123,
             name=u"テスト抽選",
@@ -169,9 +171,16 @@ class LotEntryReporterTests(unittest.TestCase):
             ),
             limit_wishes=5,
         )
+        recipients=[
+            ReportRecipient(
+                name=u"",
+                email=u"testing-recipient@example.com",
+                organization_id=organization.id
+            )
+        ]
         setting = testing.DummyModel(
             lot_id=123,
-            recipient=u"testing-recipient@example.com",
+            recipients=recipients,
             lot=lot,
         )
         now = datetime(2013, 2, 3)
@@ -260,6 +269,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
             Venue,
             Site,
             Organization,
+            ReportRecipient,
         )
         from altair.app.ticketing.lots.models import (
             Lot,
@@ -268,6 +278,13 @@ class send_lot_report_mailsTests(unittest.TestCase):
         from altair.app.ticketing.events.lots.models import (
             LotEntryReportSetting,
         )
+
+        organization = Organization(
+            short_name="testing"
+        )
+        self.session.add(organization)
+        self.session.flush()
+
         lot = Lot(
             name=u"テスト抽選",
             sales_segment=SalesSegment(
@@ -277,13 +294,18 @@ class send_lot_report_mailsTests(unittest.TestCase):
             limit_wishes=3,
             event=Event(title=u"テストイベント"),
         )
+        report_recipient = ReportRecipient(
+            email=u"testing-recipient@example.com",
+            organization_id=organization.id
+        )
         report_setting = LotEntryReportSetting(
             lot=lot,
-            email=u"testing-recipient@example.com",
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Normal.v[0],
             time="1030",
+            recipients=[report_recipient],
         )
+        self.session.add(report_recipient)
         self.session.add(report_setting)
         self.session.add(lot)
         self.session.flush()
@@ -307,10 +329,12 @@ class send_lot_report_mailsTests(unittest.TestCase):
     def test_it_multi(self, mock_dt):
         mock_dt.now.return_value = datetime(2013, 2, 3, 10, 33)
         from pyramid_mailer import get_mailer
+        from altair.app.ticketing.core.models import Organization, ReportRecipient
         from altair.app.ticketing.events.lots.models import LotEntryReportSetting
         self._add_lot_entries()
         rs = self.session.query(LotEntryReportSetting).filter_by(time="1030").one()
-        rs.email = u"testing-recipient@example.com, testing-second@example.com"
+        organization = self.session.query(Organization).filter_by(short_name="testing").one()
+        rs.recipients.append(ReportRecipient(email=u"testing-second@example.com", organization_id=organization.id))
         request = testing.DummyRequest()
         sender = "testing@example.com"
 

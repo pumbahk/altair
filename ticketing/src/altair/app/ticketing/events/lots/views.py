@@ -26,6 +26,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     StockHolder,
     Stock,
+    ReportRecipient
     )
 from altair.app.ticketing.orders.forms import ClientOptionalForm
 from altair.app.ticketing.lots.models import (
@@ -56,6 +57,7 @@ from .forms import (
     SendingMailForm,
     LotEntryReportSettingForm,
 )
+from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 
 from . import api
 from .models import LotWishSummary, LotEntryReportSetting
@@ -651,8 +653,9 @@ class LotEntries(BaseView):
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
-        reject_entries = []
-        reset_entries = []
+        elect_entries = set()
+        reject_entries = set()
+        reset_entries = set()
         reader = csv.DictReader(file)
         for i, row in enumerate(reader):
             keys = [unicode(k.decode(encoding)) for k in row.keys()]
@@ -677,23 +680,26 @@ class LotEntries(BaseView):
                 raise CSVFileParserError(entry_no=entry_no)
 
             if status == u'当選予定':
+                if entry_no in elect_entries:
+                    raise CSVFileParserError(entry_no=u"申込番号({entry_no})に複数の当選予定があります".format(entry_no=entry_no))
+                elect_entries.add(entry_no)
                 elect_wishes.append((entry_no, wish_order))
             elif status == u'落選予定':
-                reject_entries.append(entry_no)
+                reject_entries.add(entry_no)
             elif status == u'申込':
-                reset_entries.append(entry_no)
+                reset_entries.add(entry_no)
         """
         落選予定/申込のentry_noに当選予定のentry_noがあったら削る
           - 当選予定はentry_no + wish_order
           - 落選予定/申込はentry_no
           の単位で処理するのでこのようになる
         """
-        for entry_no, wish_order in elect_wishes:
+        for entry_no in elect_entries:
             if entry_no in reject_entries:
                  reject_entries.remove(entry_no)
             if entry_no in reset_entries:
                  reset_entries.remove(entry_no)
-        return elect_wishes, reject_entries, reset_entries
+        return elect_wishes, list(reject_entries), list(reset_entries)
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
@@ -1117,18 +1123,45 @@ class LotReport(object):
     def index_url(self):
         return self.request.route_url("lots.entries.index", **self.request.matchdict)
 
-    @view_config(route_name="lot.entries.new_report_setting", renderer="lots/report_setting.html")
+    def _save_report_setting(self, report_setting=None):
+        f = LotEntryReportSettingForm(self.request.POST, context=self.context)
+        if not f.validate():
+            raise ReportSettingValidationError(form=f)
+        new_recipients = [
+            ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
+            for report_recipient_id in f.recipients.data
+            ]
+        if f.email.data:
+            new_recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+        if report_setting is None:
+            report_setting = LotEntryReportSetting()
+
+        remove_candidates = set(report_setting.recipients) - set(new_recipients)
+        for c in remove_candidates:
+            if len(c.settings) == 0 and len([s for s in c.lot_entry_report_settings if s.id != report_setting.id]) == 0:
+                logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
+                c.delete()
+
+        report_setting = merge_session_with_post(report_setting, f.data, excludes={'name', 'email'})
+        report_setting.recipients[:] = []
+        report_setting.recipients.extend(new_recipients)
+        report_setting.save()
+        return
+
+    @view_config(route_name="lot.entries.new_report_setting", request_method="GET", renderer="lots/report_setting.html")
     def new(self):
         form = LotEntryReportSettingForm(formdata=self.request.POST, context=self.context)
         form.lot_id.data = self.context.lot.id
-        if self.request.method == "POST":
-            if form.validate():
-                new_setting = LotEntryReportSetting()
-                form.sync(new_setting)
-                DBSession.add(new_setting)
-                self.request.session.flash(u'レポート送信設定を保存しました')
-                return HTTPFound(self.index_url)
         return dict(form=form, lot=self.context.lot)
+
+    @view_config(route_name="lot.entries.new_report_setting", request_method="POST", renderer="lots/report_setting.html")
+    def new_post(self):
+        try:
+            self._save_report_setting()
+            self.request.session.flash(u'レポート送信設定を保存しました')
+            return HTTPFound(self.index_url)
+        except ReportSettingValidationError as e:
+            return dict(form=e.form, lot=self.context.lot)
 
     @view_config(route_name="lot.entries.edit_report_setting", request_method="GET", renderer="lots/report_setting.html")
     def edit(self):
@@ -1139,21 +1172,26 @@ class LotReport(object):
 
     @view_config(route_name="lot.entries.edit_report_setting", request_method="POST", renderer="lots/report_setting.html")
     def edit_post(self):
-        f = LotEntryReportSettingForm(self.request.POST, context=self.context)
-        if not f.validate():
-            return dict(form=f, lot=self.context.lot)
-        report_setting = self.context.report_setting
-        report_setting = merge_session_with_post(report_setting, f.data)
-        report_setting.save()
-
-        self.request.session.flash(u'レポート送信設定を保存しました')
-        return HTTPFound(self.index_url)
+        try:
+            self._save_report_setting(self.context.report_setting)
+            self.request.session.flash(u'レポート送信設定を保存しました')
+            return HTTPFound(self.index_url)
+        except ReportSettingValidationError as e:
+            return dict(form=e.form, lot=self.context.lot)
 
     @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
     def delete(self):
-        self.context.report_setting.deleted_at = datetime.now()
-
-        self.request.session.flash(u'レポート送信設定を削除しました')
+        try:
+            remove_candidates = set(self.context.report_setting.recipients)
+            for c in remove_candidates:
+                if len(c.settings) == 0 and len([s for s in c.lot_entry_report_settings if s.id != self.context.report_setting.id]) == 0:
+                    logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
+                    c.delete()
+            self.context.report_setting.deleted_at = datetime.now()
+            self.request.session.flash(u'レポート送信設定を削除しました')
+        except Exception as e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(self.index_url)
         return HTTPFound(self.index_url)
 
     @view_config(route_name="lot.entries.send_report_setting", request_method="POST")

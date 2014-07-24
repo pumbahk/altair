@@ -1,10 +1,27 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
 <form class="form-horizontal" action="${action}" method="POST">
-  ${ch.form_item(form.operator_id)}
-  ${ch.form_item(form.name)}
-  ${ch.form_item(form.email)}
+  <div class="control-group ${u'error' if form.recipients.errors else u''}">
+    <label class="control-label">${form.recipients.label.text}</label>
+    <div class="controls">
+      ${form.recipients(style="width:300px", size=4, multiple="")}
+      ${ch.validate_errors(form.recipients)}
+    </div>
+  </div>
+  <script type="text/javascript">
+    $("form select[name='recipients']").chosen();
+  </script>
+  <div class="control-group">
+    <label class="control-label">送信先追加</label>
+    <div class="controls">
+      ${form.name(style="width:140px", placeholder=form.name.label.text)}
+      ${form.email(style="width:140px", placeholder=form.email.label.text)}
+    </div>
+  </div>
   ${ch.form_item(form.frequency)}
   <div class="frequency-weekly">
   ${ch.form_item(form.day_of_week)}
@@ -21,9 +38,6 @@
   ${ch.form_item(form.report_type)}
   ${ch.form_item(form.start_on)}
   ${ch.form_item(form.end_on)}
-  <div class="controls">
-    * オペレーターの追加は<a href="${request.route_path('operators.index')}">こちら</a>
-  </div>
   ${ch.form_item(form.id)}
   ${ch.form_item(form.event_id)}
   ${ch.form_item(form.performance_id)}
