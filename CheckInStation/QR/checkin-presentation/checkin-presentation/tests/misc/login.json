@@ -12,7 +12,7 @@
 	"image_from_svg": "http://localhost:8000/image.png"
     },
     "ad_images": [
-        "http://localhost:8000/sample.jpg"
+        "http://localhost:8000/ad.sample.jpg"
     ],
     "comment": {
         "memo": "svg_from_imageこれどこで設定しよう?",
