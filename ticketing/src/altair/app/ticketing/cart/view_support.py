@@ -152,7 +152,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         stocks = stocks_for_stock_type.get(stock_type.id)
         if stocks is None:
             stocks = stocks_for_stock_type[stock_type.id] = []
-        stocks.append(stock.id)
+        stocks.append(stock)
 
     max_quantity_per_user = None
     # このクエリが重い可能性が高いので、一時的に蓋閉め
@@ -177,10 +177,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         max_quantity = stock_type.max_quantity
 
         total_quantity_per_stock_type = 0
-        for target_stock in stock_type.stocks:
-            for target_item in target_stock.product_items:
-                if target_item.id in stock_for_product_item:
-                    total_quantity_per_stock_type = total_quantity_per_stock_type + stock_for_product_item[target_item.id].quantity
+        for target_stock in set(stocks_for_stock_type[stock_type.id]):
+            total_quantity_per_stock_type = total_quantity_per_stock_type + target_stock.quantity
 
         # ユーザ毎の最大購入枚数があれば、それを加味する...
         if max_quantity_per_user is not None:
@@ -274,7 +272,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             name=stock_type.name,
             description=stock_type.description,
             style=stock_type.style,
-            stocks=stocks_for_stock_type[stock_type.id],
+            stocks=[st.id for st in stocks_for_stock_type[stock_type.id]],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
             availability_text=h.get_availability_text(actual_availability_for_stock_type, total_quantity_per_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent),
