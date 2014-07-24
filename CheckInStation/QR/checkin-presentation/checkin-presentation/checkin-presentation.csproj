@@ -200,6 +200,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Resource Include="Resource\qr.input.new.jpg" />
     <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />
     <Resource Include="Resource\background.png" />
