@@ -103,8 +103,8 @@ class AttributeRenderer(object):
         items = dereference(record, self.key)
         retval = []
         for attr_key, attr_value in items.items():
-            renderer = self.renderer_class(u'_[%s]' % attr_key, u'%s[%s]' % (self.variable_name, attr_key))
-            retval.extend(renderer(dict(_=items)))
+            renderer = self.renderer_class(u'_', u'%s[%s]' % (self.variable_name, attr_key))
+            retval.extend(renderer(dict(_=attr_value)))
         return retval
 
 class CSVRenderer(object):
