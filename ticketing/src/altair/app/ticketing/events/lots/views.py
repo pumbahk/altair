@@ -1138,7 +1138,7 @@ class LotReport(object):
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 
-        report_setting = merge_session_with_post(report_setting, f.data, excludes={'name', 'email'})
+        report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
         report_setting.save()
