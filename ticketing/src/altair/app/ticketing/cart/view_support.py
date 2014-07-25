@@ -124,6 +124,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     product_items_for_product = dict()
     stock_for_product_item = dict()
     stocks_for_stock_type = dict()
+    availability_for_stock = dict()
 
     availability_per_product_map = dict()
     for stock_type, product, product_item, stock, available in q:
@@ -149,6 +150,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             availability_per_product = min(availability_per_product, available)
         availability_per_product_map[product.id] = availability_per_product
 
+        if stock.id not in availability_for_stock:
+            availability_for_stock[stock.id] = available
+
         stocks = stocks_for_stock_type.get(stock_type.id)
         if stocks is None:
             stocks = stocks_for_stock_type[stock_type.id] = []
@@ -170,11 +174,13 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     for stock_type in stock_types.itervalues():
         availability_for_stock_type = 0
         actual_availability_for_stock_type = 0
+        actual_stocks_for_stock_type = set()
         product_dicts = []
         min_product_quantity = stock_type.min_product_quantity
         max_product_quantity = stock_type.max_product_quantity
         min_quantity = stock_type.min_quantity
         max_quantity = stock_type.max_quantity
+
         # ユーザ毎の最大購入枚数があれば、それを加味する...
         if max_quantity_per_user is not None:
             max_quantity = max(max_quantity, max_quantity_per_user)
@@ -190,6 +196,13 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             if quantity_power == 0:
                 logger.warning("quantity power=0! sales_segment.id=%ld, product.id=%ld", sales_segment.id, product.id)
                 quantity_power = 1
+            stocks = set(
+                stock_for_product_item[product_item.id]
+                for product_item in product_items_for_product[product.id]
+                if stock_for_product_item[product_item.id].stock_type_id == \
+                        product.seat_stock_type_id \
+                   or product.seat_stock_type_id is None
+                )
             availability = availability_per_product_map[product.id]
             max_product_quatity = sales_segment.max_product_quatity
 
@@ -230,7 +243,10 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                actual_availability * quantity_power < min_quantity_per_product or \
                actual_availability < min_product_quantity_per_product:
                 actual_availability = 0
+                stocks = set()
             actual_availability_for_stock_type = max(actual_availability_for_stock_type, actual_availability)
+            for stock in stocks:
+                actual_stocks_for_stock_type.add(stock)
 
             product_dicts.append(
                 dict(
@@ -260,6 +276,14 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                         )
                     )
                 )
+
+        event = sales_segment.performance.event
+        total_availability_for_stock_type = sum([availability_for_stock.get(actual_stock.id) for actual_stock in actual_stocks_for_stock_type])
+        total_quantity_for_stock_type = sum([actual_stock.quantity for actual_stock in actual_stocks_for_stock_type])
+        logger.debug(u'stock_type.id={}, name={}, availability={}, actual_availability={}'.format(
+            stock_type.id, stock_type.name, availability_for_stock_type, actual_availability_for_stock_type))
+        logger.debug(u'total_availability_for_stock_type={}, total_quantity_for_stock_type={}, middle_stock_threshold={}, middle_stock_threshold_percent={}'.format(
+            total_availability_for_stock_type, total_quantity_for_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent))
         retval.append(dict(
             id=stock_type.id,
             name=stock_type.name,
@@ -268,7 +292,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             stocks=stocks_for_stock_type[stock_type.id],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
-            availability_text=h.get_availability_text(actual_availability_for_stock_type),
+            availability_text=h.get_availability_text(total_availability_for_stock_type, total_quantity_for_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent),
             quantity_only=stock_type.quantity_only,
             seat_choice=sales_segment.seat_choice,
             products=product_dicts,
