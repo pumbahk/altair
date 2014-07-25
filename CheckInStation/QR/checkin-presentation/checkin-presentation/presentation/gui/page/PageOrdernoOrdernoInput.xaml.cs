@@ -27,6 +27,7 @@ namespace checkin.presentation.gui.page
         public PageOrdernoOrdernoInputDataContext(Page page) : base(page) { }
 
         public string Orderno { get; set; }
+        public string Description { get; set; }
 
         public override void OnSubmit()
         {
@@ -66,10 +67,12 @@ namespace checkin.presentation.gui.page
             var data = (ctx.Case as CaseOrdernoOrdernoInput).RequestData;
             {
                 string orderno;
+                var organization_code = AppUtil.GetCurrentResource().AuthInfo.organization_code;
+                ctx.Description = "(“ü—Í—á:" + organization_code + "0101010101)";
                 if (data != null && data.order_no != null)
                     orderno = data.order_no;
                 else
-                    orderno = AppUtil.GetCurrentResource().AuthInfo.organization_code;
+                    orderno = organization_code;
                 this.KeyPad.Text = orderno;
             }
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();

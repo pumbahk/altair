@@ -36,7 +36,7 @@
                         <Grid>
                             <c:VirtualKeyboard Text="" 
                                                x:Name="KeyPad"
-                                               Description="(入力例:RE0101010101)"
+                                               Description="{Binding Description}"
                                                VirtualkeyboardFinish="KeyPad_KeyPadFinish"
                                                DisableModifyKey="True"
                                                DisableTenKey="False"
