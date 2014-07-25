@@ -170,7 +170,7 @@ class EventForm(Form):
         filters=[zero_as_none],
         validators=[Optional()],
         hide_on_new=True,
-        help=u'カートの在庫表示を△にする閾値を席数で指定します。在庫数がこの値未満になると△表示になります。'
+        help=u'カートの在庫表示を△にする閾値を席数で指定します。在庫数がこの値未満(未設定の場合は20未満)になると△表示になります。'
     )
     middle_stock_threshold_percent = OurIntegerField(
         label=label_text_for(EventSetting.middle_stock_threshold_percent),
