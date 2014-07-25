@@ -204,9 +204,7 @@
     <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />
     <Resource Include="Resource\background.png" />
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="app.config"/>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
