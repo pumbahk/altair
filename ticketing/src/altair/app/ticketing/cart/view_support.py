@@ -277,13 +277,11 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     )
                 )
 
-        event = sales_segment.performance.event
+        event_setting = sales_segment.performance.event.setting
         total_availability_for_stock_type = sum([availability_for_stock.get(actual_stock.id) for actual_stock in actual_stocks_for_stock_type])
         total_quantity_for_stock_type = sum([actual_stock.quantity for actual_stock in actual_stocks_for_stock_type])
-        logger.debug(u'stock_type.id={}, name={}, availability={}, actual_availability={}'.format(
-            stock_type.id, stock_type.name, availability_for_stock_type, actual_availability_for_stock_type))
-        logger.debug(u'total_availability_for_stock_type={}, total_quantity_for_stock_type={}, middle_stock_threshold={}, middle_stock_threshold_percent={}'.format(
-            total_availability_for_stock_type, total_quantity_for_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent))
+        middle_stock_threshold = event_setting.middle_stock_threshold if event_setting else None
+        middle_stock_threshold_percent = event_setting.middle_stock_threshold_percent if event_setting else None
         retval.append(dict(
             id=stock_type.id,
             name=stock_type.name,
@@ -292,7 +290,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             stocks=stocks_for_stock_type[stock_type.id],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
-            availability_text=h.get_availability_text(total_availability_for_stock_type, total_quantity_for_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent),
+            availability_text=h.get_availability_text(total_availability_for_stock_type, total_quantity_for_stock_type, middle_stock_threshold, middle_stock_threshold_percent),
             quantity_only=stock_type.quantity_only,
             seat_choice=sales_segment.seat_choice,
             products=product_dicts,
