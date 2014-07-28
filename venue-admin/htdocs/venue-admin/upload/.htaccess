@@ -1,0 +1,7 @@
+php_value post_max_size 32M
+php_value upload_max_filesize 32M
+
+<Files "*.svgz">
+	AddType image/svg+xml .svgz
+	Header set Content-Encoding gzip
+</Files>

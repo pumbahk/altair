@@ -2,6 +2,20 @@
 
 require_once 'site.php';
 
+function pack_svg($src, $dst) {
+	$pp = popen("xsltproc strip-metadata.xsl $src | gzip", 'r');
+	if(!$pp) {
+		print "xsltproc or gzip failed.";
+		exit;
+	}
+	$fp = fopen($dst, 'w');
+	while(!feof($pp)) {
+		fwrite($fp, fread($pp, 1024*1024));
+	}
+	fclose($pp);
+	fclose($fp);
+}
+
 function build_metadata($name) {
 	return sprintf('{
     "pages": {
@@ -46,6 +60,7 @@ if(@$_FILES['back'] && @$_FILES['back']['tmp_name']) {
 	$meta = array(
 		'name' => (string) $xml->title,
 		'seat_count' => $count,
+		'uploaded_by' => @$_SERVER['PHP_AUTH_USER'],
 	);
 
 	$name = uniqid();
@@ -53,14 +68,13 @@ if(@$_FILES['back'] && @$_FILES['back']['tmp_name']) {
 		$name .= ".".$matches[1];
 	}
 
-	file_put_contents("backend/$name.xml.meta", json_encode($meta));
+	file_put_contents(BACKEND_STORAGE."/$name.xml.meta", json_encode($meta));
 	
-	copy($_FILES['back']['tmp_name'], "backend/$name.xml");
+	copy($_FILES['back']['tmp_name'], BACKEND_STORAGE."/$name.xml");
 	
-	# 未テスト
 	$url = sprintf('%s://%s%s/checker.html#%s', empty($_SERVER['HTTPS']) ? 'http' : 'https',
 		$_SERVER['HTTP_HOST'], dirname($_SERVER['SCRIPT_NAME']),
-		'checker.html', dirname($_SERVER['SCRIPT_NAME']).'/backend/'.$name.'.xml');
+		dirname($_SERVER['SCRIPT_NAME']).'/backend/'.$name.'.xml');
 	
 	header("Location: $url");
 	exit;
@@ -68,8 +82,8 @@ if(@$_FILES['back'] && @$_FILES['back']['tmp_name']) {
 
 if(@$_FILES['front']) {
 	$name = uniqid();
-	mkdir("frontend/$name");
-	chmod("frontend/$name", 0777);
+	mkdir(FRONTEND_STORAGE."/$name");
+	chmod(FRONTEND_STORAGE."/$name", 0777);
 	
 	$json = null;
 	$files = array();
@@ -80,14 +94,12 @@ if(@$_FILES['front']) {
 			continue;
 		}	
 		if(preg_match('/\.json$/i', $filename)) {
-			# for asis
-			$json = "frontend/$name/metadata.raw.json";
 			$content = file_get_contents($_FILES['front']['tmp_name'][$i]);
 			$content = preg_replace('/^\xef\xbb\xbf/', '', $content);	// remove BOM
-			file_put_contents($json, $content);
+			# for plain version
+			file_put_contents(FRONTEND_STORAGE."/$name/metadata.raw.json", $content);
 			
-			# for gzip
-			$json = "frontend/$name/metadata.json";
+			# for gzipped version
 			$dst = new stdClass();
 			foreach(json_decode($content) as $key => $data) {
 				if($key == 'pages') {
@@ -101,35 +113,36 @@ if(@$_FILES['front']) {
 					$dst->$key = $data;
 				}
 			}
-			$content = json_encode($dst);
-			file_put_contents($json, $content);
-		} else {
-			$files[] = "frontend/$name/".$filename;		# .svg
-			copy($_FILES['front']['tmp_name'][$i], "frontend/$name/".$filename);
+			file_put_contents($json=FRONTEND_STORAGE."/$name/metadata.json", json_encode($dst));
+		} elseif(preg_match('/\.svg$/i', $filename)) {
+			$files[] = FRONTEND_STORAGE."/$name/$filename";		# .svg
+			copy($_FILES['front']['tmp_name'][$i], FRONTEND_STORAGE."/$name/$filename");
 			
-			system("xsltproc ../strip-metadata.xsl ".$_FILES['front']['tmp_name'][$i]." | gzip > frontend/$name/$filename"."z");
+			pack_svg($_FILES['front']['tmp_name'][$i], FRONTEND_STORAGE."/$name/$filename"."z");
 		}
-		chmod("frontend/$name/".$filename, 0666);
+		chmod(FRONTEND_STORAGE."/$name/".$filename, 0666);
+	}
+	
+	if(count($files) == 0) {
+		print "require .svg file.";
+		exit;
 	}
 	
 	if(!$json) {
-		$json = "frontend/$name/metadata.raw.json";
-		file_put_contents($json, build_metadata(basename($files[0])));
+		file_put_contents(FRONTEND_STORAGE."/$name/metadata.raw.json", build_metadata(basename($files[0])));
 		
-		$json = "frontend/$name/metadata.json";
-		file_put_contents($json, build_metadata(preg_replace('/\.svg$/', '.svgz', basename($files[0]))));
+		file_put_contents($json=FRONTEND_STORAGE."/$name/metadata.json", build_metadata(preg_replace('/\.svg$/', '.svgz', basename($files[0]))));
 	}
 	
-	ini_set('display_errors', 1);
-	error_reporting(E_ALL);
-	
-	file_put_contents("$json.meta", json_encode(array(
+	file_put_contents($json.".meta", json_encode(array(
 		'name' => get_frontend_venue_name($files[0]),
+		'uploaded_by' => @$_SERVER['PHP_AUTH_USER'],
 	)));
-	chmod("$json.meta", 0666);
+	chmod($json.".meta", 0666);
 	
-	$url = sprintf('%s://%s%s', empty($_SERVER['HTTPS']) ? 'http' : 'https',
-		$_SERVER['HTTP_HOST'], "/venue-admin/upload/viewer.html#/venue-admin/upload/frontend/$name/metadata.raw.json");
+	$url = sprintf('%s://%s%s/viewer.html#%s', empty($_SERVER['HTTPS']) ? 'http' : 'https',
+		$_SERVER['HTTP_HOST'], dirname($_SERVER['SCRIPT_NAME']),
+		dirname($_SERVER['SCRIPT_NAME'])."/frontend/$name/metadata.json");
 	
 	header("Location: $url");
 	
@@ -139,7 +152,6 @@ if(@$_FILES['front']) {
 header("Content-Type: text/html; charset=UTF-8");
 
 ?>
-
 <script src="js/jquery-1.7.2.js"></script>
 <script src="https://service.ticketstar.jp/static/js/jquery.chosen.js"></script>
 <link rel="stylesheet" type="text/css" href="https://service.ticketstar.jp/static/css/chosen.css" />
@@ -148,6 +160,8 @@ $(function() {
 	$('select').chosen();
 });
 </script>
+
+<h1>venue uploader</h1>
 
 <form method="post" enctype="multipart/form-data">
 backend(.xml): <input type="file" name="back" />
@@ -165,9 +179,9 @@ while($f = readdir($dh)) {
 	if(preg_match('/^(.+)\.meta$/', $f, $matches) && file_exists(BACKEND_STORAGE.'/'.$matches[1])) {
 		$meta = json_decode(file_get_contents(BACKEND_STORAGE.'/'.$f));
 		$mtime = filemtime(BACKEND_STORAGE.'/'.$f);
-		$comment = sprintf('%s %s (%u席, %uKB)',
+		$comment = sprintf('%s %s (%u席, %uKB) %s',
 			date('Y-m-d H:i', $mtime),
-			$meta->name, $meta->seat_count, filesize(BACKEND_STORAGE.'/'.$matches[1])/1024);
+			$meta->name, $meta->seat_count, filesize(BACKEND_STORAGE.'/'.$matches[1])/1024, $meta->uploaded_by ? 'by '.$meta->uploaded_by : '');
 		$options[] = sprintf('<option value="%s">%s</option>'."\n",
 			   dirname($_SERVER['SCRIPT_NAME']).'/backend/'.$matches[1], $comment);
 		$sorter[] = $mtime;
@@ -205,9 +219,10 @@ while($d = readdir($dh)) {
 		if(preg_match('/^(.+)\.meta$/', $f, $matches) && file_exists(FRONTEND_STORAGE.'/'.$d.'/'.$matches[1])) {
 			$meta = json_decode(file_get_contents(FRONTEND_STORAGE."/$d/$f"));
 			$mtime = filemtime(FRONTEND_STORAGE."/$d/$f");
-			$comment = sprintf('%s %s',
+			$comment = sprintf('%s %s %s',
 				date('Y-m-d H:i', $mtime),
-				$meta->name);
+				$meta->name,
+				$meta->uploaded_by ? 'by '.$meta->uploaded_by : '');
 			$options[] = sprintf('<option value="%s">%s</option>'."\n", dirname($_SERVER['SCRIPT_NAME']).'/frontend/'.$d.'/'.$matches[1], $comment);
 			$sorter[] = $mtime;
 		}
