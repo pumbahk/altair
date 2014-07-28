@@ -564,6 +564,8 @@ function buildStockTypeHolderTables(venue) {
   var retval = $('<div></div>');
   venue.stockTypes.each(function (stockType) {
     var keyedStocks = stockType.keyedStocks();
+    if (!keyedStocks)
+      return;
     var swatch = buildColorButton(stockType, 'style').addClass('swatch');
     var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockType.get('name'));
     var lock_group = $('<a class="transfer btn btn-mini" href="javascript:lockStocksByStockType(' + stockType.id + ');"></a>');
@@ -609,6 +611,8 @@ function buildStockHolderTypeTables(venue) {
   var retval = $('<div></div>');
   venue.stockHolders.each(function (stockHolder) {
     var keyedStocks = stockHolder.keyedStocks();
+    if (!keyedStocks)
+      return;
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
