@@ -25,7 +25,7 @@ namespace checkin.core.flow
             var ts = new TaskCompletionSource<bool>();
             var subject = this.PresentationChanel as OrdernoInputEvent;
             this.RequestData.order_no = subject.Orderno;
-            var r = this.Resource.Validation.ValidateOrderno(this.RequestData.order_no);
+            var r = this.Resource.Validation.ValidateOrderno(this.RequestData.order_no, subject.OrganizationCode);
             ts.SetResult(r.Status);
             if (!r.Status)
             {

@@ -15,7 +15,7 @@ namespace checkin.core.models
         Result ValidateAuthLoginName(string name);
         Result ValidateAuthPassword(string password);
         Result ValidateQRCode(string qrcode);
-        Result ValidateOrderno(string orderno);
+        Result ValidateOrderno(string orderno, string organizationCode);
         Result ValidateTel(string tel);
     }
 }

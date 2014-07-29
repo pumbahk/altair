@@ -33,6 +33,7 @@ namespace checkin.presentation.gui.page
         {
             var ev = this.Event as OrdernoInputEvent;
             ev.Orderno = this.Orderno;
+            ev.OrganizationCode = AppUtil.GetCurrentResource().AuthInfo.organization_code;
             base.OnSubmit();
         }
     }

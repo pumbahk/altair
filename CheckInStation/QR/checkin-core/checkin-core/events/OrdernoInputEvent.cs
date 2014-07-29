@@ -19,7 +19,10 @@ namespace checkin.core.events
 
         public string Tel { get; set; }
 
-        public OrdernoInputEvent () : base ()
+        public string OrganizationCode { get; set; }
+        
+        public OrdernoInputEvent()
+            : base()
         {
         }
 
