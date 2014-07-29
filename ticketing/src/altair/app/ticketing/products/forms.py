@@ -35,6 +35,7 @@ from altair.app.ticketing.core.models import (
     SalesSegment, Product, ProductItem, StockHolder, StockType, TicketBundle,
     SalesSegmentGroup, Event, Ticket, TicketFormat, DeliveryMethod,
     )
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
 
@@ -204,8 +205,10 @@ class ProductItemFormMixin(object):
         if form.product_item_id.data:
             pi = ProductItem.query.filter_by(id=form.product_item_id.data).one()
             stock = pi.stock
-            if stock.stock_holder_id != field.data and len(pi.ordered_product_items) > 0:
-                raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
+            if stock.stock_holder_id != field.data:
+                count = Order.query.join(OrderedProduct, OrderedProductItem, ProductItem).filter(ProductItem.id==pi.id).count()
+                if count > 0:
+                    raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
 
     def validate_product_item(self):
         status = True
