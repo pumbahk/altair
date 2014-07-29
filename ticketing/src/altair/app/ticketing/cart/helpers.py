@@ -4,6 +4,7 @@
 TODO: cart取得はリソースの役目
 """
 import functools
+from decimal import Decimal
 from pyramid.view import render_view_to_response
 from pyramid.compat import escape
 from markupsafe import Markup
@@ -216,14 +217,16 @@ def product_name_with_unit(product_items):
             for product_item in product_items))
 
 def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle_stock_threshold_percent):
-    if not middle_stock_threshold and not middle_stock_threshold_percent:
+    if middle_stock_threshold_percent is None:
         middle_stock_threshold_percent = 50
+    if middle_stock_threshold is None:
+        middle_stock_threshold = 20
 
     if quantity <= 0:
         return u'×'
 
     if middle_stock_threshold_percent:
-        if quantity < (all_quantity/100 * middle_stock_threshold_percent):
+        if quantity < (Decimal(all_quantity) / 100 * middle_stock_threshold_percent):
             return u'△'
 
     if middle_stock_threshold:

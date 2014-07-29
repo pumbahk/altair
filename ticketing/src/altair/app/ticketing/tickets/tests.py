@@ -388,34 +388,19 @@ class TicketsUtilsTest(TestCase):
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 10, u"minute": 1, u"second": 2, 
-                    u"weekday": 0, 
+                    u"hour": 10, u"minute": 1, u"second": 2,
+                    u"weekday": 0,
                     },
                 u"start_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 11, u"minute": 3, u"second": 4, 
-                    u"weekday": 0, 
+                    u"hour": 11, u"minute": 3, u"second": 4,
+                    u"weekday": 0,
                     },
-                u"end_on": None, 
+                u"end_on": None,
                 },
             u"venue": {
                 u"name": u"会場名",
                 u"sub_name": u"サブ会場名"
-                },
-            u"stock": {
-                u"quantity": 100
-                },
-            u"stockStatus": {
-                u"quantity": 98,
-                },
-            u"stockHolder": {
-                u"name": u"stock_holder"
-                },
-            u"stockType": {
-                u"name": u"S席",
-                u"type": 0,
-                u"display_order": 0,
-                u"quantity_only": 0
                 },
             u"seat": {
                 u"l0_id": u"l0_id",
@@ -433,7 +418,6 @@ class TicketsUtilsTest(TestCase):
             u"開始時刻": u"11時 03分",
             u"開始時刻s": u"11:03",
             u"終了時刻": u"",
-            u"席種名": u"S席",
             u"席番": u"seat_name",
             }
         for k in expected:
@@ -456,15 +440,15 @@ class TicketsUtilsTest(TestCase):
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 10, u"minute": 1, u"second": 2, 
-                    u"weekday": 0, 
+                    u"hour": 10, u"minute": 1, u"second": 2,
+                    u"weekday": 0,
                     },
                 u"start_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 11, u"minute": 3, u"second": 4, 
-                    u"weekday": 0, 
+                    u"hour": 11, u"minute": 3, u"second": 4,
+                    u"weekday": 0,
                     },
-                u"end_on": None, 
+                u"end_on": None,
                 },
             u"venue": {
                 u"name": u"会場名",
@@ -536,15 +520,15 @@ class TicketsUtilsTest(TestCase):
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 10, u"minute": 1, u"second": 2, 
-                    u"weekday": 0, 
+                    u"hour": 10, u"minute": 1, u"second": 2,
+                    u"weekday": 0,
                     },
                 u"start_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 11, u"minute": 3, u"second": 4, 
-                    u"weekday": 0, 
+                    u"hour": 11, u"minute": 3, u"second": 4,
+                    u"weekday": 0,
                     },
-                u"end_on": None, 
+                u"end_on": None,
                 },
             u"venue": {
                 u"name": u"会場名",
@@ -663,4 +647,3 @@ class TicketsCleanerTest(TestCase):
         self.assertEqual(u'matrix(2,0,0,2,30,60)', elem.get(u'transform'))
         elem = svg[0][0][0][0]
         self.assertEqual(u'matrix(1,0,0,1,20,30)', elem.get(u'transform'))
-

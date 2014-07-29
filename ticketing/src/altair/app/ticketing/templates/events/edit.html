@@ -27,6 +27,7 @@
       code_buf = [];
     });
     $("#account_id").chosen();
+    $('[rel=popover]').popover({html:true});
   });
 </script>
 <%block name="breadcrumbs">
@@ -51,8 +52,8 @@ ${ch.breadcrumbs(
       ${ch.form_item(form.code, style='width:100px', maxlength=7, counter=True)}
       ${ch.form_item(form.order_limit)}
       ${ch.form_item(form.max_quantity_per_user)}
-      ${ch.form_item(form.middle_stock_threshold)}
-      ${ch.form_item(form.middle_stock_threshold_percent)}
+      ${ch.form_item(form.middle_stock_threshold, help=ch.help(form.middle_stock_threshold))}
+      ${ch.form_item(form.middle_stock_threshold_percent, help=ch.help(form.middle_stock_threshold_percent))}
       ${ch.form_item(form.display_order)}
       ${ch.form_item(form.performance_selector)}
       ${ch.form_item(form.performance_selector_label1_override)}
