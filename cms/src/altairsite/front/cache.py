@@ -85,14 +85,19 @@ def cached_view_tween(handler, registry):
 
     def tween(request):
         ## get以外かpreviewリクエストの時はcacheしない
+        nocache = False
         if request.method != "GET":
-            return handler(request)
+            nocache = True
+        else:
+            try:
+                nocache = "_nocache" in request.GET
+            except UnicodeDecodeError:
+                pass 
 
-        if "_nocache" in request.GET:
-            return handler(request)
+            if get_preview_request_condition(request):
+                nocache = True
 
-        # logger.debug("req:"+request.path)
-        if get_preview_request_condition(request):
+        if nocache:
             return handler(request)
 
         keygen = get_key_generator(request)
