@@ -12,7 +12,7 @@ ROUTE_URL_RESOURCE = {
     'augus.test': ('/test', None),
     'augus.venue.index': ('/venues/{venue_id}', VenueResource),
     'augus.venue.download': ('/venues/{venue_id}/download', VenueResource),
-    'augus.venue.upload': ('/venues/{venue_id}/upload', None),
+    'augus.venue.upload': ('/venues/{venue_id}/upload', AugusVenueResource),
     'augus.augus_venue.list': ('/augus_venues', None),
     'augus.augus_venue.index': ('/augus_venues/{augus_venue_code}',
                                 AugusVenueListResource),

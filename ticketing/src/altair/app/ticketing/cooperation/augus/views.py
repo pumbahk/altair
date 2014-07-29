@@ -117,7 +117,19 @@ class VenueView(_AugusBaseView):
         import csv
         from altair.app.ticketing.core.models import Venue, AugusSeat
 
-        if not self.context.augus_account:
+        from altair.app.ticketing.core.models import (
+            Account,
+            AugusAccount,
+            )
+        augus_account_id = int(self.request.params.get('augus_account_id', 0))
+        augus_account = AugusAccount\
+          .query\
+          .join(Account)\
+          .filter(AugusAccount.id==augus_account_id)\
+          .filter(Account.organization_id==self.context.organization.id)\
+          .first()
+
+        if not augus_account:
             raise HTTPBadRequest('augus account not found')
 
         venue_id = int(self.request.matchdict['venue_id'])
@@ -134,7 +146,7 @@ class VenueView(_AugusBaseView):
             records = [record for record in reader]
             logger.info('AUGUS VENUE: creating target list')
             external_venue_code_name_version_list = filter(lambda code_version: code_version != ("", "", ""),
-                                                           set([(record[6], record[7], record[23]) for record in records]))
+                                                           set([(record[6], record[7], record[23]) for record in records])) # tab 区切りだとココでIndexErrorとかになるよ
             count = len(external_venue_code_name_version_list)
             if count == 0: # 対象すべてunlink
                 raise HTTPBadRequest(body=json.dumps({
@@ -163,7 +175,7 @@ class VenueView(_AugusBaseView):
                 ex_venue.name = ex_venue_name
                 ex_venue.version = ex_venue_version
                 ex_venue.venue_id = venue.id
-                ex_venue.augus_account_id = self.context.augus_account.id
+                ex_venue.augus_account_id = augus_account.id
                 ex_venue.save()
 
                 logger.info('AUGUS VENUE: creating augus seat target dict')
