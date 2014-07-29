@@ -60,8 +60,10 @@ class MobileMiddleware(object):
 
     def _convert_response_encoding(self, response):
         if self._is_text_response(response) and response.charset is not None:
-            response.body = response.unicode_body.encode(self.codec, self.errors)
-            response.charset = self.encoding
+            response.unicode_errors = self.errors
+            if response.charset != self.encoding:
+                response.body = response.text.encode(self.codec, self.errors)
+                response.charset = self.encoding
         return response
 
     def _convert_response(self, mobile_ua, request, response):
@@ -124,7 +126,6 @@ class MobileMiddleware(object):
 
     def _make_mobile_request(self, request):
         # the following is needed to differentiate the kind of the request in HTTP backend module
-        directlyProvides(request, IMobileRequest)
         self._revalidate_session(request)
         kept_session = request.session
         decoded = request.decode(self.codec, self.errors)
@@ -145,6 +146,7 @@ class MobileMiddleware(object):
 
     def __call__(self, handler, request):
         mobile_ua = self._detect(request)
+        original_request = request
         if not mobile_ua.carrier.is_nonmobile:
             try:
                 request = self._make_mobile_request(request)
@@ -164,6 +166,7 @@ class MobileMiddleware(object):
         # TODO:remove.
         # cms, usersite compatibility
         request.is_docomo = mobile_ua.carrier.is_docomo
+        request.original_request = original_request if request is not original_request else None
 
         if self.preverify_request_parameter_encoding:
             try:
@@ -182,7 +185,7 @@ class MobileMiddleware(object):
             if not mobile_ua.carrier.is_nonmobile:
                 try:
                     response = self._convert_response(mobile_ua, request, response)
-                except UnicodeEncodeError as e:
+                except (UnicodeDecodeError, UnicodeEncodeError) as e:
                     logger.info('error occurred during converting response', exc_info=True)
                     if self.on_error_handler is not None:
                         return self.on_error_handler(e, request)

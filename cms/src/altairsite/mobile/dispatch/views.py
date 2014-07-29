@@ -13,6 +13,9 @@ def mobile_route_path(request):
     return _
 
 def dispatch_view(context, request):
+    original_request = getattr(request, 'original_request', None)
+    if original_request is not None:
+        request = original_request
     if "return_twice" in request.environ:
         raise HTTPNotFound()
     request.environ["PATH_INFO"] = MOBILE_PREFIX + "/" + request.environ["PATH_INFO"].lstrip("/")
