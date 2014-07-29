@@ -254,7 +254,7 @@ class ReportSettingForm(OurForm):
                 query = query.filter(ReportSetting.event_id==form.event_id.data)
             if form.performance_id.data:
                 query = query.filter(ReportSetting.performance_id==form.performance_id.data)
-            if form.day_of_week.data == ReportFrequencyEnum.Weekly.v[0]:
+            if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
                 raise ValidationError(u'既にレポート送信設定済みの送信先です')
