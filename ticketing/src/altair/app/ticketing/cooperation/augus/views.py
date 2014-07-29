@@ -454,7 +454,7 @@ class AugusVenueView(_AugusBaseView):
     def complete_download(self):
         augus_venue = self.context.augus_venue
         res = Response()
-        venue_response = VenueSyncResponse(customer_id=CUSTOMER_ID,
+        venue_response = VenueSyncResponse(customer_id=augus_venue.augus_account.code,
                                            venue_code=augus_venue.code)
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(venue_response.name)),
