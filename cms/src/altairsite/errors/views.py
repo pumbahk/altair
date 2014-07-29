@@ -5,11 +5,11 @@ from altair.exclog.api import build_exception_message, log_exception_message
 from ..separation import enable_smartphone
 
 @view_config(context="pyramid.exceptions.Forbidden", 
-             request_type='altairsite.tweens.ISmartphoneRequest', 
+             request_type='altair.mobile.interfaces.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
              renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
-             request_type='altairsite.tweens.IMobileRequest', 
+             request_type='altair.mobile.interfaces.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"RT": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
@@ -20,17 +20,17 @@ def forbidden(request):
     return {}
 
 @view_config(context="pyramid.exceptions.NotFound", 
-             request_type='altairsite.tweens.ISmartphoneRequest', 
+             request_type='altair.mobile.interfaces.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
              renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
-             request_type='altairsite.tweens.IMobileRequest', 
+             request_type='altair.mobile.interfaces.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"RT": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 @view_config(context="altaircms.page.api.StaticPageNotFound", 
-             request_type='altairsite.tweens.IMobileRequest', 
+             request_type='altair.mobile.interfaces.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"RT": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="altaircms.page.api.StaticPageNotFound", 
@@ -41,11 +41,11 @@ def notfound(request):
     return {}
 
 @view_config(context="altairsite.exceptions.UsersiteException", 
-             request_type='altairsite.tweens.ISmartphoneRequest', 
+             request_type='altair.mobile.interfaces.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
              renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="altairsite.exceptions.UsersiteException", 
-             request_type='altairsite.tweens.IMobileRequest', 
+             request_type='altair.mobile.interfaces.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer(
                {"RT": "altaircms:templates/mobile/notfound.html"}, 
                default = "altaircms:templates/mobile/default_notfound.html"))

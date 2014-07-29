@@ -1,4 +1,5 @@
-from .interfaces import IMobileCarrierDetector, IMobileRequestMaker
+from pyramid.interfaces import IRequest
+from .interfaces import IMobileCarrierDetector, IMobileMiddleware, ISmartphoneSupportPredicate
 from . import PC_ACCESS_COOKIE_NAME
 from datetime import datetime #ok?
 
@@ -40,7 +41,13 @@ def set_we_need_pc_access(response):
 def set_we_invalidate_pc_access(response):
     response.delete_cookie(PC_ACCESS_COOKIE_NAME)
 
-def make_mobile_request(request):
-    registry = getattr(request, 'registry', request)
-    maker = registry.queryUtility(IMobileRequestMaker)
-    return maker(request)
+def get_middleware(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IMobileMiddleware)
+
+def smartphone_support_enabled_for(request):
+    predicate = request.registry.getUtility(ISmartphoneSupportPredicate)
+    return not predicate or predicate(request)

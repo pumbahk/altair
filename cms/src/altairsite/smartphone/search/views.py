@@ -9,7 +9,7 @@ from altairsite.separation import selectable_renderer, enable_search_function
 
 from pyramid.renderers import render_to_response
 
-@smartphone_site_view_config(route_name='smartphone.search',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/search.html'))
 def search(context, request):
     # トップ画面の検索
@@ -30,7 +30,7 @@ def search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.search_genre',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search_genre',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/genre.html'))
 def genre_search(context, request):
     # ジャンル画面の検索
@@ -59,13 +59,13 @@ def genre_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.search_subsubgenre',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search_subsubgenre',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/subgenre.html'))
 def subsubgenre_search(context, request):
     # サブサブジャンルは検索結果
     return context.get_subsubgenre_render_param(genre_id=None)
 
-@smartphone_site_view_config(route_name='smartphone.search_area',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search_area',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/area.html'))
 def search_area(context, request):
     # トップ画面のエリア検索
@@ -78,7 +78,7 @@ def search_area(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.search_genre_area',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search_genre_area',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/genre_area.html'))
 def search_genre_area(context, request):
     # ジャンル画面のエリア検索
@@ -93,7 +93,7 @@ def search_genre_area(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.init_detail',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.init_detail',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/detail_search.html'))
 def init_detail_search(context, request):
     # 詳細検索画面表示
@@ -105,7 +105,7 @@ def init_detail_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.search_detail',request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_search_function, )
+@smartphone_site_view_config(route_name='smartphone.search_detail',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/detail_search.html'))
 def detail_search(context, request):
     # 詳細検索
@@ -140,7 +140,7 @@ def detail_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.hotword',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.hotword',request_type="altair.mobile.interfaces.ISmartphoneRequest"
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/hotword.html'))
 def move_hotword(context, request):
     form = HotwordSearchForm(request.GET)

@@ -11,7 +11,7 @@ from altairsite.mobile.core.eventhelper import EventHelper
 from altaircms.datelib import get_now
 from altairsite.separation import selectable_renderer, get_organization_from_request
 
-@mobile_site_view_config(route_name='home', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='home', request_type="altair.mobile.interfaces.IMobileRequest"
              , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/top/top.mako'))
 def main(request):
 

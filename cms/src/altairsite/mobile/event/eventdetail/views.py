@@ -29,7 +29,7 @@ def get_page_published(request, event_id, dt):
             ).first()
     return page
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='eventdetail', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/eventdetail/eventdetail.mako'))
 def move_eventdetail(request):
 
@@ -70,6 +70,6 @@ def move_eventdetail(request):
     }
 
 @mobile_site_view_config(route_name='eventdetail', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
+    , request_type="altair.mobile.interfaces.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

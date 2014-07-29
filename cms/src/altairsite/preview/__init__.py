@@ -5,5 +5,5 @@ def includeme(config):
     config.registry.registerUtility(PreviewPermission(), IPreviewPermission)
 
     # tween
-    config.add_tween('altair.preview.tweens.preview_tween', under='.gaq_tween_factory')
+    config.add_tween('altair.preview.tweens.preview_tween', under='altair.mobile.tweens.mobile_encoding_convert_factory')
 
