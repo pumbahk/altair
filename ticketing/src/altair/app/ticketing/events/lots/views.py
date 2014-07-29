@@ -1132,7 +1132,10 @@ class LotReport(object):
             for report_recipient_id in f.recipients.data
             ]
         if f.email.data:
-            new_recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+            rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
+            if not rr:
+                rr = ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id)
+            new_recipients.append(rr)
         if report_setting is None:
             report_setting = LotEntryReportSetting()
 
@@ -1142,7 +1145,7 @@ class LotReport(object):
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 
-        report_setting = merge_session_with_post(report_setting, f.data, excludes={'name', 'email'})
+        report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
         report_setting.save()

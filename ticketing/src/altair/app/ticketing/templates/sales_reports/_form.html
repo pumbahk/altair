@@ -20,6 +20,8 @@
     <div class="controls">
       ${form.name(style="width:140px", placeholder=form.name.label.text)}
       ${form.email(style="width:140px", placeholder=form.email.label.text)}
+      ${ch.validate_errors(form.name)}
+      ${ch.validate_errors(form.email)}
     </div>
   </div>
   ${ch.form_item(form.frequency)}
