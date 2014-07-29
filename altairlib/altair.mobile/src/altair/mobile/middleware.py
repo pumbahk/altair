@@ -41,7 +41,7 @@ class MobileMiddleware(object):
         if codec is None:
             codec = encoding
             # XXX: tentative
-            if codec.lower() == 'Shift_JIS':
+            if codec.lower() == 'shift_jis':
                 codec = 'cp932:normalized-tilde'
         self.encoding = encoding
         self.codec = codec
