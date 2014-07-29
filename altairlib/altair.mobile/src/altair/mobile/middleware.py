@@ -37,7 +37,7 @@ overridden_url_methods = [
 class MobileMiddleware(object):
     hash_key = __name__ + '.ua_hash'
 
-    def __init__(self, encoding='Shift_JIS', codec=None, errors='strict', on_error_handler=None):
+    def __init__(self, encoding='Shift_JIS', codec=None, errors='strict', on_error_handler=None, preverify_request_parameter_encoding=False):
         if codec is None:
             codec = encoding
             # XXX: tentative
@@ -47,6 +47,7 @@ class MobileMiddleware(object):
         self.codec = codec
         self.errors = errors
         self.on_error_handler = on_error_handler
+        self.preverify_request_parameter_encoding = preverify_request_parameter_encoding
 
     def _is_text_response(self, response):
         return response.content_type is not None and \
@@ -164,15 +165,16 @@ class MobileMiddleware(object):
         # cms, usersite compatibility
         request.is_docomo = mobile_ua.carrier.is_docomo
 
-        try:
-            request.params
-        except UnicodeDecodeError as e:
-            if self.on_error_handler is not None:
-                try:
-                    return self.on_error_handler(e, request)
-                except Exception as e:
-                    logger.exception('exception raised within error handler')
-            raise
+        if self.preverify_request_parameter_encoding:
+            try:
+                request.params
+            except UnicodeDecodeError as e:
+                if self.on_error_handler is not None:
+                    try:
+                        return self.on_error_handler(e, request)
+                    except Exception as e:
+                        logger.exception('exception raised within error handler')
+                raise
 
         response = handler(request)
 

@@ -37,13 +37,16 @@ def install_mobile_middleware(config):
     on_error_handler = config.registry.settings.get("altair.mobile.on_error_handler", on_error_return_error_response)
     if on_error_handler is not None:
         on_error_handler = config.maybe_dotted(on_error_handler)
+    preverify_request_parameter_encoding = config.registry.settings.get('altair.mobile.preverify_request_parameter_encoding', False)
+    preverify_request_parameter_encoding = asbool(preverify_request_parameter_encoding)
 
     config.registry.registerUtility(
         MobileMiddleware(
             encoding=encoding,
             codec=codec,
             errors=errors,
-            on_error_handler=on_error_handler
+            on_error_handler=on_error_handler,
+            preverify_request_parameter_encoding=preverify_request_parameter_encoding
             ),
         IMobileMiddleware
         )
