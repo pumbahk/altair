@@ -71,3 +71,4 @@ def add_routes(config, route_url_resource):
 
 def includeme(config):
     add_routes(config, ROUTE_URL_RESOURCE)
+    config.include('altair.app.ticketing.cooperation.augus.accounts', route_prefix='accounts')

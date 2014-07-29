@@ -3,7 +3,7 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <div class="page-header">
-  <h3>オーガス会場図連携 - ${augus_venue.name} - ${augus_venue.code} - ${augus_venue.version}</h3>
+  <h3>オーガス会場図連携 - ${augus_venue.name} - ${augus_venue.code} - ${augus_venue.version} - ${augus_venue.augus_account_id}</h3>
 </div>
 
 <div class="container">
@@ -55,6 +55,7 @@
     </div>
     <div class="modal-body">
       オーガス会場図と連携させるためのCSVをアップロードします。
+      ${ch.form_item(upload_form.augus_account_id)}
       ${ch.form_item(upload_form.augus_venue_file)}
     </div>
     <div class="modal-footer">
