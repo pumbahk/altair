@@ -1,14 +1,14 @@
 """drop column ReportSetting.email,name
 
 Revision ID: 470ecc52bc32
-Revises: 45e17ff9f21a
+Revises: 20b4a3d70ef4
 Create Date: 2014-07-17 18:15:46.334444
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '470ecc52bc32'
-down_revision = '45e17ff9f21a'
+down_revision = '20b4a3d70ef4'
 
 from alembic import op
 import sqlalchemy as sa
