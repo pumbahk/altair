@@ -1,0 +1,8 @@
+#!/bin/sh
+
+CURRENT=$(dirname $(dirname $(cd $(dirname $0) ; pwd)))
+ALTAIR_CONF=${CURRENT}/deploy/production/conf/altair.ticketing.admin.ini
+
+MYSQL_ARGS=`grep ^sqlalchemy.url $ALTAIR_CONF | perl -npe 's,^.+//(.+):(.+)@(.+):(\d+)/([^\?]+).+$,--user=$1 --password=$2 --host=$3 --port=$4 $5,'`
+
+mysql $MYSQL_ARGS $*
