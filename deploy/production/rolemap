@@ -1,9 +1,5 @@
-apbv1.1a.vpc.altr	adminapp
-apbv1.1c.vpc.altr	adminapp
 apbv2.1a.vpc.altr	adminapp
 apbv2.1c.vpc.altr	adminapp
-apcs1.1c.vpc.altr	gateapp
-apcs1.1a.vpc.altr	gateapp
 apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
 apmv4.1c.vpc.altr	userapp-with-booster
