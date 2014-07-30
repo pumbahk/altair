@@ -2,7 +2,7 @@ import hashlib
 import logging
 from markupsafe import Markup, escape
 from urlparse import urlparse, urlunparse
-from zope.interface import implementer, directlyProvides
+from zope.interface import implementer, directlyProvides, noLongerProvides
 from pyramid.threadlocal import manager
 
 from .interfaces import (
@@ -126,8 +126,10 @@ class MobileMiddleware(object):
 
     def _make_mobile_request(self, request):
         # the following is needed to differentiate the kind of the request in HTTP backend module
-        self._revalidate_session(request)
+        directlyProvides(request, IMobileRequest) # for HybridHTTPSession
         kept_session = request.session
+        self._revalidate_session(request)
+        noLongerProvides(request, IMobileRequest)
         decoded = request.decode(self.codec, self.errors)
         request.environ.update(decoded.environ)
         decoded.environ = request.environ
