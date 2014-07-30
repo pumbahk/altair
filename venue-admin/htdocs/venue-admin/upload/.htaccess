@@ -5,3 +5,6 @@ php_value upload_max_filesize 32M
 	AddType image/svg+xml .svgz
 	Header set Content-Encoding gzip
 </Files>
+
+RewriteEngine on
+RewriteRule ^(js/carts\.js)$ /venue-admin/upload/rewrite.php/$1

@@ -1,9 +1,6 @@
 #!/bin/sh
 
-SERVER_ROOT=$(dirname $(dirname $0))
-echo ${SERVER_ROOT}
-exit
-
+SERVER_ROOT=$(dirname `(cd $(dirname $0) ; pwd)`)
 
 GID=`grep ^${USER}: /etc/passwd | cut -d ":" -f 4`
 GROUP=`grep :${GID}: /etc/group | cut -d ":" -f 1`

@@ -175,6 +175,9 @@ backend(.xml): <input type="file" name="back" />
 $options = array();
 $sorter = array();
 $dh = opendir(BACKEND_STORAGE);
+if(!$dh) {
+	user_error("cannot open ".BACKEND_STORAGE, E_USER_ERROR);
+}
 while($f = readdir($dh)) {
 	if(preg_match('/^(.+)\.meta$/', $f, $matches) && file_exists(BACKEND_STORAGE.'/'.$matches[1])) {
 		$meta = json_decode(file_get_contents(BACKEND_STORAGE.'/'.$f));

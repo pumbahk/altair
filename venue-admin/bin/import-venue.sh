@@ -52,6 +52,7 @@ fi
 
 # 登録済みでないことを確認
 SITE=$(${CURRENT}/get-site ${DIRNAME})
+VENUE=$(${CURRENT}/get-venue ${DIRNAME})
 
 if [ "X$SITE" = "X" ] ; then
     if [ "X$DRY_RUN" != "X" ] ; then
@@ -66,9 +67,10 @@ if [ "X$SITE" = "X" ] ; then
 	-A 10 -O ${ORG} -U ${DIRNAME}/ \
 	/srv/altair/master/deploy/production/conf/altair.ticketing.admin.ini \
 	${BACKEND_XML} 2>&1
-    echo -n "Copmleted at " && date
+    echo -n "Completed at " && date
     
     SITE=$(${CURRENT}/get-site ${DIRNAME})
+    VENUE=$(${CURRENT}/get-venue ${DIRNAME})
     if [ "X$SITE" = "X" ] ; then
 	echo "maybe backend registration failed."
 	exit 1
@@ -77,7 +79,9 @@ if [ "X$SITE" = "X" ] ; then
     # 補足と都道府県名をセット
     ${CURRENT}/update-site-info ${SITE} ${PREF} ${SUB_NAME}
     
-    echo "registered successfully as site=$SITE"
+    echo ""
+    echo "Registered successfully as site=$SITE"
+    echo ""
 else
     if [ "X$FRONTEND_JSON" = "X" ] ; then
 	echo "already registered as site=$SITE"
@@ -101,7 +105,12 @@ if [ "X$FRONTEND_JSON" != "X" ] ; then
 	-s ${SITE} -U ${DIRNAME}/ \
 	/srv/altair/master/deploy/production/conf/altair.ticketing.admin.ini \
 	${FRONTEND_JSON} 2>&1
-    echo -n "Copmleted at " && date
+    echo -n "Completed at " && date
+fi
+
+if [ "X$VENUE" != "X" ] ; then
+    echo ""
+    echo "See https://service.ticketstar.jp/venues/show/${VENUE}"
 fi
 
 exit 0
