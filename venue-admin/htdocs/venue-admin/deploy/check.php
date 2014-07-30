@@ -43,8 +43,8 @@ function get_object_ids_frontend($xml) {
 }
 
 if(isset($argv[1])) {
-	$backend = 'venue-layouts/svgs/'.$argv[1].'.xml';
-	$frontend = 'venue-layouts/frontend/'.$argv[1].'/metadata.json';
+	$backend = BACKEND_STORAGE.'/'.'venue-layouts/svgs/'.$argv[1].'.xml';
+	$frontend = FRONTEND_STORAGE.'/'.'venue-layouts/frontend/'.$argv[1].'/metadata.json';
 	
 	print "backend: $backend\n";
 	print "frontend: $frontend\n";
@@ -52,29 +52,29 @@ if(isset($argv[1])) {
 
 require_once 'site.php';
 
-if(!is_file(BACKEND_STORAGE.'/'.@$backend)) {
+if(!is_file($backend)) {
 	print "$backend missing.\n";
 	exit(0);
 }
 
-if(!is_file(FRONTEND_STORAGE.'/'.@$frontend)) {
+if(!is_file($frontend)) {
 	print "$frontend missing.\n";
 	exit(0);
 }
 
 $b_ids = array();
-$xml = simplexml_load_file(BACKEND_STORAGE.'/'.$backend);
+$xml = simplexml_load_file($backend);
 
 $b_ids = get_object_ids($xml);
 
 print "founds ".count($b_ids)." seats in backend.\n";
 
-$decoded = json_decode(file_get_contents(FRONTEND_STORAGE.'/'.$frontend));
+$decoded = json_decode(file_get_contents($frontend));
 $files = array_keys((array) $decoded->pages);
 
 $covered = 0;
 foreach($files as $f) {
-	$fp = gzopen(dirname(FRONTEND_STORAGE.'/'.$frontend).'/'.$f, 'r');
+	$fp = gzopen(dirname($frontend).'/'.$f, 'r');
 	if(!$fp) {
 		 print "failed";
 		 exit;

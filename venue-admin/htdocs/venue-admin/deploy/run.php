@@ -26,7 +26,11 @@ if(!empty($_POST['register'])) {
 	$org = $_POST['organization'];
 	$pref = empty($_POST['prefecture']) ? "''" : bin2hex($_POST['prefecture']);
 	$sub_name = empty($_POST['sub_name']) ? "''" : bin2hex($_POST['sub_name']);
-	$dirname = empty($_POST['filename']) ? basename($backend, '.xml') : $_POST['filename'];
+	if(!empty($_POST['filename'])) {
+		$dirname = $_POST['filename'];
+	} else {
+		$dirname = preg_replace('{^.+?([^\./]+)\.xml$}', '$1', $backend);
+	}
 	
 	print "<pre>";
 	system(CMD_IMPORT_VENUE." $org $dirname $backend $frontend $pref $sub_name 2>&1");

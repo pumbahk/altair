@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-MAILFROM=sasao@ticketstar.jp
+MAILFROM=venue@ticketstar.jp
 MAILTO=venue@ticketstar.jp
 
 CURRENT=$(dirname $0)
