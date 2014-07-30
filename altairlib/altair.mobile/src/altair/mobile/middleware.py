@@ -131,8 +131,9 @@ class MobileMiddleware(object):
         self._revalidate_session(request)
         noLongerProvides(request, IMobileRequest)
         decoded = request.decode(self.codec, self.errors)
-        request.environ.update(decoded.environ)
-        decoded.environ = request.environ
+        new_environ = request.environ.copy()
+        new_environ.update(decoded.environ)
+        decoded.environ = new_environ
         decoded.response_callbacks = request.response_callbacks
         manager.get()['request'] = decoded # hack!
         decoded.is_mobile = True
