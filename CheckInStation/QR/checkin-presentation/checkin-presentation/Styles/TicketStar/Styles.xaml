@@ -55,7 +55,7 @@
     </SolidColorBrush>
 
     <SolidColorBrush x:Key="MainBorderBrush">
-        <SolidColorBrush.Color>#111111</SolidColorBrush.Color>
+        <SolidColorBrush.Color>#C0C0C0</SolidColorBrush.Color>
     </SolidColorBrush>
 
     <!-- <ResourceDictionary Source="./Controls.Checkbox.xaml" /> -->
