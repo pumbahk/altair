@@ -1,6 +1,7 @@
 #!/bin/sh
 
 CURRENT=$(dirname $0)
+ALTAIR_ROOT=$(dirname $(dirname $(cd $(dirname $0) ; pwd)))
 
 # usage:
 # [DRY_RUN=1] import-venue.sh ORG DIRNAME BACKEND_XML [FRONTEND_JSON] [PREFECTURE] [SUB_NAME]
@@ -61,11 +62,11 @@ if [ "X$SITE" = "X" ] ; then
 
     # BACKEND
     echo -n "Starting venue_import at " && date
-    cat /srv/altair/master/deploy/production/bin/venue_import | \
+    cat ${ALTAIR_ROOT}/deploy/production/bin/venue_import | \
 	sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
 	python - \
 	-A 10 -O ${ORG} -U ${DIRNAME}/ \
-	/srv/altair/master/deploy/production/conf/altair.ticketing.admin.ini \
+	${ALTAIR_ROOT}/deploy/production/conf/altair.ticketing.admin.ini \
 	${BACKEND_XML} 2>&1
     echo -n "Completed at " && date
     
@@ -99,11 +100,11 @@ if [ "X$FRONTEND_JSON" != "X" ] ; then
 
     # FRONTEND
     echo -n "Starting frontend_venue_import at " && date
-    cat /srv/altair/master/deploy/production/bin/frontend_venue_import | \
+    cat ${ALTAIR_ROOT}/deploy/production/bin/frontend_venue_import | \
 	sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
 	python - \
 	-s ${SITE} -U ${DIRNAME}/ \
-	/srv/altair/master/deploy/production/conf/altair.ticketing.admin.ini \
+	${ALTAIR_ROOT}/deploy/production/conf/altair.ticketing.admin.ini \
 	${FRONTEND_JSON} 2>&1
     echo -n "Completed at " && date
 fi
