@@ -1,0 +1,8 @@
+#!/bin/sh
+
+CURRENT=$(dirname $0)
+
+SITE=$1
+
+echo "SELECT metadata_url FROM Site WHERE id=$SITE and metadata_url is not null and deleted_at is null" | \
+$CURRENT/db-master --skip-column-names
