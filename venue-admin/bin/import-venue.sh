@@ -3,23 +3,26 @@
 CURRENT=$(dirname $0)
 
 # usage:
-# [DRY_RUN=1] import-venue.sh ORG DIRNAME BACKEND_XML [FRONTEND_JSON]
+# [DRY_RUN=1] import-venue.sh ORG DIRNAME BACKEND_XML [FRONTEND_JSON] [PREFECTURE] [SUB_NAME]
 
 # ex:
 # ./import-venue.sh 楽天チケット backend/rakuten-hall.xml
 # ./import-venue.sh 楽天チケット backend/rakuten-hall.xml frontend/rakuten-hall/metadata.json
 
 # 最初にbackendだけを登録し、後からfrontendを追加することも可能
+# PREFECTUREとSUB_NAMEはhex encodedで
 
 ORG=$1
 DIRNAME=$2
 BACKEND_XML=$3
 FRONTEND_JSON=$4
+PREF=$5
+SUB_NAME=$6
 
 # パラメータチェック
 if [ "X${BACKEND_XML}" = "X" ] ; then
     echo "usage: $0 ORG DIRNAME BACKEND_XML [FRONTEND_JSON]"
-    exit 0
+    exit 1
 fi
 
 # ORGが存在するかをチェック
@@ -70,10 +73,15 @@ if [ "X$SITE" = "X" ] ; then
 	echo "maybe backend registration failed."
 	exit 1
     fi
+    
+    # 補足と都道府県名をセット
+    ${CURRENT}/update-site-info ${SITE} ${PREF} ${SUB_NAME}
+    
     echo "registered successfully as site=$SITE"
 else
     if [ "X$FRONTEND_JSON" = "X" ] ; then
 	echo "already registered as site=$SITE"
+	exit 1
     fi
 fi
 

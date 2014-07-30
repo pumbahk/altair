@@ -12,4 +12,4 @@ if [ $? != 0 ] ; then
 fi
 
 echo "Starting background process..."
-echo "( echo \"From: ${MAILFROM}\" ; echo \"Subject: result of import-venue\" ; echo \"\" ; ${CURRENT}/import-venue.sh $* ) | /usr/sbin/sendmail -f${MAILFROM} ${MAILTO} 1> /dev/null 2> /dev/null &" | /bin/sh
+echo "( ( echo \"From: ${MAILFROM}\" ; echo \"Subject: result of import-venue\" ; echo \"\" ; ${CURRENT}/import-venue.sh $* ) | /usr/sbin/sendmail -f${MAILFROM} ${MAILTO} ) | /bin/bash 1> /dev/null 2> /dev/null < /dev/null &" | /bin/bash 1> /dev/null 2> /dev/null

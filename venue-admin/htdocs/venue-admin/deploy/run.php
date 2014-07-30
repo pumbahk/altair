@@ -2,13 +2,15 @@
 
 # print "Sorry, now maintenance by sasao\n";exit;
 
+require_once 'site.php';
+
 header("Content-Type: text/html; charset=UTF-8");
 
 if(isset($_POST['backend'])) {
-	$backend = basename($_POST['backend']);
+	$backend = BACKEND_STORAGE.'/'.basename($_POST['backend']);
 }
 if(isset($_POST['frontend'])) {
-	$frontend = preg_replace('/^.+\/([^\/]+\/[^\/]+)(\.raw)?\.json$/', '$1.json', $_POST['frontend']);
+	$frontend = FRONTEND_STORAGE.'/'.preg_replace('/^.+\/([^\/]+\/[^\/]+)(\.raw)?\.json$/', '$1.json', $_POST['frontend']);
 }
 
 if(!empty($_POST['check'])) {
@@ -20,14 +22,14 @@ if(!empty($_POST['check'])) {
 require_once 'site.php';
 
 if(!empty($_POST['register'])) {
-	print "<pre>";
-	if(empty($_POST['backend'])) { print "parameter error."; exit; }
 	if($frontend == '') { $frontend = "''"; }
 	$org = $_POST['organization'];
-	$pref = empty($_POST['prefecture']) ? "''" : $_POST['prefecture'];
+	$pref = empty($_POST['prefecture']) ? "''" : bin2hex($_POST['prefecture']);
 	$sub_name = empty($_POST['sub_name']) ? "''" : bin2hex($_POST['sub_name']);
-	$filename = empty($_POST['filename']) ? "''" : $_POST['filename'];
-	system(CMD_IMPORT_VENUE." $backend $frontend $org $pref $sub_name $filename 2>&1");
+	$dirname = empty($_POST['filename']) ? basename($backend, '.xml') : $_POST['filename'];
+	
+	print "<pre>";
+	system(CMD_IMPORT_VENUE." $org $dirname $backend $frontend $pref $sub_name 2>&1");
 	exit;
 }
 
