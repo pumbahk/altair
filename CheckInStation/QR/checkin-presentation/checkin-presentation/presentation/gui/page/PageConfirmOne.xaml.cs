@@ -40,7 +40,9 @@ namespace checkin.presentation.gui.page
          private string _orderNo ;
          private string _productName ;
          private string _seatName ;
-         private string _printedAt ;
+         private string _printedAt;
+         private Visibility _nextButtonVisibility;
+         private Visibility _allPrintedVisibility;
 
          public string PerformanceName
          {
@@ -80,6 +82,16 @@ namespace checkin.presentation.gui.page
              get { return this._printedAt; }
              set { this._printedAt = value; this.OnPropertyChanged("PrintedAt"); }
          }
+         public Visibility NextButtonVisibility
+         {
+             get { return this._nextButtonVisibility; }
+             set { this._nextButtonVisibility = value; this.OnPropertyChanged("NextButtonVisibility"); }
+         }
+         public Visibility AllPrintedVisibility
+         {
+             get { return this._allPrintedVisibility; }
+             set { this._allPrintedVisibility = value; this.OnPropertyChanged("AllPrintedVisibility"); }
+         }
     }
 
 
@@ -109,7 +121,13 @@ namespace checkin.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await (this.DataContext as PageConfirmOneDataContext).PrepareAsync().ConfigureAwait(false);
+            var ctx = (this.DataContext as PageConfirmOneDataContext);
+            await ctx.PrepareAsync().ConfigureAwait(false);
+            if (ctx.PrintedAt != null)
+            {
+                ctx.NextButtonVisibility = Visibility.Hidden;
+                ctx.AllPrintedVisibility = Visibility.Visible;
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, SelectionChangedEventArgs e)

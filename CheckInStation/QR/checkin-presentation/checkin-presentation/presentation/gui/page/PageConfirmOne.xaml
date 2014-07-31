@@ -47,7 +47,7 @@
                                 <RowDefinition Height="2*"/>
                                 <RowDefinition Height="1*"/>
                             </Grid.RowDefinitions>
-                            <WrapPanel Grid.Row="1" Grid.Column="1">
+                            <WrapPanel Visibility="{Binding NextButtonVisibility}" Grid.Row="1" Grid.Column="1">
                                 <TextBlock FontSize="20pt" HorizontalAlignment="Center">
                             １枚だけ発券する際には「１枚だけ発券」を                                </TextBlock>
                                 <TextBlock FontSize="20pt" HorizontalAlignment="Center">
@@ -86,7 +86,7 @@
                                     </WrapPanel>
                                 </ListViewItem>
                             </ListView>
-                            <ListBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
+                            <ListBox Visibility="{Binding NextButtonVisible}" Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
                                 <ListBox.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
