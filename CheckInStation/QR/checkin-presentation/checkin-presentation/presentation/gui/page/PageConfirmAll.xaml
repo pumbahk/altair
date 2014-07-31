@@ -55,7 +55,7 @@
                         <WrapPanel
                         Grid.Row="2" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}"開催日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
