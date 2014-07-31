@@ -1,10 +1,22 @@
 #!/bin/sh
 
+if [ "X${ALTAIR_ENVIRONMENT}" = "X" ] ; then
+    echo "usage: ALTAIR_ENVIRONMENT=dev $0"
+    exit 1
+fi
+
 SERVER_ROOT=$(dirname `(cd $(dirname $0) ; pwd)`)
+DEPLOY_ROOT=$(dirname $(dirname `(cd $(dirname $0) ; pwd)`))/deploy/${ALTAIR_ENVIRONMENT}
+
+if [ ! -f "${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini" ] ; then
+    echo "No altair configuration: ${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini"
+    exit 1
+fi
 
 GID=`grep ^${USER}: /etc/passwd | cut -d ":" -f 4`
 GROUP=`grep :${GID}: /etc/group | cut -d ":" -f 1`
 
+DEPLOY_ROOT=${DEPLOY_ROOT} \
 LISTEN_PORT=33080 \
 HTTPD_ROOT=${SERVER_ROOT}/etc \
 APACHE_LOCK_DIR=${SERVER_ROOT}/var \

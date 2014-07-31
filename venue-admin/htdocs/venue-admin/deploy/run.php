@@ -6,6 +6,8 @@ require_once 'db.php';
 
 header("Content-Type: text/html; charset=UTF-8");
 
+if(@$_GET['env']) { print_r($_SERVER); exit; }
+
 if(!empty($_POST['backend'])) {
 	$backend = BACKEND_STORAGE.'/'.basename($_POST['backend']);
 }

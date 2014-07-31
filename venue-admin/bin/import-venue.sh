@@ -1,7 +1,6 @@
 #!/bin/sh
 
 CURRENT=$(dirname $0)
-ALTAIR_ROOT=$(dirname $(dirname $(cd $(dirname $0) ; pwd)))
 
 # PREFECTUREとSUB_NAMEはhex encodedで
 
@@ -57,8 +56,8 @@ if [ ! -f ${BACKEND_XML} ] ; then
 fi
 
 # ORGが存在するかをチェック
-if [ `${CURRENT}/list-organizations | sed 's/\t.*$//' | grep -x ${ORG} | wc -l` = "0" ] ; then
-    dcho "No such organization: ${ORG}"
+if [ `${CURRENT}/list-organizations | sed 's/\t.*$//' | grep -x "${ORG}" | wc -l` = "0" ] ; then
+    echo "No such organization: ${ORG}"
     exit 1
 fi
 
@@ -82,11 +81,11 @@ if [ "X$DRY_RUN" != "X" ] ; then
 fi
 
 echo -n "Starting venue_import at " && date
-    cat ${ALTAIR_ROOT}/deploy/production/bin/venue_import | \
+    cat ${DEPLOY_ROOT}/bin/venue_import | \
     sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
     python - \
 	-A 10 -O ${ORG} -U ${BACKEND_DIRNAME}/ \
-	${ALTAIR_ROOT}/deploy/production/conf/altair.ticketing.admin.ini \
+	${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini \
 	${BACKEND_XML} 2>&1
 echo -n "Completed at " && date
 
