@@ -1,0 +1,64 @@
+<html>
+<head>
+<style>
+td { font-size: 12px; }
+small { font-size: 9px; }
+</style>
+</head>
+<body>
+
+<template:block id="site">
+<h1>${id} ${name} <small>${sub_name}</small></h1>
+
+席数: <a target="_blank" href="https://service.ticketstar.jp/venues/show/${venue}">${count}</a> <br />
+backend: ${backend_metadata_url} <br />
+frontend: ${metadata_url} <br />
+</template:block>
+<ul>
+<template:block id="svgs">
+<li><a target="_blank" href="https://service.ticketstar.jp/venues/${venue.element(0).element(id)}/frontend/${filename}">${filename}</a> (${name})</li>
+</template:block>
+</ul>
+
+<template:block id="site">
+<form method="post" target="output">
+<input type="submit" name="check" value="整合性チェック" ${metadata_url.if(=).then(disabled="disabled")} />
+</form>
+<a href="../deploy/run.php?filename=${dirname}">frontend差し替え...</a>
+</template:block>
+
+<div style="display: none;">
+<form method="post" style="background-color: #ffcccc;" target="output">
+<h2>frontendの差替</h2>
+<template:block id="site">
+<!--<input type="hidden" name="site" value="${id}" />-->
+</template:block>
+frontend: <input type="text" name="frontend" value="" style="width: 90%;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" /> <br />
+directory name: <input type="text" name="dir" value="${dir}" style="width: 400px;" /> (重複しないよう変更してください) <br />
+<!--frontend(.svg files and .json): <input type="file" name="front[]" multiple="multiple" />-->
+<input type="submit" name="replace" value="差替" /> <br />
+<input type="submit" name="check" value="整合性チェック" />
+</form>
+</div>
+
+<iframe name="output" style="width: 100%;" src="blank.html"></iframe>
+
+<h2>Venues &amp; Performances</h2>
+<table border="1">
+<tbody>
+<template:block id="venue">
+<tr><td>${id}</td><td>${performance_name} ${performance.if(=).then(<!--)}(${start_on.format(Y/M/D)}-)${performance.if(=).then(-->)}</td>
+<td>${performance.if(=).then(<!--)}
+	<a target="_blank" href="https://service.ticketstar.jp/events/performances/show/${performance}/seat-allocation">service</a>
+${performance.if(=).then(-->)}</td>
+<td>${performance.if(=).then(<!--)}
+	<a target="_blank" href="https://${host}/cart/events/${event}?performance=${performance}">cart</a>
+${performance.if(=).then(-->)}</td>
+<td>${created_at.format(Y/M/D)}</td>
+<td>${count}</td></tr>
+</template:block>
+</tbody>
+</table>
+
+</body>
+</html>
