@@ -2,7 +2,6 @@
 
 CURRENT=$(dirname $0)
 ALTAIR_ROOT=$(dirname $(dirname $(cd $(dirname $0) ; pwd)))
-ALTAIR_ROOT=/srv/altair/master
 
 # PREFECTUREとSUB_NAMEはhex encodedで
 
