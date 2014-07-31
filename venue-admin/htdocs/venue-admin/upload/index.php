@@ -184,7 +184,7 @@ while($f = readdir($dh)) {
 		$mtime = filemtime(BACKEND_STORAGE.'/'.$f);
 		$comment = sprintf('%s %s (%u席, %uKB) %s',
 			date('Y-m-d H:i', $mtime),
-			$meta->name, $meta->seat_count, filesize(BACKEND_STORAGE.'/'.$matches[1])/1024, $meta->uploaded_by ? 'by '.$meta->uploaded_by : '');
+			$meta->name, $meta->seat_count, filesize(BACKEND_STORAGE.'/'.$matches[1])/1024, empty($meta->uploaded_by) ? '' : 'by '.$meta->uploaded_by);
 		$options[] = sprintf('<option value="%s">%s</option>'."\n",
 			   dirname($_SERVER['SCRIPT_NAME']).'/backend/'.$matches[1], $comment);
 		$sorter[] = $mtime;
@@ -225,7 +225,7 @@ while($d = readdir($dh)) {
 			$comment = sprintf('%s %s %s',
 				date('Y-m-d H:i', $mtime),
 				$meta->name,
-				$meta->uploaded_by ? 'by '.$meta->uploaded_by : '');
+				empty($meta->uploaded_by) ? '' : 'by '.$meta->uploaded_by);
 			$options[] = sprintf('<option value="%s">%s</option>'."\n", dirname($_SERVER['SCRIPT_NAME']).'/frontend/'.$d.'/'.$matches[1], $comment);
 			$sorter[] = $mtime;
 		}
