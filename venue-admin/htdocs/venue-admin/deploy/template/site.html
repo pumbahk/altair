@@ -24,7 +24,7 @@ frontend: ${metadata_url} <br />
 <form method="post" target="output">
 <input type="submit" name="check" value="整合性チェック" ${metadata_url.if(=).then(disabled="disabled")} />
 </form>
-<a href="../deploy/run.php?filename=${dirname}">frontend差し替え...</a>
+<a href="run.php?site=${id}">frontend差し替え...</a>
 </template:block>
 
 <div style="display: none;">

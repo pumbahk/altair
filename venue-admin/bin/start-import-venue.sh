@@ -5,7 +5,7 @@ MAILTO=venue@ticketstar.jp
 
 CURRENT=$(dirname $0)
 
-DRY_RUN=1 ${CURRENT}/import-venue.sh "$1" "$2" "$3" "$4" "$5" "$6"
+DRY_RUN=1 ${CURRENT}/import-venue.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7"
 
 if [ $? != 0 ] ; then
     exit

@@ -5,118 +5,109 @@ ALTAIR_ROOT=$(dirname $(dirname $(cd $(dirname $0) ; pwd)))
 
 # PREFECTUREとSUB_NAMEはhex encodedで
 
-DIRNAME=$1
-BACKEND_XML=$2
-FRONTEND_JSON=$3
-ORG=$4
-PREF=$5
-SUB_NAME=$6
+BACKEND_XML=$1
+FRONTEND_JSON=$2
+ORG=$3
+PREF=$4
+SUB_NAME=$5
+BACKEND_DIRNAME=$6
+FRONTEND_DIRNAME=$7
 
 # パラメータチェック
-if [ "X${DIRNAME}" = "X" ] ; then
-    echo "usage: $0 DIRNAME BACKEND_XML FRONTEND_JSON ORG PREF SUB_NAME"
+if [ "X${BACKEND_XML}" = "X" ] ; then
+    echo "usage: $0 BACKEND_XML FRONTEND_JSON ORG PREF SUB_NAME BACKEND_DIRNAME FRONTEND_DIRNAME"
     exit 1
 fi
 
-echo "DIRNAME=${DIRNAME}"
 echo "BACKEND=${BACKEND_XML}"
 echo "FRONTEND=${FRONTEND_JSON}"
 echo "ORG=${ORG}"
 echo "PREF=${PREF}"
 echo "SUB_NAME=${SUB_NAME}"
+echo "BACKEND_DIRNAME=${BACKEND_DIRNAME}"
+echo "FRONTEND_DIRNAME=${FRONTEND_DIRNAME}"
 
 # DIRNAMEに.が含まれていたりしたらダメ
-if [ `echo ${DIRNAME} | grep \\\\. | wc -l` != "0" ] ; then
-    echo "Wrong basename: ${DIRNAME}"
+if [ "X${BACKEND_DIRNAME}" = "X" ] ; then
+    echo "backend dirname is required."
+    exit 1
+fi
+if [ `echo ${BACKEND_DIRNAME} | grep \\\\. | wc -l` != "0" ] ; then
+    echo "Wrong backend dirname: ${BACKEND_DIRNAME}"
     exit 1
 fi
 
-SITE=$(${CURRENT}/get-site ${DIRNAME})
-VENUE=$(${CURRENT}/get-venue ${DIRNAME})
-
-# SITEが無い = BACKENDを登録する場合
-if [ "X$SITE" = "X" ] ; then
-    # ORGが存在するかをチェック
-    if [ `${CURRENT}/list-organizations | sed 's/\t.*$//' | grep -x ${ORG} | wc -l` = "0" ] ; then
-	echo "No such organization: ${ORG}"
+if [ "X$FRONTEND_JSON" != "X" ] ; then
+    if [ "X${FRONTEND_DIRNAME}" = "X" ] ; then
+	echo "frontend dirname is required."
 	exit 1
     fi
     
-    # パラメータチェック
-    if [ "X${BACKEND_XML}" = "X" ] ; then
-	echo "backend_xml is required.";
+    # DIRNAMEに.が含まれていたりしたらダメ
+    if [ `echo ${FRONTEND_DIRNAME} | grep \\\\. | wc -l` != "0" ] ; then
+	echo "Wrong frontend dirname: ${FRONTEND_DIRNAME}"
 	exit 1
-    fi
-    
-    # ファイルの存在を確認
-    if [ ! -f ${BACKEND_XML} ] ; then
-	echo "No such file: ${BACKEND_XML}"
-	exit 1
-    fi
-    
-    # 指定されている場合は、念のためこちらもチェック
-    if [ "X$FRONTEND_JSON" != "X" ] ; then
-	if [ ! -f ${FRONTEND_JSON} ] ; then
-	    echo "No such file: ${FRONTEND_JSON}"
-	    exit 1
-	fi
     fi
 fi
 
-if [ "X$SITE" = "X" ] ; then
-    if [ "X$DRY_RUN" != "X" ] ; then
-	exit 0
-    fi
+# ファイルの存在を確認
+if [ ! -f ${BACKEND_XML} ] ; then
+    echo "No such file: ${BACKEND_XML}"
+    exit 1
+fi
 
-    # BACKEND
-    echo -n "Starting venue_import at " && date
-    cat ${ALTAIR_ROOT}/deploy/production/bin/venue_import | \
-    sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
-    python - \
-	-A 10 -O ${ORG} -U ${DIRNAME}/ \
-	${ALTAIR_ROOT}/deploy/production/conf/altair.ticketing.admin.ini \
-	${BACKEND_XML} 2>&1
-    echo -n "Completed at " && date
-    
-    SITE=$(${CURRENT}/get-site ${DIRNAME})
-    VENUE=$(${CURRENT}/get-venue ${DIRNAME})
-    if [ "X$SITE" = "X" ] ; then
-	echo "maybe backend registration failed."
-	exit 1
-    fi
-    
-    # 補足と都道府県名をセット
-    ${CURRENT}/update-site-info ${SITE} ${PREF} ${SUB_NAME}
-    
-    echo ""
-    echo "Registered successfully as site=$SITE"
-    echo ""
-else
-    if [ "X$FRONTEND_JSON" = "X" ] ; then
-	echo "already registered as site=$SITE"
-	exit 1
-    fi
+# ORGが存在するかをチェック
+if [ `${CURRENT}/list-organizations | sed 's/\t.*$//' | grep -x ${ORG} | wc -l` = "0" ] ; then
+    dcho "No such organization: ${ORG}"
+    exit 1
 fi
 
 if [ "X$FRONTEND_JSON" != "X" ] ; then
-    if [ "X$DRY_RUN" != "X" ] ; then
-	exit 0
+    # ファイルの存在を確認
+    if [ ! -f ${FRONTEND_XML} ] ; then
+	echo "No such file: ${FRONTEND_XML}"
+	exit 1
     fi
+fi
 
-    # FRONTEND
-    echo -n "Starting frontend_venue_import at " && date
-    cat ${ALTAIR_ROOT}/deploy/production/bin/frontend_venue_import | \
-	sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
-	python - \
-	-s ${SITE} -U ${DIRNAME}/ \
+SITE=$(${CURRENT}/get-site ${BACKEND_DIRNAME})
+VENUE=$(${CURRENT}/get-venue ${BACKEND_DIRNAME})
+if [ "X$SITE" != "X" ] ; then
+    echo "already registered as site=$SITE"
+    exit 1
+fi
+
+if [ "X$DRY_RUN" != "X" ] ; then
+    exit 0
+fi
+
+echo -n "Starting venue_import at " && date
+    cat ${ALTAIR_ROOT}/deploy/production/bin/venue_import | \
+    sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
+    python - \
+	-A 10 -O ${ORG} -U ${BACKEND_DIRNAME}/ \
 	${ALTAIR_ROOT}/deploy/production/conf/altair.ticketing.admin.ini \
-	${FRONTEND_JSON} 2>&1
-    echo -n "Completed at " && date
+	${BACKEND_XML} 2>&1
+echo -n "Completed at " && date
+
+SITE=$(${CURRENT}/get-site ${BACKEND_DIRNAME})
+VENUE=$(${CURRENT}/get-venue ${BACKEND_DIRNAME})
+if [ "X$SITE" = "X" ] ; then
+    echo "maybe backend registration failed."
+    exit 1
 fi
 
-if [ "X$VENUE" != "X" ] ; then
-    echo ""
-    echo "See https://service.ticketstar.jp/venues/show/${VENUE}"
+# 補足と都道府県名をセット
+${CURRENT}/update-site-info ${SITE} ${PREF} ${SUB_NAME}
+
+# フロントエンド
+if [ "X$FRONTEND_JSON" != "X" ] ; then
+    ${CURRENT}/register-frontend.sh ${SITE} ${FRONTEND_JSON} ${FRONTEND}
 fi
+
+echo ""
+echo "Registered successfully as site=$SITE"
+echo ""
+echo "See https://service.ticketstar.jp/venues/show/$VENUE"
 
 exit 0
