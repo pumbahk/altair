@@ -100,7 +100,7 @@
                                 VerticalAlignment="Center"
                                 LineHeight="25"
                                 FontSize="25"
-                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券しないチケットは選択を解除してください"/></TextBlock>
+                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
                             <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                 <TextBlock FontSize="28">開催日時:</TextBlock>
                                 <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
@@ -138,6 +138,7 @@
                     <Button
                         Canvas.Right="60"
                         Canvas.Top="655"
+                        Visibility="{Binding NotPrintVisibility}"
                         Style="{StaticResource SubmitButton}"
                         Click="OnSubmitWithBoundContext"
             >

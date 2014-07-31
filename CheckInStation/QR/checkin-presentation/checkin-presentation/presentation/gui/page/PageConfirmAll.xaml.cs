@@ -81,6 +81,13 @@ namespace checkin.presentation.gui.page
             var ev = this.Event as ConfirmAllEvent;            
             base.OnSubmit();
         }
+    
+        private Visibility _notPrintVisibility;
+        public Visibility NotPrintVisibility
+        {
+            get { return this._notPrintVisibility; }
+            set { this._notPrintVisibility = value; this.OnPropertyChanged("NotPrintVisibility"); }
+        }
     }
 
 
@@ -192,12 +199,25 @@ namespace checkin.presentation.gui.page
                 ctx.TreatErrorMessage();
 
                 //unregister event
-                foreach (var dc in (ctx as PageConfirmAllDataContext).DisplayTicketDataCollection)
+                int notPrintedCount = 0;
+                var pageCtx = ctx as PageConfirmAllDataContext;
+                foreach (var dc in pageCtx.DisplayTicketDataCollection)
                 {
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
+                    if (dc.PrintedAt == null)
+                    {
+                        notPrintedCount++;
+                    }
+                }
+
+                if (notPrintedCount == 0)
+                {
+                    pageCtx.NotPrintVisibility = Visibility.Hidden;
+                    pageCtx.Description = "î≠åîçœÇ›Ç≈Ç∑";
+                    return;
                 }
                 this.NavigationService.Navigate(new PagePrintingConfirm());
-               // AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                // AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 
