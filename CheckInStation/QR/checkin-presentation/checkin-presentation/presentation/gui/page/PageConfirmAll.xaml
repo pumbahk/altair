@@ -55,7 +55,7 @@
                         <WrapPanel
                         Grid.Row="2" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">試合日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}"開催日時:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
@@ -102,7 +102,7 @@
                                 FontSize="25"
                                 Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券しないチケットは選択を解除してください"/></TextBlock>
                             <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="28">試合日時:</TextBlock>
+                                <TextBlock FontSize="28">開催日時:</TextBlock>
                                 <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                                 <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
                             </WrapPanel>
