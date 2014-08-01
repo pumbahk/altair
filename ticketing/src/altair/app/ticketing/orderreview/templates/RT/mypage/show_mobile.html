@@ -52,7 +52,18 @@ ${h.get_payment_status(order)}<br/>
 公演名：
 ${order.performance.name}<br/>
 公演開始時間：
-${h.japanese_datetime(order.performance.start_on)}<br/>
+% if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+    ${period}<br/>
+% else:
+    ${h.japanese_datetime(order.performance.start_on)}<br/>
+% endif
 会場名：
 ${order.performance.venue.name}
 <br/>
