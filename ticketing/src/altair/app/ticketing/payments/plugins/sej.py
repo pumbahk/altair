@@ -124,7 +124,7 @@ def get_tickets(request, order, ticket_template_id=None):
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
-                        ticket_type = SejTicketType.Ticket
+                        ticket_type = SejTicketType.ExtraTicket
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
@@ -156,7 +156,7 @@ def get_tickets_from_cart(request, cart, now):
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
-                        ticket_type = SejTicketType.Ticket
+                        ticket_type = SejTicketType.ExtraTicket
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
