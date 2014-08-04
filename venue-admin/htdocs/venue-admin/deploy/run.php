@@ -12,11 +12,15 @@ if(!empty($_POST['backend'])) {
 	$backend = BACKEND_STORAGE.'/'.basename($_POST['backend']);
 }
 if(!empty($_POST['frontend'])) {
-	$frontend = FRONTEND_STORAGE.'/'.preg_replace('/^.+\/([^\/]+\/[^\/]+)(\.raw)?\.json$/', '$1.json', $_POST['frontend']);
+	$frontend = FRONTEND_STORAGE.'/'.preg_replace('/^.+\/([^\/]+\/[^\/]+?)(\.raw)?\.json$/', '$1.json', $_POST['frontend']);
 }
 
 if(!empty($_POST['check'])) {
 	if(empty($_POST['site'])) {
+		if(empty($backend)) {
+			print "backend is required.\n";
+			exit(0);
+		}
 		if(!is_file($backend)) {
 			print "$backend missing.\n";
 			exit(0);
@@ -25,6 +29,7 @@ if(!empty($_POST['check'])) {
 			print "$frontend missing.\n";
 			exit(0);
 		}
+		print "<pre>";
 		check($backend, $frontend);
 	} else {
 		$site = get_site($_POST['site']);
@@ -110,7 +115,7 @@ if(!empty($_POST['replace'])) {
 ?>
 <div style="position: absolute; right: 10px; width: 300px; height: 200px;">
 <iframe src="ps.php" style="width: 300px; height: 200px;"></iframe>
-<br />(auto updated at 10min interval)
+<br />(auto updated at 10 seconds interval)
 </div>
 
 <?php if(empty($_GET['site'])) { ?>

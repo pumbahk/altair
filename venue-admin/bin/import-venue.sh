@@ -101,7 +101,7 @@ ${CURRENT}/update-site-info ${SITE} ${PREF} ${SUB_NAME}
 
 # フロントエンド
 if [ "X$FRONTEND_JSON" != "X" ] ; then
-    ${CURRENT}/register-frontend.sh ${SITE} ${FRONTEND_JSON} ${FRONTEND}
+    ${CURRENT}/register-frontend.sh ${SITE} ${FRONTEND_JSON} ${FRONTEND_DIRNAME}
 fi
 
 echo ""

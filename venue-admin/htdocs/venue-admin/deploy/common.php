@@ -66,10 +66,12 @@ function get_object_ids_frontend($xml) {
 }
 
 function check($backend_xml_path, $frontend_json_path) {
+	print "BACKEND: $backend_xml_path\n";
 	$xml = simplexml_load_file($backend_xml_path);
 	$b_ids = get_object_ids($xml);
 	print "founds ".count($b_ids)." seats in backend.\n";
 
+	print "FRONTEND: $frontend_json_path\n";
 	$decoded = json_decode(file_get_contents($frontend_json_path));
 	$files = array_keys((array) $decoded->pages);
 	
