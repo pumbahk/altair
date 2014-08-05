@@ -237,3 +237,16 @@ class SmartPhoneHelper(object):
     def get_summary_salessegment_group(self, event):
         helper = EventHelper()
         return helper.get_summary_salessegment_group(event)
+
+    def disp_period(self, open, close):
+        if open is not None and close is not None and \
+           (open.year == close.year and \
+            open.month == close.month and \
+            open.day == close.day):
+            period = self.disp_date_week(close)
+        else:
+            period = u'%s〜%s' % (
+                self.disp_date_week(open) if open is not None else u'',
+                self.disp_date_week(close) if close is not None else u'',
+                )
+        return period
