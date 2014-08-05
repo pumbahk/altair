@@ -8,11 +8,7 @@
     perfs = sorted(perfs, key=lambda v: (v['display_order']))
     from altaircms.datelib import get_now
 
-    o = event.event_open
-    c = event.event_close
-    period = helper.get_info(event_info, u'公演期間') or str(o.year) + u"/" + str(o.month).zfill(2) + u"/" + str(o.day).zfill(2) + u"(" + week[o.weekday()] + u") 〜 " + str(c.year) + u"/" + str(c.month).zfill(2) + u"/" + str(c.day).zfill(2) + u"(" + week[c.weekday()] + u")"
-    if o.year==c.year and o.month==c.month and o.day==c.day:
-        period = str(o.year) + u"/" + str(o.month).zfill(2) + u"/" + str(o.day).zfill(2) + u"(" + week[o.weekday()] + u")"
+    period = helper.get_info(event_info, u'公演期間') or helper.disp_period(event.event_open, event.event_close)
 
     info = {
         'performance_period':period,
@@ -187,8 +183,7 @@ ${helper.nl2br(info['content'])|n}
                     ${str(perf['perf'].open_on.hour).zfill(2)}:${str(perf['perf'].open_on.minute).zfill(2)}<br />
                 % endif
                 % if perf['perf'].start_on:
-                    開演:${str(perf['perf'].start_on.year)[2:]}/${str(perf['perf'].start_on.month).zfill(2)}/${str(perf['perf'].start_on.day).zfill(2)}(${week[perf['perf'].start_on.weekday()]})
-                    ${str(perf['perf'].start_on.hour).zfill(2)}:${str(perf['perf'].start_on.minute).zfill(2)}<br />
+                    開演（開催期間）:${helper.disp_period(perf['perf'].start_on, perf['perf'].end_on)}<br/>
                 % endif
                 % if perf['perf'].venue:
                     会場:${perf['perf'].venue}<br/>

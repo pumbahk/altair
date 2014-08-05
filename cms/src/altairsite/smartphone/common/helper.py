@@ -243,7 +243,7 @@ class SmartPhoneHelper(object):
            (open.year == close.year and \
             open.month == close.month and \
             open.day == close.day):
-            period = self.disp_date_week(close)
+            period = self.disp_time(close)
         else:
             period = u'%s〜%s' % (
                 self.disp_date_week(open) if open is not None else u'',
