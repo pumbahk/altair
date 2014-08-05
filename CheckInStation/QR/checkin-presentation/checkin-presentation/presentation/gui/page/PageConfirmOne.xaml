@@ -12,6 +12,7 @@
 	Title="PageConfirmOne"
     Loaded="OnLoaded">
     <Page.Resources>
+        <!--
         <Style x:Key="MainBorder" TargetType="Border">
             <Setter Property="CornerRadius" Value="24.5"/>
             <Setter Property="Height" Value="500"/>
@@ -19,16 +20,161 @@
             <Setter Property="BorderThickness" Value="10"/>
             <Setter Property="BorderBrush" Value="{DynamicResource MainBorderBrush}"/>
         </Style>
+        -->
     </Page.Resources>
     <Grid>
         <Viewbox Style="{StaticResource ContentViewboxStyle}">
-            <Grid Background="{StaticResource LogoBackgroundBrush}">
+            <Grid Background="{StaticResource LogoBackgroundBrush2}">
                 <Canvas Width="1366" Height="728">
 
-                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
+                    <Grid
+                        Canvas.Top="17"
+                        Canvas.Left="284"
+                        Height="70"
+                        Width="1000"
+                        Background="#eeeeee"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="28"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- todo padding 23-->
+                        <WrapPanel 
+                        Grid.Row="1" Grid.Column="1"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="1"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                    </Grid>
 
+                    
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="90"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
+                    </StackPanel>
 
                     <!-- メインコンテンツ -->
+                    <Border 
+                        Canvas.Left="50"
+                        Canvas.Top="148"
+                        Style="{StaticResource MainBorder}">
+                        <StackPanel Margin="50,20,50,20">
+                            <TextBlock 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                LineHeight="25"
+                                FontSize="25"
+                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
+                            <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="28">開催日時:</TextBlock>
+                                <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                                <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                            </WrapPanel>
+                            <ListView 
+                            	Margin="0,0,0,0"
+                            	ItemsSource="{Binding DisplayTicketDataCollection}"
+                            	d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                            	Style="{StaticResource ChoiceCandidatesTwoColumns}" >
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Width="1200" Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ListBoxItem}">
+                                        <Setter Property="Width" Value="580"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                    <ContentPresenter
+                            							Content="{TemplateBinding Content}"
+                            							ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+
+                    <Button
+                        Canvas.Right="300"
+                        Canvas.Top="655"
+                        Visibility="{Binding NextButtonVisibility}"
+                        Style="{StaticResource SubmitButton}"
+                        Click="OnSubmitPrint">
+                        <TextBlock FontSize="20">このチケットを発券</TextBlock>
+                    </Button>
+                    <Button
+                        Canvas.Right="60"
+                        Canvas.Top="655"
+                        Visibility="{Binding NextButtonVisibility}"
+                        Style="{StaticResource SubmitButton}"
+                        Click="OnSubmitAllPrint"
+                        >
+                        <TextBlock FontSize="20">他のチケットも発券</TextBlock>
+                    </Button>
+
+                    <!--
+                    <Button
+                        Canvas.Right="60"
+                        Canvas.Top="655"
+                        Visibility="{Binding NotPrintVisibility}"
+                        Style="{StaticResource SubmitButton}"
+            >
+                        <TextBlock FontSize="20">発券する</TextBlock>
+                    </Button>
+                    -->
+                    <Button
+                        Canvas.Left="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource BackwardButton}"
+                        Click="OnBackwardWithBoundContext">
+                        <TextBlock FontSize="20">戻る</TextBlock>
+                    </Button>
+
+
+                    <!-- 終了ボタン-->
+
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="89" Canvas.Top="8" Height="97" Width="187"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
+
+                    <!--
                     <Border 
                         Canvas.Left="140"
                         Canvas.Top="143"
@@ -101,7 +247,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- 説明(description)-->
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
@@ -124,16 +269,15 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
-                    <!-- ボタン -->
                     <Button
                         Canvas.Left="60"
                         Canvas.Top="655"
                         Style="{StaticResource BackwardButton}"
-                        Click="OnBackwardWithBoundContext"
-            >
+                        Click="OnBackwardWithBoundContext">
                         <TextBlock FontSize="20">戻る</TextBlock>
                     </Button>
-                    <!--
+
+
                     <Button
                      Canvas.Right="60"
                      Canvas.Top="655"
@@ -141,19 +285,17 @@
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
                     </Button>
-                    -->
 
-                    <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
 
 
-                    <!-- 終了ボタン-->
                     <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
                             Background="Transparent"
                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
                             />
+                    -->
 
 
                 </Canvas>

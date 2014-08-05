@@ -130,6 +130,7 @@ namespace checkin.presentation.gui.page
             }
         }
 
+        /*
         private async void OnSubmitWithBoundContext(object sender, SelectionChangedEventArgs e)
         {
             var box = sender as ListBox;
@@ -148,6 +149,20 @@ namespace checkin.presentation.gui.page
                 });
             }
         }
+        */
+
+        private async void OnCommonSubmit(string value)
+        {
+            var ctx = this.DataContext as PageConfirmOneDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                ctx.InputString = value;
+
+                var case_ = await ctx.SubmitAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
+        }
 
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
@@ -158,6 +173,16 @@ namespace checkin.presentation.gui.page
                 ctx.TreatErrorMessage();
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
+        }
+
+        private void OnSubmitPrint(object sender, RoutedEventArgs e)
+        {
+            OnCommonSubmit(PrintUnit.one.ToString());
+        }
+
+        private void OnSubmitAllPrint(object sender, RoutedEventArgs e)
+        {
+            OnCommonSubmit(PrintUnit.all.ToString());
         }
     }
 }
