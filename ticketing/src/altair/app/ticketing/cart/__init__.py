@@ -32,8 +32,8 @@ def exception_message_renderer_factory(show_traceback):
         from pyramid.renderers import render
         from pyramid import security
         from .selectable_renderer import selectable_renderer
-        from altair.mobile.api import is_mobile
-        if is_mobile(request):
+        from altair.mobile.api import is_mobile_request
+        if is_mobile_request(request):
             renderer = selectable_renderer('%(membership)s/mobile/error.html')
         else:
             renderer = selectable_renderer('%(membership)s/pc/message.html')
