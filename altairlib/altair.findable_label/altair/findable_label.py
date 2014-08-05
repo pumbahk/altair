@@ -39,9 +39,7 @@ class AppendHeaderElementOutput(object):
         return cls(labelname, color, background_color)
 
     def rewrite(self, response):
-        result = self.output(response.text)
-        response.body = ""
-        response.write(result.encode("utf-8"))
+        response.text = self.output(response.text)
         return response
 
     def output(self, html):

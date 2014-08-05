@@ -14,7 +14,7 @@ from altair.now import get_now
 class ValidationFailure(UsersiteException):
     pass
 
-@smartphone_site_view_config(route_name='smartphone.detail',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.detail',request_type="altair.mobile.interfaces.ISmartphoneRequest"
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/detail/detail.html'))
 def moveDetail(context, request):
     form = DetailForm(request.GET)
@@ -52,6 +52,6 @@ def moveDetail(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.detail', context=ValidationFailure
-    , request_type="altairsite.tweens.ISmartphoneRequest", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/common/error.html'))
+    , request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/common/error.html'))
 def failed_validation(request):
     return {}

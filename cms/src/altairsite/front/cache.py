@@ -47,12 +47,21 @@ class WrappedFrontPageCache(object):
 
     def get(self, request, k):
         v = self.cache.get(k)
-        if v is None:
+        if v is None or not isinstance(v, dict):
             return None
-        return self.mutator(request, v)
+        response = Response(
+            body=v['body'],
+            content_type=v['content_type'],
+            charset=v['charset']
+            )
+        return self.mutator(request, response)
 
-    def set(self, request, k, v):
-        self.cache.set(k, v)
+    def set(self, request, k, response):
+        self.cache.set(k, dict(
+            body=response.body,
+            content_type=response.content_type,
+            charset=response.charset
+            ))
 
 @implementer(ICacheKeyGenerator)
 class CacheKeyGenerator(object):
@@ -63,9 +72,10 @@ class CacheKeyGenerator(object):
         return self.prefix+request.url
 
 @provider(ICacheValueMutator)
-def update_browser_id(request, text):
+def update_browser_id(request, response):
     gen = request.registry.getUtility(ITrackingImageGenerator)
-    return gen.replace(request, text)
+    response.text = gen.replace(request, response.text)
+    return response
 
 
 ## api
@@ -85,14 +95,19 @@ def cached_view_tween(handler, registry):
 
     def tween(request):
         ## get以外かpreviewリクエストの時はcacheしない
+        nocache = False
         if request.method != "GET":
-            return handler(request)
+            nocache = True
+        else:
+            try:
+                nocache = "_nocache" in request.GET
+            except UnicodeDecodeError:
+                pass 
 
-        if "_nocache" in request.GET:
-            return handler(request)
+            if get_preview_request_condition(request):
+                nocache = True
 
-        # logger.debug("req:"+request.path)
-        if get_preview_request_condition(request):
+        if nocache:
             return handler(request)
 
         keygen = get_key_generator(request)
@@ -103,9 +118,8 @@ def cached_view_tween(handler, registry):
             logger.warn("cache: requesting another process. '{k}'".format(k=k))
             return handler(request)
 
-        v = cache.get(request, k)
-        if v:
-            response = Response(v)
+        response = cache.get(request, k)
+        if response is not None:
             if max_age:
                 response.cache_control.max_age = max_age
             return response
@@ -121,8 +135,7 @@ def cached_view_tween(handler, registry):
                     return response
                 app_cands = ("application/json", "application/javascript", "application/xhtml+xml")
                 if content_type.startswith("text/") or any(content_type == x for x in app_cands):
-                    # logger.debug("cache:"+request.path)
-                    cache.set(request, k, response.body)
+                    cache.set(request, k, response)
                     if max_age:
                         response.cache_control.max_age = max_age
                 return response

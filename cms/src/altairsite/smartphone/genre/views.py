@@ -4,7 +4,7 @@ from altairsite.separation import selectable_renderer
 from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPFound
 
-@smartphone_site_view_config(route_name='smartphone.genre',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.genre',request_type="altair.mobile.interfaces.ISmartphoneRequest"
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/genre/genre.html'))
 def move_genre(context, request):
 

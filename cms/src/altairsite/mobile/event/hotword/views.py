@@ -15,7 +15,7 @@ from altairsite.separation import selectable_renderer
 class ValidationFailure(UsersiteException):
     pass
 
-@mobile_site_view_config(route_name='hotword', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='hotword', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/hotword_result.mako'))
 def move_hotword(request):
 
@@ -59,6 +59,6 @@ def move_hotword(request):
     return {'form':form}
 
 @mobile_site_view_config(route_name='hotword', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
+    , request_type="altair.mobile.interfaces.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

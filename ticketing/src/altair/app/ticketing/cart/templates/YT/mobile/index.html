@@ -12,7 +12,7 @@
 % if not key:
   <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
   % for _key, _ in key_to_formatted_sales_segments_map:
-  <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
+  <a href="${request.current_route_path(_query={'key': _key})}">${_key}</a><br/>
   % endfor
 % else:
   <%mobile:form_header>${selector_label_2}をお選びください</%mobile:form_header>

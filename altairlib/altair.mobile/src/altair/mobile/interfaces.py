@@ -48,6 +48,10 @@ class ISmartphoneRequest(Interface):
     """ smartphone request interface"""
     pass
 
-class IMobileRequestMaker(Interface):
+class IMobileMiddleware(Interface):
+    def __call__(handler, request):
+        pass
+
+class ISmartphoneSupportPredicate(Interface):
     def __call__(request):
         pass

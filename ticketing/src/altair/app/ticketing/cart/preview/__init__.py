@@ -4,5 +4,5 @@ def includeme(config):
     config.include("altair.preview")
     config.registry.registerUtility(PreviewPermission(), IPreviewPermission)
 
-    config.add_tween('altair.preview.tweens.preview_tween', under=".tweens.mobile_encoding_convert_factory")
+    config.add_tween('altair.preview.tweens.preview_tween', under="altair.mobile.tweens.mobile_encoding_convert_factory")
 

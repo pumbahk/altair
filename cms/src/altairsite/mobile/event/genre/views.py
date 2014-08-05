@@ -18,7 +18,7 @@ from altairsite.separation import selectable_renderer
 class ValidationFailure(UsersiteException):
     pass
 
-@mobile_site_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='genre', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/genre/genre.mako'))
 def move_genre(request):
 
@@ -78,7 +78,7 @@ def move_genre(request):
     }
 
 @mobile_site_view_config(route_name='genre', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
+    , request_type="altair.mobile.interfaces.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}
 

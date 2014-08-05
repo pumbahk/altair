@@ -5,9 +5,9 @@ def includeme(config):
     config.add_view("altairsite.mobile.dispatch.views.dispatch_view", 
                     route_name="usersite.order", 
                     custom_predicates=(enable_mobile, ), 
-                    request_type="altairsite.tweens.IMobileRequest")
+                    request_type="altair.mobile.interfaces.IMobileRequest")
     config.add_view("altairsite.smartphone.dispatch.views.dispatch_view", 
                     route_name="usersite.order", 
                     custom_predicates=(enable_smartphone, ), 
-                    request_type="altairsite.tweens.ISmartphoneRequest")
+                    request_type="altair.mobile.interfaces.ISmartphoneRequest")
     config.scan()
