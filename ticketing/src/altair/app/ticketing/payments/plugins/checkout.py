@@ -13,6 +13,7 @@ from pyramid.httpexceptions import HTTPOk, HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
 from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.session import HybridHTTPBackend, unmerge_session_restorer_from_url
+from altair.mobile.api import is_mobile_request
 
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
@@ -94,7 +95,7 @@ class CheckoutPlugin(object):
         """ ここでは何もしない """
 
     def delegator(self, request, cart):
-        if request.is_mobile:
+        if is_mobile_request(request):
             submit = literal(
                 u'<input type="submit" value="次へ" />'
             )

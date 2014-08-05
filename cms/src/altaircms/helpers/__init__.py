@@ -8,8 +8,9 @@ from . import widget
 from . import tag
 from . import link
 from . import mobilelink
+from . import access
 from xml.etree import ElementTree
-__all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
+__all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink", "access"]
 
 ## pagination
 from webhelpers.paginate import Page

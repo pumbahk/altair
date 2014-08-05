@@ -21,6 +21,8 @@ from webob.multidict import MultiDict
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.request.adapters import UnicodeMultiDictAdapter
 
+from altair.mobile.api import is_mobile_request
+
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
@@ -40,7 +42,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
+from .api import set_rendered_event, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -1224,7 +1226,7 @@ class PointAccountEnteringView(object):
         form = schemas.PointForm(formdata=formdata)
 
         asid = self.request.altair_pc_asid
-        if is_mobile(self.request):
+        if is_mobile_request(self.request):
             asid = self.request.altair_mobile_asid
 
         if is_smartphone(self.request):
@@ -1261,7 +1263,7 @@ class PointAccountEnteringView(object):
         form = self.form
         if not form.validate():
             asid = None
-            if is_mobile(self.request):
+            if is_mobile_request(self.request):
                 asid = self.request.altair_mobile_asid
 
             if is_smartphone(self.request):

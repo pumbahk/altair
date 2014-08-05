@@ -1,5 +1,5 @@
 from pyramid.interfaces import IRequest
-from .interfaces import IMobileCarrierDetector, IMobileMiddleware, ISmartphoneSupportPredicate
+from .interfaces import IMobileCarrierDetector, IMobileMiddleware, ISmartphoneSupportPredicate, IMobileRequest
 from . import PC_ACCESS_COOKIE_NAME
 from datetime import datetime #ok?
 
@@ -51,3 +51,6 @@ def get_middleware(request_or_registry):
 def smartphone_support_enabled_for(request):
     predicate = request.registry.getUtility(ISmartphoneSupportPredicate)
     return not predicate or predicate(request)
+
+def is_mobile_request(request):
+    return IMobileRequest.providedBy(request)

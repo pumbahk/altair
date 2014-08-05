@@ -5,6 +5,7 @@ from pyramid.view import view_config
 from altair.auth import who_api as get_who_api
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
 import altair.app.ticketing.users.models as u_m
@@ -28,14 +29,14 @@ class LoginView(object):
 
     def select_renderer(self, membership, detail_membership=None):
         if detail_membership:
-            if cart_api.is_mobile(self.request):
+            if is_mobile_request(self.request):
                 self.request.override_renderer = self.detail_renderer_tmpl_mobile.format(membership=membership, detail_membership=detail_membership)
             elif cart_api.is_smartphone(self.request):
                 self.request.override_renderer = self.detail_renderer_tmpl_smartphone.format(membership=membership, detail_membership=detail_membership)
             else:
                 self.request.override_renderer = self.detail_renderer_tmpl.format(membership=membership, detail_membership=detail_membership)
         else:
-            if cart_api.is_mobile(self.request):
+            if is_mobile_request(self.request):
                 self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
             elif cart_api.is_smartphone(self.request):
                 self.request.override_renderer = self.renderer_tmpl_smartphone.format(membership=membership)

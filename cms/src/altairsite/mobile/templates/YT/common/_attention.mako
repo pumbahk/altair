@@ -15,7 +15,7 @@
             if attention.mobile_link:
                 link = attention.mobile_link
             elif event:
-                link = request.mobile_route_path("eventdetail") + "?event_id=" + str(event.id)
+                link = request.mobile_route_path("eventdetail", _query=dict(event_id=event.id))
         %>
 
         % if link:
