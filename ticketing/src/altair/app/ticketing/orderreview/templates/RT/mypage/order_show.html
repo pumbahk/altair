@@ -126,8 +126,19 @@ shipping =order.shipping_address
       <tr>
         <th scope="row">公演日</th>
         <td>
-          <span class="date">${h.japanese_date(order.performance.start_on)}</span> 
-          <span class="time">${h.japanese_time(order.performance.start_on)}</span>
+          % if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+            <span class="date">${period}</span>
+          % else:
+            <span class="date">${h.japanese_date(order.performance.start_on)}</span>
+            <span class="time">${h.japanese_time(order.performance.start_on)}</span>
+          % endif
         </td>
       </tr>
       <tr>

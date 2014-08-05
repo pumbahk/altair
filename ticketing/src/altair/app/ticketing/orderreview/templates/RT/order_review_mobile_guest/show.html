@@ -7,8 +7,19 @@
 <div>
 ${order.performance.event.title} ${order.performance.name}<br />
 <%mobile:form_header>開演日時</%mobile:form_header>
+% if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+${period}
+% else:
 ${h.japanese_date(order.performance.start_on)}
 ${h.japanese_time(order.performance.start_on)}
+% endif
 <%mobile:form_header>会場</%mobile:form_header>
 ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
