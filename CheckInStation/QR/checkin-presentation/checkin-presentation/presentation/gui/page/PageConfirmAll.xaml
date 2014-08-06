@@ -49,20 +49,20 @@
                         <WrapPanel
                         Grid.Row="1" Grid.Column="2"
                         HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">お客様(氏名):</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding CustomerName, Mode=OneWay}"></TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
                         Grid.Row="2" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
                         Grid.Row="2" Grid.Column="2"
                         HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                     </Grid>
 
@@ -101,11 +101,6 @@
                                 LineHeight="25"
                                 FontSize="25"
                                 Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
-                            <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="28">開催日時:</TextBlock>
-                                <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
-                                <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
                             <ListView 
                             	Margin="0,0,0,0"
                             	ItemsSource="{Binding DisplayTicketDataCollection}"
