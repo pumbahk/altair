@@ -64,6 +64,7 @@
                     
                     <!-- 説明(description)-->
                     <StackPanel
+                        Visibility="{Binding NextButtonVisibility}"
                         Canvas.Top="90"
                         Orientation="Horizontal"
                         >
@@ -96,37 +97,42 @@
                                 VerticalAlignment="Center"
                                 LineHeight="25"
                                 FontSize="25"
-                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
+                                Style="{StaticResource MainText}" Margin="121,0"><Run Text=""/></TextBlock>
                             <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                 <TextBlock FontSize="28">開催日時:</TextBlock>
                                 <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                                 <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
                             </WrapPanel>
-                            <ListView 
-                            	Margin="0,0,0,0"
-                            	ItemsSource="{Binding DisplayTicketDataCollection}"
-                            	d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                            	Style="{StaticResource ChoiceCandidatesTwoColumns}" >
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel Width="1200" Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="{x:Type ListBoxItem}">
-                                        <Setter Property="Width" Value="580"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                    <ContentPresenter
-                            							Content="{TemplateBinding Content}"
-                            							ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                            </ListView>
+
+                            <!-- printed -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="520">
+                                <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="90">
+                                    <Border Width="108" Height="90">
+                                        <TextBlock/>
+                                    </Border>
+                                </ToggleButton>
+                                <Grid>
+                                    <Button Style="{StaticResource GrayButton}"
+                                          HorizontalAlignment="Left"
+                                          Height="90"
+                                          Width="410"
+                                          BorderThickness="2"
+                                          Margin="2,2,2,2"
+                                          >
+                                        <StackPanel>
+                                            <WrapPanel>
+                                                <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
+                                                <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                                                <TextBlock Style="{StaticResource GrayoutGrowupContent}" Visibility="{Binding AllPrintedVisibility}">発券済み:</TextBlock>
+                                                <TextBlock Style="{StaticResource GrayoutGrowupContent}" Visibility="{Binding AllPrintedVisibility}" Text="{Binding PrintedAt}"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+
+
+
                         </StackPanel>
                     </Border>
 

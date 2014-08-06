@@ -240,7 +240,51 @@
     </Style.Triggers>
     <Setter Property="IsChecked" Value="True"/>
   </Style>
-  
+
+  <Style x:Key="GrayButton" TargetType="Button">
+        <Setter Property="Padding"
+            Value="4" />
+        <Setter Property="Foreground"
+            Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="Background"
+            Value="{DynamicResource ToggleButtonFillNormal}"/>
+        <Setter Property="BorderBrush"
+            Value="{DynamicResource ToggleButtonStrokeNormal}"/>
+        <Setter Property="FocusVisualStyle"
+            Value="{DynamicResource ToggleButtonFocusVisual}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border Margin="0"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4"
+                    SnapsToDevicePixels="true"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                  x:Name="contentPresenter"
+                  Content="{TemplateBinding Content}"
+                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="Background"
+                Value="{DynamicResource ToggleButtonFillSelected}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ToggleButtonStrokeSelected}"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource ToggleButtonForegroundSelected}"/>
+        <Setter Property="FontWeight" Value="Bold" />
+
+
+  </Style>
+    
   <Style x:Key="GrayoutIfNeedCheckBox" TargetType="CheckBox" BasedOn="{StaticResource MyCheckBoxStyle}">
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
@@ -706,17 +750,17 @@
       </DataTrigger>
     </Style.Triggers>
   </Style>
-  
-  <DataTemplate x:Key="SelectingTicketItemBoxData">
-    <StackPanel Orientation="Horizontal" Width="520">
-      <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="60">
-        <Border Width="108" Height="60">
-          <TextBlock/>
-        </Border>
-      </ToggleButton>
-      <Grid>
-        <!-- スタンプ -->
-        <!--
+
+    <DataTemplate x:Key="SelectingTicketItemBoxData">
+        <StackPanel Orientation="Horizontal" Width="520">
+            <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="60">
+                <Border Width="108" Height="60">
+                    <TextBlock/>
+                </Border>
+            </ToggleButton>
+            <Grid>
+                <!-- スタンプ -->
+                <!--
             <Canvas Width="0" Height="0" Margin="350,-30,0,0"
             Style="{StaticResource StampCanvas}"
             >
@@ -734,7 +778,7 @@
             <TextBlock Margin="20,44,0,0">発券予定</TextBlock>
             </Canvas>
         -->
-        <ToggleButton Style="{StaticResource GrayoutIfNeedToggleButton}"
+                <ToggleButton Style="{StaticResource GrayoutIfNeedToggleButton}"
                       IsChecked="{Binding IsSelected,Mode=TwoWay}"
                       HorizontalAlignment="Left"
                       Height="60"
@@ -742,27 +786,27 @@
                       BorderThickness="2"
                       Margin="2,2,2,2"
                       >
-          <StackPanel>
-            <WrapPanel>
-              <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
-              <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
-            </WrapPanel>
-            <WrapPanel Style="{StaticResource GrayoutHiddenWrap}">
-              <TextBlock Style="{StaticResource GrayoutGrowdownContent}">発券済み:</TextBlock>
-              <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutGrowdownContent}" Text="{Binding PrintedAt}"/>
-            </WrapPanel>
-          </StackPanel>
-        </ToggleButton>
-      </Grid>
-    </StackPanel>
-  </DataTemplate>
+                    <StackPanel>
+                        <WrapPanel>
+                            <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
+                            <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                        </WrapPanel>
+                        <WrapPanel Style="{StaticResource GrayoutHiddenWrap}">
+                            <TextBlock Style="{StaticResource GrayoutGrowdownContent}">発券済み:</TextBlock>
+                            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutGrowdownContent}" Text="{Binding PrintedAt}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </ToggleButton>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+    
+    <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
+        <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
+        <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
+    </Style>
 
-  <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
-    <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
-    <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
-  </Style>
-
-  <!-- <ResourceDictionary Source="./Resources.Image.xaml"/> -->
+    <!-- <ResourceDictionary Source="./Resources.Image.xaml"/> -->
   <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="AdImageStyle">
   </Style>
 

@@ -127,6 +127,10 @@ namespace checkin.presentation.gui.page
             {
                 ctx.NextButtonVisibility = Visibility.Hidden;
                 ctx.AllPrintedVisibility = Visibility.Visible;
+            } else
+            {
+                ctx.NextButtonVisibility = Visibility.Visible;
+                ctx.AllPrintedVisibility = Visibility.Hidden;
             }
         }
 
