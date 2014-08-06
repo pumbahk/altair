@@ -51,10 +51,16 @@
                         Grid.Row="1" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
                             <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding OrderNo, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
-                        Grid.Row="2" Grid.Column="1"
+                            Grid.Row="2" Grid.Column="1"
+                            HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="2"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
                             <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
@@ -98,21 +104,16 @@
                                 LineHeight="25"
                                 FontSize="25"
                                 Style="{StaticResource MainText}" Margin="121,0"><Run Text=""/></TextBlock>
-                            <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="28">開催日時:</TextBlock>
-                                <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
-                                <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
 
-                            <!-- printed -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="520">
-                                <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="90">
+                                <ToggleButton IsEnabled="{Binding NextEnable}" Style="{StaticResource StatusBoxOneStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="90">
                                     <Border Width="108" Height="90">
                                         <TextBlock/>
                                     </Border>
                                 </ToggleButton>
                                 <Grid>
                                     <Button Style="{StaticResource GrayButton}"
+                                          IsEnabled="{Binding NextEnable}"
                                           HorizontalAlignment="Left"
                                           Height="90"
                                           Width="410"

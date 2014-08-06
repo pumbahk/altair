@@ -282,7 +282,39 @@
                 Value="{DynamicResource ToggleButtonForegroundSelected}"/>
         <Setter Property="FontWeight" Value="Bold" />
 
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="true">
+                <Setter Property="Background"
+                            Value="{DynamicResource ToggleButtonFillSelected}"/>
+                <Setter Property="BorderBrush"
+                            Value="{DynamicResource ToggleButtonStrokeSelected}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="false">
+                <Setter Property="Background"
+                            Value="{DynamicResource ToggleButtonFillDisabled}"/>
+                <Setter Property="BorderBrush"
+                            Value="{DynamicResource ToggleButtonStrokeDisabled}"/>
+            </Trigger>
+        </Style.Triggers>
 
+      <Style.Resources>
+            <Style TargetType="Button">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="true">
+                        <Setter Property="Background"
+                            Value="{DynamicResource ToggleButtonFillSelected}"/>
+                        <Setter Property="BorderBrush"
+                            Value="{DynamicResource ToggleButtonStrokeSelected}"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Background"
+                            Value="{DynamicResource ToggleButtonFillDisabled}"/>
+                        <Setter Property="BorderBrush"
+                            Value="{DynamicResource ToggleButtonStrokeDisabled}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
   </Style>
     
   <Style x:Key="GrayoutIfNeedCheckBox" TargetType="CheckBox" BasedOn="{StaticResource MyCheckBoxStyle}">
@@ -662,7 +694,62 @@
     <Setter Property="Visibility" Value="Visible"/>
   </Style>
   <!-- todo move-->
-  <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
+    <Style x:Key="StatusBoxOneStyle" TargetType="ToggleButton">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+                <Setter Property="IsEnabled" Value="False"/>
+                <Setter Property="IsChecked" Value="False"/>
+            </DataTrigger>
+        </Style.Triggers>
+        <Setter Property="IsChecked" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <ContentPresenter
+              x:Name="contentPresenter"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Margin="{TemplateBinding Padding}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Resources>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="true">
+                        <Setter Property="Background" Value="{DynamicResource StatusBoxSelected}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxSelected}"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Background" Value="{DynamicResource StatusBoxUnSelected}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxUnSelected}"/>
+                    </Trigger>
+                </Style.Triggers>
+                <Setter Property="Background" Value="{DynamicResource StatusBoxSelected}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxSelected}"/>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="true">
+                        <Setter Property="Text" Value="発券予定"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Text" Value="発券済み"/>
+                    </Trigger>
+                </Style.Triggers>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Text" Value="発券予定"/>
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
         <Setter Property="IsEnabled" Value="False"/>

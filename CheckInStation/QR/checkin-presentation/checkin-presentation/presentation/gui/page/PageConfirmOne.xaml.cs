@@ -41,6 +41,7 @@ namespace checkin.presentation.gui.page
          private string _productName ;
          private string _seatName ;
          private string _printedAt;
+         private bool _nextEnable;
          private Visibility _nextButtonVisibility;
          private Visibility _allPrintedVisibility;
 
@@ -81,6 +82,11 @@ namespace checkin.presentation.gui.page
          {
              get { return this._printedAt; }
              set { this._printedAt = value; this.OnPropertyChanged("PrintedAt"); }
+         }
+         public bool NextEnable
+         {
+             get { return this._nextEnable; }
+             set { this._nextEnable = value; this.OnPropertyChanged("NextEnable"); }
          }
          public Visibility NextButtonVisibility
          {
@@ -123,14 +129,15 @@ namespace checkin.presentation.gui.page
         {
             var ctx = (this.DataContext as PageConfirmOneDataContext);
             await ctx.PrepareAsync().ConfigureAwait(false);
+            ctx.NextEnable = true;
+            ctx.NextButtonVisibility = Visibility.Visible;
+            ctx.AllPrintedVisibility = Visibility.Hidden;
+
             if (ctx.PrintedAt != null)
             {
+                ctx.NextEnable = false;
                 ctx.NextButtonVisibility = Visibility.Hidden;
                 ctx.AllPrintedVisibility = Visibility.Visible;
-            } else
-            {
-                ctx.NextButtonVisibility = Visibility.Visible;
-                ctx.AllPrintedVisibility = Visibility.Hidden;
             }
         }
 
