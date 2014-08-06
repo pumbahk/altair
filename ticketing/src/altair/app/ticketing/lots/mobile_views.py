@@ -46,7 +46,7 @@ def back_to_step3(request):
     context = request.context
     return HTTPFound(request.route_path('lots.entry.step3', event_id=context.event.id, lot_id=context.lot.id))
 
-@view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("mobile/%(membership)s/agreement.html"),
+@view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("%(membership)s/mobile/agreement.html"),
             request_type='altair.mobile.interfaces.IMobileRequest', permission="lots")
 class AgreementLotView(object):
 
@@ -130,7 +130,7 @@ class EntryLotView(object):
     def cr2br(self, t):
         return h.cr2br(t)
 
-    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("%(membership)s/mobile/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):
         event = self.context.event
         lot = self.context.lot
@@ -148,7 +148,7 @@ class EntryLotView(object):
             option_index=len(api.get_options(self.request, lot.id)) + 1
             )
 
-    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("%(membership)s/mobile/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
         KEYWORD = '1dFG23e74Ab13S3f85a1c0b7Z0ebBd07'
         keyword = self.request.POST.get('keyword', None)
@@ -159,7 +159,7 @@ class EntryLotView(object):
             return self.index()
         raise HTTPNotFound()
 
-    @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("mobile/%(membership)s/step1.html"))
+    @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("%(membership)s/mobile/step1.html"))
     def step1(self):
         event = self.context.event
         lot = self.context.lot
@@ -179,7 +179,7 @@ class EntryLotView(object):
             option_index=self.context.option_index
             )
 
-    @view_config(route_name='lots.entry.step2', renderer=selectable_renderer("mobile/%(membership)s/step2.html"))
+    @view_config(route_name='lots.entry.step2', renderer=selectable_renderer("%(membership)s/mobile/step2.html"))
     def step2(self):
         event = self.context.event
         lot = self.context.lot
@@ -235,7 +235,7 @@ class EntryLotView(object):
             options=h.decorate_options_mobile(api.get_options(self.request, lot.id))
             )
 
-    @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
+    @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("%(membership)s/mobile/step3.html"))
     def step3(self):
         lot = self.context.lot
         option_index = len(api.get_options(self.request, lot.id))
@@ -244,7 +244,7 @@ class EntryLotView(object):
         return self.step3_rendered_value(option_index)
 
     @back(mobile=back_to_step1)
-    @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
+    @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("%(membership)s/mobile/step3.html"))
     def step3_post(self):
         event = self.context.event
         lot = self.context.lot
@@ -356,13 +356,13 @@ class EntryLotView(object):
             messages=self.request.session.pop_flash()
             )
 
-    @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
+    @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("%(membership)s/mobile/step4.html"))
     def step4(self):
         cform = api.create_client_form(self.context, self.request)
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
-    @view_config(route_name='lots.entry.step4', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
+    @view_config(route_name='lots.entry.step4', request_method='POST', renderer=selectable_renderer("%(membership)s/mobile/step4.html"))
     def step4_post(self):
         event = self.context.event
         lot = self.context.lot
