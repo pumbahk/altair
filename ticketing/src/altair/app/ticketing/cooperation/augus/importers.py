@@ -13,7 +13,6 @@ from altair.app.ticketing.core.models import (
     Performance,
     Stock,
     StockHolder,
-    AugusAccount,
     AugusPerformance,
     AugusVenue,
     AugusTicket,
@@ -32,12 +31,10 @@ from .errors import (
 
 def get_or_create_augus_stock_info(seat):
     try:
-        return AugusStockInfo\
-          .query\
-          .filter(AugusStockInfo.seat_id==seat.id)\
-          .one()
+        return AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).one()
     except NoResultFound as err:
         return AugusStockInfo()
+
 
 def get_augus_stock_detail(augus_stock_info, record):
     return AugusStockDetail.query.filter(AugusStockDetail.augus_stock_info_id==augus_stock_info.id)\
@@ -55,7 +52,7 @@ def get_enable_stock_info(seat):
                 return info
 
 class AugusPerformanceImpoter(object):
-    def import_record(self, record, augus_account):
+    def import_record(self, record):
         ag_venue = None
         ag_performance = None
         try:
@@ -90,22 +87,21 @@ class AugusPerformanceImpoter(object):
         ag_performance.open_on = record.open_on_datetime
         ag_performance.start_on = record.start_on_datetime
         ag_performance.augus_venue_version = record.venue_version
-        ag_performance.augus_account_id = augus_account.id
         ag_performance.save()
         return ag_performance
 
-    def import_record_all(self, records, augus_account):
+    def import_record_all(self, records):
         elms = []
         for record in records:
-            elm = self.import_record(record, augus_account)
+            elm = self.import_record(record)
             elms.append(elm)
         return elms
 
-    def import_(self, protocol, augus_account):
-        return self.import_record_all(protocol, augus_account)
+    def import_(self, protocol):
+        return self.import_record_all(protocol)
 
 class AugusTicketImpoter(object):
-    def import_record(self, record, augus_account):
+    def import_record(self, record):
         ag_ticket = AugusTicket.get(augus_event_code=record.event_code,
                                     augus_performance_code=record.performance_code,
                                     augus_seat_type_code=record.seat_type_code,
@@ -130,23 +126,68 @@ class AugusTicketImpoter(object):
         ag_ticket.augus_seat_type_classif = record.seat_type_classif
         ag_ticket.value = record.value
         ag_ticket.augus_performance_id = ag_performance.id
-        ag_ticket.augus_account_id = augus_account.id
         ag_ticket.save()
         return ag_ticket
 
 
-    def import_record_all(self, records, augus_account):
+    def import_record_all(self, records):
         elms = []
         for record in records:
-            elm = self.import_record(record, augus_account)
+            elm = self.import_record(record)
             elms.append(elm)
         return elms
 
-    def import_(self, protocol, augus_account):
-        return self.import_record_all(protocol, augus_account)
+    def import_(self, protocol):
+        return self.import_record_all(protocol)
 
 
 class AugusDistributionImporter(object):
+    # def _import_record(self, record):
+    #     if int(record.seat_type_classif) != 1: # 指定席以外はエラー
+    #         raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
+    #     ag_performance = None
+    #     try:
+    #         ag_performance = AugusPerformance\
+    #             .query\
+    #             .filter(AugusPerformance.augus_event_code==record.event_code)\
+    #             .filter(AugusPerformance.augus_performance_code==record.performance_code)\
+    #             .one()
+    #     except NoResultFound as err:
+    #         # 未連携はNG通知しない
+    #         msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+    #             record.event_code, record.performance_code, repr(err))
+    #         raise AugusDataImportError(msg)
+    #     except MultipleResultsFound as err:
+    #         msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+    #             record.event_code, record.performance_code, repr(err))
+    #         raise AugusIntegrityError(msg)
+
+
+    #     ag_seat = None
+    #     try:
+    #         ag_seat = AugusSeat\
+    #             .query\
+    #             .filter(AugusSeat.augus_venue_id==ag_performance.augus_venue_id)\
+    #             .filter(AugusSeat.area_code==record.area_code)\
+    #             .filter(AugusSeat.info_code==record.info_code)\
+    #             .filter(AugusSeat.floor==record.floor)\
+    #             .filter(AugusSeat.column==record.column)\
+    #             .filter(AugusSeat.num==record.number)\
+    #             .one()
+    #     except NoResultFound as err:
+    #         # 席がない場合はNGを返す
+    #         msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+    #             ag_performance.augus_venue_id, record.area_code, record.info_code,
+    #             record.floor, record.column, record.number)
+    #         raise IllegalImportDataError(msg)
+    #     except MultipleResultsFound as err:
+    #         msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+    #             ag_performance.augus_venue_id, record.area_code, record.info_code,
+    #             record.floor, record.column, record.number)
+    #         raise AugusIntegrityError(msg)
+
+
     def import_record(self, record, stock, ag_performance):
         if int(record.seat_type_classif) != 1: # 指定席以外はエラー
             raise IllegalImportDataError('augus seat type classif error: {}'.format(record.seat_type_classif))
@@ -200,7 +241,6 @@ class AugusDistributionImporter(object):
                 raise IllegalImportDataError('Cannot seat move: seat_id={}'.format(seat.id))
 
             ag_stock_info = get_or_create_augus_stock_info(seat)
-            ag_stock_info.augus_account_id = ag_performance.augus_account_id
             ag_stock_info.augus_performance_id = ag_performance.id
             ag_stock_info.augus_distribution_code = record.distribution_code
             ag_stock_info.seat_type_classif = record.seat_type_classif
@@ -252,7 +292,7 @@ class AugusDistributionImporter(object):
         stock_holder.save()
         return stock_holder
 
-    def import_record_all(self, records, augus_account):
+    def import_record_all(self, records):
         success_records = []
         allocated_seats = []
         stock_holders = {}
@@ -260,10 +300,8 @@ class AugusDistributionImporter(object):
             for record in records:
                 ag_performance = AugusPerformance\
                     .query\
-                    .join(AugusAccount)\
                     .filter(AugusPerformance.augus_event_code==record.event_code)\
                     .filter(AugusPerformance.augus_performance_code==record.performance_code)\
-                    .filter(AugusAccount.id==augus_account.id)\
                     .first()
                 if not ag_performance:
                     raise AugusDataImportError(u'augus performance not found')
@@ -280,13 +318,9 @@ class AugusDistributionImporter(object):
                     stock_holders[ag_performance.performance.event] = stock_holder
 
 
-                ag_ticket = AugusTicket\
-                    .query\
-                    .join(AugusAccount)\
-                    .filter(AugusTicket.augus_performance_id==ag_performance.id)\
-                    .filter(AugusTicket.augus_seat_type_code==record.seat_type_code)\
-                    .filter(AugusAccount.id==augus_account.id)\
-                    .first()
+                ag_ticket = AugusTicket.query.filter(AugusTicket.augus_performance_id==ag_performance.id)\
+                                             .filter(AugusTicket.augus_seat_type_code==record.seat_type_code)\
+                                             .first()
 
                 # validation
                 if not ag_ticket:
@@ -315,8 +349,8 @@ class AugusDistributionImporter(object):
                     seat.save()
         return success_records
 
-    def import_(self, protocol, augus_account):
-        return self.import_record_all(protocol, augus_account)
+    def import_(self, protocol):
+        return self.import_record_all(protocol)
 
     @staticmethod
     def get_augus_seat(ag_venue, area_code, info_code, floor, column, number):

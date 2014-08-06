@@ -229,6 +229,7 @@ class VenueView(_AugusBaseView):
                     'message':u'複数の会場コードは受け付けられません',
                 }))
 
+CUSTOMER_ID = 1000001
 
 @view_defaults(route_name='augus.augus_venue', decorator=with_bootstrap, permission='event_editor')
 class AugusVenueView(_AugusBaseView):
@@ -807,7 +808,6 @@ class AugusPutbackView(_AugusBaseView):
                         return HTTPFound(error_url)
 
                     ag_putback = AugusPutback()
-                    ag_putback.augus_account_id = ag_stock_info.augus_account_id
                     ag_putback.augus_putback_code = putback_code
                     ag_putback.quantity = ag_stock_info.quantity # 席指定のみのためすべて(1)返しても良い/ 自由席の場合はここが問題になる
                     ag_putback.augus_stock_info_id = ag_stock_info.id
@@ -898,7 +898,7 @@ class AugusAchievementView(_AugusBaseView):
         exporter = AugusAchievementExporter()
         res_proto = exporter.export_from_augus_performance(augus_performance)
         res_proto.event_code = augus_performance.augus_event_code
-        res_proto.customer_id = augus_performance.augus_account.code
+        res_proto.customer_id = CUSTOMER_ID
         AugusExporter.exportfp(res_proto, res)
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(res_proto.name)),

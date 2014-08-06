@@ -15,13 +15,10 @@ from altair.app.ticketing.core.models import (
 from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
 from altair import multilock
-from ..operations import AugusOperationManager
 from ..exporters import AugusPutbackExporter
-from ..config import get_var_dir
-from ..errors import (
-    IllegalImportDataError,
-    AugusDataImportError,
-    )
+from ..errors import AugusDataImportError
+
+
 
 def mkdir_p(path):
     if not os.path.isdir(path):
@@ -59,15 +56,34 @@ def main():
     setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    var_dir = get_var_dir(settings)
-    mailer = Mailer(settings)
-    mgr = AugusOperationManager(var_dir=var_dir)
+    putback_codes = []
     try:
         with multilock.MultiStartLock('augus_putback'):
-            mgr.putback(mailer)
             putback_codes = export_putback_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+    else:
+        count = len(putback_codes)
+        if 0 == count:
+            return
+        sender = settings['mail.augus.sender']
+        recipient = settings['mail.augus.recipient']
+
+        augus_putbacks = AugusPutback\
+            .query\
+            .filter(AugusPutback.augus_putback_code.in_(putback_codes))\
+            .order_by(AugusPutback.augus_performance_id)\
+            .all()
+        mailer = Mailer(settings)
+        params = {'augus_putbacks': augus_putbacks}
+        body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_putback.html', params)
+        mailer.create_message(
+            sender=sender,
+            recipient=recipient,
+            subject=u'【オーガス連携】返券のお知らせ',
+            body=body.text,
+        )
+        mailer.send(sender, [recipient])
 
 if __name__ == '__main__':
     main()
