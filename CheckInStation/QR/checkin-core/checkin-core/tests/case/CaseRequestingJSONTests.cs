@@ -75,6 +75,7 @@ namespace checkin.core
     
         class MockStatusInfo : IConfirmAllStatusInfo{
             public ConfirmAllStatus Status { get; set; }
+            public TicketData ReadTicketData { get; set; }
             public TicketDataCollection TicketDataCollection { get; set; }
         }
 

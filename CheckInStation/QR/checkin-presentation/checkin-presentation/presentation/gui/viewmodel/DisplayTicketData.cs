@@ -11,15 +11,17 @@ namespace checkin.presentation.gui.viewmodel
 {
     public class DisplayTicketData : ViewModel
     {
-        public DisplayTicketData()
+        public DisplayTicketData(object parentContext)
         {
+            this.parentContext = parentContext;
             this.coreData = new TicketDataMinumum();
             this.Today = DateTime.Today;
             //for designer preview
         }
 
-        public DisplayTicketData(TicketDataMinumum tdata)
+        public DisplayTicketData(object parentContext, TicketDataMinumum tdata)
         {
+            this.parentContext = parentContext;
             this.Today = DateTime.Today;
             this.coreData = tdata;
             this.ProductName = tdata.product.name;
@@ -30,6 +32,8 @@ namespace checkin.presentation.gui.viewmodel
         }
 
         private readonly TicketDataMinumum coreData;
+        private object parentContext;
+        public object ParentContext { get { return parentContext; } }
         public DateTime Today { get; set; }
         public string ProductName { get; set; }
         public string SeatName { get; set; }

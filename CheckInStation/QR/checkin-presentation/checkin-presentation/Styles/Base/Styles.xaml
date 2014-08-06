@@ -2,7 +2,8 @@
                     xmlns:c="clr-namespace:checkin.presentation.gui.control"
                     xmlns:converter="clr-namespace:checkin.presentation.gui.converter"
                     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Class="checkin.presentation.gui.control.AddToggleButtonValidation">
 
   <!-- <ResourceDictionary Source="Brush.Background.xaml" /> -->
   <VisualBrush x:Key="TeamLogoBrush">
@@ -178,6 +179,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
+            <!--
             <Trigger Property="IsChecked" Value="true">
                 <Setter Property="Background"
                 Value="{DynamicResource ToggleButtonFillSelected}"/>
@@ -187,6 +189,16 @@
                 Value="{DynamicResource ToggleButtonForegroundSelected}"/>
                 <Setter Property="FontWeight" Value="Bold" />
             </Trigger>
+            -->
+            <DataTrigger Binding="{Binding IsSelected,Mode=TwoWay}" Value="True">
+                <Setter Property="Background"
+                Value="{DynamicResource ToggleButtonFillSelected}"/>
+                <Setter Property="BorderBrush"
+                Value="{DynamicResource ToggleButtonStrokeSelected}"/>
+                <Setter Property="Foreground"
+                Value="{DynamicResource ToggleButtonForegroundSelected}"/>
+                <Setter Property="FontWeight" Value="Bold" />
+            </DataTrigger>
             <Trigger Property="IsEnabled" Value="false">
                 <Setter Property="Background"
                 Value="{DynamicResource ToggleButtonFillDisabled}"/>
@@ -840,7 +852,7 @@
 
     <DataTemplate x:Key="SelectingTicketItemBoxData">
         <StackPanel Orientation="Horizontal" Width="520">
-            <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay}" Width="108" Height="90">
+            <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,NotifyOnValidationError=True}" Loaded="X" Width="108" Height="90">
                 <Border Width="108" Height="90">
                     <TextBlock/>
                 </Border>
@@ -866,7 +878,8 @@
             </Canvas>
         -->
                 <ToggleButton Style="{StaticResource GrayoutIfNeedToggleButton}"
-                      IsChecked="{Binding IsSelected,Mode=TwoWay}"
+                      IsChecked="{Binding IsSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,NotifyOnValidationError=True}"
+                      Loaded="X"
                       HorizontalAlignment="Left"
                       Height="90"
                       Width="410"

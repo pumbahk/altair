@@ -34,6 +34,8 @@ namespace checkin.core.flow
 
             var subject = ev as ConfirmAllEvent;
             var data = new TicketDataCollectionRequestData() { order_no = TicketData.additional.order.order_no, secret = TicketData.secret };
+            subject.SetInfo(TicketData);
+
             ResultTuple<string, TicketDataCollection> result = await new DispatchResponse<TicketDataCollection>(Resource).Dispatch(() => Resource.TicketDataCollectionFetcher.FetchAsync(data)).ConfigureAwait(false);
             if (result.Status)
             {

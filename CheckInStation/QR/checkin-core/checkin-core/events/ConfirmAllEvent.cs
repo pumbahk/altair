@@ -18,6 +18,7 @@ namespace checkin.core.events
     public interface IConfirmAllStatusInfo
     {
         ConfirmAllStatus Status { get; set; }
+        TicketData ReadTicketData { get; set; }
         TicketDataCollection TicketDataCollection { get; set; }
     }
     
@@ -31,8 +32,13 @@ namespace checkin.core.events
 
         public void SetCollection(TicketDataCollection collection)
         {
-           this.StatusInfo.TicketDataCollection = collection;
-           this.StatusInfo.Status = ConfirmAllStatus.prepared;
+            this.StatusInfo.TicketDataCollection = collection;
+            this.StatusInfo.Status = ConfirmAllStatus.prepared;
+        }
+    
+        public void SetInfo(TicketData readTicketData)
+        {
+            this.StatusInfo.ReadTicketData = readTicketData;
         }
     }
 }

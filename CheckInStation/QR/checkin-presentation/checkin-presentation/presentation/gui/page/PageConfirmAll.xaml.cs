@@ -37,7 +37,14 @@ namespace checkin.presentation.gui.page
         public TicketDataCollection TicketDataCollection
         {
             get { return this._TicketDataCollection; }
-            set { this._TicketDataCollection = value;  this.OnPropertyChanged("TicketDataCollection"); }
+            set { this._TicketDataCollection = value; this.OnPropertyChanged("TicketDataCollection"); }
+        }
+
+        private TicketData _readTicketData;
+        public TicketData ReadTicketData
+        {
+            get { return this._readTicketData; }
+            set { this._readTicketData = value; this.OnPropertyChanged("ReadTicketData"); }
         }
 
         private string _PerformanceName;        
@@ -154,7 +161,7 @@ namespace checkin.presentation.gui.page
             ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
             foreach (var tdata in source.collection)
             {
-                var dtdata = new DisplayTicketData(tdata);
+                var dtdata = new DisplayTicketData(ctx, tdata);
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
                 displayColl.Add(dtdata);
             }
@@ -162,11 +169,13 @@ namespace checkin.presentation.gui.page
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)
         {
+            var ctx = this.DataContext as PageConfirmAllDataContext;
+            var DisplayTicketData = (sender as DisplayTicketData);
+            //if (ctx.ReadTicketData.ordered_product_item_token_id == DisplayTicketData.TokenId)
             if (e.PropertyName == "IsSelected")
             {
-                var delta = (sender as DisplayTicketData).IsSelected? 1 : -1;
+                var delta = DisplayTicketData.IsSelected ? 1 : -1;
                 this.Dispatcher.InvokeAsync(() => {
-                    var ctx = this.DataContext as PageConfirmAllDataContext;
                     ctx.NumberOfPrintableTicket += delta;
                 });
             }
