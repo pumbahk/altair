@@ -1,0 +1,8 @@
+#!/bin/sh
+
+CURRENT=$(dirname $0)
+
+BASENAME=$1
+
+echo "SELECT id FROM Site WHERE (drawing_url like \"%/svgs/${BASENAME}.xml\" OR backend_metadata_url like \"%/backend/${BASENAME}/metadata.json\") and deleted_at is null" | \
+$CURRENT/db-master --skip-column-names

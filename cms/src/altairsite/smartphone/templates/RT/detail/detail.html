@@ -13,11 +13,7 @@
             perfs.append({"perf":perf, "display_order":perf.display_order})
     perfs = sorted(perfs, key=lambda v: (v['display_order']))
 
-    o = event.event_open
-    c = event.event_close
-    period = helper.get_info(event_info, u'公演期間') or helper.disp_date_week(o) + u'〜' + helper.disp_date_week(c)
-    if o.year==c.year and o.month==c.month and o.day==c.day:
-        period = helper.disp_date_week(o)
+    period = helper.get_info(event_info, u'公演期間') or helper.disp_period(event.event_open, event.event_close)
 
     info = {
         'performance_period':period,
@@ -29,7 +25,6 @@
         'content':helper.get_info(event_info, u'お問い合わせ先') or event.inquiry_for,
     }
 %>
-
 <script type="text/javascript">
 $(function () {
   $('*[data-toggle]').each(function (_, n) {
@@ -277,7 +272,7 @@ $(function () {
                               % if perf['perf'].open_on:
                                 開場：${helper.disp_time(perf['perf'].open_on)}<br/>
                               % endif
-                              開演：${helper.disp_time(perf['perf'].start_on)}<br/>
+                                開演（開催期間）：${helper.disp_period(perf['perf'].start_on, perf['perf'].end_on)}<br/>
                               % if perf['perf'].venue:
                                 会場：${perf['perf'].venue}<br/>
                               % endif
@@ -339,5 +334,3 @@ $(function () {
         </li>
       % endfor
 </ul>
-
-

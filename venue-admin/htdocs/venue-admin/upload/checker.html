@@ -1,0 +1,221 @@
+<?xml version='1.0'?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="js/jquery.mousewheel.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var load = function(url, next) {
+	$.ajax({
+		url: url,
+		dataType: 'text',
+		success: function(r) {
+			$('#stage').get(0).innerHTML = r.replace(/<(\/?)svg:/g, '<$1');
+			
+			$('#stage svg').get(0).viewBox.baseVal.x -= 10;
+			$('#stage svg').get(0).viewBox.baseVal.y -= 10;
+			
+			var svgfind = function(p, element, attr, value) {
+				var len = p.size();
+				for(var i=0 ; i<len ; i++) {
+					if(p.get(i).tagName == element) {
+						if(!attr || p.eq(i).attr(attr) == value) {
+							return p.get(i);
+						}
+					}
+				}
+			};
+			$('#block, #row, #row_id, #seat, #seat_id, #seat_no, #index, #seat_proto').html('&nbsp;');
+			$('#stage g g rect').hover(function() {
+				// jQuery DOES NOT SUPPORT SVG Elements traversal
+				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
+				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
+				$('#block').text($('si\\:property[name="name"]', b).text());
+				$('#row').text($('si\\:property[name="name"]', r).text());
+				$('#row_id').text($(this).parents('g').eq(0).attr('id'));
+				$('#seat').text($('title', this).text());
+				$('#seat_no').text($('si\\:property[name="seat_no"]', this).text());
+				$('#index').text($('metadata si\\:object si\\:collection si\\:object si\\:property[name="index"]', this).text());
+				$('#seat_id').text($(this).attr('id'));
+/*
+				var obj = svgfind($('metadata *', this), 'si:object');
+				$('#seat_proto').text(obj.getAttribute('prototype'));
+*/
+				$('#seat_proto').text($('metadata si\\:object', this).attr('prototype'));
+				$(this).attr('fill-opacity', '0.2');
+			}, function() {
+				var e = $(this).get(0);
+				$('#block, #row, #row_id, #seat, #seat_id, #seat_no, #index, #seat_proto').html('&nbsp;');
+				$(this).attr('fill-opacity', '');
+			});
+			
+			if(next) {
+				next();
+			}
+		}
+	});
+};
+var next = function() {
+	$('#venue').text($('#stage > svg > title').text());
+	
+	var afterZoom = function() {
+		$('#stage svg').css({ width: $('#stage svg').attr('width') });
+		$('#stage svg').css({ height: $('#stage svg').attr('height') });
+/*
+		$('#stage svg g g rect').each(function() {
+			trans.setup(this);
+			return false;
+		});
+*/
+	};
+	
+	var rect = $('#stage svg').get(0).viewBox;
+	if(rect.animVal.width) {
+		var defaultZoom = 1000 / rect.animVal.width;
+		$('#stage svg').attr('width', rect.animVal.width * defaultZoom);
+		$('#stage svg').attr('height', rect.animVal.height * defaultZoom);
+	}
+	
+	var zoomRatio = 1.2;
+	$('form input.zoomup').click(function() {
+		$('#stage svg').attr('width', $('#stage svg').attr('width') * zoomRatio);
+		$('#stage svg').attr('height', $('#stage svg').attr('height') * zoomRatio);
+		afterZoom();
+	});
+	$('form input.zoomdown').click(function() {
+		$('#stage svg').attr('width', $('#stage svg').attr('width') / zoomRatio);
+		$('#stage svg').attr('height', $('#stage svg').attr('height') / zoomRatio);
+		afterZoom();
+	});
+	$('#stage').mousewheel(function(e, delta) {
+		if(e.ctrlKey) {
+			if(0 < delta) {
+				$('form input.zoomdown').click();
+			} else if(delta < 0) {
+				$('form input.zoomup').click();
+			}
+		}
+	});
+};
+var showList = function() {
+	$('#stage').css({ paddingLeft: 200 });
+	$('#listContainer').show();
+	$('#list').css({ height: $(window).height() - 60 });
+	var list = $('#list').get(0);
+	$('#stage g g rect')
+	.each(function() {
+				$('<div></div>').text($('title', this).text())
+				.attr('ref', $(this).attr('id'))
+				.hover(function() {
+					var id = $(this).attr('ref');
+					$('#'+id).attr('fill-opacity', '0.2');
+					$(this).css({ backgroundColor: '#ffcccc' });
+				}, function() {
+					var id = $(this).attr('ref');
+					$('#'+id).attr('fill-opacity', '');
+					$(this).css({ backgroundColor: '' });
+				})
+				.appendTo(list);
+	});
+};
+$(function() {
+	$('#stage').css({ cursor: 'url(pointer.png)' });
+	if(location.hash) {
+		$('#url').val(location.hash.substr(1));
+		$('form').submit(function() {
+			load($('#url').val(), next);
+			return false;
+		});
+	}
+	$('form').submit();
+});
+//]]>
+</script>
+<style type="text/css">
+* { font-size: 9px; }
+body { margin: 0; }
+
+#status { height: 20px; width: 2000px; }
+#status span { display: inline-block; width: 70px; height: 18px; font-size: 11px; background-color: #ffffff; padding-left: 2px; padding-right: 2px; overflow: visible; white-space: nowrap; }
+ #status span#venue { width: auto; }
+ #status span#block { width: 120px; }
+ #status span#row { width: 20px; }
+ #status span#seat { width: 160px; }
+ #status span#seat_no { width: 20px; }
+ #status span#index { width: 20px; }
+
+#panel { position: fixed; background-color: #cccccc; width: 100%; }
+#panel form,
+#panel div { padding-left: 10px; padding-right: 10px; }
+#panel-space { height: 80px; }
+
+#listContainer {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	margin-top: 57px;
+	width: 200px;
+	height: 100%;
+}
+
+#list {
+	background-color: #ffffff;
+	overflow-y: scroll;
+}
+#list div {
+	cursor: default;
+}
+
+.block { fill: rgb(255, 255, 192); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+g .seat { fill: rgb(255, 255, 255); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+g g .seat { fill: rgb(160, 160, 160); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.label { z-index: 2; fill: rgb(0, 0, 255); }
+.background { z-index: 1; stroke: rgb(220, 220, 220); fill: transparent; }
+</style>
+</head>
+<body>
+
+<div id="listContainer">
+<div id="list"></div>
+end
+</div>
+
+<div id="panel">
+	<form style="padding-top: 8px;">
+	Location: <input type="text" id="url" value="" style="width: 70%" />
+	<input type="submit" value="Load" />
+	<input type="button" value="-" class="zoomdown" />
+	<input type="button" value="+" class="zoomup" />
+	<input type="button" value="LIST" onclick="showList();" />
+	</form>
+	<div id="status">
+		Venue: <span id="venue"></span>
+		Block: <span id="block"></span>
+		&nbsp;&nbsp;
+		Row: <span id="row"></span>
+		&nbsp;&nbsp;
+		Seat: <span id="seat"></span>
+		&nbsp;&nbsp;
+		Num: <span id="seat_no"></span>
+		&nbsp;&nbsp;
+		Idx: <span id="index"></span>
+		&nbsp;&nbsp;
+		Row_ID: <span id="row_id"></span>
+		&nbsp;&nbsp;
+		Seat_ID: <span id="seat_id"></span>
+		&nbsp;&nbsp;
+		Seat_Prototype: <span id="seat_proto"></span>
+
+	</div>
+</div>
+
+<div id="panel-space"></div>
+
+<div id="stage"></div>
+
+
+</body>
+</html>

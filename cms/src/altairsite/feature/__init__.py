@@ -4,5 +4,5 @@ def includeme(config):
     #mobile
     config.add_view("altairsite.mobile.staticpage.views.staticpage_view", 
                     route_name="features", 
-                    request_type="altairsite.tweens.IMobileRequest"), 
+                    request_type="altair.mobile.interfaces.IMobileRequest"), 
     config.scan(".views")

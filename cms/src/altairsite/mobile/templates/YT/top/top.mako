@@ -22,7 +22,7 @@
             if promo.mobile_link:
                 link = promo.mobile_link
             elif event:
-                link = request.mobile_route_path("eventdetail") + "?event_id=" + str(event.id)
+                link = request.mobile_route_path("eventdetail", _query=dict(event_id=event.id))
         %>
         % if link:
             <a href=${link}>${promo.text}</a><br />

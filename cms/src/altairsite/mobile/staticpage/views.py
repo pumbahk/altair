@@ -14,7 +14,7 @@ def not_static_path(info, request):
     return not request.path.startswith("static")
 
 ## deprecated view?
-@usersite_view_config(route_name="staticpage", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, ))
+@usersite_view_config(route_name="staticpage", request_type="altair.mobile.interfaces.IMobileRequest", custom_predicates=(not_static_path, ))
 def staticpage_view(context, request):
     # logger.debug("req2:"+request.path)
     path = request.matchdict["page_name"]

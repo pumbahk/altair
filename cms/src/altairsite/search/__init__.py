@@ -33,10 +33,10 @@ def includeme(config):
                        "page_search_by"]:
         config.add_view("altairsite.mobile.dispatch.views.dispatch_view", 
                         route_name=route_name, 
-                        request_type="altairsite.tweens.IMobileRequest")
+                        request_type="altair.mobile.interfaces.IMobileRequest")
         config.add_view("altairsite.smartphone.dispatch.views.dispatch_view", 
                         route_name=route_name, 
-                        request_type="altairsite.tweens.ISmartphoneRequest")
+                        request_type="altair.mobile.interfaces.ISmartphoneRequest")
     config.scan(".views")
     
 

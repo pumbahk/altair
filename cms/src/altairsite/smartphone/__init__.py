@@ -18,7 +18,7 @@ def install_app(config):
     config.include("altairsite.config")
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
     add_route("smartphone.main", "/")
-    config.smartphone_site_add_view(".views.main", route_name='smartphone.main',request_type="altairsite.tweens.ISmartphoneRequest", 
+    config.smartphone_site_add_view(".views.main", route_name='smartphone.main',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
                              renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/top.html'))
 
     config.smartphone_site_add_view(".views.main", route_name='smartphone.main',request_param=PC_ACCESS_COOKIE_NAME, 

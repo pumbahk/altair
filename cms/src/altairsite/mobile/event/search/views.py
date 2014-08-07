@@ -16,9 +16,9 @@ from .forms import MobileTagSearchForm
 class ValidationFailure(UsersiteException):
     pass
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='search', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/search.mako'))
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='genresearch', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/genresearch.mako'))
 def search(request):
     log_info("search", "start")
@@ -65,7 +65,7 @@ def search(request):
     log_info("search", "end")
     return {'form':form}
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='mobile_tag_search', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/mobile_tag_search_result.mako'))
 def mobile_tag_search(request):
 
@@ -90,7 +90,7 @@ def mobile_tag_search(request):
     return {'form':form}
 
 @mobile_site_view_config(route_name='mobile_tag_search', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest"
+    , request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

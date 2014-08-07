@@ -10,6 +10,7 @@ from altair.app.ticketing.qr.image import qrdata_as_image_response
 from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
+from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.cart import api as cart_api
 from datetime import datetime
@@ -180,7 +181,7 @@ class MypageLoginView(object):
 
     def select_renderer(self, membership):
         self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
-        if cart_api.is_mobile(self.request):
+        if is_mobile_request(self.request):
             self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
         """
         elif cart_api.is_smartphone(self.request):

@@ -92,7 +92,7 @@ class Tests(unittest.TestCase):
         self.assertEquals(result.text, response_body)
 
         ## cached
-        self.assertEquals(self.cache.cache.cache, {'P:http://rt.example.jp/foo/bar?foo=1': response_body})
+        self.assertEquals(self.cache.cache.cache, {'P:http://rt.example.jp/foo/bar?foo=1': {'content_type':'text/html', 'charset': 'UTF-8', 'body':response_body}})
 
     def test_not_cache__when_not_text_response(self):
         def view(request):

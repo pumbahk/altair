@@ -21,12 +21,17 @@ class RegressionTest(TestCase):
             detect_from_email_address(self.config.registry, 'test@docomo.ne.jp'),
             DoCoMo)
 
-    def test_make_mobile_request_hybrid(self):
-        from .api import make_mobile_request
-        from . import install_mobile_request_maker
+    def test_middleware_hybrid(self):
+        from .api import get_middleware
+        from . import install_mobile_middleware
         from .session import HybridHTTPBackend
-        from pyramid.request import Request
-        install_mobile_request_maker(self.config)
+        from .interfaces import ISmartphoneSupportPredicate
+        from pyramid.request import Request, Response
+        install_mobile_middleware(self.config)
+        self.config.registry.registerUtility(
+            lambda request: False,
+            ISmartphoneSupportPredicate
+            )
         request = Request(
             environ={
                 'QUERY_STRING': 'a=b&c=d&e=f&g=h+i&k=l%20m',
@@ -40,19 +45,31 @@ class RegressionTest(TestCase):
                 is_docomo=True
                 )
             )
+
+        def handler(request):
+            self.assertEqual(request.params['a'], 'b')
+            self.assertEqual(request.params['c'], 'd')
+            self.assertTrue('e' not in request.params)
+            self.assertEqual(request.params['g'], 'h i')
+            self.assertEqual(request.params['k'], 'l m')
+            return Response()
+
         HybridHTTPBackend(request, 'e')
-        result = make_mobile_request(request)
-        self.assertEqual(result.params['a'], 'b')
-        self.assertEqual(result.params['c'], 'd')
-        self.assertTrue('e' not in result.params)
-        self.assertEqual(result.params['g'], 'h i')
-        self.assertEqual(result.params['k'], 'l m')
+        middleware = get_middleware(request)
+        middleware(handler, request)
 
 
-class MobileRequestMakerTest(TestCase):
+class MobileMiddlewareTest(TestCase):
+    def setUp(self):
+        config = testing.setUp()
+        self.config = config
+
+    def tearDown(self):
+        testing.tearDown()
+
     def _getTarget(self):
-        from .impl import MobileRequestMaker
-        return MobileRequestMaker
+        from .middleware import MobileMiddleware
+        return MobileMiddleware
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -63,7 +80,7 @@ class MobileRequestMakerTest(TestCase):
         request.user_agent = 'USER_AGENT'
         request.session.get.return_value = hashlib.sha1('USER_AGENT').hexdigest()
         target = self._makeOne()
-        target.revalidate_session(request)
+        target._revalidate_session(request)
         request.session.get.assert_called_with_argument('altair.mobile.impl.us_hash')
         request.session.invalidate.assert_not_called()
 
@@ -73,7 +90,86 @@ class MobileRequestMakerTest(TestCase):
         request.user_agent = 'USER_AGENT'
         request.session.get.return_value = hashlib.sha1('OOPS').hexdigest()
         target = self._makeOne()
-        target.revalidate_session(request)
+        target._revalidate_session(request)
         request.session.get.assert_called_with_argument('altair.mobile.impl.us_hash')
         request.session.invalidate.assert_called()
 
+    def test_smartphone_predicate_1(self):
+        from .interfaces import IMobileCarrierDetector, ISmartphoneSupportPredicate, ISmartphoneRequest
+        from pyramid.testing import DummyRequest
+        detector = mock.Mock()
+        detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = True
+        request = DummyRequest()
+        request.registry.registerUtility(
+            detector,
+            IMobileCarrierDetector
+            )
+        request.registry.registerUtility(
+            lambda request: False,
+            ISmartphoneSupportPredicate
+            )
+        target = self._makeOne()
+        def handler(request):
+            self.assertFalse(ISmartphoneRequest.providedBy(request))
+            return None
+        target(handler, request)
+
+    def test_smartphone_predicate_2(self):
+        from .interfaces import IMobileCarrierDetector, ISmartphoneSupportPredicate, ISmartphoneRequest
+        from pyramid.testing import DummyRequest
+        detector = mock.Mock()
+        detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = True
+        request = DummyRequest()
+        request.user_agent = 'Dummy'
+        request.decode = lambda *args: request
+        request.registry.registerUtility(
+            detector,
+            IMobileCarrierDetector
+            )
+        request.registry.registerUtility(
+            lambda request: True,
+            ISmartphoneSupportPredicate
+            )
+        target = self._makeOne()
+        def handler(request):
+            self.assertTrue(ISmartphoneRequest.providedBy(request))
+            return None
+        target(handler, request)
+
+        detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = False
+        target = self._makeOne()
+        def handler(request):
+            self.assertFalse(ISmartphoneRequest.providedBy(request))
+            return None
+        target(handler, request)
+
+    def test_decode_fail(self):
+        from .interfaces import IMobileCarrierDetector, ISmartphoneSupportPredicate, ISmartphoneRequest
+        from pyramid.request import Request
+        from pyramid.testing import DummySession
+        detector = mock.Mock()
+        detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = False
+        session = DummySession()
+        from altair.extracodecs import register_codecs
+        register_codecs()
+        self.config.set_session_factory(lambda request: session)
+        self.config.registry.registerUtility(
+            detector,
+            IMobileCarrierDetector
+            )
+        self.config.registry.registerUtility(
+            lambda request: False,
+            ISmartphoneSupportPredicate
+            )
+        on_error_handler = mock.Mock()
+        target = self._makeOne(
+            encoding='Shift_JIS',
+            on_error_handler=on_error_handler
+            )
+        request = Request(environ={
+            'HTTP_USER_AGENT': 'DoCoMo/2.0 ',
+            'QUERY_STRING': b'a=\x81\x31',
+            })
+        request.registry = self.config.registry
+        target(lambda request: None, request)
+        self.assertTrue(on_error_handler.called)

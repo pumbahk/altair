@@ -341,9 +341,10 @@ class MultiCheckoutPlugin(object):
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('remaining amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (remaining_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
 
+        # 払い戻すべき金額を渡す必要がある
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
-            remaining_amount,
+            order.total_amount - remaining_amount,
             0)
         if part_cancel_res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(

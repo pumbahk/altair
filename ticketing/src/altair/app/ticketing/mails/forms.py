@@ -73,7 +73,15 @@ class OrderInfoDefaultMixin(object):
         return u"{0} {1}".format(performance.event.title, performance.name)
 
     def get_performance_date(request, order):
-        return ch.japanese_datetime(order.performance.start_on)
+        if order.performance.end_on:
+            o = order.performance.start_on
+            c = order.performance.end_on
+            period = ch.japanese_date(o) + u'〜' + ch.japanese_date(c)
+            if o.year==c.year and o.month==c.month and o.day==c.day:
+                period = ch.japanese_datetime(o)
+        else:
+            period = ch.japanese_datetime(order.performance.start_on)
+        return period
 
     def get_seat_no(request, order):
         seat_no = []

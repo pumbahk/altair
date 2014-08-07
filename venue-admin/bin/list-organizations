@@ -1,0 +1,6 @@
+#!/bin/sh
+
+CURRENT=$(dirname $0)
+
+echo "SELECT o.name,opa.login_id FROM Organization o LEFT JOIN Operator op ON op.organization_id=o.id LEFT JOIN OperatorAuth opa ON opa.operator_id=op.id GROUP BY o.id  ORDER BY o.id" | \
+$CURRENT/db-master --skip-column-names

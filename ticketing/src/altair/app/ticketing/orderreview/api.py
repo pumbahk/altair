@@ -3,7 +3,7 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.app.ticketing.core.api import get_organization_setting, is_mobile_request, get_default_contact_url
+from altair.app.ticketing.core.api import get_organization_setting, get_default_contact_url
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
