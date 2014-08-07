@@ -22,27 +22,33 @@ namespace checkin.presentation.gui.control
             var pageConfirmAllDataContext = displayTicketData.ParentContext as PageConfirmAllDataContext;
             if (pageConfirmAllDataContext != null)
             {
-                binding.ValidationRules.Add(new ToggleButtonValidationRule(pageConfirmAllDataContext));
+                binding.ValidationRules.Add(new ToggleButtonValidationRule(pageConfirmAllDataContext, displayTicketData));
             }
         }
     }
 
     class ToggleButtonValidationRule: ValidationRule
     {
-        public PageConfirmAllDataContext PageConfirmAllDataContext { get; set; }
+        private DisplayTicketData DisplayTicketData;
 
-        public ToggleButtonValidationRule(PageConfirmAllDataContext context)
+        private PageConfirmAllDataContext PageConfirmAllDataContext;
+
+        public ToggleButtonValidationRule(page.PageConfirmAllDataContext pageConfirmAllDataContext, DisplayTicketData displayTicketData)
         {
-            this.PageConfirmAllDataContext = context as PageConfirmAllDataContext;
+            this.PageConfirmAllDataContext = pageConfirmAllDataContext;
+            this.DisplayTicketData = displayTicketData;
         }
 
         public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
         {
-
-            //var ticketData = value as TicketData;
-            //var ticketDat2a = value as DisplayTicketData;
-            //Console.WriteLine(ticketData.ordered_product_item_token_id);
-            return new ValidationResult(true, "hoge");
+            /*
+            if (this.PageConfirmAllDataContext.ReadTicketData.ordered_product_item_token_id == this.DisplayTicketData.TokenId)
+            {
+                return new ValidationResult(false, "must print ticket!!");
+            }
+            */
+            Console.WriteLine(this);
+            return new ValidationResult(true, "validation ok!!");
         }
     }
 }

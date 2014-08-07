@@ -171,7 +171,6 @@ namespace checkin.presentation.gui.page
         {
             var ctx = this.DataContext as PageConfirmAllDataContext;
             var DisplayTicketData = (sender as DisplayTicketData);
-            //if (ctx.ReadTicketData.ordered_product_item_token_id == DisplayTicketData.TokenId)
             if (e.PropertyName == "IsSelected")
             {
                 var delta = DisplayTicketData.IsSelected ? 1 : -1;
