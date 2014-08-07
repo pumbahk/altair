@@ -4,8 +4,10 @@ import sys
 import time
 import shutil
 import logging
+import datetime
 import traceback
 import transaction
+import sqlalchemy as sa
 from sqlalchemy.orm.exc import (
     NoResultFound,
     MultipleResultsFound,
@@ -21,6 +23,8 @@ from altair.augus.protocols import (
     PerformanceSyncRequest,
     TicketSyncRequest,
     DistributionSyncRequest,
+    VenueSyncRequest,
+    VenueSyncResponse,
     )
 
 from altair.app.ticketing.core.models import (
@@ -29,7 +33,10 @@ from altair.app.ticketing.core.models import (
     AugusPerformance,
     AugusTicket,
     AugusPutback,
+    AugusVenue,
     )
+
+from .mails import send_venue_sync_request_mail
 from .importers import (
     AugusPerformanceImpoter,
     AugusTicketImpoter,
@@ -288,7 +295,7 @@ class AugusWorker(object):
 
     def achieve(self, all_=False, sleep=1.5):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
-        staging = self.path.recv_dir_staging
+        staging = self.path.send_dir_staging
         exporter = AugusAchievementExporter()
         qs = AugusPerformance\
           .query\
@@ -310,6 +317,68 @@ class AugusWorker(object):
             ag_performance.is_report_target = False
             ag_performance.save()
         transaction.commit()
+        return ids
+
+
+    def venue_sync_request(self, mailer, sleep=2):
+        logger.info('start augus venue sync request: augus_account_id={}'.format(self.augus_account.id))
+        staging = self.path.recv_dir_staging
+        pending = self.path.recv_dir_pending
+
+        target = VenueSyncRequest
+        for name in filter(target.match_name, os.listdir(staging)):
+            time.sleep(sleep)
+            path = os.path.join(staging, name)
+            logger.info('Venue sync request: target: {}'.format(path))
+            send_venue_sync_request_mail(mailer, self.augus_account, path)
+            logger.info('Venue sync request: send mail: {}'.format(path))
+            shutil.move(path, pending) # pending
+            logger.info('Venue sync request: ok: {}'.format(path))
+
+
+    def _sync_response_target_augus_venues(self):
+        """会場図連携完了通知対象AugusVenueを取得する
+
+        対象の条件は次の通り
+
+        - 連携完了通知予約中のものの内、次のいずれかの条件を満たす
+
+          - 未通知
+          - 通知日時よりあとに通知予約がされている
+
+        """
+        return AugusVenue\
+          .query\
+          .filter(AugusVenue.augus_account_id==self.augus_account.id)\
+          .filter(AugusVenue.reserved_at!=None)\
+          .filter(sa.or_(AugusVenue.notified_at==None,
+                         sa.and_(AugusVenue.notified_at!=None,
+                                 AugusVenue.reserved_at>AugusVenue.notified_at)))
+
+
+
+    def venue_sync_response(self):
+        logger.info('start augus venue sync response: augus_account_id={}'.format(self.augus_account.id))
+        ids = []
+        staging = self.path.send_dir_staging
+        augus_venues = self._sync_response_target_augus_venues()
+        now = datetime.datetime.now()
+        for augus_venue in augus_venues:
+            ids.append(augus_venue.id)
+            venue_response = VenueSyncResponse(
+                customer_id=self.augus_account.code, venue_code=augus_venue.code)
+            record = venue_response.record()
+            record.venue_code = augus_venue.code
+            record.venue_name = augus_venue.name
+            record.status = Status.OK.value
+            record.venue_version = augus_venue.version
+            venue_response.append(record)
+
+            path = os.path.join(staging, venue_response.name)
+            AugusExporter.export(venue_response, path)
+            augus_venue.notified_at = now
+            augus_venue.save()
+            transaction.commit()
         return ids
 
 
@@ -350,7 +419,6 @@ class AugusOperationManager(object):
             body=body.text,
             )
         mailer.send(sender, [recipient])
-
 
     def download(self):
         for worker in self.augus_workers():
@@ -482,5 +550,36 @@ class AugusOperationManager(object):
                     mailer, worker.augus_account,
                     u'【オーガス連携】販売実績通知のおしらせ',
                     'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html',
+                    params,
+                    )
+
+    def venue_sync_request(self, mailer=None):
+        for worker in self.augus_workers():
+            try:
+                worker.venue_sync_request(mailer)
+            except:
+                raise
+
+    def venue_sync_response(self, mailer=None):
+        for worker in self.augus_workers():
+            augus_account_id = worker.augus_account.id
+            ids = []
+            try:
+                ids = worker.venue_sync_response()
+            except:
+                raise
+
+            if mailer and len(ids):
+                augus_venues = AugusVenue\
+                  .query\
+                  .filter(AugusVenue.id.in_(ids))
+                params = {
+                    'augus_venues': augus_venues,
+                    }
+
+                self.send_mail(
+                    mailer, worker.augus_account,
+                    u'【オーガス連携】会場連携完了通知のおしらせ',
+                    'altair.app.ticketing:templates/cooperation/augus/mails/augus_venue_sync_response.html',
                     params,
                     )
