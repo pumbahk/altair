@@ -109,12 +109,12 @@
                             	Style="{StaticResource ChoiceCandidatesTwoColumns}" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel Width="1200" Orientation="Horizontal"/>
+                                        <WrapPanel Width="1070" Orientation="Horizontal"/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
                                 <ListView.ItemContainerStyle>
                                     <Style TargetType="{x:Type ListBoxItem}">
-                                        <Setter Property="Width" Value="580"/>
+                                        <Setter Property="Width" Value="524"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type ListBoxItem}">
