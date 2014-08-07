@@ -39,7 +39,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.core.models import (
     Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
-    ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
+    ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex, SeatGroup
 )
 from altair.app.ticketing.venues.forms import SiteForm, VenueSearchForm
 from altair.app.ticketing.venues.export import SeatCSV
@@ -268,6 +268,98 @@ def update_seat_priority(context, request):
                 updated = updated + 1
     
     return lxml_result("success", "ok, %u records updated." % updated)
+
+@view_config(route_name="api.group", request_method="GET", renderer="lxml", permission="event_viewer")
+def get_seat_group(context, request):
+    x_result = etree.Element("result")
+
+    venue = request.context.venue
+    site = venue.site
+
+    if venue.performance != None:
+        create_text_element(x_result, "error", u"公演に紐づいていない初期VenueのIDを指定してください")
+        return x_result
+
+    x_venue = etree.Element("venue")
+    x_result.append(x_venue)
+    create_text_element(x_venue, "id", str(venue.id))
+    create_text_element(x_venue, "name", venue.name)
+
+    seats = DBSession.query(Seat, SeatIndex.index)\
+        .filter_by(venue_id=venue.id)\
+        .join(SeatIndex.seat)
+
+    x_seats = etree.Element("seats")
+    x_result.append(x_seats)
+    for seat, index in seats:
+        x_seat = etree.Element("seat")
+        x_seats.append(x_seat)
+        create_text_element(x_seat, "l0_id", seat.l0_id)
+        create_text_element(x_seat, "row_l0_id", seat.row_l0_id)
+        create_text_element(x_seat, "name", seat.name)
+
+    groups = DBSession.query(SeatGroup)\
+        .filter_by(site_id=site.id)\
+        .order_by(SeatGroup.name, SeatGroup.l0_id)
+
+    x_groups = etree.Element("groups")
+    x_result.append(x_groups)
+    x_group_name = ""
+    for group in groups:
+        if x_group_name != group.name:
+            x_group_name = group.name
+            x_group = etree.Element("group")
+            x_groups.append(x_group)
+            create_text_element(x_group, "name", group.name)
+        create_text_element(x_group, "l0_id", group.l0_id)
+
+    return x_result
+
+@view_config(route_name="api.group", request_method="POST", renderer="lxml", permission="event_editor")
+def update_seat_group(context, request):
+    venue = request.context.venue
+    if venue.id != long(request.POST['venue']):
+        return lxml_result("error", "wrong parameter")
+    if venue.performance != None:
+        return lxml_result("error", "not base venue")
+    site = venue.site
+
+    # リクエスト
+    req_by_l0_id = dict()
+    names = request.POST.getall('name[]')
+    for i, l0_id_list in enumerate(request.POST.getall('l0_id[]')):
+        for l0_id in l0_id_list.split("\t"):
+            req_by_l0_id[l0_id] = names[i]
+
+    # DB登録済み
+    group_by_l0_id = dict()
+    groups = DBSession.query(SeatGroup)\
+        .filter_by(site_id=site.id)\
+        .order_by(SeatGroup.name, SeatGroup.l0_id)
+    for group in groups:
+        group_by_l0_id[group.l0_id] = group
+    
+    # 処理開始
+    for l0_id in group_by_l0_id:
+        if l0_id in req_by_l0_id:
+            if group_by_l0_id[l0_id].name != req_by_l0_id[l0_id]:
+                # UPDATE
+                group_by_l0_id[l0_id].name = req_by_l0_id[l0_id]
+                group_by_l0_id[l0_id].save()
+            del req_by_l0_id[l0_id]
+        else:
+            # DELETE
+            DBSession.delete(group_by_l0_id[l0_id])
+
+    for l0_id in req_by_l0_id:
+        # INSERT
+        new_seat_group = SeatGroup()
+        new_seat_group.name = req_by_l0_id[l0_id]
+        new_seat_group.site_id = site.id
+        new_seat_group.l0_id = l0_id
+        DBSession.add(new_seat_group)
+
+    return lxml_result("success", "ok")
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
