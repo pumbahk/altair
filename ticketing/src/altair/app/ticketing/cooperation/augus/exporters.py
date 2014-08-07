@@ -115,8 +115,6 @@ class AugusPutbackExporter(object):
                                          .filter(AugusPutback.reserved_at!=None)\
                                          .all()
 
-        # for (event_code, putback_code), putbacks_in_event \
-        #     in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code)):
         now = datetime.datetime.now()
 
         responses = []

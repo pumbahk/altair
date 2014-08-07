@@ -37,3 +37,6 @@ class IllegalDataError(AugusError):
 
 class DuplicateFileNameError(AugusError):
     pass
+
+class DistributionExcutionError(AugusError):
+    pass
