@@ -900,14 +900,18 @@
             </Grid>
         </StackPanel>
     </DataTemplate>
-    
+
     <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
-        <!--
         <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
-        -->
         <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
+        <!--
         <Setter Property="Height" Value="400"/>
         <Setter Property="Width" Value="1100"/>
+        -->
+    </Style>
+
+    <Style TargetType="ListView" x:Key="DisableListViewScrolviewer">
+        <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
     </Style>
 
     <!-- <ResourceDictionary Source="./Resources.Image.xaml"/> -->
