@@ -50,7 +50,14 @@ namespace checkin.presentation.gui.page{
         public UnitPair<Style> SelectedWindowStyle
         {
             get { return this._selectedWindowStyle; }
-            set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle");}
+            set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle"); }
+        }
+
+        private bool _selectedMultiPrintMode;
+        public bool SelectedMultiPrintMode
+        {
+            get { return this._selectedMultiPrintMode; }
+            set { this._selectedMultiPrintMode = value; this.OnPropertyChanged("SelectedMultiPrintMode"); }
         }
 
         private string _loadedQRCode;
@@ -143,6 +150,8 @@ namespace checkin.presentation.gui.page{
             ctx.SelectedWindowStyle = selected;
         }
 
+
+
         private void MenuDialogTesting_OnTestPrinting(object sender, RoutedEventArgs e)
         {
             var resource = AppUtil.GetCurrentResource();
@@ -190,6 +199,23 @@ namespace checkin.presentation.gui.page{
             {
                 tbox.Focus();
             }
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            checkMultiPrintMode(sender, e);
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            checkMultiPrintMode(sender, e);
+        }
+
+        private void checkMultiPrintMode(object sender, RoutedEventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            var ctx = (this.DataContext as HomeMenuDataContext);
+            ctx.SelectedMultiPrintMode = (bool)checkBox.IsChecked;
         }
     }
 }

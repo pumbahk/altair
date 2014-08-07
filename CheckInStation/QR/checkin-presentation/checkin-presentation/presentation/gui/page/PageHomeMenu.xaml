@@ -128,6 +128,25 @@
             </c:MenuDialog>
 
             <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogMultiPrint"
+                          Title="複数発券モードのON/OFF">
+                <StackPanel>
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">複数発券モードのON/OFFを行う</TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedMultiPrintModeStyle.Key, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <CheckBox
+                        IsChecked="{Binding SelectedMultiPrintModeStyle}"
+                        Checked="CheckBox_Checked"
+                        Unchecked="CheckBox_Unchecked"
+                        Content="複数発券のON/OFF"
+                        />
+                </StackPanel>
+            </c:MenuDialog>
+            
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
                          x:Name="MenuDialogQRTesting"
                          Title="テスト読み取り">
                 <StackPanel>
@@ -173,6 +192,15 @@
             <Button Command="{Binding ElementName=MenuDialogWindow, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogWindow}"
                     Style="{StaticResource MenuSelectButtonFirst}">ウィンドウの表示の設定
+            </Button>
+
+            <WrapPanel>
+                <TextBlock Style="{StaticResource SubText}">複数発券モードのON/OFF:</TextBlock>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedMultiPrintMode}"/>
+            </WrapPanel>
+            <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogMultiPrint}"
+                    Style="{StaticResource MenuSelectButtonFirst}">複数発券モードのON/OFF
             </Button>
 
             <TextBlock Style="{StaticResource SubText}">テスト印刷•テスト読み取り</TextBlock>
