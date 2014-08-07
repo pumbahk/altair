@@ -150,6 +150,8 @@ class MobileMiddlewareTest(TestCase):
         detector = mock.Mock()
         detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = False
         session = DummySession()
+        from altair.extracodecs import register_codecs
+        register_codecs()
         self.config.set_session_factory(lambda request: session)
         self.config.registry.registerUtility(
             detector,
@@ -165,8 +167,8 @@ class MobileMiddlewareTest(TestCase):
             on_error_handler=on_error_handler
             )
         request = Request(environ={
-            'HTTP_USER_AGENT': 'DoCoMo/2.0',
-            'QUERY_STRING': 'a=\xff\xff',
+            'HTTP_USER_AGENT': 'DoCoMo/2.0 ',
+            'QUERY_STRING': b'a=\x81\x31',
             })
         request.registry = self.config.registry
         target(lambda request: None, request)
