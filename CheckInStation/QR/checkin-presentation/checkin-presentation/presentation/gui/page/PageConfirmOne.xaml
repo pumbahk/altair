@@ -27,6 +27,49 @@
             <Grid Background="{StaticResource LogoBackgroundBrush2}">
                 <Canvas Width="1366" Height="728">
 
+                    <ListView
+                        Canvas.Top="17"
+                        Canvas.Left="50"
+                        Style="{StaticResource DisableListViewScrolviewer}">
+
+
+                    <Grid
+                        Height="60"
+                        Width="1250"
+                        Background="#eeeeee"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="625"/>
+                            <ColumnDefinition Width="625"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- todo padding 23-->
+                        <WrapPanel 
+                            Grid.Row="0" Grid.Column="0"
+                            HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding OrderNo, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                            Grid.Row="1" Grid.Column="0"
+                            HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="1" Grid.Column="1"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                    </Grid>
+
+                    
+                    
+                    <!--
                     <Grid
                         Canvas.Top="17"
                         Canvas.Left="284"
@@ -46,7 +89,6 @@
                             <ColumnDefinition/>
                             <ColumnDefinition Width="28"/>
                         </Grid.ColumnDefinitions>
-                        <!-- todo padding 23-->
                         <WrapPanel 
                         Grid.Row="1" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
@@ -66,8 +108,9 @@
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                     </Grid>
+                    -->
 
-                    
+
                     <!-- 説明(description)-->
                     <StackPanel
                         Visibility="{Binding NextButtonVisibility}"
@@ -92,6 +135,8 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    </ListView>
+                    
                     <!-- メインコンテンツ -->
                     <Border 
                         Canvas.Left="50"
@@ -131,7 +176,7 @@
                                     </Button>
                                 </Grid>
                             </StackPanel>
-
+                            <TextBlock Visibility="{Binding AllPrintedVisibility}" Text="発券可能なチケットはありません。ご同行の方にご連絡・ご確認ください。"/>
 
 
                         </StackPanel>
@@ -142,17 +187,17 @@
                         Canvas.Top="655"
                         Visibility="{Binding NextButtonVisibility}"
                         Style="{StaticResource SubmitButton}"
-                        Click="OnSubmitPrint">
-                        <TextBlock FontSize="20">このチケットを発券</TextBlock>
+                        Click="OnSubmitAllPrint"
+                        >
+                        <TextBlock FontSize="20">他のチケットも発券</TextBlock>
                     </Button>
                     <Button
                         Canvas.Right="60"
                         Canvas.Top="655"
                         Visibility="{Binding NextButtonVisibility}"
                         Style="{StaticResource SubmitButton}"
-                        Click="OnSubmitAllPrint"
-                        >
-                        <TextBlock FontSize="20">他のチケットも発券</TextBlock>
+                        Click="OnSubmitPrint">
+                        <TextBlock FontSize="20">このチケットを発券</TextBlock>
                     </Button>
 
                     <!--
