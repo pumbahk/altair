@@ -158,13 +158,22 @@ namespace checkin.presentation.gui.page
             ctx.PerformanceDate = performance.date;
             ctx.Orderno = source.additional.order.order_no;
             ctx.CustomerName = source.additional.user;
-            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
             foreach (var tdata in source.collection)
             {
                 var dtdata = new DisplayTicketData(ctx, tdata);
+                if (ctx.ReadTicketData != null)
+                {
+                    // QR‚ð“Ç‚Ýž‚ñ‚¾‚à‚Ì‚¾‚¯‰Šú”­Œ”—\’è‚Æ‚·‚éB
+                    if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
+                    {
+                        dtdata.IsSelected = false;
+                        ctx.NumberOfPrintableTicket--;
+                    }
+                }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
                 displayColl.Add(dtdata);
             }
+            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
         }
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)

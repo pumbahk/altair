@@ -29,6 +29,7 @@ namespace checkin.presentation.gui.viewmodel
             this.PrintedAt = tdata.printed_at; //null?
             this.LockedAt = tdata.locked_at; //null?
             this.TokenId = tdata.ordered_product_item_token_id;
+            this.IsPrinted = tdata.is_selected;
         }
 
         private readonly TicketDataMinumum coreData;
@@ -45,6 +46,12 @@ namespace checkin.presentation.gui.viewmodel
         public string TokenId { get; set; }
         public string PrintedAt { get; set; }
         public string LockedAt { get; set; }
+        private bool _isPrinted { get; set; }
+        public bool IsPrinted
+        {
+            get { return this._isPrinted; }
+            set { this._isPrinted = value; }
+        }
     }
 
     public class DisplayTicketDataCollection : ObservableCollection<DisplayTicketData>

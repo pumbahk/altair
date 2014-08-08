@@ -199,6 +199,16 @@
                 Value="{DynamicResource ToggleButtonForegroundSelected}"/>
                 <Setter Property="FontWeight" Value="Bold" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelected,Mode=TwoWay}" Value="False">
+                <Setter Property="Foreground"
+                Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="Background"
+                Value="{DynamicResource ToggleButtonFillNormal}"/>
+                <Setter Property="BorderBrush"
+                Value="{DynamicResource ToggleButtonStrokeNormal}"/>
+                <Setter Property="FocusVisualStyle"
+                Value="{DynamicResource ToggleButtonFocusVisual}"/>
+            </DataTrigger>
             <Trigger Property="IsEnabled" Value="false">
                 <Setter Property="Background"
                 Value="{DynamicResource ToggleButtonFillDisabled}"/>
@@ -245,7 +255,7 @@
 
   <Style x:Key="GrayoutIfNeedToggleButton" TargetType="ToggleButton" BasedOn="{StaticResource MyToggleButtonStyle}">
     <Style.Triggers>
-      <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+      <DataTrigger Binding="{Binding IsPrinted, Mode=OneTime}" Value="False">
         <Setter Property="IsEnabled" Value="False"/>
         <Setter Property="IsChecked" Value="False"/>
       </DataTrigger>
@@ -342,7 +352,7 @@
 
   <Style x:Key="GrayoutIfNeedTextBlock" TargetType="TextBlock">
     <Style.Triggers>
-      <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+      <DataTrigger Binding="{Binding IsSelected}" Value="False">
         <Setter Property="Foreground" Value="{StaticResource Grayout_InactiveTextColor}"></Setter>
       </DataTrigger>
       <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=CheckBox, Mode=FindAncestor}}" Value="False">
@@ -763,12 +773,14 @@
 
     <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
     <Style.Triggers>
-      <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+      <DataTrigger Binding="{Binding IsPrinted, Mode=OneTime}" Value="False">
         <Setter Property="IsEnabled" Value="False"/>
         <Setter Property="IsChecked" Value="False"/>
       </DataTrigger>   
     </Style.Triggers>
-    <Setter Property="IsChecked" Value="True"/>
+
+        <Setter Property="IsChecked" Value="True"/>
+
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
@@ -785,11 +797,15 @@
     <Style.Resources>
       <Style TargetType="Border">
         <Style.Triggers>
+          <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="True">
+            <Setter Property="Background" Value="{DynamicResource StatusBoxSelected}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxSelected}"/>
+          </DataTrigger>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
             <Setter Property="Background" Value="{DynamicResource StatusBoxUnSelected}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxUnSelected}"/>                        
+            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxUnSelected}"/>
           </DataTrigger>
-          <DataTrigger Binding="{Binding IsSelected,Mode=OneTime}" Value="False">
+          <DataTrigger Binding="{Binding IsPrinted,Mode=OneTime}" Value="False">
             <Setter Property="Background" Value="{DynamicResource StatusBoxDisabled}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxDisabled}"/>
           </DataTrigger>
@@ -803,10 +819,13 @@
       </Style>
       <Style TargetType="TextBlock">
         <Style.Triggers>
+          <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="True">
+            <Setter Property="Text" Value="発券予定"/>
+          </DataTrigger>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
             <Setter Property="Text" Value="発券解除"/>
           </DataTrigger>
-          <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+          <DataTrigger Binding="{Binding IsPrinted, Mode=OneTime}" Value="False">
             <Setter Property="Text" Value="発券済み"/>
           </DataTrigger>
           <DataTrigger Binding="{Binding LockedAt,Mode=OneTime, Converter={StaticResource notEmptyStringConverter}}" Value="True">
