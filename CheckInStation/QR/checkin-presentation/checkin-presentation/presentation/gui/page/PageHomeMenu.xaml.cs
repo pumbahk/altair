@@ -53,11 +53,11 @@ namespace checkin.presentation.gui.page{
             set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle"); }
         }
 
-        private bool _selectedMultiPrintMode;
-        public bool SelectedMultiPrintMode
+        private bool _multiPrintMode;
+        public bool MultiPrintMode
         {
-            get { return this._selectedMultiPrintMode; }
-            set { this._selectedMultiPrintMode = value; this.OnPropertyChanged("SelectedMultiPrintMode"); }
+            get { return this._multiPrintMode; }
+            set { this._multiPrintMode = value; this.OnPropertyChanged("MultiPrintMode"); }
         }
 
         private string _loadedQRCode;
@@ -215,7 +215,8 @@ namespace checkin.presentation.gui.page{
         {
             var checkBox = sender as CheckBox;
             var ctx = (this.DataContext as HomeMenuDataContext);
-            ctx.SelectedMultiPrintMode = (bool)checkBox.IsChecked;
+            ctx.MultiPrintMode = (bool)checkBox.IsChecked;
+            AppUtil.GetCurrentResource().MultiPrintMode = ctx.MultiPrintMode;
         }
     }
 }

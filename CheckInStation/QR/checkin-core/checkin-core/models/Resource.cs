@@ -11,6 +11,7 @@ namespace checkin.core.models
 {
     public class Resource :IResource
     {
+
         protected bool VerifyEnable;
         private static Logger logger = LogManager.GetCurrentClassLogger ();
 
@@ -61,6 +62,9 @@ namespace checkin.core.models
                 throw new InvalidOperationException("FlowDefinition is  null");
             return true;
         }
+
+        public bool MultiPrintMode { get; set; }
+
         public IModelValidation Validation { get; set; }
 
         public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }

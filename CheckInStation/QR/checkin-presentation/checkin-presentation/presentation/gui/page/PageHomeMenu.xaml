@@ -196,7 +196,7 @@
 
             <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">複数発券モードのON/OFF:</TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedMultiPrintMode}"/>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode}"/>
             </WrapPanel>
             <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogMultiPrint}"

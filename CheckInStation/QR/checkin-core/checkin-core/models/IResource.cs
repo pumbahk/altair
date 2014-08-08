@@ -20,6 +20,8 @@ namespace checkin.core.models
         AuthInfo AuthInfo { get; set; }
 
         //アプリ用
+        bool MultiPrintMode { get; set;} 
+        
         IModelValidation Validation { get; set; }
 
         IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }

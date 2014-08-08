@@ -185,7 +185,7 @@
                     <Button
                         Canvas.Right="300"
                         Canvas.Top="655"
-                        Visibility="{Binding NextButtonVisibility}"
+                        Visibility="{Binding MultiPrintModeVisibility}"
                         Style="{StaticResource SubmitButton}"
                         Click="OnSubmitAllPrint"
                         >
