@@ -33,6 +33,7 @@ SUBDOMAINS = [
     'popcircus',
     'sc',
     'jubilo',
+    'hannaryz',
     ]
 
 class URLRewriterPatternBuilder(object):
