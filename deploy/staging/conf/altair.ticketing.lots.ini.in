@@ -1,12 +1,6 @@
 [app:lots]
 use = config:%(here)s/../../baseconf/common.ini#lots
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.auth pyramid_layout
-altair.auth.specs =
-    rakuten=%(here)s/rakuten_who.ini
-    fc_auth=%(here)s/fc_who.ini
-altair.auth.decider = altair.app.ticketing.lots:WhoDecider
-altair.auth.callback = altair.app.ticketing.security:auth_model_callback
-altair.sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
@@ -37,6 +31,10 @@ altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
 altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
 altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
 altair.httpsession.http_backend.query_string_key = JSESSIONID
+
+; altair.nogizaka46_auth
+altair.nogizaka46_auth.key = nogizaka_test
+altair.lots.nogizaka_lot_id = 1128,1088,1042,1041,996,570,979,462,1110,261,404,396,253,240,1146,1206,1248
 
 [app:www-check]
 use = egg:Paste#static

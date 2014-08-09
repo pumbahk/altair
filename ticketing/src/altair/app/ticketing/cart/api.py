@@ -322,10 +322,6 @@ def get_cart_user_identifiers(request):
             retval.append((remote_addr, 'weak'))
     return retval
 
-def is_smartphone_organization(context, request):
-    organization = get_organization(request)
-    return organization.setting.enable_smartphone_cart
-
 def is_point_input_organization(context, request):
     organization = get_organization(request)
     return organization.id == 24

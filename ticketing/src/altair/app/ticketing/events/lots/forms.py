@@ -9,12 +9,13 @@ from wtforms.widgets import CheckboxInput
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.validators import Optional, AnyOf, Length, Regexp, NumberRange
 
+from altair.auth import get_who_api_factory_registry
 from altair.formhelpers import (
     DateTimeField, Translations, Required, DateField, Max, OurDateWidget, Email,
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
     LazySelectMultipleField,
-    OurBooleanField, OurDecimalField
+    OurBooleanField, OurDecimalField, OurSelectField,
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
@@ -86,12 +87,15 @@ class LotForm(Form):
         ],
     )
 
-    auth_type = SelectField(
+    def _auth_types(field):
+        retval = [('', u'なし')]
+        for name, _ in get_who_api_factory_registry(field.form.context.request):
+            retval.append((name, name))
+        return retval
+
+    auth_type = OurSelectField(
         label=u"認証方法",
-        validators=[
-            ## 認証方法一覧にあるかって確認はchocesでやってくれるのだろうか
-        ],
-        choices=[('', ''), ('rakuten', 'rakuten'), ('fc_auth', 'fc_auth')],
+        choices=_auth_types
     )
 
     ### 販売区分
@@ -215,6 +219,10 @@ class LotForm(Form):
         lot.auth_type = self.data['auth_type']
 
         return lot
+
+    def __init__(self, *args, **kwargs):
+        self.context = kwargs.pop('context')
+        super(LotForm, self).__init__(*args, **kwargs)
 
 class ProductForm(Form):
     name = TextField(

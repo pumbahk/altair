@@ -204,7 +204,7 @@ class MypageLoginView(object):
     @view_config(request_method="POST", route_name='order_review.form', renderer='string',
                  custom_predicates=(is_mypage_organization, ))
     def login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.context.membership.name
         if self.request.params.get('membership', None):
             authmembership = self.request.params.get('membership', None)

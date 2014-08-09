@@ -86,6 +86,8 @@ def main(global_config, **local_config):
         config.include('altair.sqlahelper')
         config.include('altair.now')
         config.include('altair.mq')
+        config.include('altair.auth.config')
+        config.include('altair.auth:register_who_api_registry')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
@@ -136,6 +138,11 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.description')
 
         config.include('altair.app.ticketing.permissions.utils.setup_role_and_permissions')
+
+        ## auth plugins
+        config.include('altair.rakuten_auth:register_auth_plugin')
+        config.include('altair.app.ticketing.fc_auth:register_auth_plugin')
+        config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
