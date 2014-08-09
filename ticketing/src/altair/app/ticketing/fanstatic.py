@@ -51,6 +51,9 @@ class FanstaticDecoratorFactory(object):
         new.update(other)
         return new
 
+    def __add__(self, other):
+        return self.merge(other)
+
     def when(self, *predicates):
         return FanstaticDecoratorFactory(*self.fns, predicates=predicates)
 
