@@ -157,7 +157,7 @@ namespace checkin.presentation.gui.page{
             var resource = AppUtil.GetCurrentResource();
             var printing = resource.TicketPrinting;
 
-            var xaml = Testing.ReadFromEmbeddedFile("QR.tests.misc.sample.qr.svg");
+            var xaml = Testing.ReadFromEmbeddedFile("checkin_core.Resources.sample.qr.svg");
             var data = TicketImageData.XamlTicketData("-1", "-1", xaml);
 
             var ev = new EmptyEvent();
