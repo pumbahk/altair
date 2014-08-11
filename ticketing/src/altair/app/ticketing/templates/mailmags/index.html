@@ -19,6 +19,7 @@ ${ch.breadcrumbs(
       <tr>
         <th>メールマガジン名</th>
         <th>説明</th>
+        <th>有効/無効</th>
       </tr>
     </thead>
     <tbody>
@@ -30,6 +31,9 @@ ${ch.breadcrumbs(
         </td>
         <td>
           ${(mailmag.description or u'')|n}
+        </td>
+        <td>
+          ${(u"有効" if mailmag.status else u"無効")|n}
         </td>
       </tr>
   % endfor
