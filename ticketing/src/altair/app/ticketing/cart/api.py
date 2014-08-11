@@ -562,3 +562,19 @@ def get_or_create_user_profile(user, data):
     user.user_profile = profile
     DBSession.add(user)
     return user.user_profile
+
+def get_contact_url(request, fail_exc=ValueError):
+    organization = get_organization(request)
+    if organization is None:
+        raise fail_exc("organization is not found")
+    retval = c_api.get_default_contact_url(request, organization, request.mobile_ua.carrier)
+    if retval is None:
+        raise fail_exc("no contact url")
+    return retval
+
+def safe_get_contact_url(request, default=""):
+    try:
+        return get_contact_url(request, Exception)
+    except Exception as e:
+        logger.warn(str(e))
+        return default

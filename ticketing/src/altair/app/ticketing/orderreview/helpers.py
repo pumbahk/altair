@@ -24,6 +24,7 @@ __all__ = [
     "is_disabled_order",
     "get_entry_status",
     "get_entry_status_image",
+    "safe_get_contact_url", # from altair.app.ticketing.cart.api
     ]
 
 def error(names):
