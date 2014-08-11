@@ -10,4 +10,4 @@
 @import'default.css';
 @import'layout.css';
 @import'content.css';
-@import'jquery.colorbox.css';
+@import'../../../common/css/jquery.colorbox.css';
