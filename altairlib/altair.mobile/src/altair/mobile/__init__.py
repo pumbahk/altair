@@ -6,6 +6,7 @@ from altair.extracodecs import register_codecs
 logger = logging.getLogger(__name__)
 
 def includeme(config):
+    config.add_directive('add_smartphone_support_predicate', add_smartphone_support_predicate)
     config.include(install_detector)
     config.include(install_mobile_middleware)
     config.include(install_smartphone_support_predicate)
@@ -51,16 +52,24 @@ def install_mobile_middleware(config):
         IMobileMiddleware
         )
 
+
+def add_smartphone_support_predicate(config, predicate):
+    from .interfaces import ISmartphoneSupportPredicate
+    predicate = config.maybe_dotted(predicate)
+    config.registry.adapters.subscribe(
+        [],
+        ISmartphoneSupportPredicate,
+        predicate
+        )
+
 def install_smartphone_support_predicate(config):
     from .predicates import DefaultSmartphoneSupportPredicate
-    from .interfaces import ISmartphoneSupportPredicate
     smartphone_support_enabled = config.registry.settings.get("altair.mobile.enable.smartphone")
     if smartphone_support_enabled is None:
         logger.warn("settings: altair.mobile.enable.smartphone not found. disabled.")
     smartphone_support_enabled = asbool(smartphone_support_enabled)
-    config.registry.registerUtility(
-        DefaultSmartphoneSupportPredicate(smartphone_support_enabled),
-        ISmartphoneSupportPredicate
+    config.add_smartphone_support_predicate(
+        DefaultSmartphoneSupportPredicate(smartphone_support_enabled)
         )
 
 def mobile_view_config(**kwargs):

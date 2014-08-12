@@ -105,7 +105,8 @@ class RakutenOpenID(object):
         return session
 
     def get_who_api(self, request):
-        return get_who_api(request, name='rakuten')
+        api, _ = get_who_api(request, 'rakuten')
+        return api
 
     def combine_session_id(self, request, session, url):
         q = '?ak=' + urllib.quote(session.id)

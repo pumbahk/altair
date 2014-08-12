@@ -1,7 +1,6 @@
 [app:mypage]
 use = config:%(here)s/../../baseconf/common.ini#mypage
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label
-pyramid_who.config = %(here)s/mypage_who.ini
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/

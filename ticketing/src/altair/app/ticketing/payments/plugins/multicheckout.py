@@ -38,7 +38,6 @@ from altair.formhelpers import (
 from .models import DBSession
 from .. import logger
 from altair.app.ticketing.cart import api
-from altair.app.ticketing.cart.api import is_smartphone_organization
 from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCartStatusError
 from ..exceptions import PaymentPluginException
 from altair.app.ticketing.views import mobile_request
@@ -406,7 +405,7 @@ class MultiCheckoutView(object):
     @clear_exc
     @view_config(route_name='payment.secure3d', request_method="GET", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
+    @view_config(route_name='payment.secure3d', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
         get_cart(self.request) # in expectation of raising NoCartError if the cart is already invalidated
@@ -416,7 +415,7 @@ class MultiCheckoutView(object):
     @clear_exc
     @view_config(route_name='payment.secure_code', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure_code', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure_code', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
+    @view_config(route_name='payment.secure_code', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
         get_cart(self.request) # in expectation of raising NoCartError if the cart is already invalidated
@@ -435,7 +434,7 @@ class MultiCheckoutView(object):
     @clear_exc
     @view_config(route_name='payment.secure3d', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
+    @view_config(route_name='payment.secure3d', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """

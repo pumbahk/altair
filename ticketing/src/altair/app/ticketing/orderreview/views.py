@@ -23,8 +23,7 @@ from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
-from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
-
+from .api import is_mypage_organization, is_rakuten_auth_organization
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 
 logger = logging.getLogger(__name__)
@@ -313,7 +312,7 @@ def notfound_view(context, request):
 @view_config(route_name="contact")
 @mobile_view_config(route_name="contact")
 def contact_view(context, request):
-    return HTTPFound(safe_get_contact_url(request, default=request.route_path("order_review.form")))
+    return HTTPFound(cart_api.safe_get_contact_url(request, default=request.route_path("order_review.form")))
 
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))

@@ -2,10 +2,11 @@
 from datetime import datetime, timedelta
 import logging
 import operator
+import urlparse
 
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPMovedPermanently
 from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
@@ -71,51 +72,40 @@ def my_render_view_to_response(context, request, view_name=''):
         return None
     return view_callable(context, request)
 
-def get_nogizaka_lot_ids(request):
-    try:
-        return [long(id) for id in request.registry.settings.get('altair.lots.nogizaka_lot_id').split(',')]
-    except:
-        return []
-
-def is_nogizaka(context, request):
-    if request.method != 'POST':
-        return False
-    lot = getattr(context, 'lot')
-    if not lot or lot.id not in get_nogizaka_lot_ids(request):
-        return False
-    return True
-
-def nogizaka_auth(context, request):
-    lot = getattr(context, 'lot')
-    if not lot or lot.id not in get_nogizaka_lot_ids(request):
-        return True
-    if request.session.get('lots.passed.keyword'):
-        return True
-    return False
-
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)
     return HTTPNotFound()
 
-@view_config(context=NoCartError, renderer=selectable_renderer("pc/%(membership)s/timeout.html"))
-@mobile_view_config(context=NoCartError, renderer=selectable_renderer("mobile/%(membership)s/timeout.html"))
-@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("smartphone/%(membership)s/timeout.html"))
+@view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/pc/timeout.html"))
+@mobile_view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/mobile/timeout.html"))
+@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/smartphone/timeout.html"))
 def no_cart_error(context, request):
     request.response.status = 404
     return {}
 
-@view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("pc/%(membership)s/agreement.html"), permission="lots")
+@view_defaults(route_name='lots.entry.agreement', permission="lots")
 class AgreementLotView(object):
-
     def __init__(self, context, request):
         self.request = request
         self.context = context
 
-    @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
-    def get(self):
+    def validate_return_to(self, url):
+        _url = urlparse.urlparse(url)
+        if _url.netloc and _url.netloc != self.request.host:
+            return None
+        return url
 
+    @view_config(request_method="GET",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
+    @view_config(request_method="GET",
+                 request_type='altair.mobile.interfaces.IMobileRequest',
+                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    @view_config(request_method="GET",
+                 request_type='altair.mobile.interfaces.ISmartphoneRequest',
+                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
+    def get(self):
         event = self.context.event
         lot = self.context.lot
 
@@ -123,57 +113,54 @@ class AgreementLotView(object):
             logger.debug('lot not found')
             raise HTTPNotFound()
 
-        performances = lot.performances
-        if not performances:
-            logger.debug('lot performances not found')
-            raise HTTPNotFound()
-
-        performance_id = self.request.params.get('performance')
         sales_segment = lot.sales_segment
 
+        return_to = self.request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id, _query=self.request.GET)
+
         if not sales_segment.setting.disp_agreement:
-            extra = {}
-            if performance_id is not None:
-                extra['_query'] = { 'performance': performance_id }
+            return HTTPFound(return_to)
 
-            return HTTPFound(event and self.request.route_url('lots.entry.index', event_id=event.id, lot_id=lot.id, **extra))
+        return dict(
+            return_to=return_to,
+            agreement_body=Markup(sales_segment.setting.agreement_body)
+            )
 
-        return dict(agreement_body=Markup(sales_segment.setting.agreement_body),
-            event_id=event.id, performance=performance_id, lot=lot)
-
-
-    @view_config(request_method="POST", custom_predicates=(nogizaka_auth,))
+    @view_config(request_method="POST")
     def post(self):
+        event = self.context.event
+        lot = self.context.lot
 
-        try:
-            event_id = long(self.request.params.get('event_id'))
-        except:
-            event_id = None
-
-        try:
-            performance_id = long(self.request.params.get('performance'))
-        except (ValueError, TypeError):
-            performance_id = None
-
-        try:
-            lot_id = long(self.request.params.get('lot_id'))
-        except:
-            lot_id = None
-
-        extra = {}
-        if performance_id is not None:
-            extra['_query'] = { 'performance': performance_id }
+        if not lot:
+            logger.debug('lot not found')
+            raise HTTPNotFound()
 
         agree = self.request.params.get('agree')
+        return_to = self.request.params.get('return_to')
+        return_to = return_to and self.validate_return_to(return_to)
 
-        if agree is None:
+        if agree is None or return_to is None:
             self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
-            return HTTPFound(event_id and self.request.route_url('lots.entry.agreement', event_id=event_id, lot_id=lot_id, **extra))
+            return HTTPFound(self.request.route_url('lots.entry.agreement', event_id=event.id, lot_id=lot.id, _query=self.request.GET))
 
-        return HTTPFound(event_id and self.request.route_url('lots.entry.index', event_id=event_id, lot_id=lot_id, **extra))
+        return HTTPFound(return_to)
 
 
-@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
+@view_defaults(route_name='lots.entry.agreement.compat', renderer=selectable_renderer("%(membership)s/pc/agreement.html"), permission="lots")
+class CompatAgreementLotView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    @view_config(request_method="GET")
+    def get(self):
+        return HTTPMovedPermanently(self.request.route_path('lots.entry.agreement', _query=self.request.GET, **self.request.matchdict))
+
+    @view_config(request_method="POST")
+    def post(self):
+        return AgreementLotView(self.context, self.request).post()
+
+
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("%(membership)s/pc/index.html"), permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
@@ -213,7 +200,7 @@ class EntryLotView(object):
     def _create_form(self):
         return api.create_client_form(self.context, self.request)
 
-    @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
+    @view_config()#request_method="GET")
     def get(self, form=None):
         """
 
@@ -277,19 +264,7 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map)
 
-    @view_config(request_method="POST", custom_predicates=(is_nogizaka, ))
-    def nogizaka_auth(self):
-        KEYWORD = '1dFG23e74Ab13S3f85a1c0b7Z0ebBd07'
-        keyword = self.request.POST.get('keyword', None)
-        if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
-            if keyword != KEYWORD:
-                raise HTTPNotFound()
-            self.request.session['lots.passed.keyword'] = keyword
-            return self.get()
-        else:
-            return self.post()
-
-    @view_config(request_method="POST", custom_predicates=(lambda *args:not is_nogizaka(*args), )) 
+    @view_config(request_method="POST")
     def post(self):
         """ 抽選申し込み作成(一部)
         商品、枚数チェック
@@ -398,9 +373,9 @@ class ConfirmLotEntryView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm.html"))
-    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/confirm.html"))
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
     def get(self):
         # セッションから表示
         entry = api.get_lot_entry_dict(self.request)
@@ -522,9 +497,9 @@ class CompletionLotEntryView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
-    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/completion.html"))
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
     def get(self):
         """ 完了画面 """
         if 'lots.entry_no' not in self.request.session:
@@ -571,15 +546,15 @@ class LotReviewView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/review_form.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/review_form.html"))
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/review_form.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review_form.html"))
-    @mobile_view_config(request_method="POST", renderer=selectable_renderer("mobile/%(membership)s/review_form.html"))
+    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/review_form.html"))
+    @mobile_view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/review_form.html"))
     def post(self):
         """ 申し込み情報表示"""
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
@@ -597,8 +572,8 @@ class LotReviewView(object):
         # XXX: hack
         return my_render_view_to_response(lot_entry, self.request)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review.html"), context=LotEntry)
-    @mobile_view_config(request_method="POST", renderer=selectable_renderer("mobile/%(membership)s/review.html"), context=LotEntry)
+    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/review.html"), context=LotEntry)
+    @mobile_view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/review.html"), context=LotEntry)
     def post_validated(self):
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
@@ -615,9 +590,9 @@ class LotReviewView(object):
             memo=lot_entry.memo)
 
 @view_config(context=".exceptions.OutTermException",
-             renderer=selectable_renderer("pc/%(membership)s/out_term_exception.html"))
+             renderer=selectable_renderer("%(membership)s/pc/out_term_exception.html"))
 @mobile_view_config(context=".exceptions.OutTermException",
-             renderer=selectable_renderer("mobile/%(membership)s/out_term_exception.html"))
+             renderer=selectable_renderer("%(membership)s/mobile/out_term_exception.html"))
 def out_term_exception(context, request):
     return dict(lot_name=context.lot_name,
                 from_=context.from_,
@@ -628,9 +603,9 @@ def out_term_exception(context, request):
 
 
 @view_config(context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
-             renderer=selectable_renderer('pc/%(membership)s/message.html'))
+             renderer=selectable_renderer('%(membership)s/pc/message.html'))
 @mobile_view_config(context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
-             renderer=selectable_renderer('mobile/%(membership)s/error.html'))
+             renderer=selectable_renderer('%(membership)s/mobile/error.html'))
 def payment_plugin_exception(context, request):
     if context.back_url is not None:
         return HTTPFound(location=context.back_url)

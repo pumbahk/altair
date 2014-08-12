@@ -113,7 +113,7 @@ class AgreementCartURLBuilder(object):
 
     def build_path(self, event):
         suffix = unicode(event.id)
-        return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
+        return u"{0}/{1}/agreement".format(self.path_prefix, suffix.lstrip("/"))
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
@@ -140,7 +140,7 @@ class AgreementLotsCartURLBuilder(object):
     def build_path(self, event, lot):
         suffix = unicode(event.id)
         lot_id = unicode(lot.id)
-        return u"{0}/{1}/entry/{2}".format(self.path_prefix, suffix.lstrip("/"), lot_id)
+        return u"{0}/{1}/entry/{2}/agreement".format(self.path_prefix, suffix.lstrip("/"), lot_id)
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
