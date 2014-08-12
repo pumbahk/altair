@@ -127,6 +127,7 @@ class MobileMiddleware(object):
     def _make_mobile_request(self, request):
         # the following is needed to differentiate the kind of the request in HTTP backend module
         directlyProvides(request, IMobileRequest) # for HybridHTTPSession
+        request.copy_body()
         kept_session = request.session
         self._revalidate_session(request)
         noLongerProvides(request, IMobileRequest)
