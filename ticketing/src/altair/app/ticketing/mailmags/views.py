@@ -50,6 +50,7 @@ class MailMagazinesView(BaseView):
         if mailmag_form.validate():
             mailmag.name = mailmag_form.name.data
             mailmag.description = mailmag_form.description.data
+            mailmag.status = mailmag_form.status.data
             mailmag.save()
             self.request.session.flash(u'メールマガジンの情報を更新しました')
             return HTTPFound(location=self.request.route_path('mailmags.index'))
@@ -72,6 +73,7 @@ class MailMagazinesView(BaseView):
             mailmag.organization = self.context.organization
             mailmag.name = mailmag_form.name.data
             mailmag.description = mailmag_form.description.data
+            mailmag.status = mailmag_form.status.data
             mailmag.save()
             self.request.session.flash(u'メールマガジンを追加しました')
             return HTTPFound(location=self.request.route_path('mailmags.index'))

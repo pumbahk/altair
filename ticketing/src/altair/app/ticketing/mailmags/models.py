@@ -19,7 +19,7 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
     description = Column(String(1024))
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('mail_magazines', lazy='dynamic'))
-    status = Column(Integer)
+    status = Column(Boolean, default=True)
 
     def subscribe(self, user, mail_address):
         subscription = MailSubscription.query.filter(
