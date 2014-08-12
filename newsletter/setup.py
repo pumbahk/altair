@@ -45,6 +45,7 @@ requires = [
     'altair.browserid', 
     'altair.formhelpers',
     'altair.httpsession',
+    'altair.multilock',
     ]
 
 setup(name='altair_newsletter',
