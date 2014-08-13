@@ -457,7 +457,7 @@ position:relative;
 top:1px;
 }
 
-table.nobdr, table.nobdr td, table.nobdr tr, table.nobdr th, table.nobdr td:last-child{
+table.nobdr, table.nobdr td, table.nobdr tr, table.nobdr th, table.nobdr td:last-child {
 border: none;
 }
 
