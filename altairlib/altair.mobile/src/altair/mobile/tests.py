@@ -145,9 +145,10 @@ class MobileMiddlewareTest(TestCase):
             detector,
             IMobileCarrierDetector
             )
-        request.registry.registerUtility(
-            lambda request: False,
-            ISmartphoneSupportPredicate
+        request.registry.adapters.subscribe(
+            [],
+            ISmartphoneSupportPredicate,
+            lambda request: False
             )
         target = self._makeOne()
         def handler(request):
