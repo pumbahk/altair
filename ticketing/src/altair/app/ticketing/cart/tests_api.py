@@ -838,7 +838,7 @@ class GetContactURLTest(unittest.TestCase):
         env = {'altair.app.ticketing.cart.organization_id': 1,
                'altair.app.ticketing.cart.organization_path': '/path/to/org',
                }
-        request = Mock()
+        request = mock.Mock()
         request.organization = organization
         request.environ = env
         return request
@@ -847,7 +847,7 @@ class GetContactURLTest(unittest.TestCase):
     def _create_organization():
         """Create mock of organization object.
         """
-        organization = Mock()
+        organization = mock.Mock()
         organization.id = 1
         return organization
 
@@ -855,7 +855,7 @@ class GetContactURLTest(unittest.TestCase):
     def _create_setting(cls):
         """Create mock of organization setting object.
         """
-        setting = Mock()
+        setting = mock.Mock()
         setting.contact_mobile_url = cls.mobile_url
         setting.contact_pc_url = cls.pc_url
         return setting
