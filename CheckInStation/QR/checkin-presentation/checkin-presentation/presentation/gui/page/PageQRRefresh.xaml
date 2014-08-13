@@ -39,7 +39,7 @@
                             Canvas.Left="327" 
                             Canvas.Top="169">
                                 <StackPanel HorizontalAlignment="Stretch">
-                                    <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.jpg"/>
+                                    <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
                                     <TextBox
                                         Width="400"
                                         HorizontalAlignment="Center"
