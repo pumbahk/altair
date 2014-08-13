@@ -1,6 +1,7 @@
 from unittest import TestCase
 from pyramid import testing 
 import mock
+import io
 
 class RegressionTest(TestCase):
     def setUp(self):
@@ -35,7 +36,7 @@ class RegressionTest(TestCase):
         request = Request(
             environ={
                 'QUERY_STRING': 'a=b&c=d&e=f&g=h+i&k=l%20m',
-                'HTTP_USER_AGENT': 'DoCoMo/2.0',
+                'HTTP_USER_AGENT': 'DoCoMo/2.0 F000',
                 }
             )
         request.registry = self.config.registry
@@ -57,6 +58,45 @@ class RegressionTest(TestCase):
         HybridHTTPBackend(request, 'e')
         middleware = get_middleware(request)
         middleware(handler, request)
+
+    def test_copy_body(self):
+        import urllib
+        import urlparse
+        from .api import get_middleware
+        from . import install_mobile_middleware
+        from .interfaces import ISmartphoneSupportPredicate
+        from pyramid.request import Request, Response
+        install_mobile_middleware(self.config)
+        self.config.registry.registerUtility(
+            lambda request: False,
+            ISmartphoneSupportPredicate
+            )
+        request_body = b'a=b&c=%81%40&e=f&g=h+i&k=l%20m'
+        request = Request(
+            environ={
+                'REQUEST_METHOD': 'POST',
+                'HTTP_USER_AGENT': 'DoCoMo/2.0 F000',
+                'CONTENT_LENGTH': len(request_body),
+                'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                'wsgi.input': io.BytesIO(request_body),
+                }
+            )
+        request.session = testing.DummySession()
+        request.registry = self.config.registry
+
+        def handler(request):
+            self.assertEqual(request.original_request.body, request_body)
+            self.assertEqual(request.body, urllib.urlencode([(k, v.decode('CP932').encode('utf-8')) for k, v in urlparse.parse_qsl(request_body)]))
+            self.assertEqual(request.params['a'], u'b')
+            self.assertEqual(request.params['c'], u'\u3000')
+            self.assertEqual(request.params['e'], u'f')
+            self.assertEqual(request.params['g'], u'h i')
+            self.assertEqual(request.params['k'], u'l m')
+            return Response()
+
+        middleware = get_middleware(request)
+        middleware(handler, request)
+        
 
 
 class MobileMiddlewareTest(TestCase):
@@ -100,6 +140,7 @@ class MobileMiddlewareTest(TestCase):
         detector = mock.Mock()
         detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = True
         request = DummyRequest()
+        request.copy_body = lambda: None
         request.registry.registerUtility(
             detector,
             IMobileCarrierDetector
@@ -120,6 +161,7 @@ class MobileMiddlewareTest(TestCase):
         detector = mock.Mock()
         detector.detect_from_wsgi_environment.return_value.carrier.is_nonmobile = True
         request = DummyRequest()
+        request.copy_body = lambda: None
         request.user_agent = 'Dummy'
         request.decode = lambda *args: request
         request.registry.registerUtility(
