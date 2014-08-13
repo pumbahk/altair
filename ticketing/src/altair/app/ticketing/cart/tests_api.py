@@ -899,6 +899,7 @@ class GetContactURLTest(unittest.TestCase):
             = self._setup_normal_mock(get_organization, get_organization_setting)
         error = _TestException
 
+        from . import api
         from altair.mobile.carriers import NonMobile, DoCoMo
         # mobile
         request.mobile_ua.carrier = DoCoMo
@@ -928,6 +929,7 @@ class GetContactURLTest(unittest.TestCase):
             = self._setup_normal_mock(get_organization, get_organization_setting)
 
         from altair.mobile.carriers import NonMobile
+        from . import api
         request.mobile_ua.carrier = NonMobile
         get_organization.return_value = None
 
