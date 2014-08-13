@@ -900,7 +900,6 @@ class GetContactURLTest(unittest.TestCase):
             = self._setup_normal_mock(get_organization, get_organization_setting)
         error = _TestException
 
-        from . import api
         from altair.mobile.carriers import NonMobile, DoCoMo
         from . import api
         # mobile
