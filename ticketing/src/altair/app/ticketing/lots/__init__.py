@@ -231,8 +231,6 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
 
-    config.include(".")
-    config.include(".sendmail")
     config.include('altair.app.ticketing.setup_beaker_cache')
 
     ### includes altair.*
@@ -241,6 +239,12 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.sqlahelper')
     config.include('altair.exclog')
+    config.include('altair.rakuten_auth')
+    config.include('altair.pyramid_assets')
+    config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_tz')
+    config.include('altair.mobile')
+    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
 
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
@@ -254,10 +258,9 @@ def main(global_config, **local_config):
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
     config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
 
-    config.include('altair.mobile')
-    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
+    config.include(".")
+    config.include(".sendmail")
 
-    config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.multicheckout')
@@ -269,10 +272,6 @@ def main(global_config, **local_config):
 
     ### whattime preview
     config.include("altair.app.ticketing.cart.preview")
-
-    config.include('altair.pyramid_assets')
-    config.include('altair.pyramid_boto')
-    config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     config.set_who_api_decider('altair.app.ticketing.lots:WhoDecider')
