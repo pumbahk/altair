@@ -25,7 +25,7 @@ namespace checkin.core.models
 
 		public virtual string GetUpdateRefreshedAtURL ()
 		{
-            return Resource.EndPoint.UpdateRefreshedAt2;
+            return Resource.EndPoint.UpdateRefreshedAt;
 		}
 
         public class OrdernoRequest
