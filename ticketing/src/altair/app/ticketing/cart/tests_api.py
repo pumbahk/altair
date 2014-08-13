@@ -879,6 +879,7 @@ class GetContactURLTest(unittest.TestCase):
             = self._setup_normal_mock(get_organization, get_organization_setting)
 
         from altair.mobile.carriers import NonMobile, DoCoMo
+        from . import api
         # mobile
         request.mobile_ua.carrier = DoCoMo
         url = api.get_contact_url(request)
@@ -901,6 +902,7 @@ class GetContactURLTest(unittest.TestCase):
 
         from . import api
         from altair.mobile.carriers import NonMobile, DoCoMo
+        from . import api
         # mobile
         request.mobile_ua.carrier = DoCoMo
         setting.default_mail_sender = None
