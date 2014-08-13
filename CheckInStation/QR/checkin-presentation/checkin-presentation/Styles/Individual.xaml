@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- プリンターの設定-->
+    <DataTemplate x:Key="InstalledPrinterListBoxData">
+        <WrapPanel>
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding FullName, Mode=OneTime}"/>
+        </WrapPanel>
+    </DataTemplate>
+
+    <!-- ウインドウの表示方法の設定-->
+    <DataTemplate x:Key="AvailableWIndowStyleListBoxData">
+        <WrapPanel>
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding Key, Mode=OneTime}"/>
+        </WrapPanel>
+    </DataTemplate>
+
+</ResourceDictionary>

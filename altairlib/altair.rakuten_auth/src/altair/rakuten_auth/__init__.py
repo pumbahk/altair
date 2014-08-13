@@ -32,6 +32,21 @@ def signout(request):
     res.headerlist.extend(headers)
     return res
 
+def register_auth_plugin(config):
+    from altair.auth.facade import AugmentedWhoAPIFactory
+    from repoze.who.classifiers import default_request_classifier
+    from .plugins import RakutenOpenIDPlugin
+    rakuten_auth = RakutenOpenIDPlugin(None)
+    config.add_who_api_factory(
+        'rakuten',
+        AugmentedWhoAPIFactory(
+            authenticators=[('rakuten', rakuten_auth)],
+            challengers=[('rakuten', rakuten_auth)],
+            mdproviders=[('rakuten', rakuten_auth)],
+            request_classifier=default_request_classifier
+            )
+        )
+
 def includeme(config):
     # openid設定
     settings = config.registry.settings
@@ -42,7 +57,9 @@ def includeme(config):
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     config.add_view('.views.RootView', attr="verify2", route_name="rakuten_auth.verify2")
     config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
-    config.add_tween('altair.rakuten_auth.tweens.RakutenAuthTween', under='altair.auth.activate_who_api_tween')
+    config.add_tween('altair.rakuten_auth.tweens.RakutenAuthTween', under='altair.auth.activation.activate_who_api_tween')
+
+    register_auth_plugin(config)
 
 def main(global_conf, **settings):
     """ fot the test """

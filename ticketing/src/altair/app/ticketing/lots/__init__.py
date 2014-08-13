@@ -24,7 +24,7 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         if hasattr(self.request, "context") and hasattr(self.request.context, "lot"):
-            return self.request.context.lot.auth_type
+            return self.request.context.auth_type
 
 def register_globals(event):
     from . import helpers
@@ -58,6 +58,7 @@ def includeme(config):
     config.include('altair.app.ticketing.renderers')
     selectable_renderer.register_to(config)
     config.include(setup_renderers)
+    config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
 
     # static_viewにfactoryを適用したくないので、add_routeで個別指定する
     factory=".resources.lot_resource_factory"
@@ -67,7 +68,8 @@ def includeme(config):
         config.add_route(*args, **kwargs)
 
     # 申し込みフェーズ
-    add_route('lots.entry.agreement', 'events/agreement/{event_id}/entry/{lot_id}')
+    add_route('lots.entry.agreement', 'events/{event_id}/entry/{lot_id}/agreement')
+    add_route('lots.entry.agreement.compat', 'events/agreement/{event_id}/entry/{lot_id}')
     add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
     add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
     add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
@@ -80,8 +82,11 @@ def includeme(config):
     add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
-    # 申し込み確認
     config.add_route('lots.review.index', 'review')
+
+    config.add_nogizaka_entrypoint('lots.entry.agreement')
+    config.add_nogizaka_entrypoint('lots.entry.agreement.compat')
+    config.add_nogizaka_entrypoint('lots.entry.index')
 
     # 当選フェーズ
     #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
@@ -250,6 +255,7 @@ def main(global_config, **local_config):
     config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
 
     config.include('altair.mobile')
+    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
 
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
@@ -269,6 +275,10 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
+    config.set_who_api_decider('altair.app.ticketing.lots:WhoDecider')
+    from altair.auth import set_auth_policy
+    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
+
     app = config.make_wsgi_app()
 
     return direct_static_serving_filter_factory({

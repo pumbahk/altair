@@ -14,10 +14,17 @@ ${ch.breadcrumbs(
 <h3>販売種別一覧</h3>
 
 <table class="table table-striped table-bordered">
+   <thead>
+    <tr>
+      <th>会員種別名</th>
+      <th>種別情報</th>
+    </tr>
+  </thead>
   <tbody>
     %for membership in memberships:
       <tr>
         <td><a href="${request.route_path("members.index", membership_id=membership.id)}">${membership.name}</a></td>
+        <td>${membership.memo if membership.memo else ''}</td>
       </tr>
     %endfor
   </tbody>

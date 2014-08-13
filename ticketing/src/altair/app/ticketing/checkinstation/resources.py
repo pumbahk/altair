@@ -45,7 +45,7 @@ class CheckinStationResource(object):
         ad_images = self.request.registry.getUtility(IAdImageCollector)
         return {
             "endpoint": collector.get_endpoints(self.request), 
-            "ad_images": ad_images.get_images(self.request)}
+            "ad_images": ad_images.get_images(self.request, organization=operator.organization)}
 
     def on_after_logout(self, operator):
         self.identity.logout()

@@ -3,7 +3,7 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.app.ticketing.core.api import get_organization_setting, get_default_contact_url
+from altair.app.ticketing.core.api import get_organization_setting
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
@@ -41,22 +41,6 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
             body=get_appropriate_message_part(request, recipient, mail_body),
             sender=sender)
     return get_mailer(request).send(message)
-
-def get_contact_url(request, fail_exc=ValueError):
-    organization = cart_api.get_organization(request)
-    if organization is None:
-        raise fail_exc("organization is not found")
-    retval = get_default_contact_url(request, organization, request.mobile_ua.carrier)
-    if retval is None:
-        raise fail_exc("no contact url")
-    return retval
-
-def safe_get_contact_url(request, default=""):
-    try:
-        return get_contact_url(request, Exception)
-    except Exception as e:
-        logger.warn(str(e))
-        return default
 
 def send_to_orion(request, context, recipient, data):
     settings = request.registry.settings

@@ -58,7 +58,7 @@ class LoginView(object):
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     @view_config(request_method="POST", route_name='fc_auth.detail_login', renderer='string')
     def login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.request.matchdict['membership']
         detail_membership = self.request.matchdict.get('detail_membership', None)
         if detail_membership:
@@ -96,7 +96,7 @@ class LoginView(object):
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
     @view_config(request_method="POST", route_name='fc_auth.detail_guest', renderer='string')
     def guest_login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.request.matchdict['membership']
         detail_membership = self.request.matchdict.get('detail_membership', None)
         if detail_membership:

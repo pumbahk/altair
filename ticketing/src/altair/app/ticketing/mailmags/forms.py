@@ -2,8 +2,8 @@
 
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
-from wtforms.widgets import TextArea
-from altair.formhelpers import OurForm, OurTextField, OurDateTimeField, Translations, Required
+from wtforms.widgets import TextArea, CheckboxInput
+from altair.formhelpers import OurForm, OurBooleanField, OurTextField, OurDateTimeField, Translations, Required
 from altair.app.ticketing.core.models import Event, Account
 
 class MailMagazineForm(OurForm):
@@ -30,3 +30,8 @@ class MailMagazineForm(OurForm):
             ]
         )
 
+    status = OurBooleanField(
+        label=u'メールマガジンの有効/無効',
+        default=True,
+        widget=CheckboxInput()
+    )
