@@ -19,6 +19,7 @@ testing_settings = {
     'makotxt.default_filters': 'unicode',    
     'mako.directories': ['altair.app.ticketing.lots:templates'],
     'altair.sej.template_file': '',
+    'altair.nogizaka46_auth.key': '',
 }
 
 
@@ -27,6 +28,9 @@ class keep_authTests(unittest.TestCase):
     def setUpClass(cls):
         cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
+        from pyramid.authorization import ACLAuthorizationPolicy
+        cls.config.set_authorization_policy(ACLAuthorizationPolicy())
+        cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
 
@@ -63,6 +67,9 @@ class EntryLotViewTests(unittest.TestCase):
             'slave',
             cls.session.bind
             )
+        from pyramid.authorization import ACLAuthorizationPolicy
+        cls.config.set_authorization_policy(ACLAuthorizationPolicy())
+        cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
         cls.config.include('altair.pyramid_tz')
@@ -248,6 +255,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
             'slave',
             self.session.bind
             )
+        from pyramid.authorization import ACLAuthorizationPolicy
+        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+        self.config.include('altair.auth')
         self.config.include('pyramid_layout')
         self.config.include('altair.app.ticketing.lots')
 
@@ -436,7 +446,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         )
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
-        request.registry.settings['lots.accepted_mail_template'] = 'altair.app.ticketing.lots:mail_templates/accept_entry.txt'
+        request.registry.settings['lots.accepted_mail_template'] = 'altair.app.ticketing:templates/lots_accept_entry.txt'
         context = DummyAuthenticatedResource(user={ 'is_guest': True, 'organization_id': 1 })
         context.lot = lot
         context.event = lot.event
@@ -472,6 +482,9 @@ class LotReviewViewTests(unittest.TestCase):
             'slave',
             cls.session.bind
             )
+        from pyramid.authorization import ACLAuthorizationPolicy
+        cls.config.set_authorization_policy(ACLAuthorizationPolicy())
+        cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
 
