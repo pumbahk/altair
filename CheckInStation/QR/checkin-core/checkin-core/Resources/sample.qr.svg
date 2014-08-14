@@ -1,0 +1,45 @@
+<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <PageContent>
+    <FixedPage Width="423.307061333" Height="283.464554667">
+      <Canvas>
+        <Canvas.RenderTransform>
+          <ScaleTransform ScaleX="1.06666666667" ScaleY="1.06666666667"/>
+        </Canvas.RenderTransform>
+        <Canvas/>
+        <Canvas>
+          <TextBlock TextWrapping="Wrap" Width="163.39909" Height="9.9508724" Canvas.Left="17.25939" Canvas.Top="238.170446" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">予約番号：{{予約番号}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="277.80493" Height="11.660078" Canvas.Left="17.29577" Canvas.Top="248.295446" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">主催・問い合わせ:株式会社テスト会社</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="184.25171" Height="12.950872" Canvas.Left="87.978" Canvas.Top="14.030902" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">2014年 プロ野球パ・リーグ公式戦</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="86.069809" Height="14.170523" Canvas.Left="195.556884" Canvas.Top="100.635669" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{チケット価格}}(税込)</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="53.812988" Height="11.969533" Canvas.Left="21.54223" Canvas.Top="13.6155997" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">Match Number　</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="121.64982" Height="11.364189" Canvas.Left="194.918502" Canvas.Top="69.226231" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">開場予定{{開場時刻s}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="171.04568" Height="13.193666" Canvas.Left="89.229881" Canvas.Top="44.057135" FontSize="11px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{開催日}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="252.55217" Height="20.268778" Canvas.Left="15.78822" Canvas.Top="139.8422294" FontSize="12px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{席番}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="77.742386" Height="17.462444" Canvas.Left="294.606472" Canvas.Top="44.508964" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{開催日}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="81.801025" Height="27.586683" Canvas.Left="294.61735" Canvas.Top="106.327944" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{席番}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="82.410851" Height="15.390174" Canvas.Left="294.61802" Canvas.Top="132.181973" FontSize="6px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{チケット価格}}(税込)</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="56.67963" Height="11.170524" Canvas.Left="294.08744" Canvas.Top="142.870616" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">予約番号</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="81.987389" Height="14.219651" Canvas.Left="294.60844" Canvas.Top="151.74922" FontSize="6px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{予約番号}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="121.64982" Height="11.364189" Canvas.Left="194.918502" Canvas.Top="57.57155" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">開始時刻{{開始時刻s}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="80.181686" Height="11.364189" Canvas.Left="295.831702" Canvas.Top="65.812206" FontSize="6px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">開場予定{{開場時刻s}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="80.791512" Height="10.144538" Canvas.Left="295.831702" Canvas.Top="56.157526" FontSize="6px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">開始時刻{{開始時刻s}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="81.401337" Height="24.78035" Canvas.Left="294.066862" Canvas.Top="14.295634" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名略称}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="81.801025" Height="27.586683" Canvas.Left="295.69369" Canvas.Top="78.093044" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{商品名}}</TextBlock>
+          <@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="34.150227" Height="34.150227" Canvas.Left="298.81448" Canvas.Top="165.73663">
+<@qrclass@.QRCode>{{予約番号}}-{{発券番号}},{{開催日}},{{seat.name}}</@qrclass@.QRCode>
+</@qrclass@>
+         <TextBlock TextWrapping="Wrap" Width="191.77975" Height="18.072269" Canvas.Left="89.165499" Canvas.Top="27.928596" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名副題}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="266.78827" Height="19.901747" Canvas.Left="14.156965" Canvas.Top="79.960272" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="264.9588" Height="15.632968" Canvas.Left="13.782044" Canvas.Top="99.683978" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{会場名}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="264.9588" Height="15.632968" Canvas.Left="15.073963" Canvas.Top="114.268016" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{商品名}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="131.07834" Height="11.170524" Canvas.Left="14.95547" Canvas.Top="129.422779" FontSize="6px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">ゲート　　　　ブロック　　　　列　　　　番</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="250.72269" Height="33.075111" Canvas.Left="35.7572" Canvas.Top="26.700532" FontSize="20px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名備考}}</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="259.75156" Height="13.609821" Canvas.Left="18.424131" Canvas.Top="153.619281" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">※雨天等により試合中止・不成立の合は、クレジットカードご登録口座へ</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="259.75156" Height="13.609821" Canvas.Left="18.424131" Canvas.Top="161.889975" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">　自動返金となります。お振込日はカード会社により異なりますので、</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="259.75156" Height="13.609821" Canvas.Left="18.424131" Canvas.Top="170.160669" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">　詳細は各カード会社へご確認ください。</TextBlock>
+          <TextBlock TextWrapping="Wrap" Width="259.75156" Height="13.609821" Canvas.Left="18.424131" Canvas.Top="178.431368" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Normal">※飲食物や危険物はお持込できません</TextBlock>
+        </Canvas>
+      </Canvas>
+    </FixedPage>
+  </PageContent>
+</FixedDocument>

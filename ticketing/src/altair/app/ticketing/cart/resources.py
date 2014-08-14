@@ -372,10 +372,9 @@ class TicketingCartResourceBase(object):
                 pass
             if sales_segment is not None:
                 q = q.filter(
-                    c_models.SalesSegment.sales_segment_id == sales_segment.id
+                    c_models.SalesSegment.id == sales_segment.id
                 )
                 break
-
             # 次にパフォーマンス
             performance = None
             try:

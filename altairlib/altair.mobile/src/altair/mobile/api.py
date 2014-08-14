@@ -49,8 +49,8 @@ def get_middleware(request_or_registry):
     return registry.queryUtility(IMobileMiddleware)
 
 def smartphone_support_enabled_for(request):
-    predicate = request.registry.getUtility(ISmartphoneSupportPredicate)
-    return not predicate or predicate(request)
+    predicates = request.registry.adapters.subscriptions([], ISmartphoneSupportPredicate)
+    return all(predicate(request) for predicate in predicates)
 
 def is_mobile_request(request):
     return IMobileRequest.providedBy(request)

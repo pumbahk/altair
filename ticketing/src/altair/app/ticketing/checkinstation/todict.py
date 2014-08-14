@@ -76,7 +76,7 @@ class TokenStatusDictBuilder(object):
         elif not self._is_printable_date_after_end(self.order, self.today):
             order = self.order
             logger.info("*status order's performance is already end. (order.id=%s, order.order_no=%s, performance.id=%s)", order.id, order.order_no, self.performance.id)
-            return {"status": TokenStatus.unknown}
+            return {"status": TokenStatus.after_end}
         else:
             return {}
 

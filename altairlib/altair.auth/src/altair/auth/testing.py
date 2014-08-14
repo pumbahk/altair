@@ -1,3 +1,7 @@
+from zope.interface import implementer
+from repoze.who.interfaces import IIdentifier, IAuthenticator, IChallenger, IMetadataProvider
+from .interfaces import IAugmentedWhoAPIFactory, IAugmentedWhoAPI
+
 class DummyDecider(object):
     def __init__(self, request):
         self.request = request
@@ -6,6 +10,7 @@ class DummyDecider(object):
         return self.request.testing_who_api_name
 
 
+@implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
 class DummyPlugin(object):
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -34,8 +39,17 @@ class DummyPlugin(object):
 
     def add_metadata(self, environ, identity):
         environ['identity_passed_to_add_metadata'] = identity
-        return environ['return_value_for_add_metadata']
+
 
 class DummySession(dict):
     def save(self):
         pass
+
+def make_augmented_who_api_factory_with_dummy(*args, **kwargs):
+    from .facade import AugmentedWhoAPIFactory
+    plugin = DummyPlugin(*args, **kwargs)
+    return AugmentedWhoAPIFactory(
+        authenticators=[('dummy', plugin)],
+        challengers=[('dummy', plugin)],
+        mdproviders=[('dummy', plugin)]
+        )

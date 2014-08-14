@@ -285,7 +285,24 @@ class guest_authenticateTests(unittest.TestCase):
         self.assertTrue(result['is_guest'])
 
 class LoginViewTests(unittest.TestCase):
-    
+    def setUp(self):
+        self.config = testing.setUp()
+        from pyramid.authorization import ACLAuthorizationPolicy
+        from zope.interface import directlyProvides
+        from altair.auth.interfaces import IAugmentedWhoAPIFactory
+        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+        self.config.include('altair.auth')
+        def factory(request, identifier):
+            return DummyWhoApi(
+                {'membership': 'testing', 'is_guest': True},
+                [('X-TESTING', 'TESTING')]
+                )
+        directlyProvides(factory, IAugmentedWhoAPIFactory)
+        self.config.add_who_api_factory('fc_auth', factory)
+
+    def tearDown(self):
+        testing.tearDown()
+
     def _getTarget(self):
         from .views import LoginView
         return LoginView
@@ -297,9 +314,8 @@ class LoginViewTests(unittest.TestCase):
         from . import SESSION_KEY
         from repoze.who.interfaces import IAPIFactory
 
-        request = testing.DummyRequest(matchdict={'membership': 'testing'})
+        request = testing.DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
-        request.registry.registerUtility(DummyWhoApi, IAPIFactory, name="fc_auth")
 
         target = self._makeOne(request)
 
@@ -310,12 +326,8 @@ class LoginViewTests(unittest.TestCase):
         from . import SESSION_KEY
         from repoze.who.interfaces import IAPIFactory
 
-        request = testing.DummyRequest(matchdict={'membership': 'testing'})
+        request = testing.DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
-        request.registry.registerUtility(lambda env: DummyWhoApi(
-            {'membership': 'testing', 'is_guest': True},
-            [('X-TESTING', 'TESTING')]),
-                                         IAPIFactory, name="fc_auth")
 
         target = self._makeOne(request)
 
