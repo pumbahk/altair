@@ -15,6 +15,7 @@ from wtforms.widgets import ListWidget
 from altair.formhelpers.widgets.checkbox import CheckboxMultipleSelect
 from altair.formhelpers.widgets.list import OurListWidget
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
+from . import api
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from altair.app.ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
@@ -293,3 +294,10 @@ def sensible_coerce(request, value):
                 + ['</ul>'])
                 )
     return value
+
+def safe_get_contact_url(request, default=""):
+    try:
+        return api.get_contact_url(request, Exception)
+    except Exception as e:
+        logger.warn(str(e))
+        return default

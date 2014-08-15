@@ -30,6 +30,7 @@ def main(global_config, **local_config):
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     ### include altair.*
+    config.include('altair.auth')
     config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
@@ -56,6 +57,11 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart')
     config.include('altair.app.ticketing.cart.import_mail_module')
     config.include('altair.app.ticketing.qr')
+
+    config.set_who_api_decider('altair.app.ticketing.security:OrganizationSettingBasedWhoDecider')
+    from altair.auth import set_auth_policy
+    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
+
     config.scan('altair.app.ticketing.cart.views')
 
     config.commit() #override qr plugins view(e.g. qr)

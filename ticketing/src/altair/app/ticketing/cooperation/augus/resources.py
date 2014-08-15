@@ -14,9 +14,11 @@ from sqlalchemy.orm.exc import (
     )
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import (
+    Account,
     Venue,
     AugusVenue,
     Event,
+    AugusAccount,
     AugusTicket,
     AugusPerformance,
     )
@@ -56,6 +58,8 @@ class AugusVenueRequestAccessor(RequestAccessor):
     in_matchdict = {'augus_venue_code': int,
                     'augus_venue_version': int,
                     }
+    in_params = {'augus_account_id': int,
+        }
 
 class AugusVenueResource(TicketingAdminResource):
     accessor_factory = AugusVenueRequestAccessor
@@ -64,12 +68,23 @@ class AugusVenueResource(TicketingAdminResource):
         self.accessor = self.accessor_factory(request)
 
     @reify
+    def augus_account(self):
+        augus_account_id = self.accessor.augus_account_id
+        return AugusAccount\
+          .query\
+          .join(Account)\
+          .filter(AugusAccount.id==augus_account_id)\
+          .filter(Account.organization_id==self.organization.id)\
+          .first()
+
+    @reify
     def augus_venue_code(self):
         return self.accessor.augus_venue_code
 
     @reify
     def augus_venue_version(self):
         return self.accessor.augus_venue_version
+
 
     @reify
     def augus_venue(self):

@@ -1,0 +1,19 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス連携 アカウント一覧</h3>
+</div>
+
+<ul>
+  % for augus_account in augus_accounts:
+  <li>
+    <a href="${request.route_path('augus.accounts.show', augus_account_id=augus_account.id)}">
+      ${augus_account.name}
+    </a>
+  </li>
+  % endfor
+</ul>
+
+<a href="${request.route_path('augus.accounts.create')}" class="btn entry">作成</a>

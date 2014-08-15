@@ -27,18 +27,19 @@ def auth_model_callback(identity, request):
 
     logger.debug('authenticator={authenticator}, identifier={identifier}'.format(**identity))
 
-    if isinstance(identity['authenticator'], FCAuthPlugin):
-        # fc_auth固有の処理
-        auth_type = 'fc_auth'
-        if 'membership' in identity:
-            logger.debug('found membership')
-            principals.append("membership:%s" % identity['membership'])
-        if 'membergroup' in identity:
-            logger.debug('found membergroup')
-            principals.append("membergroup:%s" % identity['membergroup'])
-    elif isinstance(identity['authenticator'], RakutenOpenIDPlugin):
+    if isinstance(identity['authenticator'], RakutenOpenIDPlugin):
         auth_type = 'rakuten'
         principals.append("membership:rakuten")
+    else:
+        # altair.auth 経由であれば、altair.auth.type がセットされているはず
+        auth_type = identity.get('altair.auth.type')
+        if 'membership' in identity:
+            logger.debug('membership:%s' % identity['membership'])
+            principals.append("membership:%s" % identity['membership'])
+        if 'membergroup' in identity:
+            logger.debug('membergroup:%s' % identity['membergroup'])
+            principals.append("membergroup:%s" % identity['membergroup'])
+    logger.debug('auth_type:%s' % auth_type)
     if identity.get('is_guest', False):
         principals.append('altair_guest')
 

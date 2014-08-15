@@ -23,3 +23,16 @@
 </%self:band>
 %endif
 </%def>
+<%def name="form_get(**kwargs)">
+%if hasattr(request, 'open_form_tag_for_get'):
+${request.open_form_tag_for_get(**kwargs)}
+%else:
+<form method="get" \
+%for k, v in kwargs.items():
+${k}="${v}" \
+%endfor
+>
+%endif
+${caller.body()}
+</form>
+</%def>

@@ -823,10 +823,6 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', backref='report_settings')
     performance_id = Column(Identifier, ForeignKey('Performance.id', ondelete='CASCADE'), nullable=True)
     performance = relationship('Performance', backref='report_settings')
-    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
-    operator = relationship('Operator', backref='report_setting')
-    name = Column(String(255), nullable=True)
-    email = Column(String(255), nullable=True)
     frequency = Column(Integer, nullable=False)
     period = Column(Integer, nullable=False)
     time = Column(String(4), nullable=False)
@@ -3704,6 +3700,23 @@ class CooperationTypeEnum(StandardEnum):
     #gettie = (2, u'Gettie')
 
 
+class AugusAccount(Base, BaseModel):
+    __tablename__ = 'AugusAccount'
+
+    id = Column(Identifier, primary_key=True)
+    code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'企業コード')) # PK
+    name = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'名称'))
+    host = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'FTPサーバのURL'))
+    username = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'ユーザー名'))
+    password = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'パスワード'))
+    send_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'送り側ディレクトリ'))
+    recv_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'受け側ディレクトリ'))
+
+    account_id = Column(Identifier, ForeignKey('Account.id'), nullable=False, unique=True)#, _a_label=(u'アカウント')) # PK
+    account = relationship('Account', uselist=False, backref=backref('augus_account', uselist=False))
+    organization = association_proxy('account', 'organization')
+
+
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusVenue'
 
@@ -3717,6 +3730,8 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'会場連携通知予約日時'))
     notified_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'会場連携通知日時'))
 
+    augus_account_id = Column(Identifier, ForeignKey('AugusAccount.id'), nullable=True)
+    augus_account = relationship('AugusAccount', backref='augus_venues')
 
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
@@ -3783,6 +3798,9 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = relationship('Performance', backref='augus_performances')
     augus_stock_infos = relationship('AugusStockInfo')
 
+    augus_account_id = Column(Identifier, ForeignKey('AugusAccount.id'), nullable=True)
+    augus_account = relationship('AugusAccount', backref='augus_performances')
+
     @property
     def code(self):
         return self.augus_performance_code
@@ -3814,6 +3832,10 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     augus_event_code = association_proxy('augus_performance', 'augus_event_code')
     augus_performance_code = association_proxy('augus_performance', 'augus_performance_code')
+
+    augus_account_id = Column(Identifier, ForeignKey('AugusAccount.id'), nullable=True)
+    augus_account = relationship('AugusAccount', backref='augus_tickets')
+
 
     def link_stock_type(self, stock_type):
         if not self.augus_performance.performance in stock_type.event.performances:
@@ -3865,6 +3887,10 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     putbacked_at = Column(DateTime, nullable=True, default=None)
 
+    augus_account_id = Column(Identifier, ForeignKey('AugusAccount.id'), nullable=True)
+    augus_account = relationship('AugusAccount', uselist=False, backref='augus_stock_infos')
+
+
     def get_seat(self):
         performance = self.augus_performance
         if not performance:
@@ -3911,6 +3937,10 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     augus_putback_type = AnnotatedColumn(Unicode(32), _a_label=(u'返券区分'), default=AugusPutbackType.ROUTE)
     augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=False)
     augus_performance = relationship('AugusPerformance')
+
+    augus_account_id = Column(Identifier, ForeignKey('AugusAccount.id'), nullable=True)
+    augus_account = relationship('AugusAccount', backref='augus_putbacks')
+
 
     def __len__(self):
         return len(self.augus_stock_details)

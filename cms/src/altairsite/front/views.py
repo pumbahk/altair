@@ -70,7 +70,7 @@ from pyramid.httpexceptions import HTTPFound
 ここから下はstatic pageを見ていない？
 """
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, enable_mobile, ))
+@usersite_view_config(route_name="front", request_type="altair.mobile.interfaces.IMobileRequest", custom_predicates=(not_static_path, enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
@@ -102,7 +102,7 @@ def mobile_rendering_page__rakuten(context, request):
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(not_static_path, enable_smartphone, ))
+@usersite_view_config(route_name="front", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(not_static_path, enable_smartphone, ))
 def smartphone_rendering_page(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]

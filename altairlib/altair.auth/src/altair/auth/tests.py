@@ -22,40 +22,47 @@ class TestIt(unittest.TestCase):
             decide,
             list_who_api_factory,
         )
-
-        self.config.registry.settings.update(
-            {'altair.auth.specs': [
-                    ('who1', 'altair.auth:test_conf/who1.ini'),
-                    ('who2', 'altair.auth:test_conf/who2.ini')
-                    ],
-             'altair.auth.decider': 'altair.auth.testing:DummyDecider'})
+        from altair.auth.testing import make_augmented_who_api_factory_with_dummy
+        self.config.registry.settings.update({'altair.auth.decider': 'altair.auth.testing:DummyDecider'})
         self.config.testing_securitypolicy()
         self.config.include('altair.auth')
         self.assertHasAttr(self.config, 'add_who_api_factory')
+        who1_factory = make_augmented_who_api_factory_with_dummy()
+        who2_factory = make_augmented_who_api_factory_with_dummy()
+        self.config.add_who_api_factory('who1', who1_factory)
+        self.config.add_who_api_factory('who2', who2_factory)
         request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
-        api = who_api(request, 'who1')
-        self.assertIsNotNone(api)
-        request.testing_who_api_name = 'testing_who'
+        factory = who_api_factory(request, 'who1')
+        self.assertEqual(factory, who1_factory)
+        factory = who_api_factory(request, 'who2')
+        self.assertEqual(factory, who2_factory)
+        request.testing_who_api_name = 'who1'
         api_name = decide(request)
-        self.assertEqual(api_name, 'testing_who')
+        self.assertEqual(api_name, 'who1')
+        api, api_name = who_api(request)
+        self.assertEqual(api_name, 'who1')
+        self.assertEqual(api.factory, who1_factory)
 
         factories = list_who_api_factory(request)
 
         self.assertEqual(factories, 
-                         [(u'who1', who_api_factory(request, 'who1')),
-                          (u'who2', who_api_factory(request, 'who2'))])
+                         [(u'who1', who1_factory),
+                          (u'who2', who2_factory)])
 
 class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
     def setUp(self):
+        from altair.auth.testing import make_augmented_who_api_factory_with_dummy
         self.config = testing.setUp()
-        self.config.registry.settings.update(
-            {'altair.auth.specs': [
-                    ('who1', 'altair.auth:test_conf/who1.ini'),
-                    ('who2', 'altair.auth:test_conf/who2.ini')
-                    ],
-             'altair.auth.decider': 'altair.auth.testing:DummyDecider'})
+        self.config.registry.settings.update({
+            'altair.auth.decider': 'altair.auth.testing:DummyDecider',
+            'altair.auth.identifier': 'altair.auth.testing:DummyPlugin',
+            })
         self.config.testing_securitypolicy()
         self.config.include('altair.auth')
+        who1_factory = make_augmented_who_api_factory_with_dummy()
+        who2_factory = make_augmented_who_api_factory_with_dummy()
+        self.config.add_who_api_factory('who1', who1_factory)
+        self.config.add_who_api_factory('who2', who2_factory)
 
     def tearDown(self):
         testing.tearDown()
@@ -67,19 +74,25 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def _makeRequest(self, *args, **kwargs):
+        from . import REQUEST_KEY
+        request = testing.DummyRequest(*args, **kwargs)
+        request.environ[REQUEST_KEY] = request
+        return request
+
     def test_authenticated_userid_with_callback_returning_empty_list(self):
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.authenticated_userid(request)
         self.assertEqual(result, None)
 
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -93,16 +106,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
     def test_authenticated_userid_with_callback_returning_nonempty_list(self):
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.authenticated_userid(request)
         self.assertEqual(result, None)
 
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -112,13 +125,13 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
 
     def test_unauthenticated_userid(self):
         callback = mock.Mock()
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.unauthenticated_userid(request)
         self.assertEqual(result, None)
 
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -130,16 +143,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.effective_principals(request)
         self.assertEqual(result, [Everyone])
 
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -154,16 +167,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.effective_principals(request)
         self.assertEqual(result, [Everyone])
 
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -175,16 +188,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.remember(request, None)
         self.assertEqual(result, [])
 
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('dummy', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         request.environ['return_value_for_remember'] = ['***']
         result = target.remember(request, None)
@@ -194,16 +207,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.remember(request, None)
         self.assertEqual(result, [])
 
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('dummy', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         request.environ['return_value_for_remember'] = ['***']
         result = target.remember(request, None)
@@ -213,16 +226,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.forget(request)
         self.assertEqual(result, [])
 
         callback = mock.Mock()
         callback.return_value = []
-        target = self._makeOne('dummy', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity
@@ -235,16 +248,16 @@ class TestMultiWhoAuthenticationPolicy(unittest.TestCase):
         from pyramid.security import Everyone, Authenticated
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('ident', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'nonexistent'
         result = target.forget(request)
         self.assertEqual(result, [])
 
         callback = mock.Mock()
         callback.return_value = ['group']
-        target = self._makeOne('dummy', callback)
-        request = testing.DummyRequest(environ={'wsgi.version': '1.0'})
+        target = self._makeOne(self.config.registry, callback)
+        request = self._makeRequest(environ={'wsgi.version': '1.0'})
         request.testing_who_api_name = 'who2'
         identity = {'a':'b'}
         request.environ['return_value_for_identify'] = identity

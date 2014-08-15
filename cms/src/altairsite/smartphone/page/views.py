@@ -8,7 +8,7 @@ from altairsite.inquiry.session import InquirySession
 from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
 
-@view_defaults(route_name="smartphone.page",request_type="altairsite.tweens.ISmartphoneRequest")
+@view_defaults(route_name="smartphone.page",request_type="altair.mobile.interfaces.ISmartphoneRequest")
 class StaticKindView(object):
     def __init__(self, context, request):
         self.request = request

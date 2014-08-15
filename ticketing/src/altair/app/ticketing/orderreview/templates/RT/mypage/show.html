@@ -85,6 +85,17 @@ ${render_pager(lot_entries)}
 
 % for order in orders:
 
+<%
+if order.performance.end_on:
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+else:
+    period = h.japanese_datetime(order.performance.start_on)
+%>
+
 <div class="box">
 <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
 <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
@@ -93,7 +104,7 @@ ${render_pager(lot_entries)}
 <input type="hidden" name="order_no" value="${order.order_no}"/>
 <dt><a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()">${order.performance.name}</a></dt>
 <dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
-<dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>
+<dd>${period} 開演 ${order.performance.venue.name}</dd>
 </form>
 </dl>
 </div>

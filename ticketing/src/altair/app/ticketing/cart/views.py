@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload
 from markupsafe import Markup
 from zope.interface import provider, implementer
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPMovedPermanently
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
@@ -20,6 +20,8 @@ from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.request.adapters import UnicodeMultiDictAdapter
+
+from altair.mobile.api import is_mobile_request
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
@@ -40,7 +42,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
+from .api import set_rendered_event, is_smartphone, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -247,22 +249,17 @@ flow_graph = flow.PageFlowGraph(
     )
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
-class IndexView(IndexViewMixin):
-    """ 座席選択画面 """
+@view_defaults(route_name='cart.agreement', decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+class PerEventAgreementView(IndexViewMixin):
+    """ 規約表示画面 """
     def __init__(self, request):
-        IndexViewMixin.__init__(self)
         self.request = request
         self.context = request.context
-        self.prepare()
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="GET",
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
-                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
-    def agreement(self):
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.IMobileRequest", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    def get(self):
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -310,14 +307,15 @@ class IndexView(IndexViewMixin):
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             event_id=event_id, performance=performance_id)
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="POST",
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
-                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
-    def agreement_post(self):
-
+    @view_config(request_method="POST",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
+    @view_config(request_method="POST",
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
+    @view_config(request_method="POST",
+                 request_type="altair.mobile.interfaces.IMobileRequest",
+                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    def post(self):
         try:
             event_id = long(self.request.params.get('event_id'))
         except:
@@ -341,18 +339,23 @@ class IndexView(IndexViewMixin):
 
         return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
-                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
-    def agreement2(self):
+
+@view_defaults(route_name='cart.agreement2', decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+class PerPerformanceAgreementView(object):
+    """ 規約表示画面 """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
+    @view_config(request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
+                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
+    @view_config(request_type="altair.mobile.interfaces.IMobileRequest",
+                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    def get(self):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
         performance_id = self.request.matchdict.get('performance_id')
-
-
         if not selected_sales_segment.setting.disp_agreement:
             extra = {}
             if performance_id is not None:
@@ -363,14 +366,15 @@ class IndexView(IndexViewMixin):
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             performance=performance_id)
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2', request_method="POST",
+    @view_config(request_method="POST",
                  renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
-                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
-    def agreement2_post(self):
-
+    @view_config(request_method="POST",
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(request_method="POST",
+                 request_type="altair.mobile.interfaces.IMobileRequest",
+                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def post(self):
         try:
             performance_id = long(self.request.params.get('performance'))
         except (ValueError, TypeError):
@@ -388,10 +392,45 @@ class IndexView(IndexViewMixin):
 
         return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',
-                  renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
+
+@view_defaults(xhr=False, permission="buy")
+class CompatAgreementView(object):
+    """ 規約表示画面 """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(request_method="GET", route_name='cart.agreement.compat')
+    def get_agreement(self):
+        return HTTPMovedPermanently(self.request.route_path('cart.agreement', _query=self.request.GET, **self.request.matchdict))
+
+    @view_config(request_method="POST", route_name='cart.agreement.compat')
+    def post_agreement(self):
+        return PerEventAgreementView(self.request).post()
+
+    @view_config(request_method="GET", route_name='cart.agreement2.compat')
+    def get_agreement2(self):
+        return HTTPMovedPermanently(self.request.route_path('cart.agreement2', _query=self.request.GET, **self.request.matchdict))
+
+    @view_config(request_method="POST", route_name='cart.agreement2.compat')
+    def post_agreement2(self):
+        return PerPerformanceAgreementView(self.request).post()
+
+
+@view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+class IndexView(IndexViewMixin):
+    """ 座席選択画面 """
+    def __init__(self, request):
+        IndexViewMixin.__init__(self)
+        self.request = request
+        self.context = request.context
+        self.prepare()
+
+    @view_config(route_name='cart.index',
+                 renderer=selectable_renderer("%(membership)s/pc/index.html"))
+    @view_config(route_name='cart.index',
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 renderer=selectable_renderer("%(membership)s/smartphone/index.html"))
     def event_based_landing_page(self):
         # 会場
         try:
@@ -458,10 +497,11 @@ class IndexView(IndexViewMixin):
             )
 
     # パフォーマンスベースのランディング画面
-    @view_config(decorator=with_jquery_tools, route_name='cart.index2',
-                  renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
+    @view_config(route_name='cart.index2',
+                 renderer=selectable_renderer("%(membership)s/pc/index.html"))
+    @view_config(route_name='cart.index2',
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 renderer=selectable_renderer("%(membership)s/smartphone/index.html"))
     def performance_based_landing_page(self):
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
@@ -499,6 +539,7 @@ class IndexView(IndexViewMixin):
             )
 
 
+@view_defaults(xhr=True, permission="buy", renderer="json")
 class IndexAjaxView(object):
     def __init__(self, request):
         self.request = request
@@ -530,7 +571,7 @@ class IndexAjaxView(object):
                 retval[name] = url
         return retval
 
-    @view_config(route_name='cart.seat_types2', renderer="json")
+    @view_config(route_name='cart.seat_types2')
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
@@ -603,8 +644,8 @@ class IndexAjaxView(object):
             )
         return data
 
-    @view_config(route_name='cart.products', renderer="json")
-    @view_config(route_name='cart.products2', renderer="json")
+    @view_config(route_name='cart.products')
+    @view_config(route_name='cart.products2')
     def get_products(self):
         """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
@@ -640,8 +681,8 @@ class IndexAjaxView(object):
             pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
             )
 
-    @view_config(route_name='cart.seats', renderer="json")
-    @view_config(route_name='cart.seats.obsolete', renderer="json")
+    @view_config(route_name='cart.seats')
+    @view_config(route_name='cart.seats.obsolete')
     def get_seats(self):
         """会場&座席情報"""
         venue = self.context.performance.venue
@@ -720,8 +761,8 @@ class IndexAjaxView(object):
             seat_groups=seat_groups
             )
 
-    @view_config(route_name='cart.seat_adjacencies', renderer="json")
-    @view_config(route_name='cart.seat_adjacencies.obsolete', renderer="json")
+    @view_config(route_name='cart.seat_adjacencies')
+    @view_config(route_name='cart.seat_adjacencies.obsolete')
     def get_seat_adjacencies(self):
         """連席情報"""
         try:
@@ -764,7 +805,7 @@ class IndexAjaxView(object):
         return resp
 
 
-@view_defaults(decorator=with_jquery)
+@view_defaults(permission="buy", renderer="json")
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
 
@@ -809,7 +850,7 @@ class ReserveView(object):
 
 
     @limiter.acquire
-    @view_config(route_name='cart.order', request_method="POST", renderer='json')
+    @view_config(route_name='cart.order', request_method="POST")
     def reserve(self):
         h.form_log(self.request, "received order")
         ordered_items = self.ordered_items
@@ -956,7 +997,7 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
 
@@ -975,7 +1016,7 @@ class PaymentView(object):
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -1054,7 +1095,7 @@ class PaymentView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -1153,7 +1194,7 @@ class PaymentView(object):
         )
 
 
-@view_defaults(route_name='cart.extra_form', decorator=with_jquery.not_when(mobile_request))
+@view_defaults(route_name='cart.extra_form', decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ExtraFormView(object):
     def __init__(self, request):
         self.request = request
@@ -1161,7 +1202,7 @@ class ExtraFormView(object):
 
     @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
     @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"))
     def get(self):
         extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
         if extra_form_field_descs is None:
@@ -1176,7 +1217,7 @@ class ExtraFormView(object):
 
     @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
     @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
-    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"))
     def post(self):
         form = form_fields = None
         extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
@@ -1196,7 +1237,7 @@ class ExtraFormView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
-@view_defaults(route_name='cart.point', decorator=with_jquery.not_when(mobile_request))
+@view_defaults(route_name='cart.point', decorator=with_jquery.not_when(mobile_request), permission="buy")
 class PointAccountEnteringView(object):
     def __init__(self, request):
         self.request = request
@@ -1211,7 +1252,7 @@ class PointAccountEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
     @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"))
     def point(self):
         cart = self.request.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
@@ -1224,7 +1265,7 @@ class PointAccountEnteringView(object):
         form = schemas.PointForm(formdata=formdata)
 
         asid = self.request.altair_pc_asid
-        if is_mobile(self.request):
+        if is_mobile_request(self.request):
             asid = self.request.altair_mobile_asid
 
         if is_smartphone(self.request):
@@ -1247,7 +1288,7 @@ class PointAccountEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
     @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"))
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
@@ -1261,7 +1302,7 @@ class PointAccountEnteringView(object):
         form = self.form
         if not form.validate():
             asid = None
-            if is_mobile(self.request):
+            if is_mobile_request(self.request):
                 asid = self.request.altair_mobile_asid
 
             if is_smartphone(self.request):
@@ -1286,7 +1327,7 @@ class PointAccountEnteringView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -1295,7 +1336,7 @@ class ConfirmView(object):
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
-    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
     def get(self):
 
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -1328,6 +1369,7 @@ class ConfirmView(object):
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
+    """permisson="buy" 不要"""
     def __init__(self, request):
         self.request = request
         self.context = request.context
@@ -1337,7 +1379,7 @@ class CompleteView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
     def complete_post(self):
         try:
             form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -1417,7 +1459,7 @@ class CompleteView(object):
 
     @view_config(route_name='payment.finish', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(route_name='payment.finish', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
     def complete_get(self):
         try:
             order_no = api.get_temporary_store(self.request).get(self.request)

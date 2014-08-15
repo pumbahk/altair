@@ -120,7 +120,6 @@ def get_fee_items_dict(request, order_like):
 def build_checkout_object_from_order_like(request, order_like):
     checkout_object = m.Checkout(
         orderCartId=order_like.order_no,
-        orderCartId_old=get_cart_id_by_order_no(request, order_like.order_no),
         orderTotalFee=int(order_like.total_amount)
         )
     for item in order_like.items:
@@ -154,25 +153,11 @@ def get_cart_id_by_order_no(request, order_no):
     return session.query(Cart).filter_by(order_no=order_no).one().id
 
 def get_checkout_object(request, session, order_no):
-    from altair.app.ticketing.cart.models import Cart
     expr = (m.Checkout.orderCartId == order_no)
-    cart = Cart.query.filter_by(order_no=order_no).first()
-    if cart is not None:
-        expr |= (m.Checkout.orderCartId_old == cart.id)
     return session.query(m.Checkout).filter(expr).one()
 
 def get_checkout_object_by_order_cart_id(request, session, orderCartId):
-    from altair.app.ticketing.cart.models import Cart
-    cart = Cart.query.filter_by(id=orderCartId).first()
-    if cart is not None:
-        q = session.query(m.Checkout) \
-            .filter(
-                (m.Checkout.orderCartId == orderCartId) |
-                (m.Checkout.orderCartId_old == cart.id))
-    else:
-        q = session.query(m.Checkout) \
-            .filter(m.Checkout.orderCartId == orderCartId)
-    return q.one()
+    return get_checkout_object(request, session, orderCartId)
 
 def get_checkout_object_by_id(request, session, id):
     return session.query(m.Checkout) \
@@ -382,10 +367,6 @@ class AnshinCheckoutAPI(object):
         confirmId = params['confirmId']
         xml = confirmId.replace(' ', '+').decode('base64')
         checkout_object = self.pb.parse_order_complete_xml(self, etree.fromstring(xml))
-
-        # compatibility code (should be removed later)
-        checkout_object.orderCartId_old = get_cart_id_by_order_no(self.request, checkout_object.orderCartId)
-
         self.session.add(checkout_object)
         self.session.commit()
         return checkout_object

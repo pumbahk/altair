@@ -13,12 +13,10 @@ from sqlalchemy.pool import NullPool
 from core.helper import log_info
 
 def includeme(config):
-    config._add_tween("altairsite.tweens.mobile_encoding_convert_factory", under=INGRESS)
     config.include(install_app)
 
 def install_app(config):
-    config.include("altair.mobile.install_detector")
-    config.include("altair.mobile.install_mobile_request_maker")
+    config.include("altair.mobile")
     config.include("altairsite.config.install_convinient_request_properties")
     config.include("altairsite.mobile.event")
     config.include('altairsite.mobile.staticpage')

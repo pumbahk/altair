@@ -27,6 +27,7 @@ from altair.app.ticketing.core.models import (
     StockHolder,
     Performance,
     StockType,
+    AugusAccount,
     AugusVenue,
     AugusTicket,
     AugusPerformance,
@@ -71,7 +72,7 @@ class VenueView(_AugusBaseView):
     def index(self):
         return {'venue': self.context.venue,
                 'ag_venues': self.context.augus_venues,
-                'upload_form': AugusVenueUploadForm(),
+                'upload_form': AugusVenueUploadForm(organization_id=self.context.organization.id),
                 }
 
     @view_config(route_name='augus.venue.download', request_method='GET')
@@ -93,7 +94,7 @@ class VenueView(_AugusBaseView):
 
     #@view_config(route_name='augus.venue.upload', request_method='POST')
     def _upload(self):
-        form = AugusVenueUploadForm(self.request.params)
+        form = AugusVenueUploadForm(self.request.params, organization_id=self.context.organization.id)
         if form.validate() and hasattr(form.augus_venue_file.data, 'file'):
             reader = csv.reader(form.augus_venue_file.data.file)
             importer = AugusVenueImporter()
@@ -116,6 +117,20 @@ class VenueView(_AugusBaseView):
         import csv
         from altair.app.ticketing.core.models import Venue, AugusSeat
 
+        from altair.app.ticketing.core.models import (
+            Account,
+            AugusAccount,
+            )
+        augus_account_id = int(self.request.params.get('augus_account_id', 0))
+        augus_account = AugusAccount\
+          .query\
+          .join(Account)\
+          .filter(AugusAccount.id==augus_account_id)\
+          .filter(Account.organization_id==self.context.organization.id)\
+          .first()
+
+        if not augus_account:
+            raise HTTPBadRequest('augus account not found')
 
         venue_id = int(self.request.matchdict['venue_id'])
         try:
@@ -131,7 +146,7 @@ class VenueView(_AugusBaseView):
             records = [record for record in reader]
             logger.info('AUGUS VENUE: creating target list')
             external_venue_code_name_version_list = filter(lambda code_version: code_version != ("", "", ""),
-                                                           set([(record[6], record[7], record[23]) for record in records]))
+                                                           set([(record[6], record[7], record[23]) for record in records])) # tab 区切りだとココでIndexErrorとかになるよ
             count = len(external_venue_code_name_version_list)
             if count == 0: # 対象すべてunlink
                 raise HTTPBadRequest(body=json.dumps({
@@ -160,6 +175,7 @@ class VenueView(_AugusBaseView):
                 ex_venue.name = ex_venue_name
                 ex_venue.version = ex_venue_version
                 ex_venue.venue_id = venue.id
+                ex_venue.augus_account_id = augus_account.id
                 ex_venue.save()
 
                 logger.info('AUGUS VENUE: creating augus seat target dict')
@@ -236,7 +252,7 @@ class AugusVenueView(_AugusBaseView):
                  renderer='altair.app.ticketing:templates/cooperation/augus/augus_venues/show.html')
     def show(self):
         return dict(augus_venue=self.context.augus_venue,
-                    upload_form=AugusVenueUploadForm(),
+                    upload_form=AugusVenueUploadForm(organization_id=self.context.organization.id),
                     )
 
     @view_config(route_name='augus.augus_venue.download', request_method='GET')
@@ -259,12 +275,15 @@ class AugusVenueView(_AugusBaseView):
 
     @view_config(route_name='augus.augus_venue.upload', request_method='POST')
     def upload(self):
-        form = AugusVenueUploadForm(self.request.params)
+        form = AugusVenueUploadForm(self.request.params, organization_id=self.context.organization.id)
         if not (form.validate() and hasattr(form.augus_venue_file.data, 'file')):
             raise HTTPBadRequest('validation error')
 
         import csv
         from altair.app.ticketing.core.models import Venue, AugusSeat
+
+        if not self.context.augus_account:
+            raise HTTPBadRequest('augus account not found')
 
         try:
             fp = self.request.POST['augus_venue_file'].file
@@ -275,8 +294,10 @@ class AugusVenueView(_AugusBaseView):
 
             logger.info('AUGUS VENUE: start creating augus venue')
             ex_venue = self.context.augus_venue
+            ex_venue.augus_account_id = self.context.augus_account.id
             venue = ex_venue.venue
             venue_id = venue.id
+
 
 
             logger.info('AUGUS VENUE: load augus venue')
@@ -433,7 +454,7 @@ class AugusVenueView(_AugusBaseView):
     def complete_download(self):
         augus_venue = self.context.augus_venue
         res = Response()
-        venue_response = VenueSyncResponse(customer_id=CUSTOMER_ID,
+        venue_response = VenueSyncResponse(customer_id=augus_venue.augus_account.code,
                                            venue_code=augus_venue.code)
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(venue_response.name)),

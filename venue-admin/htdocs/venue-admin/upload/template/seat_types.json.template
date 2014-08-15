@@ -1,0 +1,16 @@
+{"sales_segment_id": "1",
+ "venue_id": 1, "venue_name": "${VENUE}",
+ "event_id": "1",
+ "performance_name": "[PERFORMANCE-PREFIX]",
+ "event_name": "EVENT",
+ "performance_start": "4月1日 00:00",
+ "seat_types": [{"style": {"stroke": {"color": null, "width": null, "pattern": null}, "fill": {"color": "#ff0099"}}, "description": null, "products_url": "/venue-admin/upload/product.json", "availability": true, "availability_text": "◎", "quantity_only": false, "id": 1, "name": "SEAT-TYPE-I"}],
+ "data_source": {
+  "seat_adjacencies": "https://c.stg2.rt.ticketstar.jp/cartevents/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}",
+  "venue_drawing": "/${DIR}/__part__",
+  "venue_drawings": ${PARTS},
+  "info": "${BASE}/frontend.php/${DIR}/${FILE}",
+  "seats": "${BASE}/frontend.php/${DIR}/${FILE}"
+ },
+ "performance_id": "1", "order_url": "https://c.stg2.rt.ticketstar.jp/cart/order/sales/1"
+}

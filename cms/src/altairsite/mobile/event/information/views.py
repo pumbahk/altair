@@ -9,9 +9,9 @@ from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
 from altairsite.separation import selectable_renderer
 
-@mobile_site_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='information', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/information/information.mako'))
-@mobile_site_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='infodetail', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/information/infodetail.mako'))
 def move_information(request):
 

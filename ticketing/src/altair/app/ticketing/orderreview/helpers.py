@@ -2,12 +2,30 @@
 
 from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
+from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.cart.helpers import *
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
-from ..cart.helpers import japanese_date, japanese_datetime
+from altair.app.ticketing.cart.helpers import japanese_date, japanese_datetime
 
-__all__ = ["error", "order_desc", "is_include_t_shirts", "sex_value"]
-           
+__all__ = [
+    "japanese_date",
+    "japanese_datetime",
+    "error",
+    "order_desc",
+    "is_include_t_shirts",
+    "sex_value",
+    "order_status",
+    "safe_strftime",
+    "get_order_status",
+    "get_order_status_image",
+    "get_payment_status",
+    "get_payment_status_image",
+    "get_print_status",
+    "is_disabled_order",
+    "get_entry_status",
+    "get_entry_status_image",
+    "safe_get_contact_url", # from altair.app.ticketing.cart.api
+    ]
 
 def error(names):
     request = get_current_request()
@@ -22,7 +40,7 @@ def error(names):
     if not errs:
         return u''
     errs = ", ".join(errs.values())
-    if request.is_mobile:
+    if is_mobile_request(request):
         return Markup('<font color="red">%s</font><br />' % errs)
     else:
         return Markup('<p class="error">%s</p>' % errs)

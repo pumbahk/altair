@@ -18,3 +18,7 @@ class DispHelper(object):
     def get_info_list(self, event_info, label):
         h = SmartPhoneHelper()
         return h.get_info_list(event_info=event_info, label=label)
+
+    def disp_period(self, open, close):
+        h = SmartPhoneHelper()
+        return h.disp_period(open=open, close=close)

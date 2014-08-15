@@ -26,6 +26,7 @@ from altair.app.ticketing.cart.helpers import (
     format_number,
     format_currency,
     error_list,
+    safe_get_contact_url,
 )
 
 SHIPPING_ATTRS = (

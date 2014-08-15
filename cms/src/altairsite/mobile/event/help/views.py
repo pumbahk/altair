@@ -9,7 +9,7 @@ from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.disphelper import DispHelper
 from altairsite.separation import selectable_renderer
 
-@mobile_site_view_config(route_name='help', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='help', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/help/help.mako'))
 def move_help(request):
 

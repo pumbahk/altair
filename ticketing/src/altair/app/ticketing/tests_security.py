@@ -28,7 +28,7 @@ class auth_model_callbackTests(unittest.TestCase):
         self.assertEqual(result, [])
 
     def test_membership(self):
-        identity = {'authenticator': self.fc_auth_plugin, 'identifier': self.fc_auth_plugin, 'membership': 'test-membership'}
+        identity = {'authenticator': self.fc_auth_plugin, 'identifier': self.fc_auth_plugin, 'membership': 'test-membership', 'altair.auth.type': 'fc_auth'}
         request = testing.DummyRequest()
 
         result = self._callFUT(identity, request)
@@ -36,7 +36,7 @@ class auth_model_callbackTests(unittest.TestCase):
         self.assertEqual(result, ['membership:test-membership', 'auth_type:fc_auth'])
 
     def test_membergroup(self):
-        identity = {'authenticator': self.fc_auth_plugin, 'identifier': self.fc_auth_plugin, 'membergroup': 'test-membergroup'}
+        identity = {'authenticator': self.fc_auth_plugin, 'identifier': self.fc_auth_plugin, 'membergroup': 'test-membergroup', 'altair.auth.type': 'fc_auth'}
         request = testing.DummyRequest()
 
         result = self._callFUT(identity, request)
@@ -44,7 +44,7 @@ class auth_model_callbackTests(unittest.TestCase):
         self.assertEqual(result, ['membergroup:test-membergroup', 'auth_type:fc_auth'])
         
     def test_claimed_id(self):
-        identity = {'authenticator': self.rakuten_auth_plugin, 'identifier': self.rakuten_auth_plugin, 'claimed_id': 'http://example.com'}
+        identity = {'authenticator': self.rakuten_auth_plugin, 'identifier': self.rakuten_auth_plugin, 'claimed_id': 'http://example.com', 'altair.auth.type': 'rakuten'}
         request = testing.DummyRequest()
 
         result = self._callFUT(identity, request)

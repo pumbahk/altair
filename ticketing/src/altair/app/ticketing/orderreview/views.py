@@ -10,6 +10,7 @@ from altair.app.ticketing.qr.image import qrdata_as_image_response
 from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
+from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.cart import api as cart_api
 from datetime import datetime
@@ -22,8 +23,7 @@ from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
-from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
-
+from .api import is_mypage_organization, is_rakuten_auth_organization
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 
 logger = logging.getLogger(__name__)
@@ -180,7 +180,7 @@ class MypageLoginView(object):
 
     def select_renderer(self, membership):
         self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
-        if cart_api.is_mobile(self.request):
+        if is_mobile_request(self.request):
             self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
         """
         elif cart_api.is_smartphone(self.request):
@@ -203,7 +203,7 @@ class MypageLoginView(object):
     @view_config(request_method="POST", route_name='order_review.form', renderer='string',
                  custom_predicates=(is_mypage_organization, ))
     def login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.context.membership.name
         if self.request.params.get('membership', None):
             authmembership = self.request.params.get('membership', None)
@@ -312,7 +312,7 @@ def notfound_view(context, request):
 @view_config(route_name="contact")
 @mobile_view_config(route_name="contact")
 def contact_view(context, request):
-    return HTTPFound(safe_get_contact_url(request, default=request.route_path("order_review.form")))
+    return HTTPFound(cart_api.safe_get_contact_url(request, default=request.route_path("order_review.form")))
 
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))

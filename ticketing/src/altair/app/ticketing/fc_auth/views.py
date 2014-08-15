@@ -5,6 +5,7 @@ from pyramid.view import view_config
 from altair.auth import who_api as get_who_api
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
 import altair.app.ticketing.users.models as u_m
@@ -28,14 +29,14 @@ class LoginView(object):
 
     def select_renderer(self, membership, detail_membership=None):
         if detail_membership:
-            if cart_api.is_mobile(self.request):
+            if is_mobile_request(self.request):
                 self.request.override_renderer = self.detail_renderer_tmpl_mobile.format(membership=membership, detail_membership=detail_membership)
             elif cart_api.is_smartphone(self.request):
                 self.request.override_renderer = self.detail_renderer_tmpl_smartphone.format(membership=membership, detail_membership=detail_membership)
             else:
                 self.request.override_renderer = self.detail_renderer_tmpl.format(membership=membership, detail_membership=detail_membership)
         else:
-            if cart_api.is_mobile(self.request):
+            if is_mobile_request(self.request):
                 self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
             elif cart_api.is_smartphone(self.request):
                 self.request.override_renderer = self.renderer_tmpl_smartphone.format(membership=membership)
@@ -57,7 +58,7 @@ class LoginView(object):
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     @view_config(request_method="POST", route_name='fc_auth.detail_login', renderer='string')
     def login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.request.matchdict['membership']
         detail_membership = self.request.matchdict.get('detail_membership', None)
         if detail_membership:
@@ -95,7 +96,7 @@ class LoginView(object):
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
     @view_config(request_method="POST", route_name='fc_auth.detail_guest', renderer='string')
     def guest_login(self):
-        who_api = get_who_api(self.request, name="fc_auth")
+        who_api, _ = get_who_api(self.request, "fc_auth")
         authmembership = membership = self.request.matchdict['membership']
         detail_membership = self.request.matchdict.get('detail_membership', None)
         if detail_membership:

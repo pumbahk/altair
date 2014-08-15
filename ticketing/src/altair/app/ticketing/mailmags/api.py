@@ -24,6 +24,7 @@ def get_magazines_to_subscribe(organization, emails):
                     (mailmag_models.MailMagazine.id == mailmag_models.MailSubscription.segment_id) & \
                     (mailmag_models.MailSubscription.email.in_(emails))) \
                 .filter(mailmag_models.MailMagazine.organization_id == organization.id) \
+                .filter(mailmag_models.MailMagazine.status == True) \
                 .filter(
                     ~mailmag_models.MailMagazine.id.in_(
                         DBSession.query(MailSubscription_alias.segment_id) \

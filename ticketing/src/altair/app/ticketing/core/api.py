@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from ..utils import sensible_alnum_encode
+from altair.mobile.api import is_mobile_request
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +15,6 @@ def get_organization_setting(request, organization, name=None):
     return OrganizationSetting.query.filter(
         OrganizationSetting.organization_id==organization.id, 
         OrganizationSetting.name==name).first()
-
-def is_mobile_request(request):
-    return getattr(request, "is_mobile", False)
 
 def get_host_base_url(request):
     from .models import Host
@@ -42,7 +40,7 @@ def get_channel(channel=None, request=None):
         if c.v == channel:
             return c
 
-    if request and hasattr(request, 'is_mobile') and request.is_mobile:
+    if request and is_mobile_request(request):
         return ChannelEnum.Mobile
     else:
         return ChannelEnum.PC

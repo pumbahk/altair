@@ -1,0 +1,26 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス連携 アカウント - ${form.name.data if form.name.data else u'作成'}</h3>
+</div>
+
+
+<div class="well">
+  <form class="form-horizontal" method="POST">
+    <fieldset>
+      ${ch.form_item(form.account_id)}
+      ${ch.form_item(form.code)}
+      ${ch.form_item(form.name)}
+      ${ch.form_item(form.host)}
+      ${ch.form_item(form.username)}
+      ${ch.form_item(form.password)}
+      ${ch.form_item(form.send_dir)}
+      ${ch.form_item(form.recv_dir)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="保存">
+    </div>
+  </form>
+</div>

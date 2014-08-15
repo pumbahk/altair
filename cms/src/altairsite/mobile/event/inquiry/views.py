@@ -6,7 +6,7 @@ from altairsite.inquiry.api import send_inquiry_mail
 from altairsite.inquiry.message import SupportMail, CustomerMail
 from altairsite.separation import selectable_renderer
 
-@mobile_site_view_config(route_name='inquiry', request_method="GET", request_type="altairsite.tweens.IMobileRequest",
+@mobile_site_view_config(route_name='inquiry', request_method="GET", request_type="altair.mobile.interfaces.IMobileRequest",
              renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/inquiry/inquiry.mako'))
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -14,7 +14,7 @@ def move_inquiry(request):
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@mobile_site_view_config(route_name='inquiry', request_method="POST", request_type="altairsite.tweens.IMobileRequest",
+@mobile_site_view_config(route_name='inquiry', request_method="POST", request_type="altair.mobile.interfaces.IMobileRequest",
              renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/inquiry/inquiry.mako'))
 def send_inquiry(request):
     log_info("send_inquiry", "start")

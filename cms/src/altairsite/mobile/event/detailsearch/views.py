@@ -7,7 +7,7 @@ from altairsite.mobile.core.searcher import create_event_searcher
 from altairsite.separation import selectable_renderer
 from datetime import date
 
-@mobile_site_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='detailsearchinit', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/detailsearch/detailsearch.mako'))
 def move_detailsearch(request):
 
@@ -19,7 +19,7 @@ def move_detailsearch(request):
 
     return {'form':form}
 
-@mobile_site_view_config(route_name='detailsearch', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='detailsearch', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/detailsearch.mako'))
 def move_detailsearch_post(request):
 

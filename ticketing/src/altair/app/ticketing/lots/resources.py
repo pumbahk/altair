@@ -59,6 +59,9 @@ class LotResource(object):
                 .first()
         self.lot = lot
 
+        # for B/W compatibility
+        self.nogizaka_lot_ids = set(long(c) for c in (c.strip() for c in request.registry.settings.get('altair.lots.nogizaka_lot_id', '').split(',')) if c)
+
     def authenticated_user(self):
         return get_auth_info(self.request)
 
@@ -73,7 +76,7 @@ class LotResource(object):
             logger.debug('acl: lot is not found')
             return []
 
-        if not self.lot.auth_type:
+        if not self.auth_type:
             logger.debug('acl: lot has no auth_type')
             return [
                 (Allow, Everyone, 'lots'),
@@ -81,8 +84,15 @@ class LotResource(object):
 
         logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
         return [
-            (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
+            (Allow, "auth_type:%s" % self.auth_type, 'lots'),
         ]
+
+    @reify
+    def auth_type(self):
+        # for B/W compatibility
+        if self.lot.id in self.nogizaka_lot_ids:
+            return 'nogizaka46'
+        return self.lot.auth_type
 
     def check_entry_limit(self, wishes, user=None, email=None):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)

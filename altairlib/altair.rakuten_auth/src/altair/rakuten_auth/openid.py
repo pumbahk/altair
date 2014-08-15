@@ -105,13 +105,14 @@ class RakutenOpenID(object):
         return session
 
     def get_who_api(self, request):
-        return get_who_api(request, name='rakuten')
+        api, _ = get_who_api(request, 'rakuten')
+        return api
 
     def combine_session_id(self, request, session, url):
         q = '?ak=' + urllib.quote(session.id)
         if IMobileRequest.providedBy(request):
-            key = request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY)
-            session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
+            key = HybridHTTPBackend.get_query_string_key(request)
+            session_restorer = HybridHTTPBackend.get_session_restorer(request)
             if key and session_restorer:
                 # webobは"&"の他に";"文字もデリミタと見なしてくれる
                 q += ';%s=%s' % (urllib.quote(key), urllib.quote(session_restorer))
@@ -208,9 +209,10 @@ class RakutenOpenID(object):
         return_url = request.url
         _session = request.session # Session gets created here!
         if _session is not None and IMobileRequest.providedBy(request):
-            key = request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY)
-            session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
-            return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
+            key = HybridHTTPBackend.get_query_string_key(request)
+            session_restorer = HybridHTTPBackend.get_session_restorer(request)
+            if key and session_restorer:
+                return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
         self.set_return_url(session, return_url)
         session.save()
         redirect_to = self.get_redirect_url(request, session)

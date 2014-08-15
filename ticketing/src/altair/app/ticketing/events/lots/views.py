@@ -138,7 +138,7 @@ class Lots(BaseView):
             (str(s.id), s.name)
             for s in sales_segment_groups
             ]
-        form = LotForm(formdata=self.request.POST)
+        form = LotForm(formdata=self.request.POST, context=self.context)
         form.sales_segment_group_id.choices = sales_segment_group_choices
 
         if self.request.POST and form.validate():
@@ -334,7 +334,7 @@ class Lots(BaseView):
             (str(s.id), s.name)
             for s in sales_segment_groups
             ]
-        form = LotForm(formdata=self.request.POST, obj=lot)
+        form = LotForm(formdata=self.request.POST, obj=lot, context=self.context)
         form.sales_segment_group_id.choices = sales_segment_group_choices
         if self.request.POST and form.validate():
             form.update_lot(lot)
@@ -1132,7 +1132,10 @@ class LotReport(object):
             for report_recipient_id in f.recipients.data
             ]
         if f.email.data:
-            new_recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+            rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
+            if not rr:
+                rr = ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id)
+            new_recipients.append(rr)
         if report_setting is None:
             report_setting = LotEntryReportSetting()
 
@@ -1142,7 +1145,7 @@ class LotReport(object):
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 
-        report_setting = merge_session_with_post(report_setting, f.data, excludes={'name', 'email'})
+        report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
         report_setting.save()

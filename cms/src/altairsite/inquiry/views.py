@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from altair.mobile.api import is_mobile_request
+
 from . api import send_inquiry_mail
 from . message import SupportMail, CustomerMail
 from . session import InquirySession
@@ -9,7 +11,7 @@ from altairsite.mobile.core.helper import log_info, log_error
 
 ##workaround.
 def pc_access(info, request):
-    return hasattr(request, "is_mobile") and request.is_mobile == False
+    return not is_mobile_request(request)
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="GET",
              custom_predicates=(pc_access, ),

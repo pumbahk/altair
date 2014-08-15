@@ -10,6 +10,7 @@ import locale
 import time
 import json
 import gzip
+import shutil
 import csv
 
 from cStringIO import StringIO
@@ -204,7 +205,7 @@ def import_tree(registry, metadata_file, bundle_base_url, site_id, dump=False, n
                 uploaded_filename = '%s.svgz' % name_part
                 svg_file = open(path_to_svg)
                 gzipped = StringIO()
-                shutil.copyfileobj(svg_file, gzip.GzipFile(mode='w', fileobj=io))
+                shutil.copyfileobj(svg_file, gzip.GzipFile(mode='w', fileobj=gzipped))
                 svg_file.seek(0) 
             elif ext == '.svgz':
                 uploaded_filename = filename
