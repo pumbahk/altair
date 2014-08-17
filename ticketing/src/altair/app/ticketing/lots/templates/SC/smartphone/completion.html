@@ -79,7 +79,7 @@
 <li>メールアドレス&nbsp;${shipping_address.email_1}</li>
 <li>電話番号&nbsp;(自宅)&nbsp;${shipping_address.tel_1}</li>
 <li>電話番号&nbsp;(携帯)&nbsp;${shipping_address.tel_2}</li>
-<li>配送先住所<br>
+<li>住所<br>
 ※配達受取を選択した場合<br>
 〒${shipping_address.zip}&nbsp;
 ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}
@@ -96,12 +96,10 @@ ${shipping_address.address_2}
 <dt class="creditHl">注意事項</dt>
 <dd>
 <div class="detailBox">
-<p>
-お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、
-入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。<br/>
-登録内容、受信設定を確認のうえ、<a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。<br/>
-お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。
-<p>お申込内容は、「<a href="/lots/review">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
+<p>お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</p>
+<p>登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</p>
+<p>お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。</p>
+<p>お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
 </div>
 </dd>
 </dl>

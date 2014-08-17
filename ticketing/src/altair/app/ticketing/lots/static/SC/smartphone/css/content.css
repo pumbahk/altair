@@ -394,7 +394,12 @@
   font-size: 17px;
 }
 
-
+label.required:after {
+  content: "*";
+  color: red;
+  font-size: 0.75em;
+  vertical-align: top;
+}
 
 
 

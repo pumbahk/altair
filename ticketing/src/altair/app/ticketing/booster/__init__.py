@@ -152,6 +152,7 @@ def includeme(config):
     config.include('altair.app.ticketing.setup_beaker_cache')
     config.include(setup_cart)
     config.include('altair.mobile')
+    config.add_smartphone_support_predicate(lambda request: False)
     config.include('altair.sqlahelper')
     config.include(setup_views)
     config.include(setup_excviews)
