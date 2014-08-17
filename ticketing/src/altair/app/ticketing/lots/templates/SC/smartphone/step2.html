@@ -151,13 +151,13 @@ ${self.error(form, 'first_name_kana')}
 <dt class="creditHl">メールアドレス(半角英数)</dt>
 <dd>
 <p>
-${form['email_1'].label}<br/>
+${h.render_label(form['email_1'])}<br/>
 ${form['email_1']}<br/>
 ${self.error(form, 'email_1')}
 (例：mail@example.ne.jp)
 </p>
 <p>
-${form['email_1_confirm'].label}<br/>
+${h.render_label(form['email_1_confirm'])}<br/>
 ${form['email_1_confirm']}<br/>
 ${self.error(form, 'email_1_confirm')}
 (例：mail@example.ne.jp)
@@ -168,13 +168,13 @@ ${self.error(form, 'email_1_confirm')}
 <dt class="creditHl">電話番号(半角数字)</dt>
 <dd>
 <p>
-${form['tel_1'].label}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
+${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
 ${form['tel_1']}<br/>
 ${self.error(form, 'tel_1')}
 (例: 03xxxxyyyy)
 </p>
 <p>
-${form['tel_2'].label}<br/>
+${h.render_label(form['tel_2'])}<br/>
 ${form['tel_2']}<br/>
 ${self.error(form, 'tel_2')}
 (例: 080xxxxyyyy)
@@ -185,34 +185,34 @@ ${self.error(form, 'tel_2')}
 <dd>
 <p>
 <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
-${form['zip'].label}<br/>
+${h.render_label(form['zip'])}<br/>
 ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}<br/>
 ${self.error(form, 'zip')}
 (例: 1030001)
 </p>
 <p>
-${form['prefecture'].label}<br/>
+${h.render_label(form['prefecture'])}<br/>
 ${form['prefecture']}<br/>
 ${self.error(form, 'prefecture')}
 (例: 東京都)
 </p>
 </p>
 <p>
-${form['city'].label}<br/>
+${h.render_label(form['city'])}<br/>
 ${form['city']}<br/>
 ${self.error(form, 'city')}
 (例: 中央区)
 </p>
 </p>
 <p>
-${form['address_1'].label}<br/>
+${h.render_label(form['address_1'])}<br/>
 ${form['address_1']}<br/>
 ${self.error(form, 'address_1')}
 (例: 日本橋x-xx-xx)
 </p>
 </p>
 <p>
-${form['address_2'].label}<br/>
+${h.render_label(form['address_2'])}<br/>
 ${form['address_2']}<br/>
 ${self.error(form, 'address_2')}
 (例: yyビルz階)
