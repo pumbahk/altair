@@ -49,19 +49,10 @@
 % for m in payment_delivery_pairs:
 <%
     checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
-
-    fee = ''
-    if m.system_fee > 0:
-        fee = fee + u' & システム利用料'
-    endif
-
-    if m.special_fee > 0:
-        fee = fee + u' & ' + m.special_fee_name
-    endif
 %>
 <p>
   <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
-  <label for="radio${m.id}">${m.payment_method.name} &amp; ${m.delivery_method.name} ${fee}</label>
+  <label for="radio${m.id}">${m.payment_method.name} / ${m.delivery_method.name}</label>
 </p>
 % endfor
 
@@ -110,9 +101,11 @@ ${m.delivery_method.description or '' | n}
 
 <div class="subbox">
 <dl>
-<dt><p class="lineRed">購入者情報</p></dt>
+<dt>
+<p class="lineRed">購入者情報</p>
+<div class="tyuui2">*印の項目は入力が必須です</div>
+</dt>
 <dd>
-
 <div class="subInner2">
 <dl class="creditList">
 
