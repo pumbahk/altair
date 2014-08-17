@@ -27,6 +27,20 @@
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2 class="title">お申込内容</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table>
+            <tr>
+              <th>決済方法</th>
+              <td>${entry.payment_delivery_method_pair.payment_method.name}</td>
+            </tr>
+            <tr class="settlementSelectEnd">
+              <th>引取方法</th>
+              <td>${entry.payment_delivery_method_pair.delivery_method.name}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
