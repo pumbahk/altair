@@ -9,7 +9,6 @@ using System.Windows.Media.Imaging;
 using System.Xml;
 
 using checkin.core.support;
-using Microsoft.TeamFoundation.Controls.WPF;
 using checkin.presentation.gui.control;
 using System.Windows.Shapes;
 using checkin.core.models;
@@ -37,7 +36,7 @@ namespace checkin.presentation.models
         {
             foreach (var p in doc.Pages)
             {
-                var qr = WpfUtil.FindVisualChild<QRCodeCanvas>(p.Child);
+                var qr = WpfUtilEx.FindVisualChild<QRCodeCanvas>(p.Child);
                 if (qr != null)
                 {
                     qr.RaiseEvent(new System.Windows.RoutedEventArgs(QRCodeCanvas.LoadedEvent));

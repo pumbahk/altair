@@ -4,41 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace checkin_core.support
+namespace checkin.core.support
 {
-    public class UIElement : IEnumerable<UIElement>
-    {
-        private List<UIElement> children = new List<UIElement>();
-        public int VisualChildrenCount { get { return children.Count; } }
-        public UIElement GetVisualChild(int i) { return children[i]; }
-
-        public UIElement() { }
-        public UIElement(IEnumerable<UIElement> e) { children.AddRange(e); }
-
-        public void Add(UIElement n) { children.Add(n); }
-        public IEnumerator<UIElement> GetEnumerator() { return children.GetEnumerator(); }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return children.GetEnumerator(); }
-    }
 
     public static class WpfUtilEx
     {
-        public static UIElement FindVisualChild<T>(UIElement searchFrom) where T : UIElement
+        public static T FindVisualChild<T>(System.Windows.UIElement element) where T : System.Windows.UIElement
         {
-            if (searchFrom is T)
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(element); i++)
             {
-                return searchFrom;
-            }
-            var numChildren = searchFrom.VisualChildrenCount;
-            for (int i = 0; i < numChildren; i++)
-            {
-                var r = FindVisualChild<T>(searchFrom.GetVisualChild(i));
-                if (r != null)
+                System.Windows.UIElement uIElement = (System.Windows.UIElement)System.Windows.Media.VisualTreeHelper.GetChild(element, i);
+                if (uIElement != null)
                 {
-                    return r;
+                    T t = uIElement as T;
+                    if (t != null)
+                    {
+                        return t;
+                    }
+                    T t2 = WpfUtilEx.FindVisualChild<T>(uIElement);
+                    if (t2 != null)
+                    {
+                        return t2;
+                    }
                 }
             }
-            return null;
+            return default(T);
         }
-
     }
 }
