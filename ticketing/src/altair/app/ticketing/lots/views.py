@@ -594,10 +594,7 @@ class LotReviewView(object):
 @mobile_view_config(context=".exceptions.OutTermException",
              renderer=selectable_renderer("%(membership)s/mobile/out_term_exception.html"))
 def out_term_exception(context, request):
-    return dict(lot_name=context.lot_name,
-                from_=context.from_,
-                to_=context.to_,
-                )
+    return dict(lot=context.lot)
 
 
 
