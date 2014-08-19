@@ -4,6 +4,8 @@ import time
 import datetime
 import itertools
 from StringIO import StringIO
+from sqlalchemy.orm.exc import NoResultFound
+
 from altair.app.ticketing.core.models import (
     Seat,
     Venue,
@@ -115,8 +117,6 @@ class AugusPutbackExporter(object):
                                          .filter(AugusPutback.reserved_at!=None)\
                                          .all()
 
-        # for (event_code, putback_code), putbacks_in_event \
-        #     in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code)):
         now = datetime.datetime.now()
 
         responses = []
@@ -158,11 +158,18 @@ class AugusAchievementExporter(object):
         augus_stock_info = None
         augus_stock_detail = None
         ordered_product_item = self.seat2opitem(seat)
+        augus_stock_detail = None
+        try:
+            augus_stock_detail = AugusStockDetail\
+            .query\
+            .join(AugusStockInfo)\
+            .filter(AugusStockInfo.seat_id==seat.id)\
+            .filter(AugusStockDetail.augus_putback_id==None)\
+            .one() # MultiplFound: 多重配席, NoResultFound: 未配席
+        except NoResultFound as err: # 未配席
+            return None
 
-        augus_stock_detail = AugusStockDetail.query.join(AugusStockInfo)\
-                                                   .filter(AugusStockInfo.seat_id==seat.id)\
-                                                   .filter(AugusStockDetail.augus_putback_id==None)\
-                                                   .one() # MultiplFound: 多重配席, NoResultFound: 未配席
+
         if ordered_product_item:
             augus_ticket = ordered_product_item.ordered_product.product.augus_ticket
             if not augus_ticket:
