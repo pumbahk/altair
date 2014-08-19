@@ -214,7 +214,7 @@ class AugusWorker(object):
         send_dir_staging = self.path.send_dir_staging
         target = DistributionSyncRequest
         importer = AugusDistributionImporter()
-        exporter = AugusAchievementExporter()
+        exporter = AugusDistributionExporter()
         status = Status.NG
 
         successes = []
