@@ -48,7 +48,6 @@ def refresh_order_with_signed(context, request):
 @view_config(route_name="refresh.order.qr", permission="sales_counter", renderer="json", request_method="POST")
 def refresh_order_with_signed_qr(context, request):
     # QRに対応したチケットのみ未発券にする
-    import ipdb;ipdb.set_trace()
     access_log("*refresh order with signed qr", context.identity)
     if not "qrsigned" in request.json_body:
         raise HTTPBadRequest(u"E@:引数が足りません")
