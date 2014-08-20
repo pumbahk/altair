@@ -531,7 +531,7 @@ class AugusOperationManager(object):
             augus_account_id = worker.augus_account.id
             ids = []
             try:
-                ids = worker.achieve(mailer, all_)
+                ids = worker.achieve(all_)
             except:
                 raise
 
