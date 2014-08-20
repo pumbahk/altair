@@ -22,14 +22,14 @@
 }
 
 table {
-	margin: 0 0 0 1em;
+    margin: 0 0 0 1em;
   padding; 0 0;
   width: 100%;
 }
 
 table th,
 table td {
-	padding: 2px 20px 2px 2px;
+    padding: 2px 20px 2px 2px;
 }
 
 table th {
@@ -38,21 +38,21 @@ table th {
 
 .itemize th,
 .commission th {
-	vertical-align: top;
-	padding: 2px 20px 2px 2px;
-	border-bottom: 1px solid .e6e6e6;
-	font-weight: normal;
-	white-space: nowrap;
+    vertical-align: top;
+    padding: 2px 20px 2px 2px;
+    border-bottom: 1px solid .e6e6e6;
+    font-weight: normal;
+    white-space: nowrap;
 }
 
 .itemize td {
-	padding: 2px;
-	border-bottom: 1px solid .e6e6e6;
+    padding: 2px;
+    border-bottom: 1px solid .e6e6e6;
 }
 
 .itemize tr:last-child th,
 .itemize tr:last-child td {
-	border: none;
+    border: none;
 }
 
 </style>
@@ -77,6 +77,12 @@ shipping =order.shipping_address
         <th scope="row">ステータス</th>
         <td>${h.order_status(order, sent=True)}</td>
       </tr>
+      % if order.status == 'delivered':
+      <tr>
+        <th scope="row">発送日</th>
+        <td>${h.japanese_date(order.delivered_at)}</td>
+      </tr>
+      % endif
     </table>
   </div>
 </div>

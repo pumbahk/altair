@@ -29,6 +29,9 @@ ${order.performance.venue.name}<br />
 　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order, sent=True)}<br/>
+% if order.status == 'delivered':
+・発送日:${h.japanese_date(order.delivered_at)}
+% endif
 ・支払状況:${h.get_payment_status(order)}<br/>
 ・発券状況:${h.get_print_status(order)}<br/>
 ・システム利用料: ￥${h.format_number(order.system_fee)}<br />

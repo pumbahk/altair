@@ -77,6 +77,12 @@ shipping =order.shipping_address
         <th scope="row">ステータス</th>
         <td>${h.order_status(order, sent=True)}</td>
       </tr>
+      % if order.status == 'delivered':
+      <tr>
+        <th scope="row">発送日</th>
+        <td>${h.japanese_date(order.delivered_at)}</td>
+      </tr>
+      % endif
     </table>
   </div>
 </div>
