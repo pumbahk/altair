@@ -214,7 +214,7 @@ class AugusWorker(object):
         send_dir_staging = self.path.send_dir_staging
         target = DistributionSyncRequest
         importer = AugusDistributionImporter()
-        exporter = AugusAchievementExporter()
+        exporter = AugusDistributionExporter()
         status = Status.NG
 
         successes = []
@@ -410,7 +410,7 @@ class AugusOperationManager(object):
 
     def send_mail(self, mailer, augus_account, subject, template_path, params):
         sender = 'dev@ticketstar.jp'
-        recipient = 'dev@ticketstar.jp' # augus_account.email
+        recipient = 'ticket-op@mail.rakuten.com' # augus_account.email
         body = render_to_response(template_path, params)
         mailer.create_message(
             sender=sender,
