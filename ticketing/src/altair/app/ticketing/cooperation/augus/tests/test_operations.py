@@ -33,7 +33,7 @@ class PathManagerTest(TestCase):
     def test_it(self):
         mgr = self.get_target()
         self.assertEqual(mgr.work_dir, '{}/{}'.format(self.var_dir, self.augus_account_id))
-        self.assertEqual(mgr.send_dir_staging, '{}/{}/staging'.format(self.var_dir, self.augus_account_id))
-        self.assertEqual(mgr.send_dir_pending, '{}/{}/pending'.format(self.var_dir, self.augus_account_id))
-        self.assertEqual(mgr.recv_dir_staging, '{}/{}/staging'.format(self.var_dir, self.augus_account_id))
-        self.assertEqual(mgr.recv_dir_pending, '{}/{}/pending'.format(self.var_dir, self.augus_account_id))
+        self.assertEqual(mgr.send_dir_staging, '{}/{}/{}/staging'.format(self.var_dir, self.augus_account_id, self.send_dir))
+        self.assertEqual(mgr.send_dir_pending, '{}/{}/{}/pending'.format(self.var_dir, self.augus_account_id, self.send_dir))
+        self.assertEqual(mgr.recv_dir_staging, '{}/{}/{}/staging'.format(self.var_dir, self.augus_account_id, self.recv_dir))
+        self.assertEqual(mgr.recv_dir_pending, '{}/{}/{}/pending'.format(self.var_dir, self.augus_account_id, self.recv_dir))
