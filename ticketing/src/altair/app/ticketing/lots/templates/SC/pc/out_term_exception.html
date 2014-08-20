@@ -9,6 +9,6 @@
 </div>
 %endif
 <p>
-${lot_name} の申込期間は ${h.japanese_datetime(from_)} ～ ${h.japanese_datetime(to_)} となっております。
+${lot.event.title} ${lot.name} の申込期間は ${h.japanese_datetime(lot.start_at)} ～ ${h.japanese_datetime(lot.end_at)} となっております。
 </p>
 

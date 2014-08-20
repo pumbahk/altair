@@ -133,7 +133,7 @@ class ClientForm(OurForm):
         ]
     )
     address_1 = fields.TextField(
-        label=u"住所",
+        label=u"町名番地",
         filters=[strip_spaces],
         validators=[
             Required(),
@@ -142,7 +142,7 @@ class ClientForm(OurForm):
         ]
     )
     address_2 = fields.TextField(
-        label=u"住所 (建物名など)",
+        label=u"建物名等",
         filters=[strip_spaces],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),

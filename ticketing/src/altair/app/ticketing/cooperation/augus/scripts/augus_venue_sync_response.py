@@ -21,9 +21,11 @@ from altair.augus.protocols import VenueSyncResponse
 from altair.augus.exporters import AugusExporter
 from altair.augus.types import Status
 from altair import multilock
+
 from ..exporters import AugusPutbackExporter
 from ..errors import AugusDataImportError
-
+from ..operations import AugusOperationManager
+from ..config import get_var_dir
 
 
 def mkdir_p(path):
@@ -62,7 +64,9 @@ def export_venue_sync_response_all(settings):
     return augus_venues
 
 
-def main():
+
+
+def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
@@ -93,6 +97,27 @@ def main():
         )
         mailer.send(sender, [recipient])
         transaction.commit()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    setup_logging(args.conf)
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    var_dir = get_var_dir(settings)
+    mailer = Mailer(settings)
+
+
+    mgr = AugusOperationManager(var_dir=var_dir)
+
+    try:
+        with multilock.MultiStartLock('augus_venue_sync_response'):
+            mgr.venue_sync_response(mailer)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
+        return
 
 if __name__ == '__main__':
     main()

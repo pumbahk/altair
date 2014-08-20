@@ -7,6 +7,7 @@ from datetime import datetime
 
 from pyramid.view import view_config
 from altair.mobile import mobile_view_config
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.core.models import (
     Organization,
@@ -25,7 +26,7 @@ def overwrite_request_organization(fn):
             logger.info("* dummy overwrite organization: organization_id = {0}".format(organization_id))
             organization = Organization.query.filter_by(id=organization_id).first()
             if organization:
-                request.organization = organization
+                request.environ[cart_api.ENV_ORGANIZATION_ID_KEY] = organization.id
         return fn(context, request)
     return wrapped
 
@@ -74,6 +75,9 @@ def dummy_qr_draw(context, request):
 def get_dummy_order():
     order = mock.Mock()
     order.created_at = datetime.now()
+    order.performance.name = u'パフォーマンス名'
+    order.performance.venue.name = u'会場名'
+    order.performance.event.title = u'イベント名'
     order.performance.start_on = datetime.now()
     order.items = []
     order.transaction_fee = 1
@@ -83,6 +87,24 @@ def get_dummy_order():
     order.total_amount = 5
     order.payment_delivery_pair.payment_method.payment_plugin_id = 1
     order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
+    order.payment_delivery_pair.special_fee_name = u'特別手数料名'
+    order.shipping_address = mock.Mock(
+        zip=u'000-0000',
+        prefecture=u'神奈川県',
+        city=u'横浜市',
+        address_1=u'戸塚区',
+        address_2=u'レジデンスロングネーム1020',
+        last_name=u'名字',
+        last_name_kana=u'ミョウジ',
+        first_name=u'名前',
+        first_name_kana=u'ナマエ',
+        tel_1=u'045-000-0000',
+        tel_2=u'090-0000-0000'
+        )
+    order.attributes = { u'テスト': u'テスト' }
+    order.get_order_attribute_pair_pairs.return_value = [
+        ((u'test', u'test'), (u'テスト', u'テスト'))
+        ]
     return order
 
 @mobile_view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
