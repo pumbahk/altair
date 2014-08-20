@@ -75,7 +75,7 @@ shipping =order.shipping_address
       </tr>
       <tr>
         <th scope="row">ステータス</th>
-        <td>${h.order_status(order)}</td>
+        <td>${h.order_status(order, sent=True)}</td>
       </tr>
     </table>
   </div>
