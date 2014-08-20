@@ -130,7 +130,7 @@ class AugusWorker(object):
             hostname=self.augus_account.host,
             username=self.augus_account.username,
             password=self.augus_account.password,
-            passive=True,
+            # passive=True, # 暫定的にactiveで接続するようにする
             )
         return transporter
 
