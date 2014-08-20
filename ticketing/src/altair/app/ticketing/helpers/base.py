@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from wtforms.fields.core import Field, UnboundField
+from wtforms import validators
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.schema import Column
@@ -49,3 +50,6 @@ def column_name_for(misc):
 
 def format_percentage(rate, precision=0):
     return (u'%%.%df%%%%' % precision) % (float(rate) * 100.) if rate is not None else u'-'
+
+def is_required(field):
+    return any(isinstance(validator, validators.Required) for validator in field.validators)

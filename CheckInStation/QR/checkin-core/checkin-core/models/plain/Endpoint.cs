@@ -50,8 +50,8 @@ namespace checkin.core.models
             this.VerifyOrderData = EndPoint.asURL (json.orderno_verified_data);
             this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
             this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
-            this.UpdateRefreshedAt = EndPoint.asURL(json.refresh_order);
-            //this.UpdateRefreshedAt2 = EndPoint.asURL(json.refresh_order2);
+            this.UpdateRefreshedAt = EndPoint.asURL(json.refresh_order_qr);
+            this.UpdateRefreshedAt2 = EndPoint.asURL(json.refresh_order2);
             this.DataCollectionFetchData = EndPoint.asURL (json.qr_ticketdata_collection);
         }
 

@@ -11,14 +11,14 @@
     <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
       <div class="confirmBoxText">
-	%if entry.is_ordered:
+        % if entry.is_ordered:
 抽選の結果、お客様はご当選されました。
-<a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。 注文番号は ${entry.entry_no} です。
-        %elif entry.is_rejected:
+<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
+        % elif entry.is_rejected:
 抽選の結果、お客様は残念ながら落選となりました。
-	%elif not entry.lot.is_elected():
-	抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
-	%endif
+        % elif not entry.lot.is_elected():
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+        % endif
       </div>
     </div>
   </div>
@@ -26,7 +26,21 @@
   
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+      <h2 class="title">お申込内容</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table>
+            <tr>
+              <th>決済方法</th>
+              <td>${entry.payment_delivery_method_pair.payment_method.name}</td>
+            </tr>
+            <tr class="settlementSelectEnd">
+              <th>引取方法</th>
+              <td>${entry.payment_delivery_method_pair.delivery_method.name}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
@@ -73,7 +87,7 @@
         <div class="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
             <tr>
-              <th>購入者氏名（全角）</th>
+              <th>購入者氏名</th>
               <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
             </tr>
             <tr>
@@ -93,7 +107,7 @@
               <td>${shipping_address.tel_2}</td>
             </tr>
             <tr>
-              <th>配送先住所</th>
+              <th>住所</th>
               <td>
                 〒${shipping_address.zip}<br />
                 ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />

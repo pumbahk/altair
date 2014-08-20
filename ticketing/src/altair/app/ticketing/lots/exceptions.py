@@ -5,12 +5,9 @@ class NotElectedException(Exception):
 
 
 class OutTermException(Exception):
-    def __init__(self, lot_name, from_, to_):
+    def __init__(self, lot):
         super(OutTermException, self).__init__()
-        self.lot_name = lot_name
-        self.from_ = from_
-        self.to_ = to_
-
+        self.lot = lot
 
 class OverEntryLimitException(Exception):
     def __init__(self, entry_limit, *args, **kwargs):

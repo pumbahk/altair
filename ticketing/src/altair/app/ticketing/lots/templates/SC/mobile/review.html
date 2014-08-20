@@ -15,7 +15,7 @@ ${h.lot_entry_status_as_string(request, entry.status)}
 <%mobile:band bgcolor="#ffffdd">
 %if entry.is_ordered:
 抽選の結果、お客様はご当選されました。<br />
-<a href="/orderreview/guest" target="_blank">購入履歴</a>をご確認ください。
+<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。
 %elif entry.is_rejected:
 抽選の結果、お客様は残念ながら落選となりました。<br />
 %elif not entry.lot.is_elected():
@@ -35,7 +35,7 @@ ${entry.lot.name}<br />
 <div>${entry.payment_delivery_method_pair.delivery_method.name}</div>
 <%mobile:form_header>注意事項</%mobile:form_header>
 <div>${entry.lot.description|n}</div>
-<%mobile:header>希望選択</%mobile:header>
+<%mobile:header>お申込内容</%mobile:header>
 %for wish in entry.wishes:
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
 <div>
@@ -93,7 +93,7 @@ ${shipping_address.email_1}
 <div>
 ${shipping_address.tel_1}
 </div>
-<%mobile:form_header>配送先住所</%mobile:form_header>
+<%mobile:form_header>住所</%mobile:form_header>
 <div>
 ${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
 </div>

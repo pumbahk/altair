@@ -20,28 +20,26 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def download_all(settings):
-    rt_staging = settings['rt_staging']
+import os
+from sqlalchemy.orm.exc import (
+    NoResultFound,
+    MultipleResultsFound,
+    )
+from pyramid.decorator import reify
+from altair.augus.transporters import FTPTransporter
+from altair.augus.parsers import AugusParser
+from altair.app.ticketing.core.models import (
+    AugusAccount,
+    )
+from ..config import get_var_dir
+from ..operations import (
+    AugusOperationManager,
+    )
 
-    mkdir_p(rt_staging)
+class AugusAccountNotFound(Exception):
+    pass
 
-    org_settings = OrganizationSetting.query.filter(
-        OrganizationSetting.augus_use==True).all()
-    for org_setting in org_settings:
-        if org_setting.organization_id != 15:# RT only
-            continue
-        url = urlparse.urlparse(org_setting.augus_download_url)
-        transporter = FTPTransporter(hostname=url.netloc,
-                                     username=org_setting.augus_username,
-                                     password=org_setting.augus_password,
-                                     )
-        transporter.chdir(url.path)
-        for name in transporter.listdir():
-            if AugusParser.is_protocol(name):
-                src = name
-                dst = os.path.join(rt_staging, name)
-                logger.info('augus file download: {} -> {}'.format(src, dst))
-                transporter.get(src, dst, remove=True)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -50,10 +48,12 @@ def main():
     setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
+    var_dir = get_var_dir(settings)
 
+    mgr = AugusOperationManager(var_dir=var_dir)
     try:
         with multilock.MultiStartLock('augus_download'):
-            download_all(settings)
+            mgr.download()
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
 

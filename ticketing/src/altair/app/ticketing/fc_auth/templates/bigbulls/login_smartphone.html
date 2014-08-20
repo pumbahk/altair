@@ -2,13 +2,13 @@
 <html lang="jp">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/bigbulls/smartphone/css/style2.css')}" media="all" />
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/bigbulls/pc/css/style2.css')}" media="all" />
   <title>ブルズチケット</title>
 </head>
 <body>
   <div class="header">
     <div class="header-inner">
-      <img src="${request.static_url('altair.app.ticketing.fc_auth:static/bigbulls/smartphone/images/logo.gif')}" alt="BIGBULLS TICKET" />
+      <img src="${request.static_url('altair.app.ticketing.fc_auth:static/bigbulls/pc/images/logo.gif')}" alt="BIGBULLS TICKET" />
       <div class="gnavi">
       </div>
     </div>
@@ -34,6 +34,9 @@
                     <tr>
                       <td style="text-align:center;"> 
                         <input type="submit" class="redBtn" style="margin-top: 30px;" value="チケット購入" />
+                        <br/>
+                        <div class="small red">※クラブブルズ会員の方も一般販売開始後は</div>
+                        <div class="small red">こちらからご購入ください。</div>
                         %if guest_message:
                         <div class="small red">${guest_message}</div>
                         %endif
@@ -72,7 +75,11 @@
                               </td>
                             </tr>
                             <tr>
-                              <td colspan="2" class="textC"> <input type="submit" class="redBtn" name="login" value="ログイン"></td>
+                              <td colspan="2" class="textC">
+                                <input type="submit" class="redBtn" name="login" value="ログイン">
+                                <div class="small red">※クラブブルズ会員の方は会員番号下5桁の前に</div>
+                                <div class="small red">『44600』をつけ、計10桁をご入力ください。</div>
+                              </td>
                             </tr>
                           </tbody>
                         </table>              

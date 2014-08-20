@@ -1,5 +1,4 @@
-﻿using Microsoft.TeamFoundation.Controls.WPF;
-using NLog;
+﻿using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -194,7 +193,7 @@ namespace checkin.presentation.gui.page{
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             //これでもだめらしい.
-            var tbox = WpfUtil.FindVisualChild<TextBox>(this.MenuDialogQRTesting);
+            var tbox = WpfUtilEx.FindVisualChild<TextBox>(this.MenuDialogQRTesting);
             if (tbox != null)
             {
                 tbox.Focus();
