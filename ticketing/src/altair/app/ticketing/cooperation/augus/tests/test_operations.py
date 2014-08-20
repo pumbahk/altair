@@ -19,10 +19,14 @@ class AugusOperationTest(TestCase):
 class PathManagerTest(TestCase):
     augus_account_id = 3
     var_dir = 'test'
+    send_dir = 'send_dir'
+    recv_dir = 'recv_dir'
 
     def get_target(self):
         augus_account = AugusAccount()
         augus_account.id = self.augus_account_id
+        augus_account.send_dir = self.send_dir
+        augus_account.recv_dir = self.recv_dir
         var_dir = self.var_dir
         return PathManager(augus_account, var_dir)
 
