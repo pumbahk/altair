@@ -117,9 +117,11 @@ class AugusWorker(object):
     def augus_account(self):
         try:
             augus_account = AugusAccount\
-            .query\
-            .filter(AugusAccount.id==self._augus_account_id)\
-            .one()
+                .query\
+                .filter(AugusAccount.id==self._augus_account_id)\
+                .one()
+            from sqlalchemy.orm.session import make_transient
+            make_transient(augus_account)
         except (NoResultFound, MultipleResultsFound) as err:
             raise AugusAccountNotFound('AugusAccount.id={}'.format(self._augus_account_id))
         else:
