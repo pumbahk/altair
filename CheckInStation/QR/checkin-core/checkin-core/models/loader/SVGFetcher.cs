@@ -40,15 +40,19 @@ namespace checkin.core.models
     {
         public readonly String Url;
         public static Logger logger = LogManager.GetCurrentClassLogger();
-        public SVGFetcherForOne(string url)
+        public IResource Resource { get; set; }
+        
+        public SVGFetcherForOne(string url, IResource resource)
         {
             this.Url = url;
+            this.Resource = resource;
         }
         public async Task<Stream> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata)
         {
             var data = new {
                 ordered_product_item_token_id = tdata.ordered_product_item_token_id,
-                secret = tdata.secret
+                secret = tdata.secret,
+                refreshMode = this.Resource.RefreshMode
             };
 
             using (var wrapper = factory.Create(this.Url))

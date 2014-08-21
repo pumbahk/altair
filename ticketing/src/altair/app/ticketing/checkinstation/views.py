@@ -86,8 +86,13 @@ from .todict import (
 @view_config(route_name="qr.ticketdata", permission="sales_counter", renderer="json")
 def ticket_data_from_signed_string(context, request):
     access_log("*qr ticketdata", context.identity)
+
     if not "qrsigned" in request.json_body:
         raise HTTPBadRequest(u"E@:引数が足りません")
+
+    refreshmode = False
+    if "refreshMode" in request.json_body:
+        refreshmode = request.json_body["refreshMode"]
 
     ticket_data = TicketData(request, context.operator)
     try:
@@ -108,7 +113,7 @@ def ticket_data_from_signed_string(context, request):
         ## 認証用の文字列追加
         data.update(verified_data_dict_from_secret(context.identity.secret))
         ## 印刷済み、キャンセル済みなどのステータス付加
-        data.update(TokenStatusDictBuilder(order, history, get_now(request)).build())
+        data.update(TokenStatusDictBuilder(order, history, get_now(request), refreshmode).build())
         return data
     except KeyError:
         logger.warn("*qr ticketdata: KeyError: json=%s", request.json_body)
@@ -164,11 +169,15 @@ def svgsource_one_from_token(context, request):
     if not "ordered_product_item_token_id" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
 
+    refreshmode = False
+    if "refreshMode" in request.json_body:
+        refreshmode = request.json_body["refreshMode"]
+
     token_data = ItemTokenData(request, context.operator)
     svg_source = SVGDataSource(request)
 
     token = token_data.get_item_token_from_id(request.json_body["ordered_product_item_token_id"])
-    if token.is_printed():
+    if token.is_printed() and not refreshmode:
         return {"datalist": []}
     datalist = svg_source.data_list_for_one(token)
     return {"datalist": datalist}

@@ -152,7 +152,7 @@ namespace checkin.core.models
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)
         {
             try {
-                var fetcher = new SVGFetcherForOne(GetSvgOneURL());
+                var fetcher = new SVGFetcherForOne(GetSvgOneURL(), this.Resource);
                 var response = await fetcher.GetSvgDataList (Resource.HttpWrapperFactory, tdata);
                 var svg_list = fetcher.ParseSvgDataList (response);
                 var r = new List<TicketImageData> ();

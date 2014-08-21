@@ -43,7 +43,7 @@ namespace checkin.core.models
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)
         {
             try{
-                var fetcher = new SVGFetcherForOne(this.GetSvgOneURL());
+                var fetcher = new SVGFetcherForOne(this.GetSvgOneURL(), this.Resource);
                 var response = await fetcher.GetSvgDataList (Resource.HttpWrapperFactory, tdata);                
                 var svg_list = fetcher.ParseSvgDataList (response);
                 var coll = new List<TicketImageData> ();

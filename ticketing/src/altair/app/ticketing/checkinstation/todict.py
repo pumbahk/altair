@@ -25,11 +25,12 @@ class TokenStatus:
     unknown = "unknown"
 
 class TokenStatusDictBuilder(object):
-    def __init__(self, order, history=None, today=None):
+    def __init__(self, order, history=None, today=None, refreshmode=None):
         self.order = order
         self.history = history
 
         self.today = today
+        self.refreshmode = refreshmode
 
         self.token = self.history.item_token if history else None
         self.performance = self.order.performance
@@ -44,6 +45,10 @@ class TokenStatusDictBuilder(object):
         return D
 
     def printed_status_dict(self):
+        # 再発券許可モードは無条件で未発券
+        if self.refreshmode:
+            return {"printed_at": None}
+
         if self._is_unprinted_yet(self.order, self.token):
             return {"printed_at": None}
         else:
