@@ -13,6 +13,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     Stock,
     StockHolder,
+    AugusAccount,
     AugusPerformance,
     AugusVenue,
     AugusTicket,
@@ -111,12 +112,18 @@ class AugusPutbackExporter(object):
         record.putback_type = ag_putback.augus_putback_type
         return record
 
-    def create_responses(self, putbacks=[]):
+    def create_responses(self, putbacks=[], customer_id=None):
         if not putbacks:
-            putbacks = AugusPutback.query.filter(AugusPutback.notified_at==None)\
-                                         .filter(AugusPutback.reserved_at!=None)\
-                                         .all()
-
+            qs = AugusPutback\
+                .query\
+                .filter(AugusPutback.notified_at==None)\
+                .filter(AugusPutback.reserved_at!=None)
+            if customer_id:
+                qs = qs\
+                    .join(AugusAccount)\
+                    .filter(AugusAccount.code==customer_id)
+            putbacks = qs.all()
+            
         now = datetime.datetime.now()
 
         responses = []
@@ -131,7 +138,7 @@ class AugusPutbackExporter(object):
         return responses
 
     def export(self, path, customer_id):
-        responses = self.create_responses()
+        responses = self.create_responses(customer_id=customer_id)
         for response in responses:
             if len(response) == 0:
                 continue
