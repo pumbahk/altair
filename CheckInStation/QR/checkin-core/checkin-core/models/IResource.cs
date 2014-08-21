@@ -20,7 +20,9 @@ namespace checkin.core.models
         AuthInfo AuthInfo { get; set; }
 
         //アプリ用
-        bool MultiPrintMode { get; set;} 
+        bool MultiPrintMode { get; set; }
+
+        bool RefreshMode { get; set; }
         
         IModelValidation Validation { get; set; }
 
