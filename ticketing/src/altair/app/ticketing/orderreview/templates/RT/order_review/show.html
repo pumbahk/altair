@@ -83,6 +83,12 @@ shipping =order.shipping_address
         <td>${h.japanese_date(order.delivered_at)}</td>
       </tr>
       % endif
+      %  if order.is_issued() and order.deliver_at_store():
+      <tr>
+        <th scope="row">発券日時</th>
+        <td>${h.japanese_datetime(order.issued_at)}</td>
+      </tr>
+      % endif
     </table>
   </div>
 </div>
