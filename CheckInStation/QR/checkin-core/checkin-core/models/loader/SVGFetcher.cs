@@ -85,17 +85,20 @@ namespace checkin.core.models
     {
         public readonly string Url;
         public static Logger logger = LogManager.GetCurrentClassLogger();
+        public IResource Resource { get; set; }
 
-        public SVGFetcherForAll(string url)
+        public SVGFetcherForAll(string url, IResource resource)
         {
             this.Url = url;
+            this.Resource = resource;
         }
         public async Task<Stream> GetSvgDataList(IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection)
         {
             var parms = new
             {
                 token_id_list = collection.collection.Where(o => o.is_selected).Select(o => o.ordered_product_item_token_id).ToArray(),
-                secret = collection.secret
+                secret = collection.secret,
+                refreshMode = this.Resource.RefreshMode
             };
             using (var wrapper = factory.Create(this.Url))
             {

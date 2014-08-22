@@ -67,7 +67,7 @@ namespace checkin.core.models
         {
             try
             {
-                var fetcher = new SVGFetcherForAll(this.GetSvgAllURL());
+                var fetcher = new SVGFetcherForAll(this.GetSvgAllURL(), this.Resource);
                 var response = await fetcher.GetSvgDataList(Resource.HttpWrapperFactory, collection).ConfigureAwait(false);
 
                 var svg_list = fetcher.ParseSvgDataList(response);

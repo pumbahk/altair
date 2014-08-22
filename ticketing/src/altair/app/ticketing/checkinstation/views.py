@@ -137,6 +137,10 @@ def ticket_data_collection_from_order_no(context, request):
     if not "order_no" in request.json_body:
         raise HTTPBadRequest(u"E@:引数が足りません")
 
+    refreshmode = False
+    if "refreshMode" in request.json_body:
+        refreshmode = request.json_body["refreshMode"]
+
     order_no = request.json_body["order_no"]
     now = get_now(request)
 
@@ -146,14 +150,14 @@ def ticket_data_collection_from_order_no(context, request):
 
     not_masked_reservaions, masked_reservations = reservertaion_generator.get_partationed_reservations(now)
     mask_predicate = TokenMaskPredicate(not_masked_reservaions, masked_reservations)
-    data = ticket_data_collection_dict_from_tokens(token_list, mask_predicate=mask_predicate)
+    data = ticket_data_collection_dict_from_tokens(token_list, mask_predicate=mask_predicate, refreshmode=refreshmode)
 
     ## 付加情報追加
     data.update(additional_data_dict_from_order(order))
     ## 認証用の文字列追加
     data.update(verified_data_dict_from_secret(context.identity.secret))
     ## 印刷済み、キャンセル済みなどのステータス付加
-    data.update(TokenStatusDictBuilder(order, None, now).build())
+    data.update(TokenStatusDictBuilder(order, None, now, refreshmode).build())
     return data
 
 
@@ -192,13 +196,17 @@ def svgsource_all_from_token_id_list(context, request):
     if not "token_id_list" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
 
+    refreshmode = False
+    if "refreshMode" in request.json_body:
+        refreshmode = request.json_body["refreshMode"]
+
     token_id_list = request.json_body["token_id_list"]
 
     token_data = ItemTokenData(request, context.operator)
     svg_source = SVGDataSource(request)
 
     token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
-    token_list = [t for t in token_list if not t.is_printed()]
+    token_list = [t for t in token_list if not t.is_printed() or refreshmode]
     datalist = svg_source.data_list_for_all(token_list)
     return {"datalist": datalist}
 

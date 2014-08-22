@@ -26,6 +26,7 @@ namespace checkin.core.flow
         {
             TicketData = ticketdata;
             this.tokenStatus = TokenStatus.valid;
+            this.Resource = resource;
         }
 
         public override async Task PrepareAsync(IInternalEvent ev)
@@ -33,7 +34,7 @@ namespace checkin.core.flow
             await base.PrepareAsync(ev).ConfigureAwait(false);
 
             var subject = ev as ConfirmAllEvent;
-            var data = new TicketDataCollectionRequestData() { order_no = TicketData.additional.order.order_no, secret = TicketData.secret };
+            var data = new TicketDataCollectionRequestData() { order_no = TicketData.additional.order.order_no, secret = TicketData.secret, refreshMode = this.Resource.RefreshMode };
             subject.SetInfo(TicketData);
 
             ResultTuple<string, TicketDataCollection> result = await new DispatchResponse<TicketDataCollection>(Resource).Dispatch(() => Resource.TicketDataCollectionFetcher.FetchAsync(data)).ConfigureAwait(false);
