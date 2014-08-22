@@ -343,6 +343,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return qs.first() is None
 
     def deliver_at_store(self):
+        """
+        コンビニ受取かどうかを判定する。
+        """
         return self.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID
 
     @property
