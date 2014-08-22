@@ -1786,6 +1786,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def filter_by_organization_id(id):
         return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
+    def deliver_at_store(self):
+        """
+        コンビニ受取かどうかを判定する。
+        """
+        return self.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID
+
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),

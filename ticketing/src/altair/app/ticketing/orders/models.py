@@ -346,7 +346,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         コンビニ受取かどうかを判定する。
         """
-        return self.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID
+        return self.payment_delivery_pair.delivery_method.deliver_at_store()
 
     @property
     def created_from_lot_entry(self):
