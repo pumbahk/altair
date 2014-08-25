@@ -148,6 +148,12 @@ namespace checkin.presentation.gui.page
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
             }
 
+            // Ä”­Œ©ƒ‚[ƒh’†‚ÍAQR‚Å‚Íˆê–‡‚Ì‚İ‚Ì”­Œ”
+            if (AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.MultiPrintModeVisibility = Visibility.Hidden;
+            }
+
             if (ctx.PrintedAt != null)
             {
                 ctx.NextEnable = false;
