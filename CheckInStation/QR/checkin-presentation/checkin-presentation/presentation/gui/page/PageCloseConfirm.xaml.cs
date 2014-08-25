@@ -76,7 +76,7 @@ namespace checkin.presentation.gui.page
 
             if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.ErrorMessage = "再発券を終了しました。";
+                ctx.ErrorMessage = "再発券モードを終了しました。";
                 AppUtil.GetCurrentResource().RefreshMode = false;
             }
             else
