@@ -342,6 +342,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(OrderedProductItem.printed_at==None)
         return qs.first() is None
 
+    def deliver_at_store(self):
+        """
+        コンビニ受取かどうかを判定する。
+        """
+        return self.payment_delivery_pair.delivery_method.deliver_at_store()
+
     @property
     def created_from_lot_entry(self):
         from altair.app.ticketing.lots.models import LotEntry

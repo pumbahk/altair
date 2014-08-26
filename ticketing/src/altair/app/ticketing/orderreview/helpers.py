@@ -74,11 +74,11 @@ def sex_value(value):
     else:
         return 0
 
-def order_status(order):
+def order_status(order, sent=False):
     if order.status == 'canceled':
         return u"無効"
     elif order.status == 'delivered':
-        return u"配送済み"
+        return u"発送済" if sent else u"配送済み"
     elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
         return u"払戻済み(中止)"
     elif order.payment_status == 'refunded':
@@ -91,11 +91,11 @@ def order_status(order):
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):
     return s and s.strftime(format) or ''
 
-def get_order_status(order):
+def get_order_status(order, sent=False):
     if order.status == 'canceled':
         return u"無効"
     elif order.status == 'delivered':
-        return u"配送済"
+        return u"発送済" if sent else u"配送済み"
     else:
         return u"受付済"
 

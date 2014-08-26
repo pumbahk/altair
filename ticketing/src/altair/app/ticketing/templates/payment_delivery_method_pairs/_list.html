@@ -23,7 +23,22 @@
   <tr>
     <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
     <td>${pdmp.payment_method.name}</td>
-    <td>${pdmp.delivery_method.name}</td>
+    <td>
+      ${pdmp.delivery_method.name}
+      % if pdmp.delivery_method.deliver_at_store():
+            % if pdmp.issuing_start_at:
+                <br/>発券開始日時: ${vh.datetime(pdmp.issuing_start_at)}
+            % else:
+                % if pdmp.issuing_interval_days is not None:
+                    % if pdmp.issuing_interval_days == 0:
+                        <br/>発券開始日時: 購入日
+                    % else:
+                        <br/>発券開始日時: 購入から${pdmp.issuing_interval_days}日後
+                    % endif
+                % endif
+            % endif
+      % endif
+    </td>
     <%! from altair.app.ticketing.core.models import FeeTypeEnum %>
     <%
       fee_type = ''

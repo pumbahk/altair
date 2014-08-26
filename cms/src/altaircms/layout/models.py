@@ -67,4 +67,4 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
         return [self.prefixed_template_filename]
 
     def is_synced(self):
-        return self.synced_at and self.synced_at > self.updated_at
+        return self.synced_at and self.synced_at >= self.updated_at
