@@ -34,9 +34,10 @@ def rakuten_checkout_sales():
     orders_to_skip = set()
     while True:
         # あんしん支払いでオーソリ済みになっているOrderを売上済みにする
-        query = m_order.Order.query.filter(m_order.Order.canceled_at==None)
-        query = query.select_from(join(m_order.Order, m_cart.Cart, m_order.Order.order_no==m_cart.Cart._order_no))
-        query = query.join(m_checkout.Checkout).filter(m_checkout.Checkout.sales_at==None)
+        query = m_order.Order.query \
+            .join(m_checkout.Checkout, m_checkout.Checkout.orderCartId == m_order.Order.order_no) \
+            .filter(m_order.Order.canceled_at==None) \
+            .filter(m_checkout.Checkout.sales_at==None)
 
         if orders_to_skip:
             query = query.filter(not_(m_order.Order.id.in_(orders_to_skip)))

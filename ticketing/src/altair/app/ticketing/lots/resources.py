@@ -9,6 +9,7 @@ from pyramid.security import (
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from sqlalchemy.sql import or_
+from sqlalchemy.orm import make_transient, joinedload
 
 from altair.now import get_now
 from altair.app.ticketing.cart.api import get_auth_info 
@@ -26,14 +27,13 @@ def lot_resource_factory(request):
         return DefaultRootFactory(request)
 
     context = LotResource(request)
-    if not context.lot:
+    lot = context.lot
+    if not lot:
         raise HTTPNotFound
 
-    if context.lot:
-        if not context.lot.available_on(get_now(request)):
-            raise OutTermException(lot_name=context.lot.name,
-                                   from_=context.lot.start_at,
-                                   to_=context.lot.end_at)
+    if not lot.available_on(get_now(request)):
+        make_transient(lot)
+        raise OutTermException(lot=lot)
     return context
 
 
@@ -45,19 +45,19 @@ class LotResource(object):
         self.organization = cart_api.get_organization(self.request)
 
         event_id = self.request.matchdict.get('event_id')
-        self.event = Event.query \
-            .filter(Event.id==event_id) \
-            .filter(Organization.id==self.organization.id) \
+        lot_id = self.request.matchdict.get('lot_id')
+        lot = Lot.query \
+            .options(joinedload(Lot.event)) \
+            .join(Lot.event) \
+            .filter(Event.organization_id == self.organization.id) \
+            .filter(Lot.event_id==event_id) \
+            .filter(Lot.id==lot_id) \
             .first()
-
-        lot = None 
-        if self.event is not None: 
-            lot_id = self.request.matchdict.get('lot_id')
-            lot = Lot.query \
-                .filter(Lot.event_id==event_id) \
-                .filter(Lot.id==lot_id) \
-                .first()
         self.lot = lot
+        self.event = lot and lot.event
+
+        # for B/W compatibility
+        self.nogizaka_lot_ids = set(long(c) for c in (c.strip() for c in request.registry.settings.get('altair.lots.nogizaka_lot_id', '').split(',')) if c)
 
     def authenticated_user(self):
         return get_auth_info(self.request)
@@ -73,7 +73,7 @@ class LotResource(object):
             logger.debug('acl: lot is not found')
             return []
 
-        if not self.lot.auth_type:
+        if not self.auth_type:
             logger.debug('acl: lot has no auth_type')
             return [
                 (Allow, Everyone, 'lots'),
@@ -81,8 +81,15 @@ class LotResource(object):
 
         logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
         return [
-            (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
+            (Allow, "auth_type:%s" % self.auth_type, 'lots'),
         ]
+
+    @reify
+    def auth_type(self):
+        # for B/W compatibility
+        if self.lot.id in self.nogizaka_lot_ids:
+            return 'nogizaka46'
+        return self.lot.auth_type
 
     def check_entry_limit(self, wishes, user=None, email=None):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)

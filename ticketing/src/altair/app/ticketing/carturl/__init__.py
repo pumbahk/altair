@@ -17,7 +17,7 @@ def includeme(config):
     config.registry.registerUtility(LotsCartURLBuilder(path_prefix="/lots/events"), IURLBuilder, name=BUILDERS.lots_cart)
 
     from .carturl import AgreementCartURLBuilder
-    config.registry.registerUtility(AgreementCartURLBuilder(path_prefix="/cart/events/agreement"), IURLBuilder, name=BUILDERS.agreement_cart)
+    config.registry.registerUtility(AgreementCartURLBuilder(path_prefix="/cart/events"), IURLBuilder, name=BUILDERS.agreement_cart)
 
     from .carturl import AgreementLotsCartURLBuilder
-    config.registry.registerUtility(AgreementLotsCartURLBuilder(path_prefix="/lots/events/agreement"), IURLBuilder, name=BUILDERS.agreement_lots_cart)
+    config.registry.registerUtility(AgreementLotsCartURLBuilder(path_prefix="/lots/events"), IURLBuilder, name=BUILDERS.agreement_lots_cart)

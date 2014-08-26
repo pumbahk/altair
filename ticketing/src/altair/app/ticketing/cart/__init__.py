@@ -126,8 +126,11 @@ def setup_mq(config):
 
 def includeme(config):
     # 規約
-    config.add_route('cart.agreement', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
-    config.add_route('cart.agreement2', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.agreement', 'events/{event_id}/agreement', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.agreement2', 'performances/{performance_id}/agreement', factory='.resources.PerformanceOrientedTicketingCartResource')
+
+    config.add_route('cart.agreement.compat', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.agreement2.compat', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
 
     # 購入系
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
@@ -304,6 +307,7 @@ def main(global_config, **local_config):
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
     ### includes altair.*
+    config.include('altair.auth')
     config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
@@ -317,6 +321,11 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.qr')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.users')
+
+    config.set_who_api_decider('altair.app.ticketing.security:OrganizationSettingBasedWhoDecider')
+    from altair.auth import set_auth_policy
+    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
+
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     config.add_tween('.tweens.CacheControlTween')
@@ -327,6 +336,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.sej')
     config.include('altair.app.ticketing.sej.userside_impl')
     config.include('altair.mobile')
+    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
     config.include('altair.app.ticketing.venues.setup_components')
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')

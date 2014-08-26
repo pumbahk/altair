@@ -138,7 +138,7 @@ class Lots(BaseView):
             (str(s.id), s.name)
             for s in sales_segment_groups
             ]
-        form = LotForm(formdata=self.request.POST)
+        form = LotForm(formdata=self.request.POST, context=self.context)
         form.sales_segment_group_id.choices = sales_segment_group_choices
 
         if self.request.POST and form.validate():
@@ -334,7 +334,7 @@ class Lots(BaseView):
             (str(s.id), s.name)
             for s in sales_segment_groups
             ]
-        form = LotForm(formdata=self.request.POST, obj=lot)
+        form = LotForm(formdata=self.request.POST, obj=lot, context=self.context)
         form.sales_segment_group_id.choices = sales_segment_group_choices
         if self.request.POST and form.validate():
             form.update_lot(lot)

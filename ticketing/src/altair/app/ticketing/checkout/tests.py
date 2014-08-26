@@ -927,7 +927,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         )
         self._session.add(Cart(id=10, _order_no='XX0000000000'))
         self._session.flush()
-        self.session.add(Checkout(orderCartId='XX0000000000', orderCartId_old=10))
+        self.session.add(Checkout(orderCartId='XX0000000000'))
         self.session.flush()
         xml_str = etree.tostring(xml)
         confirmId = xml_str.replace('+', ' ').encode('base64')
@@ -1090,7 +1090,6 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.add(
             Checkout(
                 orderCartId='XX0000000000',
-                orderCartId_old=10,
                 orderControlId='dc-1234567890-110415-0000022222'
                 )
             )

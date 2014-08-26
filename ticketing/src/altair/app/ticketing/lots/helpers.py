@@ -26,7 +26,9 @@ from altair.app.ticketing.cart.helpers import (
     format_number,
     format_currency,
     error_list,
+    safe_get_contact_url,
 )
+from altair.app.ticketing.helpers.base import is_required
 
 SHIPPING_ATTRS = (
     "email_1",
@@ -325,13 +327,6 @@ def tojson(obj):
 def performance_date_label(performance):
     return u'%s %s' % (japanese_datetime(performance.start_on), performance.venue.name)
 
-def is_required(field):
-    required = False
-    for v in field.validators:
-        if isinstance(v, Required):
-            required = True
-    return required
-
 def mobile_required_mark():
     return Markup('<sup><font color="#f00">*</font></sup>')
 
@@ -355,3 +350,14 @@ def announce_time_label(lot):
     announce_datetime = japanese_datetime(lot.lotting_announce_datetime)
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)
+
+def render_label(field):
+    required = is_required(field)
+    buf = [
+        u'<label for="%(id)s"%(class_)s>%(label)s</label>' % dict(
+            id=escape(field.id),
+            class_=(u' class="required"' if required else u''),
+            label=escape(field.label.text)
+            )
+        ]
+    return Markup(u''.join(buf))

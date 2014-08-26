@@ -50,6 +50,10 @@ ${ch.breadcrumbs(
           <th>説明</th>
           <td>${mailmag.description|n}</td>
         </tr>
+        <tr>
+          <th>有効/無効</th>
+          <td>${u"有効" if mailmag.status else u"無効"}</td>
+        </tr>
       </tbody>
     </table>
   </div>

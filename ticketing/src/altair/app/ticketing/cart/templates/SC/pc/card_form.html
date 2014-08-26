@@ -31,7 +31,9 @@
   %endfor
 %endif
 
+% if hasattr(self, 'widget'):
 ${self.widget.flow_widget(2)}
+% endif
 
 <form id="form1" name="form1" method="post" action="${request.url}">
   ${form.csrf_token()}
