@@ -37,7 +37,7 @@ ${order.performance.venue.name}<br />
 ・発送日:${h.japanese_date(order.delivered_at)}
 % endif
 %  if order.is_issued() and order.deliver_at_store():
-発券日時:${h.japanese_datetime(order.issued_at)}
+・発券日時:${h.japanese_datetime(order.issued_at)}
 % endif
 ・支払状況:${h.get_payment_status(order)}<br/>
 ・発券状況:${h.get_print_status(order)}<br/>
