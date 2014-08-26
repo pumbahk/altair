@@ -117,9 +117,11 @@ class AugusWorker(object):
     def augus_account(self):
         try:
             augus_account = AugusAccount\
-            .query\
-            .filter(AugusAccount.id==self._augus_account_id)\
-            .one()
+                .query\
+                .filter(AugusAccount.id==self._augus_account_id)\
+                .one()
+            from sqlalchemy.orm.session import make_transient
+            make_transient(augus_account)
         except (NoResultFound, MultipleResultsFound) as err:
             raise AugusAccountNotFound('AugusAccount.id={}'.format(self._augus_account_id))
         else:
@@ -130,7 +132,7 @@ class AugusWorker(object):
             hostname=self.augus_account.host,
             username=self.augus_account.username,
             password=self.augus_account.password,
-            passive=True,
+            # passive=True, # 暫定的にactiveで接続するようにする
             )
         return transporter
 
@@ -493,7 +495,7 @@ class AugusOperationManager(object):
                 mailer.successes = successes
                 mailer.errors = errors
                 mailer.not_yets = not_yets
-                recipients = ['dev@ticketstar.jp']
+                recipients = ['ticket-op@mail.rakuten.com'] # augus_account.email
                 sender = 'dev@ticketstar.jp'
                 mailer.send(recipients, sender)
             if exception:
@@ -502,6 +504,7 @@ class AugusOperationManager(object):
     def putback(self, mailer):
         for worker in self.augus_workers():
             augus_account = worker.augus_account
+            augus_account_code = augus_account.code
             try:
                 putback_codes = worker.putback()
             except:
@@ -510,8 +513,8 @@ class AugusOperationManager(object):
             if mailer and len(putback_codes):
                 augus_putbacks = AugusPutback\
                     .query\
-                    .filter(AugusPutback.augus_ptuback_code.in_(putback_codes))\
-                    .filter(AugusAccount.code==augus_account.code)\
+                    .filter(AugusPutback.augus_putback_code.in_(putback_codes))\
+                    .filter(AugusAccount.code==augus_account_code)\
                     .all()
 
                 params = {
@@ -531,7 +534,7 @@ class AugusOperationManager(object):
             augus_account_id = worker.augus_account.id
             ids = []
             try:
-                ids = worker.achieve(mailer, all_)
+                ids = worker.achieve(all_)
             except:
                 raise
 

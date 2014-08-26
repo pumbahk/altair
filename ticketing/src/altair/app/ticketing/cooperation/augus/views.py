@@ -863,6 +863,7 @@ class AugusPutbackView(_AugusBaseView):
         # Performanceごとにputbackを作成
         for augus_performance, asis in itertools.groupby(augus_stock_infos, key=lambda asi: asi.augus_performance):
             putback = AugusPutback()
+            putback.augus_account_id = augus_performance.augus_account_id
             putback.reserved_at = now
             putback.augus_putback_code = self.get_putback_code()
             putback.augus_performance_id = augus_performance.id
