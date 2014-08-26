@@ -40,7 +40,6 @@
                 </td>
                 <td>
                   <form action="${request.path}" method="post">
-                    <input type="hidden" name="password" value="ohashi-gym"/>
                     <table class="loginbox">
                         <thead>
                             <tr>
@@ -59,6 +58,14 @@
                                             %if message:
                                             <br/><span class="small red">IDまたはパスワードが一致しません</span>
                                             %endif
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <th style="text-align:right">パスワード</th>
+                                      <td style="text-align:left">
+                                        <div class="tal">
+                                            <input type="text" class="text" name="password">
                                         </div>
                                       </td>
                                     </tr>

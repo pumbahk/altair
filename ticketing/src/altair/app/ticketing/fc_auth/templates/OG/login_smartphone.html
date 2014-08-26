@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/OG/smartphone/images/ohashi-gym.ico')}">
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/OG/pc/images/ohashi-gym.ico')}">
   <title>大橋ボクシングジム ログインページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/OG/smartphone/css/style2.css')}" media="all" />
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/OG/pc/css/style2.css')}" media="all" />
 </head>
 <body>
 <div class="header" id="top">
   <div class="header-inner">
     <h1>
       <a href="/">
-        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/OG/smartphone/images/logo.png')}" alt="大橋ボクシングジム" height="64"/>
+        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/OG/pc/images/logo.png')}" alt="大橋ボクシングジム" height="64"/>
       </a>
     </h1>
   </div>
@@ -40,7 +40,6 @@
                 </td>
                 <td>
                   <form action="${request.path}" method="post">
-                    <input type="hidden" name="password" value="ohashi-gym"/>
                     <table class="loginbox">
                         <thead>
                             <tr>
@@ -59,6 +58,14 @@
                                             %if message:
                                             <br/><span class="small red">IDまたはパスワードが一致しません</span>
                                             %endif
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <th style="text-align:right">パスワード</th>
+                                      <td style="text-align:left">
+                                        <div class="tal">
+                                            <input type="text" class="text" name="password">
                                         </div>
                                       </td>
                                     </tr>
@@ -91,7 +98,7 @@
 <h3>お問い合わせ</h3>
 
 <ul class="notes">
-        <li>大橋ボクシングジム <a href="tel:0222536175">022-253-6175</a>(平日9:00～18:00)</li>
+        <li>大橋ボクシングジム <a href="tel:0222536175">022-253-6175</a> (平日9:00～18:00)</li>
 </ul>
   </div>
 </div>
