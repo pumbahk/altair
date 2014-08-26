@@ -12,7 +12,7 @@
       <tbody>
         %for product in order.items:
         <tr>
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.orderreview:static/OG/pc/images/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
+          <th scope="row" style="background-color: #FFF;"><img src="${request.static_url('altair.app.ticketing.orderreview:static/OG/pc/images/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
           % if product.seats:
           % if product.product.sales_segment.setting.display_seat_no:
           <td><strong>${product.seat_quantity}</strong>枚</td>
@@ -109,19 +109,19 @@
     <table class="purchasedContents" summary="配送先情報">
       <tbody>
         <tr>
-          <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
+          <th scope="row"><span style="color: #FFF">氏名（漢字）</span></th>
           <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
         </tr>
         <tr>
-          <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
+          <th scope="row"><span style="color: #FFF">氏名（カナ）</span></th>
           <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
         </tr>
         <tr>
-          <th scope="row"><span style="color: #000000">電話番号</span></th>
+          <th scope="row"><span style="color: #FFF">電話番号</span></th>
           <td>${shipping_address.tel_1}</td>
         </tr>
         <tr>
-            <th scope="row"><span style="color: #000000">住所</span></th>
+            <th scope="row"><span style="color: #FFF">住所</span></th>
             <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
         </tr>
       </tbody>
