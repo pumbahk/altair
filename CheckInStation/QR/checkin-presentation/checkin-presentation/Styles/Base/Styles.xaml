@@ -123,9 +123,13 @@
 
   <!-- <ResourceDictionary Source="./Brush.Generic.xaml" /> -->
   <SolidColorBrush x:Key="MainTextBrush">
-    <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
+      <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
   </SolidColorBrush>
 
+  <SolidColorBrush x:Key="RefreshModeBrush">
+      <SolidColorBrush.Color>#FF0000</SolidColorBrush.Color>
+  </SolidColorBrush>
+    
   <SolidColorBrush x:Key="MainBorderBrush">
     <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
   </SolidColorBrush>
@@ -948,12 +952,17 @@
   <Style TargetType="Viewbox" x:Key="ContentViewboxStyle">
     <Setter Property="Margin" Value="0,-10,0,0"/>
   </Style>
-  
+
   <Style TargetType="TextBlock" x:Key="DescriptionText">
     <Setter Property="FontSize" Value="38"/>
     <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
   </Style>
 
+  <Style TargetType="TextBlock" x:Key="RefreshModeText">
+    <Setter Property="FontSize" Value="38"/>
+    <Setter Property="Foreground" Value="{DynamicResource RefreshModeBrush}"/>
+  </Style>
+    
   <!-- <ResourceDictionary Source="./Controls.ToggleButton.xaml" /> -->
   <!-- 一覧左端のcheckbox的な要素 -->
   <LinearGradientBrush x:Key="StatusBoxSelected" StartPoint="0.5,0" EndPoint="0.5,1">

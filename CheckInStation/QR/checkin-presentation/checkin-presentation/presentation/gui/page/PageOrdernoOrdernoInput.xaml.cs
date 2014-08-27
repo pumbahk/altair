@@ -36,6 +36,12 @@ namespace checkin.presentation.gui.page
             ev.OrganizationCode = AppUtil.GetCurrentResource().AuthInfo.organization_code;
             base.OnSubmit();
         }
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
     }
 
 
@@ -76,6 +82,12 @@ namespace checkin.presentation.gui.page
                     orderno = organization_code;
                 this.KeyPad.Text = orderno;
             }
+
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.RefreshModeVisibility = Visibility.Hidden;
+            }
+
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 

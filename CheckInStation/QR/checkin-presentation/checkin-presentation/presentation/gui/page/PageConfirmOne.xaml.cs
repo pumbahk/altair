@@ -45,6 +45,7 @@ namespace checkin.presentation.gui.page
          private Visibility _nextButtonVisibility;
          private Visibility _allPrintedVisibility;
          private Visibility _multiPrintMode;
+         private Visibility _refreshModeVisibility;
 
          public string PerformanceName
          {
@@ -104,6 +105,11 @@ namespace checkin.presentation.gui.page
              get { return this._multiPrintMode; }
              set { this._multiPrintMode = value; this.OnPropertyChanged("MultiPrintModeVisibility"); }
          }
+         public Visibility RefreshModeVisibility
+         {
+             get { return this._refreshModeVisibility; }
+             set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+         }
     }
 
 
@@ -139,11 +145,12 @@ namespace checkin.presentation.gui.page
             ctx.NextButtonVisibility = Visibility.Visible;
             ctx.AllPrintedVisibility = Visibility.Hidden;
 
-            if (AppUtil.GetCurrentResource().MultiPrintMode)
+            if (!AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.MultiPrintModeVisibility = Visibility.Visible;
+                ctx.RefreshModeVisibility = Visibility.Hidden;
             }
-            else
+
+            if (!AppUtil.GetCurrentResource().MultiPrintMode)
             {
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
             }
