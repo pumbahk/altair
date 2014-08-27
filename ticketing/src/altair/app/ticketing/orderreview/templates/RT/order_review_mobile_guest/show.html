@@ -34,10 +34,10 @@ ${order.performance.venue.name}<br />
 %endfor
 ・ステータス:${h.get_order_status(order, sent=True)}<br/>
 % if order.status == 'delivered':
-・発送日:${h.japanese_date(order.delivered_at)}
+・発送日:${h.japanese_date(order.delivered_at)}<br/>
 % endif
-%  if order.is_issued() and order.deliver_at_store():
-・発券日時:${h.japanese_datetime(order.issued_at)}
+% if order.is_issued() and order.deliver_at_store():
+・発券日時:${h.japanese_datetime(order.issued_at)}<br/>
 % endif
 ・支払状況:${h.get_payment_status(order)}<br/>
 ・発券状況:${h.get_print_status(order)}<br/>
