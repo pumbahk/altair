@@ -112,13 +112,13 @@ ${m.delivery_method.description or '' | n}
 <dt class="creditHl">購入者氏名（全角）</dt>
 <dd>
 <p>
-${form['last_name'].label}<br/>
+${h.render_label(form['last_name'])}<br/>
 ${form['last_name']}<br/>
 ${self.error(form, 'last_name')}
 (例：山田)
 </p>
 <p>
-${form['first_name'].label}<br/>
+${h.render_label(form['first_name'])}<br/>
 ${form['first_name']}<br/>
 ${self.error(form, 'first_name')}
 (例：太郎)
@@ -128,13 +128,13 @@ ${self.error(form, 'first_name')}
 <dt class="creditHl">購入者氏名（全角カナ）</dt>
 <dd>
 <p>
-${form['last_name_kana'].label}<br/>
+${h.render_label(form['last_name_kana'])}<br/>
 ${form['last_name_kana']}<br/>
 ${self.error(form, 'last_name_kana')}
 (例：ヤマダ)
 </p>
 <p>
-${form['first_name_kana'].label}<br/>
+${h.render_label(form['first_name_kana'])}<br/>
 ${form['first_name_kana']}<br/>
 ${self.error(form, 'first_name_kana')}
 (例：タロウ)
@@ -212,7 +212,7 @@ ${self.error(form, 'address_2')}
 </p>
 </dd>
 
-<dt class="creditHl">生年月日</dt>
+<dt class="creditHl"><label class="required" for="year">生年月日</label></dt>
 <dd>
 <p>
 ${form['year']} 年
@@ -222,10 +222,9 @@ ${self.error(form, 'year')}
 </p>
 </dd>
 
-<dt class="creditHl">性別</dt>
+<dt class="creditHl">${h.render_label(form['sex'])}</dt>
 <dd>
 <p>
-${form['sex'].label}<br/>
 ${form['sex']}
 ${self.error(form, 'sex')}
 </p>
