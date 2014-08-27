@@ -27,7 +27,12 @@ namespace checkin.presentation.gui.page
         public PageOrdernoOrdernoInputDataContext(Page page) : base(page) { }
 
         public string Orderno { get; set; }
-        public string Description { get; set; }
+        public string _description;
+        public string Description
+        {
+            get { return this._description; }
+            set { this._description = value; this.OnPropertyChanged("Description"); }
+        }
 
         public override void OnSubmit()
         {
