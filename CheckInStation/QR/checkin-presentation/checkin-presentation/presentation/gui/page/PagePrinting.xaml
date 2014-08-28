@@ -23,14 +23,6 @@
                             Canvas.Left="327" 
                             Canvas.Top="169">
                         <StackPanel HorizontalAlignment="Stretch">                            
-                            <TextBlock HorizontalAlignment="Center" FontSize="40" Foreground="Black">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="印刷中: {0}/{1}">
-                                        <Binding Path="FinishedPrinted" Mode="OneWay"/>
-                                        <Binding Path="TotalPrinted" Mode="OneWay" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
                             <Image Stretch="Uniform" MaxHeight="350" Source="{Binding AdImage, Mode=OneTime}"/>
                             <TextBlock HorizontalAlignment="Center" FontSize="30" Foreground="Black"
                                 Text="{Binding SubDescription}"/>
