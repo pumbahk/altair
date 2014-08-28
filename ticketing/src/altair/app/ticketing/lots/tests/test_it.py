@@ -96,16 +96,21 @@ class EntryLotViewTests(unittest.TestCase):
 
 
     def test_get(self):
-        from ...users.models import MemberGroup
+        from altair.app.ticketing.core.models import Organization
+        from altair.app.ticketing.users.models import Membership, MemberGroup
         from ..testing import _add_lots, login
-        
-        membergroup = MemberGroup(name='test-group')
+       
+        organization = Organization(code='XX', short_name='example')
+        membergroup = MemberGroup(
+            membership=Membership(organization=organization),
+            name='test-group'
+            )
         self.session.add(membergroup)
         login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         #event = testing.DummyModel(id=1111)
         #sales_segment = testing.DummyModel(id=12345)
         #lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3, membergroups=[membergroup])
-        lot, products = _add_lots(self.session, [], membergroups=[membergroup])
+        lot, products = _add_lots(self.session, organization, [], membergroups=[membergroup])
         event = lot.event
 
         request = DummyRequest(
@@ -121,14 +126,19 @@ class EntryLotViewTests(unittest.TestCase):
         self.assertEqual(result['lot'].id, lot.id)
 
     def _add_datas(self, product_data):
-        from ...users.models import MemberGroup
+        from altair.app.ticketing.core.models import Organization
+        from altair.app.ticketing.users.models import Membership, MemberGroup
         from ..testing import _add_lots, login
 
-        membergroup = MemberGroup(name='test-group')
+        organization = Organization(code='XX', short_name='example')
+        membergroup = MemberGroup(
+            membership=Membership(organization=organization),
+            name='test-group'
+            )
         self.session.add(membergroup)
         login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         
-        lot, products = _add_lots(self.session, product_data, [membergroup])
+        lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
     def test_post(self):
@@ -243,7 +253,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.session.add(membergroup)
         login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         
-        lot, products = _add_lots(self.session, product_data, [membergroup])
+        lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
     def setUp(self):

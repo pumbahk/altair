@@ -71,7 +71,7 @@ class LotResourceTests(unittest.TestCase):
         self.assertEqual(target.lot, None)
 
     def test_lot(self):
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -81,7 +81,7 @@ class LotResourceTests(unittest.TestCase):
         self.assertEqual(target.lot, lot)
 
     def test_event(self):
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -91,7 +91,7 @@ class LotResourceTests(unittest.TestCase):
         self.assertEqual(target.event, lot.event)        
 
     def test_check_entry_limit_no_check(self):
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -110,7 +110,7 @@ class LotResourceTests(unittest.TestCase):
 
     def test_check_entry_limit_ng(self):
         from ..exceptions import OverEntryLimitException
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -128,7 +128,7 @@ class LotResourceTests(unittest.TestCase):
             target.check_entry_limit([], email=email)
 
     def test_check_entry_limit_ok(self):
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -144,7 +144,7 @@ class LotResourceTests(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_check_entry_limit_many_ok(self):
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -164,7 +164,7 @@ class LotResourceTests(unittest.TestCase):
 
     def test_check_entry_limit_many_ng(self):
         from ..exceptions import OverEntryLimitException
-        lot, products = _add_lots(self.session, [], [])
+        lot, products = _add_lots(self.session, self.organization, [], [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -185,7 +185,7 @@ class LotResourceTests(unittest.TestCase):
     def test_check_entry_limit_performance_ok(self):
         from ..exceptions import OverEntryLimitException
         product_data = [{'name': u'Product-A', 'price': 100}]
-        lot, products = _add_lots(self.session, product_data, [])
+        lot, products = _add_lots(self.session, self.organization, product_data, [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
@@ -211,7 +211,7 @@ class LotResourceTests(unittest.TestCase):
     def test_check_entry_limit_performance_ng(self):
         from ..exceptions import OverEntryLimitPerPerformanceException
         product_data = [{'name': u'Product-A', 'price': 100}]
-        lot, products = _add_lots(self.session, product_data, [])
+        lot, products = _add_lots(self.session, self.organization, product_data, [])
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},

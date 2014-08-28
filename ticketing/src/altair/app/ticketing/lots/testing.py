@@ -27,12 +27,11 @@ class DummyStockerFactory(object):
         return DummyStocker(self.result)
 
 
-def _add_lots(session, product_data, membergroups):
+def _add_lots(session, organization, product_data, membergroups):
 
-    from altair.app.ticketing.core.models import Organization, Event, SalesSegment, Performance, PerformanceSetting, Venue, Site
+    from altair.app.ticketing.core.models import Event, SalesSegment, Performance, PerformanceSetting, Venue, Site
     
     #event = Event(id=1111)
-    organization = Organization(code="test", short_name="test")
     event_id = 1111
     venue = Venue(name="testing-venue", site=Site(), organization=organization)
     setting = PerformanceSetting(entry_limit=1)
