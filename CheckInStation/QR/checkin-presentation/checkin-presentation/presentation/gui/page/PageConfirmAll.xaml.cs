@@ -95,6 +95,12 @@ namespace checkin.presentation.gui.page
             get { return this._notPrintVisibility; }
             set { this._notPrintVisibility = value; this.OnPropertyChanged("NotPrintVisibility"); }
         }
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
     }
 
 
@@ -192,11 +198,16 @@ namespace checkin.presentation.gui.page
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as PageConfirmAllDataContext;
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.RefreshModeVisibility = Visibility.Hidden;
+            }
             ctx.Description = "データを取得しています。少々お待ちください";
             await ctx.PrepareAsync();
             ctx.Description = ctx.Case.Description;
             var s = await ctx.VerifyAsync();
             this.loadingLock = true;
+
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
             }

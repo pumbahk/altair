@@ -11,7 +11,7 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#FEBF00">■</font>ファンクラブ会員の方はこちらから</font>
+<div><font color="#FEBF00">■</font>各種会員の方はこちらから</font>
 </div>
 <br/>
 
@@ -19,19 +19,23 @@
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="KE" />
 <div>
-  会員番号(半角英数字)<br/>
+  会員ID(半角英数字)<br/>
   ※FC会員番号orユーザーID(Block.Bのみ)<br/>
+  ※キッスエンタ会員受付の場合は、ご登録のメールアドレスになります。<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
   %endif
   <br/>
   パスワード(半角英数字)<br/>
-  ※ファンクラブにご登録のお電話番号下4ケタ<br/>
+  ※ファンクラブ or キッスエンタにご登録のお電話番号下4ケタ<br/>
   <input type="password" name="password" value=""><br/>
 </div>
 <input type="submit" value="ログイン" /><br/>
-会員番号・パスワードをお忘れの方は各ファンクラブ事務局へお問い合わせください。
+<p>
+  ファンクラブ会員ID・パスワードをお忘れの方は各ファンクラブ事務局へ、
+  キッスエンタ.jp会員ID・パスワードをお忘れの方はキッスエンタ.jpへお問い合わせください。
+<p/>
 </form>
 </div>
 

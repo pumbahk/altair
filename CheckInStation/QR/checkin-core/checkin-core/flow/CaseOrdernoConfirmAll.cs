@@ -35,8 +35,10 @@ namespace checkin.core.flow
             var data = new TicketDataCollectionRequestData()
             {
                 order_no = this.RequestData.order_no,
-                secret = this.RequestData.secret
+                secret = this.RequestData.secret,
+                refreshMode = this.Resource.RefreshMode
             };
+
             ResultTuple<string, TicketDataCollection> result = await new DispatchResponse<TicketDataCollection>(Resource).Dispatch(() => Resource.TicketDataCollectionFetcher.FetchAsync(data)).ConfigureAwait(false);
             if (result.Status)
             {

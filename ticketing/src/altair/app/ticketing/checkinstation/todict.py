@@ -25,11 +25,12 @@ class TokenStatus:
     unknown = "unknown"
 
 class TokenStatusDictBuilder(object):
-    def __init__(self, order, history=None, today=None):
+    def __init__(self, order, history=None, today=None, refreshmode=None):
         self.order = order
         self.history = history
 
         self.today = today
+        self.refreshmode = refreshmode
 
         self.token = self.history.item_token if history else None
         self.performance = self.order.performance
@@ -44,6 +45,10 @@ class TokenStatusDictBuilder(object):
         return D
 
     def printed_status_dict(self):
+        # 再発券許可モードは無条件で未発券
+        if self.refreshmode:
+            return {"printed_at": None}
+
         if self._is_unprinted_yet(self.order, self.token):
             return {"printed_at": None}
         else:
@@ -132,13 +137,13 @@ def additional_data_dict_from_order(order):
                 }
             }}
 
-def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None):
+def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None, refreshmode=None):
     collection = []
     for token in tokens:
         seat = token.seat
         D = {
             "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
-            "printed_at": unicode(token.printed_at) if token.is_printed() else None, 
+            "printed_at": unicode(token.printed_at) if token.is_printed() and not refreshmode else None,
             "locked_at": "", 
             "ordered_product_item_token_id": unicode(token.id), 
             "seat": {

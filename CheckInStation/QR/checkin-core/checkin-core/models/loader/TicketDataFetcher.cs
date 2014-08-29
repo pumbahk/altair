@@ -20,7 +20,8 @@ namespace checkin.core.models
 
         public class QRRequest
         {
-            public string qrsigned{ get; set; }
+            public string qrsigned { get; set; }
+            public bool refreshMode { get; set; }
         }
 
         public TicketDataFetcher (IResource resource)
@@ -38,7 +39,7 @@ namespace checkin.core.models
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
             using (var wrapper = factory.Create(GetQRFetchDataUrl()))
             {
-                var qrdata = new QRRequest() { qrsigned = qrcode };
+                var qrdata = new QRRequest() { qrsigned = qrcode, refreshMode = this.Resource.RefreshMode };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(qrdata).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
                 return Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));

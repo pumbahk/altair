@@ -54,7 +54,6 @@ namespace checkin.presentation.gui.page
         private InputDataContext CreateDataContext()
         {
             var resource = AppUtil.GetCurrentResource();
-
             var ctx = new PageFinishDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
@@ -86,6 +85,8 @@ namespace checkin.presentation.gui.page
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             await (this.DataContext as PageFinishDataContext).VerifyAsync().ConfigureAwait(false);
+            // ここに来たら、再発券モードは必ず終了する。
+            AppUtil.GetCurrentResource().RefreshMode = false;
         }
     }
 }

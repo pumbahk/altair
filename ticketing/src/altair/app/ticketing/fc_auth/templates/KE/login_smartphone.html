@@ -29,7 +29,7 @@
                             </tr>
                         </thead>
                         <tr>
-                            <td style="text-align:center">
+                            <td style="text-align:center; height: 367px">
                               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
                                 <input type="submit" class="btnLogin" style="width: 200px; height: 50px;" value="チケット購入" />
                               </form>
@@ -43,7 +43,7 @@
                     <table class="loginbox">
                         <thead>
                             <tr>
-                                <th>ファンクラブ会員の方<small> はこちらから</small></th>
+                                <th>各種会員の方<small> はこちらから</small></th>
                             </tr>
                         </thead>
                         <tr>
@@ -52,8 +52,9 @@
                                   <tbody>
                                     <tr>
                                       <th colspan="2" style="text-align:left">
-                                          会員番号(半角英数字)<br/>
+                                          会員ID(半角英数字)<br/>
                                           ※FC会員番号orユーザーID(Block.Bのみ)<br/>
+                                          ※キッスエンタ会員受付の場合は、ご登録のメールアドレスになります<br/>
                                       </th>
                                     </tr>
                                     <tr>
@@ -70,7 +71,7 @@
                                     <tr>
                                       <th colspan="2" style="text-align:left">
                                           パスワード(半角英数字)<br/>
-                                          ※ファンクラブにご登録のお電話番号下4ケタ
+                                          ※ファンクラブ or キッスエンタにご登録のお電話番号下4ケタ
                                       </th>
                                     </tr>
                                     <tr>
@@ -82,8 +83,10 @@
                                     </tr>
                                   </tbody>
                                 </table>
-                                 会員番号・パスワードをお忘れの方は<a href="https://www.kissent.jp/contact/" target="_blank">各ファンクラブ事務局へお問い合わせ</a>ください。
-<p/>
+                                <p>
+                                 ファンクラブ会員ID・パスワードをお忘れの方は各ファンクラブ事務局へ、
+                                 キッスエンタ.jp会員ID・パスワードをお忘れの方はキッスエンタ.jpへお問い合わせください。
+                                <p/>
 <div id="btn_login" style="text-align:center">
 <input type="submit" value="ログイン" style="width: 200px; height: 50px;" class="btnLogin">
 </div>
@@ -99,9 +102,10 @@
     <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
 <span style="color:#f00;">kissent@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
     <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
-    <li>本サイトで使用する会員番号は、各ファンクラブの会員番号となります。なお、Block.Bの会員番号は、BBC JAPANにご登録頂いたユーザーIDとなります。</li>
-    <li>パスワードは、ファンクラブにご登録のお電話番号下4ケタとなります（全アーティスト共通）。</li>
-    <li>会員番号・パスワードをお忘れの方は各ファンクラブ事務局へお問い合わせください。</li>
+    <li>本サイトで使用する会員IDは、各ファンクラブの会員番号(Block.BのみユーザーID)となります。</li>
+    <li>キッスエンタ会員受付の場合は、ご登録のメールアドレスになります。</li>
+    <li>パスワードは、ファンクラブorキッスエンタにご登録のお電話番号下4ケタとなります。</li>
+    <li>ファンクラブ会員ID・パスワードをお忘れの方は各ファンクラブ事務局へ、キッスエンタ.jp会員ID・パスワードをお忘れの方はキッスエンタ.jpへお問い合わせください。</li>
 </ul>
 
 <div class="footer">

@@ -73,11 +73,18 @@ namespace checkin.presentation.gui.page
             {
                 return false;
             }
-            var case_ = AppUtil.GetCurrentBroker().FlowManager.Peek().Case;
-            var state = new RefreshPageState(case_);
-            state.Forward();
-            var navigator = AppUtil.GetRefreshPageNavigator();
-            navigator.NavigateToMatchedPage(state, this);
+
+            if (AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.ErrorMessage = "再発券モードを終了しました。";
+                AppUtil.GetCurrentResource().RefreshMode = false;
+            }
+            else
+            {
+                ctx.ErrorMessage = "再発券モードになりました。";
+                AppUtil.GetCurrentResource().RefreshMode = true;
+            }
+            this.ErrorDialog.Show();
             return true;
         }
 
