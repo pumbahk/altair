@@ -1470,6 +1470,49 @@ SalesSegment_PaymentDeliveryMethodPair = Table(
     Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
     )
 
+class DateCalculationBase(StandardEnum):
+    Absolute             = 0
+    OrderDate            = 1
+    PerformanceStartDate = 2
+    PerformanceEndDate   = 3
+    SalesStartDate       = 4
+    SalesEndDate         = 5
+
+class DateCalculationBias(StandardEnum):
+    Exact       = 0
+    StartOfDay  = 1
+    EndOfDay    = 2
+
+def get_base_datetime_from_order_like(order_like, base_type):
+    if base_type == DateCalculationBase.Absolute.v:
+        return None
+    elif base_type == DateCalculationBase.OrderDate.v:
+        return order_like.created_at # TODO: created_at is not part of IOrderLike interface
+    elif base_type == DateCalculationBase.PerformanceStartDate.v:
+        sales_segment = order_like.sales_segment
+        return sales_segment.performance and sales_segment.performance.start_on
+    elif base_type == DateCalculationBase.PerformanceEndDate.v:
+        sales_segment = order_like.sales_segment
+        return sales_segment.performance and (sales_segment.performance.end_on or sales_segment.performance.start_on.replace(hour=23, minute=59, second=59))
+    elif base_type == DateCalculationBase.SalesStartDate.v:
+        return order_like.sales_segment.start_at
+    elif base_type == DateCalculationBase.SalesEndDate.v:
+        return order_like.sales_segment.end_at or order_like.created_at.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=365, second=-1)
+
+def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date):
+    if base_type == DateCalculationBase.Absolute.v:
+        assert period is None or period is 0
+        return abs_date
+    else:
+        base = get_base_datetime_from_order_like(order_like, base_type)
+        if base is None:
+            raise ValueError('could not determine base date')
+        if bias == DateCalculationBias.StartOfDay.v:
+            base = base.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif bias == DateCalculationBias.EndOfDay.v:
+            base = base.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1, seconds=-1)
+        return base + timedelta(days=period)
+
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
     query = DBSession.query_property()
@@ -1486,12 +1529,26 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
     discount_unit = AnnotatedColumn(Integer, _a_label=_(u'割引数'))
 
-    # 申込日から計算して入金できる期限、日数指定
-    payment_period_days = AnnotatedColumn(Integer, default=3, _a_label=_(u'コンビニ窓口での支払期限日数'))
-    # 入金から発券できるまでの時間
-    issuing_interval_days = AnnotatedColumn(Integer, default=1, _a_label=_(u'コンビニ窓口での発券が可能となるまでの日数'))
+    # 支払開始日時
+    payment_start_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'支払開始日時の計算基準'))
+    payment_start_in_days = AnnotatedColumn(Integer, default=0, _a_label=_(u'コンビニでの支払開始までの日数'))
+    payment_start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'支払開始日時'))
+
+    # 支払期限
+    payment_due_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'支払期限日時の計算基準'))
+    payment_period_days = AnnotatedColumn(Integer, default=3, _a_label=_(u'コンビニでの支払期限日数'))
+    payment_due_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'支払期日'))
+
+    # 発券開始日時
+    issuing_start_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
+    issuing_interval_days = AnnotatedColumn(Integer, default=1, _a_label=_(u'コンビニでの発券が可能となるまでの日数'))
     issuing_start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券開始日時'))
+
+    # 発券終了日時
+    issuing_end_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
+    issuing_end_in_days = AnnotatedColumn(Integer, default=365, _a_label=_(u'コンビニでの発券終了までの日数'))
     issuing_end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券期限日時'))
+
     # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
     unavailable_period_days = AnnotatedColumn(Integer, nullable=False, default=0, _a_label=_(u'選択不可期間'))
     # 一般公開するか
@@ -1700,6 +1757,13 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def filter_by_organization_id(id):
         return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
+
+    def pay_at_store(self):
+        """
+        コンビニ支払かどうかを判定する。
+        """
+        return self.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID
+
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
@@ -4004,32 +4068,53 @@ class CartMixin(object):
     def issuing_start_at(self):
         assert self.payment_delivery_pair is not None
         assert self.created_at is not None
-        if self.payment_delivery_pair.issuing_start_at:
-            issuing_start_at = self.payment_delivery_pair.issuing_start_at
-        else:
-            issuing_start_at = self.created_at + timedelta(days=self.payment_delivery_pair.issuing_interval_days)
-            issuing_start_at = issuing_start_at.replace(hour=0, minute=0, second=0)
-        return issuing_start_at
+        # XXX: created_at はカート生成日時なので、Order 生成時に再計算する必要あり
+        return calculate_date_from_order_like(
+            self,
+            self.payment_delivery_pair.issuing_start_day_calculation_base,
+            DateCalculationBias.StartOfDay.v,
+            self.payment_delivery_pair.issuing_interval_days,
+            self.payment_delivery_pair.issuing_start_at
+            )
 
     @property
     def issuing_end_at(self):
         assert self.payment_delivery_pair is not None
         assert self.created_at is not None
-        return self.payment_delivery_pair.issuing_end_at
+        # XXX: created_at はカート生成日時なので、Order 生成時に再計算する必要あり
+        return calculate_date_from_order_like(
+            self,
+            self.payment_delivery_pair.issuing_end_day_calculation_base,
+            DateCalculationBias.EndOfDay.v,
+            self.payment_delivery_pair.issuing_end_in_days,
+            self.payment_delivery_pair.issuing_end_at
+            )
 
     @property
     def payment_start_at(self):
-        # 暫定
-        return min(self.created_at, self.issuing_start_at)
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        # XXX: created_at はカート生成日時なので、Order 生成時に再計算する必要あり
+        return calculate_date_from_order_like(
+            self,
+            self.payment_delivery_pair.payment_start_day_calculation_base,
+            DateCalculationBias.StartOfDay.v,
+            self.payment_delivery_pair.payment_start_in_days,
+            self.payment_delivery_pair.payment_start_at
+            )
 
     @property
     def payment_due_at(self):
         assert self.payment_delivery_pair is not None
         assert self.created_at is not None
-        payment_period_days = self.payment_delivery_pair.payment_period_days or 3
-        payment_due_at = self.created_at + timedelta(days=payment_period_days)
-        payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
-        return payment_due_at
+        # XXX: created_at はカート生成日時なので、Order 生成時に再計算する必要あり
+        return calculate_date_from_order_like(
+            self,
+            self.payment_delivery_pair.payment_due_day_calculation_base,
+            DateCalculationBias.EndOfDay.v,
+            self.payment_delivery_pair.payment_period_days,
+            self.payment_delivery_pair.payment_due_at
+            )
 
 class GettiiVenue(Base, BaseModel):
     __tablename__ = 'GettiiVenue'

@@ -170,23 +170,29 @@ class PerformanceForm(OurForm):
             if form.id.data:
                 sales_segments = SalesSegment.query.filter_by(performance_id=form.id.data).all()
                 for ss in sales_segments:
-                    end_at = ss.end_at
+                    ss_end_at = ss.end_at
                     if ss.use_default_end_at:
                         end_at = ss.sales_segment_group.end_for_performance(ss.performance)
-                    targets.append((end_at, ss.payment_delivery_method_pairs))
+                    targets.append((ss_end_at, ss.payment_delivery_method_pairs))
             else:
                 sales_segment_groups = form.event.sales_segment_groups
                 for ssg in sales_segment_groups:
-                    end_at = ssg.end_at
-                    if not end_at:
+                    ss_end_at = ssg.end_at
+                    if not ss_end_at:
                         s = field.data
-                        end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
-                        end_at -= timedelta(days=ssg.end_day_prior_to_performance)
-                    targets.append((end_at, ssg.payment_delivery_method_pairs))
-            for end_at, pdmps in targets:
+                        ss_end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
+                        ss_end_at -= timedelta(days=ssg.end_day_prior_to_performance)
+                    targets.append((ss_end_at, ssg.payment_delivery_method_pairs))
+            for ss_end_at, pdmps in targets:
                 for pdmp in pdmps:
                     try:
-                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                        validate_issuing_start_at(
+                            performance_start_on=performance_start_on,
+                            performance_end_on=performance_end_on,
+                            sales_segment_start_at=ss_start_at,
+                            sales_segment_end_at=ss_end_at,
+                            pdmp=pdmp
+                            )
                     except IssuingStartAtOutTermException as e:
                         raise ValidationError(e.message)
 
