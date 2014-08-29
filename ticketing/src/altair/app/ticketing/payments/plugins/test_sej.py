@@ -453,104 +453,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test2@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000001',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = u'',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        #
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 900,
-            ticketing_fee         = 0,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -566,7 +469,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -582,7 +485,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -598,7 +501,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -614,7 +517,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -630,7 +533,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -647,8 +550,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -663,8 +566,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -679,8 +582,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -695,8 +598,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -711,8 +614,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -727,8 +630,105 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        #
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         #
@@ -744,8 +744,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -760,8 +760,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -776,8 +776,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -792,8 +792,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -808,8 +808,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -824,8 +824,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 900,
             ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         ]
@@ -1235,104 +1235,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test2@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000001',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = u'',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
-            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
-            ),
-        #
-        dict(
-            order_no              = '00000001',
-            user_name             = u'last_namefirst_name',
-            user_name_kana        = u'last_name_kanafirst_name_kana',
-            tel                   = '0300000000',
-            zip_code              = '1234567',
-            email                 = 'test1@test.com',
-            total_price           = 1000,
-            ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
-            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1348,7 +1251,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1364,7 +1267,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1380,7 +1283,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1396,7 +1299,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1412,7 +1315,7 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_start_at    = None,
             ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
@@ -1429,8 +1332,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1445,8 +1348,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1461,8 +1364,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1477,8 +1380,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1493,8 +1396,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1509,8 +1412,105 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        #
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 700,
+            ticketing_fee         = 200,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         #
@@ -1526,8 +1526,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1542,8 +1542,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1558,8 +1558,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1574,8 +1574,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1590,8 +1590,8 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -1606,43 +1606,76 @@ class BuildSejArgsTest(unittest.TestCase):
             commission_fee        = 700,
             ticketing_fee         = 200,
             payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
-            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            ticketing_start_at    = None,
+            ticketing_due_at      = None,
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         ]
 
     def setUp(self):
-        from altair.app.ticketing.core.models import CartMixin
+        from altair.app.ticketing.core.models import CartMixin, DateCalculationBase
         class DummyCart(CartMixin):
-            def __init__(self, payment_delivery_pair, created_at):
+            def __init__(self, sales_segment, payment_delivery_pair, created_at):
+                self.sales_segment = sales_segment
                 self.payment_delivery_pair = payment_delivery_pair
                 self.created_at = created_at
 
         self.pdmps = [
             testing.DummyModel(
-                issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
-                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
+                issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_interval_days=None,
-                payment_period_days=1
+                issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
+                issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
+                issuing_end_in_days=None,
+                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
+                payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_start_in_days=0,
+                payment_start_at=None,
+                payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_period_days=1,
+                payment_due_at=None
                 ),
             testing.DummyModel(
+                issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
+                issuing_interval_days=None,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
+                issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
+                issuing_end_in_days=None,
                 issuing_end_at=None,
-                issuing_interval_days=None,
-                payment_period_days=1
+                payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_start_in_days=0,
+                payment_start_at=None,
+                payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_period_days=1,
+                payment_due_at=None
                 ),
             testing.DummyModel(
-                issuing_start_at=None,
-                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
+                issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 issuing_interval_days=3,
-                payment_period_days=1
+                issuing_start_at=None,
+                issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
+                issuing_end_in_days=None,
+                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
+                payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_start_in_days=0,
+                payment_start_at=None,
+                payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_period_days=1,
+                payment_due_at=None
                 ),
             testing.DummyModel(
+                issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
-                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 issuing_interval_days=None,
-                payment_period_days=None
+                issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
+                issuing_end_in_days=None,
+                issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
+                payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_start_in_days=0,
+                payment_start_at=None,
+                payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_period_days=3,
+                payment_due_at=None
                 ),
             ]
 
@@ -1718,7 +1751,13 @@ class BuildSejArgsTest(unittest.TestCase):
         orders = []
         for payment_delivery_pair in self.pdmps:
             for shipping_address in self.shipping_addresses:
-                cart = DummyCart(payment_delivery_pair, self.now)
+                sales_segment = testing.DummyModel(
+                    performance=testing.DummyModel(
+                        start_on=datetime(2013, 3, 1, 1, 2, 3),
+                        end_on=datetime(2013, 3, 1, 2, 3, 4)
+                        )
+                    )
+                cart = DummyCart(sales_segment, payment_delivery_pair, self.now)
                 orders.append(
                     testing.DummyModel(
                         order_no='00000001',
@@ -1733,12 +1772,7 @@ class BuildSejArgsTest(unittest.TestCase):
                         issuing_end_at=cart.issuing_end_at,
                         payment_start_at=cart.payment_start_at,
                         payment_due_at=cart.payment_due_at,
-                        sales_segment=testing.DummyModel(
-                            performance=testing.DummyModel(
-                                start_on=datetime(2013, 3, 1, 1, 2, 3),
-                                end_on=datetime(2013, 3, 1, 2, 3, 4)
-                                )
-                            )
+                        sales_segment=sales_segment
                         )
                     )
         self.orders = orders
@@ -2189,6 +2223,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 )
             order.order_no=self.new_order_no()
             order.created_at = datetime(2012, 1, 1, 0, 0, 0)
+            order.payment_due_at = datetime(2012, 1, 5, 0, 0, 0)
             sej_order = self._create_sej_order(order, payment_type)
             self.session.add(order)
             order_pairs[payment_type] = (order, sej_order)
@@ -2436,6 +2471,7 @@ class DeliveryPluginTest(PluginTestBase):
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
         plugin = self._makeOne()
+        now = datetime.now()
         order = Order(
             order_no='XX0000000000',
             organization_id=self.organization.id,
@@ -2446,8 +2482,9 @@ class DeliveryPluginTest(PluginTestBase):
             transaction_fee=0,
             delivery_fee=0,
             special_fee=0,
-            created_at=datetime.now(),
-            delivered_at=datetime.now()
+            payment_due_at=now + timedelta(days=5),
+            created_at=now,
+            delivered_at=now
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         with self.assertRaises(SejPluginFailure) as c:
@@ -2489,7 +2526,9 @@ class PaymentDeliveryPluginTest(PluginTestBase):
                 'X_hakken_daikin': cart.transaction_fee,
                 'X_barcode_no_01': '00000001',
                 }
-            order = plugin.finish(self.request, cart)
+            with mock.patch('altair.app.ticketing.payments.plugins.sej.datetime') as m:
+                m.now.return_value = datetime(2012, 1, 1, 0, 0, 0)
+                order = plugin.finish(self.request, cart)
             self.session.flush()
             new_sej_order = self.session.query(SejOrder).filter_by(order_no=order.order_no).one()
             new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
@@ -2526,6 +2565,7 @@ class PaymentDeliveryPluginTest(PluginTestBase):
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
         plugin = self._makeOne()
+        now = datetime.now()
         order = Order(
             order_no='XX0000000000',
             organization_id=self.organization.id,
@@ -2536,8 +2576,9 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             transaction_fee=0,
             delivery_fee=0,
             special_fee=0,
-            created_at=datetime.now(),
-            paid_at=datetime.now()
+            payment_due_at=now + timedelta(days=5),
+            created_at=now,
+            paid_at=now
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         self.result = {
@@ -2565,6 +2606,7 @@ class PaymentDeliveryPluginTest(PluginTestBase):
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
         plugin = self._makeOne()
+        now = datetime.now()
         order = Order(
             order_no='XX0000000000',
             organization_id=self.organization.id,
@@ -2575,8 +2617,9 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             transaction_fee=0,
             delivery_fee=0,
             special_fee=0,
-            created_at=datetime.now(),
-            delivered_at=datetime.now()
+            payment_due_at=now + timedelta(days=5),
+            created_at=now,
+            delivered_at=now
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         with self.assertRaises(SejPluginFailure) as c:

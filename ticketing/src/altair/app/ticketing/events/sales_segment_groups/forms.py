@@ -4,7 +4,7 @@ import logging
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput
-
+from datetime import datetime, timedelta
 from altair.formhelpers import (
     OurTextField,
     OurTextAreaField,
@@ -331,6 +331,39 @@ class SalesSegmentGroupForm(OurForm):
                     return False
         return True
 
+    def _start_for_performance(self, performance):
+        """ 公演開始日に対応した販売開始日時を算出
+        start_atによる直接指定の場合は、start_atを利用する
+        """
+
+        if self.start_at.data:
+            return self.start_at.data
+
+        if self.start_time.data is None or self.start_day_prior_to_performance.data is None:
+            return None
+        s = performance.start_on
+        d = datetime(s.year, s.month, s.day,
+                     self.start_time.data.hour, self.start_time.data.minute)
+        d -= timedelta(days=self.start_day_prior_to_performance.data)
+        return d
+
+
+    def _end_for_performance(self, performance):
+        """ 公演開始日に対応した販売終了日時を算出
+        end_atによる直接指定の場合は、end_atを利用する
+        """
+        if self.end_at.data:
+            return self.end_at.data
+
+        if self.end_time.data is None or self.end_day_prior_to_performance.data is None:
+            return None
+
+        s = performance.start_on
+        d = datetime(s.year, s.month, s.day,
+                     self.end_time.data.hour, self.end_time.data.minute)
+        d -= timedelta(days=self.end_day_prior_to_performance.data)
+        return d
+
     def _validate_display_seat_no(self, *args, **kwargs):
         if self.id.data:
             if self.seat_choice.data and not self.display_seat_no.data:
@@ -344,21 +377,31 @@ class SalesSegmentGroupForm(OurForm):
             return False
 
         # コンビニ発券開始日時をチェックする
-        if self.id.data and self.end_at.data is not None:
+        if self.id.data:
             from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
             from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
             ssg = SalesSegmentGroup.query.filter_by(id=self.id.data).one()
             for ss in ssg.sales_segments:
                 if not ss.performance or not ss.use_default_end_at:
                     continue
+                performance_start_on = ss.performance.start_on
                 performance_end_on = ss.performance.end_on or ss.performance.start_on
-                end_at = self.end_at.data or ssg.end_for_performance(ss.performance)
+                ss_start_at = self._start_for_performance(ss.performance)
+                ss_end_at = self._end_for_performance(ss.performance)
+                if ss_start_at is None:
+                    continue
                 for pdmp in ss.payment_delivery_method_pairs:
                     try:
-                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                        validate_issuing_start_at(
+                            performance_start_on=performance_start_on,
+                            performance_end_on=performance_end_on,
+                            sales_segment_start_at=ss_start_at,
+                            sales_segment_end_at=ss_end_at,
+                            pdmp=pdmp)
                     except IssuingStartAtOutTermException as e:
                         self.end_at.errors.append(e.message)
                         return False
+
         return True
 
     def _validate_public(self, *args, **kwargs):

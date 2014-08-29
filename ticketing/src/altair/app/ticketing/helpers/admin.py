@@ -5,6 +5,8 @@ from markupsafe import Markup
 from pyramid.security import has_permission as security_has_permission
 from pyramid.security import ACLAllowed
 from webhelpers.util import html_escape
+from altair.viewhelpers.datetime_ import create_date_time_formatter
+from altair.app.ticketing.core.models import DateCalculationBase
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
 
@@ -190,3 +192,189 @@ class AdminHelperAdapter(object):
 
     def permissions(self):
         return PermissionCategory.items()
+
+    def format_issuing_start_at(self, pdmp):
+        if pdmp.issuing_start_day_calculation_base == DateCalculationBase.Absolute.v:
+            if pdmp.issuing_start_at is not None:
+                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_start_at)
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.OrderDate.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'購入日'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'購入から%d日後' % pdmp.issuing_interval_days
+                else:
+                    return u'不正な値'
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'公演開始日'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'公演開始から%d日後' % pdmp.issuing_interval_days
+                elif pdmp.issuing_interval_days < 0:
+                    return u'公演開始の%d日前' % -pdmp.issuing_interval_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'公演終了日'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'公演終了から%d日後' % pdmp.issuing_interval_days
+                elif pdmp.issuing_interval_days < 0:
+                    return u'公演終了の%d日前' % -pdmp.issuing_interval_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'販売開始日'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'販売開始から%d日後' % pdmp.issuing_interval_days
+                elif pdmp.issuing_interval_days < 0:
+                    return u'販売開始の%d日前' % -pdmp.issuing_interval_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'販売終了日'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'販売終了から%d日後' % pdmp.issuing_interval_days
+                elif pdmp.issuing_interval_days < 0:
+                    return u'販売終了の%d日前' % -pdmp.issuing_interval_days
+        return u'未設定'
+
+    def format_issuing_end_at(self, pdmp):
+        if pdmp.issuing_end_day_calculation_base == DateCalculationBase.Absolute.v:
+            if pdmp.issuing_end_at is not None:
+                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_end_at)
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.OrderDate.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'購入日'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'購入から%d日後' % pdmp.issuing_end_in_days
+                else:
+                    return u'不正な値'
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'公演開始日'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'公演開始から%d日後' % pdmp.issuing_end_in_days
+                elif pdmp.issuing_end_in_days < 0:
+                    return u'公演開始の%d日前' % -pdmp.issuing_end_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'公演終了日'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'公演終了から%d日後' % pdmp.issuing_end_in_days
+                elif pdmp.issuing_end_in_days < 0:
+                    return u'公演終了の%d日前' % -pdmp.issuing_end_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'販売開始日'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'販売開始から%d日後' % pdmp.issuing_end_in_days
+                elif pdmp.issuing_end_in_days < 0:
+                    return u'販売開始の%d日前' % -pdmp.issuing_end_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'販売終了日'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'販売終了から%d日後' % pdmp.issuing_end_in_days
+                elif pdmp.issuing_end_in_days < 0:
+                    return u'販売終了の%d日前' % -pdmp.issuing_end_in_days
+        return u'未設定'
+
+    def format_payment_start_at(self, pdmp):
+        if pdmp.payment_start_day_calculation_base == DateCalculationBase.Absolute.v:
+            if pdmp.payment_start_at is not None:
+                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_start_at)
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.OrderDate.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'購入日'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'購入から%d日後' % pdmp.payment_start_in_days
+                else:
+                    return u'不正な値'
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'公演開始日'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'公演開始から%d日後' % pdmp.payment_start_in_days
+                elif pdmp.payment_start_in_days < 0:
+                    return u'公演開始の%d日前' % -pdmp.payment_start_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'公演終了日'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'公演終了から%d日後' % pdmp.payment_start_in_days
+                elif pdmp.payment_start_in_days < 0:
+                    return u'公演終了の%d日前' % -pdmp.payment_start_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'販売開始日'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'販売開始から%d日後' % pdmp.payment_start_in_days
+                elif pdmp.payment_start_in_days < 0:
+                    return u'販売開始の%d日前' % -pdmp.payment_start_in_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'販売終了日'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'販売終了から%d日後' % pdmp.payment_start_in_days
+                elif pdmp.payment_start_in_days < 0:
+                    return u'販売終了の%d日前' % -pdmp.payment_start_in_days
+        return u'未設定'
+
+    def format_payment_due_at(self, pdmp):
+        if pdmp.payment_due_day_calculation_base == DateCalculationBase.Absolute.v:
+            if pdmp.payment_due_at is not None:
+                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_due_at)
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDate.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'購入日'
+                elif pdmp.payment_period_days > 0:
+                    return u'購入から%d日後' % pdmp.payment_period_days
+                else:
+                    return u'不正な値'
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'公演開始日'
+                elif pdmp.payment_period_days > 0:
+                    return u'公演開始から%d日後' % pdmp.payment_period_days
+                elif pdmp.payment_period_days < 0:
+                    return u'公演開始の%d日前' % -pdmp.payment_period_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'公演終了日'
+                elif pdmp.payment_period_days > 0:
+                    return u'公演終了から%d日後' % pdmp.payment_period_days
+                elif pdmp.payment_period_days < 0:
+                    return u'公演終了の%d日前' % -pdmp.payment_period_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'販売開始日'
+                elif pdmp.payment_period_days > 0:
+                    return u'販売開始から%d日後' % pdmp.payment_period_days
+                elif pdmp.payment_period_days < 0:
+                    return u'販売開始の%d日前' % -pdmp.payment_period_days
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'販売終了日'
+                elif pdmp.payment_period_days > 0:
+                    return u'販売終了から%d日後' % pdmp.payment_period_days
+                elif pdmp.payment_period_days < 0:
+                    return u'販売終了の%d日前' % -pdmp.payment_period_days
+        return u'未設定'
+
+
