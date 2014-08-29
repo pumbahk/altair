@@ -449,7 +449,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         inner_field=OurIntegerField(
             validators=[
                 Required(),
-                NumberRange(min=1, max=364, message=u'有効な値を入力してください(1〜364)'),
+                NumberRange(max=364, message=u'有効な値を入力してください(〜364)'),
                 ],
             default=3
             )
@@ -500,7 +500,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         inner_field=OurIntegerField(
             validators=[
                 Required(),
-                NumberRange(min=0, max=364, message=u'有効な値を入力してください'),
+                NumberRange(max=364, message=u'有効な値を入力してください'),
                 ],
             default=364
             )
