@@ -38,6 +38,12 @@ namespace checkin.presentation.gui.page
             this.QRCode = ""; //QR‚Ìsubmit‚ÉŽ¸”s‚µ‚½Žž‚Ì‚±‚Æ‚ðŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­
             base.OnSubmit();
         }
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
     }
 
 
@@ -72,6 +78,10 @@ namespace checkin.presentation.gui.page
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.RefreshModeVisibility = Visibility.Hidden;
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

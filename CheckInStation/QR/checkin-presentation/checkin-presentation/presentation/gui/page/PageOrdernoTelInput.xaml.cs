@@ -25,7 +25,13 @@ namespace checkin.presentation.gui.page
     class PageOrdernoTelInputDataContext : InputDataContext
     {
         public PageOrdernoTelInputDataContext(Page page) : base(page) { }
-
+        
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
         public string Tel { get; set; }
         public override void OnSubmit()
         {
@@ -67,6 +73,12 @@ namespace checkin.presentation.gui.page
             {
                 this.KeyPad.Text = data.tel;
             }
+
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.RefreshModeVisibility = Visibility.Hidden;
+            }
+
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 

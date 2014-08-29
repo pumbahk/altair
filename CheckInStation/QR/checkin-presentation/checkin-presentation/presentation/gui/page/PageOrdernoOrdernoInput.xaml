@@ -69,6 +69,12 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    <TextBlock
+                        Text="※再発券モード※"
+                        Canvas.Top="655"
+                        Canvas.Left="520"
+                        Style="{StaticResource RefreshModeText}"
+                        Visibility="{Binding RefreshModeVisibility}"/>
                     <!-- ボタン -->
                     <Button
                      Canvas.Right="60"

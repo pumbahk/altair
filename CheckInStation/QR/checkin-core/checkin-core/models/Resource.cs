@@ -25,6 +25,7 @@ namespace checkin.core.models
         {
             this.VerifyEnable = false;
             this.WaitingTimeAfterFinish = 30;
+            this.RefreshMode = false;
         }
 
         public bool Verify ()
@@ -64,6 +65,8 @@ namespace checkin.core.models
         }
 
         public bool MultiPrintMode { get; set; }
+
+        public bool RefreshMode { get; set; }
 
         public IModelValidation Validation { get; set; }
 

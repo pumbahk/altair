@@ -84,6 +84,12 @@
                         </TextBlock>
                     </Button>
 
+                    <TextBlock
+                        Text="※再発券モード※"
+                        Canvas.Top="655"
+                        Canvas.Left="520"
+                        Style="{StaticResource RefreshModeText}" Visibility="{Binding RefreshModeVisibility}"/>
+
 
                     <!-- change mode-->
                     <Button Click="OnGotoAnotherMode"
