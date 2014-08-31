@@ -35,7 +35,8 @@ UPDATE PaymentDeliveryMethodPair
 SET
     issuing_start_day_calculation_base=IF(issuing_start_at IS NOT NULL, 0, 1),
     issuing_interval_days=IF(issuing_start_at IS NOT NULL, NULL, issuing_interval_days),
-    issuing_end_day_calculation_base=IF(issuing_end_at IS NOT NULL, 0, 1)
+    issuing_end_day_calculation_base=IF(issuing_end_at IS NOT NULL, 0, 1),
+    issuing_end_in_days=IF(issuing_end_at IS NOT NULL, NULL, issuing_end_in_days)
 ''')
 
 
