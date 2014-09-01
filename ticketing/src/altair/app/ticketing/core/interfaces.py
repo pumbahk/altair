@@ -38,6 +38,7 @@ class IOrderLike(IPurchase):
     shipping_address      = Attribute(u"")
     channel               = Attribute(u"")
     operator              = Attribute(u"")
+    created_at            = Attribute(u'tentative')
 
 class IShippingAddress(Interface):
     user_id         = Attribute(u"")

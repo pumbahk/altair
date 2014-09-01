@@ -169,7 +169,18 @@ def Zenkaku(form, field):
 after1900 = DateTimeInRange(from_=date(1900, 1, 1))
 
 
-class SwitchOptional(validators.Optional):
+class SwitchOptionalBase(validators.Optional):
+    field_flags = ('optional', )
+
+    def __init__(self, predicate=lambda form, field:True, strip_whitespace=True):
+        super(SwitchOptionalBase, self).__init__(strip_whitespace=strip_whitespace)
+        self.predicate = predicate
+
+    def __call__(self, form, field):
+        if self.predicate(form, field):
+            super(SwitchOptionalBase, self).__call__(form, field)
+
+class SwitchOptional(SwitchOptionalBase):
     """
     :param switch_field:
         If field named `switch_field` is True, this field marked as optional.
@@ -177,12 +188,8 @@ class SwitchOptional(validators.Optional):
         If True (the default) also stop the validation chain on input which
         consists of only whitespace.
     """
-    field_flags = ('optional', )
-
     def __init__(self, switch_field, strip_whitespace=True):
-        super(SwitchOptional, self).__init__(strip_whitespace=strip_whitespace)
-        self.switch_field = switch_field
-
-    def __call__(self, form, field):
-        if form[self.switch_field].data:
-            super(SwitchOptional, self).__call__(form, field)
+        super(SwitchOptional, self).__init__(
+            predicate=lambda form, field: bool(form[switch_field].data),
+            strip_whitespace=strip_whitespace
+            )

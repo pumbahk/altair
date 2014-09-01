@@ -22,21 +22,17 @@
   % for i, pdmp in enumerate(payment_delivery_method_pairs):
   <tr>
     <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
-    <td>${pdmp.payment_method.name}</td>
     <td>
-      ${pdmp.delivery_method.name}
+      ${pdmp.payment_method.name}<br />
+      % if pdmp.payment_method.pay_at_store():
+      支払期限: ${HH.format_payment_due_at(pdmp)}<br />
+      % endif
+    </td>
+    <td>
+      ${pdmp.delivery_method.name}<br />
       % if pdmp.delivery_method.deliver_at_store():
-            % if pdmp.issuing_start_at:
-                <br/>発券開始日時: ${vh.datetime(pdmp.issuing_start_at)}
-            % else:
-                % if pdmp.issuing_interval_days is not None:
-                    % if pdmp.issuing_interval_days == 0:
-                        <br/>発券開始日時: 購入日
-                    % else:
-                        <br/>発券開始日時: 購入から${pdmp.issuing_interval_days}日後
-                    % endif
-                % endif
-            % endif
+      発券開始日時: ${HH.format_issuing_start_at(pdmp)}<br />
+      発券終了日時: ${HH.format_issuing_end_at(pdmp)}<br />
       % endif
     </td>
     <%! from altair.app.ticketing.core.models import FeeTypeEnum %>

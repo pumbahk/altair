@@ -593,3 +593,268 @@ class SalesSegmentGroupTests(unittest.TestCase):
         result = target.end_for_performance(performance)
 
         self.assertEqual(result, datetime(2013, 8, 21, 11, 0))
+
+
+class DateCalculationTests(unittest.TestCase):
+    def _getTarget(self):
+        from .models import calculate_date_from_order_like
+        return calculate_date_from_order_like
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_absolute(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel()
+                ),
+            created_at=datetime(1970, 1, 1, 0, 0, 0)
+            )
+        for bias in [DateCalculationBias.Exact.v, DateCalculationBias.StartOfDay.v, DateCalculationBias.EndOfDay.v]:
+            with self.assertRaises(AssertionError):
+                self._callFUT(
+                    order,
+                    base_type=DateCalculationBase.Absolute.v,
+                    bias=bias,
+                    period=1,
+                    abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                    )
+            try:
+                self.assertEqual(
+                    self._callFUT(
+                        order,
+                        base_type=DateCalculationBase.Absolute.v,
+                        bias=bias,
+                        period=None,
+                        abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                        ),
+                    datetime(1970, 6, 1, 0, 0, 0)
+                    )
+                self.assertTrue(True)
+            except:
+                self.fail()
+            try:
+                self.assertEqual(
+                    self._callFUT(
+                        order,
+                        base_type=DateCalculationBase.Absolute.v,
+                        bias=bias,
+                        period=0,
+                        abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                        ),
+                    datetime(1970, 6, 1, 0, 0, 0)
+                    )
+            except:
+                self.fail()
+
+    def test_relative_order_date(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel()
+                ),
+            created_at=datetime(1970, 1, 1, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.OrderDate.v,
+                bias=DateCalculationBias.Exact.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 1, 2, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.OrderDate.v,
+                bias=DateCalculationBias.StartOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 1, 2, 0, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.OrderDate.v,
+                bias=DateCalculationBias.EndOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 1, 2, 23, 59, 59)
+            )
+
+    def test_relative_performance_start_date(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel(
+                    start_on=datetime(1970, 8, 1, 19, 0, 0)
+                    )
+                ),
+            created_at=datetime(1970, 1, 1, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceStartDate.v,
+                bias=DateCalculationBias.Exact.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 2, 19, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceStartDate.v,
+                bias=DateCalculationBias.StartOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 2, 0, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceStartDate.v,
+                bias=DateCalculationBias.EndOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 2, 23, 59, 59)
+            )
+
+    def test_relative_performance_end_date(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel(
+                    end_on=datetime(1970, 8, 5, 18, 0, 0)
+                    )
+                ),
+            created_at=datetime(1970, 1, 1, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceEndDate.v,
+                bias=DateCalculationBias.Exact.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 6, 18, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceEndDate.v,
+                bias=DateCalculationBias.StartOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 6, 0, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.PerformanceEndDate.v,
+                bias=DateCalculationBias.EndOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 8, 6, 23, 59, 59)
+            )
+
+    def test_relative_sales_start_date(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel(
+                    ),
+                start_at=datetime(1970, 2, 1, 0, 0, 1)
+                ),
+            created_at=datetime(1970, 1, 1, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesStartDate.v,
+                bias=DateCalculationBias.Exact.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 2, 2, 0, 0, 1)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesStartDate.v,
+                bias=DateCalculationBias.StartOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 2, 2, 0, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesStartDate.v,
+                bias=DateCalculationBias.EndOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 2, 2, 23, 59, 59)
+            )
+
+    def test_relative_sales_end_date(self):
+        from .models import DateCalculationBase, DateCalculationBias
+        from datetime import datetime
+        order = testing.DummyModel(
+            sales_segment=testing.DummyModel(
+                performance=testing.DummyModel(
+                    ),
+                end_at=datetime(1970, 3, 31, 23, 59, 58)
+                ),
+            created_at=datetime(1970, 1, 1, 0, 1, 2)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesEndDate.v,
+                bias=DateCalculationBias.Exact.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 4, 1, 23, 59, 58)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesEndDate.v,
+                bias=DateCalculationBias.StartOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 4, 1, 0, 0, 0)
+            )
+        self.assertEqual(
+            self._callFUT(
+                order,
+                base_type=DateCalculationBase.SalesEndDate.v,
+                bias=DateCalculationBias.EndOfDay.v,
+                period=1,
+                abs_date=datetime(1970, 6, 1, 0, 0, 0)
+                ),
+            datetime(1970, 4, 1, 23, 59, 59)
+            )
+
+
