@@ -1501,7 +1501,7 @@ def get_base_datetime_from_order_like(order_like, base_type):
 
 def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date):
     if base_type == DateCalculationBase.Absolute.v:
-        assert period is None or period is 0
+        assert period is None or period == 0
         return abs_date
     else:
         base = get_base_datetime_from_order_like(order_like, base_type)
