@@ -251,7 +251,7 @@ class AdminHelperAdapter(object):
                     return u'購入から%d日後' % pdmp.issuing_end_in_days
                 else:
                     return u'不正な値'
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
                     return u'公演開始日'
@@ -259,7 +259,7 @@ class AdminHelperAdapter(object):
                     return u'公演開始から%d日後' % pdmp.issuing_end_in_days
                 elif pdmp.issuing_end_in_days < 0:
                     return u'公演開始の%d日前' % -pdmp.issuing_end_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
                     return u'公演終了日'
@@ -267,7 +267,7 @@ class AdminHelperAdapter(object):
                     return u'公演終了から%d日後' % pdmp.issuing_end_in_days
                 elif pdmp.issuing_end_in_days < 0:
                     return u'公演終了の%d日前' % -pdmp.issuing_end_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.SalesStartDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
                     return u'販売開始日'
@@ -275,7 +275,7 @@ class AdminHelperAdapter(object):
                     return u'販売開始から%d日後' % pdmp.issuing_end_in_days
                 elif pdmp.issuing_end_in_days < 0:
                     return u'販売開始の%d日前' % -pdmp.issuing_end_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.SalesEndDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
                     return u'販売終了日'
@@ -297,7 +297,7 @@ class AdminHelperAdapter(object):
                     return u'購入から%d日後' % pdmp.payment_start_in_days
                 else:
                     return u'不正な値'
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
                     return u'公演開始日'
@@ -305,7 +305,7 @@ class AdminHelperAdapter(object):
                     return u'公演開始から%d日後' % pdmp.payment_start_in_days
                 elif pdmp.payment_start_in_days < 0:
                     return u'公演開始の%d日前' % -pdmp.payment_start_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
                     return u'公演終了日'
@@ -313,7 +313,7 @@ class AdminHelperAdapter(object):
                     return u'公演終了から%d日後' % pdmp.payment_start_in_days
                 elif pdmp.payment_start_in_days < 0:
                     return u'公演終了の%d日前' % -pdmp.payment_start_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
                     return u'販売開始日'
@@ -321,7 +321,7 @@ class AdminHelperAdapter(object):
                     return u'販売開始から%d日後' % pdmp.payment_start_in_days
                 elif pdmp.payment_start_in_days < 0:
                     return u'販売開始の%d日前' % -pdmp.payment_start_in_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
                     return u'販売終了日'
@@ -343,7 +343,7 @@ class AdminHelperAdapter(object):
                     return u'購入から%d日後' % pdmp.payment_period_days
                 else:
                     return u'不正な値'
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
                     return u'公演開始日'
@@ -351,7 +351,7 @@ class AdminHelperAdapter(object):
                     return u'公演開始から%d日後' % pdmp.payment_period_days
                 elif pdmp.payment_period_days < 0:
                     return u'公演開始の%d日前' % -pdmp.payment_period_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
                     return u'公演終了日'
@@ -359,7 +359,7 @@ class AdminHelperAdapter(object):
                     return u'公演終了から%d日後' % pdmp.payment_period_days
                 elif pdmp.payment_period_days < 0:
                     return u'公演終了の%d日前' % -pdmp.payment_period_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.SalesStartDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
                     return u'販売開始日'
@@ -367,7 +367,7 @@ class AdminHelperAdapter(object):
                     return u'販売開始から%d日後' % pdmp.payment_period_days
                 elif pdmp.payment_period_days < 0:
                     return u'販売開始の%d日前' % -pdmp.payment_period_days
-        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.SalesEndDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
                     return u'販売終了日'
