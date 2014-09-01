@@ -47,7 +47,6 @@
       var delivery_method_id_sej = $.inArray(dm_id, sej_delivery_method_ids) >= 0;
       if (payment_method_is_sej || delivery_method_id_sej) {
         sej_field.css('display', 'block');
-        sej_field.find('input').removeAttr('disabled');
         if (!is_edit) {
           if (!payment_method_is_sej) {
             if (!issuing_interval_days_changed) {
@@ -61,7 +60,6 @@
         }
       } else {
         sej_field.css('display', 'none');
-        sej_field.find('input').attr('disabled', 'disabled');
       }
     };
 

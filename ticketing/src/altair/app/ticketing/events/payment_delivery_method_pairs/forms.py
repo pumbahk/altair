@@ -108,12 +108,12 @@ class PDMPPeriodField(OurField):
 
         if self.calculation_base.data is not None:
             calculation_base_value = self.calculation_base.data
-            if self.calculation_base.data == DateCalculationBase.Absolute.v:
+            if calculation_base_value == DateCalculationBase.Absolute.v:
                 base_type_data = 'absolute'
                 subcategory_data = None
             else:
                 base_type_data = 'relative'
-                subcategory_data = self.calculation_base.data
+                subcategory_data = calculation_base_value
 
         if formdata is not None:
             if self.base_type_key in formdata:
