@@ -1536,7 +1536,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     # 支払期限
     payment_due_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'支払期限日時の計算基準'))
-    payment_period_days = AnnotatedColumn(Integer, nullable=True, default=3, _a_label=_(u'コンビニでの支払期限日数'))
+    payment_period_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの支払期限日数'))
     payment_due_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'支払期日'))
 
     # 発券開始日時
