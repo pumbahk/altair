@@ -1489,11 +1489,11 @@ def get_base_datetime_from_order_like(order_like, base_type):
     elif base_type == DateCalculationBase.OrderDate.v:
         return order_like.created_at # TODO: created_at is not part of IOrderLike interface
     elif base_type == DateCalculationBase.PerformanceStartDate.v:
-        sales_segment = order_like.sales_segment
-        return sales_segment.performance and sales_segment.performance.start_on
+        performance = order_like.performance
+        return performance and performance.start_on
     elif base_type == DateCalculationBase.PerformanceEndDate.v:
-        sales_segment = order_like.sales_segment
-        return sales_segment.performance and (sales_segment.performance.end_on or sales_segment.performance.start_on.replace(hour=23, minute=59, second=59))
+        performance = order_like.performance
+        return performance and (performance.end_on or performance.start_on.replace(hour=23, minute=59, second=59))
     elif base_type == DateCalculationBase.SalesStartDate.v:
         return order_like.sales_segment.start_at
     elif base_type == DateCalculationBase.SalesEndDate.v:
