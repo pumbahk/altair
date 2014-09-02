@@ -70,6 +70,7 @@ class DummyCart(CartMixin):
             issuing_start_at,
             issuing_interval_days,
             created_at):
+        performance = None
         if performance_start_on is not None:
             performance = DummyPerformance(
                 performance_start_on,
@@ -88,6 +89,7 @@ class DummyCart(CartMixin):
             issuing_start_at
             )
         self.created_at = created_at
+        self.performance = performance
 
 def validate_issuing_start_at(
     performance_start_on,
@@ -103,7 +105,7 @@ def validate_issuing_start_at(
         issuing_start_day_calculation_base = pdmp.issuing_start_day_calculation_base
         issuing_start_at = pdmp.issuing_start_at
         issuing_interval_days = pdmp.issuing_interval_days
-            
+
     # 公演終了日 < コンビニ発券開始日時 とならないこと
     issuing_start_at = DummyCart(
         performance_start_on=performance_start_on,
