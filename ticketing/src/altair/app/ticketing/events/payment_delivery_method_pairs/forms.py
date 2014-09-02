@@ -142,6 +142,7 @@ class PDMPPeriodField(OurField):
 
             if base_type_data == 'absolute':
                 calculation_base_value = DateCalculationBase.Absolute.v
+                self.inner_field.data = None
             elif base_type_data == 'relative':
                 if not any(subcategory_data == k for k, _ in self.choices):
                     self.calculation_base.process_errors.append(self.gettext('Not a valid choice'))
@@ -164,9 +165,7 @@ class PDMPPeriodField(OurField):
                 except ValueError as e:
                     self.process_errors.append(e.args[0])
 
-            self.data = self.inner_field.data
-        else:
-            self.data = None
+        self.data = self.inner_field.data
 
         self.base_type_data = base_type_data
         self.subcategory_data = subcategory_data
