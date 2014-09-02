@@ -1536,17 +1536,17 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     # 支払期限
     payment_due_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'支払期限日時の計算基準'))
-    payment_period_days = AnnotatedColumn(Integer, default=3, _a_label=_(u'コンビニでの支払期限日数'))
+    payment_period_days = AnnotatedColumn(Integer, nullable=True, default=3, _a_label=_(u'コンビニでの支払期限日数'))
     payment_due_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'支払期日'))
 
     # 発券開始日時
     issuing_start_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
-    issuing_interval_days = AnnotatedColumn(Integer, default=1, _a_label=_(u'コンビニでの発券が可能となるまでの日数'))
+    issuing_interval_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの発券が可能となるまでの日数'))
     issuing_start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券開始日時'))
 
     # 発券終了日時
     issuing_end_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
-    issuing_end_in_days = AnnotatedColumn(Integer, default=365, _a_label=_(u'コンビニでの発券終了までの日数'))
+    issuing_end_in_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの発券終了までの日数'))
     issuing_end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券期限日時'))
 
     # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
