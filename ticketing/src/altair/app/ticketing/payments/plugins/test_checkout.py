@@ -20,7 +20,12 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         from decimal import Decimal
         from pyramid.config import Configurator
         from webtest import TestApp
-        from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, PaymentDeliveryMethodPair
+        from altair.app.ticketing.core.models import (
+            SalesSegmentGroup,
+            SalesSegment,
+            PaymentDeliveryMethodPair,
+            DateCalculationBase,
+            )
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.checkout.models import RakutenCheckoutSetting
         from . import CHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID
@@ -54,7 +59,14 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             public=True,
             payment_method=self.payment_methods[CHECKOUT_PAYMENT_PLUGIN_ID],
             delivery_method=self.delivery_methods[SHIPPING_DELIVERY_PLUGIN_ID],
-            issuing_interval_days=5
+            payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_start_in_days=0,
+            payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_period_days=3,
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_interval_days=5,
+            issuing_end_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_end_in_days=364,
             )
         self.sales_segment = SalesSegment(
             sales_segment_group=self.sales_segment_group,
