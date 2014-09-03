@@ -734,14 +734,13 @@ class DateCalculationTests(unittest.TestCase):
     def test_relative_performance_end_date(self):
         from .models import DateCalculationBase, DateCalculationBias
         from datetime import datetime
+        performance = testing.DummyModel(end_on=datetime(1970, 8, 5, 18, 0, 0))
         order = testing.DummyModel(
-            sales_segment=testing.DummyModel(
-                performance=testing.DummyModel(
-                    end_on=datetime(1970, 8, 5, 18, 0, 0)
-                    )
-                ),
+            performance=performance,
+            sales_segment=testing.DummyModel(performance=performance),
             created_at=datetime(1970, 1, 1, 0, 1, 2)
             )
+
         self.assertEqual(
             self._callFUT(
                 order,
@@ -856,5 +855,3 @@ class DateCalculationTests(unittest.TestCase):
                 ),
             datetime(1970, 4, 1, 23, 59, 59)
             )
-
-
