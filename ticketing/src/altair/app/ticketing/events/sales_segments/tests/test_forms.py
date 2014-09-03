@@ -107,7 +107,9 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_other_delivery_plugin(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -115,9 +117,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         try:
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 10, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 10, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )
@@ -128,7 +133,9 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_in_term(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -136,9 +143,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         try:
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 9, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 9, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )
@@ -149,7 +159,9 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_in_term_issuing_interval_days(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -157,9 +169,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         try:
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 8, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 8, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )
@@ -170,8 +185,10 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_in_term_with_issuing_interval_days(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         from ..exceptions import IssuingStartAtOutTermException
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -179,9 +196,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         with self.assertRaises(IssuingStartAtOutTermException):
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 8, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 8, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 issuing_start_at=None,
                 issuing_interval_days=3
                 )
@@ -189,7 +209,9 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_in_term_with_issuing_start_at(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -197,21 +219,26 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         try:
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 8, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 8, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_start_at=datetime(2014, 1, 9, 23, 59, 59),
-                issuing_interval_days=3
+                issuing_interval_days=None
                 )
             self.assert_(True)
-        except:
+        except Exception as e:
             self.fail()
 
     def test_validate_issuing_start_at_out_term(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         from ..exceptions import IssuingStartAtOutTermException
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -219,9 +246,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         with self.assertRaises(IssuingStartAtOutTermException):
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 10, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 10, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )
@@ -229,8 +259,10 @@ class validate_issuing_start_atTests(unittest.TestCase):
     def test_validate_issuing_start_at_out_term_issuing_interval_days(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
         from ..exceptions import IssuingStartAtOutTermException
         pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
             payment_method=Mock(name=u'コンビニ決済'),
@@ -238,9 +270,12 @@ class validate_issuing_start_atTests(unittest.TestCase):
             )
         with self.assertRaises(IssuingStartAtOutTermException):
             self._callFUT(
-                datetime(2014, 1, 10, 10, 0, 0),
-                datetime(2014, 1, 9, 23, 59, 59),
-                pdmp,
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=datetime(2014, 1, 9, 23, 59, 59),
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )

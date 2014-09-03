@@ -66,7 +66,7 @@ class PerformanceForm(OurForm):
             ],
         validators=[
             Required(),
-            JISX0208, 
+            JISX0208,
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
@@ -165,28 +165,66 @@ class PerformanceForm(OurForm):
         if field.data is not None:
             from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
             from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
+            performance_start_on = form.start_on.data or field.data
             performance_end_on = form.end_on.data or field.data
             targets = []
             if form.id.data:
                 sales_segments = SalesSegment.query.filter_by(performance_id=form.id.data).all()
                 for ss in sales_segments:
-                    end_at = ss.end_at
-                    if ss.use_default_end_at:
-                        end_at = ss.sales_segment_group.end_for_performance(ss.performance)
-                    targets.append((end_at, ss.payment_delivery_method_pairs))
+                    ssg = ss.sales_segment_group
+                    if not ss.use_default_start_at:
+                        # デフォルト値を使わないケース
+                        ss_start_at = ss.start_at
+                    else:
+                        # SalesSegmentGroupの値を使うケース
+                        if not ssg.start_at:
+                            s = field.data
+                            ss_start_at = datetime(s.year, s.month, s.day, ssg.start_time.hour, ssg.start_time.minute)
+                            ss_start_at -= timedelta(days=ssg.start_day_prior_to_performance)
+                        else:
+                            assert ss.start_at == ssg.start_at
+                            ss_start_at = ssg.start_at
+                    if not ss.use_default_end_at:
+                        # デフォルト値を使わないケース
+                        ss_end_at = ss.end_at
+                    else:
+                        # SalesSegmentGroupの値を使うケース
+                        if not ssg.end_at:
+                            # で、かつ相対指定の場合
+                            s = field.data
+                            ss_end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
+                            ss_end_at -= timedelta(days=ssg.end_day_prior_to_performance)
+                        else:
+                            # 絶対指定の場合
+                            assert ss.end_at == ssg.end_at
+                            ss_end_at = ssg.end_at
+                    targets.append((ss_start_at, ss_end_at, ss.payment_delivery_method_pairs))
             else:
                 sales_segment_groups = form.event.sales_segment_groups
                 for ssg in sales_segment_groups:
-                    end_at = ssg.end_at
-                    if not end_at:
+                    if not ssg.start_at:
                         s = field.data
-                        end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
-                        end_at -= timedelta(days=ssg.end_day_prior_to_performance)
-                    targets.append((end_at, ssg.payment_delivery_method_pairs))
-            for end_at, pdmps in targets:
+                        ss_start_at = datetime(s.year, s.month, s.day, ssg.start_time.hour, ssg.start_time.minute)
+                        ss_start_at -= timedelta(days=ssg.start_day_prior_to_performance)
+                    else:
+                        ss_start_at = ssg.start_at
+                    if not ssg.end_at:
+                        s = field.data
+                        ss_end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
+                        ss_end_at -= timedelta(days=ssg.end_day_prior_to_performance)
+                    else:
+                        ss_end_at = ssg.end_at
+                    targets.append((ss_start_at, ss_end_at, ssg.payment_delivery_method_pairs))
+            for ss_start_at, ss_end_at, pdmps in targets:
                 for pdmp in pdmps:
                     try:
-                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                        validate_issuing_start_at(
+                            performance_start_on=performance_start_on,
+                            performance_end_on=performance_end_on,
+                            sales_segment_start_at=ss_start_at,
+                            sales_segment_end_at=ss_end_at,
+                            pdmp=pdmp
+                            )
                     except IssuingStartAtOutTermException as e:
                         raise ValidationError(e.message)
 
@@ -250,7 +288,7 @@ class PerformancePublicForm(Form):
                                 p = product_item.product
                                 if p.sales_segment is not None:
                                     no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
-                    
+
             if no_ticket_bundles:
                 raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
 

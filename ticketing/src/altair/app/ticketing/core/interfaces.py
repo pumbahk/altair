@@ -21,11 +21,13 @@ class IPurchase(Interface):
     order_no              = Attribute('')
     browserid             = Attribute('')
     sales_segment         = Attribute('')
+    performance           = Attribute('') # primary performance
     payment_delivery_pair = Attribute('')
     issuing_start_at      = Attribute('')
     issuing_end_at        = Attribute('')
     payment_start_at      = Attribute('')
     payment_due_at        = Attribute('')
+    created_at            = Attribute('')
 
 class IOrderLike(IPurchase):
     items                 = Attribute('')

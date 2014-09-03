@@ -64,17 +64,18 @@ class NogizakaAuthPlugin(object):
 
 def nogizaka_entrypoint_predicate(context, request):
     api, _ = who_api(request, IDENTIFIER_NAME)
-    if not api.authenticate():
-        # POSTでかつnogizaka46認証されていないときのみ、新規の認証を試みる
-        keyword = request.POST.get('keyword') 
-        if keyword is not None:
+    keyword = request.POST.get('keyword')
+    if keyword is not None:
+        if not api.authenticate():
+            # POSTでかつnogizaka46認証されていないときのみ、新規の認証を試みる
             identity, headers = api.login(
                 { CREDENTIAL_KEY: keyword }
                 )
             if identity:
                 request.response.headers.update(headers)
-                return True
-    return False
+        return True
+    else:
+        return False
 
 def nogizaka_entrypoint_view(config, request):
     return HTTPFound(request.current_route_path())

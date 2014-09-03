@@ -47,7 +47,6 @@
       var delivery_method_id_sej = $.inArray(dm_id, sej_delivery_method_ids) >= 0;
       if (payment_method_is_sej || delivery_method_id_sej) {
         sej_field.css('display', 'block');
-        sej_field.find('input').removeAttr('disabled');
         if (!is_edit) {
           if (!payment_method_is_sej) {
             if (!issuing_interval_days_changed) {
@@ -61,7 +60,6 @@
         }
       } else {
         sej_field.css('display', 'none');
-        sej_field.find('input').attr('disabled', 'disabled');
       }
     };
 
@@ -107,6 +105,7 @@
     }).change();
 
     $('[rel=popover]').popover();
+    display_sej_field.call();
   });
 </script>
 
@@ -153,10 +152,72 @@
       ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.unavailable_period_days, class_='span2', help=ch.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
       <div id="sej_field">
-        ${ch.form_item(form.payment_period_days, class_='span2', help=ch.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
-        ${ch.form_item(form.issuing_interval_days, class_='span2', help=ch.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}
-        ${ch.form_item(form.issuing_start_at, class_='span2', help=ch.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。指定した場合「前払後日発券」になります。(通常はこの日時指定は使いません)'))}
-        ${ch.form_item(form.issuing_end_at, class_='span2', help=ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了する日時を指定します。(通常はこの日時指定は使いません)'))}
+        <div class="control-group">
+          <label class="control-label">
+            ${form.payment_due_at.label}
+            ${ch.help(form.payment_due_at, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。')|n}
+          </label>
+          <div class="controls${u' error' if form.payment_due_at.errors else u''}">
+            <label class="radio">
+              ${form.payment_period_days.base_type_radio('absolute')}
+            </label>
+            ${form.payment_due_at()}
+            ${ch.validate_errors(form.payment_due_at)}
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls${u' error' if form.payment_period_days.errors else u''}">
+            <label class="radio">
+              ${form.payment_period_days.base_type_radio('relative')}
+            </label>
+            ${form.payment_period_days(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.payment_period_days)}
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">
+            ${form.issuing_start_at.label}
+            ${ch.help(form.issuing_start_at, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)')|n}
+          </label>
+          <div class="controls${u' error' if form.issuing_start_at.errors else u''}">
+            <label class="radio">
+              ${form.issuing_interval_days.base_type_radio('absolute')}
+            </label>
+            ${form.issuing_start_at()}
+            ${ch.validate_errors(form.issuing_start_at)}
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls${u' error' if form.issuing_interval_days.errors else u''}">
+            <label class="radio">
+              ${form.issuing_interval_days.base_type_radio('relative')}
+            </label>
+            ${form.issuing_interval_days(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.issuing_interval_days)}
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">
+            ${form.issuing_end_at.label}
+            ${ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了するまでの日数を指定します。(通常はこの日時指定は使いません)')|n}
+          </label>
+          <div class="controls${u' error' if form.issuing_end_at.errors else u''}">
+            <label class="radio">
+              ${form.issuing_end_in_days.base_type_radio('absolute')}
+            </label>
+            ${form.issuing_end_at()}
+            ${ch.validate_errors(form.issuing_end_at)}
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls${u' error' if form.issuing_end_in_days.errors else u''}">
+            <label class="radio">
+              ${form.issuing_end_in_days.base_type_radio('relative')}
+            </label>
+            ${form.issuing_end_in_days(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.issuing_end_in_days)}
+          </div>
+        </div>
       </div>
     </fieldset>
     <div class="form-actions">

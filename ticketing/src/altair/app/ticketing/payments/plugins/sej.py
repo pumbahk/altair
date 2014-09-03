@@ -306,6 +306,8 @@ def build_sej_args(payment_type, order_like, now):
         commission_fee      = 0
         ticketing_fee       = 0
         payment_due_at      = None
+        ticketing_start_at  = get_ticketing_start_at(now, order_like)
+        ticketing_due_at    = get_ticketing_due_at(now, order_like)
         if ticketing_due_at is None:
             # この処理は代済発券のみでよい
             # 発券期限はつねに確定させておかなければ再付番できない
@@ -316,6 +318,8 @@ def build_sej_args(payment_type, order_like, now):
         ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
         commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee
         ticketing_fee       = 0
+        ticketing_start_at  = None
+        ticketing_due_at    = None
         payment_due_at      = get_payment_due_at(now, order_like)
     elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
         total_price         = order_like.total_amount
@@ -323,8 +327,23 @@ def build_sej_args(payment_type, order_like, now):
         commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee
         ticketing_fee       = order_like.delivery_fee
         payment_due_at      = get_payment_due_at(now, order_like)
+        if payment_due_at is None:
+            raise SejPluginFailure('payment_due_at is not specified', order_no=order_like.order_no, back_url=None)
+        if payment_due_at < now:
+            raise SejPluginFailure("payment_due_at ({0:'%Y-%m-%d %H:%M:%S}') < the current time ({1:'%Y-%m-%d %H:%M:%S}')".format(payment_due_at, now), order_no=order_like.order_no, back_url=None)
+        if payment_due_at >= now + timedelta(days=365):
+            raise SejPluginFailure("payment_due_at ({0:'%Y-%m-%d %H:%M:%S}') >= 365 days after the current time ({1:'%Y-%m-%d %H:%M:%S}')".format(payment_due_at, now), order_no=order_like.order_no, back_url=None)
+        if ticketing_due_at is not None:
+            if ticketing_due_at <= payment_due_at:
+                logger.warning("ticketing_due_at ({0:'%Y-%m-%d %H:%M:%S}) < payment_due_at ({1:'%Y-%m-%d %H:%M:%S})".format(ticketing_due_at, payment_due_at))
+        if int(payment_type) == int(SejPaymentType.CashOnDelivery):
+            if ticketing_start_at is not None:
+                if ticketing_start_at > payment_due_at:
+                    logger.warning("ticketing_start_at ({0:'%Y-%m-%d %H:%M:%S}) < payment_due_at ({1:'%Y-%m-%d %H:%M:%S})".format(ticketing_start_at, payment_due_at))
+            ticketing_start_at  = None
+            ticketing_due_at    = None
     else:
-        raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_link.order_no, back_url=None)
+        raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_like.order_no, back_url=None)
 
     regrant_number_due_at = None
     performance = order_like.sales_segment.performance

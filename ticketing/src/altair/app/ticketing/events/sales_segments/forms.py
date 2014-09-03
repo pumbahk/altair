@@ -3,6 +3,7 @@
 import re
 import logging
 from datetime import timedelta
+from collections import namedtuple
 
 from wtforms import Form
 from wtforms import HiddenField
@@ -35,7 +36,9 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     SalesSegmentSetting,
     Account,
-    Performance
+    Performance,
+    calculate_date_from_order_like,
+    CartMixin
     )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
@@ -50,15 +53,70 @@ logger = logging.getLogger(__name__)
 
 UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
-def validate_issuing_start_at(performance_end_on, sales_segment_end_at, pdmp, issuing_start_at=None, issuing_interval_days=None):
-    # 公演終了日 < コンビニ発券開始日時 とならないこと
-    if issuing_start_at is None:
+DummyPerformance = namedtuple('DummyPerformance', ['start_on', 'end_on'])
+DummyPDMP = namedtuple('DummyPDMP', [
+    'issuing_start_day_calculation_base',
+    'issuing_interval_days',
+    'issuing_start_at'
+    ])
+DummySalesSegment = namedtuple('DummySalesSegment', ['start_at', 'end_at', 'performance'])
+class DummyCart(CartMixin):
+    def __init__(self,
+            performance_start_on,
+            performance_end_on,
+            sales_segment_start_at,
+            sales_segment_end_at,
+            issuing_start_day_calculation_base,
+            issuing_start_at,
+            issuing_interval_days,
+            created_at):
+        performance = None
+        if performance_start_on is not None:
+            performance = DummyPerformance(
+                performance_start_on,
+                performance_end_on
+                )
+        else:
+            performance = None
+        self.sales_segment = DummySalesSegment(
+            sales_segment_start_at,
+            sales_segment_end_at,
+            performance
+            )
+        self.payment_delivery_pair = DummyPDMP(
+            issuing_start_day_calculation_base,
+            issuing_interval_days,
+            issuing_start_at
+            )
+        self.created_at = created_at
+        self.performance = performance
+
+def validate_issuing_start_at(
+    performance_start_on,
+    performance_end_on,
+    sales_segment_start_at,
+    sales_segment_end_at,
+    pdmp,
+    issuing_start_day_calculation_base=None,
+    issuing_start_at=None,
+    issuing_interval_days=None
+    ):
+    if issuing_start_day_calculation_base is None:
+        issuing_start_day_calculation_base = pdmp.issuing_start_day_calculation_base
         issuing_start_at = pdmp.issuing_start_at
-    if issuing_interval_days is None:
         issuing_interval_days = pdmp.issuing_interval_days
-    if issuing_start_at is None:
-        issuing_start_at = sales_segment_end_at + timedelta(days=issuing_interval_days)
-        issuing_start_at = issuing_start_at.replace(hour=0, minute=0, second=0)
+
+    # 公演終了日 < コンビニ発券開始日時 とならないこと
+    issuing_start_at = DummyCart(
+        performance_start_on=performance_start_on,
+        performance_end_on=performance_end_on,
+        sales_segment_start_at=sales_segment_start_at,
+        sales_segment_end_at=sales_segment_end_at,
+        issuing_start_day_calculation_base=issuing_start_day_calculation_base,
+        issuing_start_at=issuing_start_at,
+        issuing_interval_days=issuing_interval_days,
+        created_at=sales_segment_end_at
+        ).issuing_start_at
     # 複数日にまたがる公演のケースがあるので公演終了日で算出
     logger.debug('performance_end_on={}, issuing_start_at={}'.format(performance_end_on, issuing_start_at))
     delivery_plugin_id = pdmp.delivery_method.delivery_plugin_id
@@ -397,30 +455,36 @@ class SalesSegmentForm(OurForm):
 
     def _validate_terms(self):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
-        start_at = self.start_at.data
-        end_at = self.end_at.data
+        ss_start_at = self.start_at.data
+        ss_end_at = self.end_at.data
         if self.performance_id.data:
             performance = Performance.get(self.performance_id.data, self.context.organization.id)
             if self.use_default_start_at.data:
-                start_at = ssg.start_for_performance(performance)
+                ss_start_at = ssg.start_for_performance(performance)
             if self.use_default_end_at.data:
-                end_at = ssg.end_for_performance(performance)
+                ss_end_at = ssg.end_for_performance(performance)
 
         # 販売開始日時と販売終了日時の前後関係をチェックする
-        if start_at is not None and end_at is not None and start_at > end_at:
+        if ss_start_at is not None and ss_end_at is not None and ss_start_at > ss_end_at:
             self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
             self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
             return False
 
         # コンビニ発券開始日時をチェックする
-        if self.performance_id.data and end_at is not None:
+        if self.performance_id.data and ss_end_at is not None:
+            performance_start_on = performance.start_on
             performance_end_on = performance.end_on or performance.start_on
             pdmps = self.context.sales_segment_group.payment_delivery_method_pairs
             if not self.use_default_payment_delivery_method_pairs.data:
                 pdmps = [x for x in pdmps if x.id in self.payment_delivery_method_pairs.data]
             for pdmp in pdmps:
                 try:
-                    validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                    validate_issuing_start_at(
+                        performance_start_on=performance_start_on,
+                        performance_end_on=performance_end_on,
+                        sales_segment_start_at=ss_start_at,
+                        sales_segment_end_at=ss_end_at,
+                        pdmp=pdmp)
                 except IssuingStartAtOutTermException as e:
                     self.end_at.errors.append(e.message)
                     return False
