@@ -4,4 +4,4 @@ ALTAIR_CONF=$DEPLOY_ROOT/conf/altair.ticketing.admin.ini
 
 MYSQL_ARGS=`grep ^sqlalchemy.url $ALTAIR_CONF | perl -npe 's,^.+//(.+):(.+)@(.+):(\d+)/([^\?]+).+$,--user=$1 --password=$2 --host=$3 --port=$4 $5,'`
 
-mysql $MYSQL_ARGS $*
+mysql --default-character-set=utf8 $MYSQL_ARGS $*
