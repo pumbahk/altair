@@ -124,7 +124,7 @@ class CoreTestMixin(object):
                 for ticket_format in self._generate_ticket_formats()
                 ]
             )
- 
+
     def _create_products(self, stocks, sales_segment=None):
         from altair.app.ticketing.core.models import Product, ProductItem
         price = Decimal(100.)
@@ -132,7 +132,7 @@ class CoreTestMixin(object):
             Product(
                 name=stock.stock_type.name,
                 price=price,
-                performance=self.performance, 
+                performance=self.performance,
                 sales_segment=sales_segment,
                 items=[
                     ProductItem(
@@ -149,7 +149,12 @@ class CoreTestMixin(object):
             ]
 
     def _create_payment_delivery_method_pairs(self, sales_segment_group, system_fee=0., system_fee_type=0, transaction_fee=0., delivery_fee_per_order=0., delivery_fee_per_principal_ticket=0., delivery_fee_per_subticket=0., special_fee=0, special_fee_type=0, discount=0., discount_unit=0):
-        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        import datetime
+        from altair.app.ticketing.core.models import (
+            PaymentDeliveryMethodPair,
+            DateCalculationBase,
+            )
+
         return [
             PaymentDeliveryMethodPair(
                 sales_segment_group=sales_segment_group,
@@ -166,7 +171,14 @@ class CoreTestMixin(object):
                 public=True,
                 payment_method=payment_method,
                 delivery_method=delivery_method,
-                issuing_interval_days=5
+                payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_start_in_days=0,
+                payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+                payment_period_days=3,
+                issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+                issuing_interval_days=5,
+                issuing_end_day_calculation_base=DateCalculationBase.OrderDate.v,
+                issuing_end_in_days=364,
                 )
             for payment_method in self.payment_methods.values()
             for delivery_method in self.delivery_methods.values()
@@ -227,7 +239,7 @@ class CoreTestMixin(object):
             for product_item in product.items:
                 product_item_quantity = quantity * product_item.quantity
                 if not product_item.stock.stock_type.quantity_only:
-                    seats = [ 
+                    seats = [
                         mark_ordered(seat)
                         for seat in self._pick_seats(product_item.stock, product_item_quantity)
                         ]
@@ -245,7 +257,7 @@ class CoreTestMixin(object):
                         OrderedProductItemToken(serial=(i + 1), valid=True)
                         for i in range(0, product_item_quantity)
                         ]
-                    
+
                 ordered_product_item = OrderedProductItem(
                     product_item=product_item,
                     price=product_item.price,
@@ -296,4 +308,3 @@ class CoreTestMixin(object):
             items=items,
             performance=performance
             )
-

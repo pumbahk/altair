@@ -39,7 +39,7 @@ class FindApplicableTicketsTest(unittest.TestCase):
                 class ticket_format:
                     another_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=-100)
                     delivery_methods = [another_delivery_method]
-                    
+
             tickets = [sej_ticket, another_ticket, sej_ticket, another_ticket, sej_ticket]
 
         result = list(self._callFUT(bundle))
@@ -438,7 +438,7 @@ class BuildSejArgsTest(unittest.TestCase):
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         ]
-    
+
     expectations_prepayment_only = [
         #
         dict(
@@ -829,7 +829,7 @@ class BuildSejArgsTest(unittest.TestCase):
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         ]
-    
+
     expectations_prepayment = [
         #
         dict(
@@ -1220,7 +1220,7 @@ class BuildSejArgsTest(unittest.TestCase):
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         ]
-    
+
     expectations_cash_on_delivery = [
         #
         dict(
@@ -2179,7 +2179,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
     def _pick_seats(self, stock, quantity):
         from altair.app.ticketing.core.models import SeatStatusEnum
         assert stock in self.stocks
-       
+
         result = []
         for seat in self.seats:
             if seat.stock == stock and seat.status == SeatStatusEnum.Vacant.v:
@@ -2599,7 +2599,7 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             self.assertTrue(True)
         except Exception as e:
             raise
-            self.fail() 
+            self.fail()
 
     def test_refresh_fail_already_delivered(self):
         from altair.app.ticketing.orders.models import Order
@@ -2630,4 +2630,3 @@ class PaymentDeliveryPluginTest(PluginTestBase):
 if __name__ == "__main__":
     # setUpModule()
     unittest.main()
-    

@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 class CartTestMixin(object):
     def _create_cart(self, product_quantity_pairs, sales_segment, pdmp=None):
         from .models import Cart, CartedProduct, CartedProductItem
@@ -25,4 +27,3 @@ class CartTestMixin(object):
                 for product, quantity in product_quantity_pairs
                 ]
             )
-

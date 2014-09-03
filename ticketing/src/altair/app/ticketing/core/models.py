@@ -1501,12 +1501,15 @@ def get_base_datetime_from_order_like(order_like, base_type):
 
 def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date):
     if base_type == DateCalculationBase.Absolute.v:
-        assert period is None or period == 0
+        assert period is None or period == 0, 'Should no be specified period when specified absolute. There is a possibility that the data migration has failed.'
         return abs_date
     else:
         base = get_base_datetime_from_order_like(order_like, base_type)
         if base is None:
             raise ValueError('could not determine base date')
+        elif period is None:
+            raise ValueError('should be specified period')
+
         if bias == DateCalculationBias.StartOfDay.v:
             base = base.replace(hour=0, minute=0, second=0, microsecond=0)
         elif bias == DateCalculationBias.EndOfDay.v:
