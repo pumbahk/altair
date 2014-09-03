@@ -132,6 +132,7 @@ class SalesSegmentsTests(unittest.TestCase):
             PaymentDeliveryMethodPair,
             PaymentMethod,
             DeliveryMethod,
+            DateCalculationBase,
         )
         from altair.app.ticketing.users.models import (
             MemberGroup,
@@ -151,7 +152,15 @@ class SalesSegmentsTests(unittest.TestCase):
             delivery_fee_per_subticket=0,
             discount=0,
             payment_method=PaymentMethod(fee=0, name="testing-payment"),
-            delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, name="testing-delivery")
+            delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, name="testing-delivery"),
+            payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_start_in_days=0,
+            payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_period_days=3,
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_interval_days=5,
+            issuing_end_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_end_in_days=364,
             )
         membergroup = MemberGroup()
         sales_segment_group=SalesSegmentGroup(
