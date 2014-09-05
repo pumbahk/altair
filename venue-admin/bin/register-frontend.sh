@@ -19,7 +19,7 @@ echo "DIRNAME=${DIRNAME}"
 echo -n "Starting frontend_venue_import at " && date
 cat ${DEPLOY_ROOT}/bin/frontend_venue_import | \
     sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
-    python - \
+    env LC_CTYPE=en_US.UTF-8 python - \
     -s ${SITE} -U ${DIRNAME}/ \
     ${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini \
     ${FRONTEND_JSON} 2>&1
