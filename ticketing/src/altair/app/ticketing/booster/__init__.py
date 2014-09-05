@@ -165,14 +165,19 @@ def includeme(config):
     STATIC_ASSET_SPEC = 'altair.app.ticketing.booster:static'
     CART_URL_PREFIX = '/cart/static/'
     CART_STATIC_ASSET_SPEC = "altair.app.ticketing.cart:static/"
+    BOOSTER_URL_PREFIX = '/static/common/'
+    BOOSTER_STATIC_ASSET_SPEC = "altair.app.ticketing.booster:static/common"
+
     config.include("altair.cdnpath")
     settings = config.registry.settings
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(
             settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-            mapping={CART_STATIC_ASSET_SPEC: CART_URL_PREFIX}))
+            # exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
+            mapping={CART_STATIC_ASSET_SPEC: CART_URL_PREFIX, BOOSTER_STATIC_ASSET_SPEC: BOOSTER_URL_PREFIX}))
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
     config.include('.89ers')
     config.include('.bambitious')
+
+
