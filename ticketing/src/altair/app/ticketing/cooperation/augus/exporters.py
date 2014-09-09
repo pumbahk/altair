@@ -308,9 +308,7 @@ class AugusAchievementExporter(object):
             opitem = OrderedProductItem.get(id=opitem_id)
             if not opitem:
                 continue
-            elif opitem.ordered_product.order is None: # refs #9443での暫定対処
-                logger.warn('OrderedProduct has not a Order: OrderedProduct.id={}'.format(opitem.ordered_product.id))
-            elif opitem.ordered_product.order.status == 'canceled':
+            elif opitem.ordered_product.current_order and  opitem.ordered_product.current_order.status == 'canceled':
                 continue
             else:
                 return opitem
