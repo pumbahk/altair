@@ -34,6 +34,9 @@ def newRootFactory(klass):
 def exclude_js(path):
     return path.endswith(".js")
 
+def no_exclude(path):
+    return False
+
 def register_globals(event):
     from .helpers import Namespace as Namespace_HH
     from .loyalty import helpers as lh

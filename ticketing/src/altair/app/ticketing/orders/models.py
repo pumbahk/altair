@@ -14,6 +14,7 @@ from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import exists, desc, select, case
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from pyramid.decorator import reify
 from pyramid.threadlocal import get_current_request
 from zope.interface import implementer
 from zope.deprecation import deprecation
@@ -987,6 +988,16 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     quantity = sa.Column(sa.Integer)
     refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+
+
+    @reify
+    def current_order(self):
+        order = None
+        if self.order:
+            order = self.order
+        elif self.proto_order:
+            order = Order.query.filter(Order.order_no==self.proto_order.order_no).first()
+        return order
 
     @property
     def ordered_product_items(self):

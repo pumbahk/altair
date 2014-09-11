@@ -18,6 +18,9 @@ cache.type = ${altair:beaker_backend_type}
 cache.data_dir = %(here)s/tmp/beaker/data
 cache.lock_dir = %(here)s/tmp/beaker/lock
 
+; s3
+s3.static.exclude.function = altair.app.ticketing:no_exclude
+
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}

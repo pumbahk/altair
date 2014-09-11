@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import os
 import time
+import logging
 import datetime
 import itertools
 from StringIO import StringIO
@@ -46,7 +47,7 @@ from .errors import (
     AugusDataExportError,
     DuplicateFileNameError,
     )
-
+logger = logging.getLogger(__name__)
 RETRY = 100
 
 class AugusDistributionExporter(object):
@@ -123,7 +124,7 @@ class AugusPutbackExporter(object):
                     .join(AugusAccount)\
                     .filter(AugusAccount.code==customer_id)
             putbacks = qs.all()
-            
+
         now = datetime.datetime.now()
 
         responses = []
@@ -307,7 +308,7 @@ class AugusAchievementExporter(object):
             opitem = OrderedProductItem.get(id=opitem_id)
             if not opitem:
                 continue
-            elif opitem.ordered_product.order.status == 'canceled':
+            elif opitem.ordered_product.current_order and  opitem.ordered_product.current_order.status == 'canceled':
                 continue
             else:
                 return opitem

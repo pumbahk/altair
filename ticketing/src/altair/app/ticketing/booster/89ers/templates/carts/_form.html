@@ -75,7 +75,10 @@
         郵便番号 <span class="red">*</span>
       </th>
       <td>
-        ${form.zipcode1(size="6", maxlength="3")}-${form.zipcode2(size="6", maxlength="4")}<span><small>（半角英数）</small></span>
+        <% path = request.static_url('altair.app.ticketing.booster:static/common/js/zipdata') %>
+        ${form.zipcode1(size="6", maxlength="3")}-
+        ${form.zipcode2(size="6", maxlength="4", onkeyup="AjaxZip3.zip2addr('" + path + "', 'zipcode1', 'zipcode2','prefecture','city', '', 'address1');")}
+        <span><small>（半角英数）</small></span>
         ${h.error(['zipcode1', 'zipcode2'])}
       </td>
     </tr>
@@ -84,17 +87,15 @@
         住所 <span class="red">*</span>
       </th>
       <td>
-        <!-- TODO: 選択 -->
         都道府県
         ${form.prefecture()}<br>
         市区町村
         ${form.city(size=25)}
-        （例：仙台市） <br>
+        <span><small>（例：仙台市青葉区）</small></span><br/>
         町名番地 ${form.address1(size=25)}
-        <span><small>（例：青葉区一番町99丁目99番99号）</small></span>
-        <br>
+        <span><small>（例：一番町99丁目99番99号）</small></span><br/>
         建物名等 ${form.address2(size=25)}
-        （例：XXビル253号）
+        <span><small>（例：XXビル253号）</small></span><br/>
         ${h.error(['prefecture', 'city', 'address1', 'address2'])}
       </td>
     </tr>
