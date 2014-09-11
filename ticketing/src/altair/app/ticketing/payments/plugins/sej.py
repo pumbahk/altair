@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import desc
 
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
-    ICompleteMailPayment, 
+    ICompleteMailPayment,
     IOrderCancelMailPayment,
     ICompleteMailDelivery,
     IOrderCancelMailDelivery,
@@ -36,7 +36,7 @@ from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
-    NumberIssuer, 
+    NumberIssuer,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
     transform_matrix_from_ticket_format
@@ -206,7 +206,7 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
         # 発券が伴う場合は ticket も比較する
         tickets = sej_order.tickets
         if len(ticket_dicts) != len(tickets):
-            return False 
+            return False
 
         for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
             if int(ticket.ticket_type) != int(d['ticket_type']):
@@ -471,7 +471,7 @@ class SejPaymentPlugin(object):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
-            sej_order = create_sej_order(   
+            sej_order = create_sej_order(
                 request,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date)
                 )
@@ -694,7 +694,7 @@ def can_receive_from_next_day(now, ticketing_start_at):
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン受け取り')
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
 @view_config(context=IOrderPayment, request_type='altair.mobile.interfaces.IMobileRequest',
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_complete_mobile.html'))
@@ -738,7 +738,7 @@ def payment_mail_viewlet(context, request):
             )
     return dict(
         sej_order=sej_order,
-        h=cart_helper, 
+        h=cart_helper,
         notice=context.mail_data("notice"),
         payment_type=payment_type,
         payment_method=payment_method,
@@ -758,24 +758,25 @@ def delivery_mail_viewlet(context, request):
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     now = datetime.now()
+    _can_receive_from_next_day = None
     if sej_order is not None:
         payment_type = payment_type_to_string(sej_order.payment_type)
-        can_receive_from_next_day = \
+        _can_receive_from_next_day = \
             sej_order.ticketing_start_at is not None and \
-            (sej_order.ticketing_start_at.day - now.day) == 1
+            can_receive_from_next_day(now, sej_order.ticketing_start_at)
     else:
         payment_type = (
             SejPaymentType.CashOnDelivery
             if payment_id == PAYMENT_PLUGIN_ID
             else SejPaymentType.Paid
             )
-        can_receive_from_next_day = (payment_id != PAYMENT_PLUGIN_ID)
+        _can_receive_from_next_day = (payment_id != PAYMENT_PLUGIN_ID)
 
     return dict(
         sej_order=sej_order,
         h=cart_helper,
         payment_type=payment_type,
-        can_receive_from_next_day=can_receive_from_next_day,
+        can_receive_from_next_day=_can_receive_from_next_day,
         notice=context.mail_data("notice"),
         delivery_method=delivery_method
         )

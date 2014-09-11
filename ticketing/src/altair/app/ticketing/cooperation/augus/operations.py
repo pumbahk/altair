@@ -226,7 +226,7 @@ class AugusWorker(object):
 
         try:
             for name in filter(target.match_name, os.listdir(staging)):
-                logger.info('target file: {}'.format(name))
+                logger.info('Target file: {}'.format(name))
                 path = os.path.join(staging, name)
 
                 request = AugusParser.parse(path)
@@ -234,40 +234,40 @@ class AugusWorker(object):
                 try:
                     importer.import_(request, self.augus_account)
                     status = Status.OK
-                    logger.info('success')
+                    logger.info('Success')
                 except AugusDataImportError as err: # 未連携状態の可能性->次のターンで再試行
                     transaction.abort()
                     not_yets.append(request)
-                    logger.info('yet another')
+                    logger.info('Cooperation has not been completed: {}'.format(err))
                     continue
                 except IllegalImportDataError as err: # 座席不正など -> Augus側にエラー通知
-                    logger.info('illigal error')
+                    logger.info('Illigal error: {}'.format(err))
                     pass
                 except Exception as err: # 未知のエラーはそのまま上位に送出
                     transaction.abort()
-                    logger.info('unknown error')
+                    logger.info('Unknown error: {}'.format(err))
                     raise
 
                 try:
                     time.sleep(sleep)
-                    logger.info('exporting start')
+                    logger.info('Exporting start')
                     exporter.export(send_dir_staging, request, status)
-                    logger.info('exporting done')
+                    logger.info('Exporting done')
                     shutil.move(path, pending)
-                    logger.info('exporting done')
-                except Exception:
-                    logger.info('errore')
+                    logger.info('Move file done')
+                except Exception as err:
+                    logger.info('Error: {}'.format(err))
                     transaction.abort()
                     raise
                 else:
                     if status == Status.OK:
-                        logger.info('data commit')
+                        logger.info('Data commit')
                         transaction.commit()
                         successes.append(request)
                     else:
                         transaction.abort()
                         errors.append(request)
-                        logger.info('no no abort')
+                        logger.info('Not able to seat distribution')
                         raise
         except Exception as err:
             traceback.print_exc(file=sys.stderr)
