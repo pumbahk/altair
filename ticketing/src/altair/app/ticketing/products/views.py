@@ -10,7 +10,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 from paste.util.multidict import MultiDict
-
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
@@ -430,12 +430,14 @@ def subview_older(context, request):
 def subview_newer(context, request):
     sales_segment = context.sales_segment
     event = sales_segment.event
+    session = get_db_session(request, 'slave')
     try:
         performance_id = request.params["performance_id"]
-        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id==performance_id).distinct().all()
+        stock_holders = session.query(StockHolder).join(StockHolder.stock).filter(Stock.performance_id==performance_id).distinct().all()
     except KeyError:
-        performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
-        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+        event = sales_segment.sales_segment_group.event
+        performance_ids = [p.id for p in event.performances]
+        stock_holders = session.query(StockHolder).join(Stock).filter(StockHolder.event_id == event.id).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
     return dict(event=event, 
          stock_types = event.stock_types, 
          ticket_bundles = event.ticket_bundles, 
