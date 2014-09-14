@@ -1552,7 +1552,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     issuing_end_in_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの発券終了までの日数'))
     issuing_end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券期限日時'))
 
-    # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
+    # 選択不可期間 (SalesSegment.end_atの何日前から利用できないか、日数指定)
     unavailable_period_days = AnnotatedColumn(Integer, nullable=False, default=0, _a_label=_(u'選択不可期間'))
     # 一般公開するか
     public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'一般公開'))
