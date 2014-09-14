@@ -1,0 +1,6 @@
+{
+    "type": "csv",
+    "filters": {"ordered-at": ["2014-01-01T00:00:00", "2014-01-01T23:59:59"]},
+    "options": ["order-no", "MAIL_MAGAZINE_PERMISSION", "USERPROFILE_LAST_NAME"],
+    "limit": 10000
+}

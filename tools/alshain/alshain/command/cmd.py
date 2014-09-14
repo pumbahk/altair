@@ -1,13 +1,16 @@
 #-*- coding: utf-8 -*-
 import os
+import sys
 import optparse
+
+import jumon
+
 from .. import utils
 
-def main(argv):
-    parser = optparse.OptionParser()
+def main(argv=sys.argv[1:]):
+    parser = jumon.TransparentOptionParser()
     opts, args = parser.parse_args(argv[1:])
     cmdfile = ''
-    args = []
     try:
         cmdfile = argv[0]
         args = ' '.join(args)
@@ -15,8 +18,5 @@ def main(argv):
         parser.error('Need command line.')
     cur = utils.DeploySwitcher.get_dir()
     cmd = os.path.join(cur, 'bin', cmdfile)
-    conf = os.path.join(cur, 'conf', 'altair.ticketing.admin.ini')
-    cmdline = cmd + ' {0} {1}'.format(conf, args)
-    os.system(cmdline)
-
-    
+    cmdline = cmd + ' {}'.format(args)
+    return utils.Shell.system(cmdline, sudo=True)
