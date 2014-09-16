@@ -131,7 +131,7 @@ class ProductFormMixin(object):
             product = Product.query.filter_by(id=self.id.data).one()
             now = datetime.now()
             if (product.public and product.sales_segment.public and product.sales_segment.in_term(now) and product.performance.public)\
-               or product.ordered_products or product.has_lot_entry_products():
+               or product.has_order() or product.has_lot_entry_products():
                 error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
                 if self.price.data != product.price:
                     self.price.errors.append(error_message)
@@ -219,7 +219,7 @@ class ProductItemFormMixin(object):
             product = pi.product
             now = datetime.now()
             if (product.public and product.sales_segment.public and product.sales_segment.in_term(now) and product.performance.public)\
-               or product.ordered_products or product.has_lot_entry_products():
+               or product.has_order() or product.has_lot_entry_products():
                 error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
                 if self.product_item_price.data != pi.price:
                     self.product_item_price.errors.append(error_message)
