@@ -421,17 +421,17 @@ class OrderBetaDownloadView(BaseView):
             raise DownloadParamValidationError(
                 'Order dowload parameter error: {}'.format(
                     repr(self.request.params)))
-        data = json.loads(json_str)
-        filters = data['filters']
-        options = data['options']
-        limit = data['limit']
+        # data = json.loads(json_str)
+        # filters = data['filters']
+        # options = data['options']
+        # limit = data['limit']
         res = Response()
         res.headers = [
             ('Content-Type', 'application/octet-stream; charset=cp932'),
             ('Content-Disposition', 'attachment; filename={0}'.format('test.csv')),
             ]
         exporter = altair_order_dump.OrderExporter(session, self.context.organization.id)
-        exporter.exportfp(res, filters=filters, options=options, limit=limit)
+        exporter.exportfp(res, json_=json_str)
         return res
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
