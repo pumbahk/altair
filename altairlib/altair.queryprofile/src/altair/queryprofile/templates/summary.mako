@@ -91,7 +91,7 @@ $(document.body).delegate('*[@data-toggle="expandable-list-item"]', 'click', fun
     </table>
     <h2>Queries</h2>
     <ul>
-    % for route, summary in reversed(sorted(summarizer.queries.items(), key=lambda q: q[1]['max'])):
+    % for route, summary in reversed(sorted(queries.items(), key=lambda q: q[1]['max'])):
       <li class="expandable-list-item collapsed">
         <div class="expandable-list-item-header"><a data-toggle="expandable-list-item">${route}</a> (min: <span class="summary-min">${summary['min']}</span>, max: <span class="summary-max">${summary['max']}</span>)<span class="indicator icon-chevron-down"></span></div>
         <div class="expandable-list-item-content">
