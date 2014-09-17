@@ -2,12 +2,14 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <!-- font-awesome -->
-<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet"></link>
+<link href="/static/css/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"></link>
 
 <!-- select2 -->
-<link rel="stylesheet" href="//cdn.jsdelivr.net/select2/3.4.8/select2.css">
-<script src="//cdn.jsdelivr.net/select2/3.4.8/select2.js"></script>
-<script src="//cdn.jsdelivr.net/select2/3.4.8/select2.min.js"></script>
+<link rel="stylesheet" href="/static/js/select2/3.5.1/select2.css">
+<script src="/static/js/select2/3.5.1/select2.min.js"></script>
+
+<!-- momentjs -->
+<script src="/static/js/moment.min.js"></script>
 
 <style>
 
@@ -209,32 +211,25 @@ input.datetime-year{
                             name = elms.find('input:first').attr('name');
 
                             var from_year = elms.find('.datetime-year:first').val();
-                            var from_month = elms.find('.datetime-month:first').val();
+                            var from_month = elms.find('.datetime-month:first').val() - 1; // 0が1月なので...
                             var from_day = elms.find('.datetime-day:first').val();
                             var from_hour = elms.find('.datetime-hour:first').val();
                             var from_minute = elms.find('.datetime-minute:first').val();
 
                             var elms = condition_value.find('.datetime-to');
                             var to_year = elms.find('.datetime-year:first').val();
-                            var to_month = elms.find('.datetime-month:first').val();
+                            var to_month = elms.find('.datetime-month:first').val() - 1; // 0が1月なので...
                             var to_day = elms.find('.datetime-day:first').val();
                             var to_hour = elms.find('.datetime-hour:first').val();
                             var to_minute = elms.find('.datetime-minute:first').val();
 
-                            values.push({
-                                'year': from_year,
-                                'month': from_month,
-                                'day': from_day,
-                                'hour': from_hour,
-                                'minute': from_minute
-                            });
-                            values.push({
-                                'year': to_year,
-                                'month': to_month,
-                                'day': to_day,
-                                'hour': to_hour,
-                                'minute': to_minute
-                            });
+                            var from_date = new Date(from_year, from_month, from_day,
+                                                     from_hour, from_minute, 0);
+
+                            values.push(moment(from_date).format("YYYY-MM-DDTHH:mm:SS"));
+                            var to_date = new Date(to_year, to_month, to_day,
+                                                   to_hour, to_minute, 59);
+                            values.push(moment(to_date).format("YYYY-MM-DDTHH:mm:SS"));
                         }else{// other
                             var elms = $(condition_values.find('input, select'));
                             elms.each(function(jj, elm){
@@ -280,9 +275,10 @@ input.datetime-year{
          */
         function create_request_data(){
             var data =  {
+                'type': 'csv',
                 'options': create_request_data_for_options(),
                 'filters': create_request_data_for_filters(),
-                'limit': 10000,
+                'limit': null,
                 'page': 1
             };
             return data;
@@ -322,9 +318,7 @@ urls=[request.route_path('index')]
 
 <div class="page-header">
   <h1>
-    <img src="/static/danger.jpeg" height="50" width="50" align="left">
     <span>購入情報検索 (ベータ版)</span>
-    <img src="/static/danger.jpeg" height="50" width="50">
   </h1>
 
   <h3 style="color: red; float='left'">使用上の注意</h3>
@@ -456,10 +450,10 @@ urls=[request.route_path('index')]
             <label class="condition-label">予約日時</label>
             <div class="condition-value">
               <input class="datetimewidget">
-              <a href="#"><i class="fa fa-calendar"></i></a>
+              <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
               〜
               <input class="datetimewidget">
-              <a href="#"><i class="fa fa-calendar"></i></a>
+              <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
             </div>
           </div>
           <div class="conditions" id="condition-SejOrder.billing_number">
@@ -547,7 +541,7 @@ urls=[request.route_path('index')]
                 <input name="performance-start-on" class="datetime-day">日
                 <input name="performance-start-on" class="datetime-hour">時
                 <input name="performance-start-on" class="datetime-minute">分
-                <a href="#"><i class="fa fa-calendar"></i></a>
+                <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
               </p>
               〜
               <p class="datetime-to">
@@ -556,31 +550,31 @@ urls=[request.route_path('index')]
                 <input name="performance-start-on" class="datetime-day">日
                 <input name="performance-start-on" class="datetime-hour">時
                 <input name="performance-start-on" class="datetime-minute">分
-                <a href="#"><i class="fa fa-calendar"></i></a>
+                <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
               </p>
             </div>
           </div>
 
           <div class="conditions" id="condition-ordered-at">
             <input class="condition-use" type="checkbox">
-            <label class="condition-label">公演日</label>
+            <label class="condition-label">予約日時</label>
             <div class="condition-value datetime">
               <p class="datetime-from">
-                <input name="performance-start-on" class="datetime-year">年
-                <input name="performance-start-on" class="datetime-month">月
-                <input name="performance-start-on" class="datetime-day">日
-                <input name="performance-start-on" class="datetime-hour">時
-                <input name="performance-start-on" class="datetime-minute">分
-                <a href="#"><i class="fa fa-calendar"></i></a>
+                <input name="ordered-at" class="datetime-year">年
+                <input name="ordered-at" class="datetime-month">月
+                <input name="ordered-at" class="datetime-day">日
+                <input name="ordered-at" class="datetime-hour">時
+                <input name="ordered-at" class="datetime-minute">分
+                <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
               </p>
               〜
               <p class="datetime-to">
-                <input name="performance-start-on" class="datetime-year">年
-                <input name="performance-start-on" class="datetime-month">月
-                <input name="performance-start-on" class="datetime-day">日
-                <input name="performance-start-on" class="datetime-hour">時
-                <input name="performance-start-on" class="datetime-minute">分
-                <a href="#"><i class="fa fa-calendar"></i></a>
+                <input name="ordered-at" class="datetime-year">年
+                <input name="ordered-at" class="datetime-month">月
+                <input name="ordered-at" class="datetime-day">日
+                <input name="ordered-at" class="datetime-hour">時
+                <input name="ordered-at" class="datetime-minute">分
+                <!--<a href="#"><i class="fa fa-calendar"></i></a>-->
               </p>
             </div>
           </div>

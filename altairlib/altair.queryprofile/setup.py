@@ -19,6 +19,9 @@ requires = [
     "setuptools>0.7",
     "pyramid",
     "sqlalchemy",
+    "fanstatic",
+    "js.bootstrap",
+    "pyramid_dogpile_cache",
 ]
 
 tests_require = [

@@ -66,5 +66,31 @@
                 % endif
               </td>
             </tr>
+            <tr>
+              <th>支払店舗</th>
+              <td>
+                % if sej_order.pay_store_name:
+                  ${sej_order.pay_store_name}
+                  % if branches:
+                    (再付番前の店舗: ${u', '.join(_sej_order.pay_store_name or u'-' for _sej_order in branches)})
+                  % endif
+                % else:
+                  -
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>受取店舗</th>
+              <td>
+                % if sej_order.ticketing_store_name:
+                  ${sej_order.ticketing_store_name}
+                  % if branches:
+                    (再付番前の店舗: ${u', '.join(_sej_order.ticketing_store_name or u'-' for _sej_order in branches)})
+                  % endif
+                % else:
+                  -
+                % endif
+              </td>
+            </tr>
             % endif
           </table>
