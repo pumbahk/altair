@@ -7,6 +7,8 @@ from pyramid.renderers import render
 from sqlalchemy import event
 from sqlalchemy.engine.base import Engine
 from zope.interface import Interface, Attribute, implementer
+import fanstatic
+import js.bootstrap
 
 logger = logging.getLogger(__name__)
 lock = threading.Lock()
@@ -30,12 +32,14 @@ def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
     if request is not None:
         with lock:
             engine_id = id(conn.engine)
-            engines = request.registry.get('altair.queryprofile.engines', {})
-            engines[engine_id] = str(conn.engine)
-            request.registry['altair.queryprofile.engines'] = engines
+            engines = request.registry.setdefault('altair.queryprofile.engines', {})
+            engine = engines.get(engine_id)
+            if engine is None:
+                i = len(engines)
+                engines[engine_id] = (i, str(conn.engine))
             statements = request.environ.get('altair.queryprofile.statements', {})
             stmt_list = statements.get(engine_id, [])
-            duration = (stop_timer - conn.pdtb_start_timer) * 1000
+            duration = (stop_timer - conn.pdtb_start_timer)
             statements[engine_id] = stmt_list + [{'duration':duration,
                                                   'statement': str(stmt)}]
             request.environ['altair.queryprofile.statements'] = statements
@@ -70,26 +74,36 @@ class QueryCountTween(object):
 
 
 class SummarizableQueryCountTween(QueryCountTween):
+    fanstatic_config = {}
+
     def __init__(self, summary_path, handler, registry):
         super(SummarizableQueryCountTween, self).__init__(handler, registry)
-        self.summary_path = summary_path
+        self.summary_path = '/' + summary_path.strip('/')
 
     def __call__(self, request):
         logger.debug(request.path)
-        if request.path.strip('/') == self.summary_path:
-            summarizer = get_summarizer(request)
-            engines = request.registry.get('altair.queryprofile.engines', {})
-            request.response.text = render('altair.queryprofile:templates/summary.mako',
-                                           dict(summarizer=summarizer,
-                                                engines=engines))
-            return request.response
-
-        try:
-            return super(SummarizableQueryCountTween, self).__call__(request)
-        finally:
-            for engine_id, count in self.get_counts(request):
+        if request.path.startswith(self.summary_path):
+            path_info = request.path[len(self.summary_path):].rstrip("/")
+            if path_info == "":
+                needed = fanstatic.init_needed(script_name=request.environ.get('SCRIPT_NAME'), base_url=self.summary_path, **self.fanstatic_config)
+                js.bootstrap.bootstrap.need()
                 summarizer = get_summarizer(request)
-                summarizer(request, count)
+                engines = request.registry.get('altair.queryprofile.engines', {})
+                request.response.text = render('altair.queryprofile:templates/summary.mako',
+                                               dict(summarizer=summarizer,
+                                                    engines=engines))
+                if needed.has_resources():
+                    request.response.body = needed.render_topbottom_into_html(request.response.body)
+                return request.response
+            else:
+                return request.get_response(fanstatic.Fanstatic(lambda environ, start_resp: [], base_url=self.summary_path, **self.fanstatic_config))
+        else:
+            try:
+                return super(SummarizableQueryCountTween, self).__call__(request)
+            finally:
+                for engine_id, count in self.get_counts(request):
+                    summarizer = get_summarizer(request)
+                    summarizer(request, count)
 
             
 class IQuerySummarizer(Interface):
