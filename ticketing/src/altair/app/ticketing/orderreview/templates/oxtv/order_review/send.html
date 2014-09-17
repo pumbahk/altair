@@ -2,8 +2,20 @@
 <head>
 </head>
 <body>
-${message}
-<a href="javascript:window.close();">閉じる</a>
+
+% for r in result:
+  % if r['result'] == 'success':
+    ${r['seat']} ${mail}宛にメールを送信しました. <br />
+  % else:
+    <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
+  % endif
+% endfor
+
+<script>
+document.write('<a href="javascript:window.close();">閉じる</a>');
+</script>
+<noscript>
+</noscript>
 
 </body>
 </html>
