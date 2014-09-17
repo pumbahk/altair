@@ -31,6 +31,20 @@ class Address(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     user = orm.relationship('User', backref="addresses")
 
+class Profile(Base):
+    __tablename__ = 'profiles'
+    id = sa.Column(sa.Integer, primary_key=True)
+    deleted_at = sa.Column(sa.DateTime)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
+    user = orm.relationship('User', backref="profiles")
+
+class ProfilePicture(Base):
+    __tablename__ = 'profile_pictures'
+    id = sa.Column(sa.Integer, primary_key=True)
+    deleted_at = sa.Column(sa.DateTime)
+    profile_id = sa.Column(sa.Integer, sa.ForeignKey('profiles.id'))
+    profile = orm.relationship('Profile', backref="pictures")
+
 Base.metadata.create_all(bind=DBSession.bind)
 
 
@@ -38,8 +52,7 @@ Base.metadata.create_all(bind=DBSession.bind)
 
 
 
-class TestIt(unittest.TestCase):
-
+class TestIt(unittest.TestCase): 
     def setUp(self):
         DBSession.remove()
 
@@ -116,3 +129,64 @@ class TestIt(unittest.TestCase):
         
         #self.assertEqual(len(u2.addresses), 1)
 
+    def test_complex_1(self):
+        from datetime import datetime
+        import transaction
+        u = User(
+            addresses=[
+                Address(deleted_at=datetime.now())
+                ],
+            profiles=[
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ProfilePicture(),
+                        ]
+                    ),
+                ],
+            deleted_at=datetime.now()
+            )
+        DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        q = DBSession.query(User).join(Address).join(Profile).order_by(User.id)
+        self.assertEqual([], q.all())
+
+    def test_complex_2(self):
+        from datetime import datetime
+        from sqlalchemy.orm import joinedload_all
+        import transaction
+        u = User(
+            addresses=[
+                Address()
+                ],
+            profiles=[
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ProfilePicture(),
+                        ]
+                    ),
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ProfilePicture(),
+                        ],
+                    deleted_at=datetime.now()
+                    ),
+                ]
+            )
+        DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        q = DBSession.query(User) \
+            .options(joinedload_all(
+                User.profiles,
+                Profile.pictures
+                )) \
+            .join(Address) \
+            .order_by(User.id)
+        result = q.all()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[0].profiles), 1)
+        self.assertEqual(len(result[0].profiles[0].pictures), 1)

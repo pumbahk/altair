@@ -102,6 +102,7 @@ requires = [
     'altair.svg',
     'altair.models',
     'altair.httpsession',
+    'altair.samarker',
     ]
 
 tests_require = [
