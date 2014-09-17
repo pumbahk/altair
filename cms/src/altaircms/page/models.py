@@ -544,9 +544,9 @@ class PageTag(WithOrganizationMixin, Base):
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
 
-def delete_orphan_pagetag(mapper, connection, target):
-    PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
-sa.event.listen(Page, "after_delete", delete_orphan_pagetag)
+#def delete_orphan_pagetag(mapper, connection, target):
+#    PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
+#sa.event.listen(Page, "after_delete", delete_orphan_pagetag)
 
 class MobileTag(WithOrganizationMixin, Base):
     __tablename__ = "mobiletag"
