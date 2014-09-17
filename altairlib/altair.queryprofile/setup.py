@@ -21,6 +21,7 @@ requires = [
     "sqlalchemy",
     "fanstatic",
     "js.bootstrap",
+    "pyramid_dogpile_cache",
 ]
 
 tests_require = [
