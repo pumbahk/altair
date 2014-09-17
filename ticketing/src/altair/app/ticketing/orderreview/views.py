@@ -578,20 +578,24 @@ def order_review_send_to_orion(context, request):
             data_list = [data]
 
         for data in data_list:
+            if data.seat is None:
+                seat = data.item.ordered_product.product.name
+            else:
+                seat = data.seat.name
             logger.info("token = %s" % data.id)
             res_text = api.send_to_orion(request, context, mail, data)
             logger.info("response = %s" % res_text)
             response = json.loads(res_text)
             # TODO: 返り値を検証する
             if response == None:
-                result.append(dict(seat=data.seat.name, result=u"failure", reason=u"不明なエラー"))
+                result.append(dict(seat=seat, result=u"failure", reason=u"不明なエラー"))
             elif response['result'] != u"OK":
-                result.append(dict(seat=data.seat.name, result=u"failure", reason=response['message']))
+                result.append(dict(seat=seat, result=u"failure", reason=response['message']))
             else:
-                result.append(dict(seat=data.seat.name, result=u"success"))
+                result.append(dict(seat=seat, result=u"success"))
     except Exception, e:
         logger.error(e.message, exc_info=1)
-        raise Exception(e)
+        raise
 
     return dict(mail=mail,
                 result=result,
