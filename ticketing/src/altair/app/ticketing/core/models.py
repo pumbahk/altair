@@ -2558,6 +2558,12 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Ticket.principal == False) \
             .scalar() or 0
 
+    def has_order(self):
+        for op in self.ordered_products:
+            if op.order:
+                return True
+        return False
+
     def has_lot_entry_products(self):
         from altair.app.ticketing.lots.models import LotEntryProduct
         return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
