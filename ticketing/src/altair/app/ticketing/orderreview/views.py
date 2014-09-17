@@ -590,8 +590,6 @@ def order_review_send_to_orion(context, request):
             else:
                 result.append(dict(seat=data.seat.name, result=u"success"))
     except Exception, e:
-        import traceback
-        print traceback.format_exc()
         logger.error(e.message, exc_info=1)
         raise Exception(e)
 
