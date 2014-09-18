@@ -1081,3 +1081,15 @@ input[type="submit"] {
   font-weight: bold;
   font-size: 17px;
 }
+
+.settlementNotice {
+	margin: 8px 8px;
+	padding: 8px 8px;
+	background-color: #ffeeee;
+	color: #f00;
+	font-weight: bold;
+}
+
+.settlementNotice p {
+	margin: 0 0;
+}
