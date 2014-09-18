@@ -91,6 +91,14 @@ class LayoutUpdateForm(Form):
     filepath = fields.FileField(label=u"テンプレートファイル", validators=[validators.Optional()])
     __display_fields__ = [u"title", "template_filename", "filepath", "blocks"]
 
+class LayoutListForm(Form):
+    title = fields.TextField(u'タイトル', validators=[validators.Required()])
+    blocks = fields.TextField(u'ブロック', validators=[validators.Required(), validate_blocks])
+    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Optional()])
+    filepath = fields.FileField(label=u"テンプレートファイル", validators=[validators.Optional()])
+    updated_at = fields.FileField(label=u"更新日付", validators=[validators.Optional()])
+    synced_at = fields.FileField(label=u"同期日付", validators=[validators.Optional()])
+
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
     display_order = fields.IntegerField(label=u"表示順序")

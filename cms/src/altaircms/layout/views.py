@@ -64,13 +64,13 @@ def layout_list_with_pagetype(context, request):
     qs = request.allowable(Layout).with_transformation(Layout.applicable(pagetype_id))
     layouts = h.paginate(request, qs, item_count=qs.count())
 
-    form = forms.LayoutUpdateForm()
+    form = forms.LayoutListForm()
     return {"layouts": layouts, 
             "pagetypes": pagetypes, 
             "current_pagetype": current_pagetype, 
             "form": form, 
             "mapper": layout_mapper, 
-            "display_fields": ["title", "template_filename", "blocks"]}
+            "display_fields": ["title", "template_filename", "blocks", "updated_at", "synced_at"]}
 
 
 @view_defaults(route_name="layout_create", 
