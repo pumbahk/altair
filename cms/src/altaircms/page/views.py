@@ -373,7 +373,7 @@ class ListView(object):
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
         pagetype = self.context.pagetype
-        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id,
                                                     PageSet.event_id!=None)
         params = dict(self.request.GET)
         if "page" in params:
@@ -389,7 +389,28 @@ class ListView(object):
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
         return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
 
-    @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html", 
+    @view_config(match_param="pagetype=event_not_bound", renderer="altaircms:templates/pagesets/event_not_bound_pageset_list.html",
+                 custom_predicates=[page_viewable])
+    def event_not_bound_page_list(self):
+        """ event詳細ページだけどイベントと結びついていないpage """
+        pagetype = self.request.allowable(PageType).filter(PageType.name=="event_detail").first()
+        real_pagetype = self.request.allowable(PageType).filter(PageType.name==self.context.pagetype.name).first()
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, PageSet.event_id==None)
+        params = dict(self.request.GET)
+        if "page" in params:
+            params.pop("page") ## pagination
+        if params:
+            search_form = forms.PageSetSearchForm(self.request.GET)
+            if search_form.validate():
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
+        else:
+            search_form = forms.PageSetSearchForm()
+
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": real_pagetype, "search_form": search_form}
+
+    @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html",
                  custom_predicates=[page_viewable])
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
@@ -408,6 +429,7 @@ class ListView(object):
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
         return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+
 
 from altaircms import security
 class EventPageFound(Exception, security.RootFactory):

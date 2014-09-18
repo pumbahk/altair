@@ -29,7 +29,11 @@
         <span class="label label-info">カテゴリトップページ:${pageset.genre.label}</span>
       %endif
     </td>
-    <th>所属イベント名</th><td><a href="${request.route_path("event",id=pageset.event_id)}">${pageset.event.title}</a></td>
+    % if pageset.event:
+      <th>所属イベント名</th><td><a href="${request.route_path("event",id=pageset.event_id)}">${pageset.event.title}</a></td>
+    % else:
+      <th>所属イベント名</th><td><span style="color: red">イベントに紐付いていません</span></a></td>
+    % endif
   </tr>
   <tr>
     <th>URL</th><td colspan="3">${pageset.url}</td>
