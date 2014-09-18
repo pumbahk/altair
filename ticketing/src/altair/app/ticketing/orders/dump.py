@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 _ = lambda x: unicode(x)
+
+import json
+import datetime
 import itertools
 from pyramid.decorator import reify
 from zope.interface import (
@@ -8,8 +11,12 @@ from zope.interface import (
     implementer,
     )
 import csv
+
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
+import sqlalchemy.sql as sa_sql
+import sqlalchemy.sql.functions as sa_func
+
 from altair.app.ticketing.core.models import(
     Organization,
     ShippingAddress,
@@ -55,18 +62,8 @@ def _bench(word):
     # print >> sys.stderr, time.clock()
     # print >> sys.stderr, word,
 
-
-class OrderExporter(object):
-    def exports(self, *args, **kwds):
-        return 'TEST'
-
-    def exportfp(self, fp, *args, **kwds):
-        fp.write(self.exports(*args, **kwds))
-
-    def export(self, path, *args, **kwds):
-        with open(path, 'w+b') as fp:
-            self.exportfp(fp, *args, **kwds)
-
+int_or_blank = lambda value: '' if value is None else int(value)
+value_or_blank = lambda value: '' if value is None else value
 
 class Compiler(object):
     pass
@@ -90,9 +87,9 @@ class OrderCreatedAtCompiler(Compiler):
     name = u'予約日時'
     get = staticmethod(lambda order, **kwds: order.created_at)
 
-class OrderCreatedAtCompiler(Compiler):
-    name = u'予約日時'
-    get = staticmethod(lambda order, **kwds: order.created_at)
+class OrderPaidAtCompiler(Compiler):
+    name = u'支払日時'
+    get = staticmethod(lambda order, **kwds: order.paid_at)
 
 class OrderDeliveredAtCompiler(Compiler):
     name = u'配送日時'
@@ -104,56 +101,56 @@ class OrderCanceledAtCompiler(Compiler):
 
 class OrderTotalAmountCompiler(Compiler):
     name = u'合計金額'
-    get = staticmethod(lambda order, **kwds: order.total_amount)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.total_amount))
 
 class OrderTransactionFeeCompiler(Compiler):
     name = u'決済手数料'
-    get = staticmethod(lambda order, **kwds: order.transaction_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.transaction_fee))
 
 class OrderDeliveryFeeCompiler(Compiler):
     name = u'配送手数料'
-    get = staticmethod(lambda order, **kwds: order.delivery_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.delivery_fee))
 
 class OrderSystemFeeCompiler(Compiler):
     name = u'システム利用料'
-    get = staticmethod(lambda order, **kwds: order.system_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.system_fee))
 
 class OrderSpecialFeeCompiler(Compiler):
     name = u'特別手数料'
-    get = staticmethod(lambda order, **kwds: order.special_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.special_fee))
 
 class OrderSpecialFeeCompiler(Compiler):
     name = u'特別手数料'
-    get = staticmethod(lambda order, **kwds: order.special_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.special_fee))
 
 class OrderRefundTotalAmountCompiler(Compiler):
     name = u'払戻合計金額'
-    get = staticmethod(lambda order, **kwds: order.refund_total_amount)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_total_amount))
 
 
 class OrderRefundTotalAmountCompiler(Compiler):
     name = u'払戻合計金額'
-    get = staticmethod(lambda order, **kwds: order.refund_total_amount)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_total_amount))
 
 
 class OrderRefundTransactionFeeCompiler(Compiler):
     name = u'払戻決済手数料'
-    get = staticmethod(lambda order, **kwds: order.refund_transaction_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_transaction_fee))
 
 
 class OrderRefundDeliveryFeeCompiler(Compiler):
     name = u'払戻配送手数料'
-    get = staticmethod(lambda order, **kwds: order.refund_delivery_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_delivery_fee))
 
 
 class OrderRefundSystemFeeCompiler(Compiler):
     name = u'払戻システム利用料'
-    get = staticmethod(lambda order, **kwds: order.refund_system_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_system_fee))
 
 
 class OrderRefundSpecialFeeCompiler(Compiler):
     name = u'払戻特別手数料'
-    get = staticmethod(lambda order, **kwds: order.refund_special_fee)
+    get = staticmethod(lambda order, **kwds: int_or_blank(order.refund_special_fee))
 
 
 class OrderNoteCompiler(Compiler):
@@ -377,7 +374,7 @@ class OrderCardAHeadComNameCompiler(Compiler):
 
 class MailMagazinePermissionCompiler(Compiler):
     name = u'メールマガジン受信可否'
-    get = staticmethod(lambda shipping_address, subscribed_emails, **kwds: shipping_address and ((shipping_address.email_1 in subscribed_emails) or (shipping_address.email_2 or shipping_address.email_2 in subscribed_emails)))
+    get = staticmethod(lambda shipping_address, subscribed_emails, **kwds: bool(shipping_address and ((shipping_address.email_1 in subscribed_emails) or (shipping_address.email_2 or shipping_address.email_2 in subscribed_emails))))
 
 class LotNameCompiler(Compiler):
     name = u'抽選'
@@ -385,10 +382,7 @@ class LotNameCompiler(Compiler):
     @staticmethod
     def get(order, lotentries, **kwds):
         lotentry = lotentries.get(order.order_no, None)
-        if lotentry:
-            return lotentry.lot.name
-        else:
-            return None
+        return lotentry.lot.name if lotentry else None
 
 class Context(object):
     pass
@@ -421,7 +415,6 @@ class OrderExportContext(Context):
         self._sej_orders = sej_orders
         self._subscribed_emails = subscribed_emails
         self._lotentries = lotentries
-
 
 class OrderExportAdapter(object):
     def __init__(self, order, sej_orders, subscribed_emails, lotentries):
@@ -482,7 +475,7 @@ column_compiler = {
     "ORDER_STATUS": OrderStatusCompiler,
     "ORDER_PAYMENT_STATUS": OrderPaymentStatusCompiler,
     "ORDER_CREATED_AT": OrderCreatedAtCompiler,
-    "ORDER_PAID_AT": OrderCreatedAtCompiler,
+    "ORDER_PAID_AT": OrderPaidAtCompiler,
     "ORDER_DELIVERED_AT": OrderDeliveredAtCompiler,
     "ORDER_CANCELED_AT": OrderCanceledAtCompiler,
     "LOT_NAME": LotNameCompiler,
@@ -726,8 +719,20 @@ class DeliveryMethodQBuilder(QBuilderIn):
 
 class OrderedAtQBuilder(QBuilderBetween):
     name = u'予約日時'
-    _type = dict
+    _type = datetime.datetime
     _targets = Order.created_at,
+
+    def __init__(self, *values):
+        def _convert(datestr):
+            fmts = ['%Y-%m-%dT%H:%M:%S']
+            for fmt in fmts:
+                try:
+                    return datetime.datetime.strptime(datestr, fmt)
+                except ValueError as err: # does not match format
+                    continue
+            raise ValueError('time date "{}" does not match formats'.format(datestr))
+        self._values = map(_convert, values)
+
 
 class PerformanceStartOnQBuilder(QBuilderBetween):
     name = u'公演開始日時'
@@ -793,7 +798,6 @@ class OrderExporter(object):
         qs = self._session.query(Order)
         qs = qs\
           .join(SalesSegment)\
-          .join(Performance)\
           .join(Event)\
           .outerjoin(ShippingAddress)\
           .outerjoin(OrderedProduct)\
@@ -805,6 +809,13 @@ class OrderExporter(object):
           .outerjoin(Member)\
           .outerjoin(MemberGroup)\
           .outerjoin(Membership)
+
+
+        # order_noが重複しているモノを消し去る こんなコード入れたら遅いかな...
+        order_one = sa_orm.aliased(Order)
+        subqs = sa.select([sa_func.max(order_one.branch_no)])\
+          .where(order_one.order_no==Order.order_no)
+        qs = qs.filter(Order.branch_no==subqs)
 
         if self.organization_id:
             qs = qs.filter(Order.organization_id==self.organization_id)
@@ -824,7 +835,6 @@ class OrderExporter(object):
             )
         for target in joinedload_targets:
             qs = qs.options(sa_orm.joinedload(target))
-
         qs = qs.order_by(sa.desc(Order.id))
         return qs
 
@@ -866,15 +876,23 @@ class OrderExporter(object):
 
     def create_rows(self, adapters, compilers):
         return [
-            [unicode(adapter.get(compiler)).encode('cp932') for compiler in compilers]
+            [unicode(value_or_blank(adapter.get(compiler))).encode('cp932') for compiler in compilers]
             for adapter in adapters
             ]
 
-    def exportfp(self, fp, options=[], filters={}, limit=None):
+    def exportfp(self, fp, options=[], filters={}, limit=None, json_=None):
+        if json_:
+            data = json.loads(json_)
+            filters = data['filters']
+            options = data['options']
+            limit = data['limit']
+
+
         qs = self._build_query(filters)
         if limit is not None:
-            qs = qs.limit(limit)
+            qs = qs.limit(limit + int(limit * 0.5))
         orders = qs.all()
+        orders = orders[:limit]
         _bench('ORDER LENGTH: {}'.format(len(orders)))
         order_nos = (order.order_no for order in orders)
         emai1_email2 = ((order.shipping_address.email_1, order.shipping_address.email_2)

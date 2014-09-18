@@ -10,7 +10,7 @@ from pyramid.security import effective_principals
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, NO_STATE
 from zope.interface import implementer
 from altair.sqlahelper import get_db_session
 from .interfaces import ICartPayment, ICartDelivery
@@ -38,6 +38,10 @@ from .exceptions import (
 from zope.deprecation import deprecate
 from altair.now import get_now
 import functools
+try:
+    from sqlalchemy.orm.utils import object_state
+except ImportError:
+    from sqlalchemy.orm.attributes import instance_state as object_state
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +57,7 @@ class TicketingCartResourceBase(object):
         self._sales_segment_id = sales_segment_id
         self._sales_segment = None
         self._cart = None
+        self._read_only_cart = None
         self._populate_params()
         self._validate_sales_segment()
 
@@ -70,7 +75,7 @@ class TicketingCartResourceBase(object):
         """現在認証済みのユーザが選択済みの販売区分を選択できるか"""
         cart = None
         try:
-            cart = self.cart
+            cart = self.read_only_cart
         except NoCartError as e:
             logger.debug('cart is not created (%s)' % e)
 
@@ -96,6 +101,27 @@ class TicketingCartResourceBase(object):
         else:
             self._cart = session.merge(self._cart)
         return self._cart
+
+    @property
+    def read_only_cart(self):
+        from altair.app.ticketing.models import DBSession as session
+        read_only_cart = None
+        if self._read_only_cart is not None:
+            read_only_cart = self._read_only_cart
+        else:
+            if self._cart is not None:
+                read_only_cart = self._cart
+        if read_only_cart is not None:
+            try:
+                state = object_state(self._read_only_cart)
+                if state.detached:
+                    read_only_cart = None
+            except NO_STATE:
+                read_only_cart = None
+        if read_only_cart is None:
+            read_only_cart = cart_api.get_cart_safe(self.request, for_update=False)
+            self._read_only_cart = read_only_cart
+        return read_only_cart
 
     @property
     def sales_segments(self):
@@ -160,14 +186,14 @@ class TicketingCartResourceBase(object):
     def available_sales_segments(self):
         """現在認証済みのユーザが今買える全販売区分"""
         per_performance_sales_segments_dict = {}
-        cart = None
+        read_only_cart = None
         try:
-            cart = self.cart
+            read_only_cart = self.read_only_cart
         except NoCartError as e:
             logger.info('cart is not created (%s)' % e)
 
         for sales_segment in self.sales_segments:
-            if (cart and cart.sales_segment_id == sales_segment.id) \
+            if (read_only_cart and read_only_cart.sales_segment_id == sales_segment.id) \
                or (sales_segment.available_payment_delivery_method_pairs(self.now) and \
                    sales_segment.in_term(self.now)):
                 per_performance_sales_segments = \
@@ -271,7 +297,7 @@ class TicketingCartResourceBase(object):
         user = self.user_object
         mail_addresses = None
         try:
-            mail_addresses = self.cart.shipping_address and self.cart.shipping_address.emails
+            mail_addresses = self.read_only_cart.shipping_address and self.read_only_cart.shipping_address.emails
         except NoCartError:
             pass
         retval = []
@@ -327,8 +353,8 @@ class TicketingCartResourceBase(object):
         設定なしの場合は何度でも購入可能です。
         カウントするOrder数にcancelされたOrderは含まれません。
         """
-        cart_total_quantity = sum(element.quantity for item in self.cart.items for element in item.elements)
-        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(self.cart.sales_segment)
+        cart_total_quantity = sum(element.quantity for item in self.read_only_cart.items for element in item.elements)
+        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(self.read_only_cart.sales_segment)
         for container, record in total_orders_and_quantities_per_user:
             order_limit = record['order_limit']
             max_quantity_per_user = record['max_quantity_per_user']
@@ -448,7 +474,7 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             return sales_segment.performance
         cart = None
         try:
-            cart = self.cart
+            cart = self.read_only_cart
         except NoCartError:
             pass
         if cart is not None and (self._event_id is None or cart.performance.event_id == self._event_id):
@@ -483,7 +509,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
         if self._performance_id is None:
             cart = None
             try:
-                cart = self.cart
+                cart = self.read_only_cart
             except NoCartError:
                 pass
             if cart is not None:
@@ -550,11 +576,11 @@ class CartBoundTicketingCartResource(TicketingCartResourceBase):
 
     @property
     def sales_segment(self):
-        return self.cart.sales_segment
+        return self.read_only_cart.sales_segment
 
     @property
     def performance(self):
-        return self.cart.sales_segment.performance
+        return self.read_only_cart.sales_segment.performance
 
     @property
     def event(self):

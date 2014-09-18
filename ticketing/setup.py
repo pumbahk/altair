@@ -205,6 +205,7 @@ setup(name='altair.app.ticketing',
       augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
       send_sej_remind_mail=altair.app.ticketing.mails.scripts.send_sej_remind_mail:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
+      download_orders=altair.app.ticketing.scripts.download_orders:main
       """,
       paster_plugins=['pyramid'],
       )

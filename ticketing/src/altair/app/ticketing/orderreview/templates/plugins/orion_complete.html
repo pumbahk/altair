@@ -109,6 +109,19 @@
 
     <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
+    % if 0 < len(tickets):
+    <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+    ${len(tickets)}枚分のメールをまとめて送信
+    <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
+      <input type="hidden" name="order_no" value="${order.order_no}" />
+      <input type="hidden" name="tel" value="${tel}" />
+      メールアドレス: <input type="text" name="mail" size="40" />
+      <input type="hidden" name="multi" value="1" />
+      <input type="submit" name="send" value="メールで送る" />
+    </form>
+    </div>
+    % endif
+
     % for (idx, ticket) in zip(range(0, len(tickets)), tickets):
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
 	    ${idx+1}/${len(tickets)} <br />

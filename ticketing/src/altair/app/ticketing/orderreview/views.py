@@ -562,33 +562,41 @@ def order_review_send_to_orion(context, request):
         return dict(mail=mail, 
                     message=u"Emailの形式が正しくありません")
 
-    res_text = None
+    result = []
     try:
-        data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
-        if data.item.ordered_product.order.order_no != request.params['order_no']:
-            raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-        res_text = api.send_to_orion(request, context, mail, data)
-        logger.info("response = %s" % res_text)
+        if 'multi' in request.params and request.params['multi']!="":
+            data_list = OrderedProductItemToken.query\
+                .join(OrderedProductItem)\
+                .join(OrderedProduct)\
+                .join(Order)\
+                .filter(Order.order_no==request.params['order_no'])
+        else:
+            # tokenで検索してorder_noを照合する
+            data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
+            if data.item.ordered_product.order.order_no != request.params['order_no']:
+                raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
+            data_list = [data]
+
+        for data in data_list:
+            if data.seat is None:
+                seat = data.item.ordered_product.product.name
+            else:
+                seat = data.seat.name
+            logger.info("token = %s" % data.id)
+            res_text = api.send_to_orion(request, context, mail, data)
+            logger.info("response = %s" % res_text)
+            response = json.loads(res_text)
+            # TODO: 返り値を検証する
+            if response == None:
+                result.append(dict(seat=seat, result=u"failure", reason=u"不明なエラー"))
+            elif response['result'] != u"OK":
+                result.append(dict(seat=seat, result=u"failure", reason=response['message']))
+            else:
+                result.append(dict(seat=seat, result=u"success"))
     except Exception, e:
         logger.error(e.message, exc_info=1)
-        ## この例外は違う...
-        raise HTTPNotFound()
+        raise
 
-    response = None
-    try:
-        response = json.loads(res_text)
-        # TODO: 返り値を検証する
-    except Exception, e:
-        logger.error(e.message + " (res_text: %s)" % res_text, exc_info=1)
-        raise HTTPNotFound()
-
-    if response != None and response['result'] == u"OK":
-        return dict(mail=mail,
-                    message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail)
-    
-    # エラーメッセージ
-    return dict(
-        mail = mail,
-        # そのまま出すのも微妙だがコード化されてないからしょうがない
-        message = response['message']
-        )
+    return dict(mail=mail,
+                result=result,
+                )
