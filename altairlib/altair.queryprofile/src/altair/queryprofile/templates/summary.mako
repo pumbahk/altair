@@ -46,7 +46,7 @@ body {
 </style>
   <script type="text/javascript">
 $(function () {
-$(document.body).delegate('*[@data-toggle="expandable-list-item"]', 'click', function() {
+$(document.body).delegate('*[data-toggle="expandable-list-item"]', 'click', function() {
   var $li = $(this).closest('.expandable-list-item');
   var $ind = $li.find('.indicator');
   if ($li.hasClass('collapsed')) {
