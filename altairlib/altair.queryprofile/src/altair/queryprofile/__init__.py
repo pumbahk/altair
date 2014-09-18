@@ -30,15 +30,13 @@ def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
     stop_timer = time.time()
     if request is not None:
         engines = request.environ.get('altair.queryprofile.engines', {})
-        engine_id = id(conn.engine)
-        engine = engines.get(engine_id)
-        if engine is None:
-            i = len(engines)
-            engines[engine_id] = (i, str(conn.engine))
+        conn_url = conn.engine.url
+        if conn_url not in engines:
+            engines[conn_url] = len(engines)
         statements = request.environ.get('altair.queryprofile.statements', {})
-        stmt_list = statements.get(engine_id, [])
+        stmt_list = statements.get(conn_url, [])
         duration = (stop_timer - conn.pdtb_start_timer)
-        statements[engine_id] = stmt_list + [{'duration':duration,
+        statements[conn_url] = stmt_list + [{'duration':duration,
                                               'statement': str(stmt)}]
         request.environ['altair.queryprofile.engines'] = engines
         request.environ['altair.queryprofile.statements'] = statements
@@ -70,6 +68,8 @@ class QueryCountTween(object):
     def get_statements(self, request):
         return request.environ.get('altair.queryprofile.statements', {})
 
+    def get_engines(self, request):
+        return request.environ.get('altair.queryprofile.engines', {})
 
 class SummarizableQueryCountTween(QueryCountTween):
     fanstatic_config = {}
@@ -102,7 +102,7 @@ class SummarizableQueryCountTween(QueryCountTween):
             try:
                 return super(SummarizableQueryCountTween, self).__call__(request)
             finally:
-                reg.set('altair.queryprofile.engines', request.environ['altair.queryprofile.engines'])
+                reg.set('altair.queryprofile.engines', self.get_engines(request))
                 store_summary(reg, request, self.get_statements(request))
 
             

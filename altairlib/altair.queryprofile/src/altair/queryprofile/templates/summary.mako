@@ -82,7 +82,7 @@ $(document.body).delegate('*[@data-toggle="expandable-list-item"]', 'click', fun
         </tr>
       </thead>
       <tbody>
-      % for i, engine in sorted(engines.values(), key=lambda p:p[0]):
+      % for engine, i in sorted(engines.items(), key=lambda p:p[1]):
         <tr>
           <td><span class="badge badge-color-${i}">${i}</span></td>
           <td>${engine}</td>
@@ -104,10 +104,10 @@ $(document.body).delegate('*[@data-toggle="expandable-list-item"]', 'click', fun
               </tr>
             </thead>
             <tbody>
-              %for engine, statements in sorted(summary['statements'].items(), key=lambda p:engines.get(p[0])[0]):
+              %for engine, statements in sorted(summary['statements'].items(), key=lambda p:engines.get(p[0])):
               %for stmt in statements:
               <tr>
-                <td><span class="badge badge-color-${engines.get(engine)[0]}">${engines.get(engine)[0]}</span></td>
+                <td><span class="badge badge-color-${engines.get(engine)}">${engines.get(engine)}</span></td>
                 <td>${'{0:.4f}s'.format(stmt['duration'])}</td>
                 <td>
                   <pre class="small scrollable">${stmt['statement']}</pre>
