@@ -917,3 +917,23 @@ class AugusAchievementView(_AugusBaseView):
         self.request.session.flash(u'販売実績戻しを予約しました')
         url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
         return HTTPFound(url)
+
+    @view_config(route_name='augus.achievement.stop', request_method='GET')
+    def achievement_stop(self):
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).one()
+        augus_performance.stoped_at = datetime.datetime.now()
+        augus_performance.save()
+        self.request.session.flash(u'販売実績戻しを停止しました')
+        url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+        return HTTPFound(url)
+
+    @view_config(route_name='augus.achievement.start', request_method='GET')
+    def achievement_start(self):
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).one()
+        augus_performance.stoped_at = None
+        augus_performance.save()
+        self.request.session.flash(u'販売実績戻しを開始')
+        url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+        return HTTPFound(url)
