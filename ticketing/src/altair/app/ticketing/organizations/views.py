@@ -226,11 +226,6 @@ class OrganizationSettings(BaseView):
         organization_setting.sales_report_type = f.sales_report_type.data
         organization_setting.enable_mypage = f.enable_mypage.data
         organization_setting.augus_use = f.augus_use.data
-        organization_setting.augus_customer_id = f.augus_customer_id.data
-        organization_setting.augus_upload_url = f.augus_upload_url.data
-        organization_setting.augus_download_url = f.augus_download_url.data
-        organization_setting.augus_username = f.augus_username.data
-        organization_setting.augus_password = f.augus_password.data
 
         self.request.session.flash(u'その他の設定を保存しました')
         return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))

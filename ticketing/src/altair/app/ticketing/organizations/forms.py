@@ -301,21 +301,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
-    augus_customer_id = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_customer_id)['label']
-        )
-    augus_upload_url = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_upload_url)['label']
-        )
-    augus_download_url = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_download_url)['label']
-        )
-    augus_username = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_username)['label']
-        )
-    augus_password = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_password)['label']
-        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\
