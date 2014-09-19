@@ -79,7 +79,7 @@
         </td>
         % if detail:
         <td><a href="${request.route_path('events.show', event_id=order['event_id'])}">${order['event_title']}</a></td>
-        <td><a href="${request.route_path('performances.show', performance_id=order['performance_id'])}/order">${order['performance_start_on'] or ''}</a></td>
+        <td><a href="${request.route_path('performances.show', performance_id=order['performance_id'])}/order">${vh.datetime(order['performance_start_on'], with_weekday=True)  or ''}</a></td>
         % endif
       	<td>${order['card_brand'] or ''}</td>
       	<td>
