@@ -205,7 +205,8 @@ def ticketdata_from_qrsigned_string(context, request):
             if not res.has_key("result"):
                 raise Exception("Unexpected response from Orion")
             if res["result"] != "OK":
-                raise Exception("Orion API failed: %s" % res_text)
+                if res.get("errcode") != 'E008': # "No such ticket with serial
+                    raise Exception("Orion API failed: %s" % res_text)
             if not res.has_key("token"):
                 raise Exception("Unexpected response from Orion: %s" % res_text)
             order_and_token = utils.order_from_token(res["token"], qrdata["order"])
