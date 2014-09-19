@@ -115,7 +115,7 @@ ${ch.breadcrumbs(
             </tr>
             <tr>
               <th>開演日時</th>
-              <td>${order.performance.start_on or ''}</td>
+              <td>${vh.datetime(order.performance.start_on, with_weekday=True) or ''}</td>
             </tr>
             <tr>
               <th>会場</th>
