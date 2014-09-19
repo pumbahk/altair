@@ -42,7 +42,7 @@
         fee_type = u' / 件'
       if pdmp.system_fee_type == int(FeeTypeEnum.PerUnit.v[0]):
         fee_type = u' / 枚'
-    %>          
+    %>
     <td>${vh.price(pdmp.system_fee)}${fee_type}</td>
 
     <%
@@ -51,7 +51,7 @@
         fee_type = u' / 件'
       if pdmp.special_fee_type == int(FeeTypeEnum.PerUnit.v[0]):
         fee_type = u' / 枚'
-    %>          
+    %>
     <td>${vh.price(pdmp.special_fee)}${fee_type}</td>
 
     <%

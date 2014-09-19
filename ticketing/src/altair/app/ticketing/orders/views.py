@@ -25,11 +25,7 @@ from webob.multidict import MultiDict
 import transaction
 
 from altair.sqlahelper import get_db_session
-from altair.viewhelpers.datetime_ import (
-    create_date_time_formatter,
-    DateTimeHelper,
-    )
-
+import  altair.viewhelpers.datetime_
 from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
@@ -175,9 +171,9 @@ class OrdersAPIView(BaseView):
 
         if formdata['event_id']:
             query = query.filter(Performance.event_id == formdata['event_id'])
-        _dt2str = lambda dt: DateTimeHelper(create_date_time_formatter(self.request)).datetime(dt, with_weekday=True)
         performances = [
-            dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, _dt2str(p.start_on)))
+            dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (
+                p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request)))
             for p in query]
         return {"result": performances, "status": True}
 
