@@ -179,6 +179,7 @@ def ticketdata_from_qrsigned_string(context, request):
         if performance is None:
             raise Exception("No such performance: %s" % qrdata["performance"])
 
+        order = data = None
         if performance.orion is not None and performance.orion.qr_enabled == 1:
             # coupon_2_qr_enabledは判定には使わない
             # eventgate
@@ -207,15 +208,16 @@ def ticketdata_from_qrsigned_string(context, request):
             if res["result"] != "OK":
                 if res.get("errcode") != 'E008': # "No such ticket with serial
                     raise Exception("Orion API failed: %s" % res_text)
-            if not res.has_key("token"):
-                raise Exception("Unexpected response from Orion: %s" % res_text)
-            order_and_token = utils.order_from_token(res["token"], qrdata["order"])
-            if order_and_token is None:
-                raise Exception("No such ticket: token=%s, order=%s" % (res["token"], qrdata["order"]))
-            order, token = order_and_token
-            data = todict.data_dict_from_order(order, token)
+            else:
+                if not res.has_key("token"):
+                    raise Exception("Unexpected response from Orion: %s" % res_text)
+                order_and_token = utils.order_from_token(res["token"], qrdata["order"])
+                if order_and_token is None:
+                    raise Exception("No such ticket: token=%s, order=%s" % (res["token"], qrdata["order"]))
+                order, token = order_and_token
+                data = todict.data_dict_from_order(order, token)
 
-        else:
+        if order is None:
             # legacy QR
             order_and_history = utils.order_and_history_from_qrdata(qrdata)
             if order_and_history is None:
