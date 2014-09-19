@@ -35,9 +35,9 @@
           % endif
           <th>表示順</th>
           <th>公演日</th>
+          <th style="width:6em">-</th>
           <th>${ch.sortable(form.name, paging)}</th>
           <th>会場</th>
-          <th style="width:6em">-<th>
         </tr>
       </thead>
       <tbody>
@@ -57,7 +57,22 @@
           </td>
           % endif
           <td>${performance.display_order}</td>
-          <td>${performance.start_on.strftime("%Y-%m-%d")if performance.start_on else ''}</td>
+          <td>${vh.date(performance.start_on, with_weekday=True)}</td>
+          <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
+            <div>
+              <span>${form.open_on.label.text}</span>
+              <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.start_on.label.text}</span>
+              <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.end_on.label.text}</span>
+              <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
+            </div>
+          </td>
+
           <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">
 					    ${performance.name}
               <%
@@ -75,20 +90,6 @@
 				<div class="sub_name">${performance.venue.sub_name}</div>
 			% endif
 		  </td>
-          <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
-            <div>
-              <span>${form.open_on.label.text}</span>
-              <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
-            </div>
-            <div>
-              <span>${form.start_on.label.text}</span>
-              <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
-            </div>
-            <div>
-              <span>${form.end_on.label.text}</span>
-              <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
-            </div>
-          </td>
         </tr>
       % endfor
       </tbody>
