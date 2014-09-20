@@ -1,9 +1,6 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
-% if request.session.peek_flash():
-<%mobile:messages messages="${request.session.pop_flush()}" />
-% endif
 <div><font size="-1">
 <font color="red">まだお申し込みは完了していません。</font><br />
 注文内容を確認の上、ページ下の「申し込む」ボタンでお申し込みください。<br />
