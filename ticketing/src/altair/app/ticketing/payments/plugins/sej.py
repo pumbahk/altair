@@ -231,7 +231,7 @@ def refresh_order(request, tenant, order, update_reason):
     if sej_order is None:
         raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
-    sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
+    sej_args = build_sej_args(sej_order.payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
     ticket_dicts = get_tickets(request, order)
 
     if is_same_sej_order(sej_order, sej_args, ticket_dicts):
@@ -294,7 +294,7 @@ def refund_order(request, tenant, order, refund_record, now=None):
     except SejErrorBase:
         raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
-def build_sej_args(payment_type, order_like, now):
+def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
     shipping_address = order_like.shipping_address
     tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
     tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
@@ -344,12 +344,6 @@ def build_sej_args(payment_type, order_like, now):
             ticketing_due_at    = None
     else:
         raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_like.order_no, back_url=None)
-
-    regrant_number_due_at = None
-    performance = order_like.sales_segment.performance
-    if performance and (performance.start_on or performance.end_on):
-        regrant_number_due_at = (performance.end_on or performance.start_on) + timedelta(days=1)
-    regrant_number_due_at = regrant_number_due_at or now + timedelta(days=365)
 
     return dict(
         payment_type        = payment_type,
@@ -473,7 +467,7 @@ class SejPaymentPlugin(object):
         try:
             sej_order = create_sej_order(
                 request,
-                **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date)
+                **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date, None)
                 )
             do_sej_order(
                 request,
@@ -539,6 +533,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         from altair.app.ticketing.cart.models import Cart
         shipping_address = order_like.shipping_address
         current_date = datetime.now()
+        regrant_number_due_at = current_date + timedelta(days=365)
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
@@ -548,7 +543,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
-                **build_sej_args(SejPaymentType.Paid, order_like, current_date)
+                **build_sej_args(SejPaymentType.Paid, order_like, current_date, regrant_number_due_at)
                 )
             do_sej_order(
                 request,
@@ -608,6 +603,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def finish2(self, request, order_like):
         current_date = datetime.now()
+        regrant_number_due_at = current_date + timedelta(days=365)
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         payment_type = determine_payment_type(current_date, order_like)
         try:
@@ -615,7 +611,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
-                **build_sej_args(payment_type, order_like, current_date)
+                **build_sej_args(payment_type, order_like, current_date, regrant_number_due_at)
                 )
             do_sej_order(
                 request,
