@@ -69,6 +69,15 @@ class FakeObject(unicode):
     def __nonzero__(self):
         return False
 
+    def __format__(self, fmt):
+        _is_datetime_format = lambda _fmt: any('%{}'.format(ch) in fmt for ch in list('aAbBcdfHIijmMpSUwWxXyYzZ'))
+        if not fmt:
+            return self
+        elif _is_datetime_format(fmt):
+            now = datetime.now()
+            return now.strftime(fmt)
+        else:
+            return fmt.format(self)
 
 def create_shipping_address(request, args):
     shipping_address = FakeObject("ShippingAddress")
