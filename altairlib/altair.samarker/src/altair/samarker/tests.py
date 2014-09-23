@@ -89,13 +89,20 @@ class MarkerQueryTest(unittest.TestCase):
         from sqlalchemy.ext.declarative import declarative_base
         from sqlalchemy.types import Integer, Unicode
         from sqlalchemy.schema import Table, Column, ForeignKey, PrimaryKeyConstraint
+        from sqlalchemy.orm import relationship
         from sqlalchemy import create_engine
 
         self.Base = declarative_base()
-        class Test(self.Base):
-            __tablename__ = 'Test'
+        class Test1(self.Base):
+            __tablename__ = 'Test1'
             id = Column(Integer, primary_key=True)
-        self.Test = Test
+        class Test2(self.Base):
+            __tablename__ = 'Test2'
+            id = Column(Integer, primary_key=True)
+            test1_id = Column(Integer, ForeignKey('Test1.id'))
+            test1 = relationship(Test1, backref='test2_list')
+        self.Test1 = Test1
+        self.Test2 = Test2
         self.engine = create_engine('sqlite:///:memory:')
         self.Base.metadata.create_all(self.engine)
 
@@ -107,13 +114,13 @@ class MarkerQueryTest(unittest.TestCase):
         from .orm import SessionFactoryFactory, MarkerQuery
         sessionmaker = SessionFactoryFactory(sessionmaker(bind=self.engine))
         session = sessionmaker()
-        session.add(self.Test(id=1))
+        session.add(self.Test1(id=1))
         session.commit()
-        self.assertEqual(session.query(self.Test).first().id, 1)
-        q = session.query(self.Test).filter_by(id=1)
+        self.assertEqual(session.query(self.Test1).first().id, 1)
+        q = session.query(self.Test1).filter_by(id=1)
         self.assertRegexpMatches(
             str(q).replace('\n', ''),
-            r'''SELECT "Test".id AS "Test_id" FROM "Test" WHERE "Test".id = [^ ]+ /\* File "[^"]*", line \d+, in test_it \*/'''
+            r'''SELECT "Test1".id AS "Test1_id" FROM "Test1" WHERE "Test1".id = [^ ]+ /\* File "[^"]*", line \d+, in test_it \*/'''
             )
 
     def test_from_self(self):
@@ -121,10 +128,27 @@ class MarkerQueryTest(unittest.TestCase):
         from .orm import SessionFactoryFactory, MarkerQuery
         sessionmaker = SessionFactoryFactory(sessionmaker(bind=self.engine))
         session = sessionmaker()
-        session.add(self.Test(id=1))
+        session.add(self.Test1(id=1))
         session.commit()
-        q = session.query(self.Test).filter_by(id=1).from_self()
+        q = session.query(self.Test1).filter_by(id=1).from_self()
         self.assertRegexpMatches(
             str(q).replace('\n', ''),
-            r'''SELECT anon_1."Test_id" AS "anon_1_Test_id" FROM \(SELECT "Test".id AS "Test_id" FROM "Test" WHERE "Test".id = [^ ]+\) AS anon_1 /\* File "[^"]*", line \d+, in test_from_self \*/'''
+            r'''SELECT anon_1."Test1_id" AS "anon_1_Test1_id" FROM \(SELECT "Test1".id AS "Test1_id" FROM "Test1" WHERE "Test1".id = [^ ]+\) AS anon_1 /\* File "[^"]*", line \d+, in test_from_self \*/'''
             )
+
+    def test_subquery(self):
+        from sqlalchemy.orm import sessionmaker
+        from .orm import SessionFactoryFactory, MarkerQuery
+        plain_session_maker = sessionmaker(bind=self.engine)
+        sessionmakers = [plain_session_maker, SessionFactoryFactory(plain_session_maker)]
+        def doit(session):
+            session.add(self.Test1(id=1, test2_list=[self.Test2()]))
+            q1 = session.query(self.Test1.id.label('FOO')).join(self.Test1.test2_list).filter_by(id=1).subquery()
+            try:
+                q2 = session.query(q1.c.FOO)
+            except:
+                self.fail('%r: %s' % (session, type(q1)))
+            self.assertEqual([(1,)], q2.all())
+            session.rollback()
+        for _sessionmaker in sessionmakers:
+            doit(_sessionmaker())
