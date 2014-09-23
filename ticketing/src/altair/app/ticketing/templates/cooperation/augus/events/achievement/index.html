@@ -16,6 +16,8 @@
     <th>オーガス公演名</th>
     <th>altair公演コード</th>
     <th>altair公演名</th>
+    <th>連携状態</th>
+    <th />
     <th />
     <th />
   </tr>
@@ -27,8 +29,16 @@
     <td>${ag_performance.augus_performance_name}</td>
     <td>${ag_performance.performance.code}</td>
     <td>${ag_performance.performance.name}</td>
+    <td>${u'連携中' if ag_performance.stoped_at is None else u'停止中'}</td>
     <td>
       <a class="btn entry" href="${request.route_url('augus.achievement.reserve', event_id=event.id, augus_performance_id=ag_performance.id)}">予約</a>
+    </td>
+    <td>
+      %if ag_performance.stoped_at is None:
+      <a class="btn entry" href="${request.route_url('augus.achievement.stop', event_id=event.id, augus_performance_id=ag_performance.id)}">停止</a>
+      %else:
+      <a class="btn entry" href="${request.route_url('augus.achievement.start', event_id=event.id, augus_performance_id=ag_performance.id)}">開始</a>
+      %endif
     </td>
     <td>
       <a class="btn entry" href="${request.route_url('augus.achievement.get', event_id=event.id, augus_performance_id=ag_performance.id)}">取得</a>

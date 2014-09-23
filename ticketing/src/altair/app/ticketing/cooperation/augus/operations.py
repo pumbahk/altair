@@ -305,6 +305,8 @@ class AugusWorker(object):
 
         if not all_:
             qs = qs.filter(AugusPerformance.is_report_target==True)
+        else:
+            qs = qs.filter(AugusPerformance.stoped_at!=True)
 
         ag_performances = qs.all()
         ids = [ag_performance.id for ag_performance in ag_performances]

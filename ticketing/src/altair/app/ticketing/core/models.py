@@ -3870,6 +3870,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
 
     is_report_target = Column(Boolean, nullable=True, default=False)
+    stoped_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'連携終了日時'))
 
     performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),

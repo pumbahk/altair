@@ -59,6 +59,8 @@ ROUTE_URL_RESOURCE = {
     'augus.achievement.index': ('/events/{event_id}/achievement', PerformanceResource),
     'augus.achievement.get': ('/events/{event_id}/achievement/get/{augus_performance_id}', PerformanceResource),
     'augus.achievement.reserve': ('/events/{event_id}/achievement/reserve/{augus_performance_id}', PerformanceResource),
+    'augus.achievement.stop': ('/events/{event_id}/achievement/stop/{augus_performance_id}', PerformanceResource),
+    'augus.achievement.start': ('/events/{event_id}/achievement/start/{augus_performance_id}', PerformanceResource),
     }
 
 def add_routes(config, route_url_resource):
