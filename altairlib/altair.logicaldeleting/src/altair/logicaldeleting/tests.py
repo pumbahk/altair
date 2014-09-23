@@ -45,20 +45,15 @@ class ProfilePicture(Base):
     profile_id = sa.Column(sa.Integer, sa.ForeignKey('profiles.id'))
     profile = orm.relationship('Profile', backref="pictures")
 
-Base.metadata.create_all(bind=DBSession.bind)
-
-
-
-
-
 
 class TestIt(unittest.TestCase): 
     def setUp(self):
         DBSession.remove()
+        Base.metadata.create_all(bind=DBSession.bind)
 
     def tearDown(self):
         DBSession.remove()
-
+        Base.metadata.drop_all(bind=DBSession.bind)
 
     def test_installed(self):
         from . import LogicalDeletableSession
@@ -190,3 +185,44 @@ class TestIt(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(len(result[0].profiles), 1)
         self.assertEqual(len(result[0].profiles[0].pictures), 1)
+
+    def test_nested(self):
+        from datetime import datetime
+        from sqlalchemy.orm import joinedload_all
+        import transaction
+        u = User(
+            addresses=[
+                Address()
+                ],
+            profiles=[
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ProfilePicture(),
+                        ]
+                    ),
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ProfilePicture(),
+                        ],
+                    deleted_at=datetime.now()
+                    ),
+                ]
+            )
+        DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        sq = DBSession.query(User) \
+            .options(joinedload_all(
+                User.profiles,
+                Profile.pictures
+                )) \
+            .join(Address) \
+            .order_by(User.id)
+        q = DBSession.query(User).filter(User.id.in_(sq.with_entities(User.id)))
+        result = q.all()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result[0].profiles), 1)
+        self.assertEqual(len(result[0].profiles[0].pictures), 1)
+
