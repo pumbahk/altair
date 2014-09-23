@@ -477,7 +477,6 @@ urls=[request.route_path('index')]
             <label class="condition-label">イベント名</label>
             <div class="condition-value">
               <select name="event" id="event_search" style="width: 300px;">
-                <option>(全て)</option>
                 % for event in events:
                 <option name="event" value="${event.id}">${event.title}</option>
                 % endfor
