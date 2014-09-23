@@ -2,8 +2,8 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from sqlalchemy import or_ 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import or_, desc
+from sqlalchemy.orm import joinedload, undefer, aliased
 from pyramid.decorator import reify
 
 # from paste.util.multidict import MultiDict
@@ -59,6 +59,7 @@ class OrderDependentsProvider(object):
     def histories(self):
         order = self.order
         return DBSession.query(Order, include_deleted=True)\
+            .options(undefer(Order.deleted_at))\
             .filter(Order.order_no==order.order_no)\
             .order_by(Order.branch_no.desc()).all()
 
@@ -187,11 +188,18 @@ class OrderResource(SingleOrderResource):
     def order(self):
         order_history_id = self.request.GET.get("order_history")
         if order_history_id is not None:
-            return Order.get(order_history_id, self.organization.id, include_deleted=True)
-        order = Order.get(self.order_id, self.organization.id, include_deleted=True)
-        if order and order.deleted_at:
-            return Order.filter_by(order_no=order.order_no).first() #logical deleted
-        return order
+            q = DBSession.query(Order, include_deleted=True) \
+                .filter(Order.id == order_history_id, Order.organization_id == self.organization.id)
+        else:
+            Order_ = aliased(Order)
+            q = DBSession.query(Order, include_deleted=True) \
+                .join(Order_, Order.order_no == Order_.order_no) \
+                .filter(Order.deleted_at == None) \
+                .filter(Order.organization_id == self.organization.id) \
+                .order_by(desc(Order.branch_no))
+            q = q.filter(Order_.id == self.order_id, Order_.organization_id == self.organization.id)
+        q = q.options(undefer(Order.deleted_at), undefer(Order.updated_at), undefer(Order.created_at), undefer(Order.queued))
+        return q.first()
 
     @reify
     def available_ticket_formats(self):
