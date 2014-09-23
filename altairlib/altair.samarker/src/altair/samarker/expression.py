@@ -15,6 +15,12 @@ class MarkedClauseElement(Executable, ClauseElement):
     def params(self, *args, **kwargs):
         return self.inner.params(*args, **kwargs)
 
+    def _init_collections(self):
+        return self.inner._init_collections()
+
+    def _populate_column_collection(self):
+        return self.inner._populate_column_collection()
+
     @property
     def _columns(self):
         return self.inner._columns
@@ -22,6 +28,22 @@ class MarkedClauseElement(Executable, ClauseElement):
     @_columns.setter
     def _columns(self, value):
         self.inner._columns = value
+
+    @property
+    def primary_key(self):
+        return self.inner.primary_key
+
+    @primary_key.setter
+    def primary_key(self, value):
+        self.inner.primary_key = value
+
+    @property
+    def foreign_keys(self):
+        return self.inner.foreign_keys
+
+    @foreign_keys.setter
+    def foreign_keys(self, value):
+        self.inner.foreign_keys = value
 
     @property
     def bind(self):
