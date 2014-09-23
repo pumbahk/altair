@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from altair.logicaldeleting import install as install_ld
-install_ld()
-
 import re
 import json
 import transaction
@@ -15,6 +12,23 @@ from pyramid.interfaces import IDict
 import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
+
+
+def install_ld():
+    from sqlalchemy import orm
+    import altair.logicaldeleting
+    from altair.samarker.orm import SessionFactoryFactory
+    from zope.sqlalchemy import ZopeTransactionExtension
+    sqlahelper._session = orm.scoped_session(
+        orm.sessionmaker(
+            class_=SessionFactoryFactory(altair.logicaldeleting.LogicalDeletableSession),
+            extension=ZopeTransactionExtension(),
+            query_cls=altair.logicaldeleting.LogicalDeletableQuery
+            )
+        )
+    altair.logicaldeleting.installed = True
+
+install_ld()
 
 def setup_mailtraverser(config):
     from altair.app.ticketing.mails.traverser import EmailInfoTraverser
