@@ -790,7 +790,11 @@ def get_order_by_order_no(request, order_no, session=None, include_deleted=False
         from altair.app.ticketing.models import DBSession
         session = DBSession
     try:
-        return session.query(Order, include_deleted=include_deleted).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
+        q = session.query(Order, include_deleted=include_deleted).filter_by(order_no=order_no)
+        if include_deleted:
+            q = q.options(orm.undefer(Order.deleted_at))
+        q = q.order_by(desc(Order.branch_no))
+        return q.first()
     except orm.exc.NoResultFound:
         return None
 
