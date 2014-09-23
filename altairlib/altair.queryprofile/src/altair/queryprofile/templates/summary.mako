@@ -110,7 +110,7 @@ $(document.body).delegate('*[data-toggle="expandable-list-item"]', 'click', func
                 <td><span class="badge badge-color-${engines.get(engine)}">${engines.get(engine)}</span></td>
                 <td>${'{0:.4f}s'.format(stmt['duration'])}</td>
                 <td>
-                  <pre class="small scrollable">${stmt['statement']}</pre>
+                  <pre class="small scrollable">${stmt['statement'].decode('us-ascii', errors='replace')}</pre>
                 </td>
               </tr>
               %endfor
