@@ -20,7 +20,7 @@ from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstra
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP, Time
-from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
+from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased, undefer
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declared_attr
@@ -690,7 +690,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
         # 削除されたデータも集める
-        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(performance_id=self.id).all()
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).options(undefer(SalesSegment.deleted_at)).filter_by(performance_id=self.id).all()
 
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:
@@ -996,7 +996,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         see:ticketing.core.tests_event_notify_data.py
         '''
         # 論理削除レコードも含めて取得
-        performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
+        performances = DBSession.query(Performance, include_deleted=True).options(undefer(Performance.deleted_at)).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
             'performances':[p.get_cms_data() for p in performances],

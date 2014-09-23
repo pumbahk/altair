@@ -504,6 +504,7 @@ def download(request):
 
     slave_session = get_db_session(request, 'slave')
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
+        .options(undefer(Order.deleted_at))\
         .outerjoin(Seat.status_) \
         .outerjoin(Seat.attributes_) \
         .outerjoin(Seat.stock) \
