@@ -5,10 +5,17 @@ from markupsafe import Markup
 from pyramid.security import has_permission as security_has_permission
 from pyramid.security import ACLAllowed
 from webhelpers.util import html_escape
-from altair.viewhelpers.datetime_ import create_date_time_formatter
+
+from altair.viewhelpers.datetime_ import (
+    create_date_time_formatter,
+    DateTimeHelper,
+    )
+
 from altair.app.ticketing.core.models import DateCalculationBase
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
+
+
 
 def render_label(label_text, label_type=None):
     if not label_text:
@@ -125,7 +132,7 @@ class AdminHelperAdapter(object):
         count = 0
         if order is None:
             order = actions.keys()
-  
+
         def attrs_str():
             attrs = actions[key].get('attrs', {})
             attrs['class'] = attrs.get('class', u'')
@@ -181,8 +188,8 @@ class AdminHelperAdapter(object):
             if vertical and count > 0:
                 html.append(u'</ul>')
         html.append(u'</div>')
-  
-        return Markup(u''.join(html)) 
+
+        return Markup(u''.join(html))
 
     def route_label(self, route_name):
         return RouteConfig.label(route_name)
@@ -196,7 +203,7 @@ class AdminHelperAdapter(object):
     def format_issuing_start_at(self, pdmp):
         if pdmp.issuing_start_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.issuing_start_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_start_at)
+                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_start_at, with_weekday=True)
         elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.issuing_interval_days is not None:
                 if pdmp.issuing_interval_days == 0:
@@ -242,7 +249,7 @@ class AdminHelperAdapter(object):
     def format_issuing_end_at(self, pdmp):
         if pdmp.issuing_end_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.issuing_end_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_end_at)
+                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_end_at, with_weekday=True)
         elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
@@ -288,7 +295,7 @@ class AdminHelperAdapter(object):
     def format_payment_start_at(self, pdmp):
         if pdmp.payment_start_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.payment_start_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_start_at)
+                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_start_at, with_weekday=True)
         elif pdmp.payment_start_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
@@ -334,7 +341,7 @@ class AdminHelperAdapter(object):
     def format_payment_due_at(self, pdmp):
         if pdmp.payment_due_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.payment_due_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_due_at)
+                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_due_at, with_weekday=True)
         elif pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
@@ -376,5 +383,3 @@ class AdminHelperAdapter(object):
                 elif pdmp.payment_period_days < 0:
                     return u'販売終了の%d日前' % -pdmp.payment_period_days
         return u'未設定'
-
-

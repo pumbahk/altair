@@ -15,7 +15,7 @@
       $this.attr('disable', 'disable');
       $.ajax({
         url: this.form.action + '?' + $(this.form).serialize(),
-        dataType: 'html', 
+        dataType: 'html',
         success: function (html) {
           $($this.get(0).form).parent().replaceWith(html);
         },
@@ -92,7 +92,7 @@
    </td>
     <td>
       %if ordered_product_item.exact_printed():
-        ${ordered_product_item.printed_at}
+        ${vh.datetime(ordered_product_item.printed_at, with_weekday=True)}
         <span alt="${ordered_product_item.printed_at}" class="label label-warning">済</span>
         %for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
           <div>作業者: ${operator_name}</div>

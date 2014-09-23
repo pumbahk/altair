@@ -23,7 +23,9 @@ from sqlalchemy.orm import joinedload, undefer
 from sqlalchemy.orm.session import make_transient
 from webob.multidict import MultiDict
 import transaction
+
 from altair.sqlahelper import get_db_session
+import  altair.viewhelpers.datetime_
 from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
@@ -169,8 +171,10 @@ class OrdersAPIView(BaseView):
 
         if formdata['event_id']:
             query = query.filter(Performance.event_id == formdata['event_id'])
-
-        performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
+        performances = [
+            dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (
+                p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request)))
+            for p in query]
         return {"result": performances, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.sales_segment_groups")
