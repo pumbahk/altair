@@ -28,8 +28,8 @@ class LogicalDeletableQuery(orm.Query):
 
     def _compile_context(self, labels=True):
         query = self
+        old_enable_assertions = query._enable_assertions
         if query._attributes.get('enable_logical_delete', False):
-            old_enable_assertions = query._enable_assertions
             query._enable_assertions = False
             context = orm.query.QueryContext(self)
             for e in query._entities:
