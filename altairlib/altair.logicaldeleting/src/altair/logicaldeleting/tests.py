@@ -229,30 +229,33 @@ class TestIt(unittest.TestCase):
     def test_implicit_join(self):
         from datetime import datetime
         from sqlalchemy.orm import joinedload_all
+        from sqlalchemy.sql.expression import or_
         import transaction
-        u = User(
-            addresses=[
-                Address()
-                ],
-            profiles=[
-                Profile(
-                    pictures=[
-                        ProfilePicture(deleted_at=datetime.now()),
-                        ]
-                    ),
-                Profile(
-                    pictures=[
-                        ProfilePicture(deleted_at=datetime.now()),
-                        ],
-                    ),
-                ]
-            )
-        DBSession.add(u)
+        for i in range(5):
+            u = User(
+                addresses=[
+                    Address()
+                    ],
+                profiles=[
+                    Profile(
+                        pictures=[
+                            ProfilePicture(deleted_at=datetime.now()),
+                            ]
+                        ),
+                    Profile(
+                        pictures=[
+                            ProfilePicture(deleted_at=datetime.now()),
+                            ],
+                        ),
+                    ]
+                )
+            DBSession.add(u)
         transaction.commit()
         DBSession.remove()
-        q = DBSession.query(User) \
+        sq = DBSession.query(User) \
             .filter(User.id == Address.user_id) \
             .filter(User.id == Profile.user_id) \
             .filter(Profile.id == ProfilePicture.profile_id)
+        q = DBSession.query(User).filter(or_(User.id.in_(sq.with_entities(User.id)), User.id == 1))
         result = q.all()
-        self.assertEqual(len(result), 0)
+        self.assertEqual(len(result), 1)
