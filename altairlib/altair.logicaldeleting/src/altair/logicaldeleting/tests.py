@@ -226,3 +226,33 @@ class TestIt(unittest.TestCase):
         self.assertEqual(len(result[0].profiles), 1)
         self.assertEqual(len(result[0].profiles[0].pictures), 1)
 
+    def test_implicit_join(self):
+        from datetime import datetime
+        from sqlalchemy.orm import joinedload_all
+        import transaction
+        u = User(
+            addresses=[
+                Address()
+                ],
+            profiles=[
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ]
+                    ),
+                Profile(
+                    pictures=[
+                        ProfilePicture(deleted_at=datetime.now()),
+                        ],
+                    ),
+                ]
+            )
+        DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        q = DBSession.query(User) \
+            .filter(User.id == Address.user_id) \
+            .filter(User.id == Profile.user_id) \
+            .filter(Profile.id == ProfilePicture.profile_id)
+        result = q.all()
+        self.assertEqual(len(result), 0)
