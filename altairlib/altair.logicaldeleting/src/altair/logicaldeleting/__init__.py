@@ -27,6 +27,7 @@ class StatementProcessor(object):
     def __init__(self, predicate):
         self.predicate = predicate
         self.current_select = None
+        self.current_conditions = []
         self.stack = []
         self.applied = set()
 
@@ -50,20 +51,42 @@ class StatementProcessor(object):
     def _visit_table(self, n):
         cond = self.predicate(n)
         if cond is not None:
-            self.current_select._whereclause = expr.and_(self.current_select._whereclause, cond)
+            self.current_conditions.append(cond)
         return n
 
     def _visit_grouping(self, n):
-        return _visit_select(n)
+        n.element = self._visit(n.element)
+        return n
 
     def _visit_alias(self, n):
         return self._visit_table(n)
 
+    def _visit_binary(self, n):
+        n.left = self._visit(n.left)
+        n.right = self._visit(n.right)
+        return n
+
+    def _visit_unary(self, n):
+        n.element = self._visit(n.element)
+        return n
+
+    def _visit_clauselist(self, n):
+        n.clauses = [self._visit(cn) for cn in n.clauses]
+        return n
+
+    def _visit_column(self, n):
+        n.table = self._visit(n.table)
+        return n
+
     def _visit_select(self, n):
-        self.stack.append(self.current_select)
+        self.stack.append((self.current_select, self.current_conditions))
         self.current_select = retval = n
-        retval._from_obj = [self._visit(n) for n in n._from_obj]
-        self.current_select = self.stack.pop()
+        retval._from_obj = [self._visit(cn) for cn in n._from_obj]
+        if retval._whereclause is not None:
+            retval._whereclause = self._visit(n._whereclause)
+        for cond in self.current_conditions:
+            retval._whereclause = expr.and_(retval._whereclause, cond)
+        (self.current_select, self.current_conditions) = self.stack.pop()
         return retval
 
     def __call__(self, statement):
