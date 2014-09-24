@@ -81,6 +81,7 @@ class StatementProcessor(object):
     def _visit_select(self, n):
         self.stack.append((self.current_select, self.current_conditions))
         self.current_select = retval = n
+        self.current_conditions = []
         retval._from_obj = [self._visit(cn) for cn in n._from_obj]
         if retval._whereclause is not None:
             retval._whereclause = self._visit(n._whereclause)
