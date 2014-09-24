@@ -339,7 +339,7 @@ def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
         if int(payment_type) == int(SejPaymentType.CashOnDelivery):
             if ticketing_start_at is not None:
                 if ticketing_start_at > payment_due_at:
-                    logger.warning("ticketing_start_at ({0:'%Y-%m-%d %H:%M:%S}) < payment_due_at ({1:'%Y-%m-%d %H:%M:%S})".format(ticketing_start_at, payment_due_at))
+                    logger.warning("ticketing_start_at ({0:'%Y-%m-%d %H:%M:%S}) > payment_due_at ({1:'%Y-%m-%d %H:%M:%S})".format(ticketing_start_at, payment_due_at))
             ticketing_start_at  = None
             ticketing_due_at    = None
     else:

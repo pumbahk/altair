@@ -73,12 +73,13 @@ class LogicalDeletableQuery(orm.Query):
     attr_name = 'deleted_at'
 
     def _compile_context(self, labels=True):
-        def cond(n):
-            if self.attr_name in n.c:
-                return n.c[self.attr_name] == None
-            return None
         retval = super(LogicalDeletableQuery, self)._compile_context(labels)
-        retval.statement = StatementProcessor(cond)(retval.statement)
+        if self._attributes.get('enable_logical_delete', False):
+            def cond(n):
+                if self.attr_name in n.c:
+                    return n.c[self.attr_name] == None
+                return None
+            retval.statement = StatementProcessor(cond)(retval.statement)
         return retval
 
 class LogicalDeletableSession(orm.Session):
