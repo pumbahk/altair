@@ -449,7 +449,13 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     cart = orm.relationship("Cart", backref="lot_entries")
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
-    order = orm.relationship("Order", backref="lot_entries")
+
+    def join_cond():
+        from altair.app.ticketing.orders.models import Order
+        return (Order.order_no == LotEntry.entry_no) & \
+               (Order.deleted_at == None)
+
+    order = orm.relationship("Order", backref="lot_entries", foreign_keys=[entry_no], primaryjoin=join_cond)
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
