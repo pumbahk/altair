@@ -259,3 +259,72 @@ class TestIt(unittest.TestCase):
         q = DBSession.query(User).filter(or_(User.id.in_(sq.with_entities(User.id)), User.id == 1))
         result = q.all()
         self.assertEqual(len(result), 1)
+
+    def test_explicit_inner_join(self):
+        from datetime import datetime
+        from sqlalchemy.orm import joinedload_all
+        from sqlalchemy.sql.expression import or_
+        import transaction
+        for i in range(5):
+            u = User(
+                addresses=[
+                    Address()
+                    ],
+                profiles=[
+                    Profile(
+                        pictures=[
+                            ProfilePicture(deleted_at=datetime.now()),
+                            ]
+                        ),
+                    Profile(
+                        pictures=[
+                            ProfilePicture(deleted_at=datetime.now()),
+                            ],
+                        ),
+                    ]
+                )
+            DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        sq = DBSession.query(User) \
+            .join(Address, User.id == Address.user_id) \
+            .join(Profile, User.id == Profile.user_id) \
+            .join(ProfilePicture, Profile.id == ProfilePicture.profile_id)
+        q = DBSession.query(User).filter(or_(User.id.in_(sq.with_entities(User.id)), User.id == 1))
+        print q
+        result = q.all()
+        self.assertEqual(len(result), 1)
+
+    def test_implicit_subquery(self):
+        from datetime import datetime
+        from sqlalchemy.orm import joinedload_all
+        from sqlalchemy.sql.expression import or_
+        import transaction
+        for i in range(5):
+            u = User(
+                addresses=[
+                    Address(deleted_at=datetime.now())
+                    ],
+                profiles=[
+                    Profile(
+                        pictures=[
+                            ProfilePicture(deleted_at=datetime.now()),
+                            ]
+                        ),
+                    Profile(
+                        pictures=[
+                            ProfilePicture(),
+                            ],
+                        ),
+                    ]
+                )
+            DBSession.add(u)
+        transaction.commit()
+        DBSession.remove()
+        sq = DBSession.query(User) \
+            .join(Address, User.id == Address.user_id) \
+            .filter(Address.id == 1) \
+            .options(joinedload_all(User.profiles, Profile.pictures)) \
+            .distinct()
+        self.assertEqual([], sq.all())
+
