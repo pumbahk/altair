@@ -3472,7 +3472,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             return enum.v
 
     def get_cms_data(self):
-        products = DBSession.query(Product, include_deleted=True).filter_by(sales_segment_id=self.id).all()
+        products = DBSession.query(Product, include_deleted=True).options(undefer(Product.deleted_at)).filter_by(sales_segment_id=self.id).all()
         data = {
             "id": self.id,
             "kind_name": self.kind,
