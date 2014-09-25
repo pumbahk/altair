@@ -152,3 +152,20 @@ class MarkerQueryTest(unittest.TestCase):
             session.rollback()
         for _sessionmaker in sessionmakers:
             doit(_sessionmaker())
+
+    def test_delete(self):
+        from sqlalchemy.orm import sessionmaker
+        from .orm import SessionFactoryFactory, MarkerQuery
+        plain_session_maker = sessionmaker(bind=self.engine)
+        sessionmakers = [plain_session_maker, SessionFactoryFactory(plain_session_maker)]
+        def doit(session):
+            session.add(self.Test1(id=1, test2_list=[self.Test2()]))
+            q = session.query(self.Test1).filter_by(id=1)
+            try:
+                q.delete()
+            except Exception as e:
+                self.fail('%r: %s - %s' % (session, e, q))
+            session.rollback()
+        for _sessionmaker in sessionmakers:
+            doit(_sessionmaker())
+
