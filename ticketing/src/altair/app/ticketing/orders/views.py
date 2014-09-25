@@ -173,7 +173,7 @@ class OrdersAPIView(BaseView):
             query = query.filter(Performance.event_id == formdata['event_id'])
         performances = [
             dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (
-                p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request)))
+                p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request, with_weekday=True)))
             for p in query]
         return {"result": performances, "status": True}
 

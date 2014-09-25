@@ -101,7 +101,7 @@ class DateTimeHelper(object):
 def create_date_time_formatter(request):
     return DefaultDateTimeFormatter()
 
-def dt2str(dt, request=None, with_weekday=True, **flavor):
+def dt2str(dt, request=None, **flavor):
     formatter = create_date_time_formatter(request)
     helper = DateTimeHelper(formatter)
     return helper.datetime(dt, **flavor)
