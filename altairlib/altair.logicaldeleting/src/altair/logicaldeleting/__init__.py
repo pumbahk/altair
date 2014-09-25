@@ -61,7 +61,11 @@ class StatementProcessor(object):
         return n
 
     def _visit_alias(self, n):
-        return self._visit_table(n)
+        if isinstance(n.element, schema.Table):
+            return self._visit_table(n)
+        elif isinstance(n.element, expr.Select):
+            n.element = self._visit_select(n.element)
+        return n
 
     def _visit_binary(self, n):
         n.left = self._visit(n.left)
