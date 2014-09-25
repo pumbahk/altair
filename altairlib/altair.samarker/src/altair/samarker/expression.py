@@ -83,6 +83,10 @@ class SelectableMarkedClauseElement(MarkedClauseElement, _SelectBase):
     def cte(self, name=None, recursive=False):
         return self.inner.cte(name, recursive)
 
+    @property
+    def froms(self):
+        return self.inner.froms
+
     @_generative
     def limit(self, limit):
         self.inner = self.inner.limit(limit)
