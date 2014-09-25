@@ -41,6 +41,8 @@ class StatementProcessor(object):
         return n
 
     def _visit(self, n):
+        if n is None:
+            return n
         if n not in self.applied:
             self.applied.add(n)
             meth = getattr(self, '_visit_%s' % n.__visit_name__, None)
