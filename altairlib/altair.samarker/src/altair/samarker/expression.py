@@ -87,6 +87,46 @@ class SelectableMarkedClauseElement(MarkedClauseElement, _SelectBase):
     def froms(self):
         return self.inner.froms
 
+    @property
+    def inner_columns(self):
+        return self.inner.inner_columns
+
+    @property
+    def _hide_froms(self):
+        return self.inner._hide_froms
+
+    @_generative
+    def with_hint(self, selectable, text, dialect_name='*'):
+        self.inner = self.inner.with_hint(selectable, text, dialect_name)
+
+    @_generative
+    def column(self, column):
+        self.append_column(column)
+
+    @_generative
+    def with_only_columns(self, columns):
+        self.inner = self.inner.with_only_columns(columns)
+
+    @_generative
+    def where(self, whereclause):
+        self.append_whereclause(whereclause)
+
+    @_generative
+    def having(self, having):
+        self.append_having(having)
+
+    @_generative
+    def distinct(self, *expr):
+        self.inner = self.inner.distinct(*expr)
+
+    @_generative
+    def prefix_with(self, *expr):
+        self.inner = self.inner.prefix_with(*expr)
+
+    @_generative
+    def select_from(self, fromclause):
+        self.inner = self.inner.select_from(fromclause)
+
     @_generative
     def limit(self, limit):
         self.inner = self.inner.limit(limit)
@@ -103,15 +143,65 @@ class SelectableMarkedClauseElement(MarkedClauseElement, _SelectBase):
     def group_by(self, *clauses):
         self.inner = self.inner.group_by(*clauses)
 
+    def append_correlation(self, fromclause):
+        self.inner.append_correlation(fromclause)
+
+    def append_column(self, column):
+        self.inner.append_column(column)
+
+    def append_prefix(self, clause):
+        self.inner.append_prefix(clause)
+
+    def append_whereclause(self, whereclause):
+        self.inner.append_whereclause(whereclause)
+
+    def append_having(self, having):
+        self.inner.append_having(having)
+
+    def append_from(self, fromclause):
+        self.inner.append_from(fromclause)
+
     def append_order_by(self, *clauses):
         self.inner.append_order_by(*clauses)
 
     def append_group_by(self, *clauses):
         self.inner.append_group_by(*clauses)
 
-    @property
-    def _hide_froms(self):
-        return self.inner._hide_froms
+    def union(self, other, **kwargs):
+        return self.__class__(
+            self.inner.union(other, **kwargs),
+            comment=self.comment
+            )
+
+    def union_all(self, other, **kwargs):
+        return self.__class__(
+            self.inner.union_all(other, **kwargs),
+            comment=self.comment
+            )
+
+    def except_(self, other, **kwargs):
+        return self.__class__(
+            self.inner.except_(other, **kwargs),
+            comment=self.comment
+            )
+
+    def except_all(self, other, **kwargs):
+        return self.__class__(
+            self.inner.except_all(other, **kwargs),
+            comment=self.comment
+            )
+
+    def intersect(self, other, **kwargs):
+        return self.__class__(
+            self.inner.intersect(other, **kwargs),
+            comment=self.comment
+            )
+
+    def intersect_all(self, other, **kwargs):
+        return self.__class__(
+            self.inner.intersect_all(other, **kwargs),
+            comment=self.comment
+            )
 
 def make_marked_clause_element(statement, comment):
     if isinstance(statement, Selectable):
