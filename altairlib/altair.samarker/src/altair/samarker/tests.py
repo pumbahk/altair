@@ -77,6 +77,35 @@ class SelectableMarkedClauseElementTest(unittest.TestCase):
         result = target.compile()
         self.assertEqual(unicode(result).replace(u'\n', ''), u'SELECT a FROM "Foo" WHERE "Foo".a IN (SELECT a FROM "Foo") /* test */')
 
+    def test_union(self):
+        from sqlalchemy.sql.expression import select
+        from sqlalchemy.schema import Table, MetaData, Column
+        from sqlalchemy.types import Integer
+        meta = MetaData()
+        table = Table(
+            u'Foo',
+            meta,
+            Column(u'a', Integer())
+            )
+        target = self._makeOne(
+            select(
+                [u'a'],
+                from_obj=table,
+                whereclause=(table.c.a == 1)
+                ),
+            comment=u'test'
+            )
+        target = target.union(
+            select(
+                [u'a'],
+                from_obj=table,
+                whereclause=(table.c.a == 2)
+                )
+            )
+        result = target.compile()
+        self.assertRegexpMatches(unicode(result).replace(u'\n', ''), ur'SELECT a FROM "Foo" WHERE "Foo".a = [^ ]+ UNION SELECT a FROM "Foo" WHERE "Foo".a = [^ ]+ /\* test \*/')
+
+
 class MarkerQueryTest(unittest.TestCase):
     def _getTarget(self):
         from .orm import MarkerQuery
@@ -153,7 +182,7 @@ class MarkerQueryTest(unittest.TestCase):
         for _sessionmaker in sessionmakers:
             doit(_sessionmaker())
 
-    def test_delete(self):
+    def test_delete_1(self):
         from sqlalchemy.orm import sessionmaker
         from .orm import SessionFactoryFactory, MarkerQuery
         plain_session_maker = sessionmaker(bind=self.engine)
@@ -168,4 +197,21 @@ class MarkerQueryTest(unittest.TestCase):
             session.rollback()
         for _sessionmaker in sessionmakers:
             doit(_sessionmaker())
+
+    def test_delete_2(self):
+        from sqlalchemy.orm import sessionmaker
+        from .orm import SessionFactoryFactory, MarkerQuery
+        plain_session_maker = sessionmaker(bind=self.engine)
+        sessionmakers = [plain_session_maker, SessionFactoryFactory(plain_session_maker)]
+        def doit(session):
+            session.add(self.Test1(id=1, test2_list=[self.Test2()]))
+            q = session.query(self.Test1).filter_by(id=1)
+            try:
+                q.delete('fetch')
+            except Exception as e:
+                self.fail('%r: %s - %s' % (session, e, q))
+            session.rollback()
+        for _sessionmaker in sessionmakers:
+            doit(_sessionmaker())
+
 
