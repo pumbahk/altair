@@ -34,11 +34,13 @@ $(function() {
 %>
 % for segment in performance.sales_segments:
   % for pdmp in segment.payment_delivery_method_pairs:
-    ## FIXME: 定数参照に変えたい (4がqr, 5がorion)
-    % if pdmp.delivery_method.delivery_plugin_id == 4:
-      <% qr.append(pdmp.delivery_method); %>
-    % elif pdmp.delivery_method.delivery_plugin_id == 5:
-      <% orion.append(pdmp.delivery_method); %>
+    % if pdmp.public:
+      ## FIXME: 定数参照に変えたい (4がqr, 5がorion)
+      % if pdmp.delivery_method.delivery_plugin_id == 4:
+        <% qr.append(pdmp.delivery_method); %>
+      % elif pdmp.delivery_method.delivery_plugin_id == 5:
+        <% orion.append(pdmp.delivery_method); %>
+      % endif
     % endif
   % endfor
 % endfor
