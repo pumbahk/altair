@@ -336,9 +336,6 @@ order.OrderedProductItem = Backbone.Model.extend({
     });
     var display_seats = $.extend(true, {}, s);
     this.set('display_seats', display_seats);
-    display_seats.on('click', function (){
-        console.log("rheaoigheaoi");
-    });
   }
 });
 
