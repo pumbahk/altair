@@ -1,3 +1,5 @@
+// -*- coding: utf-8 -*-
+
 /* application */
 
 Backbone.emulateHTTP = true;
@@ -129,8 +131,12 @@ order.OrderFormPresenter.prototype = {
     var self = this;
     var venue = venueEditorRoot.venueeditor('model');
     var venue_seat = venue.seats.get(seat.id);
-    if (self.ensure_seats.get(venue_seat)) self.ensure_seats.remove(venue_seat);
-    if (!self.release_seats.get(venue_seat)) self.release_seats.push(venue_seat);
+    if (self.ensure_seats.get(venue_seat)){
+        self.ensure_seats.remove(venue_seat);
+    }
+    if (!self.release_seats.get(venue_seat)){
+        self.release_seats.push(venue_seat);
+    }
     seat.collection.remove(seat);
     self.showForm();
   },
@@ -529,12 +535,16 @@ order.OrderProductFormView = Backbone.View.extend({
     var product_name = $('<td colspan="2" />');
 
     var sales_segment_id = op.get('sales_segment_id') || self.order.get('sales_segment_id');
-    if (!op.get('sales_segment_id')) op.set('sales_segment_id', sales_segment_id);
+    if (!op.get('sales_segment_id')){
+        op.set('sales_segment_id', sales_segment_id);
+    }
     var sales_segment = $('<select id="sales_segment_id" name="sales_segment_id"></select>');
     var ssc = self.presenter.performance.get('sales_segments');
     ssc.each(function(ss) {
       var option = $('<option/>').text(ss.get('name')).attr('value', ss.get('id'));
-      if (ss.get('id') == sales_segment_id) option.attr('selected', 'selected');
+      if (ss.get('id') == sales_segment_id){
+          option.attr('selected', 'selected');
+      }
       sales_segment.append(option);
     });
     sales_segment.on('change', function() {
@@ -550,13 +560,19 @@ order.OrderProductFormView = Backbone.View.extend({
       var stock_type_id = op.get('stock_type_id');
       var existing_pid = [];
       self.order.get('ordered_products').each(function(existing_op) {
-        if (op != existing_op) existing_pid.push(existing_op.get('product_id'));
+        if (op != existing_op){
+            existing_pid.push(existing_op.get('product_id'));
+        }
       })
       ss.get('products').each(function(p) {
-        if ($.inArray(p.get('id'), existing_pid) > -1) return false;
+        if ($.inArray(p.get('id'), existing_pid) > -1){
+            return false;
+        }
         if (!stock_type_id || stock_type_id == p.get('stock_type_id')) {
           var option = $('<option/>').text(p.get('name')).attr('value', p.get('id'));
-          if (p.get('id') == product_id) option.attr('selected', 'selected');
+          if (p.get('id') == product_id){
+              option.attr('selected', 'selected');
+          }
           product_list.append(option);
         }
       });
