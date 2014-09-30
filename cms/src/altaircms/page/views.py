@@ -526,7 +526,7 @@ def page_edit(context, request):
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
     disposition_save_default = WidgetDispositionSaveDefaultForm(page=page.id, title=u"%sのデフォルト設定" % page.layout.title if page.layout else u"-")
     ## layoutの選択対象はnone or 同一pagetype?
-    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id))
+    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id)).order_by(Layout.display_order)
     return {
             'event':page.event,
             'page':page,
