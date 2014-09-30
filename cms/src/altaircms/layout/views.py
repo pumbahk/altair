@@ -70,7 +70,7 @@ def layout_list_with_pagetype(context, request):
             "current_pagetype": current_pagetype, 
             "form": form, 
             "mapper": layout_mapper, 
-            "display_fields": ["title", "template_filename", "blocks", "updated_at", "synced_at"]}
+            "display_fields": ["title", "template_filename", "blocks", "updated_at", "synced_at", "display_order"]}
 
 
 @view_defaults(route_name="layout_create", 
@@ -129,7 +129,8 @@ class LayoutUpdateView(object):
         layout = get_or_404(self.request.allowable(Layout), Layout.id==self.request.matchdict["id"])
         self.request._form = forms.LayoutUpdateForm(title=layout.title, 
                                                     blocks=layout.blocks, 
-                                                    template_filename=layout.template_filename, 
+                                                    template_filename=layout.template_filename,
+                                                    display_order=layout.display_order,
                                                     pagetype_id=pagetype_id
                                                     )
         raise AfterInput
