@@ -1,5 +1,4 @@
 // -*- coding: utf-8 -*-
-
 /* application */
 
 Backbone.emulateHTTP = true;
@@ -105,6 +104,7 @@ order.OrderFormPresenter.prototype = {
     var selection = venueEditorRoot.venueeditor('selection');
     var opi = ordered_product_item;
     var seats = opi.get('seats');
+    var display_seats = opi.get('display_seats');
     var add_flag = false;
     selection.each(function(seat) {
       var stock_type_id = seat.get('stock').get('stockType').get('id');
@@ -112,12 +112,20 @@ order.OrderFormPresenter.prototype = {
         self.showMessage('席種が異なるので追加できません', 'alert-warning');
         return false;
       }
-      if (!seats.get(seat) && !self.ensure_seats.get(seat)) {
-        seats.push(new order.Seat({
+      if (!seats.get(seat)) {
+        seat = new order.Seat({
           'id':seat.get('id'),
           'name':seat.get('name'),
           'stock_type_id':stock_type_id
-        }));
+        });
+        seats.push(seat);
+        add_flag = true;
+      }
+      if(!display_seats.get(seat)){
+        display_seats.push(seat);
+        add_flag = true;
+      }
+      if (!self.ensure_seats.get(seat)){
         self.ensure_seats.push(seat);
         add_flag = true;
       }
@@ -127,17 +135,45 @@ order.OrderFormPresenter.prototype = {
       self.showForm();
     }
   },
-  deleteSeat: function(seat) {
+
+  addSeatSingle: function (seat, ordered_product_item){
+    var self = this;
+    var opi = ordered_product_item;
+    var seats = opi.get('seats');
+    var stock_type_id = seat.get('stock_type_id');
+    if (stock_type_id != opi.get('product_item').get('stock_type_id')) {
+      self.showMessage('席種が異なるので追加できません', 'alert-warning');
+      return false;
+    }
+
+    if (!seats.get(seat)) {
+      var seat = new order.Seat({
+        'id':seat.get('id'),
+        'name':seat.get('name'),
+        'stock_type_id':stock_type_id
+      });
+      seats.push(seat);
+      seats.sort();
+    }
+    if (!self.ensure_seats.get(seat)){
+      self.ensure_seats.push(seat);
+    }
+
+    opi.trigger('change:seats');
+    self.showForm();
+  },
+  deleteSeat: function(seat){
     var self = this;
     var venue = venueEditorRoot.venueeditor('model');
     var venue_seat = venue.seats.get(seat.id);
+
+    seat.collection.remove(seat);
     if (self.ensure_seats.get(venue_seat)){
         self.ensure_seats.remove(venue_seat);
     }
     if (!self.release_seats.get(venue_seat)){
         self.release_seats.push(venue_seat);
     }
-    seat.collection.remove(seat);
     self.showForm();
   },
   addProduct: function() {
@@ -161,6 +197,7 @@ order.OrderFormPresenter.prototype = {
   },
   confirm: function() {
     var self = this;
+    console.log(self.order.attributes);
     $.ajax({
       url: '/orders/api/edit_confirm',
       async: false,
@@ -274,7 +311,8 @@ order.OrderedProductItem = Backbone.Model.extend({
     id: null,
     quantity: 0,
     product_item: null,
-    seats: null
+    seats: null,
+    display_seats: null
   },
   initialize: function() {
     var self = this;
@@ -295,6 +333,11 @@ order.OrderedProductItem = Backbone.Model.extend({
     });
     s.on('remove', function() {
       self.set('quantity', self.get('seats').length);
+    });
+    var display_seats = $.extend(true, {}, s);
+    this.set('display_seats', display_seats);
+    display_seats.on('click', function (){
+        console.log("rheaoigheaoi");
     });
   }
 });
@@ -384,7 +427,10 @@ order.OrderedProductItemCollection = Backbone.Collection.extend({
 });
 
 order.SeatCollection = Backbone.Collection.extend({
-  model: order.Seat
+  model: order.Seat,
+  comparator: function (model){
+      return model.id
+  }
 });
 
 order.SalesSegmentCollection = Backbone.Collection.extend({
@@ -437,7 +483,7 @@ order.OrderFormView = Backbone.View.extend({
   events: {
     'click .btn-add-product': 'addProduct',
     'click .btn-add-seat': 'addSeat',
-    'click .chk-select-seat': 'deleteSeat'
+    'click .chk-select-seat': 'changeSeat'
   },
   initialize: function() {
     this.presenter = this.options.presenter;
@@ -474,8 +520,12 @@ order.OrderFormView = Backbone.View.extend({
     e.preventDefault();
     this.presenter.addSeat($(e.target).data('ordered_product_item'));
   },
-  deleteSeat: function(e) {
-    this.presenter.deleteSeat($(e.target).data('seat'));
+  changeSeat: function(e) {
+    if($(e.target).attr('checked')){
+        this.presenter.addSeatSingle($(e.target).data('seat'), $(e.target).data('ordered_product_item'));
+    }else{
+        this.presenter.deleteSeat($(e.target).data('seat'));
+    }
   },
   render: function() {
     var self = this;
@@ -642,9 +692,16 @@ order.OrderProductItemFormView = Backbone.View.extend({
     var span = $('<span class="label label-info" />').text(pi.get('stock_holder_name'));
     var seat_name = $('<td class="span4" />');
     var seats = $('<ul/>');
-    opi.get('seats').each(function(seat) {
-      var chk_select = $('<input type="checkbox" checked="checked" class="chk-select-seat">');
-      chk_select.data('seat', seat);
+    opi.get('display_seats').each(function(seat) {
+      var chk_select = $('<input type="checkbox" class="chk-select-seat">');
+      var target_seat = opi.get('seats').get(seat.get('id'));
+      if (target_seat){
+          chk_select.attr('checked', 'checked');
+      }else{
+          target_seat = seat;
+      }
+      chk_select.data('seat', target_seat);
+      chk_select.data('ordered_product_item', opi);
       seats.append($('<li/>').text(seat.get('name')).append(chk_select));
     });
     var product_item_price = $('<td style="text-align: right;" />').text(pi.get('price') || '');
