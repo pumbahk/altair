@@ -690,7 +690,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
         # 削除されたデータも集める
-        sales_segments = DBSession.query(SalesSegment, include_deleted=True).options(undefer(SalesSegment.deleted_at)).filter_by(performance_id=self.id).all()
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).options(undefer(SalesSegment.deleted_at), joinedload(SalesSegment.sales_segment_group)).filter_by(performance_id=self.id).all()
 
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:

@@ -98,7 +98,7 @@ def mobile_rendering_page__rakuten(context, request):
         query.update(params)
         return HTTPFound(request.route_path("eventdetail", _query=query))
     if page.pageset.genre_id:
-        return HTTPFound(request.route_path("genre") + "?genre=" + str(page.pageset.genre_id))
+        return HTTPFound(request.route_path("genre", _query=dict(genre=page.pageset.genre_id)))
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 

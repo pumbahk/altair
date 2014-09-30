@@ -853,3 +853,48 @@ class DateCalculationTests(unittest.TestCase):
                 ),
             datetime(1970, 4, 1, 23, 59, 59)
             )
+
+class SendCMSFeatureTest(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db(
+            [
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.users.models",
+                "altair.app.ticketing.cart.models",
+            ])
+        from .models import Organization, Event, SalesSegmentKindEnum, SalesSegmentGroup, SalesSegment, Performance
+        from datetime import datetime
+        now = datetime.now()
+        event = Event(organization=Organization(short_name='XX'))
+        performance = Performance(
+           event=event,
+           start_on=datetime(2014, 1, 1, 0, 0, 0)
+           )
+        event.sales_segment_groups=[
+            SalesSegmentGroup(
+                kind='normal',
+                sales_segments=[
+                    SalesSegment(performance=performance),
+                    SalesSegment(performance=performance, deleted_at=now),
+                    ]
+                ),
+            SalesSegmentGroup(
+                deleted_at=now,
+                kind='vip',
+                sales_segments=[
+                    SalesSegment(performance=performance),
+                    SalesSegment(performance=performance, deleted_at=now),
+                    ]
+                )
+            ]
+        self.session.add(event)
+        self.session.flush()
+        self.event = event
+
+    def tearDown(self):
+        _teardown_db()
+
+    def testEvent(self):
+        x = self.event.get_cms_data()
+        self.assertEqual(len(x['performances'][0]['sales']), 4)
