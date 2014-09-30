@@ -410,12 +410,38 @@ class ListView(object):
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
         return {"pages": pages, "pagetype": real_pagetype, "search_form": search_form}
 
+    @view_config(match_param="pagetype=page_separation", renderer="altaircms:templates/pagesets/page_separation_list.html",
+                 custom_predicates=[page_viewable])
+    def page_separation_list(self):
+        """ 切り離しをしたページ """
+        pagetype = get_pagetype(self.request)
+        qs = self.request.allowable(PageSet).join(Page, Page.pageset_id==PageSet.id)\
+            .join(PageType, Page.pagetype_id==PageType.id) \
+            .filter(PageSet.pagetype_id != Page.pagetype_id) \
+            .filter(PageType.name=='event_detail')
+
+        params = dict(self.request.GET)
+        if "page" in params:
+            params.pop("page") ## pagination
+        if params:
+            search_form = forms.PageSetSearchForm(self.request.GET)
+            if search_form.validate():
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
+        else:
+            search_form = forms.PageSetSearchForm()
+
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+
     @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html",
                  custom_predicates=[page_viewable])
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         pagetype = get_pagetype(self.request)
-        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
+        qs = self.request.allowable(PageSet).join(Page, Page.pageset_id==PageSet.id) \
+            .filter(Page.pagetype_id==pagetype.id)
+
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
