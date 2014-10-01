@@ -95,6 +95,7 @@ class Payment(object):
                 try:
                     delivery_plugin.finish(self.request, self.cart)
                 except Exception as e:
+                    logger.exception("???")
                     self.session.add(order)
                     self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                     raise

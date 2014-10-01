@@ -128,7 +128,7 @@ def get_tickets(request, order, ticket_template_id=None):
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
                     svg = etree.tostring(
                         convert_svg(
@@ -160,7 +160,7 @@ def get_tickets_from_cart(request, cart, now):
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
                     svg = etree.tostring(
                         convert_svg(

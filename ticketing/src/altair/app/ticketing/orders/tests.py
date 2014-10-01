@@ -149,8 +149,10 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         patch = mock.patch('altair.app.ticketing.payments.plugins.multicheckout.get_multicheckout_3d_api')
         patches.append(patch)
         self.multicheckout_get_multicheckout_3d_api = patch.start()
-        self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value.CmnErrorCd = '000000'
-        self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value.CardErrorCd = '000000'
+        self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value = mock.Mock(
+            CmnErrorCd = '000000',
+            CardErrorCd = '000000'
+            )
         patch = mock.patch('altair.app.ticketing.checkout.api.get_checkout_service')
         patches.append(patch)
         self.checkout_get_checkout_service = patch.start()
@@ -250,6 +252,8 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
     def test_cancel_unpaid(self):
         request = testing.DummyRequest()
         for pn, payment_plugin_id in self.payment_plugins.items():
+            if pn in ('multicheckout', 'checkout'):
+                continue
             for dn, delivery_plugin_id in self.delivery_plugins.items():
                 description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
                 payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
@@ -261,11 +265,17 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     transaction_fee=0,
                     delivery_fee=0
                     )
+                self.multicheckout_get_multicheckout_3d_api.return_value.checkout_inquiry.return_value = mock.Mock(
+                    CmnErrorCd='001002',
+                    CardErrorCd='000000',
+                    Status='',
+                    )
                 target.cancel(request)
                 self.assertTrue(target.is_canceled(), description)
 
     def test_cancel_paid(self):
         from datetime import datetime
+        from altair.multicheckout.models import MultiCheckoutStatusEnum
         from altair.app.ticketing.payments import plugins as p
         request = testing.DummyRequest()
         for pn, payment_plugin_id in self.payment_plugins.items():
@@ -293,6 +303,12 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     target.refund = refund
                     self.session.add(target)
                     self.session.flush()
+                self.multicheckout_get_multicheckout_3d_api.return_value.checkout_inquiry.return_value = mock.Mock(
+                    CmnErrorCd='000000',
+                    CardErrorCd='000000',
+                    Status=str(MultiCheckoutStatusEnum.Settled),
+                    SalesAmount=target.total_amount
+                    )
                 target.cancel(request)
                 self.assertEqual(target.payment_status, 'refunded', description)
                 if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
@@ -690,6 +706,10 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                 transaction_fee=0,
                 delivery_fee=200,
                 paid_at=None
+                )
+            self.multicheckout_get_multicheckout_3d_api.return_value.checkout_inquiry.return_value = mock.Mock(
+                CmnErrorCd='000000',
+                SalesAmount=target.total_amount
                 )
             target.cancel(request)
             self.assertTrue(self.sej_cancel_sej_order.called)
