@@ -39,6 +39,19 @@ ${entry.lot.name}<br />
 %for wish in entry.wishes:
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
 <div>
+抽選結果
+%if entry.is_ordered:
+  %if wish.elected_at:
+    ご用意できました
+  %else:
+    ご用意できませんでした
+  %endif
+%elif entry.rejected_at:
+  ご用意できませんでした
+%else:
+  抽選処理前です
+%endif
+<br/>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
 会場 ${wish.performance.venue.name}<br />
@@ -48,7 +61,7 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込) 
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
 </div>
 % endfor
 ・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
