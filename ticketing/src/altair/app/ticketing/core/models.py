@@ -3765,6 +3765,9 @@ class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     contact_02              = Column(String(255))
     api_key                 = Column(String(255), nullable=True)
     inticket_api_url        = Column(String(255), nullable=True)
+    nwts_endpoint_url       = Column(String(255), nullable=True)
+    nwts_terminal_id        = Column(String(255), nullable=True)
+    nwts_password           = Column(String(255), nullable=True)
 
     organization_id         = Column(Identifier)
 

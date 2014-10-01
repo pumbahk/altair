@@ -28,7 +28,6 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.orders.mail import send_refund_complete_mail, send_refund_error_mail
 from altair.app.ticketing.payments import plugins
-from altair.app.ticketing.sej.refund import create_and_send_refund_file
 
 def update_seat_status():
     _keep_to_vacant()
@@ -85,6 +84,8 @@ def refund_order():
 
     logging.info('start refund_order batch')
 
+    now = datetime.now()
+
     refunds = Refund.query.filter(Refund.status==RefundStatusEnum.Waiting.v).order_by(Refund.id).with_lockmode('update').all()
     for refund in refunds:
         refund.status = RefundStatusEnum.Refunding.v
@@ -121,9 +122,8 @@ def refund_order():
         logging.error('failed to refund orders (%s)' % e.message)
         transaction.abort()
 
-    # SEJ払戻ファイル送信
-    create_and_send_refund_file(registry.settings)
-
+    from altair.app.ticketing.sej.refund import stage_refund_zip_files
+    stage_refund_zip_files(registry, now)
     logging.info('end refund_order batch')
 
 def detect_fraud():
