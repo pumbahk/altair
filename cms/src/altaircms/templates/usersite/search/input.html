@@ -1,4 +1,6 @@
-<%inherit file="altaircms:templates/usersite/subbase.html"/>
+<%inherit file="../outer.html"/>
+<!-- ========== main ========== -->
+<%block name="title">【楽天チケット】詳細検索｜チケット予約・購入</%block>
 <div id="main">
 		<!-- InstanceBeginEditable name="main" -->
 		<form action="${request.route_path("page_search_result")}" method="GET">
@@ -45,7 +47,7 @@
 			</dd>
 		  </dl>
 		</div>
-		
+
 		<div class="searchInput">
 		  <dl>
 			<dt><div class="searchInputHeader">販売条件</div></dt>
@@ -86,3 +88,68 @@
 <script type="text/javascript">
   $('input#freeword_query').attr("placeholder", "イベント スポーツ")
 </script>
+<!-- ========== /main ========== -->
+
+<hr />
+
+<!-- ========== side ========== -->
+<div id="side">
+  <div class="sideCategoryGenre">
+    <h2>ジャンル一覧</h2>
+
+	  <ul>
+		  % for g in layout.top_category_genre_list:
+		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+		  % endfor
+</ul>
+</div>
+
+## area
+<%
+   from altaircms.seeds.area import AREA_CHOICES
+   %>
+<dl id="sideRefineSearch">
+  <dt>エリアを選択</dt>
+  <dd>
+	  <ul>
+	    % for en,ja in AREA_CHOICES:
+	    <li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="area", value=en)}">${ja}</a></li>
+	    % endfor
+	  </ul>
+  </dd>
+
+## deal_cond
+<%
+from altairsite.search.forms import DealCondPartForm
+%>
+<dt>販売状態で絞込み</dt>
+<dd>
+  <ul>
+    % for k in layout.top_salessegment_kind_list:
+	  <li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="deal_cond", value=k.name)}">${k.label}</a></li>
+    % endfor
+  </ul>
+</dd>
+
+## deal_open
+	<dt>発売日・受付日で絞込み</dt>
+	<dd>
+		<ul>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="deal_open", value=7) }">7日以内に受付・発売開始</a></li>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="deal_open", value=14) }">14日以内に受付・発売開始</a></li>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="deal_open", value=30) }">30日以内に受付・発売開始</a></li>
+		</ul>
+	</dd>
+
+## event open
+	<dt>公演日で絞込み</dt>
+	<dd>
+		<ul>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="event_open", value=7) }">7日以内に公演</a></li>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="event_open", value=14) }">14日以内に公演</a></li>
+			<li><a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="event_open", value=30) }">30日以内に公演</a></li>
+		</ul>
+	</dd>
+</dl>
+</div>
+<!-- ========== /side ========== -->
