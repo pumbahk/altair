@@ -24,6 +24,8 @@ from wtforms.fields import (
     )
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
+import  altair.viewhelpers.datetime_
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 from altair.formhelpers import (
     Translations,
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget, OurSelectField,
@@ -216,6 +218,7 @@ class SearchFormBase(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+        self.request = kwargs.pop('request', None)
 
         organization = None
         event = None
@@ -257,12 +260,14 @@ class SearchFormBase(Form):
         if event is None and self.event_id.data:
             event = Event.get(self.event_id.data)
 
+        dthelper = DateTimeHelper(create_date_time_formatter(self.request))
         if event is not None:
             if performance is None:
                 performances = Performance.filter_by(event_id=event.id)
-                self.performance_id.choices = [('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+                self.performance_id.choices = [
+                    ('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
             else:
-                self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M')))]
+                self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
             if sales_segment_group is None:
                 sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == event.id)
                 self.sales_segment_group_id.choices = [('', u'(すべて)')] + [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
@@ -273,7 +278,7 @@ class SearchFormBase(Form):
                 performances = Performance.query.join(Event).filter(Event.organization_id == organization.id)
             else:
                 performances = Performance.query
-            self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+            self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
 
         # Performance が指定されていなかったらフォームから取得を試みる
         if performance is None and self.performance_id.data:
@@ -597,7 +602,7 @@ class OrderReserveForm(Form):
                 query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
 
             sales_segments = set(product.sales_segment for product in query.distinct())
-            from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
+
             self.sales_segment_id.choices = [
                 (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(self.request)).term(sales_segment.start_at, sales_segment.end_at)))
                 for sales_segment in \

@@ -22,6 +22,7 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     created_at = Column(DateTime(), default=datetime.now)
     updated_at = Column(DateTime(), default=datetime.now, onupdate=datetime.now)
     uploaded_at = Column(DateTime())
+    display_order = Column(Integer())
     synced_at = Column(DateTime())
     title = Column(String(255))
     template_filename = Column(String(255))

@@ -73,6 +73,7 @@ class LayoutCreator(object):
                         title=params["title"], 
                         blocks=blocks,
                         uploaded_at=datetime.now(),
+                        display_order=params['display_order'],
                         )
         DBSession.add(layout)
         return layout
@@ -100,6 +101,7 @@ class LayoutUpdater(object):
         layout.template_filename = filename
         layout.updated_at = datetime.now()
         layout.uploaded_at = datetime.now()
+        layout.display_order = params['display_order']
         DBSession.add(layout)
         return layout
 

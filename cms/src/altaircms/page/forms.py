@@ -26,7 +26,7 @@ from ..models import Category, Genre, _GenrePath
 def layout_filter(model, request, query):
     name = request.GET.get("pagetype") or request.matchdict.get("pagetype")
     pagetype = PageType.get_or_create(name=name, organization_id=request.organization.id)
-    return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
+    return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id)).order_by(Layout.display_order)
 
 class PageSetSearchForm(Form):
     """

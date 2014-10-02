@@ -50,7 +50,7 @@ ${nco.breadcrumbs(
         request.route_path('pageset_detail', pageset_id=page.pageset.id, kind=page.pageset.pagetype.name,_query=dict(curren_page_id=page.id))+"#nav_page"]
 )}
 
-<h2>page編集(D&D widget)</h2>
+<h2>ページ編集(D&D widget)</h2>
 
 <table class="table">
   <tr>
@@ -88,18 +88,18 @@ ${nco.breadcrumbs(
           ## layoutの変更
                   <ul class="nav pull-right">
                     <li id="fat-menu" class="dropdown">
-                      <a href="#" id="drop3" role="button" class="dropdown-toggle" data-toggle="dropdown">widget layout <b class="caret"></b></a>
+                      <a href="#" id="drop3" role="button" class="dropdown-toggle" data-toggle="dropdown">ウィジェットレイアウト <b class="caret"></b></a>
                       <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
-                        <li><a tabindex="-1" href="${h.widget.to_disposition_list(request)}">widget layout一覧へ移動</a></li>
+                        <li><a tabindex="-1" href="${h.widget.to_disposition_list(request)}">ウィジェットレイアウト一覧へ移動</a></li>
                         <li class="divider"></li>
-                        <li><a tabindex="-1" href="#load_widget_layout_modal" data-toggle="modal">widget layoutの読込</a></li>
-                        <li><a tabindex="-1" href="#save_widget_layout_modal" data-toggle="modal">widget layoutの保存</a></li>
-                        <li><a tabindex="-1" href="#save_default_layout_modal" data-toggle="modal">defaultの設定として保存</a></li>
+                        <li><a tabindex="-1" href="#load_widget_layout_modal" data-toggle="modal">ウィジェットレイアウトの読込</a></li>
+                        <li><a tabindex="-1" href="#save_widget_layout_modal" data-toggle="modal">ウィジェットレイアウトの保存</a></li>
+                        <li><a tabindex="-1" href="#save_default_layout_modal" data-toggle="modal">デフォルトの設定として保存</a></li>
                       </ul>
                     </li>
                   </ul>
           <ul class="nav pull-right" role="navigation">
-            <li><a class="pull-right brand" href="#">現在のLayout</a></li>
+            <li><a class="pull-right brand" href="#">現在のレイアウト</a></li>
             <form id="layout_update_form" class="pull-right navbar-form">
               <select id="layout" style="min-width: 100px;" >
                 %for layout in layout_candidates:
@@ -110,7 +110,7 @@ ${nco.breadcrumbs(
                   %endif
                 %endfor
               </select>
-              <button type="submit" class="btn">layoutを変更</button>
+              <button type="submit" class="btn">レイアウトを変更</button>
             </form>
             <script type="text/javascript">
               $(function(){
@@ -133,7 +133,7 @@ ${nco.breadcrumbs(
 <div class="modal hide" id="save_widget_layout_modal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
-	  <h3>現在のwidget layoutを保存</h3>
+	  <h3>現在のウィジェットレイアウトを保存</h3>
   </div>
   <div class="modal-body">
 	<form class="form" action="${request.route_path("disposition", action="save", id=page.id)}" method="POST">
@@ -172,7 +172,7 @@ ${nco.breadcrumbs(
 <div class="modal hide" id="load_widget_layout_modal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
-	  <h3>widget layoutの読み込み</h3>
+	  <h3>ウィジェットレイアウトの読み込み</h3>
   </div>
   <div class="modal-body">
 	  <form action="${request.route_path("disposition", action="load", id=page.id)}" method="GET">

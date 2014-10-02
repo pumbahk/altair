@@ -19,6 +19,7 @@ from ..utils import json_safe_coerce
 from ..views import BaseView
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import (
+    Event,
     DeliveryMethod,
     TicketFormat,
     PageFormat,
@@ -88,14 +89,14 @@ class TicketMasters(BaseView):
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
 
         ticket_cover_qs = TicketCover.query.filter_by(organization_id=self.context.user.organization_id)
-        ticket_cover_qs = ticket_cover_qs.order_by(helpers.get_direction(ticket_cover_direction)(ticket_cover_sort_by))    
+        ticket_cover_qs = ticket_cover_qs.order_by(helpers.get_direction(ticket_cover_direction)(ticket_cover_sort_by))
 
         ticket_candidates = [{"name": t.name,"pk": t.id }for t in ticket_template_qs]
-        return dict(h=helpers, 
+        return dict(h=helpers,
                     page_formats=page_format_qs,
                     ticket_formats=ticket_format_qs,
-                    templates=ticket_template_qs, 
-                    covers=ticket_cover_qs, 
+                    templates=ticket_template_qs,
+                    covers=ticket_cover_qs,
                     ticket_candidates=json.dumps(ticket_candidates))
 
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
@@ -107,12 +108,12 @@ class TicketFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id, 
-                                      name=format.name, 
-                                      data_value=json.dumps(format.data), 
+        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
+                                      name=format.name,
+                                      data_value=json.dumps(format.data),
                                       delivery_methods=[m.id for m in format.delivery_methods])
         return dict(h=helpers, form=form, format=format)
-        
+
     @view_config(route_name='tickets.ticketformats.edit', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
     def edit_post(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -120,11 +121,11 @@ class TicketFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(h=helpers, form=form, format=format)
-        
+
         params = form.data
         format.name=params["name"]
         format.data=params["data_value"]
@@ -140,18 +141,18 @@ class TicketFormats(BaseView):
     @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html')
     def new(self):
         ## ugly
-        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       data_value=u"""\
 {
   "size": {"width": "", "height": ""},
-  "perforations": {"vertical": [], "horizontal": []}, 
+  "perforations": {"vertical": [], "horizontal": []},
   "printable_areas": [{"x": "", "y": "", "width": "", "height":""}],
   "print_offset": {"x": "", "y": ""}
 }
 """)
         return dict(h=helpers, form=form)
 
-    @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', 
+    @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html',
                  request_param="id")
     def new_with_baseobject(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -159,22 +160,22 @@ class TicketFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id, 
-                                      name=format.name, 
-                                      data_value=json.dumps(format.data), 
+        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
+                                      name=format.name,
+                                      data_value=json.dumps(format.data),
                                       delivery_methods=[m.id for m in format.delivery_methods])
         return dict(h=helpers, form=form)
 
     @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
     def new_post(self):
-        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(h=helpers, form=form)
-        
+
         params = form.data
-        ticket_format = TicketFormat(name=params["name"], 
-                                data=params["data_value"], 
+        ticket_format = TicketFormat(name=params["name"],
+                                data=params["data_value"],
                                 organization_id=self.context.user.organization_id
                                 )
 
@@ -183,7 +184,7 @@ class TicketFormats(BaseView):
         ticket_format.save()
         self.request.session.flash(u'チケット様式を登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
-            
+
 
     @view_config(route_name='tickets.ticketformats.delete', request_method="POST")
     def delete_post(self):
@@ -224,12 +225,12 @@ class PageFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.PageFormatForm(organization_id=self.context.user.organization_id, 
-                                      name=format.name, 
+        form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
+                                      name=format.name,
                                       printer_name=format.printer_name,
                                       data_value=json.dumps(format.data))
         return dict(h=helpers, form=form, format=format)
-        
+
     @view_config(route_name='tickets.pageformats.edit', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html', request_method="POST")
     def edit_post(self):
         format = PageFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -237,11 +238,11 @@ class PageFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.PageFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(h=helpers, form=form, format=format)
-        
+
         params = form.data
         format.name = params["name"]
         format.printer_name = params["printer_name"]
@@ -253,7 +254,7 @@ class PageFormats(BaseView):
     @view_config(route_name='tickets.pageformats.new', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html')
     def new(self):
         ## ugly
-        form = forms.PageFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
                                       data_value=u"""\
 {
   "size": { "width": "", "height": "" },
@@ -269,7 +270,7 @@ class PageFormats(BaseView):
 """)
         return dict(h=helpers, form=form)
 
-    @view_config(route_name='tickets.pageformats.new', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html', 
+    @view_config(route_name='tickets.pageformats.new', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html',
                  request_param="id")
     def new_with_baseobject(self):
         format = PageFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -277,21 +278,21 @@ class PageFormats(BaseView):
         if format is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.PageFormatForm(organization_id=self.context.user.organization_id, 
-                                      name=format.name, 
-                                      data_value=json.dumps(format.data), 
+        form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
+                                      name=format.name,
+                                      data_value=json.dumps(format.data),
                                       delivery_methods=[m.id for m in format.delivery_methods])
         return dict(h=helpers, form=form)
 
     @view_config(route_name='tickets.pageformats.new', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html', request_method="POST")
     def new_post(self):
-        form = forms.PageFormatForm(organization_id=self.context.user.organization_id, 
+        form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(h=helpers, form=form)
-        
+
         params = form.data
-        ticket_format = PageFormat(name=params["name"], 
+        ticket_format = PageFormat(name=params["name"],
                                 printer_name=params["printer_name"],
                                 data=params["data_value"],
                                 organization_id=self.context.user.organization_id
@@ -300,7 +301,7 @@ class PageFormats(BaseView):
         ticket_format.save()
         self.request.session.flash(u'チケット様式を登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
-            
+
 
     @view_config(route_name='tickets.pageformats.delete', request_method="POST")
     def delete_post(self):
@@ -341,11 +342,11 @@ class TicketCovers(BaseView):
         if cover is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
-                                     name=cover.name, 
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id,
+                                     name=cover.name,
                                      ticket=cover.ticket_id)
         return dict(h=helpers, form=form, cover=cover)
-        
+
     @view_config(route_name='tickets.covers.edit', renderer='altair.app.ticketing:templates/tickets/covers/new.html', request_method="POST")
     def edit_post(self):
         cover = TicketCover.filter_by(organization_id=self.context.user.organization_id,
@@ -353,11 +354,11 @@ class TicketCovers(BaseView):
         if cover is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(h=helpers, form=form, cover=cover)
-        
+
         params = form.data
         cover.name = params["name"]
         cover.ticket_id = params["ticket"]
@@ -373,7 +374,7 @@ class TicketCovers(BaseView):
             raise HTTPNotFound("this is not found")
         return dict(h=helpers, cover=cover, event=getattr(self.request.context, 'event', None))
 
-    @view_config(route_name="tickets.covers.new", renderer="altair.app.ticketing:templates/tickets/covers/new.html", 
+    @view_config(route_name="tickets.covers.new", renderer="altair.app.ticketing:templates/tickets/covers/new.html",
                  request_method="GET")
     def new(self):
         form = forms.TicketCoverForm(organization_id=self.context.user.organization_id)
@@ -387,7 +388,7 @@ class TicketCovers(BaseView):
 
     @view_config(route_name='tickets.covers.new', renderer='altair.app.ticketing:templates/tickets/covers/new.html', request_method="POST")
     def new_post(self):
-        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id,
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(
@@ -398,11 +399,11 @@ class TicketCovers(BaseView):
                 route_name=u'登録',
                 )
 
-        ticket_cover = TicketCover(name=form.data["name"], 
-                                   ticket_id=form.data["ticket"], 
+        ticket_cover = TicketCover(name=form.data["name"],
+                                   ticket_id=form.data["ticket"],
                                    organization_id=self.context.user.organization_id
                                    )
-        
+
         ticket_cover.save()
         self.request.session.flash(u'表紙を登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
@@ -428,7 +429,7 @@ class TicketCovers(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketTemplates(BaseView):
-    @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html", 
+    @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html",
                  request_method="GET")
     def new(self):
         form = forms.TicketTemplateForm(context=self.context)
@@ -452,10 +453,10 @@ class TicketTemplates(BaseView):
                 route_name=u'登録',
                 )
 
-        ticket_template = Ticket(name=form.data["name"], 
-                                 ticket_format_id=form.data["ticket_format_id"], 
-                                 data=form.data_value, 
-                                 filename=form.drawing.data.filename, 
+        ticket_template = Ticket(name=form.data["name"],
+                                 ticket_format_id=form.data["ticket_format_id"],
+                                 data=form.data_value,
+                                 filename=form.drawing.data.filename,
                                  organization_id=self.context.organization.id
                                  )
 
@@ -472,7 +473,7 @@ class TicketTemplates(BaseView):
 
         if template is None:
             raise HTTPNotFound("this is not found")
-        
+
         form = forms.TicketTemplateEditForm(
             context=self.context,
             obj=template
@@ -497,7 +498,7 @@ class TicketTemplates(BaseView):
             raise HTTPNotFound("this is not found")
 
         form = forms.TicketTemplateEditForm(
-            context=self.context, 
+            context=self.context,
             obj=template,
             formdata=self.request.POST)
         if not form.validate():
@@ -529,7 +530,11 @@ class TicketTemplates(BaseView):
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
+        tickets = Ticket\
+          .query\
+          .join(Event)\
+          .filter(Ticket.original_ticket_id==self.request.matchdict['id'])
+
         return dict(h=helpers, tickets=tickets, template=template)
 
     @view_config(route_name='tickets.templates.update_derivatives', renderer='altair.app.ticketing:templates/tickets/templates/update_derivatives.html', request_method='POST')
@@ -538,7 +543,11 @@ class TicketTemplates(BaseView):
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
+        tickets = Ticket\
+          .query\
+          .join(Event)\
+          .filter(Ticket.original_ticket_id==self.request.matchdict['id'])
+
         if self.request.POST.get('do_update'):
             for ticket in tickets:
                 ticket.data = template.data
@@ -752,7 +761,7 @@ class TicketPrinter(BaseView):
                     .filter_by(organization_id=self.context.organization.id) \
                     .one()
                 d = build_dict_from_ordered_product_item_token(ordered_product_item_token)
-                retval = [] 
+                retval = []
                 if d is not None:
                     retval.append({
                         u'ordered_product_item_token_id': ordered_product_item_token.id,
@@ -876,7 +885,7 @@ class TicketPrinter(BaseView):
                 u'serial': serial,
                 u'page': int(serial / tickets_per_page) if unmasked else None,
                 u'masked': not unmasked,
-                u'queue_id': queue_id, 
+                u'queue_id': queue_id,
                 u'summary': summary,
                 u'seat_id': seat_id,
                 u'seat_name': seat_name,
@@ -955,4 +964,3 @@ class QRReaderViewDemo(BaseView):
                     .join(OrderedProduct) \
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id))
-
