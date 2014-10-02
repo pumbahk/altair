@@ -331,9 +331,15 @@ class OrderIndexView(OrderBaseView):
                                     organization_id,
                                     condition=form_search)
             else:
-                query = OrderSummary(slave_session,
-                                    organization_id,
-                                    condition=None)
+                return {
+                    'form':OrderForm(context=self.context),
+                    'form_search':form_search,
+                    'orders':orders,
+                    'page': page,
+                    'total': total,
+                    'endpoints': self.endpoints,
+                    }
+
             if request.params.get('action') == 'checked':
                 checked_orders = [o.lstrip('o:')
                                   for o in request.session.get('orders', [])
@@ -353,6 +359,7 @@ class OrderIndexView(OrderBaseView):
                 items_per_page=40,
                 url=paginate.PageURL_WebOb(request)
             )
+
         return {
             'form':OrderForm(context=self.context),
             'form_search':form_search,

@@ -63,7 +63,7 @@ class DateTimeFormat(object):
             if not field.errors and not self.message: # input data is emputy
                 message = field.gettext('This field is required.')
             else:
-                message = self.message                
+                message = self.message
             raise validators.ValidationError(message)
 
 class DateTimeInRange(object):

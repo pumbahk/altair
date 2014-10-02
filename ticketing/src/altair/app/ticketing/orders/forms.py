@@ -175,7 +175,7 @@ class OrderForm(Form):
     )
     created_at = HiddenField(
         label=u'予約日時',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
     )
     system_fee = DecimalField(
         label=u'システム利用料',
