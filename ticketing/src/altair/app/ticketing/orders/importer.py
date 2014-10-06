@@ -660,6 +660,8 @@ class ImportCSVParserContext(object):
                     raise self.exc_factory(u'決済方法「%s」は存在しません' % name)
             return payment_method
         else:
+            if self.default_payment_method is None:
+                raise self.exc_factory(u'決済方法が指定されていません')
             return self.default_payment_method
 
     def get_delivery_method(self, row):
@@ -678,6 +680,8 @@ class ImportCSVParserContext(object):
                     raise self.exc_factory(u'引取方法「%s」は存在しません' % name)
             return delivery_method
         else:
+            if self.default_delivery_method is None:
+                raise self.exc_factory(u'引取方法が指定されていません')
             return self.default_delivery_method
 
 
