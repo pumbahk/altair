@@ -1,14 +1,14 @@
 """Add manual_grant column to PointGrantHistoryEntry
 
 Revision ID: 48ef7b667f43
-Revises: 2c844ed2c11
+Revises: 51d49f4a42b6
 Create Date: 2014-09-12 11:03:50.577134
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '48ef7b667f43'
-down_revision = '2c844ed2c11'
+down_revision = '51d49f4a42b6'
 
 from alembic import op
 import sqlalchemy as sa
