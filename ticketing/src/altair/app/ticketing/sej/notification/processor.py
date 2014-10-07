@@ -115,10 +115,11 @@ class SejNotificationProcessor(object):
     def reflect_expire(self, sej_order, order, notification):
         from ..models import SejPaymentType
         _session = object_session(sej_order)
+        # 対応するOrderがない場合はスキップする (see #5610)
         if order is not None:
-            # 対応するOrderがない場合はスキップする (see #5610)
-            # 代済発券はキャンセルしない
-            if int(notification.payment_type) != int(SejPaymentType.Paid):
+            # 代済発券および前払後日発券でかつ支払済の場合はキャンセル状態にしない refs #9838
+            if int(notification.payment_type) != int(SejPaymentType.Paid) and \
+               (int(notification.payment_type) != int(SejPaymentType.Prepayment) or sej_order.pay_at is None):
                 sej_order.canceled_at = notification.processed_at
                 sej_order.mark_canceled(notification.processed_at)
                 self.cancel_order_if_necessary(order, notification.processed_at, _session)
