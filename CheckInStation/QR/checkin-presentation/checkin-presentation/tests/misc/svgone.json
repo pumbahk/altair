@@ -175,7 +175,7 @@
           "quantity_only": true
         },
         "席種名": ":StockType:name",
-        "注文番号": "Demo:OrderNO:01",
+        "受付番号": "Demo:OrderNO:01",
         "商品名": ":ProductItem:name",
         "organization": {
           "code": ":Organization:code",
