@@ -23,8 +23,8 @@
       <thead>
         <tr>
           % if not display_only:
-          <th class="minwidth"></th>
-          <th>
+          <th style="width:2em"></th>
+          <th style="width:6em">
             状態
             <span class="help-inline">
               <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br>ボタン押下で公開または非公開状態に変更できます。">
@@ -33,9 +33,9 @@
             </span>
           </th>
           % endif
-          <th>表示順</th>
-          <th>公演日</th>
-          <th style="width:6em">-</th>
+          <th style="width:6em">表示順</th>
+          <th style="width:12em">公演日</th>
+          <th style="width:12em">時刻</th>
           <th>${ch.sortable(form.name, paging)}</th>
           <th>会場</th>
         </tr>
