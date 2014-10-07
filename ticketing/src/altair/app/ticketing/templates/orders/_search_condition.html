@@ -5,36 +5,40 @@
 % if conditions:
 <h4>現在の検索条件</h4>
 <div class="well">
-  <dl class="dl-horizontal">
-    <% listed = [] %>
-    % for k, v in conditions.items():
-      % if k in listed:
-        <% continue %>
-      % elif k in ['ordered_from', 'ordered_to']:
-        <%
-          ordered_from = conditions.pop('ordered_from', None)
-          ordered_to = conditions.pop('ordered_to', None)
-          if ordered_from:
-            (label, ordered_from) = ordered_from
-          if ordered_to:
-            (label, ordered_to) = ordered_to
-            listed += ['ordered_from', 'ordered_to']
-        %>
-        <dt>${label}</dt>
-        <dd>${vh.term(ordered_from, ordered_to)}</dd>
-      % else:
-        <dt>${v[0]}</dt>
-        <dd>
-        % if isinstance(v[1], list):
-          % for el in v[1]:
-            ${el}<br>
-          % endfor
-        % else:
-          ${v[1]}
-        % endif
-        </dd>
-      % endif
-    % endfor
-  </dl>
+  % if form_search.validate():
+      <dl class="dl-horizontal">
+        <% listed = [] %>
+        % for k, v in conditions.items():
+          % if k in listed:
+            <% continue %>
+          % elif k in ['ordered_from', 'ordered_to']:
+            <%
+              ordered_from = conditions.pop('ordered_from', None)
+              ordered_to = conditions.pop('ordered_to', None)
+              if ordered_from:
+                (label, ordered_from) = ordered_from
+              if ordered_to:
+                (label, ordered_to) = ordered_to
+                listed += ['ordered_from', 'ordered_to']
+            %>
+            <dt>${label}</dt>
+            <dd>${vh.term(ordered_from, ordered_to)}</dd>
+          % else:
+            <dt>${v[0]}</dt>
+            <dd>
+            % if isinstance(v[1], list):
+              % for el in v[1]:
+                ${el}<br>
+              % endfor
+            % else:
+              ${v[1]}
+            % endif
+            </dd>
+          % endif
+        % endfor
+      </dl>
+  % else:
+    <span style="color: red;">不正な条件が含まれています。</span>
+  % endif
 </div>
 % endif

@@ -72,9 +72,18 @@ from altair.formhelpers import OurDateWidget
         <tr>
           <th><label>${form.ordered_from.label.text}</label></th>
           <td colspan="4">
-            ${form.ordered_from()} 〜
-            ${form.ordered_to()}
+            ${form.ordered_from} 〜 ${form.ordered_to}
             <a class="show-ordered-time-btn btn btn-small" style="margin-left: 10px;"><i class="icon-plus"></i> 時間</a>
+            %if form.ordered_from.errors or form.ordered_to.errors:
+              <%
+                 errors = set(form.ordered_from.errors + form.ordered_to.errors)
+                 %>
+              %for error in errors:
+              <div>
+                <span style="color: red;">${error}</span>
+              </div>
+              %endfor
+            %endif
           </td>
           <script>
             $('.show-ordered-time-btn').click(function(){
@@ -121,10 +130,21 @@ from altair.formhelpers import OurDateWidget
           <td colspan="3">
             ${form.start_on_from()} 〜
             ${form.start_on_to()}
+            %if form.start_on_from.errors or form.start_on_to.errors:
+              <%
+                 errors = set(form.start_on_from.errors + form.start_on_to.errors)
+                 %>
+              %for error in errors:
+              <div>
+                <span style="color: red;">${error}</span>
+              </div>
+              %endfor
+            %endif
           </td>
           <th>
             <label for="number_of_tickets">${form.number_of_tickets.label.text}</label>
           </th>
+
           <td>
             ${form.number_of_tickets()}
           </td>
