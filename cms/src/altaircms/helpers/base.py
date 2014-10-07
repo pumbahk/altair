@@ -100,6 +100,18 @@ def deal_limit(today, deal_open, deal_close, in_preparation):
     else:
         return u"販売終了"
 
+def get_genres(request, genre_id):
+    from altaircms.models import Genre
+    genre = request.allowable(Genre).filter(Genre.id==genre_id).first()
+
+    gs = genre.ancestors_include_self
+    gs.pop()
+
+    genres = []
+    for g in reversed(gs):
+        genres.append(g)
+    return genres
+
 def deal_limit_class(limit):
     limit_class = "searchRemainingOnsale"
     if limit == u"本日販売":
