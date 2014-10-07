@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from altair.app.ticketing.utils import todatetime, todate
 
 def japanese_date(date):
