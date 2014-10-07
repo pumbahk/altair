@@ -296,6 +296,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     refund_delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     refund_special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
+    manual_point_grant = sa.Column(sa.Boolean, nullable=False, default=False)
+
     @property
     def organization(self):
         return self.ordered_from

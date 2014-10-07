@@ -1,6 +1,6 @@
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import Organization, Event, Performance, SalesSegment, SalesSegmentGroup
-from .models import PointGrantSetting
+from .models import PointGrantSetting, PointGrantHistoryEntry
 
 class PointGrantSettingAdminResource(TicketingAdminResource):
     def __init__(self, request):
@@ -82,3 +82,23 @@ class PointGrantSettingAdminResource(TicketingAdminResource):
         else:
             self.point_grant_setting = None
 
+class PointGrantHistoryEntryAdminResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(PointGrantHistoryEntryAdminResource, self).__init__(request)
+
+        try:
+            self.order_id = long(self.request.GET.get('order_id'))
+        except (TypeError, ValueError):
+            pass
+
+        point_grant_history_entry_id = None
+
+        try:
+            point_grant_history_entry_id = long(self.request.matchdict.get('point_grant_history_entry_id'))
+        except (TypeError, ValueError):
+            pass
+
+        if point_grant_history_entry_id is not None:
+            self.point_grant_history_entry = PointGrantHistoryEntry.get(id=point_grant_history_entry_id)
+        else:
+            self.point_grant_history_entry = None

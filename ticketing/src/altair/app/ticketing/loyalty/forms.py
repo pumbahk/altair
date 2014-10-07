@@ -1,20 +1,26 @@
 # encoding: utf-8
 
 from wtforms.fields import HiddenField
-from wtforms.validators import Optional
+from wtforms.validators import Optional, NumberRange
 from altair.app.ticketing.helpers import label_text_for
 from altair.formhelpers import Translations
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import Required
-from altair.formhelpers.fields import OurTextField, OurDecimalField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
+from altair.formhelpers.fields import OurTextField, OurDecimalField, OurDateField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
+from altair.formhelpers.widgets.datetime import OurDateWidget
 from altair.app.ticketing.users import models as user_models
 from wtforms.validators import ValidationError
-from .models import PointGrantSetting
+from .models import PointGrantSetting, PointGrantHistoryEntry
 from ..models import HyphenationCodecMixin
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import asc, and_
 from ..core.models import Event, Product, SalesSegmentGroup, SalesSegment
 from . import helpers as lh
+
+def append_error(field, error):
+    if not hasattr(field.errors, 'append'):
+        field.errors = list(field.errors)
+    field.errors.append(error)
 
 class PointGrantSettingForm(OurForm):
     def _get_translations(self):
@@ -72,3 +78,20 @@ class PointGrantSettingForm(OurForm):
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context', None)
         super(PointGrantSettingForm, self).__init__(*args, **kwargs)
+
+class PointGrantHistoryEntryForm(OurForm):
+    submitted_on = OurDateField(
+        label=u'ポイント付与予定日',
+        validators=[Required(u'ポイント付与予定日の値が不正です')],
+        format='%Y-%m-%d',
+        widget=OurDateWidget()
+        )
+
+    amount = OurDecimalField(
+        label=u'付与ポイント',
+        validators=[Required(u'付与ポイントの値が不正です'), NumberRange(min=0.01, message='付与ポイントの値が不正です')]
+        )
+
+    def __init__(self, formdata=None, obj=None, prefix='', membergroups=None, **kwargs):
+        super(PointGrantHistoryEntryForm, self).__init__(formdata, obj, prefix, **kwargs)
+        self.context = kwargs.pop('context', None)
