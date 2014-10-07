@@ -63,7 +63,13 @@ class CooperationView(BaseView):
             import csv
             seats = dict([(seat.l0_id, seat.l0_id) for seat in parent_venue.seats])
             reader = csv.reader(self.request.POST['csvfile'].file)
-            reader.next()
+            try:
+                reader.next() # headerを捨てる
+            except csv.Error as err:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'ファイルが空です',
+                }))
+
             for record in reader:
                 l0_id = record[1].strip().decode('cp932')
                 name = record[3].strip().decode('cp932')
