@@ -1,14 +1,14 @@
 <%inherit file="../commons/layout_mobile.html" />
 <%namespace file="../commons/tags_mobile.html" name="mobile" />
-<%mobile:header>各種会員の方はこちら</%mobile:header>
+<%mobile:header>メンバーの方はこちら</%mobile:header>
 <form method="post" action="${request.url}">
-会員番号<br/>
+メンバーID(半角数字)<br/>
 <input type="text" class="text" name="username"><br/>
-パスワード<br/>
+パスワード(半角英数字)<br/>
 <input type="password" name="password"><br/>
 <input type="submit" value="次に進む" />
 %if message:
-<br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+<br/><span style="color: red">メンバーIDまたはパスワードが一致しません</span>
 %endif
 </form>
 
