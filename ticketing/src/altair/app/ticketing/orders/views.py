@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import sys
 import json
 import logging
 import csv
@@ -1463,6 +1464,24 @@ class OrderDetailView(BaseView):
             old = order.attributes.get(k, marker)
             if v or old is not marker:
                 order.attributes[k] = v
+        order.save()
+        return {}
+
+    @view_config(route_name="orders.point_grant_mode", request_method="POST", renderer="json", permission="event_editor")
+    def update_point_grant_mode(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = get_order_by_id(self.request, order_id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+
+        params = MultiDict(self.request.json_body)
+        if params["point_grant_mode"] == "auto":
+            order.manual_point_grant = False
+        elif params["point_grant_mode"] == "manual":
+            order.manual_point_grant = True
+
         order.save()
         return {}
 

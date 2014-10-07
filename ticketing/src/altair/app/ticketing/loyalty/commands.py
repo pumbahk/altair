@@ -431,7 +431,8 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .filter(Order.canceled_at == None) \
             .filter(Order.refunded_at == None) \
             .filter(Order.refund_id == None) \
-            .filter(Order.paid_at != None)
+            .filter(Order.paid_at != None) \
+            .filter(Order.manual_point_grant == False) # Only select auto grant mode
         if start_date:
             query = query.filter(Performance.start_on >= start_date)
         if end_date:

@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+from datetime import datetime
+
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
 from sqlalchemy import util as sautil
@@ -10,11 +12,14 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy import event as sa_event
+
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from altair.app.ticketing.core.models import Product, SalesSegment
 from standardenum import StandardEnum
+
+
 
 SalesSegment_PointGrantSetting = Table(
     'SalesSegment_PointGrantSetting',
@@ -126,7 +131,8 @@ class PointGrantHistoryEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order = relationship('Order', uselist=False, backref='point_grant_history_entries')
     amount = Column(Numeric(precision=16, scale=2), nullable=False)
     submitted_on = Column(Date, nullable=False)
+    edited_by = Column(Identifier, ForeignKey("Operator.id"))
+    manual_grant = Column(Boolean, nullable=False, default=False)
     grant_status = Column(Unicode(4), nullable=True)
     granted_amount = Column(Numeric(precision=16, scale=2), nullable=True)
     granted_at = Column(DateTime, nullable=True)
-
