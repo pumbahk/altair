@@ -32,6 +32,9 @@ altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
 altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
 altair.httpsession.http_backend.query_string_key = JSESSIONID
 
+; altair.queryprofile
+altair.queryprofile.summary_path = cart/__queryprofile
+
 ; altair.nogizaka46_auth
 altair.nogizaka46_auth.key = nogizaka_test
 altair.lots.nogizaka_lot_id = 1128,1088,1042,1041,996,570,979,462,1110,261,404,396,253,240,1146,1206,1248
