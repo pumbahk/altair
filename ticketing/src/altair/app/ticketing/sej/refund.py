@@ -32,23 +32,21 @@ class SejRefundFileManager(object):
         self.pending_dir = pending_dir
 
     def get_new_stage_dir_for(self, now):
-        serial = 0
-        while True:
-            work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
-            if serial > 0:
-                work_dir += '.%d' % serial
-            if not os.path.exists(work_dir):
-                os.mkdir(work_dir)
-                break
-            serial += 1
+        work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
+        def make_room(dir_, serial=0):
+            if os.path.exists(dir_):
+                next_dir = '%s.%d' % (work_dir, serial)
+                make_room(next_dir, serial + 1)
+                os.rename(dir_, next_dir)
+        make_room(work_dir)
+        os.mkdir(work_dir)
         return work_dir
 
     def get_latest_stage_dir(self, now):
-        prefix = now.strftime("%Y%m%d")
-        candidates = sorted(os.path.join(self.stage_dir, d) for d in os.listdir(self.stage_dir) if d.startswith(prefix))
-        if len(candidates) == 0:
+        work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
+        if not os.path.exists(work_dir):
             return None
-        return os.path.join(self.stage_dir, candidates[-1])
+        return work_dir
 
     def mark_file_sent(self, p):
         if not p.startswith(self.stage_dir):
