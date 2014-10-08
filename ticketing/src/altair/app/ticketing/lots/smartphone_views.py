@@ -254,7 +254,7 @@ class EntryLotView(object):
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
-        wishes = h.convert_sp_wishes(self.request.params, lot.limit_wishes)
+        wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
         logger.debug('wishes={0}'.format(wishes))
 
         validated = True

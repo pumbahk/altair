@@ -246,7 +246,10 @@ class CartBot(object):
 
         self.print_(u'Trying to buy some products that belong to %s' % sales_segment['name'])
         self.print_()
-        sales_segment_detail = json.load(self.m.create_loader(urllib2.Request(sales_segment['seat_types_url']))())
+
+        req = urllib2.Request(sales_segment['seat_types_url'])
+        req.add_header("X-requested-with", "XMLHttpRequest")
+        sales_segment_detail = json.load(self.m.create_loader(req)())
         self.show_sales_segment_detail(sales_segment_detail)
         #self.wait()
         self.print_()
@@ -256,12 +259,16 @@ class CartBot(object):
             self.print_(u"It looks like we're done with %s" % sales_segment['name'])
             return None
 
-        product_info = json.load(self.m.create_loader(urllib2.Request(seat_type['products_url']))())
+        req = urllib2.Request(seat_type['products_url'])
+        req.add_header("X-requested-with", "XMLHttpRequest")
+        product_info = json.load(self.m.create_loader(req)())
         products = product_info['products']
         products_to_buy = [(product, 1) for product in sample(products, randint(1, len(products)))]
 
         # dummy request
-        seats_info = json.load(self.m.create_loader(urllib2.Request(seat_type['seats_url']))())
+        req = urllib2.Request(seat_type['seats_url'])
+        req.add_header("X-requested-with", "XMLHttpRequest")
+        seats_info = json.load(self.m.create_loader(req)())
         self.print_(u'seats_info -> %s' % seats_info)
 
         url = sales_segment['order_url']
