@@ -141,7 +141,7 @@
         var url = '${request.route_path('point_grant_history_entry.delete', point_grant_history_entry_id='{id}')}';
         url = url.replace(encodeURIComponent('{id}'), point_grant_history_entry_id);
         modal.find('#delete').click(function() {
-            var param = {'order_id': '${order.id}', 'point_grant_history_entry_id': point_grant_history_entry_id};
+            var param = {'point_grant_history_entry_id': point_grant_history_entry_id};
             $.ajax({
                 type: 'post',
                 url: url,
