@@ -137,23 +137,29 @@ def refund_sej_order(request,
             i = 0
             sum_amount = 0
             for sej_ticket in sej_tickets:
+                # 主券でかつバーコードがあるものだけ払戻する
                 if sej_ticket.barcode_number is not None and \
                    int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
-                    # 主券でかつバーコードがあるものだけ払戻する
+                    ticket_amount = ticket_price_getter(sej_ticket)
                     rt = session.query(SejRefundTicket).filter(and_(
                         SejRefundTicket.order_no==sej_order.order_no,
                         SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
                     )).first()
                     if not rt:
                         rt = SejRefundTicket()
-                        session.add(rt)
+
+                    # すべてが0の場合はデータを追加しない refs #9766
+                    if ticket_amount == 0 and (per_order_fee == 0 or i > 0) and per_ticket_fee == 0:
+                        if rt.id is not None:
+                            session.delete(rt)
+                        continue
 
                     rt.available = 1
                     rt.refund_event_id = re.id
                     rt.event_code_01 = performance_code
                     rt.order_no = sej_order.order_no
                     rt.ticket_barcode_number = sej_ticket.barcode_number
-                    rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
+                    rt.refund_ticket_amount = ticket_amount
                     rt.refund_other_amount = per_ticket_fee
                     # 手数料などの払戻があったら1件目に含める
                     if per_order_fee > 0 and i == 0:
@@ -165,10 +171,10 @@ def refund_sej_order(request,
                         logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
                         raise RefundTotalAmountOverError(u'refund total amount over: {0} < {1}'.format(refund_total_amount, sum_amount))
 
-                    session.merge(rt)
+                    session.add(rt)
                     i += 1
             if i == 0:
-                raise SejError(u'No refundable tickets found', sej_order.order_no)
+                logger.warning(u'No refundable tickets found: %s' % sej_order.order_no)
 
             return re
         finally:
