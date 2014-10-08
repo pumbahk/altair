@@ -17,6 +17,8 @@ from sqlalchemy.sql.expression import asc, and_
 from ..core.models import Event, Product, SalesSegmentGroup, SalesSegment
 from . import helpers as lh
 
+from datetime import date
+
 def append_error(field, error):
     if not hasattr(field.errors, 'append'):
         field.errors = list(field.errors)
@@ -89,9 +91,13 @@ class PointGrantHistoryEntryForm(OurForm):
 
     amount = OurDecimalField(
         label=u'付与ポイント',
-        validators=[Required(u'付与ポイントの値が不正です'), NumberRange(min=0.01, message='付与ポイントの値が不正です')]
+        validators=[Required(u'付与ポイントの値が不正です'), NumberRange(min=0, message=u'付与ポイントの値が不正です')]
         )
 
     def __init__(self, formdata=None, obj=None, prefix='', membergroups=None, **kwargs):
         super(PointGrantHistoryEntryForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = kwargs.pop('context', None)
+
+    def validate_submitted_on(self, field):
+        if field.data < date.today():
+            raise ValidationError(u'%sには過去の日付は指定できません' % self.submitted_on.label.text)

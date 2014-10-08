@@ -154,13 +154,13 @@ class PointGrantSettings(BaseView):
     @view_config(route_name='point_grant_history_entry.edit', request_method='GET', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
     def edit_xhr_point_grant_history_entry(self):
         form = PointGrantHistoryEntryForm(obj=self.context.point_grant_history_entry, context=self.context)
-        return {'form': form, 'action': self.request.path}
+        return {'form': form, 'action': self.request.current_route_path()}
 
     @view_config(route_name='point_grant_history_entry.new', request_method='POST', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
     def new_post(self):
+        order_id = long(self.context.order_id)
         form = PointGrantHistoryEntryForm(formdata=self.request.POST, context=self.context, new_form=True)
         if form.validate():
-            order_id = long(self.context.order_id)
             try:
                 user_point_account_id = UserPointAccount.query.join(Order, UserPointAccount.user_id == Order.user_id).filter(Order.id == order_id).first().id
                 submitted_on=form.submitted_on.data
@@ -173,15 +173,15 @@ class PointGrantSettings(BaseView):
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             except Exception, exception:
                 self.request.session.flash(exception.message)
-                raise HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
-            return {'form': form, 'action': self.request.path}
+            return {'form': form, 'action': self.request.current_route_path(_query=dict(order_id=order_id))}
 
     @view_config(route_name="point_grant_history_entry.edit", request_method="POST", renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
     def update_point_grant_history_entry(self):
         form = PointGrantHistoryEntryForm(formdata=self.request.POST, context=self.context)
+        point_grant_history_entry = self.context.point_grant_history_entry
         if form.validate():
-            point_grant_history_entry = self.context.point_grant_history_entry
             try:
                 point_grant_history_entry.edited_by = self.context.user.id
                 point_grant_history_entry.submitted_on = form.submitted_on.data
@@ -194,9 +194,9 @@ class PointGrantSettings(BaseView):
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             except Exception, exception:
                 self.request.session.flash(exception.message)
-                raise HTTPFound(location=self.request.route_path('orders.show', self.request, order_id=point_grant_history_entry.order_id))
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
-            return {'form': form, 'action': self.request.path}
+            return {'form': form, 'action': self.request.current_route_path(_query=dict(order_id=point_grant_history_entry.order_id))}
 
     @view_config(route_name="point_grant_history_entry.delete", request_method="POST", permission="event_editor")
     def delete_point_grant_history_entry(self):
@@ -206,6 +206,6 @@ class PointGrantSettings(BaseView):
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         except Exception, exception:
             self.request.session.flash(exception.message)
-            raise HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.point_grant_history_entry.order_id))
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
 
