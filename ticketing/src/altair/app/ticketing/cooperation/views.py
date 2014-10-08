@@ -16,6 +16,7 @@ from altair.app.ticketing.core.models import (
     GettiiVenue,
     )
 
+from .utils import CSVEmptyError
 from .forms import (
     CooperationUpdateForm,
     CooperationDownloadForm,
@@ -28,6 +29,7 @@ from .augus2 import (
     EntryFormatError,
     SeatImportError,
     )
+
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -65,7 +67,7 @@ class CooperationView(BaseView):
             reader = csv.reader(self.request.POST['csvfile'].file)
             try:
                 reader.next() # headerを捨てる
-            except csv.Error as err:
+            except (csv.Error, StopIteration) as err:
                 raise HTTPBadRequest(body=json.dumps({
                     'message':u'ファイルが空です',
                 }))
@@ -87,10 +89,15 @@ class CooperationView(BaseView):
             external_seat_csv = GettiiSeatCSV()
             try:
                 external_seat_csv.read_csv(self.request.POST['csvfile'].file)
+            except CSVEmptyError as err:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'ファイルが空です',
+                }))
             except AttributeError as err:
                 raise HTTPBadRequest(body=json.dumps({
                     'message':u'ファイルが選択されていません',
                 }))
+
 
             records = [record for record in external_seat_csv]
 
