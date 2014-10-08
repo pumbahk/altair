@@ -29,9 +29,9 @@ from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.sej import userside_api
-from altair.app.ticketing.sej.exceptions import SejErrorBase
+from altair.app.ticketing.sej.exceptions import SejErrorBase, SejError
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record, refund_sej_order
+from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -128,7 +128,7 @@ def get_tickets(request, order, ticket_template_id=None):
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
                     svg = etree.tostring(
                         convert_svg(
@@ -160,7 +160,7 @@ def get_tickets_from_cart(request, cart, now):
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
                     svg = etree.tostring(
                         convert_svg(
@@ -227,7 +227,7 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
 
 def refresh_order(request, tenant, order, update_reason):
     from altair.app.ticketing.sej.models import _session
-    sej_order = get_sej_order(order.order_no, session=_session)
+    sej_order = sej_api.get_sej_order(order.order_no, session=_session)
     if sej_order is None:
         raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
@@ -246,7 +246,7 @@ def refresh_order(request, tenant, order, update_reason):
             raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
     new_sej_order = sej_order.new_branch()
-    new_sej_order.tickets = build_sej_tickets_from_dicts(
+    new_sej_order.tickets = sej_api.build_sej_tickets_from_dicts(
         sej_order.order_no,
         ticket_dicts,
         lambda idx: None
@@ -256,7 +256,7 @@ def refresh_order(request, tenant, order, update_reason):
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
     try:
-        new_sej_order = refresh_sej_order(
+        new_sej_order = sej_api.refresh_sej_order(
             request,
             tenant=tenant,
             sej_order=new_sej_order,
@@ -270,11 +270,15 @@ def refresh_order(request, tenant, order, update_reason):
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
 def refund_order(request, tenant, order, refund_record, now=None):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    if order.paid_at is None:
+        raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+    if order.issued_at is not None:
+        logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
-    sej_order = get_sej_order(order.order_no)
     performance = order.performance
     try:
-        refund_sej_order(
+        sej_api.refund_sej_order(
             request,
             tenant=tenant,
             sej_order=sej_order,
@@ -293,6 +297,18 @@ def refund_order(request, tenant, order, refund_record, now=None):
             )
     except SejErrorBase:
         raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
+
+def cancel_order(request, tenant, order, now=None):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    if int(sej_order.payment_type) in (SejPaymentType.PrepaymentOnly.v, SejPaymentType.CashOnDelivery.v) and order.paid_at is not None:
+        refund_order(request, tenant, order, order, now)
+    else:
+        if sej_order is None:
+            raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
+        try:
+            sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
+        except SejError:
+            raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
 def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
     shipping_address = order_like.shipping_address
@@ -465,11 +481,11 @@ class SejPaymentPlugin(object):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
-            sej_order = create_sej_order(
+            sej_order = sej_api.create_sej_order(   
                 request,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date, None)
                 )
-            do_sej_order(
+            sej_api.do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order
@@ -479,7 +495,7 @@ class SejPaymentPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = get_sej_order(order.order_no)
+        sej_order = sej_api.get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -497,22 +513,28 @@ class SejPaymentPlugin(object):
             )
 
     @clear_exc
-    def refund(self, request, order, refund_record):
-        if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+    def cancel(self, request, order):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
-        refund_order(
+        cancel_order(
             request,
             tenant=tenant,
-            order=order,
-            refund_record=refund_record
+            order=order
             )
+
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        """ *** 支払のみの場合は払戻しない *** """
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        sej_order = sej_api.get_sej_order(order.order_no)
+        assert sej_order_like.payment_type == SejPaymentType.PrepaymentOnly.v
+
 
 @implementer(ISejDeliveryPlugin)
 class SejDeliveryPluginBase(object):
     def template_record_for_ticket_format(self, request, ticket_format):
         ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
-        return get_ticket_template_record(request, ticket_template_id)
+        return sej_api.get_ticket_template_record(request, ticket_template_id)
 
 
 @implementer(IDeliveryPlugin)
@@ -540,12 +562,12 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
                 tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
                 tickets = get_tickets(request, order_like)
-            sej_order = create_sej_order(
+            sej_order = sej_api.create_sej_order(
                 request,
                 tickets=tickets,
                 **build_sej_args(SejPaymentType.Paid, order_like, current_date, regrant_number_due_at)
                 )
-            do_sej_order(
+            sej_api.do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order
@@ -555,7 +577,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = get_sej_order(order.order_no)
+        sej_order = sej_api.get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -569,6 +591,15 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def cancel(self, request, order):
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        cancel_order(
+            request,
+            tenant=tenant,
+            order=order
             )
 
     @clear_exc
@@ -608,12 +639,12 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         payment_type = determine_payment_type(current_date, order_like)
         try:
             tickets = get_tickets(request, order_like)
-            sej_order = create_sej_order(
+            sej_order = sej_api.create_sej_order(
                 request,
                 tickets=tickets,
                 **build_sej_args(payment_type, order_like, current_date, regrant_number_due_at)
                 )
-            do_sej_order(
+            sej_api.do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order
@@ -623,7 +654,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = get_sej_order(order.order_no)
+        sej_order = sej_api.get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -637,6 +668,15 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def cancel(self, request, order):
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        cancel_order(
+            request,
+            tenant=tenant,
+            order=order
             )
 
     @clear_exc
@@ -663,7 +703,7 @@ def payment_type_to_string(payment_type):
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete_mobile.html'))
 def sej_delivery_viewlet(context, request):
     order = context.order
-    sej_order = get_sej_order(order.order_no)
+    sej_order = sej_api.get_sej_order(order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
@@ -696,7 +736,7 @@ def sej_delivery_confirm_viewlet(context, request):
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_complete_mobile.html'))
 def sej_payment_viewlet(context, request):
     order = context.order
-    sej_order = get_sej_order(order.order_no)
+    sej_order = sej_api.get_sej_order(order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
     payment_type = payment_type_to_string(sej_order.payment_type)
     return dict(
@@ -721,7 +761,7 @@ def payment_mail_viewlet(context, request):
     if provided_sej_order is not None:
         sej_order = provided_sej_order
     else:
-        sej_order = get_sej_order(context.order.order_no)
+        sej_order = sej_api.get_sej_order(context.order.order_no)
     delivery_plugin_id = context.order.payment_delivery_pair.delivery_method.delivery_plugin_id
     payment_method = context.order.payment_delivery_pair.payment_method
     if sej_order is not None:
@@ -750,7 +790,7 @@ def delivery_mail_viewlet(context, request):
     if provided_sej_order is not None:
         sej_order = provided_sej_order
     else:
-        sej_order = get_sej_order(context.order.order_no)
+        sej_order = sej_api.get_sej_order(context.order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     now = datetime.now()

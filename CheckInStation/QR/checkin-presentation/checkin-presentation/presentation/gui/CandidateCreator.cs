@@ -31,7 +31,7 @@ namespace checkin.presentation.gui
         {
             var candidates = new ObservableCollection<UnitStringPair>();
             candidates.Add(new UnitStringPair("このチケット１枚を発券", PrintUnit.one.ToString()));
-            candidates.Add(new UnitStringPair("同じ注文番号のチケットをまとめて発券", PrintUnit.all.ToString()));
+            candidates.Add(new UnitStringPair("同じ受付番号のチケットをまとめて発券", PrintUnit.all.ToString()));
             return candidates;
         }
 
@@ -39,7 +39,7 @@ namespace checkin.presentation.gui
         {
             var candidates = new ObservableCollection<UnitStringPair>();
             candidates.Add(new UnitStringPair("QRで認証", InputUnit.qrcode.ToString()));
-            candidates.Add(new UnitStringPair("注文番号を入力して認証", InputUnit.order_no.ToString()));
+            candidates.Add(new UnitStringPair("受付番号を入力して認証", InputUnit.order_no.ToString()));
             return candidates;
         }
 

@@ -1,4 +1,4 @@
-<%page args="order, sort=None" />
+<%page args="order, sort=None, vertical=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" name="m" />
 
@@ -85,6 +85,76 @@
       }
     });
   }
+
+  function save_point_grant_mode() {
+    var params = {};
+    var form = $('#point-grant-mode-form');
+    form.find('.message').empty();
+    params["point_grant_mode"] = $("input[name='point_grant_mode']:checked").val()
+    $.ajax({
+      type: 'POST',
+      url: '${request.route_path('orders.point_grant_mode', order_id=order.id)}',
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      data: JSON.stringify(params),
+      success: function(result) {
+        form.find('.message').append('変更を保存しました。');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText
+        form.find('.message').text(messages);
+      }
+    });
+  }
+
+  function get_selected_point_grant_history_entry_id() {
+    return $("input[name='rdo_point_grant_history']:checked").val();
+  }
+
+  function new_point_grant_history_entry() {
+    var modal = $('#modal-point_grant_history_entry');
+    var form = '#point_grant_history_entry-form';
+    var url = '${request.route_path('point_grant_history_entry.new', _query={'order_id': order.id})}';
+    load_modal_form(modal, url, null);
+  }
+
+  function edit_point_grant_history_entry() {
+    var modal = $('#modal-point_grant_history_entry');
+    var form = '#point_grant_history_entry-form';
+    var point_grant_history_entry_id = get_selected_point_grant_history_entry_id();
+    if (point_grant_history_entry_id === void(0)) {
+        alert("編集するエントリを選択してください。");
+    } else {
+        var url = '${request.route_path('point_grant_history_entry.edit', point_grant_history_entry_id='{id}', _query={'order_id': order.id})}';
+        url = url.replace(encodeURIComponent('{id}'), point_grant_history_entry_id)
+        load_modal_form(modal, url, null);
+    }
+  }
+
+  function delete_point_grant_history_entry() {
+    var point_grant_history_entry_id = get_selected_point_grant_history_entry_id();
+    if (point_grant_history_entry_id === void(0)) {
+        alert("削除するエントリを選択してください。");
+    } else {
+        var modal = $('#modal-delete');
+        var url = '${request.route_path('point_grant_history_entry.delete', point_grant_history_entry_id='{id}')}';
+        url = url.replace(encodeURIComponent('{id}'), point_grant_history_entry_id);
+        modal.find('#delete').click(function() {
+            var param = {'point_grant_history_entry_id': point_grant_history_entry_id};
+            $.ajax({
+                type: 'post',
+                url: url,
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify(param),
+            });
+        });
+        modal.find('#message').text('選択したエントリを削除します。よろしいですか？');
+        modal.modal('toggle');
+    }
+  }
+
   function save_note() {
     var param = {};
     var form = $('#note-form');
@@ -204,6 +274,30 @@ actions = {
     icon='icon-edit',
     route_name='orders.edit.product',
   ),
+  'save_point_grant_mode':dict(
+    label=u'変更を保存',
+    url='javascript:save_point_grant_mode();',
+    icon='icon-pencil',
+    route_name='orders.point_grant_mode',
+  ),
+  'new_point_grant_history_entry':dict(
+    label=u'新規',
+    url='javascript:new_point_grant_history_entry(%d);' % order.id,
+    icon='icon-plus',
+    route_name='point_grant_history_entry.new',
+  ),
+  'edit_point_grant_history_entry':dict(
+    label=u'編集',
+    url='javascript:edit_point_grant_history_entry(%d);' % order.id,
+    icon='icon-edit',
+    route_name='point_grant_history_entry.edit',
+  ),
+  'delete_point_grant_history_entry':dict(
+    label=u'削除',
+    url='javascript:delete_point_grant_history_entry();',
+    icon='icon-minus',
+    route_name='point_grant_history_entry.delete',
+  ),
   'note':dict(
     label=u'メモを保存',
     url='javascript:save_note(%d);' % order.id,
@@ -256,7 +350,7 @@ if 'delete' in sort:
 if sort:
   sort = iter(sort)
 %>
-${HH.action_button(actions, sort, vertical=False)}
+${HH.action_button(actions, sort, vertical=vertical)}
 
 ${m.confirm_modal()}
 ${m.delete_modal(label_cancel=u'戻る')}

@@ -1,115 +1,381 @@
-# -*- coding:utf-8 -*-
+# encoding: utf-8 
+from __future__ import absolute_import
 
 import os
-import sys
 import logging
-import transaction
-import argparse
-import requests
-from requests.auth import HTTPBasicAuth
+import csv
+import codecs
+import zipfile
+import re
+from collections import namedtuple
+from datetime import date, time, datetime, timedelta
+from urlparse import urlparse
+from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.orm import contains_eager, joinedload
 
-from pyramid.paster import bootstrap, setup_logging
-from sqlalchemy import and_
-from sqlalchemy.sql.expression import not_
-import sqlahelper
+from .api import get_nwts_uploader_factory
+from .zip_file import EnhZipFile
+from .models import SejRefundTicket, SejRefundEvent
 
-from altair.app.ticketing.sej.ticket import create_refund_zip_file
-from altair.app.ticketing.sej.nwts import nws_data_send
-from altair.app.ticketing.sej.models import _session
+logger = logging.getLogger(__name__)
 
-def send_refund_file(session):
-    ''' 払戻ファイルをSEJへ送信
-    '''
-    config_file = sys.argv[1]
-    log_file = os.path.abspath(sys.argv[2])
-    logging.config.fileConfig(log_file)
-    app_env = bootstrap(config_file)
-    settings = app_env['registry'].settings
+NWTSInfo = namedtuple('NWTSInfo', (
+    'nwts_endpoint_url',
+    'nwts_terminal_id',
+    'nwts_password',
+    ))
 
-    logging.info('start send_refund_file batch')
+class SejRefundFileManager(object):
+    def __init__(self, stage_dir, sent_dir, pending_dir):
+        self.stage_dir = stage_dir
+        self.sent_dir = sent_dir
+        self.pending_dir = pending_dir
 
-    try:
-        # 払戻対象データをファイルに書き出して圧縮
-        zip_file = create_refund_zip_file(_session)
+    def get_new_stage_dir_for(self, now):
+        work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
+        def make_room(dir_, serial=0):
+            if os.path.exists(dir_):
+                next_dir = '%s.%d' % (work_dir, serial)
+                make_room(next_dir, serial + 1)
+                os.rename(dir_, next_dir)
+        make_room(work_dir)
+        os.mkdir(work_dir)
+        return work_dir
 
-        # 払戻対象データをSEJへ送信
-        nws_data_send(
-            url=settings.get('sej.nwts.url') + '/tpayback.asp',
-            data=open(zip_file).read(),
-            file_id='SEIT020U',
-            terminal_id=settings.get('sej.terminal_id'),
-            password=settings.get('sej.password'),
-            ca_certs=settings.get('sej.nwts.ca_certs'),
-            cert_file=settings.get('sej.nwts.cert_file'),
-            key_file=settings.get('sej.nwts.key_file')
+    def get_latest_stage_dir(self, now):
+        work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
+        if not os.path.exists(work_dir):
+            return None
+        return work_dir
+
+    def mark_file_sent(self, p):
+        if not p.startswith(self.stage_dir):
+            raise ValueError("specified file (%s) does not exist under %s" % (p, self.stage_dir))
+        vpart = os.path.dirname(p[len(self.stage_dir):]).lstrip('/')
+        sent_dir = os.path.join(self.sent_dir, vpart)
+        if not os.path.exists(sent_dir):
+            os.makedirs(sent_dir)
+        os.rename(p, os.path.join(sent_dir, os.path.basename(p)))
+
+    def mark_file_pending(self, p):
+        if not p.startswith(self.stage_dir):
+            raise ValueError("specified file (%s) does not exist under %s" % (p, self.stage_dir))
+        vpart = os.path.dirname(p[len(self.stage_dir):]).lstrip('/')
+        pending_dir = os.path.join(self.pending_dir, vpart)
+        if not os.path.exists(pending_dir):
+            os.makedirs(pending_dir)
+        os.rename(p, os.path.join(pending_dir, os.path.basename(p)))
+
+def create_refund_file_manager_from_settings(settings):
+    stage_dir = settings['altair.sej.refund.stage_dir']
+    sent_dir = settings['altair.sej.refund.sent_dir']
+    pending_dir = settings['altair.sej.refund.pending_dir']
+    return SejRefundFileManager(
+        stage_dir=stage_dir,
+        sent_dir=sent_dir,
+        pending_dir=pending_dir
         )
-    finally:
-        _session.commit()
-    logging.info('end send_refund_file batch')
 
-def send_refund_file_with_proxy(session=None):
-    ''' 払戻ファイルをプロキシ経由でSEJへ送信
-    '''
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config')
-    args = parser.parse_args()
+class SejRefundRecordProvider(object):
+    def __init__(self, target_date, session):
+        self._refund_events = None
+        self._refund_tickets = None
+        self._nwts_info_list = None
+        self.target_date = target_date
+        self.target_from = datetime.combine(target_date + timedelta(days=-1), time(6,0))
+        self.target_to = datetime.combine(target_date, time(6,0))
+        self.session = session
+   
+    def _populate_refund_events(self):
+        if self._refund_events is not None:
+            return
+        refund_events = {}
+        query = self.session.query(SejRefundEvent) \
+            .join(SejRefundTicket) \
+            .filter(self.target_date <= SejRefundEvent.end_at)
+        for refund_event in query.distinct():
+            nwts_info = NWTSInfo(
+                nwts_endpoint_url=refund_event.nwts_endpoint_url,
+                nwts_terminal_id=refund_event.nwts_terminal_id,
+                nwts_password=refund_event.nwts_password
+                )
+            refund_events.setdefault(nwts_info, []).append(refund_event)
+        self._refund_events = refund_events
 
-    setup_logging(args.config)
-    env = bootstrap(args.config)
-    settings = env['registry'].settings
+    def _populate_refund_tickets(self):
+        if self._refund_tickets is not None:
+            return
+        refund_tickets = {}
+        query = self.session.query(SejRefundTicket) \
+            .options(joinedload(SejRefundTicket.refund_event)) \
+            .filter(
+                or_(
+                    SejRefundTicket.sent_at == None,
+                    and_(
+                        self.target_from <= SejRefundTicket.sent_at,
+                        SejRefundTicket.sent_at < self.target_to
+                        )
+                    )
+                )
+        for refund_ticket in query:
+            refund_event = refund_ticket.refund_event
+            nwts_info = NWTSInfo(
+                nwts_endpoint_url=refund_event.nwts_endpoint_url,
+                nwts_terminal_id=refund_event.nwts_terminal_id,
+                nwts_password=refund_event.nwts_password
+                )
+            refund_tickets.setdefault(nwts_info, []).append(refund_ticket)
+        self._refund_tickets = refund_tickets
 
-    if session is None:
-        session = _session
+    @property
+    def nwts_info_list(self):
+        self._populate_refund_events()
+        self._populate_refund_tickets()
+        keys = self._refund_events.viewkeys()
+        assert keys >= self._refund_tickets.viewkeys()
+        return keys
 
-    logging.info('start send_refund_file_with_proxy batch')
-    try:
-        create_and_send_refund_file(settings, _session)
-    finally:
-        session.commit()
-    logging.info('end send_refund_file_with_proxy batch')
+    def get_refund_events_for(self, nwts_info):
+        self._populate_refund_events()
+        return self._refund_events[nwts_info]
 
-def create_and_send_refund_file(settings, session=None):
-    if session is None:
-        session = _session
+    def get_refund_tickets_for(self, nwts_info):
+        return self._refund_tickets[nwts_info]
 
-    nwts_proxy_url = settings.get('altair.sej.nwts.proxy_url')
-    if nwts_proxy_url is None:
-        logging.warning("altair.sej.nwts.proxy_url is not given. using deprecated sej.nwts.proxy_url instead")
-        nwts_proxy_url = settings['sej.nwts.proxy_url']
+def encode_to_sjis(row):
+    encoded = []
+    for value in row:
+        if value:
+            if not isinstance(value, unicode):
+                value = unicode(value)
+            value = value.encode('shift_jis')
+        else:
+            value = ''
+        encoded.append(value)
+    return encoded
 
-    nwts_auth_user = settings.get('altair.sej.nwts.auth_user')
-    if nwts_auth_user is None:
-        logging.warning("altair.sej.nwts.auth_user is not given. using deprecated sej.nwts.auth_user instead")
-        nwts_auth_user = settings['sej.nwts.auth_user']
+class SejRefundZipFileBuilder(object):
+    def __init__(self, target_date, work_dir):
+        self.work_dir = work_dir
+        target_ymd = target_date.strftime('%Y%m%d')
+        self.zip_file_name = '%s.zip' % target_ymd
+        self.archive_file_name = 'archive.txt'
+        self.refund_event_file_name = target_ymd + '_TPBKOEN.dat'
+        self.refund_ticket_file_name = target_ymd + '_TPBTICKET.dat'
 
-    nwts_auth_pass = settings.get('altair.sej.nwts.auth_password')
-    if nwts_auth_pass is None:
-        logging.warning("altair.sej.nwts.auth_password is not given. using deprecated sej.nwts.auth_pass instead")
-        nwts_auth_pass = settings['sej.nwts.auth_pass']
-
-    # 払戻対象データをファイルに書き出して圧縮
-    try:
-        zip_file = create_refund_zip_file(session)
-    finally:
-        session.commit()
-
-    # 払戻対象データをSEJへ送信
-    if zip_file:
-        logging.info('zipfile=%s' % zip_file)
+    def _create_refund_event_file(self, sej_refund_events, now):
+        # SejRefundEvent -> yyyymmdd_tpbkoen.dat
+        refund_event_file_path = os.path.join(self.work_dir, self.refund_event_file_name)
+        refund_event_tsv = open(refund_event_file_path, 'w')
+        tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
         try:
-            files = {'zipfile': (os.path.basename(zip_file), open(zip_file, 'rb'))}
-            r = requests.post(
-                url=nwts_proxy_url,
-                files=files,
-                auth=HTTPBasicAuth(nwts_auth_user, nwts_auth_pass)
+            for sej_refund_event in sej_refund_events:
+                tsv_writer.writerow(encode_to_sjis([
+                    sej_refund_event.available,
+                    sej_refund_event.shop_id,
+                    sej_refund_event.event_code_01,
+                    sej_refund_event.event_code_02,
+                    sej_refund_event.title,
+                    sej_refund_event.sub_title,
+                    sej_refund_event.event_at.strftime('%y%m%d'),
+                    sej_refund_event.start_at.strftime('%y%m%d'),
+                    sej_refund_event.end_at.strftime('%y%m%d'),
+                    sej_refund_event.event_expire_at.strftime('%y%m%d'),
+                    sej_refund_event.ticket_expire_at.strftime('%y%m%d'),
+                    sej_refund_event.refund_enabled,
+                    sej_refund_event.disapproval_reason,
+                    unicode(sej_refund_event.need_stub),
+                    sej_refund_event.remarks,
+                    sej_refund_event.un_use_01,
+                    sej_refund_event.un_use_02,
+                    sej_refund_event.un_use_03,
+                    sej_refund_event.un_use_04,
+                    sej_refund_event.un_use_05
+                    ]))
+                sej_refund_event.sent_at = now
+        finally:
+            refund_event_tsv.close()
+
+        return refund_event_file_path
+
+    def _create_refund_ticket_file(self, sej_refund_tickets, now):
+        # SejRefundTicket -> yyyymmdd_tpbticket.dat
+        refund_ticket_file_path = os.path.join(self.work_dir, self.refund_ticket_file_name)
+        refund_ticket_tsv = open(refund_ticket_file_path, 'w')
+        tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
+        try:
+            for sej_refund_ticket in sej_refund_tickets:
+                tsv_writer.writerow(encode_to_sjis([
+                    sej_refund_ticket.available,
+                    sej_refund_ticket.refund_event.shop_id,
+                    sej_refund_ticket.event_code_01,
+                    sej_refund_ticket.event_code_02,
+                    sej_refund_ticket.order_no,
+                    sej_refund_ticket.ticket_barcode_number,
+                    int(sej_refund_ticket.refund_ticket_amount),
+                    int(sej_refund_ticket.refund_other_amount)
+                    ]))
+                sej_refund_ticket.sent_at = now
+        finally:
+            refund_ticket_tsv.close()
+        return refund_ticket_file_path
+
+    def _create_archive_txt(self):
+        # archive.txt
+        archive_txt_file_path = os.path.join(self.work_dir, self.archive_file_name)
+        archive_txt = codecs.open(archive_txt_file_path, 'w', 'shift_jis')
+        try:
+            archive_txt.write(self.refund_event_file_name + '\r\n')
+            archive_txt.write(self.refund_ticket_file_name + '\r\n')
+        finally:
+            archive_txt.close()
+        return archive_txt_file_path
+
+    def __call__(self, zip_file_base, sej_refund_events, sej_refund_tickets, now):
+        refund_event_file_path = self._create_refund_event_file(sej_refund_events, now)
+        refund_ticket_file_path = self._create_refund_ticket_file(sej_refund_tickets, now)
+        archive_txt_file_path = self._create_archive_txt()
+        zip_file_path = os.path.join(zip_file_base, self.zip_file_name)
+        # create zip file
+        zf = EnhZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED)
+        zf.append_file(archive_txt_file_path, self.archive_file_name)
+        zf.append_file(refund_event_file_path, self.refund_event_file_name)
+        zf.append_file(refund_ticket_file_path, self.refund_ticket_file_name)
+        zf.close()
+        return zip_file_path
+
+def sanitize(n):
+    return re.sub(r'[^0-9a-zA-Z_.-]', '-', n)
+
+def build_dirname_from_nwts_info(nwts_info):
+    endpoint = urlparse(nwts_info.nwts_endpoint_url)
+    return "%s-%s-%s-%s" % (
+        sanitize(endpoint.netloc),
+        sanitize(endpoint.path),
+        sanitize(nwts_info.nwts_terminal_id),
+        sanitize(nwts_info.nwts_password),
+        )
+
+
+def calculate_target_date(now):
+    # 0:00-5:59の間なら当日, それ以外は翌日でファイル名を生成する
+    hour = now.hour
+    if hour < 6:
+        target_date = now.date()
+    else:
+        target_date = (now + timedelta(days=1)).date()
+    return target_date
+
+def create_refund_zip_files(now=None, work_dir_base='/tmp', session=None):
+    if session is None:
+        from .models import _session
+        session = _session
+    if now is None:
+        now = datetime.now()
+
+    target_date = calculate_target_date(now)
+
+    provider = SejRefundRecordProvider(
+        target_date=target_date,
+        session=session
+        )
+
+    zip_file_path_list = []
+    work_dir_list = []
+    try:
+        for nwts_info in provider.nwts_info_list:
+            work_dir = os.path.join(
+                work_dir_base,
+                build_dirname_from_nwts_info(nwts_info)
+                )
+            os.mkdir(work_dir)
+            work_dir_list.append(work_dir)
+            builder = SejRefundZipFileBuilder(
+                target_date=target_date,
+                work_dir=work_dir,
+                )
+            sej_refund_events = provider.get_refund_events_for(nwts_info)
+            sej_refund_tickets = provider.get_refund_tickets_for(nwts_info)
+            zip_file_path = builder(
+                zip_file_base=work_dir,
+                sej_refund_events=sej_refund_events,
+                sej_refund_tickets=sej_refund_tickets,
+                now=now)
+            zip_file_path_list.append(zip_file_path)
+    except:
+        for work_dir in work_dir_list:
+            try:
+                os.removedirs(work_dir)
+            except:
+                logger.exception("ignored exception")
+        raise
+
+    return zip_file_path_list
+
+def stage_refund_zip_files(registry, now):
+    # sej払戻ファイル生成
+    manager = create_refund_file_manager_from_settings(registry.settings)
+    work_dir_base = manager.get_new_stage_dir_for(now)
+    logger.info("writing refund zip file(s) to %s..." % work_dir_base)
+    from .models import _session as sej_session
+    try:
+        zip_files = create_refund_zip_files(session=sej_session, now=now, work_dir_base=work_dir_base)
+        for zip_file in zip_files:
+            logger.info("refund zip file successfully created as %s" % zip_file)
+    except:
+        sej_session.rollback()
+        raise
+
+def send_refund_file(registry, nwts_info, zip_file_path):
+    factory = get_nwts_uploader_factory(registry)
+    uploader = factory(
+        endpoint_url=nwts_info.nwts_endpoint_url,
+        terminal_id=nwts_info.nwts_terminal_id,
+        password=nwts_info.nwts_password
+        )
+    uploader(
+        application='tpayback.asp',
+        file_id='SEIT020U',
+        data=open(zip_file_path).read(),
+        )
+
+def send_refund_files(registry, now):
+    manager = create_refund_file_manager_from_settings(registry.settings)
+    work_dir_base = manager.get_latest_stage_dir(now)
+    logger.info("sending refund zip file(s) under %s..." % work_dir_base)
+    target_date = calculate_target_date(now)
+    from .models import _session as sej_session
+    provider = SejRefundRecordProvider(
+        target_date=target_date,
+        session=sej_session
+        )
+    # preflight
+    nwts_info_dir_triplets = []
+    for nwts_info in provider.nwts_info_list:
+        work_dir = os.path.join(
+            work_dir_base,
+            build_dirname_from_nwts_info(nwts_info)
             )
-            if r.status_code == 200:
-                logging.info('success')
-            else:
-                logging.error('proxy response = %s' % r.status_code)
-        except Exception:
-            logging.exception('exception occured')
+        if not os.path.exists(work_dir):
+            raise Exception('%s does not exist' % work_dir)
+        zip_files = []
+        for f in os.listdir(work_dir):
+            zip_file = os.path.join(work_dir, f)
+            if f.endswith('.zip') and os.path.isfile(zip_file):
+                zip_files.append(zip_file)
+        if len(zip_files) == 0:
+            logger.warning('no zip file exists under %s. skipped.' % work_dir)
+            continue
+        elif len(zip_files) > 1:
+            raise Exception('more than one zip files exist under %s' % work_dir)
+        nwts_info_dir_triplets.append((nwts_info, work_dir, zip_files[0]))
 
-
-if __name__ == '__main__':
-    send_refund_file_with_proxy()
+    # do it
+    for nwts_info, _, zip_file in nwts_info_dir_triplets:
+        logger.info("sending {0} to {1.nwts_endpoint_url} (terminal_id={1.nwts_terminal_id})...".format(zip_file, nwts_info))
+        try:
+            send_refund_file(registry, nwts_info, zip_file)
+            manager.mark_file_sent(zip_file)
+        except:
+            logger.error("failed to send {0} to {1.nwts_endpoint_url} (terminal_id={1.nwts_terminal_id})...".format(zip_file, nwts_info), exc_info=True)
+            manager.mark_file_pending(zip_file)

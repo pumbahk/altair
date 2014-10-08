@@ -13,6 +13,11 @@ def validate_filetype(fieldname, failfn, message=u"不正なファイルです",
     if v != u"" and failfn(v):
         raise ValidationError(message)
 
+def validate_url(fieldname, message=u"不正なURLです", data=None):
+    v = data.get(fieldname)
+    if '/' in v:
+        raise ValidationError(message)
+
 class ValidationQueue(object):
     def __init__(self):
         self.queue = []

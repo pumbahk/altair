@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import json
+import logging
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
@@ -13,11 +14,16 @@ from webob.multidict import MultiDict
 from datetime import datetime
 
 from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.views import BaseView
 from altair.sqla import get_relationship_query
 from ..core.models import Product
-from .models import PointGrantSetting
-from .forms import PointGrantSettingForm
+from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.users.models import UserPointAccount
+from .models import PointGrantSetting, PointGrantHistoryEntry
+from .forms import PointGrantSettingForm, PointGrantHistoryEntryForm
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PointGrantSettings(BaseView):
@@ -139,3 +145,67 @@ class PointGrantSettings(BaseView):
         product_ids = [long(id) for id in self.request.POST.getall('product_id')]
         self.context.point_grant_setting.target_products.difference_update(Product.query.filter(Product.id.in_(product_ids)))
         return HTTPFound(location=self.request.route_path('point_grant_settings.show', point_grant_setting_id=self.context.point_grant_setting.id))
+
+    @view_config(route_name='point_grant_history_entry.new', request_method='GET', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
+    def new_xhr_point_grant_history_entry(self):
+        form = PointGrantHistoryEntryForm(context=self.context, new_form=True)
+        return {'form': form, 'action': self.request.current_route_path(_query=dict(order_id=self.context.order_id))}
+
+    @view_config(route_name='point_grant_history_entry.edit', request_method='GET', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
+    def edit_xhr_point_grant_history_entry(self):
+        form = PointGrantHistoryEntryForm(obj=self.context.point_grant_history_entry, context=self.context)
+        return {'form': form, 'action': self.request.current_route_path()}
+
+    @view_config(route_name='point_grant_history_entry.new', request_method='POST', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
+    def new_post(self):
+        order_id = long(self.context.order_id)
+        form = PointGrantHistoryEntryForm(formdata=self.request.POST, context=self.context, new_form=True)
+        if form.validate():
+            try:
+                user_point_account_id = UserPointAccount.query.join(Order, UserPointAccount.user_id == Order.user_id).filter(Order.id == order_id).first().id
+                submitted_on=form.submitted_on.data
+                amount=float(form.amount.data)
+                operator_id = self.context.user.id
+                point_grant_history_entry = \
+                    PointGrantHistoryEntry(user_point_account_id=user_point_account_id, order_id=order_id, submitted_on=submitted_on, amount=amount, edited_by=operator_id , manual_grant=True)
+                point_grant_history_entry.add()
+                self.request.session.flash(u'ポイント付与エントリを保存しました。')
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+            except Exception, exception:
+                self.request.session.flash(exception.message)
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {'form': form, 'action': self.request.current_route_path(_query=dict(order_id=order_id))}
+
+    @view_config(route_name="point_grant_history_entry.edit", request_method="POST", renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
+    def update_point_grant_history_entry(self):
+        form = PointGrantHistoryEntryForm(formdata=self.request.POST, context=self.context)
+        point_grant_history_entry = self.context.point_grant_history_entry
+        if form.validate():
+            try:
+                point_grant_history_entry.edited_by = self.context.user.id
+                point_grant_history_entry.submitted_on = form.submitted_on.data
+                point_grant_history_entry.amount=form.amount.data
+                point_grant_history_entry.manual_grant=True
+
+                DBSession.add(point_grant_history_entry)
+                DBSession.flush()
+                self.request.session.flash(u'ポイント付与エントリを保存しました。')
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+            except Exception, exception:
+                self.request.session.flash(exception.message)
+                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {'form': form, 'action': self.request.current_route_path(_query=dict(order_id=point_grant_history_entry.order_id))}
+
+    @view_config(route_name="point_grant_history_entry.delete", request_method="POST", permission="event_editor")
+    def delete_point_grant_history_entry(self):
+        try:
+            self.context.point_grant_history_entry.delete()
+            self.request.session.flash(u'ポイント付与エントリを削除しました。')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        except Exception, exception:
+            self.request.session.flash(exception.message)
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
+

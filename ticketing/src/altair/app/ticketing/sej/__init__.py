@@ -8,19 +8,29 @@ import sqlahelper
 
 import logging
 
-from .interfaces import ISejTenant
+from .interfaces import ISejTenant, ISejNWTSUploaderFactory
 
 logger = logging.getLogger(__name__)
 
 def includeme(config):
     from .models import ThinSejTenant
     registry = config.registry
+    settings = registry.settings
+
     default_sej_tenant = ThinSejTenant(
-        shop_id=registry.settings.get('altair.sej.shop_id') or registry.settings.get('sej.shop_id'),
-        api_key=registry.settings.get('altair.sej.api_key') or registry.settings.get('sej.api_key'),
-        inticket_api_url=registry.settings.get('altair.sej.inticket_api_url') or registry.settings.get('sej.inticket_api_url')
+        shop_id=settings.get('altair.sej.shop_id') or settings.get('sej.shop_id'),
+        api_key=settings.get('altair.sej.api_key') or settings.get('sej.api_key'),
+        inticket_api_url=settings.get('altair.sej.inticket_api_url') or settings.get('sej.inticket_api_url'),
+        nwts_endpoint_url=settings.get('altair.sej.nwts.endpoint_url') or settings.get('sej.nwts.url'),
+        nwts_terminal_id=settings.get('altair.sej.nwts.terminal_id') or settings.get('sej.terminal_id'),
+        nwts_password=settings.get('altair.sej.nwts.password') or settings.get('sej.password'),
         )
-    config.registry.registerUtility(default_sej_tenant, ISejTenant)
+    registry.registerUtility(default_sej_tenant, ISejTenant)
+
+    from .nwts import ProxyNWTSUploaderFactory
+    nwts_factory = config.maybe_dotted(settings.get('altair.sej.nwts.factory', ProxyNWTSUploaderFactory))
+    registry.registerUtility(nwts_factory(registry), ISejNWTSUploaderFactory)
+
     config.include(configure_session)
     config.include('.communicator')
     config.add_tween('.tweens.sej_dbsession_tween_factory')

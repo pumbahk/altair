@@ -493,7 +493,8 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
-            preferred_performance=preferred_performance
+            preferred_performance=preferred_performance,
+            performance=performance_id
             )
 
     # パフォーマンスベースのランディング画面

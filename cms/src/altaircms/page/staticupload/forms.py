@@ -9,7 +9,7 @@ from wtforms import validators
 from ..models import StaticPage, StaticPageSet
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import MaybeDateTimeField
-from altaircms.formhelpers.validations import validate_term, validate_filetype
+from altaircms.formhelpers.validations import validate_term, validate_filetype, validate_url
 from altaircms.formhelpers.validations import ValidationQueue
 from altaircms.layout.models import Layout
 from altaircms.page.forms import layout_filter
@@ -35,6 +35,7 @@ class StaticPageCreateForm(Form):
     def validate(self):
         queue = ValidationQueue()
         queue.enqueue("publish_begin", validate_term, begin="publish_begin", end="publish_end")
+        queue.enqueue("name", validate_url, "name", u"階層を持たせるには、Zipの中にフォルダを作成してください。")
         queue.enqueue("zipfile", validate_filetype, "zipfile", failfn=lambda v: not zipupload.is_zipfile(v.file), 
                       message=u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" )
         return super(type(self), self).validate() and queue(self.data, self.errors)
