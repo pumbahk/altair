@@ -16,6 +16,9 @@ import re
 class DuplicateInstallError(Exception):
     pass
 
+class CSVEmptyError(Exception):
+    pass
+
 class RequestAccessor(object):
     in_params = {}
     in_matchdict = {}
@@ -169,7 +172,11 @@ class CSVData(list):
 
     def _parse(self, fp):
         reader = csv.reader(fp)
-        reader.next() # header
+        try:
+            reader.next() # header
+        except StopIteration as err:
+            raise CSVEmptyError()
+
         for row in reader:
             record = self.record_factory()
             record.parse(row)
