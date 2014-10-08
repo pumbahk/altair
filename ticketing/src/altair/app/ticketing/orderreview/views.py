@@ -283,6 +283,11 @@ class OrderReviewView(object):
         order, sej_order = self.context.get_order()
         if not form.object_validate(self.request, order):
             raise InvalidGuestForm(form)
+
+        # Orion受取りなのにOrionPerformanceが無い場合は、警告
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and order.performance.orion is None:
+            logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
+
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
 @mobile_view_config(context=InvalidForm,
