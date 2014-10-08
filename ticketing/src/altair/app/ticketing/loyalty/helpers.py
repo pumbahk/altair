@@ -3,6 +3,7 @@
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from markupsafe import Markup
 from .models import PointGrantStatusEnum
+from altair.app.ticketing.helpers import dt
 
 import logging
 
@@ -27,7 +28,7 @@ grant_statuses = {
 
 def format_granted_at(granted_at_value):
     if granted_at_value:
-        return japanese_datetime(granted_at_value)
+        return dt.japanese_datetime(granted_at_value)
     else:
         return u'未'
 
