@@ -57,9 +57,9 @@ from altair.app.ticketing.sej.models import (
     SejOrder,
     )
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import lookup_plugin
+from altair.app.ticketing.payments.api import lookup_plugin, get_payment_delivery_plugin, get_payment_plugin, get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import IPaymentCart
-from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
+from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, PaymentDeliveryMethodPairNotFound, PaymentPluginException
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import (
     Order,
@@ -592,6 +592,106 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
             query = asc_or_desc(query, self.targets['subject'].order_no, 'desc')
         return query
 
+
+def cancel_order(request, order, now=None):
+    logger.info('canceling order: %s' % order.order_no)
+    warnings = []
+    now = now or datetime.now()
+    if not order.can_cancel():
+        raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})'),  dict(status=order.status, payment_status=order.payment_status))
+
+    '''
+    決済方法ごとに払戻処理
+    '''
+    payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+    # インナー予約の場合はAPI決済していないのでスキップ
+    # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
+    if order.is_inner_channel and payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
+
+    payment_delivery_plugin = get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id)
+    payment_plugin = get_payment_plugin(request, payment_plugin_id)
+    delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+    else:
+        if payment_plugin is None and delivery_plugin is None:
+            raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
+
+    # 入金済みなら決済をキャンセル
+    try:
+        payment_plugin.cancel(request, order)
+        if delivery_plugin is not None:
+            delivery_plugin.cancel(request, order)
+    except PaymentPluginException:
+        logger.exception(u'キャンセルに失敗しました')
+        raise
+
+    # 在庫を戻す
+    logger.info('try release stock (order_no=%s)' % order.order_no)
+    order.release()
+    order.mark_canceled()
+    if order.payment_status == 'paid':
+        order.mark_refunded()
+
+    order.save()
+    logger.info('success order cancel (order_no=%s)' % order.order_no)
+    return warnings
+
+def refund_order(request, order, payment_method=None, now=None):
+    logger.info('refunding order: %s (payment method override=%s)' % (order.order_no, payment_method.payment_plugin_id if payment_method is not None else '-'))
+    warnings = []
+    now = now or datetime.now()
+    if not order.can_refund() or order.payment_status != 'refunding':
+        raise OrderCancellationError(order.order_no, _(u'予約が払戻できる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})'),  dict(status=order.status, payment_status=order.payment_status))
+
+    '''
+    決済方法ごとに払戻処理
+    '''
+    if payment_method:
+        payment_plugin_id = payment_method.payment_plugin_id
+    else:
+        payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+    # SEJの払戻は PaymentPlugin 単体では行われないので
+    # delivery_pluginをオーバライドする...
+    if payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        delivery_plugin_id = payments_plugins.SEJ_DELIVERY_PLUGIN_ID
+
+    if not payment_plugin_id:
+        return False
+
+    # インナー予約の場合はAPI決済していないのでスキップ
+    # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
+    if order.is_inner_channel and \
+       payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID and \
+       delivery_plugin_id != payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+        warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
+
+    payment_delivery_plugin = get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id)
+    payment_plugin = get_payment_plugin(request, payment_plugin_id)
+    delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+    else:
+        if payment_plugin is None and delivery_plugin is None:
+            raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
+
+    try:
+        payment_plugin.refund(request, order, order)
+    except PaymentPluginException:
+        logger.exception(u'キャンセルに失敗しました')
+        raise
+
+    order.mark_refunded()
+    order.save()
+    logger.info('success order refund (order_no=%s)' % order.order_no)
+    return warnings
 
 def create_inner_order(request, order_like, note, session=None):
     if session is None:

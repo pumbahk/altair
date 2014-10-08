@@ -8,9 +8,7 @@ import optparse
 import sys
 import logging.config
 from dateutil import parser as date_parser
-from pyramid.paster import bootstrap
-from altair.app.ticketing.sej.nwts import nws_data_send
-
+from pyramid.paster import bootstrap, setup_logging
 
 def main(argv=sys.argv):
     '''
@@ -68,19 +66,18 @@ def main(argv=sys.argv):
     data = open(args[0]).read()
 
     env = bootstrap(config)
-    logging.config.fileConfig(config)
+    setup_logging(config)
+    registry = env['registry']
 
-    settings = env['registry'].settings
-
-    nwts_url                = settings['sej.nwts.url']
-    terminal_id             = settings['sej.terminal_id']
-    password                = settings['sej.password']
-    ca_certs                = settings.get('sej.nwts.ca_certs', None)
-    cert_file               = settings.get('sej.nwts.cert_file', None)
-    key_file                = settings.get('sej.nwts.key_file', None)
-
-    url = nwts_url + "/" + type
-    nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password, ca_certs=ca_certs, cert_file=cert_file, key_file=key_file)
+    from ..interfaces import ISejTenant
+    from ..api import get_nwts_uploader_factory
+    default_tenant = registry.queryUtility(ISejTenant)
+    uploader = get_nwts_uploader_factory(env['registry'])(
+        endpoint_url=default_tenant.nwts_endpoint_url,
+        terminal_id=default_tenant.nwts_terminal_id,
+        password=default_tenant.nwts_password
+        )
+    uploader(application=type, data=data, file_id=file)
 
 if __name__ == u"__main__":
     main(sys.argv)
