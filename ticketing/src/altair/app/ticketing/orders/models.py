@@ -63,6 +63,7 @@ from altair.app.ticketing.models import (
     Base,
 )
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.sej import api as sej_api
 
 logger = logging.getLogger(__name__)
 
