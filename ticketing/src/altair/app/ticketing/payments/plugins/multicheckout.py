@@ -47,7 +47,7 @@ from altair.app.ticketing.payments.api import get_cart, get_confirm_url
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
-            
+
 SALES_PART_CANCEL_ENABLED_SINCE = datetime.strptime('2012-12-03 08:00', "%Y-%m-%d %H:%M")
 
 confirm_url = get_confirm_url # XXX: backwards compatibility: must be removed later! yet any code should not rely on this reference
@@ -133,7 +133,7 @@ class CardForm(CSRFSecureForm):
         })
 
     card_number = fields.TextField('card',
-                                   filters=[ignore_space_hyphen], 
+                                   filters=[ignore_space_hyphen],
                                    validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
     exp_year = OurSelectField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)], choices=card_exp_year)
     exp_month = OurSelectField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)], choices=[(u'%02d' % i, u'%02d' % i) for i in range(1, 13)])
@@ -154,7 +154,7 @@ def get_order_no(request, order_like):
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
     def validate_order(self, request, order_like):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
 
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
@@ -187,7 +187,8 @@ class MultiCheckoutPlugin(object):
         if card_number:
             card_brand = detect_card_brand(request, card_number)
 
-        checkout_sales_result = self._finish2_inner(request, cart)
+        organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
+        checkout_sales_result = self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
 
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
@@ -203,7 +204,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def finish2(self, request, order_like):
         # finish2 では OrderLike から organization を取得する
-        organization = order_like.sales_segment.sales_segment_group.organization
+        organization = c_models.Organization.query.filter_by(id=order_like.organization_id).one()
         self._finish2_inner(request, order_like, override_name=organization.setting.multicheckout_shop_name)
 
     def _finish2_inner(self, request, order_like, override_name=None):
@@ -277,7 +278,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def refresh(self, request, order):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
-        multicheckout_api = get_multicheckout_3d_api(request, order.setting.multicheckout_shop_name)
+        multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = get_order_no(request, order)
 
         if order.is_inner_channel:
@@ -419,7 +420,7 @@ def card_number_mask(number):
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("card_confirm.html"))
 def confirm_viewlet(context, request):
-    """ 確認画面表示 
+    """ 確認画面表示
     :param context: ICartPayment
     """
 
@@ -428,7 +429,7 @@ def confirm_viewlet(context, request):
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("card_complete.html"))
 def completion_viewlet(context, request):
-    """ 完了画面表示 
+    """ 完了画面表示
     :param context: IOrderPayment
     """
     return dict()

@@ -27,10 +27,7 @@
       <h4>集計期間の絞り込み</h4>
       <table>
         <tr>
-          <td valign="top" style="padding-top: 10px; width: 50px;">販売期間</td>
-          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_from, label=False, error_next_line=True)}</td>
-          <td valign="top" style="padding-top: 10px; width: 30px;"> 〜 </td>
-          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_to, label=False, error_next_line=True)}</td>
+          <td>販売期間</td><td>${form.limited_from} 〜 ${form.limited_to}</td>
         </tr>
       </table>
       <br/><br/>
