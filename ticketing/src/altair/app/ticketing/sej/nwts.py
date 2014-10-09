@@ -221,7 +221,7 @@ class ProxyNWTSUploader(object):
         self.password = password
         auth_handler = urllib2.HTTPBasicAuthHandler(password_mgr=MyPasswdMgr())
         if self.proxy_auth_user:
-            auth_handler.add_password(realm=None, uri='/', user=self.proxy_auth_user, passwd=self.proxy_auth_password)
+            auth_handler.add_password(realm=None, uri=proxy_url, user=self.proxy_auth_user, passwd=self.proxy_auth_password)
         self.auth_handler = auth_handler
 
     def __call__(self, application, file_id, data):
