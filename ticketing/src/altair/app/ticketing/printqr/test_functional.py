@@ -401,6 +401,9 @@ class QRTestsWithoutSeat(unittest.TestCase, BaseTestMixin):
         cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
         transaction.commit()
 
+    def tearDown(self):
+        BaseTestMixin.tearDown(self)
+
     def test_ticketdata_from_qrsigned_string__success(self):
         def _getTarget():
             from .views import ticketdata_from_qrsigned_string
