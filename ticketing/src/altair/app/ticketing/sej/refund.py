@@ -7,6 +7,7 @@ import csv
 import codecs
 import zipfile
 import re
+import shutil
 from collections import namedtuple
 from datetime import date, time, datetime, timedelta
 from urlparse import urlparse
@@ -305,7 +306,8 @@ def create_refund_zip_files(now=None, work_dir_base='/tmp', session=None):
     except:
         for work_dir in work_dir_list:
             try:
-                os.removedirs(work_dir)
+                logger.info("removing %s..." % work_dir)
+                shutil.rmtree(work_dir)
             except:
                 logger.exception("ignored exception")
         raise
