@@ -73,8 +73,11 @@ class SejTicketTemplateFile(Base, WithTimestamp, LogicallyDeleted):
 class SejRefundEvent(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejRefundEvent'
     id                      = Column(Identifier, primary_key=True)
-    available = Column(Integer)
-    shop_id = Column(String(5))
+    available               = Column(Integer)
+    shop_id                 = Column(String(5))
+    nwts_endpoint_url       = Column(String(255), nullable=True)
+    nwts_terminal_id        = Column(String(255), nullable=True)
+    nwts_password           = Column(String(255), nullable=True)
     event_code_01  = Column(String(16))
     event_code_02  = Column(String(16), nullable=True)
     title = Column(String(200))
@@ -346,6 +349,9 @@ class ThinSejTenant(object):
         '_contact_02',
         '_api_key',
         '_inticket_api_url',
+        '_nwts_endpoint_url',
+        '_nwts_terminal_id',
+        '_nwts_password',
         )
 
     @property
@@ -372,10 +378,25 @@ class ThinSejTenant(object):
     def inticket_api_url(self):
         return self._inticket_api_url
 
-    def __init__(self, original=None, shop_name=None, shop_id=None, contact_01=None, contact_02=None, api_key=None, inticket_api_url=None):
+    @property
+    def nwts_endpoint_url(self):
+        return self._nwts_endpoint_url
+
+    @property
+    def nwts_terminal_id(self):
+        return self._nwts_terminal_id
+
+    @property
+    def nwts_password(self):
+        return self._nwts_password
+
+    def __init__(self, original=None, shop_name=None, shop_id=None, contact_01=None, contact_02=None, api_key=None, inticket_api_url=None, nwts_endpoint_url=None, nwts_terminal_id=None, nwts_password=None):
         self._shop_name = shop_name if shop_name is not None else (original and original.shop_name)
         self._shop_id = shop_id if shop_id is not None else (original and original.shop_id)
         self._contact_01 = contact_01 if contact_01 is not None else (original and original.contact_01)
         self._contact_02 = contact_02 if contact_02 is not None else (original and original.contact_02)
         self._api_key = api_key if api_key is not None else (original and original.api_key)
         self._inticket_api_url = inticket_api_url if inticket_api_url is not None else (original and original.inticket_api_url)
+        self._nwts_endpoint_url = nwts_endpoint_url if nwts_endpoint_url is not None else (original and original.nwts_endpoint_url)
+        self._nwts_terminal_id = nwts_terminal_id if nwts_terminal_id is not None else (original and original.nwts_terminal_id)
+        self._nwts_password = nwts_password if nwts_password is not None else (original and original.nwts_password)

@@ -54,6 +54,14 @@ class ShippingDeliveryPlugin(object):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
 
+    def cancel(self, request, order):
+        # キャンセルフラグを立てるべきだと思うけど...
+        pass
+
+    def refund(self, request, order, refund_record):
+        pass
+
+
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 @view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):

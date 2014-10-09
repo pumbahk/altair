@@ -184,7 +184,6 @@ setup(name='altair.app.ticketing',
       sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
       rakuten_checkout_sales=altair.app.ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=altair.app.ticketing.orders.scripts:refund_order
-      sej_send_refund_file_with_proxy=altair.app.ticketing.sej.commands:send_refund_file_with_proxy
       import_point_grant_results=altair.app.ticketing.loyalty.commands:import_point_grant_results
       import_point_grant_data=altair.app.ticketing.loyalty.commands:import_point_grant_data
       export_point_grant_data=altair.app.ticketing.loyalty.commands:export_point_grant_data
@@ -205,6 +204,7 @@ setup(name='altair.app.ticketing',
       augus_venue_sync_request=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_request:main
       augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
       send_sej_remind_mail=altair.app.ticketing.mails.scripts.send_sej_remind_mail:main
+      sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
       """,

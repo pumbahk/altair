@@ -1,0 +1,6 @@
+<%page args="form, action = '#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+    ${ch.form_item(form.submitted_on)}
+    ${ch.form_item(form.amount)}
+</form>

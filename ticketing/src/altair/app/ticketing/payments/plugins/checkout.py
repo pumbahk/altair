@@ -153,7 +153,52 @@ class CheckoutPlugin(object):
             return
 
         service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
-        service.request_change_order([(order_like, order_like)])
+        try:
+            service.request_change_order([(order_like, order_like)])
+        except AnshinCheckoutAPIError as e:
+            raise CheckoutSettlementFailure(
+                message=u'あんしん決済の予約内容変更ができませんでした',
+                order_no=order_like.order_no,
+                back_url=None,
+                error_code=order_like.error_code
+                )
+
+    def cancel(self, request, order_like):
+        # 売り上げキャンセル
+        service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
+        try:
+            result = service.request_cancel_order([order_like])
+        except AnshinCheckoutAPIError as e:
+            raise CheckoutSettlementFailure(
+                message=u'あんしん決済をキャンセルできませんでした',
+                order_no=order_like.order_no,
+                back_url=None,
+                error_code=order_like.error_code
+                )
+
+    def refund(self, request, order_like, refund_record):
+        # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
+        service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
+        remaining_amount = order_like.total_amount - refund_record.refund_total_amount
+        if remaining_amount > 0 and remaining_amount < 100:
+            raise CheckoutSettlementFailure(
+                message=u'0円以上100円未満の注文は払戻できません',
+                order_like_no=order_like.order_no,
+                back_url=None,
+                error_code=None
+                )
+        try:
+            if remaining_amount == 0:
+                result = service.request_cancel_order([order_like])
+            else:
+                result = service.request_change_order([(order_like, order_like)])
+        except AnshinCheckoutAPIError as e:
+            raise CheckoutSettlementFailure(
+                message=u'generic failure',
+                order_no=order_like.order_no,
+                back_url=None,
+                error_code=order_like.error_code
+                )
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):

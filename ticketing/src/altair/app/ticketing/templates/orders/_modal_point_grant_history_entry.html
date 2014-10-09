@@ -1,0 +1,24 @@
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+
+<script type="text/javascript">
+  $(function() {
+    $("#modal-point_grant_history_entry #text_color").decentcolorpicker();
+  });
+</script>
+
+<div id="modal-point_grant_history_entry" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>ポイント付与エントリ</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-point_grant_history_entry').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

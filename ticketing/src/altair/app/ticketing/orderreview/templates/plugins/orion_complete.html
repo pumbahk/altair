@@ -103,10 +103,6 @@
 
 % endif
 
-% else:
-本公演は「イベント・ゲート」に対応していない可能性があります
-% endif
-
     <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
     % if 0 < len(tickets):
@@ -154,6 +150,13 @@
               </form>
         </div>
     % endfor
+
+% else:
+<p class="red">本公演は
+${order.payment_delivery_pair.delivery_method.name}
+に対応していません。詳しくは、<a href="${h.safe_get_contact_url(request)}">こちら</a>までお問い合わせください。
+</p>
+% endif
 
 % endif
 

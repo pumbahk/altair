@@ -15,7 +15,7 @@ import sqlahelper
 from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType
 from .models import _session
-from .interfaces import ISejTenant
+from .interfaces import ISejTenant, ISejNWTSUploader, ISejNWTSUploaderFactory
 from .exceptions import SejServerError, SejError, SejErrorBase, RefundTotalAmountOverError
 from .payment import request_cancel_order, request_order, request_update_order
 from pyramid.threadlocal import get_current_registry
@@ -108,14 +108,21 @@ def refund_sej_order(request,
             # create SejRefundEvent
             re = session.query(SejRefundEvent).filter(and_(
                 SejRefundEvent.shop_id==tenant.shop_id,
+                SejRefundEvent.nwts_endpoint_url==tenant.nwts_endpoint_url,
+                SejRefundEvent.nwts_terminal_id==tenant.nwts_terminal_id,
+                SejRefundEvent.nwts_password==tenant.nwts_password,
                 SejRefundEvent.event_code_01==performance_code
             )).first()
             if not re:
-                re = SejRefundEvent()
+                re = SejRefundEvent(
+                    shop_id=tenant.shop_id,
+                    nwts_endpoint_url=tenant.nwts_endpoint_url,
+                    nwts_terminal_id=tenant.nwts_terminal_id,
+                    nwts_password=tenant.nwts_password,
+                    event_code_01=performance_code
+                    )
 
             re.available = 1
-            re.shop_id = tenant.shop_id
-            re.event_code_01 = performance_code
             re.title = performance_name
             re.event_at = performance_start_on
             re.start_at = refund_start_at
@@ -130,23 +137,29 @@ def refund_sej_order(request,
             i = 0
             sum_amount = 0
             for sej_ticket in sej_tickets:
+                # 主券でかつバーコードがあるものだけ払戻する
                 if sej_ticket.barcode_number is not None and \
                    int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
-                    # 主券でかつバーコードがあるものだけ払戻する
+                    ticket_amount = ticket_price_getter(sej_ticket)
                     rt = session.query(SejRefundTicket).filter(and_(
                         SejRefundTicket.order_no==sej_order.order_no,
                         SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
                     )).first()
                     if not rt:
                         rt = SejRefundTicket()
-                        session.add(rt)
+
+                    # すべてが0の場合はデータを追加しない refs #9766
+                    if ticket_amount == 0 and (per_order_fee == 0 or i > 0) and per_ticket_fee == 0:
+                        if rt.id is not None:
+                            session.delete(rt)
+                        continue
 
                     rt.available = 1
                     rt.refund_event_id = re.id
                     rt.event_code_01 = performance_code
                     rt.order_no = sej_order.order_no
                     rt.ticket_barcode_number = sej_ticket.barcode_number
-                    rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
+                    rt.refund_ticket_amount = ticket_amount
                     rt.refund_other_amount = per_ticket_fee
                     # 手数料などの払戻があったら1件目に含める
                     if per_order_fee > 0 and i == 0:
@@ -158,10 +171,10 @@ def refund_sej_order(request,
                         logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
                         raise RefundTotalAmountOverError(u'refund total amount over: {0} < {1}'.format(refund_total_amount, sum_amount))
 
-                    session.merge(rt)
+                    session.add(rt)
                     i += 1
             if i == 0:
-                raise SejError(u'No refundable tickets found', sej_order.order_no)
+                logger.warning(u'No refundable tickets found: %s' % sej_order.order_no)
 
             return re
         finally:
@@ -220,7 +233,10 @@ def merge_sej_tenant(src, override_by):
         contact_01=override_by.contact_01,
         contact_02=override_by.contact_02,
         api_key=override_by.api_key,
-        inticket_api_url=override_by.inticket_api_url
+        inticket_api_url=override_by.inticket_api_url,
+        nwts_endpoint_url=override_by.nwts_endpoint_url,
+        nwts_terminal_id=override_by.nwts_terminal_id,
+        nwts_password=override_by.nwts_password
         )
 
 def validate_sej_tenant(sej_tenant):
@@ -230,6 +246,12 @@ def validate_sej_tenant(sej_tenant):
         raise AssertionError('api_key is empty')
     if not sej_tenant.inticket_api_url:
         raise AssertionError('inticket_api_url is empty')
+    if not sej_tenant.nwts_endpoint_url:
+        raise AssertionError('endpoint_url is empty')
+    if not sej_tenant.nwts_terminal_id:
+        raise AssertionError('terminal_id is empty')
+    if not sej_tenant.nwts_password:
+        raise AssertionError('password is empty')
 
 def build_sej_tickets_from_dicts(order_no, tickets, barcode_number_getter):
     return [
@@ -299,3 +321,10 @@ def get_ticket_template_record(request, template_id, session=None):
         return template_file_rec
     except NoResultFound:
         return None
+
+def get_nwts_uploader_factory(request_or_registry):
+    if hasattr(request_or_registry, 'registry'):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(ISejNWTSUploaderFactory)

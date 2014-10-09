@@ -4,17 +4,17 @@ import os
 import unittest
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
-class TestCreateRefundZipFile(unittest.TestCase):
+class TestCreateRefundZipFiles(unittest.TestCase):
     def _getTarget(self):
-        from ..ticket import create_refund_zip_file
-        return create_refund_zip_file
+        from ..refund import create_refund_zip_files
+        return create_refund_zip_files
 
     def _callFUT(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
     def setUp(self):
         from tempfile import mkdtemp
-        self.work_dir = mkdtemp()
+        self.work_dir_base = mkdtemp()
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
@@ -43,7 +43,10 @@ class TestCreateRefundZipFile(unittest.TestCase):
                 disapproval_reason=0,
                 need_stub=(i % 2),
                 remarks=('REMARKS%05d' % i),
-                sent_at=sent_at
+                sent_at=sent_at,
+                nwts_endpoint_url='http://www.example.com/foo',
+                nwts_terminal_id='TERMINAL',
+                nwts_password='PASSWORD'
                 )
             for i in range(0, num_events)
             ]
@@ -67,34 +70,38 @@ class TestCreateRefundZipFile(unittest.TestCase):
 
     def tearDown(self):
         _teardown_db()
-        for parent_dir, dirs, files in os.walk(self.work_dir, topdown=False):
+        for parent_dir, dirs, files in os.walk(self.work_dir_base, topdown=False):
             for file in files:
                 os.unlink(os.path.join(parent_dir, file))
-        os.removedirs(self.work_dir)
+            for dir_ in dirs:
+                os.rmdir(os.path.join(parent_dir, dir_))
+        os.removedirs(self.work_dir_base)
 
     def test_no_refund_event(self):
         from datetime import datetime
         from ..zip_file import EnhZipFile
-        self._callFUT(self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
+        self._callFUT(session=self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir_base=self.work_dir_base)
+        work_dir = os.path.join(self.work_dir_base, 'www.example.com--foo-TERMINAL-PASSWORD')
         refund_event_file_name = '20140101_TPBKOEN.dat'
         refund_ticket_file_name = '20140101_TPBTICKET.dat'
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_event_file_name)))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_ticket_file_name)))
-        zip_file_path = os.path.join(self.work_dir, '20140101.zip')
+        self.assertFalse(os.path.exists(os.path.join(work_dir, 'archive.txt')))
+        self.assertFalse(os.path.exists(os.path.join(work_dir, refund_event_file_name)))
+        self.assertFalse(os.path.exists(os.path.join(work_dir, refund_ticket_file_name)))
+        zip_file_path = os.path.join(work_dir, '20140102.zip')
         self.assertFalse(os.path.exists(zip_file_path))
 
     def test_before_six(self):
         from datetime import datetime
         from ..zip_file import EnhZipFile
         self._setup_fixtures(sent_at=datetime(2014, 1, 1, 0, 0, 0), prefix='TT', num_events=3, num_tickets=5)
-        self._callFUT(self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
+        self._callFUT(session=self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir_base=self.work_dir_base)
+        work_dir = os.path.join(self.work_dir_base, 'www.example.com--foo-TERMINAL-PASSWORD')
         refund_event_file_name = '20140101_TPBKOEN.dat'
         refund_ticket_file_name = '20140101_TPBTICKET.dat'
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_event_file_name)))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_ticket_file_name)))
-        zip_file_path = os.path.join(self.work_dir, '20140101.zip')
+        self.assertTrue(os.path.exists(os.path.join(work_dir, 'archive.txt')))
+        self.assertTrue(os.path.exists(os.path.join(work_dir, refund_event_file_name)))
+        self.assertTrue(os.path.exists(os.path.join(work_dir, refund_ticket_file_name)))
+        zip_file_path = os.path.join(work_dir, '20140101.zip')
         self.assertTrue(os.path.exists(zip_file_path))
         z = EnhZipFile(zip_file_path, 'r')
         self.assertEqual(set(z.namelist()), {
@@ -122,13 +129,14 @@ class TestCreateRefundZipFile(unittest.TestCase):
         self._setup_fixtures(sent_at=datetime(2014, 1, 1, 6, 0, 0), prefix='TB', num_events=7, num_tickets=3)
         self._setup_fixtures(sent_at=datetime(2014, 1, 2, 0, 0, 0), prefix='TC', num_events=11, num_tickets=7)
         self._setup_fixtures(sent_at=datetime(2014, 1, 2, 6, 0, 0), prefix='TD', num_events=13, num_tickets=11)
-        self._callFUT(self.session, now=datetime(2014, 1, 1, 6, 0, 0), work_dir=self.work_dir)
+        self._callFUT(session=self.session, now=datetime(2014, 1, 1, 6, 0, 0), work_dir_base=self.work_dir_base)
+        work_dir = os.path.join(self.work_dir_base, 'www.example.com--foo-TERMINAL-PASSWORD')
         refund_event_file_name = '20140102_TPBKOEN.dat'
         refund_ticket_file_name = '20140102_TPBTICKET.dat'
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_event_file_name)))
-        self.assertTrue(os.path.exists(os.path.join(self.work_dir, refund_ticket_file_name)))
-        zip_file_path = os.path.join(self.work_dir, '20140102.zip')
+        self.assertTrue(os.path.exists(os.path.join(work_dir, 'archive.txt')))
+        self.assertTrue(os.path.exists(os.path.join(work_dir, refund_event_file_name)))
+        self.assertTrue(os.path.exists(os.path.join(work_dir, refund_ticket_file_name)))
+        zip_file_path = os.path.join(work_dir, '20140102.zip')
         self.assertTrue(os.path.exists(zip_file_path))
         z = EnhZipFile(zip_file_path, 'r')
         self.assertEqual(set(z.namelist()), {

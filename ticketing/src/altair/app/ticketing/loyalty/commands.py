@@ -431,7 +431,8 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .filter(Order.canceled_at == None) \
             .filter(Order.refunded_at == None) \
             .filter(Order.refund_id == None) \
-            .filter(Order.paid_at != None)
+            .filter(Order.paid_at != None) \
+            .filter(Order.manual_point_grant == False) # Only select auto grant mode
         if start_date:
             query = query.filter(Performance.start_on >= start_date)
         if end_date:
@@ -442,10 +443,11 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         for order in orders:
             point_grant_history_entries_by_type = {}
             for point_grant_history_entry in order.point_grant_history_entries:
-                point_grant_history_entries = point_grant_history_entries_by_type.get(point_grant_history_entry.user_point_account.type)
-                if point_grant_history_entries is None:
-                    point_grant_history_entries = point_grant_history_entries_by_type[point_grant_history_entry.user_point_account.type] = []
-                point_grant_history_entries.append(point_grant_history_entry)
+                if point_grant_history_entry.edited_by is None: # Skip manual grant mode
+                    point_grant_history_entries = point_grant_history_entries_by_type.get(point_grant_history_entry.user_point_account.type)
+                    if point_grant_history_entries is None:
+                        point_grant_history_entries = point_grant_history_entries_by_type[point_grant_history_entry.user_point_account.type] = []
+                    point_grant_history_entries.append(point_grant_history_entry)
 
             point_by_type = calculate_point_for_order(order)
             user_point_accounts = order.user_id and DBSession.query(UserPointAccount).filter_by(user_id=order.user_id).all()

@@ -3,6 +3,11 @@
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from markupsafe import Markup
 from .models import PointGrantStatusEnum
+from altair.app.ticketing.helpers import dt
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 point_types = {
     UserPointAccountTypeEnum.Rakuten.v: u'楽天スーパーポイント'
@@ -20,6 +25,12 @@ grant_statuses = {
     PointGrantStatusEnum.NoSuchReasonCode.v:           u'事由コード該当なし',
     PointGrantStatusEnum.KeyAlreadyExists.v:           u'同じ参照キーとサブキーの組み合わせで付与済み',
     }
+
+def format_granted_at(granted_at_value):
+    if granted_at_value:
+        return dt.japanese_datetime(granted_at_value)
+    else:
+        return u'未'
 
 def format_point_type(type_value):
     retval = None
@@ -40,3 +51,15 @@ def format_grant_status(grant_status_value):
             return Markup(u'<span class="error">%s (%s)</span>' % (s, grant_status_value))
         else:
             return Markup(u'<span class="error">不明なステータスコード (%s)</span>' % (grant_status_value))
+
+def format_grant_mode(manual_grant_value):
+    if manual_grant_value:
+        return u'手動'
+    else:
+        return u'自動'
+
+def point_already_granted(grant_status_value):
+    if grant_status_value is not None:
+        return True
+    else:
+        return False

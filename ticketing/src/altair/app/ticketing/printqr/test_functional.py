@@ -265,7 +265,7 @@ def qrsigned_from_token(token):
 
 
 ## todo: assertion strictly
-class BaseTests(unittest.TestCase):
+class BaseTestMixin(object):
     @classmethod
     def setUpClass(cls):
         cls.config = testing.setUp()
@@ -282,12 +282,12 @@ class BaseTests(unittest.TestCase):
         reset_issuer()
         transaction.abort()
 
-class QRTestsWithSeat(BaseTests):
+class QRTestsWithSeat(unittest.TestCase, BaseTestMixin):
     TOKEN_ID = 19999
     DRAWING_DATA = "drawing-data-for-svg"
     @classmethod
     def setUpClass(cls):
-        BaseTests.setUpClass()
+        BaseTestMixin.setUpClass()
 
         from altair.app.ticketing.models import DBSession
         from altair.app.ticketing.core.models import Seat
@@ -371,12 +371,12 @@ class QRTestsWithSeat(BaseTests):
         self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
 
-class QRTestsWithoutSeat(BaseTests):
+class QRTestsWithoutSeat(unittest.TestCase, BaseTestMixin):
     TOKEN_ID = 9999
     DRAWING_DATA = "drawing-data-for-svg"
     @classmethod
     def setUpClass(cls):
-        BaseTests.setUpClass()
+        BaseTestMixin.setUpClass()
 
         from altair.app.ticketing.models import DBSession
         operator = setup_operator()
@@ -400,6 +400,9 @@ class QRTestsWithoutSeat(BaseTests):
         cls.budnle = property(lambda self: DBSession.merge(bundle))
         cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
         transaction.commit()
+
+    def tearDown(self):
+        BaseTestMixin.tearDown(self)
 
     def test_ticketdata_from_qrsigned_string__success(self):
         def _getTarget():

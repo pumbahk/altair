@@ -456,6 +456,11 @@ class Performances(BaseView):
                 performance.setting.order_limit = f.order_limit.data
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+
+                original = Performance.query.filter_by(id=self.request.POST['original_id']).first()
+                if original is not None:
+                    if original.orion is not None:
+                        performance.orion = OrionPerformance.clone(original.orion, False, [ 'performance_id' ])
             else:
                 try:
                     query = Performance.query.filter_by(id=performance.id)
