@@ -161,7 +161,6 @@ def _elect_lots_task(context, message, lot, work, history):
     request = context.request
     ## XXX: ワーカーがシングルスレッドなので使えるが...
     request.session['order'] = {'order_no': work.lot_entry_no}
-    request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
     wish_id = wish.id
 

@@ -187,7 +187,8 @@ class MultiCheckoutPlugin(object):
         if card_number:
             card_brand = detect_card_brand(request, card_number)
 
-        checkout_sales_result = self._finish2_inner(request, cart)
+        organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
+        checkout_sales_result = self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
 
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
@@ -203,7 +204,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def finish2(self, request, order_like):
         # finish2 では OrderLike から organization を取得する
-        organization = order_like.sales_segment.sales_segment_group.organization
+        organization = c_models.Organization.query.filter_by(id=order_like.organization_id).one()
         self._finish2_inner(request, order_like, override_name=organization.setting.multicheckout_shop_name)
 
     def _finish2_inner(self, request, order_like, override_name=None):
