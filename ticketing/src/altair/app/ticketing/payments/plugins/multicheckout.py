@@ -277,8 +277,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def refresh(self, request, order):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
-        override_name = None if hasattr(request, 'altair_checkout3d_override_shop_name') else organization.setting.multicheckout_shop_name
-        multicheckout_api = get_multicheckout_3d_api(request, override_name)
+        multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = get_order_no(request, order)
 
         if order.is_inner_channel:
