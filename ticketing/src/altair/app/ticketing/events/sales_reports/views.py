@@ -45,16 +45,11 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.index', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index_post(self):
         form = SalesReportForm(self.request.params)
-        if form.validate():
-            event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
-            return {
-                'form':form,
-                'event_total_reporter':event_total_reporter,
-                }
-        else:
-            return {
-                'form':form,
-                }
+        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
+        return {
+            'form':form,
+            'event_total_reporter':event_total_reporter,
+            }
 
     @view_config(route_name='sales_reports.event', renderer='altair.app.ticketing:templates/sales_reports/event.html')
     def event(self):

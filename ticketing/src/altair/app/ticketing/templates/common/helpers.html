@@ -22,7 +22,7 @@
 </%doc>
 <%def name="validate_errors(f)">
   % for error in f.errors:
-    <span class="help-inline">${error}</span>
+    <span class="help-inline">${error}</span> 
   % endfor
 </%def>
 
@@ -64,7 +64,7 @@
   % endif
 </%def>
 
-<%def name="form_item(item, help=None, label=True, error_next_line=False, **options)">
+<%def name="form_item(item, help=None, label=None, **options)">
   <% from wtforms.widgets import CheckboxInput %>
   <% from altair.formhelpers import CheckboxMultipleSelect %>
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
@@ -76,46 +76,27 @@
     % if isinstance(item.widget, CheckboxInput):
       <div class="controls">
         ${item(**options)}
-
-        %if label:
         <label class="${u' '.join(classes + [u'inline'])}" for="${item.id}">
           ${(help or u'')|n}
-          ${label if label and label is not True else item.label.text}
+          ${label or item.label.text}
         </label>
-        %endif
-
-        %if error_next_line:
-        <br/>
-        %endif
-
         ${validate_errors(item)}
       </div>
     % elif isinstance(item.widget, CheckboxMultipleSelect):
-
-      %if label:
       <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">
         ${(help or u'')|n}
-        ${label if label and label is not True else item.label.text}
+        ${label or item.label.text}
       </label>
-      %endif
-
       <div class="controls">
         ${item(**options)}
-        %if error_next_line:
-        <br/>
-        %endif
         ${validate_errors(item)}
       </div>
     % else:
       % if item.type != 'HiddenField':
-
-        %if label:
         <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">
           ${(help or u'')|n}
-          ${label if label and label is not True else item.label.text}
+          ${label or item.label.text}
         </label>
-        %endif
-
       % endif
       <% add_on = options.pop('add_on', None) %>
       <% counter = options.pop('counter', None) %>
@@ -135,9 +116,6 @@
           });
         </script>
         % endif
-        %if error_next_line:
-        <br/>
-        %endif
         ${validate_errors(item)}
       </div>
     % endif
