@@ -200,7 +200,6 @@ def build_multipart(params):
     payload = fp.getvalue()
     if payload[-1] != '\n':
         payload += '\n'
-    payload = payload.replace('\n', '\r\n')
     return payload, dict(p for p in m.items() if p[0].lower() != 'mime-version')
 
 class MyPasswdMgr(urllib2.HTTPPasswordMgr):
