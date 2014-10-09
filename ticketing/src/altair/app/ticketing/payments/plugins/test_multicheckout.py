@@ -21,14 +21,18 @@ def _setup_test_db(config):
         session.bind
         )
     from altair.app.ticketing.core.models import Host, Organization, OrganizationSetting
-    org = Organization(short_name='TEST')
-    host = Host(host_name='example.com:80')
-    settings = OrganizationSetting(cart_item_name=u'テストテスト')
-    host.organization = org
-    settings.organization = org
-    session.add(org)
+    organization = Organization(id=1, short_name='TEST')
+    host = Host(
+        organization=organization,
+        host_name='example.com:80'
+        )
+    settings = OrganizationSetting(
+        organization=organization,
+        cart_item_name=u'テストテスト'
+        )
+    session.add(organization)
     session.flush()
-    return session
+    return session, organization
 
 
 class MultiCheckoutViewTests(unittest.TestCase):
@@ -36,7 +40,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.config = testing.setUp()
         self._register_dummy_card_brand_detector()
         self._register_cart_interface()
-        self.session = _setup_test_db(self.config)
+        self.session, self.organization = _setup_test_db(self.config)
         from altair.sqlahelper import register_sessionmaker_with_engine
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -401,7 +405,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
 class MultiCheckoutPluginTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.session = _setup_test_db(self.config)
+        self.session, self.organization = _setup_test_db(self.config)
         from altair.sqlahelper import register_sessionmaker_with_engine
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -466,6 +470,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         cart_id = 500
         dummy_cart = cart_models.Cart(
             id=cart_id,
+            organization_id=1,
             performance=core_models.Performance(id=100, name=u'テスト公演'),
             products=[],
             is_expired=lambda self, *args: False,
@@ -544,6 +549,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"9999999999",
+            organization_id=1,
             total_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
@@ -625,6 +631,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             id=cart_id,
             name=u"9999999999",
             total_amount=1234,
+            organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
             is_expired=lambda self, *args: False,
@@ -705,6 +712,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             id=cart_id,
             name=u"9999999999",
             total_amount=1234,
+            organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
             is_expired=lambda self, *args: False,
@@ -760,3 +768,63 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             target.finish(request, dummy_cart)
         self.assertEqual(m.exception.error_code, None)
         self.assertFalse(request_card_cancel_auth.called)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales_part_cancel')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_inquiry')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_refresh_success(self, save_api_response, get_multicheckout_impl, request_card_inquiry, request_card_sales_part_cancel, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        from altair.app.ticketing.core import models as core_models
+        from altair.app.ticketing.orders import models as orders_models
+
+        order = orders_models.Order(
+            organization_id=1,
+            items=[
+                orders_models.OrderedProduct(
+                    price=10,
+                    product=core_models.Product(price=10),
+                    quantity=1,
+                    elements=[
+                        orders_models.OrderedProductItem(
+                            price=10,
+                            product_item=core_models.ProductItem(price=10),
+                            quantity=1,
+                            tokens=[
+                                orders_models.OrderedProductItemToken(valid=True)
+                                ],
+                            seats=[]
+                            )
+                        ]
+                    )
+                ],
+            total_amount=10
+            )
+        get_multicheckout_impl.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/',
+            api_timeout=90,
+            )
+        request_card_inquiry.return_value = mc_models.MultiCheckoutInquiryResponseCard(
+            CmnErrorCd='000000',
+            Status=str(mc_models.MultiCheckoutStatusEnum.Settled),
+            SalesAmount=15
+            )
+        request_card_sales_part_cancel.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+
+        request = DummyRequest()
+        target = self._makeOne()
+
+        try:
+            target.refresh(request, order)
+            self.assertTrue(True)
+        except Exception as e:
+            raise
+            self.fail()
+        self.assertTrue(request_card_sales_part_cancel.called)

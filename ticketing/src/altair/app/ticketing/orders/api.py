@@ -764,7 +764,6 @@ def refresh_order(request, session, order):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
                         % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name, order.payment_delivery_pair.delivery_method.name))
     os = order.organization.setting
-    request.altair_checkout3d_override_shop_name = os.multicheckout_shop_name
     payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
     if payment_delivery_plugin is not None:
         logger.info('payment_delivery_plugin.refresh')
