@@ -119,11 +119,14 @@ def refund_order():
                 send_refund_error_mail(request, refund, error_message)
             transaction.commit()
     except Exception as e:
-        logging.error('failed to refund orders (%s)' % e.message)
+        logging.error('failed to refund orders', exc_info=True)
         transaction.abort()
 
     from altair.app.ticketing.sej.refund import stage_refund_zip_files
-    stage_refund_zip_files(registry, now)
+    try:
+        stage_refund_zip_files(registry, now)
+    except:
+        logging.error('failed to create refund zip files', exc_info=True)
     logging.info('end refund_order batch')
 
 def detect_fraud():
