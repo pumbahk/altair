@@ -14,6 +14,7 @@ from . import helpers as h
 import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView as _BaseView
@@ -318,8 +319,8 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
-            lots_cart_now_url=self.context.lots_cart_now_url, 
-            agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url, 
+            lots_cart_now_url=self.context.lots_cart_now_url,
+            agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url,
             product_grid=product_grid,
             h=h,
             )
@@ -362,8 +363,10 @@ class Lots(BaseView):
             for s in stock_types
         ]
         performances = event.performances
+        dthelper = DateTimeHelper(create_date_time_formatter(self.request))
+
         performance_choices = [
-            (p.id, u"{0.name} {0.start_on}".format(p))
+            (p.id, u"{0} {1}".format(dthelper.datetime(p.start_on, with_weekday=True), p.name))
             for p in performances
         ]
         form = ProductForm(formdata=self.request.POST)
@@ -666,7 +669,7 @@ class LotEntries(BaseView):
             entry_no = None
             wish_order = None
             try:
-                status = row[u'状態'] 
+                status = row[u'状態']
                 entry_no = row[u'申し込み番号']
                 wish_order = row[u'希望順序']
                 if not (status and entry_no and wish_order):
