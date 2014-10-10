@@ -606,11 +606,6 @@ def cancel_order(request, order, now=None):
     payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
 
-    # インナー予約の場合はAPI決済していないのでスキップ
-    # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-    if order.is_inner_channel and payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
-        warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
-
     payment_delivery_plugin = get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id)
     payment_plugin = get_payment_plugin(request, payment_plugin_id)
     delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
@@ -621,9 +616,16 @@ def cancel_order(request, order, now=None):
         if payment_plugin is None and delivery_plugin is None:
             raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
 
+    # インナー予約の場合はAPI決済していないのでスキップ
+    # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
+    if order.is_inner_channel and payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
+        payment_plugin = None
+
     # 入金済みなら決済をキャンセル
     try:
-        payment_plugin.cancel(request, order)
+        if payment_plugin is not None:
+            payment_plugin.cancel(request, order)
         if delivery_plugin is not None:
             delivery_plugin.cancel(request, order)
     except PaymentPluginException:
