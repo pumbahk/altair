@@ -8,7 +8,7 @@ from altair.app.ticketing.core.models import Event, Product
 from altair.app.ticketing.lots.models import Lot, LotEntry
 from altair.app.ticketing.carturl.api import (
     get_lots_cart_url_builder,
-    get_agreement_lots_cart_url_builder, 
+    get_agreement_lots_cart_url_builder,
     get_cart_now_url_builder
 )
 
@@ -71,6 +71,14 @@ class LotResource(AbstractLotResource):
     def agreement_lots_cart_now_url(self):
         return get_cart_now_url_builder(self.request).build(self.request, self.agreement_lots_cart_url, self.event.id if self.event else None)
 
+
+class LotViewResource(LotResource):
+    def __init__(self, request, lot_id):
+        super(LotResource, self).__init__(request)
+        try:
+            self.lot_id = long(lot_id)
+        except (TypeError, ValueError):
+            raise HTTPNotFound
 
 class LotEntryResource(AbstractLotResource):
     def __init__(self, request):
