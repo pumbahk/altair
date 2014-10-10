@@ -138,10 +138,10 @@ class SejRefundRecordProvider(object):
 
     def get_refund_events_for(self, nwts_info):
         self._populate_refund_events()
-        return self._refund_events[nwts_info]
+        return self._refund_events.get(nwts_info, [])
 
     def get_refund_tickets_for(self, nwts_info):
-        return self._refund_tickets[nwts_info]
+        return self._refund_tickets.get(nwts_info, [])
 
 def encode_to_sjis(row):
     encoded = []
