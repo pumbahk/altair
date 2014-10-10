@@ -327,6 +327,7 @@ def stage_refund_zip_files(registry, now):
     except:
         sej_session.rollback()
         raise
+    sej_session.commit()
 
 def send_refund_file(registry, nwts_info, zip_file_path):
     factory = get_nwts_uploader_factory(registry)
