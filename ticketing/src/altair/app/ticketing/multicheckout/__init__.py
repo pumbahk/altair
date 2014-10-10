@@ -25,7 +25,7 @@ def get_multicheckout_setting(request, override_name=None, organization_id=None)
         os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
     else:
         if organization_id != None:
-            os = core_Models.OrganizationSetting.query.filter_by(organization_id=organization_id).one()
+            os = core_models.OrganizationSetting.query.filter_by(organization_id=organization_id).one()
         else:
             organization = cart_api.get_organization(request)
             os = organization.setting

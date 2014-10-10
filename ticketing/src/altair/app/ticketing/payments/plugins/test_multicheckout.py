@@ -828,3 +828,78 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             raise
             self.fail()
         self.assertTrue(request_card_sales_part_cancel.called)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_validate_success(self, save_api_response, get_multicheckout_impl, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        from altair.app.ticketing.core import models as core_models
+        from altair.app.ticketing.orders import models as orders_models
+        status = mc_models.MultiCheckoutOrderStatus(
+            OrderNo='000000000000',
+            Status=str(mc_models.MultiCheckoutStatusEnum.Authorized)
+            )
+        self.session.add(status)
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            name=u"99999999",
+            total_amount=1234,
+            organization_id=1,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self, *args: False,
+            finished_at=None,
+            order_no='000000000000',
+            payment_delivery_pair=testing.DummyModel(id=1),
+        )
+        dummy_cart.finish = lambda: None
+
+        request = DummyRequest()
+        target = self._makeOne()
+
+        try:
+            target.validate(request, dummy_cart)
+            self.assertTrue(True)
+        except Exception as e:
+            raise
+            self.fail()
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_validate_fail(self, save_api_response, get_multicheckout_impl, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        from altair.app.ticketing.core import models as core_models
+        from altair.app.ticketing.orders import models as orders_models
+        status = mc_models.MultiCheckoutOrderStatus(
+            OrderNo='000000000000',
+            Status=str(mc_models.MultiCheckoutStatusEnum.NotAuthorized)
+            )
+        self.session.add(status)
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            name=u"99999999",
+            total_amount=1234,
+            organization_id=1,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self, *args: False,
+            finished_at=None,
+            order_no='000000000000',
+            payment_delivery_pair=testing.DummyModel(id=1),
+        )
+        dummy_cart.finish = lambda: None
+
+        request = DummyRequest()
+        target = self._makeOne()
+
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure):
+            target.validate(request, dummy_cart)
+
+

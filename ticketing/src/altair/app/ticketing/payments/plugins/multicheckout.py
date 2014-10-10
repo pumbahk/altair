@@ -166,7 +166,8 @@ class MultiCheckoutPlugin(object):
     def validate(self, request, cart):
         """ 確定前の状態確認 """
         order_no = get_order_no(request, cart)
-        multicheckout_api = get_multicheckout_3d_api(request)
+        organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
+        multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order_no)
         # オーソリ済みであること
         if status is None or status.Status is not None and status.Status != str(MultiCheckoutStatusEnum.Authorized):
