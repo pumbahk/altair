@@ -15,6 +15,7 @@ from .resources import LotViewResource
 import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView as _BaseView
@@ -373,8 +374,10 @@ class Lots(BaseView):
             for s in stock_types
         ]
         performances = event.performances
+        dthelper = DateTimeHelper(create_date_time_formatter(self.request))
+
         performance_choices = [
-            (p.id, u"{0.name} {0.start_on}".format(p))
+            (p.id, u"{0} {1}".format(dthelper.datetime(p.start_on, with_weekday=True), p.name))
             for p in performances
         ]
         form = ProductForm(formdata=self.request.POST)
