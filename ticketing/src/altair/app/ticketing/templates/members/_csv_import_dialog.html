@@ -5,7 +5,7 @@
     <h3>CSVインポート</h3>
   </div>
 
- <form method="POST" action="${request.route_path("members.member",membership_id=membership_id,action="csv_import")}",
+ <form class="import-membes-form" method="POST" action="${request.route_path("members.member",membership_id=membership_id,action="csv_import")}",
        enctype="multipart/form-data">
   <div class="modal-body">
 以下のような形式のcsvを受け取ります。
@@ -25,3 +25,9 @@
     <input class="btn btn-primary" type="submit" name="submit" value="csvからimport">
   </div>
  </form>
+
+<script>
+  (function () {
+      $(".import-membes-form").disableOnSubmit();
+  })();
+</script>
