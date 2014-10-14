@@ -78,8 +78,7 @@ class MailMagazinesView(BaseView):
             self.request.session.flash(u'メールマガジンを追加しました')
             return HTTPFound(location=self.request.route_path('mailmags.index'))
         return dict(
-            mailmag=mailmag,
-            mailmag_form=mailmag_form
+            mailmag_form=mailmag_form,
             )
 
     @view_config(route_name='mailmags.show', renderer='altair.app.ticketing:templates/mailmags/show.html')
