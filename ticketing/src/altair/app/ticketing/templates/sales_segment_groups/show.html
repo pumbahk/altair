@@ -97,7 +97,7 @@ ${ch.breadcrumbs(
             </td>
             <td>
               %if sales_segment.performance is not None:
-                ${vh.datetime(sales_segment.performance.start_on)}
+                ${vh.datetime(sales_segment.performance.start_on, with_weekday=True)}
               %else:
                 -
               %endif
