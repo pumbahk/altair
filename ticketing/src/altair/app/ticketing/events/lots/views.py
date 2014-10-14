@@ -11,6 +11,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer, render_to_response
 from pyramid_mailer import get_mailer
 from . import helpers as h
+from .resources import LotViewResource
 import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
@@ -118,11 +119,21 @@ class Lots(BaseView):
         if event is None:
             return HTTPNotFound()
 
+        import copy
+        from .resources import LotResource
+        def _lot_view_resource_factory(lot):
+
+            req = copy.deepcopy(self.request)
+            req.matchdict['lot_id'] = lot.id
+            return LotResource(req)
+
         lots = slave_session.query(Lot).filter(Lot.event_id==event.id).all()
+        lotid_viewresource = dict((lot.id, LotViewResource(self.request, lot.id)) for lot in lots)
 
         return dict(
             event=event,
             lots=lots,
+            lotid_viewresource=lotid_viewresource,
             h=h,
             )
 
@@ -318,8 +329,8 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
-            lots_cart_now_url=self.context.lots_cart_now_url, 
-            agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url, 
+            lots_cart_now_url=self.context.lots_cart_now_url,
+            agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url,
             product_grid=product_grid,
             h=h,
             )
@@ -666,7 +677,7 @@ class LotEntries(BaseView):
             entry_no = None
             wish_order = None
             try:
-                status = row[u'状態'] 
+                status = row[u'状態']
                 entry_no = row[u'申し込み番号']
                 wish_order = row[u'希望順序']
                 if not (status and entry_no and wish_order):
