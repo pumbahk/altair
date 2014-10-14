@@ -131,12 +131,12 @@ class PointGrantSettings(BaseView):
 
     @view_config(route_name='point_grant_settings.delete_confirm', renderer='altair.app.ticketing:templates/point_grant_settings/_delete_confirm.html', xhr=True)
     def delete_confirm(self):
-        point_grant_setting_ids = [long(id) for id in self.request.POST.getall('point_grant_setting_id')]
+        point_grant_setting_ids = [long(id) for id in self.request.POST.getall('point_grant_setting_id[]')]
         return dict(point_grant_settings=PointGrantSetting.query.filter(PointGrantSetting.id.in_(point_grant_setting_ids)))
 
     @view_config(route_name='point_grant_settings.delete', renderer='altair.app.ticketing:templates/refresh.html', xhr=True)
     def delete(self):
-        point_grant_setting_ids = [long(id) for id in self.request.POST.getall('point_grant_setting_id')]
+        point_grant_setting_ids = [long(id) for id in self.request.POST.getall('point_grant_setting_id[]')]
         PointGrantSetting.query.filter(PointGrantSetting.id.in_(point_grant_setting_ids)).update(dict(deleted_at=datetime.now()), synchronize_session=False)
         return {}
 
