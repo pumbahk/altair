@@ -48,6 +48,7 @@ class SalesReportSearchForm(OurForm):
     event_to = OurDateTimeField(
         label=u'公演期間',
         validators=[Optional(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
     event_start_from = OurDateTimeField(
@@ -58,6 +59,7 @@ class SalesReportSearchForm(OurForm):
     event_start_to = OurDateTimeField(
         label=u'公演開始日',
         validators=[Optional(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
     event_end_from = OurDateTimeField(
@@ -68,6 +70,7 @@ class SalesReportSearchForm(OurForm):
     event_end_to = OurDateTimeField(
         label=u'公演終了日',
         validators=[Optional(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
 
@@ -79,6 +82,7 @@ class SalesReportSearchForm(OurForm):
     limited_to = OurDateTimeField(
         label=u'絞り込み期間',
         validators=[Optional(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
 
