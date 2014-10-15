@@ -25,6 +25,83 @@ def validate_report_type(event_id, report_type):
             raise ValidationError(u'レポート対象が多すぎます。レポート内容で"合計"を選択してください。')
 
 
+class SalesReportSearchForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(SalesReportSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    def _get_translations(self):
+        return Translations()
+
+    event_title = TextField(
+        label=u'イベント名',
+        validators=[Optional()],
+    )
+
+    event_from = OurDateTimeField(
+        label=u'公演期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_to = OurDateTimeField(
+        label=u'公演期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_start_from = OurDateTimeField(
+        label=u'公演開始日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_start_to = OurDateTimeField(
+        label=u'公演開始日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_end_from = OurDateTimeField(
+        label=u'公演終了日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_end_to = OurDateTimeField(
+        label=u'公演終了日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+
+    limited_from = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    limited_to = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+
+    report_type = HiddenField(
+        validators=[Optional()],
+        default=ReportTypeEnum.Detail.v[0],
+    )
+
+    recipient = TextField(
+        label=u'送信先',
+        validators=[MultipleEmail()],
+    )
+
+    def validate_report_type(form, field):
+        if field.data:
+            validate_report_type(form.event_id.data, int(field.data))
+
+    def is_detail_report(self):
+        if not self.report_type.data:
+            self.report_type.data = self.report_type.default
+        return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
+
+
 class SalesReportForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
