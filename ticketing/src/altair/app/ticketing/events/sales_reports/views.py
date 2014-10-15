@@ -19,7 +19,12 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, ReportSetting, ReportRecipient
 from altair.app.ticketing.core.models import Performance
-from altair.app.ticketing.events.sales_reports.forms import SalesReportForm, ReportSettingForm
+from altair.app.ticketing.events.sales_reports.forms import (
+    SalesReportSearchForm,
+    SalesReportForm,
+    ReportSettingForm,
+    )
+
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, sendmail
 from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 
@@ -31,7 +36,7 @@ class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
-        form = SalesReportForm()
+        form = SalesReportSearchForm()
         now = datetime.now()
         if not form.event_from.data:
             form.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
@@ -44,7 +49,7 @@ class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.index', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index_post(self):
-        form = SalesReportForm(self.request.params)
+        form = SalesReportSearchForm(self.request.params)
         if form.validate():
             event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
             return {
