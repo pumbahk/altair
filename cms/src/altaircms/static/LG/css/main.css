@@ -105,7 +105,7 @@ padding:0;
 .fll{ float: left !important; }
 
 body {
-background:#FFFCE1;
+background:#FFF;
 font-size:12px;
 height:100%;
 font-family:"Helvetica Neue",Helvetica,Meiryo,メイリオ,HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif;
@@ -217,7 +217,7 @@ background-color:#dbced0;
 }
 
 .header {
-background:#1C1F89;
+background:#FFF;
 height:82px;
 width:100%;
 position:relative;
