@@ -35,6 +35,7 @@
     });
 
     $("#modal-stock_type #fill_color").decentcolorpicker();
+    $("form").disableOnSubmit();
   });
 </script>
 
@@ -43,9 +44,9 @@
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>席種</h3>
   </div>
+  <form action="javascript:save_stock_type();" method="POST">
+    <div class="modal-body">
 
-  <div class="modal-body">
-    <form action="javascript:save_stock_type();" method="POST">
       ${ch.form_item(form.id)}
       ${ch.form_item(form.event_id)}
       ${ch.form_item(form.name, style='display: block;', maxlength=255)}
@@ -62,11 +63,12 @@
         ${ch.form_item(form.fill_color, class_='span3')}
       </div>
       ${ch.form_item(form.description)}
-    </form>
-  </div>
 
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void($('#modal-stock_type').find('form').submit());" class="btn">保存</a>
-  </div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+      <input type="submit" value="保存" href="javascript:void($('#modal-stock_type').find('form').submit());" class="btn" />
+    </div>
+  </form>
 </div>

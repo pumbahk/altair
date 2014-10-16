@@ -92,9 +92,9 @@ class SalesTotalReporter(object):
         self.calculate_total()
 
     def add_form_filter(self, query):
-        if self.form.performance_id.data:
+        if hasattr(self.form, 'performance_id') and self.form.performance_id.data:
             query = query.filter(Performance.id==self.form.performance_id.data)
-        if self.form.event_id.data:
+        if hasattr(self.form, 'event_id') and self.form.event_id.data:
             query = query.filter(Event.id==self.form.event_id.data)
         return query
 

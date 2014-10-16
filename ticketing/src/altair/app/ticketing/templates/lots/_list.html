@@ -1,4 +1,4 @@
-<%page args="lots, limit=None" />
+<%page args="lots, lotid_viewresource, limit=None" />
 %if not lots:
 <p>
   登録されている抽選はありません。
@@ -17,10 +17,15 @@
             <th>申込上限</th>
             <th>抽選結果発表予定日</th>
             <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
           </tr>
         </thead>
         <tbody>
           %for lot in sorted(lots, key=lambda x:(x.start_at, x.end_at, x.lotting_announce_datetime, x.id)):
+          <%
+             resource = lotid_viewresource[lot.id]
+             %>
           <tr>
             <td><input type="checkbox" name="lot_id" value="${lot.id}"/></td>
             <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
@@ -30,6 +35,14 @@
               % if h.timezone_label(lot):
                 (${h.timezone_label(lot)})
               % endif
+            </td>
+            <td>
+              <a href="${resource.lots_cart_url}">申込画面</a>
+              <a href="${resource.lots_cart_now_url}">(時間指定)</a>
+            </td>
+            <td>
+              <a href="${resource.agreement_lots_cart_url}">同意画面</a>
+              <a href="${resource.agreement_lots_cart_now_url}">(時間指定)</a>
             </td>
             <td>
               <div class="btn-group">

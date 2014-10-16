@@ -841,7 +841,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             OrderNo='000000000000',
             Status=str(mc_models.MultiCheckoutStatusEnum.Authorized)
             )
-        self.session.add(status)
+        mc_models._session.add(status)
+        mc_models._session.flush()
         cart_id = 500
         dummy_cart = testing.DummyModel(
             id=cart_id,
@@ -879,7 +880,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             OrderNo='000000000000',
             Status=str(mc_models.MultiCheckoutStatusEnum.NotAuthorized)
             )
-        self.session.add(status)
+        mc_models._session.add(status)
+        mc_models._session.flush()
         cart_id = 500
         dummy_cart = testing.DummyModel(
             id=cart_id,

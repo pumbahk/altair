@@ -52,7 +52,7 @@ tr.highlighted td.name:before {
     % if point_grant_settings:
       % for i, pgs in enumerate(sorted(point_grant_settings)):
     <tr${u' class="highlighted"' if pgs.applicable_to(request.now) and pgs.target_products else u''|n}>
-      <td><input type="checkbox" name="point_grant_setting_id" value="${pgs.id}" /></td>
+      <td><input type="checkbox" name="point_grant_setting_id[]" value="${pgs.id}" /></td>
       <td class="name"><a href="${request.route_path('point_grant_settings.show', point_grant_setting_id=pgs.id)}">${pgs.name}</a></td>
       <td>${lh.format_point_type(pgs.type)}</td>
       <td>${vh.price(pgs.fixed) if pgs.fixed else u'-'}</td>
