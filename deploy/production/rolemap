@@ -24,6 +24,7 @@ btmv1.1c.vpc.altr	batch
 btmv1.1a.vpc.altr	worker
 samv1.1c.vpc.altr	newsletter
 apvv1.1c.vpc.altr	adminapp
+apvv1.1a.vpc.altr	adminapp
 apcv1.1c.vpc.altr	sej
 apsv1.1b.vpc.altr	solr
 # vim: noet
