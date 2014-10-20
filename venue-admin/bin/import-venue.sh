@@ -83,7 +83,7 @@ fi
 echo -n "Starting venue_import at " && date
     cat ${DEPLOY_ROOT}/bin/venue_import | \
     sed "s/^if /import codecs\nsys.stdout = codecs.EncodedFile(sys.stdout, 'utf_8')\nif /" | \
-    env LC_CTYPE=en_US.UTF-8 python - \
+    env LC_ALL=en_US.UTF-8 python - \
 	-A 10 -O ${ORG} -U ${BACKEND_DIRNAME}/ \
 	${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini \
 	${BACKEND_XML} 2>&1
