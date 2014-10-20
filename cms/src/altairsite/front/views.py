@@ -131,7 +131,7 @@ def smartphone_rendering_page(context, request):
         return HTTPFound(request.route_path("smartphone.detail", _query=query))
     if page.pageset.url.startswith("special"):
         return _rendering_page(context, request, control, page)
-    if page.pageset.genre_id:
+    if page.pageset.genre_id and page.pageset.url:
         return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
     else:
         return smartphone_dispatch_view(context, request)
