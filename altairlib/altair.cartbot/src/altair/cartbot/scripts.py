@@ -1,3 +1,4 @@
+# encoding: utf-8
 from gevent import monkey
 monkey.patch_time()
 monkey.patch_socket()
@@ -95,6 +96,7 @@ def main():
     parser.add_argument('-l', '--logging', dest='logging', action='store_true',
                         help="Use Python's logging facility instead of print")
     parser.add_argument('-n', '--repeat', dest='repeat', help="Repeat n times")
+    parser.add_argument('-f', '--fail_percent', dest='fail_percent', help="Fail Percent 0 - 100, default = 0")
     parser.add_argument('-C', '--concurrency', dest='concurrency', help="Stress mode; make n concurrent requests")
     parser.add_argument('-r', '--retry-count', dest='retry_count', help='retry count')
     parser.add_argument('-s', '--sleep', dest='sleep_sec', type=float, default=HUMANIC_SLEEP_SECOND,
@@ -109,25 +111,37 @@ def main():
     repeat = 1
     concurrency = 1
     retry_count = None
+    fail_percent = 0
+
     if options.repeat:
         try:
             repeat = int(options.repeat)
         except:
-            parse.help()
+            parser.print_help()
             sys.exit(255)
 
     if options.concurrency:
         try:
             concurrency = int(options.concurrency)
         except:
-            parse.help()
+            parser.print_help()
             sys.exit(255)
 
     if options.retry_count:
         try:
             retry_count = int(options.retry_count)
         except:
-            parse.help()
+            parser.print_help()
+            sys.exit(255)
+
+    if options.fail_percent:
+        try:
+            fail_percent = int(options.fail_percent)
+            if fail_percent < 0 or fail_percent > 100:
+                parser.print_help()
+                sys.exit(255)
+        except:
+            parser.print_help()
             sys.exit(255)
 
     if options.logging:
@@ -158,6 +172,8 @@ def main():
         pass
 
     def run():
+        fail_num = 0
+
         for _ in range(repeat):
             bot = LoggableCartBot(
                 url = options.url[0],
@@ -168,9 +184,14 @@ def main():
                 http_auth_credentials=http_auth_credentials,
                 retry_count=retry_count,
                 sleep_sec=options.sleep_sec,
+                fail_percent=fail_percent,
                 )
             bot.log_output = options.logging 
             order_no = bot.buy_something()
+            if not order_no:
+                fail_num += 1
+
+            print u'進捗状況:' + str(_ + 1) + u'/' + str(repeat) + u'(Failed ' + str(fail_num) + u')'
 
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:

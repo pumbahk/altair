@@ -14,7 +14,6 @@ from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
 from cookielib import CookieJar
 
-
 class CartBotError(Exception):
     pass
 
@@ -379,6 +378,10 @@ class CartBot(object):
         elif path != '/cart/confirm':
             raise NotImplementedError(self.m.location)
 
+        if randint(0, 100) <= self.fail_percent:
+            self.print_(u'Operation was stopped!! (Fail Percent)')
+            return None
+
         self.wait()
         form = self.m.page.root.find('.//form[@id="form1"]')
         self.m.submit_form(form, submit=form.find('.//input[@id="btn-complete"]'))
@@ -399,7 +402,7 @@ class CartBot(object):
         time.sleep(self._sleep_sec)
 
     def __init__(self, url, shipping_address, credit_card_info, rakuten_auth_credentials=None,
-                 fc_auth_credentials=None, http_auth_credentials=None, cookiejar=None, sleep_sec=0):
+                 fc_auth_credentials=None, http_auth_credentials=None, cookiejar=None, sleep_sec=0, fail_percent=0):
         keychain = KeyChain()
 
         if cookiejar is None:
@@ -422,3 +425,4 @@ class CartBot(object):
         self.seat_type_choices_map = {}
         self.pdmp_choices_map = {}
         self._sleep_sec = float(sleep_sec)
+        self.fail_percent = fail_percent
