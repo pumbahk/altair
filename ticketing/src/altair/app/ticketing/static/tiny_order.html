@@ -32,6 +32,14 @@
     <td></td>
     <td style="text-align: right;"><%= system_fee %></td>
   </tr>
+  <% if (special_fee_name) { %>
+  <tr>
+    <td colspan="2"><%= special_fee_name %></td>
+    <td></td>
+    <td></td>
+    <td style="text-align: right;"><%= special_fee %></td>
+  </tr>
+  <% } %>
   <tr>
     <td colspan="2" class="span2"><strong>合計</strong></td>
     <td></td>

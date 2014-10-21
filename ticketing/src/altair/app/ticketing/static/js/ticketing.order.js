@@ -252,6 +252,7 @@ order.Order = Backbone.Model.extend({
     delivery_fee: 0,
     system_fee: 0,
     special_fee: 0,
+    special_fee_name: '',
     total_amount: 0,
     ordered_products: null
   },
