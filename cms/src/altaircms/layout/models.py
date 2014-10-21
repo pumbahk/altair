@@ -40,6 +40,12 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
             return qs.filter(sa.or_(Layout.pagetype_id==pagetype_id, Layout.pagetype_id==None))
         return transformation
 
+    @classmethod
+    def get_in_order(cls, pagetype_id):
+        def transformation(qs):
+            return qs.filter(sa.or_(Layout.pagetype_id==pagetype_id, Layout.pagetype_id==None)).order_by(Layout.display_order.asc(), Layout.id.asc())
+        return transformation
+
     @property
     def organization(self):
         if self.organization_id is None:

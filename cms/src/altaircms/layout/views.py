@@ -61,7 +61,7 @@ def layout_list_with_pagetype(context, request):
     pagetype_id = request.matchdict["pagetype_id"]
     pagetypes = request.allowable(PageType)
     current_pagetype = get_or_404(request.allowable(PageType), PageType.id==pagetype_id)
-    qs = request.allowable(Layout).with_transformation(Layout.applicable(pagetype_id))
+    qs = request.allowable(Layout).with_transformation(Layout.get_in_order(pagetype_id))
     layouts = h.paginate(request, qs, item_count=qs.count())
 
     form = forms.LayoutListForm()
