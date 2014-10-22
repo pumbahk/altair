@@ -22,7 +22,7 @@ apmv10.1a.vpc.altr	userapp-cart
 apmv10.1c.vpc.altr	userapp-cart
 btmv1.1c.vpc.altr	batch
 btmv1.1a.vpc.altr	worker
-samv1.1c.vpc.altr	newsletter
+apnl1.1a.vpc.altr	newsletter
 apvv1.1a.vpc.altr	venueadmin
 apcv1.1c.vpc.altr	sej
 apsv1.1b.vpc.altr	solr
