@@ -47,7 +47,7 @@ from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    # 決済系(楽天あんしん支払いサービス)
+    # 決済系(楽天ID決済)
     config.add_payment_plugin(CheckoutPlugin(), PAYMENT_PLUGIN_ID)
     config.add_route('payment.checkout.login', 'payment/checkout/login')
     config.add_route('payment.checkout.order_complete', 'payment/checkout/order_complete')
@@ -103,7 +103,7 @@ class CheckoutPlugin(object):
             submit = literal(
                 u'<input type="image" src="https://checkout.rakuten.co.jp/p/common/img/btn_check_01.gif?c9cc8c1b9ae94c18920540a80b95c16a" border="0">'
                 u'<br />'
-                u'※楽天あんしん支払いサービスへ移動します。'
+                u'※楽天ID決済へ移動します。'
             )
         return {
             'url':request.route_url('payment.checkout.login'),
@@ -157,7 +157,7 @@ class CheckoutPlugin(object):
             service.request_change_order([(order_like, order_like)])
         except AnshinCheckoutAPIError as e:
             raise CheckoutSettlementFailure(
-                message=u'あんしん決済の予約内容変更ができませんでした',
+                message=u'楽天ID決済の予約内容変更ができませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
                 error_code=order_like.error_code
@@ -170,7 +170,7 @@ class CheckoutPlugin(object):
             result = service.request_cancel_order([order_like])
         except AnshinCheckoutAPIError as e:
             raise CheckoutSettlementFailure(
-                message=u'あんしん決済をキャンセルできませんでした',
+                message=u'楽天ID決済をキャンセルできませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
                 error_code=order_like.error_code
@@ -205,14 +205,14 @@ def confirm_viewlet(context, request):
     """ 確認画面表示
     :param context: ICartPayment
     """
-    return Response(text=u"楽天あんしん支払いサービス")
+    return Response(text=u"楽天ID決済")
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def completion_viewlet(context, request):
     """ 完了画面表示
     :param context: IOrderPayment
     """
-    return Response(text=u"楽天あんしん支払いサービス")
+    return Response(text=u"楽天ID決済")
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/checkout_mail_complete.html")
 @view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/checkout_mail_complete.html")
@@ -229,7 +229,7 @@ def notice_viewlet(context, request):
 
 
 class CheckoutView(object):
-    """ 楽天あんしん支払いサービスへ遷移する """
+    """ 楽天ID決済へ遷移する """
 
     def __init__(self, request):
         self.request = request
@@ -266,7 +266,7 @@ class CheckoutView(object):
 
 
 class CheckoutCompleteView(object):
-    """ 楽天あんしん支払いサービス(API)からの完了通知受取 """
+    """ 楽天ID決済(API)からの完了通知受取 """
 
     def __init__(self, request):
         self.request = request
@@ -276,7 +276,7 @@ class CheckoutCompleteView(object):
     def order_complete(self):
         '''
         注文完了通知を保存し、予約確定する
-          - 楽天あんしん支払いサービスより注文完了通知が来たタイミングで、予約を確定させる
+          - 楽天ID決済より注文完了通知が来たタイミングで、予約を確定させる
           - ここでOKを返すとオーソリが完了する、なのでCheckoutの売上処理はこのタイミングではやらない
           - NGの場合はオーソリもされないので、Cartも座席解放してfinished_atをセットする
           - Checkoutの売上処理は、バッチで行う
@@ -323,7 +323,7 @@ class CheckoutCompleteView(object):
 
 
 class CheckoutCallbackView(object):
-    """ 楽天あんしん支払いサービスからの戻り先 """
+    """ 楽天ID決済からの戻り先 """
 
     def __init__(self, request):
         self.request = request
