@@ -121,6 +121,42 @@ class VenueResource(TicketingAdminResource):
     def augus_venues(self):
         return AugusVenue.query.filter(AugusVenue.venue_id==self.venue.id).all()
 
+
+class ChildVenueRequestAccessor(VenueRequestAccessor):
+    pass
+
+class ChildVenueResource(TicketingAdminResource):
+    accessor_factory = ChildVenueRequestAccessor
+    def __init__(self, request):
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+
+    @reify
+    def venue(self):
+        try:
+            return Venue.query.filter(Venue.id==self.accessor.venue_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
+                              .one()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The venue_id = {} is not found or multiply.'.format(self.accessor.venue_id))
+
+    @reify
+    def parent(self):
+        return Venue\
+          .query\
+          .filter(Venue.site_id==self.venue.site_id)\
+          .filter(Venue.performance_id==None)\
+          .one()
+
+    @reify
+    def augus_venues(self):
+        return AugusVenue\
+          .query\
+          .filter(AugusVenue.venue_id==self.parent.id)\
+          .all()
+
+
 class PerformanceRequestAccessor(RequestAccessor):
     in_matchdict = {'event_id': int}
 
