@@ -56,11 +56,13 @@ function updateSalesSegmentGroupById(j) {
   $('#end_at\\.minute').val(end_at_arr[4]);
   $('#end_at\\.second').val(end_at_arr[5]);
 }
+</script>
 
+<script type="text/javascript">
   $(function() {
     $('[rel=popover]').popover({html:true});
     $('#sales_segment_group_id').change(function() {
-      $('#name').val($(this).children(':selected').text());
+      // $('#name').val($(this).children(':selected').text());
       var j = $(this).children(':selected').val();
       updateSalesSegmentGroupById(j);
     });
