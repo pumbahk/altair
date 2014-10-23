@@ -2069,6 +2069,7 @@ class OrdersEditAPIView(BaseView):
             system_fee=int(order.system_fee),
             special_fee=int(order.special_fee),
             total_amount=int(order.total_amount),
+            special_fee_name=order.special_fee_name,
             ordered_products=[
             dict(
                 id=op.id,
@@ -2259,6 +2260,7 @@ class OrdersEditAPIView(BaseView):
         sales_segment = None
         products_for_get_amount = []
         products_for_fee_calculator = []
+        order_data['special_fee_name'] = order.special_fee_name
         for op_data in order_data.get('ordered_products'):
             if sales_segment is None:
                 sales_segment_id = op_data.get('sales_segment_id')
