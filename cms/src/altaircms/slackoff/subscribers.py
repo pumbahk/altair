@@ -126,7 +126,7 @@ def update_pageset_genretag(self):
         put_system_tags(pageset, obj_type, system_tag_labels, self.request)
     else:
         pageset.kick_genre()
-    if pageset.pagetype.is_portal and pageset.genre:
+    if pageset.pagetype.is_portal and pageset.genre and self.request.params['endpoint'].find('page_separation') == -1:
         DBSession.flush()
         pageset.genre.save_as_category_toppage(pageset)
 

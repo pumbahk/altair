@@ -72,14 +72,20 @@ class CooperationView(BaseView):
                     'message':u'ファイルが空です',
                 }))
 
-            for record in reader:
-                l0_id = record[1].strip().decode('cp932')
-                name = record[3].strip().decode('cp932')
-                seat = seats.get(l0_id, None)
-                if seat:
-                    success[name] = l0_id
-                else:
-                    fail[name] = l0_id
+            try:
+                for record in reader:
+                    l0_id = record[1].strip().decode('cp932')
+                    name = record[3].strip().decode('cp932')
+                    seat = seats.get(l0_id, None)
+                    if seat:
+                        success[name] = l0_id
+                    else:
+                        fail[name] = l0_id
+            except IndexError as err:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'ファイルフォーマットが不正です',
+                }))
+
             return {'success': success,
                     'fail': fail,
                     }

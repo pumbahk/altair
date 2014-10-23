@@ -128,8 +128,8 @@
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
       % if is_edit:
-      ${ch.form_item(form.payment_method_id, disabled='disabled')}
-      ${ch.form_item(form.delivery_method_id, disabled='disabled')}
+      ${ch.form_item(form.payment_method_id, disabled='disabled', style='width:27em')}
+      ${ch.form_item(form.delivery_method_id, disabled='disabled', style='width:27em')}
       % else:
       ${ch.form_item(form.payment_method_id)}
       ${ch.form_item(form.delivery_method_id)}

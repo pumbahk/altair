@@ -85,6 +85,47 @@
         }
       }).change();
 
+      var warning_entry = function (selector, validators){
+          $(selector).on('change', function (event){
+              var msg;
+              var target = $(event.target);
+              var next_el = $(event.target.nextSibling);
+              if (! next_el.hasClass('message')){
+                  msg = $('<span class="message"></span>').css({
+                      'color': 'red'
+                  });
+                  target.after(msg);
+              }else{
+                  msg = next_el;
+              }
+              target.css({
+                  'background-color': 'transparent'
+              });
+              msg.text("");
+              $.each(validators, function (message, validator){
+                  if(validator(event)){
+                      msg.text(message);
+                      target.css({
+                          'background-color': 'yellow'
+                      });
+                  }
+              });
+          });
+      }
+
+      var ratio_validators = {
+          "不正な値が指定されています": function (event) {
+              console.log("S");
+              return Number.isNaN(parseFloat(event.target.value));
+          },
+          '100%以上の値が指定されています': function (event) {
+              return parseFloat(event.target.value) >= 100;
+          }
+      };
+
+      warning_entry('input#margin_ratio', ratio_validators);
+      warning_entry('input#refund_ratio', ratio_validators);
+
       $('[rel=popover]').popover({html:true});
     })($('script:last').parent());
   </script>

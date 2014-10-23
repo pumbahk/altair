@@ -44,6 +44,7 @@ render_tstar_feature_faq = partial(render_topics_with_template, "altaircms.plugi
 render_tstar_genre_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/sidebar_category_genre_render.html")
 render_tstar_change_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/change_render.html")
 render_tstar_other_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/topic_render.html")
+render_tstar_header = partial(render_topics_with_template, "altaircms.plugins.widget:topic/header_render.html")
 
 ## todo 分解
 @implementer(IWidgetUtility)
@@ -76,6 +77,7 @@ jnames = 注目のイベント
         self.rendering.register("feature", render_tstar_feature_faq)
         self.rendering.register("genre", render_tstar_genre_faq)
         self.rendering.register("change", render_tstar_change_faq)
+        self.rendering.register("header", render_tstar_header)
         self.rendering.register("other", render_tstar_other_faq)
 
         self.choices = self.rendering.choices
