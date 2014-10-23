@@ -146,6 +146,8 @@ class PointGrantSettings(BaseView):
         self.context.point_grant_setting.target_products.difference_update(Product.query.filter(Product.id.in_(product_ids)))
         return HTTPFound(location=self.request.route_path('point_grant_settings.show', point_grant_setting_id=self.context.point_grant_setting.id))
 
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
+class PointGrantEntryView(BaseView):
     @view_config(route_name='point_grant_history_entry.new', request_method='GET', renderer='altair.app.ticketing:templates/loyalty/point_grant_history_entry_form.html', xhr=True, permission="event_editor")
     def new_xhr_point_grant_history_entry(self):
         form = PointGrantHistoryEntryForm(context=self.context, new_form=True)
