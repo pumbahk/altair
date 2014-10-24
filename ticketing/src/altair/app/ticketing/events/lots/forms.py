@@ -110,6 +110,15 @@ class LotForm(Form):
 
     start_at = DateTimeField(
         label=u"販売開始",
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
+        ),
         validators=[
             Required(),
         ],
@@ -122,6 +131,15 @@ class LotForm(Form):
 
     end_at = DateTimeField(
         label=u"販売終了",
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
+        ),
         validators=[
             Required(),
         ],
