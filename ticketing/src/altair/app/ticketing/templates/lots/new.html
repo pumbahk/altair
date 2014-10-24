@@ -103,7 +103,11 @@ function updateSalesSegmentGroupById(j) {
 </div>
 <script type="text/javascript">
   $(document).ready(function(){
-    var opt = $('#sales_segment_group_id').children(':first');
+    var ssgid = "${request.params.get('ssgid', '')}";
+    $('#sales_segment_group_id').val(ssgid);
+
+    var opt = $('#sales_segment_group_id').children(':selected');
+
     $('#name').val(opt.text());
     updateSalesSegmentGroupById(opt.val());
   });
