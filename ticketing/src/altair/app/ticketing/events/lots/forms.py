@@ -110,6 +110,7 @@ class LotForm(Form):
 
     start_at = DateTimeField(
         label=u"販売開始",
+        format='%Y-%m-%d %H:%M',
         validators=[
             Required(),
         ],
@@ -122,6 +123,7 @@ class LotForm(Form):
 
     end_at = DateTimeField(
         label=u"販売終了",
+        format='%Y-%m-%d %H:%M',
         validators=[
             Required(),
         ],
