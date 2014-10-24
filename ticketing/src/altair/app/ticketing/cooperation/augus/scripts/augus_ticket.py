@@ -19,7 +19,10 @@ from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
 from altair import multilock
 from ..importers import AugusTicketImpoter
-from ..errors import AugusDataImportError
+from ..errors import (
+    AugusDataImportError,
+    AugusPerformanceNotFound,
+    )
 from ..operations import AugusOperationManager
 from ..config import get_var_dir
 
@@ -38,7 +41,12 @@ def main():
     mgr = AugusOperationManager(var_dir=var_dir)
     try:
         with multilock.MultiStartLock('augus_ticket'):
-            mgr.ticketing(mailer)
+            try:
+                mgr.ticketing(mailer)
+            except AugusPerformanceNotFound as err:
+                logger.warn(err)
+                transaction.abort()
+
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
 
