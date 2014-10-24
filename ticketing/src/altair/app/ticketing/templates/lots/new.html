@@ -62,9 +62,9 @@ function updateSalesSegmentGroupById(j) {
   $(function() {
     $('[rel=popover]').popover({html:true});
     $('#sales_segment_group_id').change(function() {
-      $('#name').val($(this).children(':selected').text());
-      var j = $(this).children(':selected').val();
-      updateSalesSegmentGroupById(j);
+      var opt = $('#sales_segment_group_id').children(':selected');
+      $('#name').val(opt.text());
+      updateSalesSegmentGroupById(opt.val());
     });
   });
 </script>
@@ -101,8 +101,8 @@ function updateSalesSegmentGroupById(j) {
 </div>
 <script type="text/javascript">
   $(document).ready(function(){
-    var v = $('#sales_segment_group_id').children(0).val();
-    //$('#sales_segment_group_id').val(v);
-    updateSalesSegmentGroupById(v);
+    var opt = $('#sales_segment_group_id').children(':first');
+    $('#name').val(opt.text());
+    updateSalesSegmentGroupById(opt.val());
   });
 </script>
