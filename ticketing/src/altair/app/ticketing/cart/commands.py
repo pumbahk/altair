@@ -48,11 +48,9 @@ def release_carts():
     from . import models as m
 
     fmt = '%Y-%m-%d %H:%M:%S'
-    default_from = (datetime.datetime.now() - datetime.timedelta(minutes=30)).strftime(fmt)
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
-    parser.add_argument('--all', default=False, action='sture_true')
-    parser.add_argument('--from', dest='from_', default=default_from)
+    parser.add_argument('--all', default=False, action='store_true')
     args = parser.parse_args()
 
     setup_logging(args.config)
@@ -61,9 +59,8 @@ def release_carts():
     registry = env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
-
     target_to = datetime.now() - timedelta(minutes=expire_time)
-    target_from = None if args.all else datetime.strptime(args.from_, fmt)
+    target_from = None if args.all else (datetime.now() - timedelta(minutes=expire_time*2))
 
     # 多重起動防止
     LOCK_NAME = release_carts.__name__
