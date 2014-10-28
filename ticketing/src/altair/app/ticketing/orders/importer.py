@@ -188,7 +188,7 @@ class DummyCart(CartMixin):
     def delivery_fee(self):
         return self.sales_segment.get_delivery_fee(self.payment_delivery_pair, self.product_quantity_pair)
 
-    @reify
+    @property
     def performance(self):
         return self.proto_order.performance
 
