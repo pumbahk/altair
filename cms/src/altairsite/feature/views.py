@@ -12,7 +12,7 @@ from datetime import datetime
 
 @usersite_view_config(route_name="features")
 def features_view(context, request):
-    path = request.matchdict["page_name"]
+    path = request.matchdict["page_url"]
     if os.path.splitext(path)[1] == "":
         return HTTPFound(urljoin(request.route_path("features", page_name=os.path.join(path.rstrip("/"), "index.html")).replace("%2F", "/"), '?' + request.query_string))
 
