@@ -1,5 +1,4 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
-<hr />
 <div align="center">
 <font size="-2">
     <div>
@@ -7,7 +6,7 @@
         <a href="http://www.ytj.gr.jp/contact/">お問い合わせ</a> |
         <a href="http://www.ytj.gr.jp/privacy/">個人情報保護方針</a>
     </div>
-    <div><font color="#888888">Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved.</font></div>
+    <div><font color="#888888">Copyright &copy; 2014 TicketStar Inc. All Rights Reserved.</font></div>
 </font>
 </div>
 

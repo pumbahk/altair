@@ -4,7 +4,7 @@
 <% topics = [(event, topic) for event, topic in ((helper.get_event_from_linked_page_id(request, topic.linked_page_id), topic) for topic in topics)] %>
 
 % if topics:
-<%m:header>トピックス</%m:header>
+<%m:header><span style="color: #cc0000">販売中公演</span></%m:header>
 <div>
     % for event, topic in topics:
 
@@ -25,6 +25,7 @@
                 ${topic.text}<br/>
             % endif
         % endif
+        <hr/>
     % endfor
 </div>
 % endif
