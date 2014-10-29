@@ -46,6 +46,11 @@
             "backend_id": 39, 
             "short_name": "YT"
         },
+        "LG": {
+            "auth_source": "oauth", 
+            "backend_id": 43, 
+            "short_name": "LG"
+        },
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"
