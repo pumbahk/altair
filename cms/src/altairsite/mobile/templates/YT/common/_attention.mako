@@ -7,7 +7,7 @@
 %>
 
 % if attentions:
-<%m:header>販売中公演</%m:header>
+<%m:header><span style="color: #cc0000">販売中公演</span></%m:header>
 <div>
     % for event, attention in attentions:
         <%
@@ -27,6 +27,7 @@
                 ${attention.text}<br/>
             % endif
         % endif
+        <hr/>
     % endfor
 </div>
 % endif

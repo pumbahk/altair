@@ -10,9 +10,8 @@
   <img src="${request.mobile_static_url('altaircms:static/YT/mobile/logo.jpg')}" width="200px"/>
 </a>
 <br />
-<div style="background-color:#892C55;" bgcolor="#892C55"><font color="white">${self.title()}</font></div>
+<div style="background-color:#0A1232;" bgcolor="#0A1232"><font color="white">${self.title()}</font></div>
 </div>
 ${self.body()}
-<hr />
 <%block name="fnavi" />
 <%include file="../common/_footer.mako"/>
