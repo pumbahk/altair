@@ -1,4 +1,6 @@
 <%inherit file="../common/_base.mako" />
+<meta http-equiv="refresh" content="0 ; URL=http://www.ytj.gr.jp/season/" span="">
+
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%block name="title">チケットTOP</%block>
 
