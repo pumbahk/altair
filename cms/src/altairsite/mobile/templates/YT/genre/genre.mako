@@ -11,5 +11,4 @@ ${form.dispgenre.data.label}
 <a href="http://ytj.tstar.jp/halloween/howto.html">購入方法</a><br><a href="http://ytj.tstar.jp/halloween/faq.html">よくある質問</a><br><a href="https://ytj.tstar.jp/orderreview">購入確認</a><br><a href="http://www.ytj.gr.jp/">公式サイトへ</a><br>
 
 <%include file='../common/_attention.mako' args="attentions=form.attentions.data, genre=form.genre.data, sub_genre=form.sub_genre.data, helper=helper"/>
-<%include file='../common/_topics.mako' args="topics=form.topics.data, genre=form.genre.data, sub_genre=form.sub_genre.data, helper=helper"/>
 <%include file='../common/_hotward.mako' args="hotwords=form.hotwords.data, genre=form.genre.data, sub_genre=form.sub_genre.data, helper=helper"/>
