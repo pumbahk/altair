@@ -1,19 +1,7 @@
-<%inherit file="../commons/layout_mobile.html" />
-<%namespace file="../commons/tags_mobile.html" name="mobile" />
-<%mobile:header>購入確認</%mobile:header>
-<form method="post" action="${request.route_path('order_review.show')}">
-<%mobile:form_header required="true">受付番号</%mobile:form_header>
-<div>
-${form.order_no(size="12", istyle="3")}<br />
-${h.error('order_no')}
-</div>
-<%mobile:form_header required="true">電話番号</%mobile:form_header>
-<div>
-<div>
-${form.tel(size="12", istyle="4")}<br>
-${h.error('tel')}
-ご予約時に登録した電話番号をご入力してください。<br />
-</div>
-</div>
-<input type="submit" value="次に進む" />
-</form>
+<%inherit file="../commons/layout_mobile.html"/>
+<%block name="header"></%block>
+<h4>指定されたページが見つかりません </h4>
+<p>なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。</p>
+・ブラウザの再読み込みを行う<br>
+・入力したURL（ページアドレス）にタイプミスがないか確認する<br>
+・ブラウザの「戻る」ボタンを押して前画面からやり直す<br>
