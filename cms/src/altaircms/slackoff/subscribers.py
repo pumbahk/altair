@@ -92,8 +92,8 @@ def _tag_labels_from_genres(genres):
     S = set()
     for g in genres:
         S.add(g.label)
-        for c in g.ancestors:
-            S.add(c.label)
+        #for c in g.ancestors:
+        #    S.add(c.label)
     return list(S)
     
 
@@ -102,10 +102,9 @@ def update_kind(self):
     obj_type = self.obj.__tablename__
     put_tags(self.obj, obj_type, tag_labels, [], self.request)
 
-    if self.params.get("genre"):
-        genres = Genre.query.filter(Genre.id.in_(self.params["genre"])).all()
-        system_tag_labels = _tag_labels_from_genres(genres)
-        put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
+    genres = Genre.query.filter(Genre.id.in_(self.params["genre"])).all()
+    system_tag_labels = _tag_labels_from_genres(genres)
+    put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
 
 
 def update_pageset_genretag(self):
