@@ -12,37 +12,11 @@
 
 <%block name="css">
 <style>
-  #btn-back {
-    width: 46%;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 10px;
-  }
-  #btn-complete {
-    width: 46%;
-    height: 46px;
-    margin-left: 10px;
-  }
   th {
       text-align: left;
   }
   .dispBox {
     margin-right: 20px
-  }
-  .methodArea {
-    border: 1px solid #000000;
-    background-color: cornsilk;
-    width: 100%;
-  }
-  .align1 {
-    text-align: right;
-  }
-  .dispBox {
-    margin: 10px;
-  }
-  .dispBoxInner {
-    margin-left: 17px;
   }
   .titleSpace {
     width: 90px;
@@ -231,10 +205,20 @@
   </div>
   % endif
 
-  % if delegator:
-    ${delegator['submit']}
-  % else:
-    <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
-  % endif
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+      <div class="dispBox">
+
+      % if delegator:
+        ${delegator['submit']}
+      % else:
+        <div class="buttonbox">
+          <input id="btn-complete" class="btn btn-primary btn-large" type="submit" value="購入する" />
+        </div>
+      % endif
+
+      </div>
+    </div>
+  </div>
 
 </form>
