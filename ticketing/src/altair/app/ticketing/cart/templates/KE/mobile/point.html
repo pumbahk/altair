@@ -1,7 +1,7 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%mobile:header>楽天スーパーポイント口座</%mobile:header>
-<form method="post" action="${request.url}">
+<form method="post" action="${request.current_route_path()}">
 <div>
 お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。
 </div>
