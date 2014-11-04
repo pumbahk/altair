@@ -847,17 +847,19 @@ class AugusPutbackView(_AugusBaseView):
     @view_config(route_name='augus.putback.reserve', request_method='POST')
     def reserve(self):
         url = self.request.route_path('augus.putback.index', event_id=self.context.event.id)
+        error_url = self.request.route_url('augus.putback.new', event_id=self.context.event.id)
         augus_stock_info_ids = map(int, self.request.params.getall('augus_stock_info_id'))
         augus_stock_infos = AugusStockInfo.query.filter(
             AugusStockInfo.id.in_(augus_stock_info_ids)).all()
 
         can_putback = lambda seat: seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
 
-        cannot_putback_info_ids = [str(augus_stock_info.id) for augus_stock_info in augus_stock_infos if not can_putback(augus_stock_info.seat)]
+        cannot_putback_info_ids = [str(augus_stock_info.id)
+                                   for augus_stock_info in augus_stock_infos if not can_putback(augus_stock_info.seat)]
         if cannot_putback_info_ids:
             self.request.session.flash(u'返券できない座席があるため返券できません')
-            self.request.session.flash(u'AugusStockInfo.id: {}'.format(u''.join(cannot_putback_infos)))
-            raise  HTTPFound(error_url)
+            self.request.session.flash(u'AugusStockInfo.id: {}'.format(u''.join(cannot_putback_info_ids)))
+            raise HTTPFound(error_url)
 
         now = datetime.datetime.now()
         # Performanceごとにputbackを作成

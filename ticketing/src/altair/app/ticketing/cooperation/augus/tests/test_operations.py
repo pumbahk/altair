@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from altair.app.ticketing.core.models import (
+    Account,
     AugusAccount,
     )
 from ..operations import (
