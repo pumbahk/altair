@@ -46,6 +46,11 @@
             "backend_id": 32, 
             "short_name": "PC"
         },
+        "LG": {
+            "auth_source": "oauth", 
+            "backend_id": 43, 
+            "short_name": "LG"
+        },
         "YT": {
             "auth_source": "oauth", 
             "backend_id": 39, 
