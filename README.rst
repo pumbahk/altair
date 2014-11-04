@@ -67,6 +67,9 @@ ubuntu
   $ env/bin/pip install --upgrade setuptools
   $ cd altair/deploy/dev
   $ ../../../env/bin/python bootstrap.py -c ./buildout.local.cfg
+  $ SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk # Mac OS X の場合必要
+  $ export CFLAGS="-I/usr/X11/include -I$SYSROOT/usr/include/ffi -I$SYSROOT/usr/include/libxml2" # Mac OS X の場合必要
+  $ export LDFLAGS="-L/usr/X11/lib -L$SYSROOT/usr/lib" # Mac OS X の場合必要
   $ ./buildout.sh
 
 * supervisor で起動
