@@ -12,8 +12,8 @@
 
 <div class="order_outline">
     <ul class="order_old_new">
-        <li><a href="${orderreview_url.altair}" class="btnRT">頭に<strong>「RT」</strong>が <strong>つく</strong> 受付番号のお客様は こちら</a></li>
-        <li><a href="${orderreview_url.getti}" class="btnNotRT" target="_blank">頭に<strong>「RT」</strong>が <strong>つかない</strong> 受付番号のお客様は こちら</a></li>
+        <li><a href="${orderreview_url.altair}" class="btnKT">頭に<strong>「KT」</strong>が <strong>つく</strong> 受付番号のお客様は こちら</a></li>
+        <li><a href="${orderreview_url.getti}" class="btnNotKT" target="_blank">頭に<strong>「KT」</strong>が <strong>つかない</strong> 受付番号のお客様は こちら</a></li>
     </ul>
     <p class="textC">
         <div class="sectionbox">
@@ -28,7 +28,7 @@
 
 <div class="order_outline">
     <ul class="order_old_new">
-        <li><a href="${orderreview_url.lots}" class="btnRT">抽選申込内容の確認はこちら</a></li>
+        <li><a href="${orderreview_url.lots}" class="btnKT">抽選申込内容の確認はこちら</a></li>
     </ul>
     <p class="textC">
         <div class="sectionbox">
@@ -56,7 +56,7 @@
         display: block;
     }
 
-    ul.order_old_new li a.btnRT, input.submit {
+    ul.order_old_new li a.btnKT, input.submit {
         -moz-box-shadow:inset 0px 1px 0px 0px #f29c93;
         -webkit-box-shadow:inset 0px 1px 0px 0px #f29c93;
         box-shadow:inset 0px 1px 0px 0px #f29c93;
@@ -81,17 +81,17 @@
         color: #fff;
         display: block;
     }
-    ul.order_old_new li a.btnRT:hover, input.submit:hover {
+    ul.order_old_new li a.btnKT:hover, input.submit:hover {
         background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #b92022), color-stop(1, #f52e35) );
         background:-moz-linear-gradient( center top, #b92022 5%, #f52e35 100% );
         filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#b92022', endColorstr='#f52e35');
         background-color:#b92022;
     }
-    ul.order_old_new li a.btnRT:active, input.submit:active {
+    ul.order_old_new li a.btnKT:active, input.submit:active {
         top:1px;
     }
 
-    ul.order_old_new li a.btnNotRT {
+    ul.order_old_new li a.btnNotKT {
         -moz-box-shadow:inset 0px 1px 0px 0px #d7d94e;
         -webkit-box-shadow:inset 0px 1px 0px 0px #d7d94e;
         box-shadow:inset 0px 1px 0px 0px #d7d94e;
@@ -116,13 +116,13 @@
         color: #fff;
         display: block;
     }
-    ul.order_old_new li a.btnNotRT:hover {
+    ul.order_old_new li a.btnNotKT:hover {
         background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #8b8f14), color-stop(1, #dbdb28) );
         background:-moz-linear-gradient( center top, #8b8f14 5%, #dbdb28 100% );
         filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#8b8f14', endColorstr='#dbdb28');
         background-color:#8b8f14;
     }
-    ul.order_old_new li a.btnNotRT:active {
+    ul.order_old_new li a.btnNotKT:active {
         position:relative;
         top:1px;
     }

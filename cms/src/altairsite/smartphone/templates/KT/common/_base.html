@@ -2,26 +2,26 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<meta name="apple-mobile-web-app-title" content="楽天チケット" />
+<meta name="apple-mobile-web-app-title" content="キョードー東北モバイルチケット" />
 <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-1.9.1.min.js')}></script>
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/flipsnap.min.js')}></script>
-<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
-<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/default.css')}" />
-<title>楽天チケット-<%block name="title"/></title>
+<script src=${request.static_url('altaircms:static/KT/smartphone/js/jquery-1.9.1.min.js')}></script>
+<script src=${request.static_url('altaircms:static/KT/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/KT/smartphone/js/flipsnap.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/KT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/smartphone/css/default.css')}" />
+<title>キョードー東北モバイルチケット-<%block name="title"/></title>
 </head>
 <body>
 
 <div class="header-navigation">
   <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
-  <a href="/"><img src="${request.static_url('altaircms:static/RT/smartphone/img/logo.gif')}"/></a>
+  <a href="/"><img src="${request.static_url('altaircms:static/KT/smartphone/img/logo.gif')}"/></a>
 </div>
 <div id="fb-root"></div>
 
 <%
-    sns_url = u"http://ticket.rakuten.co.jp/"
-    sns_title = u"楽天チケット-トップ"
+    sns_url = u"http://ktohoku.tstar.jp/"
+    sns_title = u"キョードー東北モバイルチケット-トップ"
     if sns:
         sns_url = sns['url']
         sns_title = sns['title']
