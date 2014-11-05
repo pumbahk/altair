@@ -248,6 +248,8 @@ class PointGrantHistoryEntryImportView(BaseView):
                 except NoResultFound, noResultFound:
                     self.request.session.flash(u"予約番号: " + order_no + u"は存在しません。")
                     logger.error(u"予約番号: " + order_no + u"は存在しません。")
+                except AttributeError, attributeError:
+                    self.request.session.flash(u"予約番号: " + order_no + u"にはポイント付与できません。")
             if count != 0:
                 self.request.session.flash(str(count) + u'件のポイント付与エントリを作成しました。')
                 logger.info(u"ポイント付与エントリを作成した予約番号: " + str(order_no_list))
