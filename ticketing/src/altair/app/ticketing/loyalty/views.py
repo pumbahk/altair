@@ -21,7 +21,9 @@ from ..core.models import Product
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.users.models import UserPointAccount
 from .models import PointGrantSetting, PointGrantHistoryEntry
-from .forms import PointGrantSettingForm, PointGrantHistoryEntryForm
+from .forms import PointGrantSettingForm, PointGrantHistoryEntryForm, PointGrantHistoryEntryImportForm
+
+from sqlalchemy.orm.exc import NoResultFound
 
 logger = logging.getLogger(__name__)
 
@@ -210,4 +212,45 @@ class PointGrantEntryView(BaseView):
             self.request.session.flash(exception.message)
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
+@view_defaults(decorator=with_bootstrap, permission='point_editor')
+class PointGrantHistoryEntryImportView(BaseView):
+    @view_config(route_name="loyalty.point_grant_history_entry.import", request_method="GET", renderer='altair.app.ticketing:templates/loyalty/import_point_grant_history_entry.html')
+    def index(self):
+        form = PointGrantHistoryEntryImportForm(context=self.context)
+        return {'form': form}
 
+    @view_config(route_name="loyalty.point_grant_history_entry.import", request_method="POST", renderer='altair.app.ticketing:templates/loyalty/import_point_grant_history_entry.html')
+    def import_csv(self):
+        form = PointGrantHistoryEntryImportForm(formdata=self.request.POST, context=self.context)
+        if form.validate():
+            submitted_on = form.submitted_on.data
+            operator_id = self.context.user.id
+            organization_id = self.context.user.organization_id
+            count = 0
+            order_no_list = []
+            for line in form.csv_data.data.splitlines():
+                try:
+                    order_no, str_amount = map(unicode.strip, line.split(','))
+                    order = Order.query.filter(Order.order_no == order_no, Order.organization_id == organization_id).one()
+                    amount = int(str_amount)
+                    if amount < 0:
+                        raise ValueError
+                    user_point_account_id = UserPointAccount.query.filter(UserPointAccount.user_id == order.user_id).first().id
+                    point_grant_history_entry = \
+                        PointGrantHistoryEntry(user_point_account_id=user_point_account_id, order_id=order.id,
+                                               submitted_on=submitted_on, amount=str_amount, edited_by=operator_id,
+                                               manual_grant=True)
+                    point_grant_history_entry.add()
+                    order_no_list.append(order_no)
+                    count += 1
+                except ValueError, valueError:
+                    self.request.session.flash(u"'" + line + u"'" + u"のインポートに失敗しました。")
+                except NoResultFound, noResultFound:
+                    self.request.session.flash(u"予約番号: " + order_no + u"は存在しません。")
+                    logger.error(u"予約番号: " + order_no + u"は存在しません。")
+            if count != 0:
+                self.request.session.flash(str(count) + u'件のポイント付与エントリを作成しました。')
+                logger.info(u"ポイント付与エントリを作成した予約番号: " + str(order_no_list))
+            return {'form': PointGrantHistoryEntryImportForm(context=self.context)}
+        else:
+            return {'form': form}
