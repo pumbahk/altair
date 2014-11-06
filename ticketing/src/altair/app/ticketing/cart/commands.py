@@ -38,7 +38,7 @@ def join_cart_and_order():
         order = o_m.Order.query.filter(o_m.Order.order_no==cart.order_no).with_lockmode('update').first()
         if order is None:
             continue
-        cart.order = order        
+        cart.order = order
         logging.info('order_no = %s : cart[id=%s].order=order[%s]' % (cart.order_no, cart.id, order.id))
     transaction.commit()
 
@@ -47,8 +47,10 @@ def release_carts():
     """
     from . import models as m
 
+    fmt = '%Y-%m-%d %H:%M:%S'
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
+    parser.add_argument('--all', default=False, action='store_true')
     args = parser.parse_args()
 
     setup_logging(args.config)
@@ -57,11 +59,8 @@ def release_carts():
     registry = env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
-
     target_to = datetime.now() - timedelta(minutes=expire_time)
-    target_from = sys.argv[2] if len(sys.argv) > 2 else None
-    if target_from:
-        target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
+    target_from = None if args.all else (datetime.now() - timedelta(minutes=expire_time*2))
 
     # 多重起動防止
     LOCK_NAME = release_carts.__name__
