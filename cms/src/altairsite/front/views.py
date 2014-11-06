@@ -167,6 +167,7 @@ def get_mobile_route_path(request, pcurl):
 def get_smartphone_route_path(request, pcurl):
     urls = dict({
         'faq':request.route_path('smartphone.page', kind='help'),
+        'purchase':request.route_path('smartphone.page', kind='purchase'),
         'change':request.route_path('smartphone.page', kind='canceled'),
         'smartphone/inquiry':request.route_path('smartphone.page', kind='inquiry')
     })
