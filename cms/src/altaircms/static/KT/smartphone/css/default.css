@@ -353,7 +353,7 @@ ul.panellist.expandable > li.panelgroup:first-child {
 
 ul.panellist.expandable > li.panelgroup > .panelgroup-label a:before {
   float: right;
-  content: "?";
+  content: "▼";
   color: #fff;
   text-shadow: 1px 1px 3px #ccc;
   margin-right: 5px;
@@ -361,7 +361,7 @@ ul.panellist.expandable > li.panelgroup > .panelgroup-label a:before {
 }
 
 ul.panellist.expandable > li.panelgroup.activated .panelgroup-label a:before {
-  content: "?";
+  content: "▲";
 }
 
 ul.panellist.expandable > li.panelgroup > .panelgroup-label {
