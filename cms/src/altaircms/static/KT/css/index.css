@@ -83,14 +83,13 @@ font-size: 17px;
 }
 
 ul.guide-tab-index {
-	padding-left: 5px;
-
+	padding-left: 0px;
 }
 
 ul.guide-tab-index li {
 	display: inline-block;
 	margin: 0;
-	width: 49%;
+	width: 100%;
   color: #fff;
   background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
@@ -104,7 +103,7 @@ ul.guide-tab-index li {
   font-weight: bold;
   text-decoration: none;
   padding: 5px 5px;
-font-size: 17px;
+font-size: 20px;
 
 }
 
