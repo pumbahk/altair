@@ -60,7 +60,7 @@ ul.menu {
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  background: url("images/rarrow.png") no-repeat center center;
+  background: url("../img/rarrow.png") no-repeat center center;
   margin: 0 8px 0 10px;
   width: 12px;
   height: 32px;
@@ -244,22 +244,22 @@ ul.buttonset i.icon {
 
 .icon.rlogo {
   background-position: center center;
-  background-image: url(images/icon.png);
+  background-image: url(../img/icon.png);
 }
 
 .icon.orderreview {
   background-position: center center;
-  background-image: url(images/orderreview.png);
+  background-image: url(../img/orderreview.png);
 }
 
 .icon.mailmag {
   background-position: center center;
-  background-image: url(images/mailmag.png);
+  background-image: url(../img/mailmag.png);
 }
 
 .icon.okng {
   background-position: center center;
-  background-image: url(images/okng.png);
+  background-image: url(../img/okng.png);
 }
 
 .condensed {
@@ -423,7 +423,7 @@ ul.panelgroup-inner > li.panel {
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  background: url("images/rarrow.png") no-repeat center center;
+  background: url("../img/rarrow.png") no-repeat center center;
   width: 12px;
   margin-top: -8px;
   vertical-align: top;
@@ -756,7 +756,7 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 }
 
 
-h2.glitter.green {
+h2.glitter.orange {
   height: 38px;
   line-height: 38px;
   font-size: 17px;
@@ -773,7 +773,7 @@ h2.glitter.green {
   -ms-user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
-  background-image: url(../images/textures.png);
+  background-image: url(../img/textures.png);
 }
 
 
@@ -797,7 +797,7 @@ h3{
     border-left:5px #009541 solid;
     padding-left:10px;
    	margin:2px 0 5px 0;
-    background-image: url(../images/h3_textures.png);
+    background-image: url(../img/h3_textures.png);
     color: #009541;
 }
 h4{

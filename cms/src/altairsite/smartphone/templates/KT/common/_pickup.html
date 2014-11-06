@@ -200,7 +200,6 @@ $(function() {
 
 <% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
 <section class="pickup" id="pickup">
-    <h2 class="glitter red">ピックアップ</h2>
         % if promotions:
             <div class="viewport">
                 <div class="flipsnap">
