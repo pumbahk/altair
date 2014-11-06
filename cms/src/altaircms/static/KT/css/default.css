@@ -39,7 +39,7 @@ ul.menu {
   border-bottom: 1px solid #ccc;
     text-align: center;
 }
- 
+
 
 .menuitem > .menuitem-label {
   display: block;
@@ -135,7 +135,7 @@ ul.menu {
 .btn-large {
   font-size: 15px;
   line-height: 1.5em;
-  height: 44px; 
+  height: 44px;
 }
 
 .buttonbox {
@@ -200,7 +200,7 @@ ul.buttonset._4cols li .button.embedded {
   width: auto;
   border: none;
   height: 30px;
-  line-height: 30px;  
+  line-height: 30px;
   width: 100%;
   font-size: 12px;
   background: #88BB55;
@@ -211,6 +211,7 @@ ul.buttonset._4cols li .button.embedded {
   padding: 0 0;
   text-align: center;
 }
+
 
 ul.buttonset._4cols li button.embedded.first,
 ul.buttonset._4cols li .button.embedded.first {
@@ -342,7 +343,7 @@ ul.panellist.expandable > li.panelgroup {
   overflow: hidden;
   height: 28px;
 }
-  
+
 ul.panellist.expandable > li.panelgroup.activated {
   height: 128px;
 }
@@ -531,7 +532,7 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 }
 
 .panel .panel-footer {
-  width: auto; 
+  width: auto;
   padding: 4px 4px;
   background-color: #fff;
   background-image: linear-gradient(top, #fff 0%, #eee 98%, #fff 100%);
@@ -589,7 +590,7 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
   text-align:center;
   display: inline-block;
   border: 1px solid #fff;
-  padding:4px 10px;  
+  padding:4px 10px;
   color: #fff;
   user-select: none;
   -ms-user-select: none;
@@ -615,7 +616,7 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 
 .btn-order {
   display: inline-block;
-  padding:4px;  
+  padding:4px;
   color: #fff;
   user-select: none;
   -ms-user-select: none;
