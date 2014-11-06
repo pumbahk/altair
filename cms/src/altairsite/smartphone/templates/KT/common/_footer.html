@@ -1,0 +1,18 @@
+<%namespace file="tags_mobile.mako" name="m" />
+<hr />
+<div align="center">
+<font size="-2">
+    <div>
+    <div>
+        <a href="http://www.kyodo-tohoku.com/tokutei_annai.php">特定商取引に関する法律に基づく表示他｜</a>
+        <a href="http://www.kyodo-tohoku.com/otoiawase.php">お問い合わせ</a><br>
+        <a href="http://www.kyodo-tohoku.com/kojin_annai.php">個人情報に関して</a>
+    </div>
+    <div><font color="#888888">Copyright c 2010-2014 TicketStar Inc. All Rights Reserved.</font></div>
+
+## tracking 画像(<browserid>.gif)を取得するhtmlを生成
+<%! from altairsite.tracking import get_tracking_image %>
+${get_tracking_image(request)}
+
+</font>
+</div>
