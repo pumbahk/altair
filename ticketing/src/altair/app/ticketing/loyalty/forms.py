@@ -9,6 +9,7 @@ from altair.formhelpers.validators import Required
 from altair.formhelpers.fields import OurTextField, OurDecimalField, OurDateField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
 from altair.formhelpers.widgets.datetime import OurDateWidget
 from altair.app.ticketing.users import models as user_models
+from wtforms.fields import TextAreaField
 from wtforms.validators import ValidationError
 from .models import PointGrantSetting, PointGrantHistoryEntry
 from ..models import HyphenationCodecMixin
@@ -97,6 +98,27 @@ class PointGrantHistoryEntryForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', membergroups=None, **kwargs):
         super(PointGrantHistoryEntryForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = kwargs.pop('context', None)
+
+    def validate_submitted_on(self, field):
+        if field.data < date.today():
+            raise ValidationError(u'%sには過去の日付は指定できません' % self.submitted_on.label.text)
+
+class PointGrantHistoryEntryImportForm(OurForm):
+    csv_data = TextAreaField(
+        label=u'CSVデータ(予約番号,付与ポイント)',
+        validators=[Required(u'CSVデータが空です')]
+    )
+
+    submitted_on = OurDateField(
+        label=u'ポイント付与予定日',
+        validators=[Required(u'ポイント付与予定日の値が不正です')],
+        format='%Y-%m-%d',
+        widget=OurDateWidget()
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.context = kwargs.pop('context', None)
+        super(PointGrantHistoryEntryImportForm, self).__init__(*args, **kwargs)
 
     def validate_submitted_on(self, field):
         if field.data < date.today():

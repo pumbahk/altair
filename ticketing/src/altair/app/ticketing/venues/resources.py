@@ -28,3 +28,6 @@ class VenueAdminResource(TicketingAdminResource):
                 raise HTTPNotFound()
         else:
             self.venue = None
+
+    def ajax(self, route_suffix):
+        return self.request.route_path('%s.%s' % (self.request.matched_route.name, route_suffix), **self.request.matchdict)

@@ -102,3 +102,7 @@ class PointGrantHistoryEntryAdminResource(TicketingAdminResource):
             self.point_grant_history_entry = PointGrantHistoryEntry.get(id=point_grant_history_entry_id)
         else:
             self.point_grant_history_entry = None
+
+class PointGrantHistoryEntryImportAdminResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(PointGrantHistoryEntryImportAdminResource, self).__init__(request)

@@ -11,7 +11,7 @@ from urlparse import urlparse
 from zope.interface import implementer
 import webhelpers.paginate as paginate
 
-from pyramid.view import view_config
+from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
@@ -27,18 +27,20 @@ from altair.sqlahelper import get_db_session
 from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.orders.models import (
     OrderedProductItem,
     OrderedProduct,
     Order,
     )
 
+from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
     Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
-    SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
+    SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex, SeatGroup
 )
 from altair.app.ticketing.venues.forms import SiteForm, VenueSearchForm
@@ -112,6 +114,7 @@ def create_text_element(parent, name, text):
 
 @view_config(route_name="api.seat_info", request_method="GET", renderer="lxml", permission="event_viewer")
 def get_seat_info(context, request):
+    slave_session = get_db_session(request, 'slave')
     x_result = etree.Element("result")
 
     venue = request.context.venue
@@ -124,7 +127,7 @@ def get_seat_info(context, request):
     row = aliased(SeatAttribute)
     floor = aliased(SeatAttribute)
     gate = aliased(SeatAttribute)
-    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, gate.value)\
+    seats = slave_session.query(Seat, VenueArea, row.value, floor.value, gate.value)\
         .filter_by(venue_id=venue.id)\
         .join(VenueArea, Seat.areas)\
         .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
@@ -223,6 +226,7 @@ def update_seat_info(context, request):
 @view_config(route_name="api.seat_priority", request_method="GET", renderer="lxml", permission="event_viewer")
 def get_seat_priority(context, request):
     x_result = etree.Element("result")
+    slave_session = get_db_session(request, 'slave')
 
     venue = request.context.venue
 
@@ -231,7 +235,7 @@ def get_seat_priority(context, request):
     create_text_element(x_venue, "name", venue.name)
     x_result.append(x_venue)
 
-    seats = DBSession.query(Seat, SeatIndex.index)\
+    seats = slave_session.query(Seat, SeatIndex.index)\
         .filter_by(venue_id=venue.id)\
         .join(SeatIndex.seat)
 
@@ -285,7 +289,8 @@ def get_seat_group(context, request):
     create_text_element(x_venue, "id", str(venue.id))
     create_text_element(x_venue, "name", venue.name)
 
-    seats = DBSession.query(Seat, SeatIndex.index)\
+    slave_session = get_db_session(request, 'slave')
+    seats = slave_session.query(Seat, SeatIndex.index)\
         .filter_by(venue_id=venue.id)\
         .join(SeatIndex.seat)
 
@@ -298,7 +303,7 @@ def get_seat_group(context, request):
         create_text_element(x_seat, "row_l0_id", seat.row_l0_id)
         create_text_element(x_seat, "name", seat.name)
 
-    groups = DBSession.query(SeatGroup)\
+    groups = slave_session.query(SeatGroup)\
         .filter_by(site_id=site.id)\
         .order_by(SeatGroup.name, SeatGroup.l0_id)
 
@@ -493,6 +498,7 @@ def get_seats(request):
 
 @view_config(route_name='seats.download', permission='event_editor')
 def download(request):
+    slave_session = get_db_session(request, 'slave')
     venue = request.context.venue
 
     headers = [
@@ -502,7 +508,6 @@ def download(request):
     ]
     response = Response(headers=headers)
 
-    slave_session = get_db_session(request, 'slave')
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .options(undefer(Order.deleted_at))\
         .outerjoin(Seat.status_) \
@@ -569,78 +574,107 @@ def frontend_drawing(request):
         content_encoding = 'gzip'
     return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
-@view_config(route_name='venues.show', renderer='altair.app.ticketing:templates/venues/show.html',
-             decorator=with_bootstrap, permission='event_editor')
-def show(request):
-    venue = request.context.venue
-    venue_id = venue.id
 
-    site = venue.site
-    drawing = get_venue_site_adapter(request, site)
-    root = None
-    pages = drawing.get_frontend_pages()
-    if pages:
-        for page, info in pages.items():
-            if info.get('root'):
-                root = page
-
-    types = SeatIndexType.filter_by(venue_id=venue_id).all()
-    type_id = types[0].id if 0<len(types) else None
-    if 'index_type' in request.GET:
-        type_id = 2
-        for type in types:
-            if request.GET.get('index_type') == str(type.id):
-                type_id = type.id
-
-    class SeatInfo:
-        def __init__(self, seat, venuearea, attr, status, index):
-            self.seat = seat
-            self.venuearea = venuearea
-            self.row = attr
-            self.status = status
-            self.index = index
-
-    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus, SeatIndex)\
-        .filter_by(venue_id=venue_id)\
-        .outerjoin(VenueArea, Seat.areas)\
-        .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
-        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
-    if type_id is not None:
-        seats = seats.outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
-    items = []
-    for seat, venuearea, attr, status, type in seats:
-        items.append(SeatInfo(seat, venuearea, attr, status, type))
-
-    class SeatAdjacencyInfo:
+@view_defaults(permission='event_editor')
+class VenueShowView(BaseView):
+    class SeatAdjacencyInfo(object):
+        __slots__ = (
+            'adj',
+            'count',
+            )
         def __init__(self, adj, count):
             self.adj = adj
             self.count = count
 
-    _adjs = DBSession\
-        .query(SeatAdjacencySet, func.count(distinct(Seat.id)))\
-        .filter_by(site_id=venue.site_id)\
-        .outerjoin(SeatAdjacencySet.adjacencies)\
-        .join(Seat_SeatAdjacency)\
-        .join(Seat, Seat_SeatAdjacency.l0_id==Seat.l0_id)\
-        .filter(Seat.venue_id==venue_id)\
-        .order_by('seat_count')\
-        .group_by(SeatAdjacencySet.id)\
-        .all()
-    adjs = []
-    for adj, count in _adjs:
-        adjs.append(SeatAdjacencyInfo(adj, count))
+    def get_seat_adjacency_counts(self, venue):
+        slave_session = get_db_session(self.request, 'slave')
+        adjacency_sets = slave_session.query(SeatAdjacencySet).filter_by(site_id=venue.site_id).all()
+        retval = []
+        for adjacency_set in adjacency_sets:
+            count = slave_session\
+                .query(Seat_SeatAdjacency) \
+                .join(SeatAdjacency)\
+                .filter(SeatAdjacency.adjacency_set_id == adjacency_set.id)\
+                .with_entities(func.count(distinct(Seat_SeatAdjacency.l0_id)))\
+                .scalar()
+            # count = slave_session\
+            #     .query(Seat) \
+            #     .join(Seat_SeatAdjacency, Seat_SeatAdjacency.l0_id == Seat.l0_id)\
+            #     .join(SeatAdjacency)\
+            #     .filter(SeatAdjacency.adjacency_set_id == adjacency_set.id, Seat.venue_id == venue.id)\
+            #     .with_entities(func.count(distinct(Seat.id)))\
+            #     .scalar()
+            retval.append(self.SeatAdjacencyInfo(adjacency_set, count))
+        return retval
 
-    return {
-        'venue': venue,
-        'site': site,
-        'drawing': drawing,
-        'root': root,
-        'type_id': type_id,
-        'types': types,
-        'pages': pages,
-        'items': items,
-        'adjs': adjs,
-    }
+    @view_config(route_name='venues.show._seat_adjacency_counts',
+                 renderer='altair.app.ticketing:templates/venues/_seat_adjacency_counts.html')
+    def seat_adjacency_count(self):
+        return dict(adjs=self.get_seat_adjacency_counts(self.context.venue))
+
+    @view_config(route_name='venues.show',
+                 renderer='altair.app.ticketing:templates/venues/show.html',
+                 decorator=with_bootstrap)
+    def get(self):
+        request = self.request
+        venue = self.context.venue
+        venue_id = venue.id
+        slave_session = get_db_session(request, 'slave')
+
+        site = venue.site
+        drawing = get_venue_site_adapter(request, site)
+        root = None
+        pages = drawing.get_frontend_pages()
+        if pages:
+            for page, info in pages.items():
+                if info.get('root'):
+                    root = page
+
+        types = slave_session.query(SeatIndexType).filter_by(venue_id=venue_id).all()
+        type_id = types[0].id if 0<len(types) else None
+        if 'index_type' in request.GET:
+            type_id = 2
+            for type in types:
+                if request.GET.get('index_type') == str(type.id):
+                    type_id = type.id
+
+        class SeatInfo(object):
+            __slots__ = (
+                'seat',
+                'venuearea',
+                'row',
+                'status',
+                'index',
+                )
+            def __init__(self, seat, venuearea, attr, status, index):
+                self.seat = seat
+                self.venuearea = venuearea
+                self.row = attr
+                self.status = status
+                self.index = index
+
+        seats = slave_session.query(Seat, VenueArea, SeatAttribute, SeatStatus, SeatIndex)\
+            .filter_by(venue_id=venue_id)\
+            .outerjoin(VenueArea, Seat.areas)\
+            .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
+            .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
+        if type_id is not None:
+            seats = seats.outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
+        items = []
+        for seat, venuearea, attr, status, type in seats:
+            items.append(SeatInfo(seat, venuearea, attr, status, type))
+
+        return {
+            'venue': venue,
+            'site': site,
+            'drawing': drawing,
+            'root': root,
+            'type_id': type_id,
+            'types': types,
+            'pages': pages,
+            'items': items,
+            }
+
 
 @view_config(route_name='venues.checker', renderer='altair.app.ticketing:templates/venues/checker.html',
              decorator=with_bootstrap, permission='event_editor')

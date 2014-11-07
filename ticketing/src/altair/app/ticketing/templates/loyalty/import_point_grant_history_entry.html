@@ -1,0 +1,22 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'トップ', u'ポイント一括付与'],
+    urls=[request.route_path('index')]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>ポイント一括付与</h1>
+</div>
+
+<form action="${request.current_route_path()}" method="POST">
+    ${ch.form_item(form.csv_data, rows='15', cols='5')}
+    ${ch.form_item(form.submitted_on)}
+    <div class="form-actions">
+        <input class="btn btn-primary" type="submit" name="submit" value="インポート">
+    </div>
+</form>
