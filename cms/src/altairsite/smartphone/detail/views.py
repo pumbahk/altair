@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 from .forms import DetailForm
 from ..common.helper import SmartPhoneHelper
 from ..common.utils import SnsUtils
@@ -64,6 +65,14 @@ def moveKTDetail(context, request):
     page_published = context.get_page_published(form.data['event_id'], now)
     if not event or not page_published:
         raise ValidationFailure
+
+    #TODO pagesetsとpageを一対一と仮定することで特定している
+    structures = json.loads(page_published.structure).items()
+    widgets = []
+    for structure in structures:
+        for widget in structure[1]:
+            widgets.append(widget)
+
 
     purchase_links = get_purchase_links(request=request, event=event)
     month_unit = get_performances_month_unit(event=event)
