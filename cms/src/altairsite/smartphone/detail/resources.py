@@ -2,7 +2,7 @@
 from altaircms.event.models import Event
 from altaircms.page.models import Page
 from altairsite.preview.api import set_rendered_event
-
+from altairsite.separation import get_organization_from_request
 
 
 class DetailPageResource(object):
@@ -23,3 +23,6 @@ class DetailPageResource(object):
                 ).first()
         return page
 
+    def is_dynamic_page_organization(self):
+        org = get_organization_from_request(request=self.request)
+        return org.short_name == "KT"
