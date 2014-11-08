@@ -2,6 +2,7 @@
 import json
 from .forms import DetailForm
 from ..common.helper import SmartPhoneHelper
+from ..common.renderer import PluginRenderer
 from ..common.utils import SnsUtils
 from altaircms.plugins.extra.api import get_stockstatus_summary
 from altaircms.plugins.extra.stockstatus import StockStatus
@@ -71,8 +72,9 @@ def moveKTDetail(context, request):
     widgets = []
     for structure in structures:
         for widget in structure[1]:
-            widgets.append(widget)
-
+            widgets.append(context.get_widget_model(widget))
+    header_image = context.get_header_image(widgets)
+    widgets = context.remove_header_image(widgets)
 
     purchase_links = get_purchase_links(request=request, event=event)
     month_unit = get_performances_month_unit(event=event)
@@ -95,6 +97,9 @@ def moveKTDetail(context, request):
         , 'event_info': event_info
         , 'stock_status': stock_status
         , 'helper': SmartPhoneHelper()
+        , 'renderer': PluginRenderer()
+        , 'header_image': header_image
+        , 'widgets': widgets
         , 'sns':{
             'url':utils.get_sns_url(event_id=event.id),
             'title':utils.get_sns_title(event_id=event.id)
