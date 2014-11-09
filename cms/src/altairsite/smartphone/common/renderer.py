@@ -51,14 +51,22 @@ class PluginRenderer(object):
     def renderFreetextWidget(self, model):
         return Markup(model.text)
     def renderHeadingWidget(self, model):
-        tag = u"<h2 class='glitter orange'>{0}</h2>".format(model.text)
+        tag = u"<h3>{0}</h3>".format(model.text)
         return Markup(tag)
     def renderIconsetWidget(self, model):
         pass
     def renderImageWidget(self, model):
-        tag = "<img {0} src='{1}' />".format(model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
+        align = ""
+        if model.html_attributes.find("center") != -1:
+            align = u"style='text-align:center'"
+        if model.html_attributes.find("right") != -1:
+            align = u"style='text-align:right'"
+        if model.html_attributes.find("left") != -1:
+            align = u"style='text-align:left'"
+
+        tag = u"<div {0}><img {1} src='{2}' /></div>".format(align, model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
         if model.href:
-            tag = "<a href={0} ><img {1} src='{2}' /></a>".format(model.href, model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
+            tag = u"<div {0}><a href={1} ><img {2} src='{3}' /></a></div>".format(align, model.href, model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
         return Markup(tag)
     def renderLinklistWidget(self, model):
         pass
