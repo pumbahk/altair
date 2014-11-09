@@ -2,6 +2,7 @@
 import logging
 
 from markupsafe import Markup
+import altaircms.helpers as helpers
 
 from altaircms.plugins.widget.anchorlist.models import AnchorlistWidget
 from altaircms.plugins.widget.breadcrumbs.models import BreadcrumbsWidget
@@ -54,12 +55,10 @@ class PluginRenderer(object):
     def renderIconsetWidget(self, model):
         pass
     def renderImageWidget(self, model):
-        """
-        asset = self.request.allowable(ImageAsset).filter(ImageAsset.id == model.asset_id).first()
-        tag = "<img src = '{0}'/>".format(self.request.static_url(asset.filepath))
+        tag = "<img {0} src='{1}' />".format(model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
+        if model.href:
+            tag = "<a href={0} ><img {1} src='{2}' /></a>".format(model.href, model.html_attributes, helpers.asset.rendering_object(self.request,model.asset).filepath)
         return Markup(tag)
-        """
-        pass
     def renderLinklistWidget(self, model):
         pass
     def renderMenuWidget(self, model):
