@@ -24,14 +24,14 @@ $(document).ready(function(){
       <li>
           % if promotion.link:
             <a href="${promotion.link}">
-              <img width="100%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+              <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
             </a>
           % elif event:
             <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
-              <img width="100%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+              <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
             </a>
           % else:
-            <img width="100%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+            <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
           % endif
       </li>
     % endfor
