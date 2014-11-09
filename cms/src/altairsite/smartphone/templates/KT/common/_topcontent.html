@@ -18,7 +18,9 @@
                     <h4>${content.title}</h4>
                     <p class="first">${content.text}</p>
                 </div>
+            % if content.link or event:
             </a>
+            % endif
         </li>
     % endfor
     </ul>
