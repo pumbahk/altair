@@ -51,7 +51,8 @@ class PluginRenderer(object):
     def renderFreetextWidget(self, model):
         return Markup(model.text)
     def renderHeadingWidget(self, model):
-        pass
+        tag = u"<h2 class='glitter orange'>{0}</h2>".format(model.text)
+        return Markup(tag)
     def renderIconsetWidget(self, model):
         pass
     def renderImageWidget(self, model):
@@ -72,7 +73,7 @@ class PluginRenderer(object):
     def renderPurchaseWidget(self, model):
         pass
     def renderRawhtmlWidget(self, model):
-        pass
+        return Markup(model.text)
     def renderReuseWidget(self, model):
         pass
     def renderSummaryWidget(self, model):
