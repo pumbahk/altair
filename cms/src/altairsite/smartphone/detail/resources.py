@@ -76,11 +76,12 @@ class DetailPageResource(object):
         org = get_organization_from_request(request=self.request)
         return org.short_name == "KT"
 
-    def get_widget_model(self, widget):
+    def get_widget_model(self, widget, widgets):
         model = None
         if widget['name'] in widget_models:
             widget_model = widget_models[widget['name']]
             model = self.request.allowable(widget_model).filter(widget_model.id == widget['pk']).first()
+
         widget.update({'model': model})
         return widget
 
@@ -90,5 +91,5 @@ class DetailPageResource(object):
                 return widget
 
     def remove_header_image(self, widgets):
-        widgets = widgets.remove(self.get_header_image(widgets))
+        widgets.remove(self.get_header_image(widgets))
         return widgets

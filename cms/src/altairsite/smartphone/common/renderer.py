@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from markupsafe import Markup
+
 from altaircms.plugins.widget.anchorlist.models import AnchorlistWidget
 from altaircms.plugins.widget.breadcrumbs.models import BreadcrumbsWidget
 from altaircms.plugins.widget.calendar.models import CalendarWidget
@@ -28,53 +30,61 @@ from altaircms.plugins.widget.twitter.models import TwitterWidget
 logger = logging.getLogger(__file__)
 
 class PluginRenderer(object):
-    def renderAnchorlistWidget(self):
+    def __init__(self, request):
+        self.request = request
+
+    def renderAnchorlistWidget(self, model):
         pass
-    def renderAnchorlistWidget(self):
+    def renderAnchorlistWidget(self, model):
         pass
-    def renderBreadcrumbsWidget(self):
+    def renderBreadcrumbsWidget(self, model):
         pass
-    def renderCalendarWidget(self):
+    def renderCalendarWidget(self, model):
         pass
-    def renderCountdownWidget(self):
+    def renderCountdownWidget(self, model):
         pass
-    def renderDetailWidget(self):
+    def renderDetailWidget(self, model):
         pass
-    def renderFlashWidget(self):
+    def renderFlashWidget(self, model):
         pass
-    def renderFreetextWidget(self):
+    def renderFreetextWidget(self, model):
+        return Markup(model.text)
+    def renderHeadingWidget(self, model):
         pass
-    def renderHeadingWidget(self):
+    def renderIconsetWidget(self, model):
         pass
-    def renderIconsetWidget(self):
+    def renderImageWidget(self, model):
+        """
+        asset = self.request.allowable(ImageAsset).filter(ImageAsset.id == model.asset_id).first()
+        tag = "<img src = '{0}'/>".format(self.request.static_url(asset.filepath))
+        return Markup(tag)
+        """
         pass
-    def renderImageWidget(self):
+    def renderLinklistWidget(self, model):
         pass
-    def renderLinklistWidget(self):
+    def renderMenuWidget(self, model):
         pass
-    def renderMenuWidget(self):
+    def renderMovieWidget(self, model):
         pass
-    def renderMovieWidget(self):
+    def renderPerformancelistWidget(self, model):
         pass
-    def renderPerformancelistWidget(self):
+    def renderPromotionWidget(self, model):
         pass
-    def renderPromotionWidget(self):
+    def renderPurchaseWidget(self, model):
         pass
-    def renderPurchaseWidget(self):
+    def renderRawhtmlWidget(self, model):
         pass
-    def renderRawhtmlWidget(self):
+    def renderReuseWidget(self, model):
         pass
-    def renderReuseWidget(self):
+    def renderSummaryWidget(self, model):
         pass
-    def renderSummaryWidget(self):
+    def renderTicketlistWidget(self, model):
         pass
-    def renderTicketlistWidget(self):
+    def renderTopcontentWidget(self, model):
         pass
-    def renderTopcontentWidget(self):
+    def renderTopicWidget(self, model):
         pass
-    def renderTopicWidget(self):
-        pass
-    def renderTwitterWidget(self):
+    def renderTwitterWidget(self, model):
         pass
 
     widget_render_map = {
@@ -104,5 +114,7 @@ class PluginRenderer(object):
     }
 
     def render(self, widget):
-        fn = self.widget_render_map[widget['model']]
-
+        if not widget:
+            return u""
+        fn = self.widget_render_map[type(widget['model'])]
+        return fn(self, widget['model'])

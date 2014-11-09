@@ -72,7 +72,10 @@ def moveKTDetail(context, request):
     widgets = []
     for structure in structures:
         for widget in structure[1]:
-            widgets.append(context.get_widget_model(widget))
+            wg = context.get_widget_model(widget, widgets)
+            if widget['pk']:
+                widgets.append(wg)
+
     header_image = context.get_header_image(widgets)
     widgets = context.remove_header_image(widgets)
 
@@ -97,7 +100,7 @@ def moveKTDetail(context, request):
         , 'event_info': event_info
         , 'stock_status': stock_status
         , 'helper': SmartPhoneHelper()
-        , 'renderer': PluginRenderer()
+        , 'renderer': PluginRenderer(request=request)
         , 'header_image': header_image
         , 'widgets': widgets
         , 'sns':{
