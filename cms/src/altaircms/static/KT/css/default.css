@@ -306,7 +306,6 @@ ul.panellist.fullwidth {
   list-style-type: none;
   margin: 0 0;
   padding: 0 0;
-  border-bottom: 1px solid #ccc;
 }
 
 ul.panellist.fullwidth > li.panel {
