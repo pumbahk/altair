@@ -107,6 +107,26 @@ font-size: 20px;
 
 }
 
+ul.guide-tab-index-2 li {
+	display: inline-block;
+	margin: 0;
+	width: 49%;
+  color: #fff;
+  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
+  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  background-image: url(../img/green_textures.png);
+  font-weight: bold;
+  text-decoration: none;
+font-size: 20px;
+
+}
+
 
 .title-second {
 	display: inline-block;
