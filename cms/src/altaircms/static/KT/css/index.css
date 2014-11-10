@@ -173,3 +173,18 @@ font-size: 20px;
   padding: 5px 5px;
 font-size: 17px;
 }
+
+
+
+dl.faq > dt {
+padding: 5px;
+background: #fff;
+background: -moz-linear-gradient(top, #fff, #eee);
+background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+-pie-background: linear-gradient(top, #fff, #eee);
+border-left: 5px #009541 solid;
+padding-left: 10px;
+margin: 2px 0 5px 0;
+background-image: url(../images/h3_textures.png);
+color: #009541;
+}
