@@ -38,7 +38,7 @@ ul.buttonset i.icon { width: 40px; height: 40px; background-size: 40px 40px; pad
 .panel.condensed p:first-child, .condensed .panel p:first-child, .panel.condensed p.first, .condensed .panel p.firs { margin: 0px; }
 .panel.condensed p, .condensed .panel p { margin: 8px 0px 0px; }
 .panel.condensed h4, .condensed .panel h4 { margin: 0px 0px 2px; line-height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-ul.panellist.fullwidth { list-style-type: none; margin: 0px; padding: 0px; border-bottom: 1px solid rgb(204, 204, 204); }
+ul.panellist.fullwidth { list-style-type: none; margin: 0px; padding: 0px;}
 ul.panellist.fullwidth > li.panel { padding: 10px; position: relative; border-top: 1px solid rgb(204, 204, 204); background-image: -moz-linear-gradient(center top , rgb(255, 255, 255) 0%, rgb(242, 243, 229) 100%); overflow: hidden; }
 ul.panellist.fullwidth > li.panel:active { background-image: -moz-linear-gradient(center top , rgb(248, 248, 248) 0%, rgb(234, 235, 204) 100%); }
 ul.panellist.fullwidth > li.panel:first-child { border-top: medium none; }
@@ -107,6 +107,10 @@ font-size: 20px;
 
 }
 
+ul.guide-tab-index-2 {
+	padding-left: 5px;
+}
+
 ul.guide-tab-index-2 li {
 	display: inline-block;
 	margin: 0;
@@ -123,6 +127,7 @@ ul.guide-tab-index-2 li {
   background-image: url(../img/green_textures.png);
   font-weight: bold;
   text-decoration: none;
+  padding: 5px 5px;
 font-size: 20px;
 
 }
