@@ -171,8 +171,8 @@ def get_smartphone_route_path(request, pcurl):
         'purchase': request.route_path('smartphone.page', kind='purchase'),
         'change': request.route_path('smartphone.page', kind='canceled'),
         'smartphone/inquiry': request.route_path('smartphone.page', kind='inquiry'),
-        'smartphone/inquiry': request.route_path('smartphone.page', kind='privacy'),
-        'smartphone/inquiry': request.route_path('smartphone.page', kind='legal'),
+        'privacy': request.route_path('smartphone.page', kind='privacy'),
+        'legal': request.route_path('smartphone.page', kind='legal'),
         })
     ret = None
     if pcurl in urls:
