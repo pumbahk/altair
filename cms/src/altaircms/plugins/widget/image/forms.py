@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 from altaircms.formhelpers import Form, MaybeIntegerField
 from altaircms.formhelpers import AlignChoiceField
 import wtforms.fields as fields
@@ -28,11 +29,13 @@ class ImageInfoForm(Form):
 
     asset_id = fields.IntegerField(id="asset_id")
     attributes = fields.HiddenField()
-    
+
 
     def validate(self):
         if not super(ImageInfoForm, self).validate():
             return False
         ## align設定追加
-        self.attributes.data = dict([("data-align", self.data["align"])])
+        data = json.loads(self.attributes.data) if self.attributes.data else {}
+        data.update(dict([("data-align", self.data["align"])]))
+        self.attributes.data = json.dumps(data)
         return True

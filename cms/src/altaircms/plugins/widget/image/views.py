@@ -1,11 +1,13 @@
+# -*- coding: utf-8 -*-
+import json
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import (
-    HTTPFound, 
-    HTTPNotFound, 
+    HTTPFound,
+    HTTPNotFound,
     HTTPBadRequest
 )
 import logging
@@ -19,14 +21,35 @@ class ImageWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
+        data = self.request.json_body["data"]
+        attributes = data.get('attributes', {})
+        if data['height']:
+            try:
+                int(data['height'])
+            except (TypeError, ValueError):
+                value = data['height']
+                attributes['height'] = value
+                data['height'] = u''
+
+        if data['width']:
+            try:
+                int(data['width'])
+            except (TypeError, ValueError):
+                value = data['width']
+                attributes['width'] = value
+                data['width'] = u''
+        data['attributes'] = json.dumps(attributes)
+
         try:
-            form = forms.ImageInfoForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+            d = MultiDict(data, page_id=self.request.json_body["page_id"])
+            form = forms.ImageInfoForm(d)
 
             if not form.validate():
                 logger.warn(str(form.errors))
                 r = self.request.json_body.copy()
                 r.update(pk=None, asset_id=None)
                 return r
+
             params = form.data
             widget = self.context.get_widget(self.request.json_body.get("pk"))
             params["asset_id"] = form.data.get("asset_id")
@@ -51,15 +74,15 @@ class ImageWidgetView(object):
             r.update(pk=None, asset_id=None)
             return r
 
-    @view_config(route_name="image_widget_create", renderer="json", request_method="POST")        
+    @view_config(route_name="image_widget_create", renderer="json", request_method="POST")
     def create(self):
         return self._create_or_update()
 
-    @view_config(route_name="image_widget_update", renderer="json", request_method="POST")        
+    @view_config(route_name="image_widget_update", renderer="json", request_method="POST")
     def update(self):
         return self._create_or_update()
 
-    @view_config(route_name="image_widget_delete", renderer="json", request_method="POST")        
+    @view_config(route_name="image_widget_delete", renderer="json", request_method="POST")
     def delete(self):
         context = self.context
         widget = context.get_widget(self.request.json_body["pk"])
@@ -137,17 +160,15 @@ def dict_from_asset(request, asset):
         "title":asset.title ,
         "width":asset.width ,
         "height":asset.height ,
-        "thumbnail_src":helpers.asset.rendering_object(request,asset).thumbnail_path, 
-        "updated_at": asset.updated_at.strftime("%Y/%m/%d %H:%M") if asset.updated_at else "-", 
+        "thumbnail_src":helpers.asset.rendering_object(request,asset).thumbnail_path,
+        "updated_at": asset.updated_at.strftime("%Y/%m/%d %H:%M") if asset.updated_at else "-",
     }
 
 def dict_from_widget(request, widget):
     return {
-        "id": widget.id, 
+        "id": widget.id,
         "asset_id": widget.asset_id
     }
 
 def dicts_from_asset_list(request, assets):
     return [dict_from_asset(request, asset) for asset in assets]
-
-
