@@ -91,5 +91,7 @@ class DetailPageResource(object):
                 return widget
 
     def remove_header_image(self, widgets):
-        widgets.remove(self.get_header_image(widgets))
+        header_image = self.get_header_image(widgets)
+        if header_image:
+            widgets.remove(header_image)
         return widgets
