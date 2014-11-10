@@ -47,10 +47,11 @@
 .subbox > dl > dt > p {
 	font-size:16px;
 	margin:0;
-	border-left:2px solid #CCCCCC;
+	border-left:2px solid #009541;
 	font-weight:bold;
 	padding:5px 0 0 5px;
 	margin-left:5px;
+    color: #009541;
 }
 
 .subbox > dl > dt > p.lineRed {

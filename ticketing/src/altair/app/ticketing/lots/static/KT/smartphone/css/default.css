@@ -37,7 +37,11 @@ hr, legend {
 	display: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1 {
+    background-color: #009A52;
+}
+
+h2, h3, h4, h5, h6 {
 	font-size: 100%;
 }
 
@@ -113,4 +117,20 @@ a:active {
 	top: 0;
 	left: 0;
 	margin: 0;
+}
+
+
+
+
+.headerTitle {
+    height: 25px;
+    line-height: 25px;
+    font-size: 17px;
+    letter-spacing: 2px;
+    color: #FFF;
+    overflow: hidden;
+    vertical-align: middle;
+    padding: 0px 0px 0px 20px;
+    -moz-user-select: none;
+    background-image: url("images/textures.png");
 }

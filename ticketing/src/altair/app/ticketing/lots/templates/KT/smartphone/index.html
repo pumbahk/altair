@@ -14,7 +14,7 @@
 <form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
 <div class="subbox">
 <dl>
-<dt><p>イベント詳細</p></dt>
+<dt><p class="lineRed">イベント詳細</p></dt>
 <dd>
 <dl class="infoList">
 <dt>イベント名</dt>
@@ -42,7 +42,7 @@
 
 <div class="subbox">
 <dl>
-<dt><p>公演一覧</p></dt>
+<dt><p class="lineRed">公演一覧</p></dt>
 <dd>
 <dl class="infoList">
 % for performance in performances:
