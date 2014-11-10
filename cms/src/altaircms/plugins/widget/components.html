@@ -8,3 +8,14 @@
 	%endif
 	</td></tr>
 </%def>
+
+<%def name="formfield2(form, k, **options)">
+	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)(**options)}
+	%if k in form.errors:
+	  <br/>
+	  %for error in form.errors[k]:
+		<span class="btn btn-danger">${error}</span>
+	  %endfor
+	%endif
+	</td></tr>
+</%def>

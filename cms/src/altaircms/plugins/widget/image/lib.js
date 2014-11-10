@@ -199,7 +199,7 @@ if(!widget){
                     self.areaManager.updatePagination(i);
                 });
             } else {
-                this.areaManager.updatePagination(i);                
+                this.areaManager.updatePagination(i);
             }
         }
     };
@@ -376,7 +376,7 @@ if(!widget){
         this.scrollableHandler.bind(root);
         this.searchHandler.bind(root);
         this.submitHandler.bind(root, submitBtn, infoSubmitBtn);
-        this.tabHandler.bind(root);   
+        this.tabHandler.bind(root);
     }
 
     ApplicationHandler.prototype.choicedElement = function(){
@@ -451,9 +451,9 @@ if(!widget){
     var appHandler = null; //hmm..
 
     var on_dialog = function(we){
-        we.bind_retry(we, 
-          10, 1.43, 15, 
-          function(){return $(".scrollable")}, 
+        we.bind_retry(we,
+          10, 1.43, 15,
+          function(){return $(".scrollable")},
           function(){
             var gateway = new AjaxScrollableAPIGateway(
                 we.get_pk(we.where),
@@ -493,21 +493,21 @@ if(!widget){
     var collect_data = function(we, choiced_elt){
         var choiced_elt = appHandler.choicedElement(); // module global variable
         var root = $(we.dialog);
-        return {imagefile: choiced_elt.attr("src"), 
-                asset_id: choiced_elt.attr("pk"), 
-                href: root.find("#href").val() || "", 
-                width: root.find("#width").val() || "", 
-                height: root.find("#height").val() || "", 
-                alt: root.find("#alt").val() || "", 
+        return {imagefile: choiced_elt.attr("src"),
+                asset_id: choiced_elt.attr("pk"),
+                href: root.find("#href").val() || "",
+                width: root.find("#width").val() || "",
+                height: root.find("#height").val() || "",
+                alt: root.find("#alt").val() || "",
                 align: root.find("#align").val() || "",
                 disable_right_click: root.find("#disable_right_click").attr("checked")
                };
     };
 
     return widget.include("image", {
-        load_page: load_page, 
-        on_dialog: on_dialog, 
-        on_close: on_close, 
-        collect_data: collect_data, 
+        load_page: load_page,
+        on_dialog: on_dialog,
+        on_close: on_close,
+        collect_data: collect_data,
     });
-})(widget); 
+})(widget);

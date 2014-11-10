@@ -43,7 +43,7 @@
         <p class="page-navi"><span class="js-page-current">0</span>/<span class="js-page-max">${max_of_pages-1}</span></p>
         <div class="items">
         %for i in xrange(max_of_pages):
-        <div class="group" id="group_${i}"> 
+        <div class="group" id="group_${i}">
           %if i == 0:
             %for asset in assets:
               %if loop.first:
@@ -79,12 +79,12 @@
   <div id="setting_tab" style="display:none;">
     <table class="table">
       <tbody>
-        ${co.formfield(form, "href")}
-        ${co.formfield(form, "width")}
-        ${co.formfield(form, "height")}
-        ${co.formfield(form, "alt")}
-        ${co.formfield(form, "align")}
-        ${co.formfield(form, "disable_right_click")}
+        ${co.formfield2(form, "href", class_="managed")}
+        ${co.formfield2(form, "width", class_="managed")}
+        ${co.formfield2(form, "height", class_="managed")}
+        ${co.formfield2(form, "alt", class_="managed")}
+        ${co.formfield2(form, "align", class_="managed")}
+        ${co.formfield2(form, "disable_right_click", class_="managed")}
       </tbody>
     </table>
     <button type="button" id="image_info_submit" class="btn btn-primary">設定を保存して登録</button>
