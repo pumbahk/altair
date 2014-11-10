@@ -77,7 +77,9 @@ $(function () {
 
 
 
-<h2 class="glitter red">イベント詳細</h2>
+<h2 class="glitter orange">イベント詳細</h2>
+    ${renderer.render(header_image)}
+
 <%m:header>イベント名称</%m:header>
 <div class="sectionbox">
   <div class="sectionbox-inner">
@@ -230,6 +232,9 @@ $(function () {
 <hr/>
 % endif
 
+% for widget in widgets:
+    ${renderer.render(widget)}
+% endfor
 
 <%m:header><a name="list">公演一覧</a></%m:header>
 % if len(perfs):
