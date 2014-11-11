@@ -2,6 +2,7 @@
 from altair.app.ticketing import newRootFactory
 from .resources import (
     VenueResource,
+    ChildVenueResource,
     AugusVenueResource,
     AugusVenueListResource,
     PerformanceResource,
@@ -11,6 +12,7 @@ from .resources import (
 ROUTE_URL_RESOURCE = {
     'augus.test': ('/test', None),
     'augus.venue.index': ('/venues/{venue_id}', VenueResource),
+    'augus.venue.get_augus_venues': ('/venues/get_augus_venues/{venue_id}', ChildVenueResource),
     'augus.venue.download': ('/venues/{venue_id}/download', VenueResource),
     'augus.venue.upload': ('/venues/{venue_id}/upload', AugusVenueResource),
     'augus.augus_venue.list': ('/augus_venues', None),
