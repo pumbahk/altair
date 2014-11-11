@@ -89,6 +89,11 @@ td.price_error {
   font-weight: bold;
 }
 
+select[multiple] {
+  resize: auto;
+  height: 15em;
+}
+
 #search table {
   border-collapse: separate;
   width: 100%;
