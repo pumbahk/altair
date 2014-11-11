@@ -1,102 +1,6 @@
 <%inherit file="./base.html" />
 <%namespace file="tags_smartphone.html" name="m" />
 
-<%block name="css">
-<style type="text/css">
-.eventTitle {
-  padding: 10px 0;
-  margin: 0 0;
-  font-size: 17px;
-}
-
-.modal {
-  font-size: 150%;
-}
-
-.dispBox {
-}
-
-.dispBoxInner {
-}
-
-#seatTypeList .panelgroup-label input {
-  display: none; 
-}
-
-#seatTypeList .panelgroup.unavailable .panelgroup-label {
-  color: #888;
-}
-
-#seatTypeList .panelgroup .panelgroup-label .seatState {
-}
-
-#seatTypeList .panelgroup .panelgroup-label .seatState:before {
-  content: "(";
-}
-
-#seatTypeList .panelgroup .panelgroup-label .seatState:after {
-  content: ")";
-}
-
-#seatTypeList .panelgroup.unavailable .panelgroup-label .seatState {
-}
-
-#seatTypeList .panelgroup.unavailable > .panelgroup-label .panelgroup-label-inner:before {
-  display: none;
-}
-
-#seatTypeList .panelgroup-label .seatColor {
-  display: inline-block;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  border: 1px solid #fff;
-  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3);
-  width: 16px;
-  height: 16px;
-  vertical-align: baseline;
-  margin: 2px 4px 0 0;
-}
-
-.productListContainer ul.productList {
-  list-style: none;
-  padding: 0 0;
-  margin: 0 0;
-}
-
-.productListContainer ul.productList li {
-  padding: 4px 4px;
-  margin: 0 0;
-  border-top: 1px solid #ccc;
-}
-
-.productListContainer ul.productList li:first-child {
-  border-top: none;
-}
-
-.productListContainer .productName {
-  float: left;
-  display: block;
-}
-
-.productListContainer .productPrice {
-  float: right;
-  display: block;
-}
-
-.productListContainer .productDescription {
-  clear: both;
-  display: block;
-}
-
-.productListContainer .productQuantity {
-  clear: both;
-  display: block;
-  text-align: right;
-}
-
-</style>
-</%block>
-
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
@@ -142,9 +46,12 @@ $(function () {
 });
 </script>
 </%block>
+    <p/>
     <div class="dispbox">
-      <h2 class="eventTitle">${event['title']}</h2>
+      <h2 class="headerTitle">${event['title']}</h2>
     </div>
+    <p/>
+
     <div class="dispBox">
       <%m:header>日時・会場</%m:header>
     % if preferred_performance:
@@ -227,9 +134,9 @@ $(function () {
                   <fieldset style="display:none;" class="selected-seats">
                   </fieldset>
                   <ul class="buttonbox">
-                    <li><button class="btn btn-primary btn-select-buy">座席を選んで購入</button></li>
-                    <li><button class="btn btn-primary btn-entrust-buy">おまかせで購入</button></li>
-                    <li><button class="btn btn-primary btn-buy">購入</button></li>
+                    <li><button class="btn btn-primary btn-select-buy btn-seat">座席を選んで購入</button></li>
+                    <li><button class="btn btn-primary btn-entrust-buy btn-seat">おまかせで購入</button></li>
+                    <li><button class="btn btn-primary btn-buy btn-seat">購入</button></li>
                   </ul>
                 </div>
               </div>
@@ -258,7 +165,10 @@ $(function () {
       </div>
     </div>
 
-    <h2 class="glitter red">イベント詳細</h2>
+    <p/>
+    <h2 class="headerTitle">イベント詳細</h2>
+    <p/>
+
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
 

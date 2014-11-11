@@ -3,7 +3,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from altaircms.lib.fanstatic_decorator import with_jquery
 from ..separation import enable_smartphone, enable_mobile
 from altaircms.page.staticupload.api import as_static_page_response, StaticPageNotFound
-import logging 
+import logging
 import os.path
 from altairsite.config import usersite_view_config
 from altairsite.preview.api import set_rendered_page
@@ -31,7 +31,7 @@ def _rendering_page(context, request, control, page): #todo: refactoring
     response = renderer.render(descriptor.absspec(), page)
     set_rendered_page(request, page)
     return response
-    
+
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
 
 def not_static_path(info, request):
@@ -164,12 +164,16 @@ def get_mobile_route_path(request, pcurl):
         ret = urls[pcurl]
     return ret
 
+
 def get_smartphone_route_path(request, pcurl):
     urls = dict({
-        'faq':request.route_path('smartphone.page', kind='help'),
-        'change':request.route_path('smartphone.page', kind='canceled'),
-        'smartphone/inquiry':request.route_path('smartphone.page', kind='inquiry')
-    })
+        'faq': request.route_path('smartphone.page', kind='help'),
+        'purchase': request.route_path('smartphone.page', kind='purchase'),
+        'change': request.route_path('smartphone.page', kind='canceled'),
+        'smartphone/inquiry': request.route_path('smartphone.page', kind='inquiry'),
+        'privacy': request.route_path('smartphone.page', kind='privacy'),
+        'legal': request.route_path('smartphone.page', kind='legal'),
+        })
     ret = None
     if pcurl in urls:
         ret = urls[pcurl]

@@ -1,0 +1,10 @@
+@charset "utf-8";
+
+@import url("common.css");
+@import url("layout.css");
+
+@import url("grpRakutenLinkArea.css");
+div#grpRakutenLinkArea {
+    clear: both;
+    font-size: 125%;
+}

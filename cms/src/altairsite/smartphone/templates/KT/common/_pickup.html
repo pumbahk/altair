@@ -1,0 +1,39 @@
+<%page args="promotions, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<script type="text/javascript" src="${request.static_url('altaircms:static/KT/smartphone/js/jquery-1.10.1.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altaircms:static/KT/smartphone/js/jquery.bxslider.min.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/smartphone/css/jquery.bxslider.css')}">
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.bxslider').bxSlider({
+        auto: true,
+        pause: 2000,
+        speed: 500,
+        mode: 'fade',
+        autoControls: true
+    });
+});
+</script>
+
+<% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
+<div class="frameline">
+  <ul class="bxslider">
+    % for event, promotion in promotions:
+      <li>
+          % if promotion.link:
+            <a href="${promotion.link}">
+              <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+            </a>
+          % elif event:
+            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
+              <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+            </a>
+          % else:
+            <img width="75%" src="${helper.get_asset_rendering_object(request, promotion.main_image).filepath}" />
+          % endif
+      </li>
+    % endfor
+  </ul>
+</div>

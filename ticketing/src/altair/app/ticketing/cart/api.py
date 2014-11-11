@@ -324,7 +324,9 @@ def get_cart_user_identifiers(request):
 
 def is_point_input_organization(context, request):
     organization = get_organization(request)
-    return organization.id == 24
+    code = organization.code
+    if code == 'RE' or code == 'KT':
+        return True
 
 def is_fc_auth_organization(context, request):
     organization = get_organization(request)

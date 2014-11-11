@@ -1,0 +1,10 @@
+<%inherit file="common/_base.html" />
+<%namespace file="common/tags_smartphone.html" name="m" />
+<%block name="title">トップ</%block>
+
+<div style="text-align: center; background-color: #009A52">
+  <img width="250px" src="${request.static_url('altaircms:static/KT/smartphone/img/point.png')}"/>
+</div>
+<%include file="common/_pickup.html" args="promotions=promotions, helper=helper"/>
+<%include file="common/_topic.html" args="topics=topics, helper=helper"/>
+<%include file="common/_topcontent.html" args="topcontents=topcontents, helper=helper"/>

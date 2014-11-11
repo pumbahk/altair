@@ -43,8 +43,8 @@ class StaticKindView(object):
               'helps':helps
             , 'helper':SmartPhoneHelper()
             , 'sns':{
-                'url':"https://ticket.rakuten.co.jp/faq",
-                'title':u"楽天チケット-よくある質問"
+                'url':"https://ktohoku.tstar.jp/faq",
+                'title':u"キョードー東北モバイルチケット-FAQ"
             }
         }
 
@@ -117,6 +117,15 @@ class StaticKindView(object):
             'sns':{
                 'url':"http://www.ticketstar.jp/legal",
                 'title':u"楽天チケット-特定商取引法に基づく表示"
+            }
+        }
+
+    @smartphone_site_view_config(match_param="kind=purchase", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/purchase.html'))
+    def move_purchase(self):
+        return {
+            'sns':{
+                'url':"http://ktohoku.tstar.jp/purchase",
+                'title':u"キョードー東北モバイルチケット-購入方法"
             }
         }
 

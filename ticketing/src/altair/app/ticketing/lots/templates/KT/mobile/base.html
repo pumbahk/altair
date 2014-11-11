@@ -1,0 +1,23 @@
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title><%block name="title">キョードー東北モバイルチケット</%block></title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.lots:static/KT/mobile/img/logo.gif')}" width="240" height="96" alt="キョードー東北モバイルチケット" />
+  <hr size="2" noshade="noshade" color="#000000" />
+</div>
+<div>
+
+${self.body()}
+
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+<a href="http://ktohoku.tstar.jp/privacy">個人情報保護方針</a> | <a href="http://ktohoku.tstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2014 &copy; TicketStar, Inc. All rights reserved.</font></div>
+</div>
+</body>
+</html>
