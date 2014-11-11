@@ -107,7 +107,8 @@ class TagManagerBase(object):
             tags = obj.tags
             qs = self.Tag.query.filter(self.XRef.object_id==obj.id).filter(self.Tag.publicp == public_status)
             for tag in qs.filter(self.Tag.label.in_(deletes), self.Tag.organization_id==organization_id):
-                tags.remove(tag)
+                if tag in tags:
+                    tags.remove(tag)
 
     def delete_mobile_tags(self, obj, deletes, public_status=True, organization_id=None):
         if deletes:
