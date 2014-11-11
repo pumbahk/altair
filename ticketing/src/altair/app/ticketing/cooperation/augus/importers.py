@@ -27,7 +27,8 @@ from .errors import (
     AugusIntegrityError,
     AugusDataImportError,
     NoSeatError,
-    IllegalImportDataError
+    IllegalImportDataError,
+    AugusPerformanceNotFound,
     )
 
 def get_or_create_augus_stock_info(seat):
@@ -118,7 +119,7 @@ class AugusTicketImpoter(object):
                                                   augus_performance_code=record.performance_code,
                                                   )
             if not ag_performance:
-                raise AugusDataImportError('AugusPerformance not found: event_code={} performance_code={}'.format(
+                raise AugusPerformanceNotFound('AugusPerformance not found: event_code={} performance_code={}'.format(
                     record.event_code, record.performance_code))
         else:
             ag_performance = ag_ticket.augus_performance
