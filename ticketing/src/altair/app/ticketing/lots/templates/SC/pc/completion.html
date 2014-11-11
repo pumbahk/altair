@@ -5,7 +5,7 @@
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
-</div>        
+</div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
@@ -46,7 +46,7 @@
     </div>
     %endfor
   </div>
-</div> 
+</div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -66,12 +66,8 @@
             <td>${shipping_address.email_1}</td>
           </tr>
           <tr>
-            <th>電話番号 (自宅)</th>
+            <th>電話番号</th>
             <td>${shipping_address.tel_1}</td>
-          </tr>
-          <tr>
-            <th>電話番号 (携帯電話)</th>
-            <td>${shipping_address.tel_2}</td>
           </tr>
           <tr>
             <th>住所</th>
