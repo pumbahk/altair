@@ -6,7 +6,7 @@ accountSetting.listingParamName = "sclid";
 accountSetting.campaignParamName = "scid,sclid";
 accountSetting.defaultRSID = "[default RSID]";
 //change bellow to false for DEV/STG environment
-accountSetting.dynamicAccountSelection=false
+accountSetting.dynamicAccountSelection=true
 accountSetting.dynamicAccountList="[DEV RSID]=some-domain,some-domain2;[PRD RSID]=some-domain-prd,some-domain-prd2";
 accountSetting.serviceName = "[service name]";
 accountSetting.cookieDomainPeriods="3"
