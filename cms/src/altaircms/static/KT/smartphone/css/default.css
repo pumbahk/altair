@@ -212,6 +212,25 @@ ul.buttonset._4cols li .button.embedded {
   text-align: center;
 }
 
+ul.buttonset._4cols li button.embedded2,
+ul.buttonset._4cols li .button.embedded2 {
+  display: block;
+  width: auto;
+  border: none;
+  height: 30px;
+  line-height: 30px;
+  width: 100%;
+  font-size: 12px;
+  background: #FF8631;
+  background-image: url(../img/textures.png);
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  color: #fff;
+  font-weight: bold;
+  padding: 0 0;
+  text-align: center;
+}
+
 ul.buttonset._4cols li button.embedded.first,
 ul.buttonset._4cols li .button.embedded.first {
   border-left: none;
