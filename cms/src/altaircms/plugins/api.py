@@ -44,7 +44,7 @@ def page_type(request, page):
 def get_widget_aggregator_dispatcher(request):
     return request.registry.getUtility(IWidgetAggregateDispatcher)
 
-def get_widget_utility(request, page,_type, enable_raise=True):
+def get_widget_utility(request, page,_type):
     logger.debug("*get widget utility* %s" % _type)
     if not hasattr(request, "_widget_utilities"):
         request._widget_utilities = {} #weak dict?
@@ -58,5 +58,4 @@ def get_widget_utility(request, page,_type, enable_raise=True):
         return utility
     except KeyError:
         logger.warn("widget utility is not found page=%s, type=%s" % (page.id,  _type))
-        if enable_raise:
-            raise Exception("widget utility is not found page=%s, type=%s" % (page.id,  _type))
+        raise Exception("widget utility is not found page=%s, type=%s" % (page.id,  _type))
