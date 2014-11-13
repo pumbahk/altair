@@ -19,6 +19,7 @@ def get_rendering_function_via_page(widget, bname, bsettings, type_=None):
             logger.exception(str(e))
             _type = type_ or widget.type
             logger.warn("%s_merge_settings. info is empty" % _type)
+            return u"%s widget: %s" % (_type, str(e))
     return closure
 
 def safe_execute(name):
