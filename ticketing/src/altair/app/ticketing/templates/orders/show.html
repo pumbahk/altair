@@ -140,13 +140,23 @@ ${ch.breadcrumbs(
           <form action="${request.route_path('orders.ordered_product_attribute_edit', order_no=order.order_no)}" method="POST" style="display: inline">
           <h3>購入商品属性</h3>
           <table class="table table-striped table-bordered">
+            <% year, month, day = None, None, None %>
             % for id, label, key, value, show_only in ordered_product_attributes:
               % if key == 'year':
-                <% year = value %>
+                <%
+                    year = value
+                    year_id = id
+                %>
               % elif key == 'month':
-                <% month = value %>
+                <%
+                    month = value
+                    month_id = id
+                %>
               % elif key == 'day':
-                <% day = value %>
+                <%
+                    day = value
+                    day_id = id
+                %>
               % else:
                 <tr>
                   <th class="span3">${label} (${key})</th>
@@ -158,28 +168,30 @@ ${ch.breadcrumbs(
                 </tr>
               % endif
             % endfor
+            % if year and month and day:
               <tr>
                   <th class="span3">誕生日 (年) (year)</th>
                   <td class="span2">
-                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${id}" />
+                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${year_id}" />
                       <input type="hidden" id="name" name="name" value="year" />
                       <input type="text" id="value" name="value" value="${year}" />
                   </td>
               </tr>
                   <th class="span3">誕生日 (月) (month)</th>
                   <td class="span2">
-                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${id}" />
+                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${month_id}" />
                       <input type="hidden" id="name" name="name" value="month" />
                       <input type="text" id="value" name="value" value="${month}" />
                   </td>
               <tr>
                   <th class="span3">誕生日 (日) (day)</th>
                   <td class="span2">
-                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${id}" />
+                      <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${day_id}" />
                       <input type="hidden" id="name" name="name" value="day" />
                       <input type="text" id="value" name="value" value="${day}" />
                   </td>
               </tr>
+             % endif
           </table>
           <input type="submit" value="購入商品属性更新" />
           </form>
