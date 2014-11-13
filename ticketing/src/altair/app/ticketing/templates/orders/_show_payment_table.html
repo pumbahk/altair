@@ -22,19 +22,19 @@
             % endif
             % if checkout:
             <tr>
-              <th>楽天あんしん支払いサービス 注文番号</th>
+              <th>楽天ID決済 注文番号</th>
               <td>${checkout.orderId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん支払いサービス 注文管理番号</th>
+              <th>楽天ID決済 注文管理番号</th>
               <td>${checkout.orderControlId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん支払いサービス 利用ポイント数</th>
+              <th>楽天ID決済 利用ポイント数</th>
               <td>${vh.price(int(checkout.usedPoint or 0))}</td>
             </tr>
             <tr>
-              <th>楽天あんしん支払いサービス 売上日時</th>
+              <th>楽天ID決済 売上日時</th>
               <td>${vh.datetime(checkout.sales_at, with_weekday=True)}</td>
             </tr>
             % endif

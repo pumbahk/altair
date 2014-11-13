@@ -55,7 +55,7 @@ class AnshinCheckoutPayloadBuilder(object):
 
     def _generate_requestid(self):
         """
-        楽天あんしん支払いサービスの一意なリクエストIDを生成する
+        楽天ID決済の一意なリクエストIDを生成する
         """
         return uuid.uuid4().hex[:16]  # uuidの前半16桁
 

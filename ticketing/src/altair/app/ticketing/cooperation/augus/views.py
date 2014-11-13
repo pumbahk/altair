@@ -75,6 +75,20 @@ class VenueView(_AugusBaseView):
                 'upload_form': AugusVenueUploadForm(organization_id=self.context.organization.id),
                 }
 
+    @view_config(route_name='augus.venue.get_augus_venues', request_method='GET', renderer='json')
+    def get_augus_venues(self):
+        def _build_augus_venue_dict(augus_venue):
+            return {
+                'id': augus_venue.id,
+                'name': augus_venue.name,
+                'code': augus_venue.code,
+                'version': augus_venue.version,
+                'augus_account': augus_venue.augus_account.name,
+                }
+        res = {'augus_venues': [_build_augus_venue_dict(augus_venue) for augus_venue in self.context.augus_venues]
+               }
+        return res
+
     @view_config(route_name='augus.venue.download', request_method='GET')
     def download(self):
         res = Response()
