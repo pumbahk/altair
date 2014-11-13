@@ -8,9 +8,63 @@
   )}
 </%block>
 
+<%
+import json
+
+f = lambda x: dict(start_at=x.start_at.strftime('%Y-%m-%dT%H:%M:%S'), end_at=x.end_at.strftime('%Y-%m-%dT%H:%M:%S') if x.end_at else '')
+
+dates_json = json.dumps(dict([(x.id, f(x)) for x in event.sales_segment_groups]))
+%>
+
+
+<script type="text/javascript">
+dates = ${dates_json | n}
+
+function timestamp_to_arr(s) {
+  if (s === '') {
+    return [[], []];
+  }
+  var dt = s.split('T');
+  var ymd = dt[0].split('-');
+  var hms = dt[1].split(':');
+
+  return Array.concat(ymd, hms);
+}
+
+function updateSalesSegmentGroupById(j) {
+  var d = dates[j];
+  var start_at_arr = timestamp_to_arr(d.start_at);
+  var end_at_arr = timestamp_to_arr(d.end_at);
+
+  if (start_at_arr.length < 6) {
+    start_at_arr = ['', '', '', '', '', ''];
+  }
+  $('#start_at\\.year').val(start_at_arr[0]);
+  $('#start_at\\.month').val(start_at_arr[1]);
+  $('#start_at\\.day').val(start_at_arr[2]);
+  $('#start_at\\.hour').val(start_at_arr[3]);
+  $('#start_at\\.minute').val(start_at_arr[4]);
+  $('#start_at\\.second').val(start_at_arr[5]);
+
+  if (end_at_arr.length < 6) {
+    end_at_arr = ['', '', '', '', '', ''];
+  }
+  $('#end_at\\.year').val(end_at_arr[0]);
+  $('#end_at\\.month').val(end_at_arr[1]);
+  $('#end_at\\.day').val(end_at_arr[2]);
+  $('#end_at\\.hour').val(end_at_arr[3]);
+  $('#end_at\\.minute').val(end_at_arr[4]);
+  $('#end_at\\.second').val(end_at_arr[5]);
+}
+</script>
+
 <script type="text/javascript">
   $(function() {
     $('[rel=popover]').popover({html:true});
+    $('#sales_segment_group_id').change(function() {
+      var opt = $('#sales_segment_group_id').children(':selected');
+      updateSalesSegmentGroupById(opt.val());
+    });
   });
 </script>
 

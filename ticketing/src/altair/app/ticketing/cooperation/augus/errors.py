@@ -29,6 +29,9 @@ class IllegalImportDataError(AugusError):
 class AugusDataExportError(AugusError):
     pass
 
+class AugusPerformanceNotFound(AugusDataExportError):
+    pass
+
 class AugusIntegrityError(AugusError):
     pass
 

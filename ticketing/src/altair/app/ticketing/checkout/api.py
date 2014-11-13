@@ -308,7 +308,7 @@ class AnshinCheckoutAPI(object):
             if 'statusCode' in result and result['statusCode'] != '0':
                 error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
                 raise AnshinCheckoutAPIError(
-                    u'楽天あんしん支払いサービスの決済確定に失敗しました',
+                    u'楽天ID決済の決済確定に失敗しました',
                     error_code
                     )
             for checkout in checkout_object_list:
@@ -328,7 +328,7 @@ class AnshinCheckoutAPI(object):
             if 'statusCode' in result and result['statusCode'] != '0':
                 error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
                 raise AnshinCheckoutAPIError(
-                    u'楽天あんしん支払いサービスのキャンセルに失敗しました',
+                    u'楽天ID決済のキャンセルに失敗しました',
                     error_code
                     )
             self.session.commit()
@@ -354,7 +354,7 @@ class AnshinCheckoutAPI(object):
             if 'statusCode' in result and result['statusCode'] != '0':
                 error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
                 raise AnshinCheckoutAPIError(
-                    u'あんしん決済の金額変更に失敗しました',
+                    u'楽天ID決済の金額変更に失敗しました',
                     error_code
                     )
             self.session.commit()

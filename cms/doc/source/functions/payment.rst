@@ -9,7 +9,7 @@ http://dev.ticketstar.jp/redmine-altair/issues/113
 * コンビニ
 * 外部決済サービス
 
- * 楽天安心決済
+ * 楽天ID決済
 
 現金、銀行振込
 --------------------------
@@ -34,7 +34,7 @@ http://dev.ticketstar.jp/redmine-altair/issues/144
 API経由で繋ぎこみを行う形になる。
 
 
-楽天あんしん決済サービス
+楽天ID決済サービス
 --------------------------
 
 .. note:: Dropboxのドキュメント参照のこと。

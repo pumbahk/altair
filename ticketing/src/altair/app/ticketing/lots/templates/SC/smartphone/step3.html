@@ -125,11 +125,6 @@
                     ${form['tel_1']}
                     ${self.error(form, 'tel_1')}
                   </div>
-                  <div class="form-field">
-                    ${form['tel_2'].label}
-                    ${form['tel_2']}
-                    ${self.error(form, 'tel_2')}
-                  </div>
                 </td>
               </tr>
               <tr>
@@ -189,7 +184,7 @@
       </div>
     </div>
     <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
-  </form>      
+  </form>
 </div>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />
@@ -315,7 +310,7 @@ var selected_performance_id = 0;
                 var stockTypeSelectUpdated = false;
                 if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
                     refreshStockTypeSelection(dateSelect, stockTypeSelect);
-                    stockTypeSelectUpdated = true;                    
+                    stockTypeSelectUpdated = true;
                 }
 
                 if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
@@ -353,7 +348,7 @@ var selected_performance_id = 0;
         refreshProducts(dateSelect, stockTypeSelect);
     });
 
-    $(function() { 
+    $(function() {
         $wishForm.find("select.performance-name-select").each(function(_, n) {
             var performanceNameSelect = $(n);
             var wishOrder = performanceNameSelect.data('wishorder');
@@ -361,7 +356,7 @@ var selected_performance_id = 0;
             refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
         });
         $wishForm.find("select.performance-date-select").each(function(_, n) {
-            var dateSelect = $(n); 
+            var dateSelect = $(n);
             var wishOrder = dateSelect.data('wishorder');
             var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
             refreshStockTypeSelection(dateSelect, stockTypeSelect);

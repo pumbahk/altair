@@ -63,6 +63,12 @@
       ${ch.form_item(form.redirect_url_pc)}
       ${ch.form_item(form.redirect_url_mobile)}
       ${ch.form_item(form.venue_id, class_='span6')}
+      <div class="control-group">
+        <div class="controls container-fluid">
+          <div id="augus-venue-message"></div>
+          <div id="augus-venue-list" class="row"></div>
+        </div>
+      </div>
       ${ch.form_item(form.abbreviated_title)}
       ${ch.form_item(form.subtitle)}
       ${ch.form_item(form.display_order)}
@@ -81,4 +87,27 @@
 <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
 <script>
 $('select#venue_id').chosen({single_only: true, no_results_text: '該当無し'});
+$('select#venue_id').on('change', function (ev){
+    var venue_id = $(ev.target).val();
+    var api_url = '/cooperation/augus/venues/get_augus_venues/' + venue_id;
+    var message = $('#augus-venue-message').css({'color': 'black'}).empty();
+    var augus_venue_list = $('#augus-venue-list').empty();
+    $.ajax(api_url, {
+        type: 'GET',
+        contentType: false,
+        dataType: 'json',
+        success: function(res){
+            var msg = res.augus_venues.length > 0 ? "以下の会場と連携済みです" : "この会場はAugusと未連携です";
+            message.text(msg);
+            $.each(res.augus_venues, function(augus_account_name, data){
+                $('<div class="col-md-2">' + data.augus_account + ' ' + data.name + '('+data.code +'/'+ data.version+')' +  '</div>').appendTo(augus_venue_list);
+            });
+        },
+        error: function(xhr, text){
+            $('#augus-venue-message')
+                .css({'color': 'red'})
+                .text("Augus用の会場データを取得できません");
+        }
+    });
+});
 </script>
