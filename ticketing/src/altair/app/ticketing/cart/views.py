@@ -158,8 +158,8 @@ def flow_predicate_extra_form(pe, flow_context, context, request):
 
 @provider(IPageFlowPredicate)
 def flow_predicate_point_input_organization(pe, flow_context, context, request):
-    return is_point_input_organization(context, request)
-
+    user = api.get_or_create_user(context.authenticated_user())
+    return is_point_input_organization(context, request, user)
 
 @provider(IPageFlowPredicate)
 def flow_predicate_prepared(pe, flow_context, context, request):

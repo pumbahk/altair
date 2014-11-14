@@ -322,15 +322,35 @@ def get_cart_user_identifiers(request):
             retval.append((remote_addr, 'weak'))
     return retval
 
-def is_point_input_organization(context, request):
+def is_point_input_organization(context, request, user=None):
+    enable_point = enable_point_input(user)
+    if not user:
+        enable_point = True
+
     organization = get_organization(request)
     code = organization.code
-    if code == 'RE' or code == 'KT':
-        return True
+
+    if enable_point:
+        if code == 'RE' or code == 'KT':
+            return True
 
 def is_fc_auth_organization(context, request):
     organization = get_organization(request)
     return bool(organization.settings[0].auth_type == "fc_auth")
+
+def enable_point_input(user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    if user.member.membergroup.enable_point_input:
+        return True
+
+    return False
 
 def enable_auto_input_form(user):
     from altair.app.ticketing.users.models import User
