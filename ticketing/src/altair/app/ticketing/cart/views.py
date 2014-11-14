@@ -1273,13 +1273,16 @@ class PointAccountEnteringView(object):
             asid = self.request.altair_smartphone_asid
 
         accountno = self.request.params.get('account')
+        user = api.get_or_create_user(self.context.authenticated_user())
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            user = api.get_or_create_user(self.context.authenticated_user())
             if user:
                 acc = api.get_user_point_account(user.id)
                 form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+
+        if not enable_auto_input_form(user):
+            form['accountno'].data = ''
 
         return dict(
             form=form,
