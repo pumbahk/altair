@@ -14,7 +14,8 @@ def get_rendering_function_via_page(widget, bname, bsettings, type_=None):
             request = bsettings.extra["request"]
             page = bsettings.extra["page"]
             utility = get_widget_utility(request, page, type_ or widget.type)
-            return utility.render_action(request, page, widget, bsettings)
+            if utility:
+                return utility.render_action(request, page, widget, bsettings)
         except Exception, e:
             logger.exception(str(e))
             _type = type_ or widget.type
