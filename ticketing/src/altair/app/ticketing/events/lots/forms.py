@@ -37,24 +37,22 @@ class LotForm(Form):
         ],
     )
     limit_wishes = IntegerField(
-        label=u'希望上限',
+        label=u'希望取得上限',
         validators=[
             Required(),
         ],
     )
 
     entry_limit = IntegerField(
-        label=u'申込上限',
+        label=u'申込上限回数',
         validators=[
             Required(),
         ],
     )
 
     description = TextAreaField(
-        label=u'詳細',
-        validators=[
-            Required(),
-        ],
+        label=u'注意文言',
+        default=u'',
     )
 
     lotting_announce_datetime = DateTimeField(
@@ -109,7 +107,7 @@ class LotForm(Form):
     )
 
     start_at = DateTimeField(
-        label=u"販売開始",
+        label=u"販売開始日時",
         format='%Y-%m-%d %H:%M',
         missing_value_defaults=dict(
             year=u'',
@@ -130,7 +128,7 @@ class LotForm(Form):
     )
 
     end_at = DateTimeField(
-        label=u"販売終了",
+        label=u"販売終了日時",
         format='%Y-%m-%d %H:%M',
         missing_value_defaults=dict(
             year=u'',
@@ -151,7 +149,7 @@ class LotForm(Form):
     )
 
     max_quantity = IntegerField(
-        label=u'購入上限',
+        label=u'購入上限枚数',
         validators=[
             Required(),
             NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),

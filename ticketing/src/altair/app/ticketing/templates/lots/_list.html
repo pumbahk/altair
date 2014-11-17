@@ -1,4 +1,6 @@
 <%page args="lots, lotid_viewresource, limit=None" />
+<%namespace file="/common/modal.html" name="m" />
+
 %if not lots:
 <p>
   登録されている抽選はありません。
@@ -13,9 +15,12 @@
           <tr>
             <th>&nbsp;</th>
             <th>抽選名</th>
-            <th>抽選期間</th>
-            <th>申込上限</th>
+            <th>受付期間</th>
+            <th>希望取得上限</th>
+            <th>申込上限回数</th>
+            <th>認証方法</th>
             <th>抽選結果発表予定日</th>
+            <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -31,6 +36,8 @@
             <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
             <td>${lot.start_at} - ${lot.end_at}</td>
             <td>${lot.limit_wishes}</td>
+            <td>${lot.entry_limit}</td>
+            <td>${lot.auth_type or u'なし'}</td>
             <td>${lot.lotting_announce_datetime}
               % if h.timezone_label(lot):
                 (${h.timezone_label(lot)})
@@ -45,12 +52,19 @@
               <a href="${resource.agreement_lots_cart_now_url}">(時間指定)</a>
             </td>
             <td>
+              <a class="btn btn-small display-description">注意文言</a>
+              <span class="lot-description">
+                ${lot.description}
+              </span>
+            </td>
+            <td>
               <div class="btn-group">
                 <a href="${request.route_url('lots.edit', lot_id=lot.id)}" class="btn btn-small"><i class="icon-edit"></i> 編集</a>
               </div>
             </td>
           </tr>
           %endfor
+
         </tbody>
       </table>
       <div class="btn-group">
@@ -61,3 +75,34 @@
   </div>
 </form>
 %endif
+
+<style>
+  .lot-description {
+      display: none;
+  }
+</style>
+
+<div class="modal hide" id="description-dialog">
+  <div class="modal-header">
+    注意文言
+  </div>
+  <div class="modal-body">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal">閉じる</button>
+  </div>
+</div>
+
+<script>
+  $(function (){
+      $('.display-description').on('click', function (ev){
+          var modal = $('#description-dialog');
+  var modal_body = modal.find('.modal-body');
+          $(ev.target.parentNode).find('.lot-description').each(function(ii, elm){
+              modal_body.text($(elm).text());
+              modal.modal('toggle');
+
+          });
+      });
+  });
+</script>
