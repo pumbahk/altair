@@ -141,8 +141,8 @@ ${ch.breadcrumbs(
         </td>
         <td>
           <ul>
-            %for attribute in bundle.attributes_.itervalues():
-            <li>${attribute.name}</li>
+            %for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
+            <li>${attribute.name}: ${attribute.value[0:10]}${"..." if 10<len(attribute.value) else ""}</li>
             %endfor		  
           </ul>
         </td>

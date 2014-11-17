@@ -219,7 +219,7 @@
 		<th>更新日時</th>
 		<th>作成日時</th>
 	  </tr>
-	%for attribute in bundle.attributes_.itervalues():
+	%for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
 	  <tr>
 		<td><input type="radio" name="id" value="${attribute.id}"/></td>
 		<td width="30%">${attribute.name}</td>
