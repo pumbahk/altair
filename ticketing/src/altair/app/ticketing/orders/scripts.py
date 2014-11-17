@@ -142,6 +142,7 @@ def detect_fraud():
     env = bootstrap(args.config)
     request = env['request']
     registry = env['registry']
+    settings = registry.settings
 
     now = datetime.now()
     period_from = args.f if args.f else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
@@ -169,6 +170,16 @@ def detect_fraud():
     ))
     # インナー予約は除く
     query = query.filter(not_(Order.channel.in_(Order.inner_channels())))
+
+    # {{{ XXX: 当面のあいだ乃木坂認証用のユーザも除外 (refs #10114)
+    from altair.app.ticketing.users.models import UserCredential
+    nogizaka46_auth_identifier = settings.get('altair.nogizaka46_auth.username', '::nogizaka46::') # manner in nogizaka46/auth.py
+    nogizaka46_auth_user_ids = UserCredential.query\
+        .filter(UserCredential.auth_identifier==nogizaka46_auth_identifier)\
+        .with_entities(UserCredential.user_id).subquery()
+    query = query.filter(not_(Order.user_id.in_(nogizaka46_auth_user_ids)))
+    # }}}
+
     query = query.with_entities(Order.organization_id, Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
     orders = query.all()
 
@@ -191,10 +202,9 @@ def detect_fraud():
                     row.fraud_suspect = True
                     row.save()
 
+    sender = settings['mail.message.sender']
     for organization_id, fraud_list in frauds.items():
         organization = Organization.filter_by(id=organization_id).one()
-        settings = registry.settings
-        sender = settings['mail.message.sender']
         recipient = u'dev@ticketstar.jp,' + organization.contact_email
         subject = u'[alert] 不正予約'
         render_params = dict(frauds=fraud_list, period_from=period_from, period_to=period_to)
