@@ -16,6 +16,7 @@ from altair.formhelpers import (
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
     LazySelectMultipleField,
     OurBooleanField, OurDecimalField, OurSelectField,
+    SwitchOptional,
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
@@ -120,12 +121,14 @@ class LotForm(Form):
             second=Max,
         ),
         validators=[
+            SwitchOptional('use_default_start_at'),
             Required(),
         ],
     )
 
     use_default_start_at = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         widget=CheckboxInput()
     )
 
@@ -141,13 +144,15 @@ class LotForm(Form):
             second=Max,
         ),
         validators=[
+            SwitchOptional('use_default_end_at'),
             Required(),
         ],
     )
 
     use_default_end_at = OurBooleanField(
         label=u'グループの値を利用',
-        widget=CheckboxInput()
+        default=True,
+        widget=CheckboxInput(),
     )
 
     max_quantity = IntegerField(
