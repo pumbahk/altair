@@ -29,9 +29,9 @@
           <tr>
             <td><input type="checkbox" name="lot_id" value="${lot.id}"/></td>
             <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
-            <td>${lot.start_at} - ${lot.end_at}</td>
+            <td>${vh.datetime(lot.start_at, with_weekday=True)} - ${vh.datetime(lot.end_at, with_weekday=True)}</td>
             <td>${lot.limit_wishes}</td>
-            <td>${lot.lotting_announce_datetime}
+            <td>${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}
               % if h.timezone_label(lot):
                 (${h.timezone_label(lot)})
               % endif
