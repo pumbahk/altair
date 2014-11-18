@@ -388,6 +388,20 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
                 status = False
         return status
 
+class ProductCopyForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', sales_segment=None, **kwargs):
+        super(ProductCopyForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if sales_segment is None:
+            raise Exception('sales_segment must be non-None value')
+        self.id = sales_segment.id
+
+    id = HiddenField(
+        validators=[Optional()],
+        )
+    sales_segments = OurBooleanField(
+        widget=CheckboxInput(),
+        default=True
+        )
 
 class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 

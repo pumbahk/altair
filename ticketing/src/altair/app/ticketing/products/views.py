@@ -15,7 +15,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
-from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm
+from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from .forms import PreviewImageDownloadForm
 
@@ -121,6 +121,64 @@ class ProductAndProductItem(BaseView):
                 product_item.quantity = f.product_item_quantity.data
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
+                product_item.save()
+
+            self.request.session.flash(u'商品を保存しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return dict(form=f)
+
+    @view_config(route_name='products.copy', request_method='GET', renderer='altair.app.ticketing:templates/products/_copy_form.html', xhr=True)
+    def copy_xhr(self):
+        # 商品の販売区分間コピー
+        sales_segment = self.context.sales_segment
+        f = ProductCopyForm(sales_segment=sales_segment)
+        return dict(form=f)
+
+    @view_config(route_name='products.copy', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
+    def copy_post_xhr(self):
+        # 商品の販売区分間コピー
+        sales_segment = self.context.sales_segment
+        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment, new_form=True)
+        if f.validate():
+            point_grant_settings = [
+                PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
+                for point_grant_setting_id in f.applied_point_grant_settings.data
+                ]
+
+            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
+            if f.all_sales_segment.data:
+                query = query.filter_by(performance_id=f.performance_id.data)
+            else:
+                query = query.filter_by(id=f.sales_segment_id.data)
+
+            for sales_segment_for_product in query:
+                product = merge_session_with_post(Product(), f.data, excludes={'id'})
+                max_display_order = Product.query.filter(
+                        Product.sales_segment_id==sales_segment_for_product.id
+                    ).with_entities(
+                        func.max(Product.display_order)
+                    ).scalar()
+                product.display_order = (max_display_order or 0) + 1
+                product.sales_segment = sales_segment_for_product
+                product.performance = sales_segment_for_product.performance
+                product.point_grant_settings.extend(point_grant_settings)
+                product.save()
+
+                stock = Stock.query.filter_by(
+                    stock_type_id=f.seat_stock_type_id.data,
+                    stock_holder_id=f.stock_holder_id.data,
+                    performance_id=sales_segment_for_product.performance.id
+                ).one()
+                product_item = ProductItem(
+                    performance_id=sales_segment_for_product.performance.id,
+                    product=product,
+                    name=f.name.data,
+                    price=f.price.data,
+                    quantity=f.product_item_quantity.data,
+                    stock_id=stock.id,
+                    ticket_bundle_id=f.ticket_bundle_id.data
+                )
                 product_item.save()
 
             self.request.session.flash(u'商品を保存しました')

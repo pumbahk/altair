@@ -2,7 +2,7 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
-  var new_product, edit_product, delete_product, preview_ticket;
+  var new_product, edit_product, copy_product, delete_product, preview_ticket;
   $(function() {
     (function (modal_product) {
       new_product = function new_product(sales_segment_id) {
@@ -14,6 +14,16 @@
           null
         );
         modal_product.find('.modal-header h3').text('商品＆商品明細 登録');
+      };
+      copy_product = function copy_product(sales_segment_id) {
+        if (!sales_segment_id) return false;
+        load_modal_form(
+          modal_product,
+          '${request.route_path('products.copy', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
+          null,
+          null
+        );
+        modal_product.find('.modal-header h3').text('販売区分間の商品コピー');
       };
       edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;
