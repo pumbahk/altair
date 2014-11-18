@@ -6,18 +6,14 @@ from datetime import datetime
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.widgets import CheckboxInput
-from wtforms.validators import Regexp, Length, Optional, ValidationError
-from wtforms.validators import Optional, AnyOf, Length, Regexp, NumberRange
+from wtforms.validators import Length, Optional, ValidationError, NumberRange
 
 from altair.auth import get_who_api_factory_registry
 from altair.formhelpers import (
-    DateTimeField, Translations, Required, DateField, Max, OurDateWidget, Email,
-    after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
-    NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
-    LazySelectMultipleField,
-    OurBooleanField, OurDecimalField, OurSelectField,
-    SwitchOptional,
-)
+    DateTimeField, Translations, Required, Max, OurDateWidget, Email,
+    after1900, LazySelectMultipleField, OurBooleanField, OurDecimalField,
+    OurSelectField, SwitchOptional,
+    )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
