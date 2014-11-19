@@ -22,7 +22,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP, Time
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased, undefer
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
@@ -776,6 +776,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.create_venue_id = template.venue.id
         performance.save()
         logger.info('[copy] Performance end')
+        return {template.id: performance.id}
 
     def has_that_delivery(self, delivery_plugin_id):
         qs = DBSession.query(DeliveryMethod)\
@@ -1023,17 +1024,22 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - Performance
                 - (この階層以下はPerformance.add()を参照)
               - EventSetting
+              - Lot
             """
             template_event = Event.get(self.original_id)
 
             # 各モデルのコピー元/コピー先のidの対比表
             convert_map = {
-                'stock_type':dict(),
-                'stock_holder':dict(),
-                'sales_segment_group':dict(),
-                'product':dict(),
-                'ticket':dict(),
-                'ticket_bundle':dict(),
+                'performance': dict(),
+                'stock_type': dict(),
+                'stock_holder': dict(),
+                'sales_segment_group': dict(),
+                'product': dict(),
+                'product_item': dict(),
+                'ticket': dict(),
+                'ticket_bundle': dict(),
+                'sales_segment': dict(),
+                'lot': dict(),
             }
 
             # create StockType
@@ -1068,13 +1074,63 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # create Performance
             for template_performance in template_event.performances:
-                Performance.create_from_template(template=template_performance, event_id=self.id)
+                convert_map['performance'].update(
+                    Performance.create_from_template(template=template_performance, event_id=self.id)
+                    )
 
             # create EventSettings
             if template_event.setting:
                 setting = template_event.setting
                 EventSetting.create_from_template(template=setting, event_id=self.id)
 
+            for key, src_dst in convert_map.items():
+                for src, dst in src_dst.items():
+                    logger.warn('[COPY] CONVERT: {}: {} -> {}'.format(key, src, dst))
+            # create Lot
+            for lot_src in template_event.lots:
+
+                ssg_src = lot_src.sales_segment.sales_segment_group
+                ssg_id = convert_map['sales_segment_group'][ssg_src.id]
+                ss_src = lot_src.sales_segment
+                res = SalesSegment.create_from_template(ss_src, sales_segment_group_id=ssg_id)
+                convert_map['sales_segment'].update(res)
+
+                lot = lot_src.create_from_template(
+                    lot_src,
+                    event_id=self.id,
+                    sales_segment_id=convert_map['sales_segment'][ss_src.id],
+                    )
+                convert_map['lot'][lot_src.id] = lot.id
+                logger.warn('[COPY] Lot id={}'.format(lot.id))
+
+                for prod_src in ss_src.products:
+
+                    res = Product.create_from_template(
+                        prod_src,
+                        with_product_items=False,
+                        event_id=self.id,
+                        performance_id=convert_map['performance'][prod_src.performance_id],
+                        **convert_map
+                        )
+                    convert_map['product'].update(res)
+                    logger.warn('[COPY] Lot Product id = {}'.format(res))
+                    for pitem_src in ProductItem.query.filter(ProductItem.product_id == prod_src.id):
+                        res = ProductItem.create_from_template_for_lot(
+                            pitem_src,
+                            product_id=convert_map['product'][prod_src.id],
+                            performance_id=convert_map['performance'][pitem_src.stock.performance_id],
+                            sales_segment_id=convert_map['sales_segment'][prod_src.sales_segment_id],
+                            )
+                        convert_map['product_item'].update(res)
+                        pitem_id = res.values()[0]
+                        pitem_dst = ProductItem.get(id=pitem_id)
+                        pitem_dst.save()
+
+            for key, src_dst in convert_map.items():
+                for src, dst in src_dst.items():
+                    logger.warn('[COPY] LOT COPIED: {}: {} -> {}'.format(key, src, dst))
+
+            # other
             convert_map['payment_delivery_method_pair'] = {}
             for org_id, new_id in convert_map['sales_segment_group'].iteritems():
                 ssg = SalesSegmentGroup.get(org_id)
@@ -1882,6 +1938,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     product_id = Column(Identifier, ForeignKey('Product.id'))
+
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
 
     stock_id = Column(Identifier, ForeignKey('Stock.id'))
@@ -1938,6 +1995,35 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     stock_id=stock.id,
                 )
                 product_item.save()
+
+    @staticmethod
+    def _create_from_template(template, **kwargs):
+        product_item = ProductItem.clone(template)
+        if 'performance_id' in kwargs:
+            product_item.performance_id = kwargs['performance_id']
+        if 'product_id' in kwargs:
+            product_item.product_id = kwargs['product_id']
+            product = Product.query.filter_by(id=kwargs['product_id']).first()
+            product_item.performance_id = product.performance_id
+        if 'stock_id' in kwargs:
+            product_item.stock_id = kwargs['stock_id']
+        else:
+            conditions = dict(
+                performance_id=product_item.performance_id,
+                stock_holder_id=template.stock.stock_holder_id,
+                stock_type_id=template.stock.stock_type_id
+            )
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                conditions['stock_holder_id'] = kwargs['stock_holder_id']
+            stock = Stock.filter_by(**conditions).first()
+            product_item.stock = stock
+            product_item.save()
+        return {template.id: product_item.id}
+
+
+    @staticmethod
+    def create_from_template_for_lot(*args, **kwds):
+        return ProductItem._create_from_template(*args, **kwds)
 
     @staticmethod
     def create_from_template(template, **kwargs):
