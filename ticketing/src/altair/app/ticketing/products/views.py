@@ -131,60 +131,28 @@ class ProductAndProductItem(BaseView):
     @view_config(route_name='products.copy', request_method='GET', renderer='altair.app.ticketing:templates/products/_copy_form.html', xhr=True)
     def copy_xhr(self):
         # 商品の販売区分間コピー
-        sales_segment = self.context.sales_segment
-        f = ProductCopyForm(sales_segment=sales_segment)
-        return dict(form=f)
+        copy_sales_segments = self.context.copy_sales_segments
+        f = ProductCopyForm(copy_sales_segments=copy_sales_segments)
+        return dict(form=f, origin_sales_segment=self.context.sales_segment)
 
     @view_config(route_name='products.copy', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def copy_post_xhr(self):
         # 商品の販売区分間コピー
-        sales_segment = self.context.sales_segment
-        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment, new_form=True)
-        if f.validate():
-            point_grant_settings = [
-                PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
-                for point_grant_setting_id in f.applied_point_grant_settings.data
-                ]
+        origin_sales_segment = self.context.sales_segment
+        form = ProductCopyForm(self.request.POST, origin_sales_segment)
+        copy_sales_segments = form['copy_sales_segments'].data
 
-            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
-            if f.all_sales_segment.data:
-                query = query.filter_by(performance_id=f.performance_id.data)
-            else:
-                query = query.filter_by(id=f.sales_segment_id.data)
+        for copy_sales_segment_id in copy_sales_segments:
+            copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
+            products = Product.query.filter(Product.sales_segment_id==origin_sales_segment.id).all()
 
-            for sales_segment_for_product in query:
-                product = merge_session_with_post(Product(), f.data, excludes={'id'})
-                max_display_order = Product.query.filter(
-                        Product.sales_segment_id==sales_segment_for_product.id
-                    ).with_entities(
-                        func.max(Product.display_order)
-                    ).scalar()
-                product.display_order = (max_display_order or 0) + 1
-                product.sales_segment = sales_segment_for_product
-                product.performance = sales_segment_for_product.performance
-                product.point_grant_settings.extend(point_grant_settings)
-                product.save()
+            for product in products:
+                new_product = Product.get(Product.create_from_template(template=product, with_product_items=True)[product.id])
+                new_product.sales_segment = copy_sales_segment
+                new_product.sales_segment_id = copy_sales_segment.id
 
-                stock = Stock.query.filter_by(
-                    stock_type_id=f.seat_stock_type_id.data,
-                    stock_holder_id=f.stock_holder_id.data,
-                    performance_id=sales_segment_for_product.performance.id
-                ).one()
-                product_item = ProductItem(
-                    performance_id=sales_segment_for_product.performance.id,
-                    product=product,
-                    name=f.name.data,
-                    price=f.price.data,
-                    quantity=f.product_item_quantity.data,
-                    stock_id=stock.id,
-                    ticket_bundle_id=f.ticket_bundle_id.data
-                )
-                product_item.save()
-
-            self.request.session.flash(u'商品を保存しました')
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return dict(form=f)
+        self.request.session.flash(u'商品をコピーしました')
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='products.delete')
     def delete(self):

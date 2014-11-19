@@ -13,6 +13,7 @@
           null,
           null
         );
+        $('#submitButton').text('保存');
         modal_product.find('.modal-header h3').text('商品＆商品明細 登録');
       };
       copy_product = function copy_product(sales_segment_id) {
@@ -23,6 +24,7 @@
           null,
           null
         );
+        $('#submitButton').text('コピー');
         modal_product.find('.modal-header h3').text('販売区分間の商品コピー');
       };
       edit_product = function edit_product(id, product_item_id) {
@@ -38,6 +40,7 @@
           null,
           null
         );
+        $('#submitButton').text('保存');
         modal_product.find('.modal-header h3').text(title);
       };
       delete_product = function delete_product(id) {
@@ -69,7 +72,7 @@
 
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+    <a id="submitButton" href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
 

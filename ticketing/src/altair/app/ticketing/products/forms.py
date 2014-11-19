@@ -389,19 +389,19 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         return status
 
 class ProductCopyForm(OurForm):
-    def __init__(self, formdata=None, obj=None, prefix='', sales_segment=None, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', copy_sales_segments=None, **kwargs):
         super(ProductCopyForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if sales_segment is None:
-            raise Exception('sales_segment must be non-None value')
-        self.id = sales_segment.id
+        if copy_sales_segments:
+            self.copy_sales_segments.choices = [
+                (sales_segment.id, sales_segment.sales_segment_group.name)
+                for sales_segment in copy_sales_segments
+                ]
 
-    id = HiddenField(
-        validators=[Optional()],
-        )
-    sales_segments = OurBooleanField(
-        widget=CheckboxInput(),
-        default=True
-        )
+    copy_sales_segments = OurPHPCompatibleSelectMultipleField(
+        label=u'コピー先を選択してください',
+        validators=[Required()],
+        choices=[],
+    )
 
 class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
