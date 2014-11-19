@@ -74,13 +74,13 @@
               <i class="icon-minus"></i> 削除
             </a>
           </li>
-<%doc>
           <li>
-            <a href="${request.route_path("events.tickets.bundles.new", event_id=event.id, query=dict(id=bundle.id))}">
-              <i class="icon-plus"></i> コピーして新規作成
+            <a href="${request.route_path("events.tickets.bundles.copy", bundle_id=bundle.id, event_id=event.id)}"
+               data-toggle="modal" data-target="#AjaxModal"
+	       class="ajax-modal">
+            <i class="icon-plus"></i> コピーして新規作成
             </a>
           </li>
-</%doc>
         </ul>
   </div>
   <div style="clear:both;"></div>
