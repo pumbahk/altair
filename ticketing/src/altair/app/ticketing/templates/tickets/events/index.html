@@ -46,14 +46,14 @@ ${ch.breadcrumbs(
 <div class="message">
 <p>この操作は商品を作成する前に行ってください。商品作成時に券面と商品が結びつけられます。</p>
 <p>
-  1. イベントにチケット券面を割り当ててください。(主券、副券..など)<br/>
-  2. チケット券面を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
+  1. イベントにチケット券面(Ticket)を割り当ててください。(主券、副券..など)<br/>
+  2. チケット券面(Ticket)を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
   3. 必要に応じて、作成したチケット券面構成(TicketBundle)に属性(TicketAttribute)を追加してください。
 </p>
 </div>
 
 <form id="tickets">
-  <h3>1. チケット券面</h3>
+  <h3>1. チケット券面(Ticket)</h3>
 
 %if tickets.count() > 0:
   <table class="table fullwidth checkboxed_table">
