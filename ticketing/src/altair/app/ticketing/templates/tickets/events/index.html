@@ -165,6 +165,13 @@ ${ch.breadcrumbs(
         <ul class="dropdown-menu">
           <li>
             <a href="#" class="id-action ajax-modal"
+             data-base-url="${request.route_path("events.tickets.bundles.copy", bundle_id="__id__", event_id=event.id)}" 
+             data-toggle="modal" data-target="#AjaxModal">
+            <i class="icon-plus"></i> コピーして新規作成
+            </a>
+          </li>
+          <li>
+            <a href="#" class="id-action ajax-modal"
              data-base-url="${request.route_path("events.tickets.bundles.delete", bundle_id="__id__", event_id=event.id)}" 
              data-toggle="modal" data-target="#AjaxModal">
             <i class="icon-minus"></i> 削除
