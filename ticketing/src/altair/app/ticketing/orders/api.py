@@ -7,7 +7,7 @@ import itertools
 import transaction
 from decimal import Decimal
 from datetime import date, datetime
-from dateutil.parser import parse as parsedata
+from dateutil.parser import parse as parsedate
 
 from sqlalchemy.sql.expression import and_, or_, desc
 from sqlalchemy.sql import functions as safunc
@@ -78,7 +78,7 @@ from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
-from .exceptions import OrderCreationError, MassOrderCreationError
+from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
 from functools import partial
 get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
                                                          name=METADATA_NAME_ORDERED_PRODUCT)
@@ -138,7 +138,7 @@ class SearchQueryBuilderBase(object):
                 if callable:
                     query = callable(query, v)
         for fn, value in self.post_queue:
-            query = fn(self, queue, value)
+            query = fn(self, query, value)
         if self.sort:
             query = self.handle_sort(query)
         return query
