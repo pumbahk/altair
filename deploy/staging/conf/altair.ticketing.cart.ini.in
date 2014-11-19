@@ -9,6 +9,9 @@ altair.auth.callback = altair.app.ticketing.security:auth_model_callback
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
+; altair.ticketing.cart.sitecatalyst
+altair.ticketing.cart.sitecatalyst.dynamicAccountSelection = false
+
 ; altair.mq
 altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
