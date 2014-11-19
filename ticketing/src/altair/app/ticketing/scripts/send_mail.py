@@ -55,6 +55,7 @@ def do_process(request, mail_type, in_, dry_run=False):
                 msg = u'OK'
         except Exception as e:
             msg = str(e)
+            transaction.abort()
         sys.stdout.write("%s\t%s\n" % (order_or_entry_no, msg))
         sys.stdout.flush()
     sys.stdout.write("done\n")
