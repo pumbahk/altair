@@ -53,7 +53,7 @@ ${tabs.tabs(request)}
         <tr>
           <th>抽選結果発表予定日</th>
           <td>
-              ${lot.lotting_announce_datetime}
+              ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}
               % if h.timezone_label(lot):
                 (${h.timezone_label(lot)})
               % endif
