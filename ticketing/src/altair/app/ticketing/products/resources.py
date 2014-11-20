@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
+import json
 from pyramid.decorator import reify
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
 from altair.app.ticketing.resources import TicketingAdminResource
@@ -154,4 +154,11 @@ class ProductCreateResource(TicketingAdminResource):
                         ).one()
             except NoResultFound:
                 raise HTTPNotFound()
+        return s
+
+    @reify
+    def copy_sales_segments(self):
+        s = SalesSegment.query \
+            .filter(SalesSegment.performance_id == self.sales_segment.performance_id) \
+            .filter(SalesSegment.id != self.sales_segment.id).all()
         return s

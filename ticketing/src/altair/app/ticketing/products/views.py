@@ -15,8 +15,9 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
-from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm
+from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
+from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
 
 logger = logging.getLogger(__name__)
@@ -127,6 +128,40 @@ class ProductAndProductItem(BaseView):
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return dict(form=f)
+
+    @view_config(route_name='products.copy', request_method='GET', renderer='altair.app.ticketing:templates/products/_copy_form.html', xhr=True)
+    def copy_xhr(self):
+        # 商品の販売区分間コピー
+        copy_sales_segments = self.context.copy_sales_segments
+        f = ProductCopyForm(copy_sales_segments=copy_sales_segments)
+        return dict(form=f, origin_sales_segment=self.context.sales_segment)
+
+    @view_config(route_name='products.copy', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
+    def copy_post_xhr(self):
+        # 商品の販売区分間コピー
+        origin_sales_segment = self.context.sales_segment
+        form = ProductCopyForm(self.request.POST, origin_sales_segment)
+        copy_sales_segments = form['copy_sales_segments'].data
+
+        for copy_sales_segment_id in copy_sales_segments:
+            copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
+            products = Product.query.filter(Product.sales_segment_id==origin_sales_segment.id).all()
+
+            for product in products:
+                new_product = Product.get(Product.create_from_template(template=product, with_product_items=True)[product.id])
+                for new_product_name in moderate_name_candidates(new_product.name):
+                    existing_product_in_copy_sales_segment = Product.query.filter(
+                        Product.sales_segment_id == copy_sales_segment_id,
+                        Product.name == new_product_name
+                        ).first()
+                    if existing_product_in_copy_sales_segment is None:
+                        new_product.name = new_product_name
+                        break
+                new_product.sales_segment = copy_sales_segment
+                new_product.sales_segment_id = copy_sales_segment.id
+
+        self.request.session.flash(u'商品をコピーしました')
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='products.delete')
     def delete(self):
