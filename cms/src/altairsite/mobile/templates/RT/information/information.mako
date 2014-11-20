@@ -5,20 +5,12 @@
 [9]<a href="/" accesskey="9">トップへ</a><br />
 </%block>
 % if form.informations.data:
-    % for count, info in enumerate(form.informations.data[0:5]):
-        % if count > 0:
-            <hr/>
-        % endif
+    % for count, info in enumerate(form.informations.data):
+        <a href="${request.mobile_route_path('infodetail', _query=dict(information_id=info.id))}">
         公演：${helper.nl2br(info.title)|n}<br/>
-        詳細：${helper.nl2br(info.text)|n}<br/>
-        <br/>
-        <a href="#top">▲上へ</a>
-    % endfor
-
-    % if len(form.informations.data) > 5:
+        </a>
         <hr/>
-        <a href="/infodetail">すべてを見る</a>
-    % endif
+    % endfor
 % else:
     公演中止・変更情報はありません。
 % endif
