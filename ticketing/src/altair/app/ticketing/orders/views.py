@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import sys
 import json
 import logging
 import csv
@@ -1143,6 +1142,11 @@ class OrderDetailView(BaseView):
             except OrderLikeValidationFailure as orderLikeValidationFailure:
                 transaction.abort()
                 self.request.session.flash(orderLikeValidationFailure.message)
+            except Exception as exception:
+                exc_info = sys.exc_info()
+                logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+                transaction.abort()
+                self.request.session.flash(exception.message)
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
