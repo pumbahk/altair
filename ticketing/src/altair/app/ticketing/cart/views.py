@@ -42,7 +42,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_smartphone, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -157,9 +157,8 @@ def flow_predicate_extra_form(pe, flow_context, context, request):
     return bool(context.sales_segment.setting.extra_form_fields)
 
 @provider(IPageFlowPredicate)
-def flow_predicate_point_input_organization(pe, flow_context, context, request):
-    user = api.get_or_create_user(context.authenticated_user())
-    return is_point_input_organization(context, request, user)
+def flow_predicate_point_input_required(pe, flow_context, context, request):
+    return is_point_input_required(context, request)
 
 @provider(IPageFlowPredicate)
 def flow_predicate_prepared(pe, flow_context, context, request):
@@ -187,7 +186,7 @@ flow_graph = flow.PageFlowGraph(
             predicates=[
                 flow.RouteIs('cart.payment'),
                 flow.Not(flow_predicate_extra_form),
-                flow_predicate_point_input_organization,
+                flow_predicate_point_input_required,
                 ],
             route_name='cart.point'
             ),
@@ -196,7 +195,7 @@ flow_graph = flow.PageFlowGraph(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
-                flow_predicate_point_input_organization,
+                flow_predicate_point_input_required,
                 ],
             route_name='cart.point'
             ),
@@ -215,7 +214,7 @@ flow_graph = flow.PageFlowGraph(
             predicates=[
                 flow.RouteIs('cart.payment'),
                 flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_organization),
+                flow.Not(flow_predicate_point_input_required),
                 flow.Not(flow_predicate_extra_form),
                 ]
             ),
@@ -225,7 +224,7 @@ flow_graph = flow.PageFlowGraph(
             predicates=[
                 flow.RouteIs('cart.point'),
                 flow.Not(flow_predicate_prepared),
-                flow_predicate_point_input_organization,
+                flow_predicate_point_input_required,
                 ]
             ),
         # 追加情報入力 => 決済情報入力
@@ -234,7 +233,7 @@ flow_graph = flow.PageFlowGraph(
             predicates=[
                 flow.RouteIs('cart.extra_form'),
                 flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_organization),
+                flow.Not(flow_predicate_point_input_required),
                 ]
             ),
         # 決済情報入力 => 確認画面
@@ -1315,7 +1314,7 @@ class PointAccountEnteringView(object):
 
         point_params = self.get_point_data()
 
-        if is_point_input_organization(self.context, self.request):
+        if is_point_input_required(self.context, self.request):
             point = point_params.pop("accountno", None)
             if point:
                 if not user:

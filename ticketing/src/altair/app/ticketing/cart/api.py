@@ -322,17 +322,24 @@ def get_cart_user_identifiers(request):
             retval.append((remote_addr, 'weak'))
     return retval
 
-def is_point_input_organization(context, request, user=None):
-    enable_point = enable_point_input(user)
-    if not user:
-        enable_point = True
-
+def is_point_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
+    return code == 'RE' or code == 'KT'
 
-    if enable_point:
-        if code == 'RE' or code == 'KT':
-            return True
+def is_point_input_required(context, request):
+    if not is_point_input_organization(context, request):
+        return False
+
+    user = get_or_create_user(context.authenticated_user())
+    if not user:
+        logger.debug('cannot get a user; assuning rsp entry is required')
+        enable_point = True
+    else:
+        enable_point = enable_point_input(user)
+        logger.debug('rsp entry for user #%d is required => %r' % (user.id, enable_point))
+
+    return enable_point 
 
 def is_fc_auth_organization(context, request):
     organization = get_organization(request)
