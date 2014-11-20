@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
 import os
+import logging
 import datetime
 import argparse
 import transaction
@@ -27,6 +28,7 @@ from ..errors import AugusDataImportError
 from ..operations import AugusOperationManager
 from ..config import get_var_dir
 
+logger = logging.getLogger(__name__)
 
 def mkdir_p(path):
     if not os.path.isdir(path):
