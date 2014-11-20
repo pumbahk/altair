@@ -107,6 +107,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             self.request.session.flash(u'決済・引取方法を登録しました')
             return HTTPFound(location=route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id))
         else:
+            self.request.session.flash(u'決済・引取方法の登録に失敗しました')
             return {
                 'form':f,
                 'sales_segment_group':pdmp.sales_segment_group,
