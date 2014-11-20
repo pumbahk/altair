@@ -17,13 +17,15 @@ from altair.formhelpers import (
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
-from altair.app.ticketing.events.sales_segments.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
 
 from .models import LotEntryReportSetting
 
 logger = logging.getLogger(__name__)
+
+UPPER_LIMIT_OF_MAX_QUANTITY_LOTS = 20  # SEJの場合21個以上だとエラーになってしまうので20で縛る
+
 
 class LotForm(Form):
     name = TextField(
@@ -145,7 +147,7 @@ class LotForm(Form):
         label=u'購入上限枚数',
         validators=[
             Required(),
-            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
+            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY_LOTS, message=u'範囲外です'),
         ],
     )
     seat_choice = BooleanField(

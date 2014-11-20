@@ -51,7 +51,7 @@ propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registrati
 
 logger = logging.getLogger(__name__)
 
-UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
+UPPER_LIMIT_OF_MAX_QUANTITY = 99  # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 DummyPerformance = namedtuple('DummyPerformance', ['start_on', 'end_on'])
 DummyPDMP = namedtuple('DummyPDMP', [
