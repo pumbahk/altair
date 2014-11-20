@@ -45,8 +45,10 @@ ${ch.breadcrumbs(
           </div>
           <%include file="./_show_order_table.html" args="order=order,vh=vh,HH=HH"/>
           <div class="pull-right">
-            <%include file="/orders/_action_button.html"
-              args="order=order, sort=['mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'refund_info', 'release_stocks', 'print', 'delete']" />
+            <%include file="/orders/_action_button.html" args="order=order, sort=['edit_order_info', 'mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'refund_info', 'release_stocks', 'print', 'delete']" />
+          </div>
+          <div id="order_info-form">
+            <%include file="/orders/_modal_order_info.html" args="form=form_order_info" />
           </div>
           <div id="refund-form">
             <%include file="/orders/refund/_form.html" args="form=form_refund" />
