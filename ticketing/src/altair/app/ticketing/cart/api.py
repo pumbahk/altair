@@ -325,12 +325,39 @@ def get_cart_user_identifiers(request):
 def is_point_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
-    if code == 'RE' or code == 'KT':
-        return True
+    return code == 'RE' or code == 'KT'
+
+def is_point_input_required(context, request):
+    if not is_point_input_organization(context, request):
+        return False
+
+    user = get_or_create_user(context.authenticated_user())
+    if not user:
+        logger.debug('cannot get a user; assuning rsp entry is required')
+        enable_point = True
+    else:
+        enable_point = enable_point_input(user)
+        logger.debug('rsp entry for user #%d is required => %r' % (user.id, enable_point))
+
+    return enable_point 
 
 def is_fc_auth_organization(context, request):
     organization = get_organization(request)
     return bool(organization.settings[0].auth_type == "fc_auth")
+
+def enable_point_input(user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    if user.member.membergroup.enable_point_input:
+        return True
+
+    return False
 
 def enable_auto_input_form(user):
     from altair.app.ticketing.users.models import User
