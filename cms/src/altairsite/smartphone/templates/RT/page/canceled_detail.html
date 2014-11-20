@@ -7,20 +7,13 @@
 </%block>
 
 <h2 class="glitter red">公演中止</h2>
-% if canceled_events:
-    % for count, event in enumerate(canceled_events):
-        <div class="sectionbox">
-            <div class="sectionbox-inner">
-                ${helper.nl2br(event.title)|n}<br/><br/>
-                詳細：${helper.nl2br(event.text)|n}<br/><br/>
-                <a href="#top">▲上へ</a>
-            </div>
+% if canceled_topic:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            ${helper.nl2br(canceled_topic.title)|n}<br/><br/>
+            詳細：${helper.nl2br(canceled_topic.text)|n}<br/><br/>
         </div>
-        % if count < len(canceled_events.all()) - 1:
-            <hr/>
-        % endif
-    % endfor
-
+    </div>
 % else:
     <div class="sectionbox">
         <div class="sectionbox-inner">
