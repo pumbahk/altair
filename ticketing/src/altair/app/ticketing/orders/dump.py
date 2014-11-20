@@ -854,7 +854,7 @@ class OrderExporter(object):
         if organization_id:
             qs = qs.filter(MailMagazine.organization_id==organization_id)
         if targets:
-          qs = qs.filter(MailSubscription.email.in_(targets))
+            qs = qs.filter(MailSubscription.email.in_(targets))
         qs = qs.with_entities(MailSubscription.email)
         return qs.all()
 

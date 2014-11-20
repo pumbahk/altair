@@ -132,6 +132,45 @@ class BundleView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event.id, bundle_id=bundle.id))
        
+    @view_config(route_name='events.tickets.bundles.copy', request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/_copyform.html")
+    def copy(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        form = forms.BundleForm(event_id=event.id, name=u"%s の コピー" % bundle.name)
+        next_to = self.request.route_path("events.tickets.bundles.copy",bundle_id=bundle.id, event_id=event.id)
+        return dict(form=form, event=event, bundle=bundle, next_to=next_to)
+
+    @view_config(route_name="events.tickets.bundles.copy", request_method="POST")
+    def copy_post(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        form = forms.BundleForm(event_id=event.id,
+                                formdata=self.request.POST)
+        
+        form.tickets.validators = []
+        if not form.validate():
+            self.request.session.flash(u'%s' % form.errors)
+            location = self.request.route_path("events.tickets.index", event_id=event.id)
+            return HTTPFound(location=location)
+
+        new_bundle = TicketBundle(operator=self.context.user,
+                                  event_id=event.id,
+                                  name=form.data["name"])
+        new_bundle.replace_tickets(bundle.tickets)
+        #bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
+        new_bundle.save()
+        
+        for attr in TicketBundleAttribute.query.filter_by(ticket_bundle=bundle):
+            new_attr = TicketBundleAttribute(name=attr.name,
+                                             value=attr.value,
+                                             ticket_bundle=new_bundle)
+            new_attr.save()
+
+        self.request.session.flash(u'チケット券面構成(TicketBundle)がコピーされました')
+        return HTTPFound(self.request.route_path("events.tickets.bundles.show",
+                                                 event_id=event.id, bundle_id=new_bundle.id))
+
 
     @view_config(route_name='events.tickets.bundles.delete', request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/_deleteform.html")

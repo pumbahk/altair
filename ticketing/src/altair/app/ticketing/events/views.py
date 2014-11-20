@@ -104,7 +104,11 @@ class Events(BaseView):
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
         slave_session = get_db_session(self.request, name="slave")
-        event_id = int(self.request.matchdict.get('event_id', 0))
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
