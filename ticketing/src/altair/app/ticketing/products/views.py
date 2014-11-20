@@ -17,6 +17,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
+from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
 
 logger = logging.getLogger(__name__)
@@ -148,6 +149,14 @@ class ProductAndProductItem(BaseView):
 
             for product in products:
                 new_product = Product.get(Product.create_from_template(template=product, with_product_items=True)[product.id])
+                for new_product_name in moderate_name_candidates(new_product.name):
+                    existing_product_in_copy_sales_segment = Product.query.filter(
+                        Product.sales_segment_id == copy_sales_segment_id,
+                        Product.name == new_product_name
+                        ).first()
+                    if existing_product_in_copy_sales_segment is None:
+                        new_product.name = new_product_name
+                        break
                 new_product.sales_segment = copy_sales_segment
                 new_product.sales_segment_id = copy_sales_segment.id
 
