@@ -512,7 +512,7 @@ class OrderDownloadView(BaseView):
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), **kwargs)
+        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
