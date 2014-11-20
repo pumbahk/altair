@@ -122,7 +122,7 @@ class MyLayout(object):
 def get_top_category_genres(request, strict=False):
     root = request.allowable(Genre).filter(Genre.is_root==True).first()
     ret = []
-    if not strict:
+    if not strict and root:
         ret = root.children_with_joined_pageset
     if root:
         ret = [g for g in root.children_with_joined_pageset if g.category_top_pageset_id]
