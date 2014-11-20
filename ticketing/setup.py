@@ -207,6 +207,7 @@ setup(name='altair.app.ticketing',
       sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
+      send_mail=altair.app.ticketing.scripts.send_mail:main
       """,
       paster_plugins=['pyramid'],
       )
