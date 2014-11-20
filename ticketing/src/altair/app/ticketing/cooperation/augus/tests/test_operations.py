@@ -8,10 +8,11 @@ from ..operations import (
     PathManager,
     )
 
+
 class AugusOperationTest(TestCase):
     def setup(self):
-        account = Account()
-        augus_account = AugusAccount()
+        self.account = Account()
+        self.augus_account = AugusAccount()
 
     def teardown(self):
         pass

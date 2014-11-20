@@ -60,10 +60,11 @@ class AugusPerformanceImpoter(object):
         ag_performance = None
         try:
             ag_venue = AugusVenue\
-                .query.filter(AugusVenue.code==record.venue_code)\
-                      .filter(AugusVenue.version==record.venue_version)\
-                      .first()
-        except (NoResultFound, MultipleResultsFound)as err:
+                .query.filter(AugusVenue.code == record.venue_code)\
+                      .filter(AugusVenue.version == record.venue_version)\
+                      .filter(AugusVenue.augus_account_id == augus_account.id)\
+                      .one()
+        except (NoResultFound, MultipleResultsFound) as err:
             raise AugusDataImportError('Cannot import augus performance: '
                                        'no such AugusVenue: '
                                        'code={} version={}: {}'.format(record.venue_code, record.venue_version, repr(err))
