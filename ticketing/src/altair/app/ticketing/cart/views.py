@@ -1494,6 +1494,10 @@ class InvalidMemberGroupView(object):
         return HTTPFound(location=location)
 
 
+def is_kt_organization(out_term_exception, request):
+    from .api import get_organization
+    organization = get_organization(request)
+    return organization.code == 'KT'
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request), context='.exceptions.OutTermSalesException')
 class OutTermSalesView(object):
@@ -1506,6 +1510,11 @@ class OutTermSalesView(object):
     def pc_event(self):
         return self._render_event()
 
+    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/smartphone/out_term_sales_event.html'),
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), is_kt_organization))
+    def smartphone_event(self):
+        return self._render_event()
+
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_event.html'),
                  request_type='altair.mobile.interfaces.IMobileRequest',
                  custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ))
@@ -1515,6 +1524,12 @@ class OutTermSalesView(object):
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_performance.html'),
                  custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), ))
     def pc_performance(self):
+        return self._render_performance()
+
+    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/smartphone/out_term_sales_performance.html'),
+                 request_type='altair.mobile.interfaces.ISmartphoneRequest',
+                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), is_kt_organization))
+    def smartphone_performance(self):
         return self._render_performance()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_performance.html'),
