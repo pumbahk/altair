@@ -6,8 +6,7 @@
 </head>
 <body>
 <div align="center" style="text-align:center">
-<img src="${request.mobile_static_url('altaircms:static/KT/mobile/logo.jpg')}" /><br />
-<div style="background-image:url(${request.mobile_static_url('altaircms:static/KT/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
+<img src="${request.static_url('altaircms:static/KT/smartphone/img/logo.png')}"/>
 </div>
 ${self.body()}
 <hr />

@@ -1,18 +1,11 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
-<hr />
-<div align="center">
-<font size="-2">
-    <div>
-        <a href="${request.mobile_route_path('help')}">ヘルプ</a> |
-        <a href="${request.mobile_route_path('company')}">運営会社</a> |
-        <a href="${request.mobile_route_path('inquiry')}">お問い合わせ</a> |
-        <a href="${request.mobile_route_path('privacy')}">個人情報保護方針</a> |
-        <a href="${request.mobile_route_path('legal')}">特定商取引法に基づく表示</a>
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footernav">
+<a href="tel:0222177788">電話によるお問い合わせ：キョードー東北(022-217-7788)</a> | <a href="http://ktohoku.tstar.jp/privacy">個人情報保護方針</a> | <a href="http://ktohoku.tstar.jp/legal">特定商取引法に基づく表示</a>
     </div>
-    <div><font color="#888888">Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved.</font></div>
-</font>
+    <div class="copyright clear">
+        Copyright 2010-2014 TicketStar Inc. All Rights Reserved.
+    </div>
+  </div>
 </div>
-
-## tracking 画像(<browserid>.gif)を取得するhtmlを生成
-<%! from altairsite.tracking import get_tracking_image %>
-${get_tracking_image(request)}
