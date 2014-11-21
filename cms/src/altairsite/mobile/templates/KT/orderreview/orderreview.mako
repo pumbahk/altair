@@ -6,8 +6,8 @@
 </%block>
 
 <%m:header>購入履歴確認</%m:header>
-<a href="${form.altair_orderreview_url.data}">受付番号の頭に<font color="#cc0000">RT</font>がつく方</a><br />
-<a href="${form.getti_orderreview_url.data}">受付番号の頭にRTがつかない方</a><br />
+<a href="${form.altair_orderreview_url.data}">受付番号の頭に<font color="#cc0000">KT</font>がつく方</a><br />
+<a href="${form.getti_orderreview_url.data}">受付番号の頭にKTがつかない方</a><br />
 <br/>
 
 <%m:header>抽選申込確認</%m:header>

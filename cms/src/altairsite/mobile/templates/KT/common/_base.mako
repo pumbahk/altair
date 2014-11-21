@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS" />
-<title>楽天チケット-<%block name="title" /></title>
+<title>キョードー東北モバイルチケット-<%block name="title" /></title>
 </head>
 <body>
 <div align="center" style="text-align:center">
-<img src="${request.mobile_static_url('altaircms:static/RT/mobile/logo.jpg')}" /><br />
-<div style="background-image:url(${request.mobile_static_url('altaircms:static/RT/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
+<img src="${request.mobile_static_url('altaircms:static/KT/mobile/logo.jpg')}" /><br />
+<div style="background-image:url(${request.mobile_static_url('altaircms:static/KT/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
 </div>
 ${self.body()}
 <hr />
