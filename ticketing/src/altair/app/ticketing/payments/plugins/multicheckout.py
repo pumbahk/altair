@@ -398,13 +398,8 @@ class MultiCheckoutPlugin(object):
 
             if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
                 raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
-            if order.total_amount == res.SalesAmount:
-                # no need to make requests
-                logger.info('total amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount))
-                return
-            else:
-                logger.info(u'売上一部取消APIで全額取消 %s' % order.order_no)
-                res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount - order.total_amount, 0)
+            logger.info(u'売上一部取消APIで全額取消 %s' % order.order_no)
+            res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount, 0)
 
         if res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
