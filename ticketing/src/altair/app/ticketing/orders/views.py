@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import sys
 import json
 import logging
 import csv
@@ -69,6 +68,7 @@ from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine,
 from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
 from altair.app.ticketing.orders.forms import (
     OrderForm,
+    OrderInfoForm,
     OrderSearchForm,
     OrderRefundSearchForm,
     SejRefundEventForm,
@@ -87,9 +87,10 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.exceptions import InnerCartSessionException
-from altair.app.ticketing.orders.api import get_order_by_id
+from altair.app.ticketing.orders.api import get_order_by_id, refresh_order
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import get_delivery_plugin
+from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin
+from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
@@ -512,7 +513,7 @@ class OrderDownloadView(BaseView):
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), **kwargs)
+        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
@@ -1083,6 +1084,7 @@ class OrderDetailView(BaseView):
             get_order_metadata_provider_registry(self.request)
         )
         forms = self.context.get_dependents_forms()
+        form_order_info = forms.get_order_info_form()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
         form_order_reserve = forms.get_order_reserve_form()
@@ -1104,6 +1106,7 @@ class OrderDetailView(BaseView):
             'sej_order':get_sej_order(order.order_no),
             'checkout': checkout_object,
             'mail_magazines':mail_magazines,
+            'form_order_info':form_order_info,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
@@ -1113,6 +1116,43 @@ class OrderDetailView(BaseView):
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
         }
+
+    @view_config(route_name='orders.edit.order_info', permission='sales_editor', request_method='POST', renderer='altair.app.ticketing:templates/orders/_modal_order_info.html')
+    def edit_order_info(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        form = OrderInfoForm(self.request.POST)
+        if form.validate():
+            order.payment_due_at = form.payment_due_at.data
+            order.issuing_start_at = form.issuing_start_at.data
+            order.issuing_end_at = form.issuing_end_at.data
+            payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, order.payment_delivery_method_pair)
+            try:
+                if payment_delivery_plugin is not None:
+                    payment_delivery_plugin.validate_order(self.request, order)
+                else:
+                    payment_plugin.validate_order(self.request, order)
+                    delivery_plugin.validate_order(self.request, order)
+                order.save()
+                refresh_order(self.request, DBSession, order)
+                self.request.session.flash(u'予約情報を保存しました')
+            except OrderLikeValidationFailure as orderLikeValidationFailure:
+                transaction.abort()
+                self.request.session.flash(orderLikeValidationFailure.message)
+            except Exception as exception:
+                exc_info = sys.exc_info()
+                logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+                transaction.abort()
+                self.request.session.flash(exception.message)
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':form,
+            }
+
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):

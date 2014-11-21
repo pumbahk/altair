@@ -1,34 +1,45 @@
 #-*- coding: utf-8 -*-
-import os.path
+import os
 import time
 import itertools
 import collections
 from abc import ABCMeta, abstractmethod
-from zope.interface import Interface, Attribute, implementer
-from sqlalchemy.orm.exc import NoResultFound
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import (
-    Venue,
     Seat,
+    Stock,
+    StockHolder,
+    SeatStatusEnum,
     AugusVenue,
     AugusSeat,
     AugusPerformance,
+    AugusStockInfo,
+    AugusPutback,
     )
+
 
 class AugusError(Exception):
     pass
 
+
 class NoSeatError(AugusError):
     pass
+
 
 class AbnormalTimestampFormatError(AugusError):
     pass
 
+
 class EntryFormatError(AugusError):
     pass
 
+
 class SeatImportError(AugusError):
-    pass    
+    pass
+
+
+class CannotPutbackTicket(Exception):
+    pass
 
 
 class SeatAugusSeatPairs(object):
@@ -40,19 +51,18 @@ class SeatAugusSeatPairs(object):
     @property
     def venue_id(self):
         return self._venue_id
-        
 
     def load(self):
-        self._seats = Seat.query.filter(Seat.venue_id==self.venue_id)\
-                                .order_by(Seat.id)\
-                                .all()
+        self._seats = Seat.query.filter(Seat.venue_id == self.venue_id)\
+            .order_by(Seat.id)\
+            .all()
 
         self._augus_seats = AugusSeat.query\
-                                     .join(AugusVenue)\
-                                     .filter(AugusVenue.id==AugusSeat.augus_venue_id)\
-                                     .filter(AugusVenue.venue_id==self.venue_id)\
-                                     .order_by(AugusSeat.seat_id)\
-                                     .all()
+            .join(AugusVenue)\
+            .filter(AugusVenue.id == AugusSeat.augus_venue_id)\
+            .filter(AugusVenue.venue_id == self.venue_id)\
+            .order_by(AugusSeat.seat_id)\
+            .all()
 
     def find_augus_seat(self, seat):
         for augus_seat in self._augus_seats:
@@ -70,31 +80,31 @@ class SeatAugusSeatPairs(object):
 
     def ___iter__(self):
         finder = self._find_augus_seat()
-        finder.next() # ignore
+        finder.next()  # ignore
         for seat in self._seats:
             augus_seat = finder.send(seat)
             yield seat, augus_seat
         finder.close()
-        
-    def _find_augus_seat(self): # co routine
+
+    def _find_augus_seat(self):  # co routine
         length = len(self._augus_seats)
         augus_seat = None
-        seat = yield # first generate ignore
+        seat = yield  # first generate ignore
         ii = 0
         while ii < length:
             augus_seat = self._augus_seats[ii]
             if augus_seat.seat_id >= seat.id:
                 if augus_seat.seat_id != seat.id:
-                    augus_seat = None # return None if augus_seat no match
+                    augus_seat = None  # return None if augus_seat no match
                 seat = yield augus_seat
                 ii += 1
-            else: # augus_seat.seat_id < seat.id
+            else:  # augus_seat.seat_id < seat.id
                 continue
-        while True: # StopIterasion free
+        while True:  # StopIterasion free
             yield None
 
     def get_seat(self, *args, **kwds):
-        seats = [seat for seat in self._find_seat(*args, **kwds)] # raise NoSeatError
+        seats = [seat for seat in self._find_seat(*args, **kwds)]  # raise NoSeatError
         return seats[0]
 
     def _find_seat(self, seat_id):
@@ -104,12 +114,11 @@ class SeatAugusSeatPairs(object):
                 break
         else:
             raise NoSeatError('no seat: {0}'.format(seat_id))
-                         
+
     def find_pair(self, seat_id):
         seat = self.get_seat(seat_id)
-        augus_seat = self.find_augus_seat(seat)        
+        augus_seat = self.find_augus_seat(seat)
         return seat, augus_seat
-
 
 
 def _sjis(unistr):
@@ -118,8 +127,8 @@ def _sjis(unistr):
     except (UnicodeEncodeError, UnicodeDecodeError) as err:
         raise err.__class__(repr(unistr), *err.args[1:])
     except AttributeError as err:
-        raise ValueError('The `unistr` should be unicode object: {0}'\
-                        .format(repr(unistr)))                        
+        raise ValueError('The `unistr` should be unicode object: {0}'.format(repr(unistr)))
+
 
 def _unsjis(msg):
     try:
@@ -127,14 +136,13 @@ def _unsjis(msg):
     except (UnicodeEncodeError, UnicodeDecodeError) as err:
         raise err.__class__(repr(msg), *err.args[1:])
     except AttributeError as err:
-        raise ValueError('The `msg` should be encoded sjis string object: {0}'\
-                         .format(repr(msg)))
+        raise ValueError('The `msg` should be encoded sjis string object: {0}'.format(repr(msg)))
 
 
 class _TableBase(object):
     __metaclass__ = ABCMeta
-    
-    BASE_HEADER_GETTER = collections.OrderedDict(( # read only property
+
+    BASE_HEADER_GETTER = collections.OrderedDict((  # read only property
         ('id', lambda seat: seat.id),
         ('name', lambda seat: _sjis(seat.name)),
         ('seat_no', lambda seat: _sjis(seat.seat_no)),
@@ -143,7 +151,7 @@ class _TableBase(object):
         ('row_l0_id', lambda seat: _sjis(seat.row_l0_id)),
         ))
 
-    EXT_HEADER_GETTER = collections.OrderedDict(( # read only property
+    EXT_HEADER_GETTER = collections.OrderedDict((  # read only property
         ))
 
     def get_header(self):
@@ -156,7 +164,7 @@ class _TableBase(object):
         return [getter(seat) for getter in self.BASE_HEADER_GETTER.values()]
 
     @abstractmethod
-    def get_ext_entry(self, *args, **kwds): # need override
+    def get_ext_entry(self, *args, **kwds):  # need override
         return []
 
 
@@ -174,7 +182,6 @@ class AugusTable(_TableBase):
         return [getter(augus_seat) for getter in self.EXT_HEADER_GETTER.values()]
 
 
-
 class _CSVEditorBase(object):
     __metaclass__ = ABCMeta
 
@@ -188,7 +195,7 @@ class _CSVEditorBase(object):
         stamp = ''
         try:
             stamp = time.strftime(fmt)
-        except TypeError as err:
+        except TypeError:
             raise AbnormalTimestampFormatError(
                 'Illigal timestamp format: {0}'.format(repr(fmt)))
         name, ext = os.path.splitext(filename)
@@ -202,7 +209,7 @@ class _CSVEditorBase(object):
 
 class AugusCSVEditor(_CSVEditorBase):
     _table = AugusTable
-    
+
     def write(self, csvlike, pairs):
         table = self._table()
         header = table.get_header()
@@ -222,11 +229,12 @@ class CSVEditorFactory(object):
 def _long(word, default=None):
     try:
         return long(word)
-    except ValueError as err:
+    except ValueError:
         if default is None:
             raise
         else:
             return default
+
 
 class EntryData(object):
     def __init__(self, row):
@@ -240,8 +248,7 @@ class EntryData(object):
             self.augus_seat_num = _unsjis(row[11])
         except (ValueError, TypeError, IndexError,
                 UnicodeDecodeError, UnicodeEncodeError) as err:
-            raise EntryFormatError('Illegal format entry: {0}: {1}'\
-                                   .format(repr(row), repr(err)))
+            raise EntryFormatError('Illegal format entry: {0}: {1}'.format(repr(row), repr(err)))
 
     def is_enable(self):
         return self.augus_venue_code != ''
@@ -256,14 +263,14 @@ def get_or_create_augus_venue_from_code(code, venue_id):
         augus_venue.save()
     elif augus_venue.venue_id != venue_id:
         augus_venue.venue_id = venue_id
-        augus_venue.save()        
+        augus_venue.save()
     return AugusVenue.get(code=code)
 
 
 class AugusVenueImporter(object):
     def import_(self, csvlike, pairs):
-        csvlike.next() # ignore header
-        datas = [EntryData(row) for row in csvlike] # raise EntryFormatError
+        csvlike.next()  # ignore header
+        datas = [EntryData(row) for row in csvlike]  # raise EntryFormatError
         augus_venue_codes = set([data.augus_venue_code
                                  for data in datas if data.augus_venue_code != ''])
         augus_venue_code = None
@@ -280,7 +287,7 @@ class AugusVenueImporter(object):
         for data in datas:
             seat, augus_seat = pairs.find_pair(data.seat_id)
             other_augus_seat = AugusSeat.get(seat_id=seat.id)
-        
+
             if data.is_enable():
                 # remove link
                 if other_augus_seat and other_augus_seat.id != augus_seat.id:
@@ -308,9 +315,10 @@ class ImporterFactory(object):
     def create(cls, type_):
         return AugusVenueImporter()
 
+
 class AugusPerformanceImpoter(object):
     def import_(self, csvlike):
-        csvlike.next() # ignore header
+        csvlike.next()  # ignore header
         for row in csvlike:
             augus_event_code = int(row[0])
             augus_performance_code = int(row[1])
@@ -320,32 +328,18 @@ class AugusPerformanceImpoter(object):
                 ag_performance.code = augus_performance_code
                 ag_performance.augus_event_code = augus_event_code
                 ag_performance.save()
-            else: # already exist
+            else:  # already exist
                 pass
-import time
-import itertools
-from altair.app.ticketing.core.models import (
-    Seat,
-    Stock,
-    StockHolder,
-    SeatStatusEnum,
-    )
-from altair.augus.protocols.putback import (
-    PutbackResponse,
-    PutbackResponseRecord,
-    )
-class CannotPutbackTicket(Exception):
-    pass
+
 
 def putback(stock_holder):
-
     if type(stock_holder) in (int, long):
         stock_holder = StockHolder.query\
-                                  .filter(StockHolder.id==stock_holder)\
-                                  .one()
-    seats = Seat.query.filter(Seat.stock_id==Stock.id)\
-                      .filter(Stock.stock_holder_id==stock_holder.id)\
-                      .order_by(Stock.performance_id)
+            .filter(StockHolder.id == stock_holder)\
+            .one()
+    seats = Seat.query.filter(Seat.stock_id == Stock.id)\
+        .filter(Stock.stock_holder_id == stock_holder.id)\
+        .order_by(Stock.performance_id)
 
     can_putback_statuses = (SeatStatusEnum.NotOnSales,
                             SeatStatusEnum.Vacant,
@@ -353,30 +347,31 @@ def putback(stock_holder):
 
     putback_code = unicode(time.strftime('%Y-%m-%d-%H-%M-%S'))
     for performance_id, seat_in_performance in itertools.groupby(seats, key=lambda seat: seat.stock.performance_id):
-        unallocation_stock = Stock.query.filter(Stock.performance_id==performance_id)\
-                                        .filter(Stock.stock_holder_id==None)\
-                                        .one()
+        unallocation_stock = Stock.query.filter(Stock.performance_id == performance_id)\
+            .filter(Stock.stock_holder_id is None)\
+            .one()
         ag_performance = AugusPerformance\
             .query\
-            .filter(AugusPerformance.performance_id==performance_id)\
+            .filter(AugusPerformance.performance_id == performance_id)\
             .one()
-        ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
-                                   .filter(AugusVenue.version==ag_performance.augus_venue_version)\
+        ag_venue = AugusVenue.query.filter(AugusVenue.code == ag_performance.augus_venue_code)\
+                                   .filter(AugusVenue.version == ag_performance.augus_venue_version)\
                                    .one()
-        for seat in sesat_in_performance:
+
+        for seat in seat_in_performance:
             if seat.status not in can_putback_statuses:
-                raise CannnotPutbackTicket()
-            ag_seat = AugusSeat.query.filter(AugusSeat.augus_venue_id==AugusVenue.id)\
-                                     .filter(AugusSeat.seat_id==Seat.id)\
-                                     .filter(Seat.l0_id==seat.l0_id)\
+                raise CannotPutbackTicket()
+            ag_seat = AugusSeat.query.filter(AugusSeat.augus_venue_id == AugusVenue.id)\
+                                     .filter(AugusSeat.seat_id == Seat.id)\
+                                     .filter(Seat.l0_id == seat.l0_id)\
                                      .one()
             ag_stock_info = AugusStockInfo.query\
-                                          .filter(AugusStockInfo.augus_performance_id==ag_performance.id)\
-                                          .filter(AugusStockInfo.augus_seat_id==ag_seat.id)\
+                                          .filter(AugusStockInfo.augus_performance_id == ag_performance.id)\
+                                          .filter(AugusStockInfo.augus_seat_id == ag_seat.id)\
                                           .one()
             ag_putback = AugusPutback()
             ag_putback.augus_putback_code = putback_code
-            ag_putback.quantity = 1 # 指定席は1
+            ag_putback.quantity = 1  # 指定席は1
             ag_putback.augus_stock_info_id = ag_stock_info.id
 
             seat.stock_id = unallocation_stock.id

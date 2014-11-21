@@ -1,20 +1,14 @@
 #-*- coding: utf-8 -*-
 import collections
 from altair.app.ticketing.core.models import (
-    Venue,
     GettiiVenue,
     )
-
 from ..utils import (
-    RawType,
     UnicodeType,
     IntegerType,
-    DateTimeType,
     Record,
     CSVData,
     )
-
-
 
 
 class AltairGettiiVenueCSVRecord(Record):
@@ -68,14 +62,14 @@ class AltairGettiiVenueCSVRecord(Record):
             self.gettii_num = gettii_seat.num
             self.gettii_block = gettii_seat.block
             self.gettii_gate = gettii_seat.gate
-            self.gettii_priority = '' #gettii_seat.priority
-            self.gettii_area_code = '' #gettii_seat.area_code
+            self.gettii_priority = ''  # gettii_seat.priority
+            self.gettii_area_code = ''  # gettii_seat.area_code
             self.gettii_priority_block = gettii_seat.priority_block
             self.gettii_priority_seat = gettii_seat.priority_seat
             self.gettii_seat_flag = gettii_seat.seat_flag
             self.gettii_seat_classif = gettii_seat.seat_classif
             self.gettii_net_block = gettii_seat.net_block
-            self.gettii_modifier = '' #gettii_seat.modifier
+            self.gettii_modifier = ''  # gettii_seat.modifier
             self.gettii_modified_at = gettii_seat.modified_at
         else:
             self.gettii_venue_code = ''
@@ -109,7 +103,7 @@ class AltairGettiiVenueCSV(CSVData):
 
     def load(self, venue):
         gettii_venue = GettiiVenue\
-            .query.filter(GettiiVenue.venue_id==venue.id).first()
+            .query.filter(GettiiVenue.venue_id == venue.id).first()
         id_gettii_seat = {}
         if gettii_venue:
             id_gettii_seat = dict([(gettii_seat.seat_id, gettii_seat)
@@ -199,7 +193,7 @@ class GettiiSeatCSV(CSVData):
 
     def load(self, venue):
         gettii_venue = GettiiVenue\
-            .query.filter(GettiiVenue.venue_id==venue.id).first()
+            .query.filter(GettiiVenue.venue_id == venue.id).first()
         id_gettii_seat = {}
         if gettii_venue:
             id_gettii_seat = dict([(gettii_seat.seat_id, gettii_seat)
