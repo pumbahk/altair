@@ -239,7 +239,7 @@ def import_orders():
     env = bootstrap(args.config)
 
     request = env['request']
-    request.browserid = u''
+    request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = 'import_orders'
 
     # 多重起動防止
     LOCK_NAME = import_orders.__name__

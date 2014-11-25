@@ -54,7 +54,7 @@ class OrganizationPathTween(object):
         return list(reversed(sorted(hosts, key=lambda h: h.path)))
 
     def __call__(self, request):
-        from .api import ENV_ORGANIZATION_ID_KEY, ENV_ORGANIZATION_PATH_KEY
+        from .request import ENV_ORGANIZATION_ID_KEY, ENV_ORGANIZATION_PATH_KEY
         # もしパスつきのHostドメインだったら
         hosts = self.get_hosts(request)
         if not hosts:
@@ -75,7 +75,8 @@ class OrganizationPathTween(object):
             import sys
             make_transient(host)
             make_transient(host.organization)
-            request.organization = host.organization
+            request.altair_host_info = host
+            request._resolved_organization = host.organization
             request.environ[ENV_ORGANIZATION_ID_KEY] = host.organization.id
             request.environ[ENV_ORGANIZATION_PATH_KEY] = host.path
         except:

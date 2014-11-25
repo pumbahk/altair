@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from zope.interface import Interface
+from zope.interface import Interface, Attribute
 
+class ILotResource(Interface):
+    lot = Attribute('''''')
 
 class IElecting(Interface):
 

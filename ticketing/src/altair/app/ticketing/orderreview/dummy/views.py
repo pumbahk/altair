@@ -6,9 +6,9 @@ from functools import wraps
 from datetime import datetime
 
 from pyramid.view import view_config
-from altair.mobile import mobile_view_config
-from altair.app.ticketing.cart import api as cart_api
-from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
+from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.app.ticketing.cart.request import ENV_ORGANIZATION_ID_KEY
+from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.core.models import (
     Organization,
     Host,
@@ -26,7 +26,7 @@ def overwrite_request_organization(fn):
             logger.info("* dummy overwrite organization: organization_id = {0}".format(organization_id))
             organization = Organization.query.filter_by(id=organization_id).first()
             if organization:
-                request.environ[cart_api.ENV_ORGANIZATION_ID_KEY] = organization.id
+                request.environ[ENV_ORGANIZATION_ID_KEY] = organization.id
         return fn(context, request)
     return wrapped
 
@@ -61,12 +61,12 @@ class DummyModels:
         ticket.ordered_product_item.product_item.performance.start_on = datetime(2000, 1, 1)
         return ticket
 
-@view_config(route_name="dummy.orderreview.index", renderer="altair.app.ticketing.orderreview:templates/dummy/index.html")
+@lbr_view_config(route_name="dummy.orderreview.index", renderer="altair.app.ticketing.orderreview:templates/dummy/index.html")
 def dummy_index(context, request):
     organizations = Organization.query.filter_by(deleted_at=None).filter(Host.organization_id==Organization.id).all()
     return {"organizations": organizations}
 
-@view_config(route_name="dummy.orderreview.qrdraw", xhr=False, permission="view")
+@lbr_view_config(route_name="dummy.orderreview.qrdraw", xhr=False, permission="view")
 def dummy_qr_draw(context, request):
     ## qr builderを一時的に切り替えられれば不要
     ticket = DummyModels.ticket(request)
@@ -107,26 +107,26 @@ def get_dummy_order():
         ]
     return order
 
-@mobile_view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
+@lbr_view_config(route_name='dummy.orderreview.show.guest', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_request_organization,
                     renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/show.html"))
-@view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
+@lbr_view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
 def dummy_show_guest(context, request):
     order = get_dummy_order()
     sej_order = mock.Mock()
     return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
-@mobile_view_config(route_name='dummy.orderreview.show', request_method="GET", decorator=overwrite_request_organization,
+@lbr_view_config(route_name='dummy.orderreview.show', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_request_organization,
                     renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
-@view_config(route_name='dummy.orderreview.show', request_method="GET", decorator=overwrite_request_organization,
+@lbr_view_config(route_name='dummy.orderreview.show', request_method="GET", decorator=overwrite_request_organization,
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
 def dummy_show(context, request):
     order = get_dummy_order()
     sej_order = mock.Mock()
     return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
-@mobile_view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
-@view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
+@lbr_view_config(route_name='dummy.orderreview.qr', request_type='altair.mobile.interfaces.IMobileRequest', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
+@lbr_view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def dummy_qr(context, request):
     ticket = DummyModels.ticket(request)
 

@@ -112,12 +112,12 @@ class OrderShowFormProvider(object):
     def get_shipping_address_form(self):
         order = self.order
         if order.shipping_address:
-            form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
+            form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address), context=self.context)
             form_shipping_address.tel_1.data = order.shipping_address.tel_1
             form_shipping_address.email_1.data = order.shipping_address.email_1
             form_shipping_address.email_2.data = order.shipping_address.email_2
         else:
-            form_shipping_address = ClientOptionalForm()
+            form_shipping_address = ClientOptionalForm(context=self.context)
         return form_shipping_address
 
     def get_order_form(self):
