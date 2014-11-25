@@ -1,0 +1,153 @@
+<div class="kadomaru">
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th><span>受付番号</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="textC font20">${order.order_no}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+<div class="kadomaru">
+  <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+  <p>
+  キャンセル処理は、下記のような理由によりおこなっております。<br />
+  ・お客様からキャンセルのご連絡があったため<br />
+  ・期限内のご入金がなくキャンセル扱いとしたため<br />
+  ・二重注文により、ひとつをキャンセル処理したため<br />
+  </p>
+</div>
+% else:
+<%
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+shipping_address = order.shipping_address
+%>
+<div class="kadomaru">
+<h3>購入情報</h3>
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th colspan="2"><span>${view_context.title}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>新規／継続</td>
+        <td class="textR">${pm.get('cont')}</td>
+      </tr>
+      % if pm.get('old_id_number'):
+ 　　 <tr>
+        <td>2013-14会員番号</td>
+        <td class="textR">${pm.get('old_id_number')}</td>
+      </tr>
+      % endif
+      <tr>
+        <td>会員種別</td>
+        <td class="textR">${order.items[0].product.name}</td>
+      </tr>
+      <tr>
+        <td>氏名</td>
+        <td class="textR">${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <td>氏名（フリガナ）</td>
+        <td class="textR">${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <td>誕生日</td>
+        <td class="textR">${pm['birthday']}</td>
+      </tr>
+      <tr>
+        <td>性別</td>
+        <td class="textR">${pm['sex']}
+        </td>
+      </tr>
+      <tr>
+        <td>郵便番号</td>
+        <td class="textR">${shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <td>住所</td>
+        <td class="textR">${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <td>電話番号</td>
+        <td class="textR">${shipping_address.tel_1 or shipping_address.tel_2}</td>
+      </tr>
+      <tr>
+          <td>メールアドレス</td>
+          <td class="textR">${shipping_address.email_1}</td>
+      </tr>
+      <tr>
+        <td>${view_context.team_name}からのメールマガジンの配信	</td>
+        <td class="textR">${pm['mail_permission']}</td>
+      </tr>
+      % if 'publicity' in pm:
+      <tr>
+        <td>メモリアルブックへの掲載希望</td>
+        <td class="textR">${u'はい' if pm['publicity'] == 'yes' else u'いいえ'}</td>
+      </tr>
+      % endif
+      % if 't_shirts_size' in pm:
+      <tr>
+        <td>ClubナイナーズＴシャツサイズ</td>
+        <td class="textR">${pm['t_shirts_size']}</td>
+      </tr>
+      % endif
+      % if 'official_ball' in pm:
+      <tr>
+        <td>オリジナル公式球への記載希望</td>
+        <td class="textR">${pm['official_ball']}</td>
+      </tr>
+      % endif
+      % if 'coupon' in pm:
+      <tr>
+        <td>特典の会場受け取り希望</td>
+        <td class="textR">${pm['coupon']}</td>
+      </tr>
+      % endif
+      % if 'motivation' in pm:
+      <tr>
+        <td>クラブナイナーズに入会しようと思ったきっかけは？</td>
+        <td class="textR">${pm['motivation']}</td>
+      </tr>
+      % endif
+      % if pm.get('num_times_at_venue'):
+      <tr>
+        <td>昨シーズンの会場での観戦回数</td>
+        <td class="textR">${pm['num_times_at_venue']}回</td>
+      </tr>
+      % endif
+    </tbody>
+  </table>
+</div>
+
+<div class="kadomaru">
+  <h3>お支払い</h3>
+  ${h.render_payment_finished_viewlet(request, order)}
+</div>
+%endif
+
+<div class="kadomaru">
+  <h3>注意事項</h3>
+  <ul>
+    <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br />
+      （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+    <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
+    <li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
+  </ul>
+</div>
+
+<div class="kadomaru">
+  <h3>お問い合わせ先</h3>
+  <ul class="markNone font14">
+    <li>${view_context.contact_name}</li>
+    <li>${view_context.contact_tel} (${view_context.contact_office_hours})</li>
+  </ul>
+</div>

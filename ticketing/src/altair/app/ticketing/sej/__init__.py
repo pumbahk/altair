@@ -58,14 +58,14 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
     config.set_root_factory('.resources.TicketingApiResource')
-    config.registry['sa.engine'] = engine
 
-    config.include('.')
     config.include('altair.app.ticketing.mails')
     config.include('altair.app.ticketing.setup_mailtraverser')
     config.include('altair.app.ticketing.orders.setup_subscribers')
     config.add_tween('.tweens.encoding_converter_tween_factory')
     config.include(setup_routes, "/altair/sej/")
+
+    config.include('.')
     config.scan('.views')
 
     return config.make_wsgi_app()

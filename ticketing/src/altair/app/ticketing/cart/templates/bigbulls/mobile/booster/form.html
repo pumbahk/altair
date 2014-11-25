@@ -1,0 +1,8 @@
+<%inherit file="../../../__layouts__/mobile/booster.html" />
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<hr />
+<div style="text-align:center" align="center"><font color="#ff0000">◆</font>申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます<font color="#ff0000">◆</font></div>
+<hr />
+<%mobile:header>${view_context.title}</%mobile:header>
+${panel("mobile_input_form", form)}
+

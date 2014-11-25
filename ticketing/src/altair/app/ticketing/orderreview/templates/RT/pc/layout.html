@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>楽天チケット 購入確認ページ</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/css/import22.css')}" media="all" />
+  <style type="text/css">
+.OrderBox .settlementBoxInner2 {
+    padding: 0 0 10px;
+}
+
+.OrderBox table {
+    line-height: 1.5em;
+}
+
+
+.OrderBox h2 {
+    text-align: left;
+    margin: 0 3px 5px 2px;
+    padding: 8px 0 10px 12px;
+    background: url(${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/bg_line.gif")}) repeat-x left bottom;
+}
+
+.OrderBox .confirmBoxText{
+    margin-left: 20px;
+}
+
+table {
+	margin: 0 0 0 1em;
+  padding; 0 0;
+  width: 100%;
+}
+
+table th,
+table td {
+	padding: 2px 20px 2px 2px;
+}
+
+table th {
+  width: 10em;
+}
+
+.itemize th,
+.commission th {
+	vertical-align: top;
+	padding: 2px 20px 2px 2px;
+	border-bottom: 1px solid .e6e6e6;
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+.itemize td {
+	padding: 2px;
+	border-bottom: 1px solid .e6e6e6;
+}
+
+.itemize tr:last-child th,
+.itemize tr:last-child td {
+	border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ***** wrapper [start] ***** -->
+<div id="wrapper">
+
+<!-- ***** header [start] ***** -->
+<div id="header">
+<h1><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/header_logo_03.gif')}" alt="楽天チケット" /></a></h1>
+</div>
+<!-- ***** header [end] ***** -->
+
+
+${next.body()}
+
+
+</br>
+<!-- ***** footer [start] ***** -->
+<div class="footer">
+<ul class="footernav">
+<li class="first"><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
+<li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
+<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+<li><a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
+<li class="last"><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+</ul>
+<div class="copyright">Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved. </div>
+</div>
+<!-- ***** footer [end] ***** -->
+
+</div>
+<!-- ***** wrapper [end] ***** -->
+
+</body>
+</html>

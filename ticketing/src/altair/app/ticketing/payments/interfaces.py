@@ -171,7 +171,7 @@ class IPayment(Interface):
         pass
 
 class IPaymentViewRendererLookup(Interface):
-    def __call__(path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
+    def __call__(request, path_or_renderer_name, for_, plugin_type, plugin_id, package, registry, **kwargs):
         pass
 
 class ISejDeliveryPlugin(Interface):

@@ -7,7 +7,6 @@ from decimal import Decimal
 from datetime import datetime
 
 from zope.interface import implementer
-from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPOk, HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
@@ -15,14 +14,17 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.session import HybridHTTPBackend, unmerge_session_restorer_from_url
 from altair.mobile.api import is_mobile_request
 
+from altair.pyramid_dynamic_renderer import lbr_view_config
+
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.mails.interfaces import ICompleteMailPayment
-from altair.app.ticketing.mails.interfaces import IOrderCancelMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsElectedMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsRejectedMailPayment
-
+from altair.app.ticketing.mails.interfaces import (
+    ICompleteMailResource,
+    IOrderCancelMailResource,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
@@ -32,7 +34,7 @@ from altair.app.ticketing.core.models import MailTypeEnum, ChannelEnum
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.cart.events import notify_order_completed
 from altair.app.ticketing.cart.interfaces import ICartPayment
-from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
+from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
 from altair.app.ticketing.checkout import api
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
@@ -45,6 +47,13 @@ from ..payment import Payment
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
+
+def _overridable(path):
+    from . import _template
+    if _template is None:
+        return '%s:templates/%s' % (__name__, path)
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
 
 def includeme(config):
     # 決済系(楽天ID決済)
@@ -200,32 +209,32 @@ class CheckoutPlugin(object):
                 error_code=order_like.error_code
                 )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):
     """ 確認画面表示
     :param context: ICartPayment
     """
     return Response(text=u"楽天ID決済")
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def completion_viewlet(context, request):
     """ 完了画面表示
     :param context: IOrderPayment
     """
     return Response(text=u"楽天ID決済")
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/checkout_mail_complete.html")
-@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/checkout_mail_complete.html")
+@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
 def payment_mail_viewlet(context, request):
-    notice=context.mail_data("notice")
+    notice=context.mail_data("P", "notice")
     order=context.order
     return dict(notice=notice, order=order)
 
-@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def notice_viewlet(context, request):
-    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("notice")))
+    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("P", "notice")))
 
 
 class CheckoutView(object):
@@ -237,8 +246,8 @@ class CheckoutView(object):
 
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type=IMobileRequest)
+    @lbr_view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/pc/checkout_login.html', request_method='POST')
+    @lbr_view_config(route_name='payment.checkout.login', request_type=IMobileRequest, renderer=selectable_renderer("checkout_login.html"), request_method='POST')
     def login(self):
         cart = cart_api.get_cart_safe(self.request, for_update=False)
         try:
@@ -272,7 +281,7 @@ class CheckoutCompleteView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='payment.checkout.order_complete')
+    @lbr_view_config(route_name='payment.checkout.order_complete')
     def order_complete(self):
         '''
         注文完了通知を保存し、予約確定する
@@ -331,8 +340,7 @@ class CheckoutCallbackView(object):
 
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
-    @view_config(route_name='payment.checkout.callback.success', request_type=IMobileRequest, renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
+    @lbr_view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("completion.html"), request_method='GET')
     def success(self):
         cart = cart_api.get_cart(self.request)
         if not cart:
@@ -353,13 +361,13 @@ class CheckoutCallbackView(object):
         finally:
             del self.request.session['altair.app.ticketing.cart.magazine_ids']
             self.request.session.persist()
-        cart_api.remove_cart(self.request)
+        cart_api.disassociate_cart_from_session(self.request)
         cart_api.logout(self.request)
 
         return dict(order=cart.order)
 
     @clear_exc
-    @view_config(route_name='payment.checkout.callback.error', request_method='GET')
+    @lbr_view_config(route_name='payment.checkout.callback.error', request_method='GET')
     def error(self):
         cart = cart_api.get_cart(self.request)
         logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s' % (cart.order_no))

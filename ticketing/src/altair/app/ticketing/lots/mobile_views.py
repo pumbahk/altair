@@ -6,18 +6,18 @@ from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
-from altair.mobile import mobile_view_config
 from wtforms.validators import ValidationError
+from altair.now import get_now
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.views import back
-from altair.now import get_now
+from altair.app.ticketing.cart.rendering import selectable_renderer
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
@@ -29,7 +29,8 @@ from . import urls
 logger = logging.getLogger(__name__)
 
 
-@mobile_view_config(context=NoResultFound)
+@lbr_view_config(request_type='altair.mobile.interfaces.IMobileRequest',
+                 context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)    
@@ -62,7 +63,7 @@ class EntryLotView(object):
     def cr2br(self, t):
         return h.cr2br(t)
 
-    @view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/index.html"))
+    @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
         event = self.context.event
         lot = self.context.lot
@@ -80,7 +81,7 @@ class EntryLotView(object):
             option_index=len(api.get_options(self.request, lot.id)) + 1
             )
 
-    @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("%(membership)s/mobile/step1.html"))
+    @lbr_view_config(route_name='lots.entry.step1', renderer=selectable_renderer("step1.html"))
     def step1(self):
         event = self.context.event
         lot = self.context.lot
@@ -100,7 +101,7 @@ class EntryLotView(object):
             option_index=self.context.option_index
             )
 
-    @view_config(route_name='lots.entry.step2', renderer=selectable_renderer("%(membership)s/mobile/step2.html"))
+    @lbr_view_config(route_name='lots.entry.step2', renderer=selectable_renderer("step2.html"))
     def step2(self):
         event = self.context.event
         lot = self.context.lot
@@ -156,7 +157,7 @@ class EntryLotView(object):
             options=h.decorate_options_mobile(api.get_options(self.request, lot.id))
             )
 
-    @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("%(membership)s/mobile/step3.html"))
+    @lbr_view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("step3.html"))
     def step3(self):
         lot = self.context.lot
         option_index = len(api.get_options(self.request, lot.id))
@@ -165,7 +166,7 @@ class EntryLotView(object):
         return self.step3_rendered_value(option_index)
 
     @back(mobile=back_to_step1)
-    @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("%(membership)s/mobile/step3.html"))
+    @lbr_view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("step3.html"))
     def step3_post(self):
         event = self.context.event
         lot = self.context.lot
@@ -278,13 +279,13 @@ class EntryLotView(object):
             messages=self.request.session.pop_flash()
             )
 
-    @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("%(membership)s/mobile/step4.html"))
+    @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))
     def step4(self):
         cform = api.create_client_form(self.context, self.request)
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
-    @view_config(route_name='lots.entry.step4', request_method='POST', renderer=selectable_renderer("%(membership)s/mobile/step4.html"))
+    @lbr_view_config(route_name='lots.entry.step4', request_method='POST', renderer=selectable_renderer("step4.html"))
     def step4_post(self):
         event = self.context.event
         lot = self.context.lot
@@ -294,7 +295,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = schemas.ClientFormFactory(self.request)(self.request.params)
+        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
         payment_delivery_method_pair_id = None
         try:
@@ -342,9 +343,7 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
-            birthday=datetime(int(cform['year'].data),
-                              int(cform['month'].data),
-                              int(cform['day'].data)),
+            birthday=cform['birthday'].data,
             memo=cform['memo'].data)
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)

@@ -38,6 +38,7 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy,
         )
+    config.include('pyramid_mako')
     config.include('altair.httpsession.pyramid')
     config.include('altair.browserid')
     config.include('altair.exclog')
@@ -48,7 +49,7 @@ def main(global_config, **local_config):
 
     config.include('newsletter.newsletters' , route_prefix='/')
 
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_mako_renderer('.html')
     config.add_renderer('json'  , 'newsletter.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'newsletter.renderers.csv_renderer_factory')
 

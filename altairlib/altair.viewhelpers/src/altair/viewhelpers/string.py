@@ -1,4 +1,5 @@
 import unicodedata
+from cgi import escape
 
 class RawText(object):
     def __init__(self, v):
@@ -6,6 +7,19 @@ class RawText(object):
 
     def __html__(self):
         return self.value
+
+    def __str__(self):
+        return self.value
+
+    def __unicode__(self):
+        return self.value
+
+    def __add__(self, that):
+        if hasattr(that, '__html__'):
+            that_html = that.__html__()
+        else:
+            that_html = escape(unicode(that))
+        return self.__class__(self.value + that_html)
 
 def truncate(s, size, ellipsis=u'...'):
     if len(s) > size:
