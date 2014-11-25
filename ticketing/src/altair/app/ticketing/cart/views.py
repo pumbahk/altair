@@ -1228,7 +1228,7 @@ class PointAccountEnteringView(object):
 
         form = self.form
         if not form.validate():
-            asid = None
+            asid = self.request.altair_pc_asid
             if is_mobile_request(self.request):
                 asid = self.request.altair_mobile_asid
 
