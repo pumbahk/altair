@@ -15,7 +15,7 @@ __all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelin
 ## pagination
 from webhelpers.paginate import Page
 import urlparse
-import cgi
+import cgi 
 import itertools
 from markupsafe import Markup
 from altair.viewhelpers import truncate, truncate_eaw, first_and_last
@@ -61,7 +61,7 @@ def url_generate_default(request, **kwargs):
     return replacement
 
 class PagerAdapter(object):
-    DEFAULT_OPT = {"items_per_page": 10,
+    DEFAULT_OPT = {"items_per_page": 10, 
                    "page": 1}
     DEFAULT_PAGER_OPT = {
         "format": "$link_first $link_previous ~3~ $link_next $link_last"
@@ -122,7 +122,7 @@ def _merge_dict(base, other=None, dels=None):
             if k in r:
                 del r[k]
     return r
-
+    
 def route_path_override(request, path, _query=None, _dels=None, **kwargs):
     qdict = _merge_dict(request.GET, other=_query, dels=_dels)
     return request.route_path(path, _query=qdict, **kwargs)
