@@ -96,9 +96,6 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
             ]
         self.session.flush()
         self.config = testing.setUp(settings={
-            'altair.pc.asid': 'xxx',
-            'altair.mobile.asid': 'xxx',
-            'altair.smartphone.asid': 'xxx',
             'altair.cart.completion_page.temporary_store.cookie_name': 'xxx',
             'altair.cart.completion_page.temporary_store.secret': 'xxx',
             })
@@ -1061,9 +1058,6 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
             ]
         self.session.flush()
         self.config = testing.setUp(settings={
-            'altair.pc.asid': 'xxx',
-            'altair.mobile.asid': 'xxx',
-            'altair.smartphone.asid': 'xxx',
             'altair.cart.completion_page.temporary_store.cookie_name': 'xxx',
             'altair.cart.completion_page.temporary_store.secret': 'xxx',
             })
