@@ -28,8 +28,8 @@
 
       <div class="side-action-buttons">
         <div style="text-align: right">
-          % if event:
-          <a href="${request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance) if performance else request.route_url('cart.switchpc', event_id=event['id'])}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+          % if hasattr(request, 'context'):
+          <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
           % endif
         </div>
       </div>

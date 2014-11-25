@@ -46,9 +46,9 @@ class SamplePairsFactory(object):
                 augus_seat.id = ii
                 augus_seat.save = Mock(return_value=None) # castration
                 augus_seat.seat_id = seat.id
-                augus_seat.area_name = u'エリア名'                
-                augus_seat.info_name = u'付加情報名'                
-                augus_seat.doorway_name = u'出入口名'                
+                augus_seat.area_name = u'エリア名'
+                augus_seat.info_name = u'付加情報名'
+                augus_seat.doorway_name = u'出入口名'
                 augus_seat.priority = 1
                 augus_seat.floor = '1'
                 augus_seat.column = u'あ'
@@ -70,9 +70,9 @@ class SamplePairsFactory(object):
             augus_seat.id = ii
             augus_seat.save = Mock(return_value=None)
             augus_seat.seat_id = None
-            augus_seat.area_name = u'エリア名'                
-            augus_seat.info_name = u'付加情報名'                
-            augus_seat.doorway_name = u'出入口名'                
+            augus_seat.area_name = u'エリア名'
+            augus_seat.info_name = u'付加情報名'
+            augus_seat.doorway_name = u'出入口名'
             augus_seat.priority = 1
             augus_seat.floor = '1'
             augus_seat.column = u'あ'
@@ -87,7 +87,7 @@ class SamplePairsFactory(object):
             augus_seat.doorway_code = 9
             augus_seat.version = 10
             augus_seats.append(augus_seat)
-            
+
         pairs = SeatAugusSeatPairs()
         pairs._venue = Venue(seats=seats)
         pairs.get_augus_seats = Mock(return_value=augus_seats)
@@ -192,7 +192,7 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[7], _sjis(augus_seat.augus_venue.name))
                 self.assertEqual(entry[8], _sjis(augus_seat.area_name))
                 self.assertEqual(entry[9], _sjis(augus_seat.info_name))
-                self.assertEqual(entry[10], _sjis(augus_seat.doorway_name))                
+                self.assertEqual(entry[10], _sjis(augus_seat.doorway_name))
                 self.assertEqual(entry[11], augus_seat.priority)
                 self.assertEqual(entry[12], _sjis(augus_seat.floor))
                 self.assertEqual(entry[13], _sjis(augus_seat.column))
@@ -206,7 +206,7 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[21], augus_seat.info_code)
                 self.assertEqual(entry[22], augus_seat.doorway_code)
                 self.assertEqual(entry[23], augus_seat.version)
-                
+
             else:
                 for ii in range(6, 24):
                     self.assertEqual(entry[ii], '')
@@ -216,18 +216,17 @@ class AugusVenueImporterTest(TestCase):
         from altair.app.ticketing.core.models import CooperationTypeEnum
         factory = SamplePairsFactory()
         pairs = factory.create()
-        io = StringIO()        
+        io = StringIO()
 
         # create csv
         writer = csv.writer(io)
         typ = CooperationTypeEnum.augus.v[0]
         editor = CSVEditorFactory.create(typ)
         editor.write(writer, pairs)
-        
+
         # test improter
         io.seek(0)
         reader = csv.reader(io)
-        
 
 
 class _FactoryTestBase(object):
@@ -261,3 +260,11 @@ class ImporterFactoryTest(TestCase, _FactoryTestBase):
 
     def test_create(self):
         self._test_create()
+
+
+class PutbackTest(TestCase):
+    def _makeOne(self):
+        return
+
+    def test_putback(self):
+        pass

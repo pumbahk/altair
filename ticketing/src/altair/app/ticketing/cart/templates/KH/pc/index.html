@@ -69,9 +69,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
 </%block>
     <%
         from altair.mobile import PC_ACCESS_COOKIE_NAME
-        link = request.route_url('cart.switchsp', event_id=event['id'])
+        link = request.context.switch_sp_url
         if performance:
-            link = request.route_url('cart.switchsp.perf', event_id=event['id'], performance=performance)
+            link = request.context.switch_sp_url
     %>
     % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
         <a href="${link}">

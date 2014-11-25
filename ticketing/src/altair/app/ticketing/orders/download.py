@@ -260,9 +260,9 @@ summary_columns = [
     t_event.c.title.label('event_title'), #-- イベント
     t_performance.c.id.label('performance_id'),
     t_performance.c.start_on.label('performance_start_on'), #-- 開演日時
-    t_order.c.card_brand, # -- カードブランド
-    t_order.c.card_ahead_com_code, #-- 仕向け先コード
-    t_order.c.card_ahead_com_name, #-- 仕向け先名
+    text("'' AS card_brand"), # -- カードブランド
+    text("'' AS card_ahead_com_code"), #-- 仕向け先コード
+    text("'' AS card_ahead_com_name"), #-- 仕向け先名
     t_order.c.fraud_suspect, #-- 不正予約フラグ
 ]
 

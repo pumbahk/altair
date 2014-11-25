@@ -105,7 +105,7 @@ class ProductFormMixin(object):
 
     applied_point_grant_settings = OurPHPCompatibleSelectMultipleField(
         label=u'適用されるポイント付与設定',
-        choices=lambda field: [(pgs.id, pgs.name) for pgs in field.form.sales_segment.point_grant_settings] if field.form.sales_segment else [],
+        choices=lambda field: [(pgs.id, pgs.name) for pgs in field._form.sales_segment.point_grant_settings] if field._form.sales_segment else [],
         hide_on_new=True,
         coerce=long,
         widget=CheckboxMultipleSelect(multiple=True)
@@ -388,6 +388,20 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
                 status = False
         return status
 
+class ProductCopyForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', copy_sales_segments=None, **kwargs):
+        super(ProductCopyForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if copy_sales_segments:
+            self.copy_sales_segments.choices = [
+                (sales_segment.id, sales_segment.sales_segment_group.name)
+                for sales_segment in copy_sales_segments
+                ]
+
+    copy_sales_segments = OurPHPCompatibleSelectMultipleField(
+        label=u'コピー先を選択してください',
+        validators=[Required()],
+        choices=[],
+    )
 
 class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
@@ -518,17 +532,17 @@ class PreviewImageDownloadForm(OurForm):
     def delivery_methods(field):
         return set(
             (pdmp.delivery_method_id, pdmp.delivery_method.name)
-            for pdmp in field.form.sales_segment.payment_delivery_method_pairs)
+            for pdmp in field._form.sales_segment.payment_delivery_method_pairs)
 
     def ticket_formats(field):
-        tickets = object_session(field.form.sales_segment) \
+        tickets = object_session(field._form.sales_segment) \
             .query(TicketFormat.id, TicketFormat.name) \
             .join(Ticket.ticket_format) \
             .join(TicketFormat.delivery_methods) \
             .join(Ticket.event) \
             .join(Event.sales_segment_groups) \
             .join(SalesSegmentGroup.sales_segments) \
-            .filter(SalesSegment.id == field.form.sales_segment.id) \
+            .filter(SalesSegment.id == field._form.sales_segment.id) \
             .group_by(TicketFormat.id)
         return tickets
  

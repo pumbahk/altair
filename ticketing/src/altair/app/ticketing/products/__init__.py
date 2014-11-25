@@ -14,6 +14,7 @@ def includeme(config):
 
     product_create_factory = newRootFactory(ProductCreateResource)
     config.add_route('products.new', '/new', factory=product_create_factory)
+    config.add_route('products.copy', '/copy', factory=product_create_factory)
 
     product_api_factory = newRootFactory(ProductAPIResource)
     config.add_route('products.api.get', '/api/get/', factory=product_api_factory)

@@ -10,11 +10,12 @@ from pyramid.security import effective_principals
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
+from sqlalchemy.orm.session import make_transient
 from sqlalchemy.orm.exc import NoResultFound, NO_STATE
 from zope.interface import implementer
+from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
-from .interfaces import ICartPayment, ICartDelivery
-from .api import get_auth_info
+from altair.app.ticketing.temp_store import TemporaryStoreError
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
@@ -26,7 +27,11 @@ from altair.app.ticketing.utils import memoize
 from . import models as m
 from . import api as cart_api
 from .exceptions import NoCartError
-from .interfaces import ICartContext
+from .interfaces import (
+    ICartResource,
+    ICartPayment,
+    ICartDelivery,
+    )
 from .exceptions import (
     OutTermSalesException,
     NoSalesSegment,
@@ -45,7 +50,38 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-@implementer(ICartContext)
+def products_filter_by_salessegment(products, sales_segment):
+    if sales_segment is None:
+        logger.debug("debug: products_filter -- salessegment is none")
+    if sales_segment:
+        return products.filter_by(sales_segment=sales_segment)
+    return products
+
+class DefaultCartSetting(object):
+    type = u'standard'
+    text_for_product_name = u'商品'
+    title = u''
+    contact_url= u'mailto:info@tstar.jp'
+    contact_tel = u''
+    office_hours = u''
+    contact_name = u''
+    mobile_header_background_color = u'#000'
+    mobile_marker_color = u'#000'
+    mobile_required_marker_color = u'#f00'
+    fc_announce_page_url = u''
+    fc_announce_page_url_mobile = u''
+    fc_announce_page_title = u''
+    privacy_policy_page_url = u''
+    privacy_policy_page_url_mobile = u''
+    orderreview_page_url = u''
+    mail_filter_domain_notice_template = None
+
+default_cart_setting = DefaultCartSetting()
+
+def get_default_cart_setting(request):
+    return default_cart_setting
+
+@implementer(ICartResource)
 class TicketingCartResourceBase(object):
     __acl__ = [
         (Allow, Authenticated, 'view'),
@@ -84,12 +120,7 @@ class TicketingCartResourceBase(object):
             user = self.authenticated_user()
             if not cart.sales_segment.applicable(user=user, type='all'):
                 logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
-                try:
-                    cart_api.release_cart(self.request, cart)
-                    cart_api.remove_cart(self.request)
-                except NoCartError:
-                    import sys
-                    logger.info('exception ignored', exc_info=sys.exc_info())
+                cart_api.remove_cart(self.request)
                 raise InvalidCartStatusError(cart.id)
         return
 
@@ -180,7 +211,7 @@ class TicketingCartResourceBase(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        return get_auth_info(self.request)
+        return self.request.altair_auth_info
 
     @reify
     def available_sales_segments(self):
@@ -289,6 +320,22 @@ class TicketingCartResourceBase(object):
     @reify
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
+
+    @reify
+    def switch_pc_url(self):
+        performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
+        if performance_id is not None:
+            return self.request.route_url('cart.switchpc', event_id=self.event.id, _query=dict(performance=performance_id))
+        else:
+            return self.request.route_url('cart.switchpc', event_id=self.event.id)
+
+    @reify
+    def switch_sp_url(self):
+        performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
+        if performance_id is not None:
+            return self.request.route_url('cart.switchsp', event_id=self.event.id, _query=dict(performance=performance_id))
+        else:
+            return self.request.route_url('cart.switchsp', event_id=self.event.id)
 
     @memoize()
     def get_total_orders_and_quantities_per_user(self, sales_segment):
@@ -432,6 +479,27 @@ class TicketingCartResourceBase(object):
         logger.info(str(q))
         return q.first() is not None
 
+    @reify
+    def cart_setting(self):
+        cart_setting = (self.event and self.event.setting.cart_setting) or cart_api.get_organization(self.request).setting.cart_setting
+        if cart_setting is not None:
+            make_transient(cart_setting)
+        else:
+            cart_setting = get_default_cart_setting(self.request)
+        return cart_setting
+
+    @reify
+    def booster_cart(self):
+        return self.cart_setting.booster_cart if self.cart_setting else False
+
+    @reify
+    def booster_or_fc_cart(self):
+        return self.cart_setting.booster_or_fc_cart if self.cart_setting else False
+
+    @reify
+    def fc_cart(self):
+        return self.cart_setting.fc_cart if self.cart_setting else False
+
 
 class EventOrientedTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request, event_id=None):
@@ -545,6 +613,14 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
             user=self.authenticated_user(),
             type='all').all()
 
+    @reify
+    def switch_pc_url(self):
+        return self.request.route_url('cart.switchpc.perf', performance_id=self.performance.id)
+
+    @reify
+    def switch_sp_url(self):
+        return self.request.route_url('cart.switchsp.perf', performance_id=self.performance.id)
+
 
 class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request, sales_segment_id=None):
@@ -569,7 +645,6 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
             raise HTTPNotFound()
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
-
 class CartBoundTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request):
         super(CartBoundTicketingCartResource, self).__init__(request)
@@ -591,17 +666,45 @@ class CartBoundTicketingCartResource(TicketingCartResourceBase):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
-# def compat_ticketing_cart_resource_factory(request):
-#     from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
-#     performance_id = None
-#     try:
-#         performance_id = long(request.params.get('pid') or request.params.get('performance'))
-#     except (ValueError, TypeError):
-#         pass
-#     if performance_id is not None:
-#         return PerformanceOrientedTicketingCartResource(request, performance_id)
-#     else:
-#         return EventOrientedTicketingCartResource(request)
+
+class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
+    def __init__(self, request):
+        super(CompleteViewTicketingCartResource, self).__init__(request)
+
+    @reify
+    def order_like(self):
+        try:
+            cart = self.read_only_cart 
+            return cart
+        except NoCartError:
+            try:
+                order_no = cart_api.get_temporary_store(self.request).get(self.request)
+                return cart_api.get_order_for_read_by_order_no(self.request, order_no)
+            except TemporaryStoreError:
+                logger.debug("could not retrieve temporary store", exc_info=True)
+        return None
+
+    @property
+    def sales_segment(self):
+        return self.order_like and self.order_like.sales_segment
+
+    @property
+    def performance(self):
+        return self.sales_segment and self.sales_segment.performance
+
+    @property
+    def event(self):
+        return self.performance and self.performance.event
+
+    @reify
+    def sales_segments(self):
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
+        return [self.sales_segment]
+
+
+class SwitchUAResource(object):
+    def __init__(self, request):
+        self.request = request
 
 compat_ticketing_cart_resource_factory = EventOrientedTicketingCartResource
 

@@ -1,0 +1,17 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  <h3>確認</h3>
+</div>
+<form action="${next_to}" method="POST">
+<div class="modal-body">
+  <p>チケット券面構成(TicketBundle)をコピーします.</p>
+  <br />
+  ${form_item(form.name)}
+</div>
+<div class="modal-footer">
+  <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+  <button type="submit" class="btn">コピー</button>
+</div>
+</form>

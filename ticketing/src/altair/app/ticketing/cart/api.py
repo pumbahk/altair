@@ -9,10 +9,6 @@ import re
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
-from sqlalchemy.orm.session import make_transient
-from sqlalchemy.orm.attributes import instance_state
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget, authenticated_userid
@@ -27,26 +23,24 @@ from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
-from altair.app.ticketing.security import get_extra_auth_info_from_principals
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 
-from .interfaces import IPaymentMethodManager
-from .interfaces import IStocker, IReserving, ICartFactory
-from .interfaces import IPerformanceSelector
-
-from .models import Cart, PaymentMethodManager, DBSession
+from .interfaces import (
+    IPaymentMethodManager,
+    IStocker,
+    IReserving,
+    ICartFactory,
+    IPerformanceSelector,
+    )
+from .models import Cart, PaymentMethodManager, DBSession, CartSetting
 from .exceptions import NoCartError
 from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
 
-ENV_ORGANIZATION_ID_KEY = 'altair.app.ticketing.cart.organization_id'
-ENV_ORGANIZATION_PATH_KEY = 'altair.app.ticketing.cart.organization_path'
-
 def set_rendered_event(request, event):
     set_rendered_target(request, "event", event)
-
 
 def is_multicheckout_payment(cart):
     if cart is None:
@@ -109,25 +103,30 @@ def get_cart(request, for_update=True):
 
     return q.first()
 
-def remove_cart(request):
-    if request.session.get("altair.app.ticketing.cart_id"):
+def disassociate_cart_from_session(request):
+    try:
         del request.session['altair.app.ticketing.cart_id']
+    except KeyError:
+        pass
 
-def release_cart(request, cart, async=True):
-    if async:
-        try:
-            get_publisher(request, 'cart').publish(
-                body=json.dumps(dict(cart_id=cart.id)),
-                routing_key='cart',
-                properties=dict(content_type="application/json")
-                )
-        except Exception as e:
-            import sys
-            logger.warning("ignored exception", exc_info=sys.exc_info())
-    else:
-        cart.release()
+def remove_cart(request, release=True, async=True):
+    cart = get_cart(request, for_update=(not async))
+    disassociate_cart_from_session(request)
+    if cart is not None and cart.finished_at is None:
+        if async:
+            try:
+                get_publisher(request, 'cart').publish(
+                    body=json.dumps(dict(cart_id=cart.id)),
+                    routing_key='cart',
+                    properties=dict(content_type="application/json")
+                    )
+            except Exception as e:
+                import sys
+                logger.warning("ignored exception", exc_info=sys.exc_info())
+        else:
+            cart.release()
 
-@deprecate
+@deprecate("deprecated")
 def has_cart(request):
     try:
         get_cart_safe(request)
@@ -165,7 +164,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = get_organization(request)
+    organization = request.organization
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -187,7 +186,7 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-@deprecate
+@deprecate("deprecated")
 def get_salessegment(request, event_id, salessegment_id, selected_date):
     ## 販売条件は必ず一つに絞られるはず
     if salessegment_id:
@@ -222,14 +221,14 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
-def order_products(request, sales_segment_id, product_requires, selected_seats=[], separate_seats=False):
+def order_products(request, sales_segment, product_requires, selected_seats=[], separate_seats=False):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
     cart_factory = get_cart_factory(request)
 
-    performance_id = c_models.SalesSegment.filter_by(id=sales_segment_id).one().performance_id
+    performance_id = sales_segment.performance_id
 
-    logger.debug("sales_segment_id=%d, performance_id=%s" % (sales_segment_id, performance_id))
+    logger.debug("sales_segment_id=%d, performance_id=%s" % (sales_segment.id, performance_id))
 
     stockstatuses = stocker.take_stock(performance_id, product_requires)
 
@@ -247,7 +246,7 @@ def order_products(request, sales_segment_id, product_requires, selected_seats=[
             seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
 
     logger.debug(seats)
-    cart = cart_factory.create_cart(performance_id, seats, product_requires)
+    cart = cart_factory.create_cart(sales_segment, seats, product_requires)
     return cart
 
 def is_quantity_only(stock):
@@ -298,7 +297,7 @@ def get_cart_user_identifiers(request):
 
     retval = []
 
-    auth_info = get_auth_info(request)
+    auth_info = request.altair_auth_info
     # is_guest は None である場合があり、その場合は guest であるとみなす
     if auth_info['is_guest'] is not None and not auth_info['is_guest']:
         retval.append((auth_info['user_id'], 'strong'))
@@ -325,12 +324,39 @@ def get_cart_user_identifiers(request):
 def is_point_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
-    if code == 'RE' or code == 'KT':
-        return True
+    return code == 'RE' or code == 'KT'
+
+def is_point_input_required(context, request):
+    if not is_point_input_organization(context, request):
+        return False
+
+    user = get_or_create_user(context.authenticated_user())
+    if not user:
+        logger.debug('cannot get a user; assuning rsp entry is required')
+        enable_point = True
+    else:
+        enable_point = enable_point_input(user)
+        logger.debug('rsp entry for user #%d is required => %r' % (user.id, enable_point))
+
+    return enable_point 
 
 def is_fc_auth_organization(context, request):
-    organization = get_organization(request)
+    organization = request.organization
     return bool(organization.settings[0].auth_type == "fc_auth")
+
+def enable_point_input(user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    if user.member.membergroup.enable_point_input:
+        return True
+
+    return False
 
 def enable_auto_input_form(user):
     from altair.app.ticketing.users.models import User
@@ -360,83 +386,51 @@ def get_order_for_read_by_order_no(request, order_no):
         .query(order_models.Order) \
         .filter_by(order_no=order_no) \
         .first()
+    if order is None:
+        order = DBSession.query(order_models.Order) \
+            .filter_by(order_no=order_no) \
+            .first()
     orders[order_no] = order
     return order
 
+@deprecate("use request.organization")
 def get_organization(request):
-    override_organization_id = request.environ.get(ENV_ORGANIZATION_ID_KEY)
+    return request.organization
 
-    if hasattr(request, 'organization'):
-        assert instance_state(request.organization).session_id is None
-        if override_organization_id is None or request.organization.id == override_organization_id:
-            return request.organization
-
-    session = get_db_session(request, 'slave')
-    try:
-        if override_organization_id is not None:
-            organization = session.query(c_models.Organization) \
-                .options(joinedload(c_models.Organization.settings)) \
-                .filter(c_models.Organization.id == override_organization_id) \
-                .one()
-        else:
-            organization = session.query(c_models.Organization) \
-                .options(joinedload(c_models.Organization.settings)) \
-                .join(c_models.Organization.hosts) \
-                .filter(c_models.Host.host_name == unicode(request.host)) \
-                .one()
-    except NoResultFound as e:
-        raise Exception("Host that named %s is not Found" % request.host)
-    make_transient(organization)
-    if override_organization_id is None:
-        request.organization = organization
-        request.environ[ENV_ORGANIZATION_ID_KEY] = request.organization.id
-    return organization
-
+@deprecate("use request.altair_auth_info")
 def get_auth_info(request):
-    retval = {}
-    user_id = authenticated_userid(request)
-    principals = effective_principals(request)
-    if principals:
-        extra = get_extra_auth_info_from_principals(principals)
-        retval.update(extra)
-        retval['user_id'] = user_id
-        if extra['auth_type'] == 'rakuten':
-            retval['claimed_id'] = user_id
-        elif extra['auth_type']:
-            retval['username'] = user_id
-        else:
-            # auth_type が無いときは guest と見なす
-            retval['is_guest'] = True
-    else:
-        retval['is_guest'] = True
-        retval['user_id'] = None
-    retval['organization_id'] = get_organization(request).id
-    return retval
+    return request.altair_auth_info
 
-def get_auth_identifier_membership(info):
-    if 'claimed_id' in info:
-        auth_identifier = info['claimed_id']
-        membership_name = 'rakuten'
-    elif 'username' in info:
-        auth_identifier = info['username']
-        membership_name = info['membership']
-    elif info.get('is_guest', False):
-        auth_identifier = None
-        membership_name = None
-    else:
-        raise ValueError('claimed_id, username not in %s' % info)
-    return dict(
-        organization_id=info['organization_id'],
-        auth_identifier=auth_identifier,
-        membership_name=membership_name
-        )
+def get_membership(d):
+    q = u_models.Membership.query \
+        .filter(u_models.Membership.name==d['membership'])
+    if d['membership'] != 'rakuten':
+        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    return q.first()
+
+def get_member_group(info):
+    membership_name = info.get('membership')
+    member_group_name = info.get('membergroup')
+    if membership_name is None or member_group_name is None:
+        return None
+    q = u_models.MemberGroup.query \
+        .filter(u_models.MemberGroup.name == member_group_name)
+    if membership_name != 'rakuten':
+        q = q \
+            .join(u_models.MemberGroup.membership) \
+            .filter(
+                u_models.Membership.name == membership_name,
+                u_models.Membership.organization_id == request.organization.id
+                )
+    return q.one()
+
 
 def lookup_user_credential(d):
     q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
-        .filter(u_models.Membership.name==d['membership_name'])
-    if d['membership_name'] != 'rakuten':
+        .filter(u_models.Membership.name==d['membership'])
+    if d['membership'] != 'rakuten':
         q = q.filter(u_models.Membership.organization_id == d['organization_id'])
     credential = q.first()
     if credential:
@@ -445,12 +439,10 @@ def lookup_user_credential(d):
         return None
 
 def get_user(info):
-    d = get_auth_identifier_membership(info)
-    return lookup_user_credential(d)
+    return lookup_user_credential(info)
 
 def get_or_create_user(info):
-    d = get_auth_identifier_membership(info)
-    user = lookup_user_credential(d)
+    user = lookup_user_credential(info)
     if user is not None:
         return user
 
@@ -463,19 +455,19 @@ def get_or_create_user(info):
     user = u_models.User()
     membership = u_models.Membership.query.filter(
         u_models.Membership.organization_id == d['organization_id'],
-        u_models.Membership.name == d['membership_name']) \
+        u_models.Membership.name == d['membership']) \
         .order_by(u_models.Membership.id.desc()) \
         .first()
     # [暫定] 楽天OpenID認証の場合は、oragnization_id の条件を外したものでも調べる
     # TODO: あとでちゃんとデータ移行する
     if membership is None and info['auth_type'] == 'rakuten':
         membership = u_models.Membership.query.filter(
-            u_models.Membership.name == d['membership_name']) \
+            u_models.Membership.name == d['membership']) \
             .order_by(u_models.Membership.id.desc()) \
             .first()
 
     if membership is None:
-        logger.error("could not found membership %s" % d['membership_name'])
+        logger.error("could not found membership %s" % d['membership'])
         return None
 
     credential = u_models.UserCredential(
@@ -566,7 +558,7 @@ def get_or_create_user_profile(user, data):
     return user.user_profile
 
 def get_contact_url(request, fail_exc=ValueError):
-    organization = get_organization(request)
+    organization = request.organization
     if organization is None:
         raise fail_exc("organization is not found")
     retval = c_api.get_default_contact_url(request, organization, request.mobile_ua.carrier)
@@ -580,3 +572,53 @@ def safe_get_contact_url(request, default=""):
     except Exception as e:
         logger.warn(str(e))
         return default
+
+def get_order_desc(request, order):
+    shipping = order.shipping_address
+    return shipping, get_user_profile_from_order(request, order)
+
+def set_user_profile_for_order(request, order, user_profile):
+    return get_persistent_userprofile(request).set_user_profile(order, user_profile)
+
+def get_user_profile_from_order(request, order):
+    return get_persistent_userprofile(request).get_user_profile(order)
+
+
+def store_extra_form_data(request, data):
+    request.session['extra_form'] = data
+
+def load_extra_form_data(request):
+    return request.session.get('extra_form')
+
+def clear_extra_form_data(request):
+    if 'extra_form' in request.session:
+        del request.session['extra_form']
+
+def is_booster_or_fc_cart(type_):
+    from .schemas import extra_form_type_map
+    return type_ in extra_form_type_map
+
+def is_fc_cart(type_):
+    return type_ == 'fc'
+
+def is_booster_cart(type_):
+    return is_booster_or_fc_cart(type_) and not is_fc_cart(type_)
+
+def get_cart_setting(request, cart_setting_id):
+    session = get_db_session(request, 'slave')
+    return session.query(CartSetting).filter_by(id=cart_setting_id).first()
+
+def get_cart_setting_from_order_like(request, order_like):
+    session = get_db_session(request, 'slave')
+    cart_setting_id = order_like.cart_setting_id 
+    if cart_setting_id is None:
+        cart_setting = session.query(CartSetting) \
+            .join(c_models.OrganizationSetting.cart_setting) \
+            .join(c_models.OrganizationSetting.organization) \
+            .filter(c_models.Organization.id == order_like.organization_id) \
+            .one()
+        return cart_setting
+    else:
+        return session.query(CartSetting) \
+            .filter_by(id=cart_setting_id) \
+            .one()

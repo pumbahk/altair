@@ -1,10 +1,13 @@
 from wtforms import form, fields
+from wtforms.ext.csrf import SecureForm
+from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.fields.core import UnboundField
 from wtforms.compat import iteritems
 from .fields.liaison import Liaison
 
 __all__ = [
     'OurForm',
+    'OurSecureForm',
     'OurDynamicForm',
     ]
 
@@ -14,9 +17,6 @@ class OurForm(form.Form):
         self._name_builder = kwargs.pop('name_builder', None)
         self._liaisons = fields and [name for name, unbound_field in self._unbound_fields if unbound_field.field_class == Liaison]
         super(OurForm, self).__init__(*args, **kwargs)
-        for _, field in iteritems(self._fields):
-            if hasattr(field, 'name_builder') and field.name_builder is None:
-                field.name_builder = self._name_builder
 
     def __setitem__(self, overridden, name, value):
         self._field[name] = value.bind(form=self, name=name, prefix=self._prefix, name_builder=self._name_builder)
@@ -47,15 +47,13 @@ class OurForm(form.Form):
                 liaison.data = None
 
 class OurDynamicForm(OurForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', *args, **kwargs):
         dynamic_fields = kwargs.pop('_fields', [])
-        formdata = kwargs.pop('formdata', None)
-        obj = kwargs.pop('obj', None)
         self._translations = kwargs.pop('_translations', None)
         self._initializing = dynamic_fields
-        super(OurDynamicForm, self).__init__(*args, **kwargs)
+        super(OurDynamicForm, self).__init__(formdata, obj, prefix, *args, **kwargs)
         self._initializing = False
-        super(OurDynamicForm, self).process(formdata=formdata, obj=obj, **kwargs)
+        super(OurDynamicForm, self).process(formdata, obj, **kwargs)
 
     def _get_translations(self):
         if callable(self._translations):
@@ -77,3 +75,10 @@ class OurDynamicForm(OurForm):
 
     def validate(self, extra={}):
         return super(form.Form, self).validate(extra)
+
+class OurSecureForm(OurForm, SecureForm):
+    def __init__(self, formdata=None, obj=None, prefix='', csrf_context=None, **kwargs):
+        super(OurSecureForm, self).__init__(formdata, obj, prefix, csrf_context=csrf_context, **kwargs)
+
+class OurSessionSecureForm(OurSecureForm, SessionSecureForm):
+    pass

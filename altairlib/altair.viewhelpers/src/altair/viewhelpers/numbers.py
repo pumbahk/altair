@@ -38,7 +38,7 @@ class DefaultNumberFormatter(object):
         return u''.join(buf)
 
     def format_currency_html(self, dec, **flavor):
-        return RawText(self.format_currency(dec).replace(u'\u00a5', '&yen;'))
+        return RawText(self.format_currency(dec, **flavor).replace(u'\u00a5', '&yen;'))
 
 class NumberHelper(object):
     def __init__(self, formatter):

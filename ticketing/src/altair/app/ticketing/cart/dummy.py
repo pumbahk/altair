@@ -3,9 +3,9 @@ import logging
 from functools import wraps
 from pyramid.response import Response
 from mako.template import Template
-from .selectable_renderer import selectable_renderer
+from .rendering import selectable_renderer
 from altair.app.ticketing.mailmags import models as mailmag_models
-from . import api
+from .request import ENV_ORGANIZATION_ID_KEY
 
 logger = logging.getLogger()
 
@@ -44,7 +44,7 @@ def overwrite_validation(fn):
         if "organization_id" in request.params:
             organization_id = request.params["organization_id"]
             logger.info("* dummy overwrite organization: organization_id = {0}".format(organization_id))
-            request.environ[api.ENV_ORGANIZATION_ID_KEY] = organization_id
+            request.environ[ENV_ORGANIZATION_ID_KEY] = organization_id
         return fn(context, request)
     return wrapped
 
