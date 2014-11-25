@@ -1,13 +1,12 @@
-from wtforms.widgets.core import HTMLString, TextInput
+from wtforms.widgets.core import HTMLString
+from .input import OurTextInput
 
 __all__ = [
     'PercentageInput',
     ]
 
-class PercentageInput(TextInput):
+class PercentageInput(OurTextInput):
     def __call__(self, field, **kwargs):
-        return HTMLString(
-            super(self.__class__, self).__call__(field, **kwargs) +
-            '%'
-            )
-
+        rendrant = super(PercentageInput, self)(field, **kwargs)
+        rendrant.html += u'%'
+        return rendrant

@@ -55,7 +55,7 @@ def login_url(request, event_id=None):
             if len(salessegment_group.membergroups) > 0:
                 membership = salessegment_group.membergroups[0].membership
                 if organization.short_name != membership.name:
-                    url = request.route_url('fc_auth.detail_login', membership=organization.short_name, detail_membership=membership.name)
+                    url = request.route_url('fc_auth.fixed.login', membership=membership.name)
 
     logger.debug("login url %s" % url)
     return url 
