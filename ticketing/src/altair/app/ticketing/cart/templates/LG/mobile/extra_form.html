@@ -1,5 +1,5 @@
 <%inherit file="./base.html"/>
-<%namespace file="./tags_mobile.html" name="mobile" />
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>追加情報の入力</%mobile:header>
 <form method="post" action="${request.current_route_path()}">
 % for i, field in enumerate(form_fields):
@@ -7,21 +7,21 @@
 <div>
 <%mobile:form_header>${field['field'].label}</%mobile:form_header>
 </div>
-% if field['description']:
-<div><font size="-1">${field['description']|n}</font></div>
+% if field['field']._description:
+<div><font size="-1">${field['field']._description}</font></div>
 % endif
 <div>
 ${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}
 ${h.error_list(request, field['field'])}
 </div>
-% if field['note']:
-<div><font size="-1">${field['note']|n}</font></div>
+% if field['field']._note:
+<div><font size="-1">${field['field']._note}</font></div>
 % endif
 % else:
 % if i > 0:
 <hr />
 % endif
-<div>${field['description']|n}</div>
+<div>${field['description']}</div>
 % endif
 % endfor
 <hr />

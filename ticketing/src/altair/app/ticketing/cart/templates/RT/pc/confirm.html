@@ -9,6 +9,11 @@
 </%block>
 <%block name="css">
 <style>
+  .button_box{
+    width: 320px;
+    text-align: center;
+    vertical-align: top;
+  }
   #btn-back {
     border: 0;
     width: 226px;
@@ -24,6 +29,9 @@
     height: 46px;
     background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_buy.gif')}") left top no-repeat;
   }
+  .message-complete {
+    color: red;
+  }
 </style>
 </%block>
 
@@ -37,7 +45,7 @@
   <p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
   <p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
 </div>
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="performance_id" value="${cart.performance.id}"/>
 
@@ -191,18 +199,21 @@
 
   <table style="margin-left: auto; margin-right: auto;">
 		<tr>
-			<td style="width: 320px; text-align: center;">
+			<td class="button_box">
 				<input id="btn-back" type="submit" name="back" value="" />
 				<br />
 				※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
 			</td>
-			<td style="width: 320px; text-align: center;">
+			<td class="button_box">
 			% if delegator:
 				${delegator['submit']}
 			% else:
 				<input id="btn-complete" type="submit" value="" />
 				<br />
-				&nbsp;
+                <div class="message-complete">
+                    ※お申込み確定後は、理由の如何を問わず、&nbsp;&nbsp;<br/>
+                    取替・変更・キャンセルをお受けできません。
+                </div>
 			% endif
 			</td>
 		</tr>

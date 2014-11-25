@@ -108,6 +108,11 @@ class MemberGroupForm(Form):
         default=True
         )
 
+    enable_point_input = BooleanField(
+        label=u"楽天ポイント手入力",
+        default=True
+        )
+
     membership_id = HiddenField(
         label=u"membership", 
         validators=[Optional()]

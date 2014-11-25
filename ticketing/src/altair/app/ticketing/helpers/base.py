@@ -52,4 +52,4 @@ def format_percentage(rate, precision=0):
     return (u'%%.%df%%%%' % precision) % (float(rate) * 100.) if rate is not None else u'-'
 
 def is_required(field):
-    return any(isinstance(validator, validators.Required) for validator in field.validators)
+    return any(isinstance(validator, (validators.Required, validators.DataRequired)) for validator in field.validators)

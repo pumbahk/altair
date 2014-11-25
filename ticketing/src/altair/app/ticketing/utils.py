@@ -410,3 +410,8 @@ class memoize(object):
                 cache[key] = fn(_self, *args, **kwargs)
             return cache[key]
         return memoizer
+
+def moderate_name_candidates(name, max=100):
+    yield name
+    for i in range(0, max):
+        yield u'%s (%d)' % (name, i + 1)

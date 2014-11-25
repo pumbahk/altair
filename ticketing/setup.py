@@ -10,13 +10,14 @@ requires = [
     'nose',
     'webtest',
     'testfixtures',
-    'pyramid == 1.3.4',
+    'pyramid == 1.5.1',
+    'pyramid_mako == 1.0.2',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
     'pyramid_tm',
     'pyramid_mailer',
     'pyramid_beaker',
-    'pyramid_layout',
+    'pyramid_layout >= 0.9',
     'pyramid_selectable_renderer >= 0.0.4',
     'pymysql',
     'mako',
@@ -103,6 +104,7 @@ requires = [
     'altair.models',
     'altair.httpsession',
     'altair.samarker',
+    'altair.pyramid_dynamic_renderer',
     ]
 
 tests_require = [

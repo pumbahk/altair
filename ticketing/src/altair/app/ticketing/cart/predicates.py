@@ -1,5 +1,7 @@
-from .api import get_organization
-
+# encoding: utf-8
 def smartphone_enabled(request):
-    organization = get_organization(request)
-    return organization.setting.enable_smartphone_cart
+    try:
+        return request.organization.setting.enable_smartphone_cart
+    except:
+        # organization が host から取れないということもある
+        return False

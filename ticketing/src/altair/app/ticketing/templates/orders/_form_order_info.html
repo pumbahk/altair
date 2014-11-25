@@ -1,0 +1,9 @@
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+  <fieldset>
+    ${ch.form_item(form.payment_due_at)}
+    ${ch.form_item(form.issuing_start_at)}
+    ${ch.form_item(form.issuing_end_at)}
+  </fieldset>
+</form>

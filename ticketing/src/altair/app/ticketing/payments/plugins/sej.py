@@ -7,24 +7,17 @@ from lxml import etree
 from decimal import Decimal
 import numpy
 import pystache
-from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.sql.expression import desc
-
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
-    ICompleteMailPayment,
-    IOrderCancelMailPayment,
-    ICompleteMailDelivery,
-    IOrderCancelMailDelivery,
-    ILotsAcceptedMailPayment,
-    ILotsAcceptedMailDelivery,
-    ILotsElectedMailPayment,
-    ILotsElectedMailDelivery,
-    ILotsRejectedMailPayment,
-    ILotsRejectedMailDelivery,
-)
-
+    ICompleteMailResource,
+    IOrderCancelMailResource,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
@@ -698,9 +691,7 @@ def payment_type_to_string(payment_type):
             return entry.k
     return None
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
-@view_config(context=IOrderDelivery, request_type='altair.mobile.interfaces.IMobileRequest',
-             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete_mobile.html'))
+@lbr_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = sej_api.get_sej_order(order.order_no)
@@ -725,15 +716,13 @@ def can_receive_from_next_day(now, ticketing_start_at):
         and next_day.month == ticketing_start_at.month \
         and next_day.day == ticketing_start_at.day)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
+@lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン受け取り')
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
+@lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
-@view_config(context=IOrderPayment, request_type='altair.mobile.interfaces.IMobileRequest',
-             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_complete_mobile.html'))
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = sej_api.get_sej_order(order.order_no)
@@ -746,13 +735,13 @@ def sej_payment_viewlet(context, request):
         payment_method=payment_method,
     )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
+@lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン支払い')
 
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
-@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
+@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
 def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -775,13 +764,13 @@ def payment_mail_viewlet(context, request):
     return dict(
         sej_order=sej_order,
         h=cart_helper,
-        notice=context.mail_data("notice"),
+        notice=context.mail_data("P", "notice"),
         payment_type=payment_type,
         payment_method=payment_method,
     )
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
-@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
+@lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
+@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
 def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
@@ -813,15 +802,18 @@ def delivery_mail_viewlet(context, request):
         h=cart_helper,
         payment_type=payment_type,
         can_receive_from_next_day=_can_receive_from_next_day,
-        notice=context.mail_data("notice"),
+        notice=context.mail_data("D", "notice"),
         delivery_method=delivery_method
         )
 
-@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-def mail_notice_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+@lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def payment_mail_notice_viewlet(context, request):
+    return Response(context.mail_data("P", "notice"))
+
+@lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+def delivery_mail_notice_viewlet(context, request):
+    return Response(context.mail_data("D", "notice"))

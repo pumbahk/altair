@@ -39,21 +39,21 @@ ${tabs.tabs(request)}
     <table class="table table-bordered table-condensed">
       <tbody>
         <tr>
-          <th class="span3">抽選期間</th>
+          <th class="span3">受付期間</th>
           <td>${vh.datetime(lot.start_at, with_weekday=True)} 〜 ${vh.datetime(lot.end_at, with_weekday=True)}</td>
         </tr>
         <tr>
-          <th>希望上限</th>
+          <th>希望取得上限</th>
           <td>${lot.limit_wishes}</td>
         </tr>
         <tr>
-          <th>申込上限</th>
+          <th>申込上限回数</th>
           <td>${lot.entry_limit}</td>
         </tr>
         <tr>
           <th>抽選結果発表予定日</th>
           <td>
-              ${lot.lotting_announce_datetime}
+              ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}
               % if h.timezone_label(lot):
                 (${h.timezone_label(lot)})
               % endif

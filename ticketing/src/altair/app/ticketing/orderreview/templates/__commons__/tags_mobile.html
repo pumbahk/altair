@@ -1,0 +1,34 @@
+<%def name="header(bgcolor=None)">
+<%
+if bgcolor is None:
+    bgcolor = request.view_context.mobile_header_background_color
+%>
+<div style="background-color:${bgcolor}" bgcolor="${bgcolor}"><font size="+1" color="white">${caller.body()}</font></div>
+</%def>
+<%def name="form_header(markercolor=None, requiredmarkcolor=None, required=False)">
+<%
+if markercolor is None:
+    markercolor = request.view_context.mobile_marker_color
+if requiredmarkcolor is None:
+    mobile_required_marker_color = request.view_context.mobile_required_marker_color
+%>
+<div><font color="${markercolor}">■</font>${caller.body()}
+%if required:
+<font color="${requiredmarkcolor}">*</font>
+%endif
+</div>
+</%def>
+<%def name="form_get(**kwargs)">
+%if hasattr(request, 'open_form_tag_for_get'):
+${request.open_form_tag_for_get(**kwargs)}
+%else:
+<form method="get" \
+%for k, v in kwargs.items():
+${k}="${v}" \
+%endfor
+>
+%endif
+${caller.body()}
+</form>
+</%def>
+

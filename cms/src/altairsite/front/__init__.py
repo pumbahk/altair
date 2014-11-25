@@ -11,7 +11,6 @@ def install_resolver(config):
 
 def install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name="synced_at"):
     from beaker.cache import cache_regions #xxx:
-    from pyramid.mako_templating import IMakoLookup
     from altairsite.front.renderer import (
         ILookupWrapperFactory,
         LayoutModelLookupWrapperFactory,
@@ -36,7 +35,7 @@ def install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name=
                                               prefix=settings["altaircms.layout_s3prefix"],
                                               sync_trigger_attribute_name=sync_trigger_attribute_name)
 
-    config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
+    config.registry.registerUtility(factory, ILookupWrapperFactory)
 
 def install_page_key_generator(config):
     from altair.mobile.interfaces import ISmartphoneRequest

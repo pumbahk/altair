@@ -94,12 +94,23 @@ def create_fake_order(request, args):
     delivery_method_id = args.get('delivery_method_id')
     event = args.get('event')
     performance = args.get('performance')
+    cart_setting_id = args.get('cart_setting_id')
+    if cart_setting_id is None:
+        if performance is not None:
+            cart_setting_id = performance.event.setting.cart_setting_id
+        elif event is not None:
+            cart_setting_id = event.setting.cart_setting_id
+        if cart_setting_id is None and organization is not None:
+            cart_setting_id = organization.setting.cart_setting_id
+        else:
+            cart_setting_id = request.context.organization.setting.cart_setting_id
     now = args.get('now') or datetime.now()
 
     order = FakeObject("T")
     order.ordered_from = organization
     order.order_no = None
     order.created_at = now
+    order.cart_setting_id = cart_setting_id
     order._cached_mail_traverser = None
 
     if event:

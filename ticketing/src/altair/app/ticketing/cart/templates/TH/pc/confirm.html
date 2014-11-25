@@ -29,7 +29,7 @@
 ${self.widget.flow_widget(3)}
 <p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
 <p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="performance_id" value="${cart.performance.id}"/>
 
