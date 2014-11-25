@@ -169,9 +169,9 @@ class PointGrantingFailureMail(object):
         return value
 
     def build_mail_body(self, request, point_grant_history_entry, traverser):
-        value = self._body_tmpl_vars(request, point_grant_history_entry, traverser)
         organization = point_grant_history_entry.order.organization
         mail_request = create_mail_request(request, organization, lambda request: MailForPointGrantHistoryEntryContext(request, point_grant_history_entry))
+        value = self._body_tmpl_vars(mail_request, point_grant_history_entry, traverser)
         retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval

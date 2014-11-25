@@ -25,6 +25,18 @@ class MailContextBase(object):
     def mail_data(self, category, k):
         return self.mail_data_store[self.build_key(category, k)]
 
+    @reify
+    def booster_cart(self):
+        return self.cart_setting.booster_cart if self.cart_setting else False
+
+    @reify
+    def booster_or_fc_cart(self):
+        return self.cart_setting.booster_or_fc_cart if self.cart_setting else False
+
+    @reify
+    def fc_cart(self):
+        return self.cart_setting.fc_cart if self.cart_setting else False
+
 
 class MailForOrderContext(MailContextBase):
     mtype = None
@@ -42,6 +54,12 @@ class MailForOrderContext(MailContextBase):
         getter = self.request.registry.getUtility(IMailDataStoreGetter)
         return getter(self.request, self.order, self.__class__.mtype)
 
+    @reify
+    def cart_setting(self):
+        from altair.app.ticketing.cart.api import get_cart_setting_from_order_like
+        return get_cart_setting_from_order_like(self.request, self.order)
+
+
 class MailForLotContext(MailContextBase):
     mtype = None
 
@@ -58,3 +76,8 @@ class MailForLotContext(MailContextBase):
     def mail_data_store(self):
         getter = self.request.registry.getUtility(IMailDataStoreGetter)
         return getter(self.request, self.lot_entry, self.__class__.mtype)
+
+    @reify
+    def cart_setting(self):
+        return self.lot_entry.organization.setting.cart_setting
+

@@ -124,9 +124,9 @@ class CancelMail(object):
         return value
 
     def build_mail_body(self, request, order, traverser):
-        value = self._body_tmpl_vars(request, order, traverser)
         organization = order.organization
         mail_request = create_mail_request(request, organization, lambda request: OrderCancelMailResource(request, order))
+        value = self._body_tmpl_vars(mail_request, order, traverser)
         retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval

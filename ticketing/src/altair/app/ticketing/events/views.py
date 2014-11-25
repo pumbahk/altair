@@ -250,9 +250,6 @@ class Events(BaseView):
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
                 event.setting.middle_stock_threshold = f.middle_stock_threshold.data
                 event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
-                event.setting.performance_selector=f.get_performance_selector(),
-                event.setting.performance_selector_label1_override=f.performance_selector_label1_override.data,
-                event.setting.performance_selector_label2_override=f.performance_selector_label2_override.data,
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

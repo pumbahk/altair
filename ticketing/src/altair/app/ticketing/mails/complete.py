@@ -105,7 +105,9 @@ class PurchaseCompleteMail(object):
         return value
 
     def build_mail_body(self, request, order, traverser, template_body=None):
-        value = self._body_tmpl_vars(request, order, traverser)
+        organization = order.organization
+        mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))
+        value = self._body_tmpl_vars(mail_request, order, traverser)
         template_body = template_body or value.get("template_body")
         organization = order.organization
         mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))

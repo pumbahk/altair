@@ -132,9 +132,9 @@ class LotsMail(object):
         return value
 
     def build_mail_body(self, request, subject, traverser):
-        value = self._body_tmpl_vars(request, subject, traverser)
         organization = subject[0].organization
         mail_request = create_mail_request(request, organization, self.build_context_factory(subject))
+        value = self._body_tmpl_vars(mail_request, subject, traverser)
         retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval
