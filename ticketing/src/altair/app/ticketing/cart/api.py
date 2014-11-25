@@ -450,7 +450,7 @@ def get_or_create_user(info):
         # ゲストのときはユーザを作らない
         return None
 
-    logger.info('creating user account for %r %r' % (d, info))
+    logger.info('creating user account for %r' % info)
 
     user = u_models.User()
     membership = u_models.Membership.query.filter(

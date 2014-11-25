@@ -67,7 +67,7 @@ def login_url(request):
                 source = event
         if source is not None:
             logger.info("source=%r" % source)
-            membership = source.query_sales_segments(type='available', now=request.context.now).join(SalesSegment.membergroups).join(MemberGroup.membership).with_entities(Membership).first()
+            membership = source.query_sales_segments(type='all', now=request.context.now).join(SalesSegment.membergroups).join(MemberGroup.membership).with_entities(Membership).first()
             logger.info("membership=%s" % (membership and membership.name))
             if membership is not None:
                 url = request.route_url('fc_auth.login', membership=membership.name)
