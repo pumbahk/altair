@@ -24,6 +24,8 @@ apmv11.1a.vpc.altr	userapp-cart
 apmv11.1c.vpc.altr	userapp-cart
 apmv12.1a.vpc.altr	userapp-cart
 apmv12.1c.vpc.altr	userapp-cart
+apmv999.1a.vpc.altr	userapp
+apmv999.1c.vpc.altr	userapp
 btmv1.1c.vpc.altr	batch
 btmv1.1a.vpc.altr	worker
 apnl1.1a.vpc.altr	newsletter
