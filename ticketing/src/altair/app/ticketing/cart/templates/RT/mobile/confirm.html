@@ -1,12 +1,12 @@
 <%inherit file="./base.html"/>
-<%namespace file="./tags_mobile.html" name="mobile" />
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
 <div><font size="-1">
 <font color="red">まだお申し込みは完了していません。</font><br />
 注文内容を確認の上、ページ下の「申し込む」ボタンでお申し込みください。<br />
 </font></div>
 <%mobile:header>申込内容確認</%mobile:header>
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish.mobile')}" method="post">
 ${form.csrf_token()}
 <div>
 ${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)} ${cart.performance.venue.name}
@@ -112,3 +112,6 @@ ${delegator['submit']}
 <input type="submit" value="申し込む" />
 % endif
 </form>
+<div style="color: red">
+※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。
+</div>

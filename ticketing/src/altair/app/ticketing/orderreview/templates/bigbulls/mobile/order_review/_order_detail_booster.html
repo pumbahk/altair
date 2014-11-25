@@ -1,0 +1,101 @@
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>受付履歴確認 検索結果</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+${order.order_no}
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+<%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
+<hr/>
+<font size="-2">
+キャンセル処理は、下記のような理由によりおこなっております。<br />
+・お客様からキャンセルのご連絡があったため<br />
+・期限内のご入金がなくキャンセル扱いとしたため<br />
+・二重注文により、ひとつをキャンセル処理したため
+</font>
+<br/>
+<hr/>
+%else:
+<%
+shipping_address = order.shipping_address
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+%>
+<%mobile:form_header>購入情報</%mobile:form_header>
+${view_context.title}
+<%mobile:form_header>新規／継続:</%mobile:form_header>
+${u'継続' if pm.get('cont') == 'yes' else u'新規'}
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2013-14会員番号</%mobile:form_header>
+${pm.get('old_id_number')}
+% endif
+<%mobile:form_header>会員種別</%mobile:form_header>
+${order.items[0].product.name}
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping_address.last_name} ${shipping_address.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+<%mobile:form_header>誕生日</%mobile:form_header>
+${pm['birthday']}
+<%mobile:form_header>性別</%mobile:form_header>
+${pm['sex']}
+<%mobile:form_header>郵便番号</%mobile:form_header>
+${shipping_address.zip}
+<%mobile:form_header>住所</%mobile:form_header>
+${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+${shipping_address.address_2}
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping_address.tel_1 or shipping_address.tel_2}<br />
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${shipping_address.email_1}<br />
+%if pm.get('parent_first_name'):
+<%mobile:form_header>保護者氏名</%mobile:form_header>
+${pm['parent_last_name']} ${pm['parent_first_name']}
+<%mobile:form_header>保護者氏名(カナ)</%mobile:form_header>
+${pm['parent_last_name_kana']} ${pm['parent_first_name_kana']}
+<%mobile:form_header>続柄</%mobile:form_header>
+${pm['relationship']}
+%endif
+<%mobile:form_header>${view_context.team_name}からのメールマガジンの配信	</%mobile:form_header>
+${pm['mail_permission']}
+%if 'publicity' in pm:
+<%mobile:form_header>ゲームプログラムの掲載希望 </%mobile:form_header>
+${pm['publicity']}
+%endif
+%if pm.get('t_shirts_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+${pm['t_shirts_size']}
+%endif
+%if pm.get('replica_uniform_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+${pm['replica_uniform_size']}
+%endif
+%if pm.get('autdentic_uniform_size') is not None:
+<%mobile:form_header>オーセンティックユニフォーム</%mobile:form_header>
+背番号: ${pm['autdentic_uniform_no']} <br/>
+お名前: ${pm['autdentic_uniform_name']} <br/>
+サイズ: ${pm['autdentic_uniform_size']} <br/>
+色: ${{"red": u"赤","white": u"白"}.get(pm['autdentic_uniform_color'])}
+%endif
+<%mobile:form_header>お支払い</%mobile:form_header>
+${h.render_payment_finished_viewlet(request, order)}
+<div>
+%endif
+&#xe737;注意事項<br />
+<font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+%endif
+</font>
+<font size="-2">
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url_mobile}">${view_context.contact_name}</a> までご連絡ください。<br /> 
+（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
+・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
+・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
+</font>
+</div>
+<%mobile:form_header>お問い合わせ先</%mobile:form_header>
+<div>
+${view_context.contact_name}<br />
+$TEL: ${view_context.contact_tel} (${view_context.contact_office_hours})<br />
+メール: <a href="${view_context.contact_url_mobile}">${view_context.contact_name}</a><br>
+</div>

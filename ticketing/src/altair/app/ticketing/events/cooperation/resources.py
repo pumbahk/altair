@@ -14,10 +14,10 @@ from altair.app.ticketing.core.models import (
 class _RequestAccessor(object):
     in_params = ()
     in_matchdict = ()
-    
+
     def __init__(self, request):
         self._request = request
-        
+
     def _get_value(self, getter, key, type_=None):
         try:
             value = getter(key)
@@ -25,14 +25,14 @@ class _RequestAccessor(object):
                 value = type_(value)
             return value
         except KeyError as err:
-            raise BadRequest('Should input parameter: {0}'.format(key))
+            raise HTTPBadRequest('Should input parameter: {0}'.format(key))
         except (TypeError, ValueError) as err:
-            raise BadRequest('Illegal type: {0} ({1})'.format(type_, key))
+            raise HTTPBadRequest('Illegal type: {0} ({1})'.format(type_, key))
         assert False
 
     def _get_matchdict(self, key, *args, **kwds):
         getter = lambda _key: self._request.matchdict[_key]
-        return self._get_value(getter, key, *args, **kwds)        
+        return self._get_value(getter, key, *args, **kwds)
 
     def _get_params(self, key, *args, **kwds):
         getter = lambda _key: self._request.params.getall(_key)
@@ -49,7 +49,7 @@ class _RequestAccessor(object):
 class CooperationRequestAccessor(_RequestAccessor):
     in_params = ()
     in_matchdict = ('event_id',)
-    
+
 
 class ICooperationResource(Interface):
     pass
@@ -57,11 +57,11 @@ class ICooperationResource(Interface):
 @implementer(ICooperationResource)
 class CooperationEventResource(TicketingAdminResource):
     accessor_factory = CooperationRequestAccessor
-    
+
     def __init__(self, request):
-        super(CooperationEventResource, self).__init__(request)        
+        super(CooperationEventResource, self).__init__(request)
         accessor = self.accessor_factory(request)
-        
+
         event_id = accessor.event_id
         try:
             self.event = Event.query.filter(Event.id==event_id).one()

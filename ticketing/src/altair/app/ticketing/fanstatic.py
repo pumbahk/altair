@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-
-from pyramid.interfaces import IRequest
+from __future__ import absolute_import
+import itertools
+from pyramid.interfaces import IRequest, ITweens
 from js.jquery import jquery
 from js.underscore import underscore
 from js.jquery_tools import jquery_tools
@@ -23,6 +24,14 @@ from altair.app.ticketing.jslib.jquery_validation_engine import validation_engin
 
 def bootstrap_need():
     bootstrap.need()
+
+def get_library_url(request, library):
+    from fanstatic import get_needed
+    needed = get_needed()
+    return needed.library_url(library)
+
+def get_resource_url(request, resource):
+    return '%s/%s' % (get_library_url(request, resource.library), resource.relpath)
 
 class FanstaticDecoratorFactory(object):
     """ jsを追加するデコレータを作成するファクトリー

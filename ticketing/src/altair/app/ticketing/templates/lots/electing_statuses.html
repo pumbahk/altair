@@ -4,6 +4,8 @@
   <table class="table">
     <tr>
       <th>公演</th>
+      <th>公演日時</th>
+      <th>会場</th>
       <th>在庫種別(席種)</th>
       <th>当選予定の合計在庫数</th>
       <th>現在庫数</th>
@@ -11,7 +13,9 @@
     </tr>
     %for s in electing.required_stocks:
     <tr>
-      <td>${s[3].name} ${s[3].start_on} ${s[3].venue.name}</td>
+      <td>${s[3].name}</td>
+      <td>${vh.datetime(s[3].start_on, with_weekday=True)}</td>
+      <td>${s[3].venue.name}</td>
       <td>${s[0].stock_type.name}</td>
       <td>${s[4]}</td>
       <td>${s[1].quantity}</td>

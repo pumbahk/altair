@@ -5,9 +5,10 @@ from pyramid_mailer.message import Message
 from pyramid.compat import text_type
 from altair.viewhelpers import DefaultDateTimeFormatter
 from altair.app.ticketing.cart import helpers as ch ##
+from altair.app.ticketing.core import models as c_models
 
-
-from .interfaces import IRemindMail
+from .resources import MailForOrderContext
+from .interfaces import IRemindMail, IRemindMailResource
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from .api import (
@@ -18,6 +19,7 @@ from .api import (
     get_default_contact_reference,
     get_mail_setting_default,
     get_default_contact_reference,
+    create_mail_request,
     )
 
 class RemindInfoDefault(OrderInfoDefault):
@@ -60,6 +62,11 @@ def get_mailtype_description():
     return u"リマインドメール"
 
 
+@implementer(IRemindMailResource)
+class RemindMailResource(MailForOrderContext):
+    """ リマインドメール """
+    mtype = c_models.MailTypeEnum.PurcacheSejRemindMail
+
 @implementer(IRemindMail)
 class SejRemindMail(object):
     def __init__(self, mail_template):
@@ -70,8 +77,10 @@ class SejRemindMail(object):
                 u'<<重要>> 支払期限についてのご案内【{organization}】'.format(organization=organization.name))
 
     def build_mail_body(self, request, something, traverser):
-        value = self._body_tmpl_vars(request, something, traverser)
-        retval = render(self.mail_template, value, request=request)
+        organization = something.organization or request.context.organization
+        mail_request = create_mail_request(request, organization, lambda request: RemindMailResource(request, something))
+        value = self._body_tmpl_vars(mail_request, something, traverser)
+        retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval
 

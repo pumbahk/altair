@@ -4,13 +4,14 @@ import logging
 import operator
 
 from markupsafe import Markup
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
-from altair.mobile import mobile_view_config
+from altair.now import get_now
 from altair.pyramid_tz.api import get_timezone
+from altair.pyramid_dynamic_renderer import lbr_view_config
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
@@ -18,12 +19,11 @@ from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart import api as cart_api
-from altair.now import get_now
+from altair.app.ticketing.cart.rendering import selectable_renderer
 
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
@@ -102,7 +102,7 @@ class EntryLotView(object):
     def _create_form(self):
         return api.create_client_form(self.context, self.request)
 
-    @view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("%(membership)s/smartphone/index.html"))
+    @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
         """
         イベント詳細
@@ -124,7 +124,7 @@ class EntryLotView(object):
             performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
             )
 
-    @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("%(membership)s/smartphone/step1.html"))
+    @lbr_view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("step1.html"))
     def step1(self):
         """
         抽選第N希望まで選択
@@ -184,7 +184,7 @@ class EntryLotView(object):
             lot=lot, performances=performances, performance_map=performance_map)
 
 
-    @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("%(membership)s/smartphone/step2.html"), custom_predicates=())
+    @lbr_view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("step2.html"), custom_predicates=())
     def step2(self):
         """
         購入情報入力
@@ -233,7 +233,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'))
 
-    @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("%(membership)s/smartphone/step3.html"), custom_predicates=())
+    @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
     def step3(self):
         """
         申し込み確認
@@ -250,7 +250,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
 
-        cform = schemas.ClientFormFactory(self.request)(formdata=self.request.params)
+        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -274,13 +274,7 @@ class EntryLotView(object):
             self.request.session.flash(u"お支払お引き取り方法を選択してください")
             validated = False
 
-        birthday = None
-        try:
-            birthday = datetime(int(cform['year'].data),
-                                int(cform['month'].data),
-                                int(cform['day'].data))
-        except (ValueError, TypeError):
-            pass
+        birthday = cform['birthday'].data
 
         # 購入者情報
         if not cform.validate() or not birthday:

@@ -69,8 +69,6 @@ class AttributeForm(Form):
     value = TextField(
         label = u"データ(value)", 
         validators=[
-            Required(), 
-            ## json?
             ], 
         widget=TextArea()
         )

@@ -3,6 +3,16 @@
 <%namespace file="/common/modal.html" name="m" />
 
 <script type="text/javascript">
+  function edit_order_info() {
+    var modal = $('#modal-edit-order_info');
+    modal.modal('toggle');
+  }
+  function save_order_info() {
+    var modal = '#modal-edit-order_info';
+    var form = '#order_info-form';
+    var url = '${request.route_path('orders.edit.order_info', order_id=order.id)}';
+    post_modal_form(modal, form, url);
+  }
   function release_stocks(id) {
     var modal = $('#modal-confirm');
     var form = modal.find('form');
@@ -189,6 +199,12 @@
 
 <%
 actions = {
+  'edit_order_info':dict(
+    label=u'編集',
+    url='javascript:edit_order_info(%d);' % order.id,
+    icon='icon-pencil',
+    route_name='orders.edit.order_info',
+   ),
   'mailinfo':dict(
     label=u"メール",
     url=request.route_path('orders.mailinfo', order_id=order.id, action="show"),

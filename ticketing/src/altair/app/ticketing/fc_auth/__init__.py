@@ -17,16 +17,22 @@ def register_auth_plugin(config):
             )
         )
 
+def setup_routes(config):
+    config.add_route(
+        'fc_auth.login',
+        '/fc/{membership}/login',
+        factory='.resources.fc_auth_resource_factory'
+        )
+    config.add_route(
+        'fc_auth.guest',
+        '/fc/{membership}/guest',
+        factory='.resources.fc_auth_resource_factory'
+        )
+
 def includeme(config):
-    config.add_route('fc_auth.login', '/fc/{membership}/login',
-        factory='.resources.FCAuthResource')
-    config.add_route('fc_auth.guest', '/fc/{membership}/guest',
-        factory='.resources.FCAuthResource')
-    config.add_route('fc_auth.detail_login', '/fc/{membership}/{detail_membership}/login',
-        factory='.resources.FCAuthResource')
-    config.add_route('fc_auth.detail_guest', '/fc/{membership}/{detail_membership}/guest',
-        factory='.resources.FCAuthResource')
+    config.include(setup_routes)
+    config.include('.rendering')
+    config.scan('.views')
 
     config.add_static_view('fc_auth/static', 'altair.app.ticketing.fc_auth:static')
-    config.scan('.views')
-    register_auth_plugin(config)
+    config.include(register_auth_plugin)

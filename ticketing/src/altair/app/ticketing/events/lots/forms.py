@@ -6,27 +6,26 @@ from datetime import datetime
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.widgets import CheckboxInput
-from wtforms.validators import Regexp, Length, Optional, ValidationError
-from wtforms.validators import Optional, AnyOf, Length, Regexp, NumberRange
+from wtforms.validators import Length, Optional, ValidationError, NumberRange
 
 from altair.auth import get_who_api_factory_registry
 from altair.formhelpers import (
-    DateTimeField, Translations, Required, DateField, Max, OurDateWidget, Email,
-    after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
-    NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
-    LazySelectMultipleField,
-    OurBooleanField, OurDecimalField, OurSelectField,
-)
+    DateTimeField, Translations, Required, Max, OurDateWidget, Email,
+    after1900, LazySelectMultipleField, OurBooleanField, OurDecimalField,
+    OurSelectField, SwitchOptional,
+    )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
-from altair.app.ticketing.events.sales_segments.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
 
 from .models import LotEntryReportSetting
 
 logger = logging.getLogger(__name__)
+
+UPPER_LIMIT_OF_MAX_QUANTITY_LOTS = 20  # SEJの場合21個以上だとエラーになってしまうので20で縛る
+
 
 class LotForm(Form):
     name = TextField(
@@ -37,24 +36,22 @@ class LotForm(Form):
         ],
     )
     limit_wishes = IntegerField(
-        label=u'希望上限',
+        label=u'希望取得上限',
         validators=[
             Required(),
         ],
     )
 
     entry_limit = IntegerField(
-        label=u'申込上限',
+        label=u'申込上限回数',
         validators=[
             Required(),
         ],
     )
 
     description = TextAreaField(
-        label=u'詳細',
-        validators=[
-            Required(),
-        ],
+        label=u'注意文言',
+        default=u'',
     )
 
     lotting_announce_datetime = DateTimeField(
@@ -89,7 +86,7 @@ class LotForm(Form):
 
     def _auth_types(field):
         retval = [('', u'なし')]
-        for name, _ in get_who_api_factory_registry(field.form.context.request):
+        for name, _ in get_who_api_factory_registry(field._form.context.request):
             retval.append((name, name))
         return retval
 
@@ -109,20 +106,22 @@ class LotForm(Form):
     )
 
     start_at = DateTimeField(
-        label=u"販売開始",
+        label=u"販売開始日時",
         format='%Y-%m-%d %H:%M',
         validators=[
+            SwitchOptional('use_default_start_at'),
             Required(),
         ],
     )
 
     use_default_start_at = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         widget=CheckboxInput()
     )
 
     end_at = DateTimeField(
-        label=u"販売終了",
+        label=u"販売終了日時",
         format='%Y-%m-%d %H:%M',
         missing_value_defaults=dict(
             year=u'',
@@ -133,20 +132,22 @@ class LotForm(Form):
             second=Max,
         ),
         validators=[
+            SwitchOptional('use_default_end_at'),
             Required(),
         ],
     )
 
     use_default_end_at = OurBooleanField(
         label=u'グループの値を利用',
-        widget=CheckboxInput()
+        default=True,
+        widget=CheckboxInput(),
     )
 
     max_quantity = IntegerField(
-        label=u'購入上限',
+        label=u'購入上限枚数',
         validators=[
             Required(),
-            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
+            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY_LOTS, message=u'範囲外です'),
         ],
     )
     seat_choice = BooleanField(

@@ -1,0 +1,10 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<form action="${request.url}" method="POST" class="form-horizontal">
+  <fieldset>
+    ${origin_sales_segment.name}をコピーします。
+    <br/>
+    ${ch.form_item(form.copy_sales_segments)}
+  </fieldset>
+</form>
