@@ -1,0 +1,27 @@
+<div>
+  
+    <h4>${request.context.cart.payment_delivery_pair.delivery_method.name}</h4>
+	
+    <p>
+    % if request.context.cart.performance.orion:
+      % if request.context.cart.performance.orion.qr_enabled:
+      決済完了後、スマートフォンアプリ「イベント・ゲート」使って電子チケットの取得が可能です。<br />
+      対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロード頂けます（要無料会員登録）。
+      % else:
+      決済完了後、スマホアプリ【イベント・ゲート】使ってチケットの受取が可能です（要無料会員登録）。 <br />
+      <br />
+      <span style="color: red;">【ご注意】<br />
+      PC、フューチャーフォンでも購入可能ですが、入場には対応スマホが必要になります。<br />
+      スマホをお持ちでない方がご購入いただいてもご入場いただけませんのでご注意ください。<br />
+      対応端末、注意事項などは<a href="https://app.eventgate.jp/info/faq" target="_blank">こちら</a>を必ず購入前にご確認の上ご購入ください。<br />
+      </span>
+      <br />
+      ご購入後、【イベント・ゲート】にチケットを送信＆保存してください。<br />
+      公演当日は、【イベント・ゲート】アプリ上でチケットを表示いただき、専用ゲートの係員にご提示ください。係員が画面を確認の上、認証コードを入力いたします。
+      % endif
+    % else:
+      本公演は「イベント・ゲート」に対応していない可能性があります。お手数をおかけしますが、購入を中止し、お問い合わせください。
+    % endif
+    </p>
+
+</div>

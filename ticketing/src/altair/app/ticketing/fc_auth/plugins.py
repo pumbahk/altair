@@ -86,7 +86,7 @@ def guest_authenticate(environ, identity):
         logger.debug('guest membergroup is not found at %s' % membership_name)
         return None
     return {
-        'username': u'ゲスト', 
+        'username': 'guest', 
         'membergroup': membergroup.name,
         'membership': membership_name,
         'is_guest': True,

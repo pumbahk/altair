@@ -55,7 +55,7 @@ class NogizakaAuthPlugin(object):
             logger.debug('%s: authentication failed' , self.__class__.__name__)
             return None
         identity.update(data)
-        identity['is_guest'] = False
+        identity['is_guest'] = True
         return identity['username']
 
     def challenge(self, environ, status, app_headers, forget_headers):

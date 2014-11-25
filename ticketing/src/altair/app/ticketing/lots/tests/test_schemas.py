@@ -4,11 +4,11 @@ import unittest
 class ClientFormTests(unittest.TestCase):
     def _getTarget(self):
         from .. import schemas
-        return schemas.ClientFormFactory
+        return schemas.ClientForm
 
     def _makeOne(self, *args, **kwargs):
         from datetime import datetime
-        return self._getTarget()(None, now=datetime(2014, 1, 1))(*args, **kwargs)
+        return self._getTarget(*args, **kwargs)
 
     def _params(self, **kwargs):
         from webob.multidict import MultiDict

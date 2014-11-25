@@ -8,7 +8,7 @@ from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.renderers import get_renderer, render_to_response
+from pyramid.renderers import render, render_to_response
 from pyramid_mailer import get_mailer
 from . import helpers as h
 from .resources import LotViewResource
@@ -798,14 +798,15 @@ class LotEntries(BaseView):
         ).filter(
             LotWishSummary.wish_order==wish.wish_order
         ).one()
-        tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_no==wish.lot_entry.entry_no).first()
 
-        from altair.viewhelpers import Namespace as Namespace_vh
-
-        html = tmpl.implementation().get_def('lot_wish_row').render(
-            self.request, vh=Namespace_vh(self.request), w=w, auth=auth, sej=sej, view=self)
+        html = render(
+            "templates/lots/search#lot_wish_row.html",
+            dict(w=w, auth=auth, sej=sej, view=self),
+            self.request,
+            self.request.registry.__name__
+            )
         return html
 
     def wish_tr_class(self, wish):

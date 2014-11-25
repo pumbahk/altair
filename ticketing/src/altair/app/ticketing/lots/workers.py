@@ -49,10 +49,12 @@ def on_delivery_error(event):
 
 
 def includeme(config):
+    config.include('altair.pyramid_dynamic_renderer')
     # payment
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
-    config.include('altair.app.ticketing.cart.setup_renderers')
+    config.include('altair.app.ticketing.cart.setup__renderers')
+    config.include('altair.app.ticketing.cart.setup_payment_renderers')
     config.include(".sendmail")
 
     reg = config.registry
@@ -67,9 +69,13 @@ def includeme(config):
 
 
 def lot_wish_cart(wish):
-    organization_id = wish.performance.event.organization_id
+    event = wish.performance.event
+    organization = event.organization
+    organization_id = organization.id
+    cart_setting_id = event.setting.cart_setting_id or organization.setting.cart_setting_id
     cart = Cart(performance=wish.performance,
                 organization_id=organization_id,
+                cart_setting_id=cart_setting_id,
                 shipping_address=wish.lot_entry.shipping_address,
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,

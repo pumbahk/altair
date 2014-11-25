@@ -706,7 +706,7 @@ def setup_routes(config):
     config.add_route('checkout_dummy_server.confirm', '/.dummy/confirm')
 
 def setup_renderers(config):
-    config.add_renderer('.mako' , 'pyramid.mako_templating.renderer_factory')
+    config.include('pyramid_mako')
 
 def setup_sqlalchemy(config):
     import sqlalchemy

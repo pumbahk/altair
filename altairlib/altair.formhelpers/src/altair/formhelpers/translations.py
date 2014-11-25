@@ -6,11 +6,12 @@ from datetime import datetime
 
 class Translations(object):
     messages={
-        'Not a valid choice': u'不正な選択です',
+        'Not a valid choice' : u'選択してください',
         'Not a valid decimal value': u'数字または小数で入力してください',
         'Not a valid integer value': u'数字で入力してください',
-        'Invalid email address.':u'不正なメールアドレスです',
+        'Invalid email address.':u'メールアドレスが正しくありません',
         'This field is required.':u'入力してください',
+        'Invalid input.' : u'入力が正しくありません',
         'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
         'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
         'Field must be between %(min)d and %(max)d characters long.' : u'%(min)d文字から%(max)d文字の間で入力してください。',

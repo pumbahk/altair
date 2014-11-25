@@ -9,6 +9,10 @@
     text-align: left;
   }
 
+  table.extra-form-fields table.table-condensed > tbody > tr.error > td {
+    background-color: #f88;
+  }
+
   table.extra-form-fields table.table-condensed > tbody > tr > td {
     padding: 0 0;
   }
@@ -18,13 +22,18 @@
   }
   </style>
   <table class="table extra-form-fields">
+	  <colgroup>
+      <col style="width:3em" />
+      <col style="width:420px" />
+      <col style="width:200p%" />
+      <col style="width:300p%" />
+		</colgroup>
     <thead>
       <tr>
         <th style="width:3em">#</th>
-        <th style="width:10%">表示名 / 種類</th>
-        <th style="width:40%">説明文</th>
-        <th style="width:10%">設定</th>
-        <th style="width:35%">プレビュー</th>
+        <th style="width:420px">表示名 / 種類 / 説明文</th>
+        <th style="width:200p%">設定</th>
+        <th>プレビュー</th>
       </tr>
     </thead>
     <tbody>
