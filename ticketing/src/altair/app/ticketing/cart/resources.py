@@ -321,6 +321,22 @@ class TicketingCartResourceBase(object):
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
 
+    @reify
+    def switch_pc_url(self):
+        performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
+        if performance_id is not None:
+            return self.request.route_url('cart.switchpc', event_id=self.event.id, _query=dict(performance=performance_id))
+        else:
+            return self.request.route_url('cart.switchpc', event_id=self.event.id)
+
+    @reify
+    def switch_sp_url(self):
+        performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
+        if performance_id is not None:
+            return self.request.route_url('cart.switchsp', event_id=self.event.id, _query=dict(performance=performance_id))
+        else:
+            return self.request.route_url('cart.switchsp', event_id=self.event.id)
+
     @memoize()
     def get_total_orders_and_quantities_per_user(self, sales_segment):
         """ユーザごとのこれまでの注文数や購入数を取得する"""
@@ -597,6 +613,15 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
             user=self.authenticated_user(),
             type='all').all()
 
+    @reify
+    def switch_pc_url(self):
+        return self.request.route_url('cart.switchpc.perf', performance_id=self.performance.id)
+
+    @reify
+    def switch_sp_url(self):
+        return self.request.route_url('cart.switchsp.perf', performance_id=self.performance.id)
+
+
 class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request, sales_segment_id=None):
         super(SalesSegmentOrientedTicketingCartResource, self).__init__(request, sales_segment_id)
@@ -676,6 +701,10 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment]
 
+
+class SwitchUAResource(object):
+    def __init__(self, request):
+        self.request = request
 
 compat_ticketing_cart_resource_factory = EventOrientedTicketingCartResource
 

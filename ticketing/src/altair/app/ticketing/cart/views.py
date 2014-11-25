@@ -15,7 +15,7 @@ from zope.interface import provider, implementer
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPMovedPermanently
 from pyramid.response import Response
-from pyramid.view import view_defaults
+from pyramid.view import view_defaults, view_config
 from pyramid.threadlocal import get_current_request
 from webob.multidict import MultiDict
 
@@ -1475,21 +1475,38 @@ def logout(request):
     api.logout(request)
     return back_to_top(request)
 
-def _create_response(request, param):
+def _create_response(request, params=None):
     event_id = request.matchdict.get('event_id')
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, _query=params) or '/')
+    return response
+
+def _create_response_perf(request, params=None):
+    performance_id = request.matchdict.get('performance_id')
+    response = HTTPFound(performance_id and request.route_url('cart.index2', performance_id=performance_id, _query=params) or '/')
     return response
 
 @lbr_view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
     api.remove_cart(request)
+<<<<<<< HEAD
     response = _create_response(request=request, param="")
+=======
+    response = _create_response(request=request, params=request.GET)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_perf(context, request):
+    api.remove_cart(request)
+    response = _create_response_perf(request=request, params=request.GET)
+>>>>>>> release/20141125
     set_we_need_pc_access(response)
     return response
 
 @lbr_view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
     api.remove_cart(request)
+<<<<<<< HEAD
     response = _create_response(request=request, param="")
     set_we_invalidate_pc_access(response)
     return response
@@ -1509,11 +1526,15 @@ def switch_sp_performance(context, request):
     performance = request.matchdict.get('performance')
     param = _create_performance_param(performance=performance)
     response = _create_response(request=request, param=param)
+=======
+    response = _create_response(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
     return response
 
-def _create_performance_param(performance):
-    param = ""
-    if performance:
-        param = "?performance=" + str(performance)
-    return param
+@view_config(route_name='cart.switchsp.perf')
+def switch_sp_perf(context, request):
+    api.remove_cart(request)
+    response = _create_response_perf(request=request, params=request.GET)
+>>>>>>> release/20141125
+    set_we_invalidate_pc_access(response)
+    return response

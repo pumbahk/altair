@@ -23,7 +23,7 @@ def return_to_url(request):
     if passed_return_to_url is not None:
         return urlparse(passed_return_to_url).path
     else:
-        return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(self.request)
+        return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(request)
 
 class FCAuthLoginViewMixin(object):
     @property

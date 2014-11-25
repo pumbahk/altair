@@ -319,6 +319,12 @@ def setup_routes(config):
     config.add_route('cart.agreement.compat', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2.compat', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
 
+    # PC/Smartphone切替
+    config.add_route('cart.switchpc', 'events/{event_id}/switchpc', factory='.resources.SwitchUAResource')
+    config.add_route('cart.switchsp', 'events/{event_id}/switchsp', factory='.resources.SwitchUAResource')
+    config.add_route('cart.switchpc.perf', 'performances/{performance_id}/switchpc', factory='.resources.SwitchUAResource')
+    config.add_route('cart.switchsp.perf', 'performances/{performance_id}/switchsp', factory='.resources.SwitchUAResource')
+
     # 購入系
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}', factory='.resources.compat_ticketing_cart_resource_factory')
@@ -346,12 +352,6 @@ def setup_routes(config):
     config.add_route('payment.finish', 'completed', factory='.resources.CompleteViewTicketingCartResource')
 
     config.add_route('cart.contact', 'contact')
-
-    # PC/Smartphone切替
-    config.add_route('cart.switchpc', 'switchpc/{event_id}')
-    config.add_route('cart.switchsp', 'switchsp/{event_id}')
-    config.add_route('cart.switchpc.perf', 'switchpc/{event_id}/{performance}')
-    config.add_route('cart.switchsp.perf', 'switchsp/{event_id}/{performance}')
 
 def main(global_config, **local_config):
     settings = dict(global_config)
