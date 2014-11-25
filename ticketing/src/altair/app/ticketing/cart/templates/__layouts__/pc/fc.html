@@ -1,0 +1,462 @@
+<%
+h2_bg_lighten = h.to_hex_color(h.lighten(view_context.mobile_header_background_color, .6))
+h2_bg = view_context.mobile_header_background_color
+h2_bg_darken = h.to_hex_color(h.darken(view_context.mobile_header_background_color, .5))
+h2_border = view_context.mobile_header_background_color
+h3_border = view_context.mobile_header_background_color
+frame_border = view_context.mobile_header_background_color
+btn_bg = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  view_context.mobile_marker_color,
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .2)),
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .05)),
+  ]
+btn_bg_hover = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .7)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .3)),
+  view_context.mobile_marker_color,
+  ]
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <style type="text/css">
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    font-size: 12px;
+}
+
+table.layout {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: #fff;
+    color: #000;
+}
+
+table.layout tr {
+    padding: 0 0;
+    margin: 0 0;
+}
+table.layout td {
+    padding: 0 0;
+    margin: 0 0;
+    text-align: left;
+}
+
+
+img {
+    border: 0;
+    vertical-align: bottom;
+}
+
+img a {
+    border: 0;
+}
+
+h1 {
+    display: none;
+}
+
+h2 {
+    background: ${h2_bg}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${h2_bg_lighten} 0%, ${h2_bg_darken} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, ${h2_bg_lighten}), color-stop(100%, ${h2_bg_darken})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* IE10+ */
+    background: linear-gradient(to bottom, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='${h2_bg_lighten}', endColorstr='${h2_bg_darken}',GradientType=0 ); /* IE6-9 */
+    width: 700px;
+    text-align: left;
+    color: #FFF;
+    padding: 5px 10px;
+    border: 2px solid ${h2_border};
+    border-radius: 10px;
+    margin: 10px auto;
+    font-size: 18px;
+}
+
+.title-right-description {
+    text-align: right;
+    font-weight: normal;
+    width: 700px;
+}
+
+.title-right-description a {
+}
+
+h3 {
+    text-align: left;
+    color: #000;
+    border-left: 4px solid ${h3_border};
+    padding: 2px 2px 2px 4px;
+    margin: 0 0 5px 0;
+    font-size: 15px;
+}
+
+.main {
+    width: 780px;
+    margin: 0 auto;
+}
+
+.main form {
+    padding: 0;
+    margin: 0;
+}
+
+.main ul.error {
+    margin: 0 30px;
+    padding: 8px 30px;
+    background-color: rgba(255, 255, 255, .5);
+    border-radius: 8px 8px;
+}
+
+.main > p {
+    color: #fff; 
+    font-weight: bold;
+    padding-left: 1%;
+}
+
+.marginal {
+    width: 700px;
+    text-align: left;
+}
+
+.frame {
+    margin: 0px auto 20px auto !important;
+    width: 690px;
+    border: 5px solid ${frame_border} !important;
+    text-align: left;
+}
+
+table.frame {
+    width: 700px !important;
+}
+
+.frame-inner {
+    background-color: #fff;
+    padding: 10px;
+}
+
+.frame.frame-inner {
+    width: 670px !important;
+}
+
+.frame-inner p {
+    margin-top: 0;
+}
+    
+table.form {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border-collapse: collapse;
+    border: none;
+    border-spacing: none;
+}
+
+table.form tbody th {
+    background-color: #efefef;
+    border-collapse: collapse;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+    text-align: right;
+}
+
+table.form thead th {
+    background-color: #efefef;
+    border-collapse: collapse;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+    text-align: left;
+    font-size: 16px;
+}
+
+table.form td {
+    background-color: #fff;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+}
+
+table.form tfoot td {
+    background-color: #fff;
+    padding: 10px;
+    border-top: 2px solid ${frame_border};
+    text-align: center;
+}
+
+.control-segment ul {
+    list-style-type: none;
+    padding: 0 0;
+    margin: 0 0;
+}
+
+.field-note {
+    display: inline-block;
+    font-size: 0.8em;
+}
+
+.control-segment .error {
+    display: inline-block;
+}
+
+.red {
+    color: #970018;
+}
+
+.textRight {
+    text-align: right;
+}
+
+.textR {
+    text-align: right !important;    
+}
+
+.textL {
+    text-align: left !important;    
+}
+
+.textC {
+    text-align: center !important;    
+}
+
+.clear {
+    clear: both !important;
+}
+
+.font12 {
+    font-size: 12px;
+}
+
+.font14 {
+    font-size: 14px;
+}
+
+.font16 {
+    font-size: 16px;
+}
+
+.font18 {
+    font-size: 18px;
+}
+
+.font20 {
+    font-size: 20px;
+}
+
+input.submit {
+    background: ${btn_bg[0]}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${btn_bg[0]} 0%, ${btn_bg[1]} 50%, ${btn_bg[2]} 51%, ${btn_bg[3]} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg[0]}), color-stop(50%,${btn_bg[1]}), color-stop(51%,${btn_bg[2]}), color-stop(100%,${btn_bg[3]})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* IE10+ */
+    background: linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='${btn_bg[0]}', endColorstr='${btn_bg[2]}',GradientType=0 ); /* IE6-9 */
+    text-shadow: 0 0 5px rgba(0, 0, 0, .5);
+    text-align: center;
+    color: #fff;
+    padding: 5px;
+    border: 2px solid ${btn_bg[0]};
+    margin: 10px auto;
+    font-size: 20px;
+    font-weight: bold;
+    display: inline-block;
+    width: 400px;
+    height: 80px;
+}
+
+input.submit:hover {
+    background: ${btn_bg_hover[0]}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${btn_bg_hover[0]} 0%, ${btn_bg_hover[1]} 50%, ${btn_bg_hover[2]} 51%, ${btn_bg_hover[3]} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg_hover[0]}), color-stop(50%,${btn_bg_hover[1]}), color-stop(51%,${btn_bg_hover[2]}), color-stop(100%,${btn_bg_hover[3]})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* IE10+ */
+    background: linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='${btn_bg_hover[0]}', endColorstr='${btn_bg_hover[2]}',GradientType=0 ); /* IE6-9 */
+    color: #fff;
+    border: 2px solid ${btn_bg_hover[0]};
+}
+
+input.submit.half {
+    width: 200px;
+}
+
+table.purchasedContents {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+    margin: 0 auto;
+}
+
+table.purchasedContents thead th {
+    border: none;
+    font-size: 16px;
+    text-align: left;
+    padding: 10px;
+}
+
+table.purchasedContents thead th span {
+    border-left: 2px #888 solid;
+    padding: 5px;
+}
+
+table.purchasedContents tbody tr {
+    border-top: 1px #efefef solid;
+}
+
+table.purchasedContents td {
+    padding: 3px 18px;
+}
+
+table.purchasedContents td ul {
+    padding: 0 0 0 20px;
+}
+
+table.purchasedContents td ul li {
+    margin-top: 3px;
+}
+
+table.purchasedContents tfoot td {
+    border-top: 1px #ccc solid;
+    font-size: 16px;
+    text-align: left;
+    padding: 10px 18px;
+}
+
+table.purchasedContents tfoot td .paymentCoupon {
+    -moz-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    box-shadow:inset 0px 1px 0px 0px #d67c75;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ad271d), color-stop(1, #661d16) );
+    background:-moz-linear-gradient( center top, #ad271d 5%, #661d16 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ad271d', endColorstr='#661d16');
+    background-color:#ad271d;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #d83526;
+    display:inline-block;
+    color:#ffffff;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 60px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #98231a;
+}
+
+table.purchasedContents tfoot td .paymentCoupon:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #661d16), color-stop(1, #ad271d) );
+    background:-moz-linear-gradient( center top, #661d16 5%, #ad271d 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#661d16', endColorstr='#ad271d');
+    background-color:#661d16;
+}
+
+table.purchasedContents tfoot td .paymentCoupon:active {
+    position:relative;
+    top:1px;
+}
+
+
+.footer {
+    -webkit-border-radius: 10px 10px 0 0 /  10px 10px 0 0;
+    -moz-border-radius: 10px 10px 0 0 /  10px 10px 0 0;
+    border-radius: 10px 10px 0 0 /  10px 10px 0 0;
+    -webkit-box-shadow: 0px 0px 10px #696969;
+    -moz-box-shadow: 0px 0px 10px #696969;
+    box-shadow: 0px 0px 10px #696969;
+    background-color: #FFFFFF;
+    font-size: 12pt;
+    color: #555;
+    text-align: center;
+    padding: 10px 0;
+    width: 760px;
+    margin: 0 auto;    
+}
+
+.footer .footernav {
+    margin: 10px auto;
+}
+
+.footer .footernav ul {
+    display: inline;
+    font-size: 75%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer .footernav ul li.first {
+    border-left: medium none;
+}
+
+.footer .footernav ul li {
+    border-left: 1px solid #534741;
+    display: inline;
+    padding: 0 6px;
+    white-space: nowrap;
+}
+
+.footer .copyright {
+    color: #CCCCCC;
+    font-size: 75%;
+}
+
+.error {
+    margin: 0;
+    color: red;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.form-field-message {
+    color: #970018;
+}
+
+.importantNumber {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+</style>
+  <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+  <%block name="javascript"></%block>
+</head>
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" width="780" height="135" />
+    </div>
+    <h1 class="title">${view_context.title}</h1>
+    <div class="main">
+      <h2><%block name="title"></%block></h2>
+      ${self.body()}
+    </div>
+    <div class="footer">
+      <div class="footernav">
+        <ul>
+          <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
+          <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
+          <li class="last"><a target="_blank" href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+        </ul>
+      </div>
+      <div class="copyright">
+        Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved. 
+      </div>
+    </div>
+  </div>
+</body>
+</html>

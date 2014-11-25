@@ -304,6 +304,10 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     def branches(cls, order_no, session=_session):
         return session.query(cls).filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
 
+    @property
+    def payment_and_delivery_done_at_once(self):
+        return int(self.payment_type) == int(SejPaymentType.CashOnDelivery)
+
 
 class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicket'

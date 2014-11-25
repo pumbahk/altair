@@ -39,15 +39,12 @@ ${lot.name}
 
 <%mobile:form_header>誕生日${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['year'](widget="input", size="4", maxlength="4", istyle="4")}年
-  ${form['month'](widget="input", size="2", maxlength="2", istyle="4")}月
-  ${form['day'](widget="input", size="2", maxlength="2", istyle="4")}日
-  ${h.mobile_error_list(request, form, 'year', with_label=True)}
-  ${h.mobile_error_list(request, form, 'month', with_label=True)}
-  ${h.mobile_error_list(request, form, 'day', with_label=True)}
+  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
+  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<p>${form['email_1']._description}</p>
 <div>
   ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}
@@ -58,7 +55,6 @@ ${lot.name}
   ${form['email_1_confirm'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
-<p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>

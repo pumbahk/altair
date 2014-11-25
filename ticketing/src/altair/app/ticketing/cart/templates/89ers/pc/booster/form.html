@@ -1,0 +1,19 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="javascript">
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+  <script type="text/javascript">
+var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/js/zipdata'))|n};
+</script>
+</%block>
+<%block name="title">
+  <div class="title-right-description">
+    申込受付履歴は<a href="${view_context.orderreview_page_url}" style="color:#ff8">こちら</a>で<br>確認できます
+  </div>
+  <span>${view_context.title}</span>
+</%block>
+<form action="${request.current_route_path()}" method="post">
+  ${panel("input_form", form)}
+  <div class="frame frame-inner textC">
+    <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
+  </div>
+</form>

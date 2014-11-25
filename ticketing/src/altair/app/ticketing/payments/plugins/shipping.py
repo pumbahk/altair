@@ -3,12 +3,16 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery
-from altair.app.ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsElectedMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsRejectedMailDelivery
+from altair.app.ticketing.mails.interfaces import (
+    ICompleteMailResource,
+    IOrderCancelMailResource,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
 
 from . import models as m
 from . import logger
@@ -17,17 +21,24 @@ from altair.app.ticketing.core import models as c_models
 
 from . import SHIPPING_DELIVERY_PLUGIN_ID as PLUGIN_ID
 
+def _overridable(path):
+    from . import _template
+    if _template is None:
+        return '%s:templates/%s' % (__name__, path)
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
+
 def includeme(config):
     config.add_delivery_plugin(ShippingDeliveryPlugin(), PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=ICartDelivery, name="delivery-1", renderer="altair.app.ticketing.payments.plugins:templates/shipping_confirm.html")
+@lbr_view_config(context=ICartDelivery, name="delivery-1", renderer=_overridable("shipping_confirm.html"))
 def deliver_confirm_viewlet(context, request):
     logger.debug(u"郵送")
     cart = context.cart
     return dict(shipping_address=cart.shipping_address)
 
-@view_config(context=IOrderDelivery, name="delivery-1", renderer="altair.app.ticketing.payments.plugins:templates/shipping_confirm.html")
+@lbr_view_config(context=IOrderDelivery, name="delivery-1", renderer=_overridable("shipping_complete.html"))
 def deliver_completion_viewlet(context, request):
     logger.debug(u"郵送")
     order = context.order
@@ -62,19 +73,19 @@ class ShippingDeliveryPlugin(object):
         pass
 
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
-@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
+@lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html"))
+@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html"))
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示
-    :param context: ICompleteMailDelivery
+    :param context: ICompleteMailResource
     """
     shipping_address = context.order.shipping_address
     return dict(h=cart_helper, shipping_address=shipping_address, 
-                notice=context.mail_data("notice")
+                notice=context.mail_data("D", "notice")
                 )
 
-@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % PLUGIN_ID)
-@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % PLUGIN_ID)
-@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+@lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % PLUGIN_ID)
 def notice_mail_viewlet(context, request):
-    return Response(text=u"＜配送にてお引取りの方＞\n{0}".format(context.mail_data("notice")))
+    return Response(text=u"＜配送にてお引取りの方＞\n{0}".format(context.mail_data("D", "notice")))

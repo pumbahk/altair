@@ -102,9 +102,9 @@ class EventSearchForm(OurForm):
         label=u'抽選を含むイベントを選択'
         )
 
-class EventForm(Form):
+class EventForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(EventForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.account_id.choices = [
                 (account.id, account.name) for account in Account.filter_by(organization_id=kwargs['organization_id'])
@@ -187,43 +187,6 @@ class EventForm(Form):
         label=label_text_for(Event.display_order),
         default=1,
         hide_on_new=True,
-    )
-    performance_selector = OurSelectField(
-        label=label_text_for(EventSetting.performance_selector),
-        filters=[
-            replace_ambiguous,
-        ],
-        choices=[
-            (u'', u'未設定'),
-            (u'matchup', u'公演名でグルーピング'),
-            (u'date', u'日付でグルーピング'),
-        ],
-    )
-
-    def get_performance_selector(self):
-        return blank_as_none(self.performance_selector.data)
-
-    performance_selector_label1_override = TextField(
-        label=label_text_for(EventSetting.performance_selector_label1_override),
-        filters=[
-            replace_ambiguous,
-            blank_as_none,
-        ],
-        validators=[
-            JISX0208,
-            Length(max=100, message=u'100文字以内で入力してください'),
-        ]
-    )
-    performance_selector_label2_override = TextField(
-        label=label_text_for(EventSetting.performance_selector_label2_override),
-        filters=[
-            replace_ambiguous,
-            blank_as_none,
-        ],
-        validators=[
-            JISX0208,
-            Length(max=100, message=u'100文字以内で入力してください'),
-        ]
     )
 
     def validate_code(form, field):

@@ -100,7 +100,7 @@ ${m.delivery_method.description or '' | n}
 </dl>
 </div>
 
-<p class="tyuui2">※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+<p class="tyuui2">${form['email_1']._description}</p>
 
 
 <div class="subbox">
@@ -159,7 +159,7 @@ ${form['email_1_confirm']}<br/>
 ${self.error(form, 'email_1_confirm')}
 (例：mail@example.ne.jp)
 </p>
-<p><span class="tyuui2">予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</span></p>
+<p class="tyuui2">${form['email_1']._description}</p>
 </dd>
 
 <dt class="creditHl">電話番号(半角数字)</dt>
@@ -216,13 +216,11 @@ ${self.error(form, 'address_2')}
 </p>
 </dd>
 
-<dt class="creditHl"><label class="required" for="year">生年月日</label></dt>
+<dt class="creditHl"><label class="required" for="birthday">生年月日</label></dt>
 <dd>
 <p>
-${form['year']} 年
-${form['month']} 月
-${form['day']} 日
-${self.error(form, 'year')}
+${form['birthday']}
+${self.error(form, 'birthday')}
 </p>
 </dd>
 
