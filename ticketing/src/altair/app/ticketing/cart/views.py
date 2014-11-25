@@ -1264,12 +1264,12 @@ class PointAccountEnteringView(object):
             )
         form = schemas.PointForm(formdata=formdata)
 
-        asid = self.request.altair_pc_asid
+        asid = self.request.context.asid
         if is_mobile_request(self.request):
-            asid = self.request.altair_mobile_asid
+            asid = self.request.context.asid_mobile
 
         if is_smartphone(self.request):
-            asid = self.request.altair_smartphone_asid
+            asid = self.request.context.asid_smartphone
 
         accountno = self.request.params.get('account')
         user = api.get_or_create_user(self.context.authenticated_user())
@@ -1304,12 +1304,12 @@ class PointAccountEnteringView(object):
 
         form = self.form
         if not form.validate():
-            asid = None
+            asid = self.request.context.asid
             if is_mobile_request(self.request):
-                asid = self.request.altair_mobile_asid
+                asid = self.request.context.asid_mobile
 
             if is_smartphone(self.request):
-                asid = self.request.altair_smartphone_asid
+                asid = self.request.context.asid_smartphone
             return dict(form=form, asid=asid)
 
         point_params = self.get_point_data()
