@@ -26,6 +26,9 @@ def upgrade():
     UPDATE OrganizationSetting SET asid='NTI4MDU2ZDY2ZDI3ZLPaxbelwaWxpcOlyA' WHERE id = 24;
     UPDATE OrganizationSetting SET asid_mobile='NTI2NzgxYTc1YjJhYbPaxbelwaWxpcOlyA' WHERE id = 24;
     UPDATE OrganizationSetting SET asid_smartphone='NTI2NzgxMjJhMzRlM7PaxbelwaWxpcOlyA' WHERE id = 24;
+    UPDATE OrganizationSetting SET asid='NTQ3M2Q5ZjJiMGFiM7PaxbelwaWxpcOlyA' WHERE id = 42;
+    UPDATE OrganizationSetting SET asid_mobile='NTQ3M2RiNWNiNDUzZbPaxbelwaWxpcOlyA' WHERE id = 42;
+    UPDATE OrganizationSetting SET asid_smartphone='NTQ3M2RhZmRhMDFjMbPaxbelwaWxpcOlyA' WHERE id = 42;
 """)
 
 def downgrade():
