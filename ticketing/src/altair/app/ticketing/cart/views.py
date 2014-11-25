@@ -1488,9 +1488,6 @@ def _create_response_perf(request, params=None):
 @lbr_view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
     api.remove_cart(request)
-<<<<<<< HEAD
-    response = _create_response(request=request, param="")
-=======
     response = _create_response(request=request, params=request.GET)
     set_we_need_pc_access(response)
     return response
@@ -1499,34 +1496,12 @@ def switch_pc(context, request):
 def switch_pc_perf(context, request):
     api.remove_cart(request)
     response = _create_response_perf(request=request, params=request.GET)
->>>>>>> release/20141125
     set_we_need_pc_access(response)
     return response
 
 @lbr_view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
     api.remove_cart(request)
-<<<<<<< HEAD
-    response = _create_response(request=request, param="")
-    set_we_invalidate_pc_access(response)
-    return response
-
-@lbr_view_config(route_name='cart.switchpc.perf')
-def switch_pc_performance(context, request):
-    api.remove_cart(request)
-    performance = request.matchdict.get('performance')
-    param = _create_performance_param(performance=performance)
-    response = _create_response(request=request, param=param)
-    set_we_need_pc_access(response)
-    return response
-
-@lbr_view_config(route_name='cart.switchsp.perf')
-def switch_sp_performance(context, request):
-    api.remove_cart(request)
-    performance = request.matchdict.get('performance')
-    param = _create_performance_param(performance=performance)
-    response = _create_response(request=request, param=param)
-=======
     response = _create_response(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
     return response
@@ -1535,6 +1510,5 @@ def switch_sp_performance(context, request):
 def switch_sp_perf(context, request):
     api.remove_cart(request)
     response = _create_response_perf(request=request, params=request.GET)
->>>>>>> release/20141125
     set_we_invalidate_pc_access(response)
     return response
