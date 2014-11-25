@@ -2,7 +2,7 @@
 import logging
 from datetime import date
 from webob.multidict import MultiDict
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.decorator import reify
 from pyramid.view import view_defaults, render_view_to_response
 from markupsafe import escape, Markup
@@ -180,7 +180,7 @@ class FCIndexView(object):
             )
         if cart is None:
             logger.debug('cart is None')
-            return dict(form=form, products=products)
+            return dict(form=form)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         data = extract_form_data(form)

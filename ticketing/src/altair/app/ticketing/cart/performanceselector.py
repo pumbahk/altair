@@ -134,7 +134,7 @@ class MatchUpPerformanceSelector2(MatchUpPerformanceSelector):
                 if label1 is not None:
                     self.label = label1
                 if label2 is not None:
-                    self.second_label = second_label
+                    self.second_label = label2
 
 @implementer(IPerformanceSelector)
 class DatePerformanceSelector(_PerformanceSelector):

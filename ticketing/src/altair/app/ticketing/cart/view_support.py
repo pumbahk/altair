@@ -28,6 +28,7 @@ from altair.formhelpers.validators import Required, DynSwitchDisabled, HIRAGANAS
 from wtforms.validators import Optional, Regexp
 from altair.formhelpers.translations import Translations
 from markupsafe import Markup
+from altair.app.ticketing.models import DBSession
 from . import helpers as h
 from . import api
 from collections import OrderedDict

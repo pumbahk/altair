@@ -709,6 +709,10 @@ class IndexAjaxView(object):
         except (ValueError, TypeError):
             venue_id = None
 
+        if venue_id is None:
+            raise HTTPNotFound()
+
+        venue = DBSession.query(c_models.Venue).filter_by(id=venue_id).one()
         length_or_range = self.request.matchdict['length_or_range']
         return dict(
             seat_adjacencies={
@@ -716,7 +720,7 @@ class IndexAjaxView(object):
                     [seat.l0_id for seat in seat_adjacency.seats_filter_by_venue(venue_id)]
                     for seat_adjacency_set in \
                         DBSession.query(c_models.SeatAdjacencySet)\
-                            .filter_by(site_id=performance.venue.site_id, seat_count=length_or_range)
+                            .filter_by(site_id=venue.site_id, seat_count=length_or_range)
                     for seat_adjacency in seat_adjacency_set.adjacencies
                     ]
                 }

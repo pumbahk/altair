@@ -63,12 +63,12 @@ class PrefectureSelectModel(object):
 
     def __iter__(self):
         for prefecture in self.prefectures:
-            yield prefectures.id
+            yield prefecture.id
 
 
 class CartSettingForm(OurForm):
     def _get_translation(self):
-        return Translation()
+        return Translations()
 
     name = OurTextField(
         label=label_text_for(CartSetting.name),

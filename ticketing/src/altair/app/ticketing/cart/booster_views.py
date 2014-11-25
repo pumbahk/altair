@@ -183,7 +183,7 @@ class BoosterIndexView(object):
             )
         if cart is None:
             logger.debug('cart is None')
-            return dict(form=form, products=products)
+            return dict(form=form)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         data = extract_form_data(form)

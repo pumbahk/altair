@@ -454,25 +454,25 @@ def get_or_create_user(info):
 
     user = u_models.User()
     membership = u_models.Membership.query.filter(
-        u_models.Membership.organization_id == d['organization_id'],
-        u_models.Membership.name == d['membership']) \
+        u_models.Membership.organization_id == info['organization_id'],
+        u_models.Membership.name == info['membership']) \
         .order_by(u_models.Membership.id.desc()) \
         .first()
     # [暫定] 楽天OpenID認証の場合は、oragnization_id の条件を外したものでも調べる
     # TODO: あとでちゃんとデータ移行する
     if membership is None and info['auth_type'] == 'rakuten':
         membership = u_models.Membership.query.filter(
-            u_models.Membership.name == d['membership']) \
+            u_models.Membership.name == info['membership']) \
             .order_by(u_models.Membership.id.desc()) \
             .first()
 
     if membership is None:
-        logger.error("could not found membership %s" % d['membership'])
+        logger.error("could not found membership %s" % info['membership'])
         return None
 
     credential = u_models.UserCredential(
         user=user,
-        auth_identifier=d['auth_identifier'],
+        auth_identifier=info['auth_identifier'],
         membership=membership
         )
     DBSession.add(credential)

@@ -7,10 +7,10 @@ from pyramid.compat import text_type
 from pyramid_mailer.message import Message
 from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.loyalty.models import PointGrantStatusEnum, PointGrantHistoryEntry
-from .interfaces import IPointGrantHistoryEntryInfoMail
+from .interfaces import IPointGrantHistoryEntryInfoMail, IMailDataStoreGetter
 from .forms import SubjectInfoRenderer, RenderVal
 from .forms import OrderInfoDefaultMixin, SubjectInfoDefaultBase, SubjectInfo, SubjectInfoWithValue
-from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part
+from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part, create_mail_request, get_default_contact_reference
 from .resources import MailContextBase
 
 logger = logging.getLogger(__name__)
