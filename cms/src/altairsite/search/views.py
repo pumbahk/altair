@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-import re
 import logging
 from webob.multidict import MultiDict
 from pyramid.view import view_defaults
@@ -22,13 +21,7 @@ def convert_getitem(D, k, convert):
         raise HTTPNotFound
 
 
-def validate_paginate_request(request):
-    regx = re.compile('^\d$')
-    is_integer = regx.match
-    if not request.GET or not is_integer(request.GET.get('page', '1')):
-        raise HTTPNotFound
-
-@usersite_view_config(custom_predicates=(enable_search_function, ),
+@usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_input",
                       renderer="altaircms:templates/usersite/search/input.html")
 def page_search_input(request):
@@ -37,7 +30,7 @@ def page_search_input(request):
     request.body_id = "searchform"
     return {"forms": forms.get_search_forms(request)}
 
-@usersite_view_config(custom_predicates=(enable_search_function, ),
+@usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_result",
                       renderer="altaircms:templates/usersite/search/result.html")
 def page_search_result(context, request):
@@ -49,24 +42,20 @@ def page_search_result(context, request):
         raise HTTPNotFound
     query_params = forms.get_search_forms(request, request.GET).make_query_params()
     result_seq = context.get_result_sequence_from_query_params(
-        query_params,
+        query_params, 
         searchfn=searcher.get_pageset_query_fullset
         )
     html_query_params = context.get_query_params_as_html(query_params)
     return dict(result_seq=result_seq, query_params=html_query_params)
 
-@usersite_view_config(custom_predicates=(enable_search_function, ),
-                      request_param="q", route_name="page_search_by_freeword",
+@usersite_view_config(custom_predicates=(enable_search_function, ), 
+                      request_param="q", route_name="page_search_by_freeword", 
                       renderer="altaircms:templates/usersite/search/result.html")
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
     ## 全文検索を使って検索。, で区切られた文字はandで結合
     request.body_id = "search"
-    if not request.GET:
-        raise HTTPNotFound
-
-    validate_paginate_request(request)
     query_params = dict(query=request.GET.get("q", u""), query_cond="intersection")
     result_seq = context.get_result_sequence_from_query_params(
         query_params,
@@ -77,8 +66,8 @@ def search_by_freeword(context, request):
     return dict(result_seq=result_seq, query_params=html_query_params)
 
 
-@usersite_view_config(custom_predicates=(enable_search_function, ),
-                      route_name="page_search_by_multi",
+@usersite_view_config(custom_predicates=(enable_search_function, ), 
+                      route_name="page_search_by_multi", 
                       renderer="altaircms:templates/usersite/search/result.html")
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
@@ -87,13 +76,13 @@ def search_by_multi(request):
     request.body_id = "search"
     query_params = forms.TopPageSidebarSearchForm(request.GET).make_query_params()
     result_seq = request.context.get_result_sequence_from_query_params(
-        query_params,
+        query_params, 
         searchfn=searcher.get_pageset_query_from_multi
         )
     html_query_params = request.context.get_query_params_as_html(query_params)
     return dict(result_seq=result_seq, query_params=html_query_params)
 
-@view_defaults(custom_predicates=(enable_search_function, ),
+@view_defaults(custom_predicates=(enable_search_function, ), 
                route_name="page_search_by", renderer="altaircms:templates/usersite/search/result.html")
 class SearchByKindView(object):
     def __init__(self, context, request):
@@ -124,7 +113,7 @@ class SearchByKindView(object):
         params = MultiDict({self.request.matchdict["value"]: "on"})
         self.request.body_id = "search"
         query_params = forms.AreaPartForm(params).make_query_params()
-
+        
         result_seq = self.context.get_result_sequence_from_query_params_ext(
             query_params,
             searchfn=searcher.get_pageset_query_from_area
@@ -158,10 +147,9 @@ class SearchByKindView(object):
         """ 公演期間で検索した結果を表示
         **N日以内に公演**
         """
-        validate_paginate_request(self.request)
         n = convert_getitem(self.request.matchdict, "value", int)
         self.request.body_id = "search"
-        query_params = {"ndays": n,
+        query_params = {"ndays": n, 
                         "query_expr_message": u"%d日以内に公演" % n}
         result_seq = self.context.get_result_sequence_from_query_params_ext(
             query_params,
@@ -179,7 +167,7 @@ class SearchByKindView(object):
         """
         n = convert_getitem(self.request.matchdict, "value", int)
         self.request.body_id = "search"
-        query_params = {"ndays": n,
+        query_params = {"ndays": n, 
                         "query_expr_message": u"%d日以内に受付・発売開始" % n}
         result_seq = self.context.get_result_sequence_from_query_params_ext(
             query_params,
@@ -202,7 +190,7 @@ class SearchByKindView(object):
             logger.warn("hot word is not found id=%s" % hotword_id)
             raise HTTPNotFound()
         self.request.body_id = "search"
-        query_params = {"hotword": hotword,
+        query_params = {"hotword": hotword, 
                         "query_expr_message": u"ホットワード:%s" % hotword.name}
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
@@ -224,7 +212,7 @@ class SearchByKindView(object):
             logger.warn("page tag is not found id=%s" % pagetag_id)
             raise HTTPNotFound()
         self.request.body_id = "search"
-        query_params = {"pagetag": pagetag,
+        query_params = {"pagetag": pagetag, 
                         "query_expr_message": pagetag.label}
         result_seq = self.context.get_result_sequence_from_query_params(
             query_params,
@@ -247,7 +235,7 @@ class SearchByKindView(object):
         html_query_params = mock_query_parms
         self.request.body_id = "search"
         result_seq = self.context.get_result_sequence_from_query_params(
-            mock_query_parms,
+            mock_query_parms, 
             )
         ### header page用のcategoryを集めてくる
         return dict(result_seq=result_seq, query_params=html_query_params)
