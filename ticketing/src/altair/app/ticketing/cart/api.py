@@ -330,6 +330,9 @@ def is_point_input_required(context, request):
     if not is_point_input_organization(context, request):
         return False
 
+    if not context.asid:
+        return False
+
     user = get_or_create_user(context.authenticated_user())
     if not user:
         logger.debug('cannot get a user; assuning rsp entry is required')

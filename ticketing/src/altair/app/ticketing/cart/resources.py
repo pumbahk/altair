@@ -183,6 +183,30 @@ class TicketingCartResourceBase(object):
             return []
         return sales_segment.membergroups
 
+    @reify
+    def asid(self):
+        organization = cart_api.get_organization(self.request)
+        asid =organization.setting.asid
+        logger.debug('organization %s' % organization.code)
+        logger.debug('asid %s' % asid)
+        return asid
+
+    @reify
+    def asid_mobile(self):
+        organization = cart_api.get_organization(self.request)
+        asid_mobile =organization.setting.asid_mobile
+        logger.debug('organization %s' % organization.code)
+        logger.debug('asid %s' % asid_mobile)
+        return asid_mobile
+
+    @reify
+    def asid_smartphone(self):
+        organization = cart_api.get_organization(self.request)
+        asid_smartphone =organization.setting.asid_smartphone
+        logger.debug('organization %s' % organization.code)
+        logger.debug('asid %s' % asid_smartphone)
+        return asid_smartphone
+
     ## なぜ２つ?
     def available_payment_delivery_method_pairs(self, sales_segment):
         return sales_segment.available_payment_delivery_method_pairs(self.now) #xxx?
