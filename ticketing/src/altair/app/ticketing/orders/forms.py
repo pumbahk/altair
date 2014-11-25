@@ -160,6 +160,32 @@ class ProductsField(Field):
                 self.process_errors.append(e.args[0])
 
 
+class OrderInfoForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        # context = kwargs.pop('context')
+        #self.context = context
+        super(OrderInfoForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+    payment_due_at = DateTimeField(
+        label=u'支払期日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget()
+    )
+    issuing_start_at = DateTimeField(
+        label=u'発券開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget()
+    )
+    issuing_end_at = DateTimeField(
+        label=u'発券期限日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget()
+    )
+
+
 class OrderForm(Form):
 
     def _get_translations(self):

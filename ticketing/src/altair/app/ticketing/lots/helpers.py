@@ -27,6 +27,7 @@ from altair.app.ticketing.cart.helpers import (
     format_currency,
     error_list,
     safe_get_contact_url,
+    sensible_widget,
 )
 from altair.app.ticketing.helpers.base import is_required
 

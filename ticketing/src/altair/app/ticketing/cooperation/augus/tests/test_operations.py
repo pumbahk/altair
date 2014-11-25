@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from altair.app.ticketing.core.models import (
+    Account,
     AugusAccount,
     )
 from ..operations import (
     PathManager,
     )
 
+
 class AugusOperationTest(TestCase):
     def setup(self):
-        account = Account()
-        augus_account = AugusAccount()
+        self.account = Account()
+        self.augus_account = AugusAccount()
 
     def teardown(self):
         pass

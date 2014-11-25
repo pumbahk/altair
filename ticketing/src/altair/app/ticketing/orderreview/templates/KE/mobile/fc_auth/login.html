@@ -1,0 +1,31 @@
+<%inherit file="../layout.html" />
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>購入確認</%mobile:header>
+<br/>
+
+
+<%mobile:header>各種会員の方はこちら</%mobile:header>
+<form method="post" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
+ログインする会員組織<br/>
+<select name="membership" style="width: 100%">
+% for membership in _context.available_memberships:
+  <option value="${membership.name}" ${u'selected="selected"' if request.params.get('membership') == membership.name else u''}>${membership.memo}</option>
+% endfor
+</select>
+会員ID(半角英数字)<br/>
+※FC会員番号orユーザーID(BTOBのみ)<br/>
+※キッスエンタ会員受付の場合は、ご登録のメールアドレスになります。<br/>
+<input type="text" class="text" name="username"><br/>
+パスワード(半角英数字）<br/>
+※ファンクラブorキッスエンタにご登録のお電話番号下4ケタ<br/>
+<input type="password" name="password"><br/>
+<input type="submit" value="次に進む" />
+%if message:
+<br/><span style="color: red">IDまたはパスワードが一致しません</span>
+%endif
+</form>
+
+<%mobile:header>一般の方のチケット確認</%mobile:header>
+<form method="get" action="${request.route_path('order_review.form')}">
+<input type="submit" value="次に進む" />
+</form>

@@ -3,21 +3,34 @@
 """ PC/Mobile のスーパービュークラス
 """
 import logging
+import functools
+from datetime import date, datetime, time
+from pyramid.interfaces import IRouteRequest, IRoutesMapper
 from pyramid.httpexceptions import HTTPFound
 from pyramid.decorator import reify
+from pyramid.threadlocal import get_current_request, get_current_registry
+from pyramid.i18n import TranslationString as _
+from zope.interface import providedBy, directlyProvides
 from sqlalchemy.sql.expression import desc, asc
 from sqlalchemy.orm import joinedload, aliased
+from wtforms import widgets as wt_widgets
+from wtforms.fields import core as wt_fields
 from altair.app.ticketing.core import models as c_models
 from altair.sqlahelper import get_db_session
 from altair.mobile.interfaces import IMobileRequest
+from altair.viewhelpers.datetime_ import create_date_time_formatter
 from altair.formhelpers.form import OurDynamicForm
 from altair.formhelpers import widgets
+from altair.formhelpers.widgets.datetime import build_date_input_select_japanese_japan
 from altair.formhelpers import fields
 from altair.formhelpers.filters import text_type_but_none_if_not_given
-from altair.formhelpers.validators import Required
-from wtforms.validators import Optional
+from altair.formhelpers.validators import Required, DynSwitchDisabled, HIRAGANAS_REGEXP, KATAKANAS_REGEXP, ALPHABETS_REGEXP, NUMERICS_REGEXP
+from wtforms.validators import Optional, Regexp
 from altair.formhelpers.translations import Translations
+from markupsafe import Markup
+from altair.app.ticketing.models import DBSession
 from . import helpers as h
+from . import api
 from collections import OrderedDict
 from .exceptions import (
     NoEventError,
@@ -28,7 +41,7 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     )
 from .resources import PerformanceOrientedTicketingCartResource
-from .interfaces import ICartContext
+from .interfaces import ICartResource
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +72,7 @@ class IndexViewMixin(object):
     def _check_redirect(self):
         mobile = IMobileRequest.providedBy(self.request)
         if isinstance(self.request.context, PerformanceOrientedTicketingCartResource):
-            performance_id = self.request.context.performance.id
+            performance_id = self.request.context.performance and self.request.context.performance.id
         else:
             performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
@@ -103,7 +116,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             desc(c_models.Product.price)
             )
 
-    if ICartContext.providedBy(request.context):
+    if ICartResource.providedBy(request.context):
         context = request.context
     else:
         context = None
@@ -389,33 +402,81 @@ def assert_quantity_within_bounds(sales_segment, order_items):
 
 
 class DynamicFormBuilder(object):
+    validator_specs = [
+        ('numerics', NUMERICS_REGEXP, u'数字'),
+        ('alphabets', ALPHABETS_REGEXP, u'英文字'),
+        ('hiragana', HIRAGANAS_REGEXP, u'ひらがな'),
+        ('katakana', KATAKANAS_REGEXP, u'カタカナ'),
+        ('other_characters', None, None),
+        ]
 
     def _convert_choices(self, choice_descs):
         return [(choice_desc['value'], choice_desc['label']) for choice_desc in choice_descs]
 
     def _build_validators(self, field_desc):
         validators = []
+        activation_conditions = field_desc.get('activation_conditions')
+        if activation_conditions:
+            validators.append(DynSwitchDisabled(u'NOT(%s)' % activation_conditions))
         if field_desc['required']:
             validators.append(Required())
-        else:
-            validators.append(Optional())
+
+        validator_flags = {}
+        all_enabled = True
+        validator_descs = field_desc.get('validators')
+        if validator_descs:
+            for name, _, _ in self.validator_specs:
+                enabled = validator_descs.get(name, {}).get('enabled', True)
+                validator_flags[name] = enabled
+                all_enabled = all_enabled and enabled
+        if not all_enabled:
+            concatenated_csets = ur''
+            message = u''
+            if validator_flags['other_characters']:
+                sets = [u'[^']
+                cdescs = []
+                for name, cset, cdesc in self.validator_specs:
+                    if cset is not None and not validator_flags[name]:
+                        sets.append(cset)
+                        cdescs.append(cdesc)
+                sets.append(u']')
+                concatenated_csets = u''.join(sets)
+                message = u'%sは入力できません' % u'・'.join(cdescs)
+            else:
+                sets = [u'[']
+                cdescs = []
+                for name, cset, cdesc in self.validator_specs:
+                    if cset is not None and validator_flags[name]:
+                        sets.append(cset)
+                        cdescs.append(cdesc)
+                sets.append(u']')
+                concatenated_csets = u''.join(sets)
+                message = u'%sのみ入力できます' % u'・'.join(cdescs)
+            validators.append(Regexp(concatenated_csets, message=message))
+
         return validators
 
     def _build_text(self, field_desc):
         return fields.OurTextField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc)
             )
 
     def _build_textarea(self, field_desc):
         return fields.OurTextAreaField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc)
             )
 
     def _build_select(self, field_desc):
         return fields.OurSelectField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
             choices=self._convert_choices(field_desc['choices'])
             )
@@ -423,6 +484,8 @@ class DynamicFormBuilder(object):
     def _build_multiple_select(self, field_desc):
         return fields.OurSelectMultipleField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
             choices=self._convert_choices(field_desc['choices'])
             )
@@ -430,6 +493,8 @@ class DynamicFormBuilder(object):
     def _build_radio(self, field_desc):
         return fields.OurRadioField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
             choices=self._convert_choices(field_desc['choices']),
             coerce=text_type_but_none_if_not_given
@@ -438,6 +503,8 @@ class DynamicFormBuilder(object):
     def _build_checkbox(self, field_desc):
         return fields.OurSelectMultipleField(
             label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
             choices=self._convert_choices(field_desc['choices']),
             widget=widgets.CheckboxMultipleSelect(
@@ -447,6 +514,17 @@ class DynamicFormBuilder(object):
                 )
             )
 
+    def _build_date(self, field_desc):
+        return fields.OurDateField(
+            label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
+            validators=self._build_validators(field_desc),
+            default=date.today(),
+            widget=widgets.OurDateWidget(
+                input_builder=build_date_input_select_japanese_japan
+                )
+            )
 
     field_factories = {
         u'text': _build_text,
@@ -455,9 +533,10 @@ class DynamicFormBuilder(object):
         u'multiple_select': _build_multiple_select,
         u'radio': _build_radio,
         u'checkbox': _build_checkbox,
+        u'date': _build_date,
         }
 
-    def __call__(self, request, extra_form_fields, formdata=None):
+    def unbound_fields(self, extra_form_fields):
         unbound_fields = []
         for field_desc in extra_form_fields:
             if field_desc['kind'] != 'description_only':
@@ -470,11 +549,16 @@ class DynamicFormBuilder(object):
                             )(self, field_desc)
                         )
                     )
+        return unbound_fields
+
+    def __call__(self, request, extra_form_fields, formdata=None, **kwargs):
+        unbound_fields = self.unbound_fields(extra_form_fields)
         form = OurDynamicForm(
             formdata=formdata,
             _fields=unbound_fields,
             _translations=Translations(),
-            name_builder=lambda name: u'extra_field[%s]' % name
+            name_builder=lambda name: u'extra_field[%s]' % name,
+            **kwargs 
             )
         fields = []
         for field_desc in extra_form_fields:
@@ -484,20 +568,141 @@ class DynamicFormBuilder(object):
             except KeyError:
                 pass
             fields.append({
-                'description': field_desc['description'],
-                'note': field_desc['note'],
                 'required': field_desc['required'],
+                'description': Markup(field_desc['description']) if field is None else None,
                 'field': field,
                 })
         return form, fields
 
 build_dynamic_form = DynamicFormBuilder()
 
-def get_extra_form_data_pair_pairs(request, sales_segment, data):
-    extra_form_fields = sales_segment.setting.extra_form_fields
-    if extra_form_fields is None:
-        return []
+class DummyForm(object):
+    def __init__(self, context):
+        self.context = context
+
+    def _get_translations(self):
+        return None
+
+def build_extra_form_fields_from_form(context, request, form_class, excludes=()):
     retval = []
+    form = None
+    _fields = sorted(
+        (
+            (k, getattr(form_class, k))
+            for k in dir(form_class)
+            if isinstance(getattr(form_class, k), wt_fields.UnboundField) and k not in excludes
+            ),
+        key=lambda pair: pair[1].creation_counter
+        )
+    for k, field in _fields:
+        if len(field.args) >= 1:
+            label = field.args[0]
+        elif 'label' in field.kwargs:
+            label = field.kwargs['label']
+        else:
+            label = k
+        if len(field.args) >= 7:
+            widget = field.args[6]
+        elif 'widget' in field.kwargs:
+            widget = field.kwargs['widget']
+        else:
+            widget = field.field_class.widget
+        if isinstance(widget, widgets.Switcher):
+            widget = sorted(widget.widgets.values(), key=lambda v: 1 if isinstance(v, wt_widgets.TextInput) else 0)[0]
+        description = field.kwargs.get('description', None)
+        note = field.kwargs.get('note', None)
+        kind = None
+        choices = None
+        if issubclass(field.field_class, (fields.OurTextField, wt_fields.StringField)):
+            if isinstance(widget, (widgets.OurTextArea, wt_widgets.TextArea)):
+                kind = 'textarea'
+            elif isinstance(widget, (widgets.OurTextInput, wt_widgets.TextInput)):
+                kind = 'text'
+        elif issubclass(field.field_class, (fields.OurIntegerField, wt_fields.IntegerField)):
+            if isinstance(widget, (wt_widgets.TextInput, widgets.OurTextInput)):
+                kind = 'text'
+        elif issubclass(field.field_class, wt_fields.RadioField):
+            kind = 'radio'
+            choices = field.kwargs.get('choices')
+        elif issubclass(field.field_class, wt_fields.SelectFieldBase):
+            kind = 'select'
+            choices = field.kwargs.get('choices')
+        elif issubclass(field.field_class, wt_fields.SelectMultipleField):
+            if isinstance(widget, wt_widgets.Select):
+                kind = 'multiple_select'
+            elif isinstance(widget, widgets.CheckboxMultipleSelect):
+                kind = 'checkbox'
+            choices = field.kwargs.get('choices')
+        elif issubclass(field.field_class, fields.OurDateField):
+            kind = 'date'
+        elif issubclass(field.field_class, fields.OurDateTimeField):
+            kind = 'datetime'
+        elif issubclass(field.field_class, fields.OurTimeField):
+            kind = 'time'
+        elif issubclass(field.field_class, wt_fields.BooleanField):
+            kind = 'bool'
+        if kind is None:
+            raise TypeError('unsupported field / widget combination: %s - %s' % (field.field_class, widget))
+        if choices is not None and callable(choices):
+            # 選択肢が動的に生成されるケース
+            # form_class の実装がわからないのでいろいろなパターンを試してインスタンス化する...
+            if form is None:
+                dummy_form = DummyForm(context)
+                try:
+                    dummy_form_field = fields.OurFormField(lambda **kwargs: form_class(context=context, **kwargs)).bind(dummy_form, '')
+                    dummy_form_field.process(None)
+                    form = dummy_form_field._contained_form
+                    assert form is not None
+                except TypeError:
+                    try:
+                        dummy_form_field = fields.OurFormField(form_class).bind(dummy_form, '')
+                        dummy_form_field.process(None)
+                        form = dummy_form_field._contained_form
+                        assert form is not None
+                    except TypeError:
+                        pass
+                if form is None:
+                    try:
+                        form = form_class(context=context)
+                    except TypeError:
+                        form = form_class()
+            choices = getattr(form, k).choices
+        retval.append({
+            'name': k,
+            'kind': kind,
+            'display_name': label,
+            'choices': [{'value': value, 'label': label} for value, label in choices] if choices is not None else None,
+            'description': description,
+            'note': note,
+            })
+    return retval    
+
+def get_extra_form_class(request, event):
+    if event.setting is None:
+        return None
+    cart_setting = event.setting.cart_setting
+    if cart_setting is None:
+        return None
+    from .schemas import extra_form_type_map
+    return extra_form_type_map.get(cart_setting.type)
+
+def get_extra_form_schema(context, request, sales_segment):
+    extra_form_fields = None
+    if context.fc_cart:
+        return context.cart_setting.extra_form_fields
+    elif context.booster_cart:
+        # XXX: ブースターの互換性のため
+        extra_form_class = get_extra_form_class(request, sales_segment.sales_segment_group.event)
+        if extra_form_class is not None:
+            extra_form_fields = build_extra_form_fields_from_form(context, request, extra_form_class, excludes=['member_type', 'product_delivery_method'])
+    else:
+        extra_form_fields = sales_segment.setting.extra_form_fields
+    return extra_form_fields or []
+
+def get_extra_form_data_pair_pairs(context, request, sales_segment, data):
+    extra_form_fields = get_extra_form_schema(context, request, sales_segment)
+    retval = []
+    dtf = create_date_time_formatter(request)
     for field_desc in extra_form_fields:
         if field_desc['kind'] == 'description_only':
             continue
@@ -520,6 +725,15 @@ def get_extra_form_data_pair_pairs(request, sales_segment, data):
                 else:
                     v = c
                 display_value.append(v)
+        elif field_desc['kind'] == 'date':
+            display_value = dtf.format_date(field_value) if field_value is not None else _(u'未入力')
+        elif field_desc['kind'] == 'datetime':
+            display_value = dtf.format_datetime(field_value) if field_value is not None else _(u'未入力')
+        elif field_desc['kind'] == 'time':
+            display_value = dtf.format_time(field_value) if field_value is not None else _(u'未入力')
+        elif field_desc['kind'] == 'bool':
+            # only for booster compatibility
+            display_value = u'はい' if field_value else u'いいえ'
         else:
             logger.warning('unsupported kind: %s' % field_desc['kind'])
             display_value = field_value
@@ -537,3 +751,200 @@ def get_extra_form_data_pair_pairs(request, sales_segment, data):
                 )
             )
     return retval
+
+def back_to_top(request):
+    event_id = None
+    performance_id = None
+
+    try:
+        event_id = long(request.matchdict.get('event_id'))
+    except (ValueError, TypeError):
+        pass
+    if isinstance(request.context, PerformanceOrientedTicketingCartResource) and \
+       request.context.performance:
+        performance_id = request.context.performance.id
+    else:
+        try:
+            performance_id = long(request.params.get('pid') or request.params.get('performance'))
+        except (ValueError, TypeError):
+            pass
+
+    if event_id is None:
+        if performance_id is None:
+            cart = api.get_cart(request)
+            if cart is not None:
+                performance_id = cart.performance.id
+                event_id = cart.performance.event_id
+        else:
+            try:
+                event_id = DBSession.query(c_models.Performance).filter_by(id=performance_id).one().event_id
+            except:
+                pass
+ 
+    extra = {}
+    if performance_id is not None:
+        extra['_query'] = { 'performance': performance_id }
+
+    api.remove_cart(request)
+
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
+
+def back(pc=back_to_top, mobile=None):
+    if mobile is None:
+        mobile = pc
+
+    def factory(func):
+        @functools.wraps(func)
+        def retval(*args, **kwargs):
+            request = get_current_request()
+            if request.params.has_key('back'):
+                if IMobileRequest.providedBy(request):
+                    return mobile(request)
+                else:
+                    return pc(request)
+            return func(*args, **kwargs)
+        return retval
+    return factory
+
+def gzip_preferred(request, response):
+    if 'gzip' in request.accept_encoding:
+        response.encode_content('gzip')
+
+import cookielib
+from pyramid.view import render_view_to_response
+from webob.cookies import Cookie
+
+default_cookie_policy = cookielib.DefaultCookiePolicy(netscape=True, rfc2965=True)
+
+class RequestWrapper(object):
+    """Wraps a WebOb request so it impersonates an urllib2's Request object"""
+    def __init__(self, request):
+        self.request = request
+
+    def get_full_url(self):
+        return self.request.url
+
+    def get_host(self):
+        return self.request.host
+
+    def is_unverifiable(self):
+        return False
+
+class MorselWrapper(object):
+    def __init__(self, morsel, request):
+        self.morsel = morsel
+        self.request = request
+        _domain, colon, port = request.host.partition(':')
+        if self.morsel.domain:
+            domain = self.morsel.domain
+            domain_specified = True
+            domain_initial_dot = domain.startswith('.')
+            if not domain_initial_dot:
+                domain = '.' + domain
+        else:
+            domain = _domain
+            domain_specified = False
+            domain_initial_dot = False
+        self.domain = domain
+        self.domain_specified = domain_specified
+        self.domain_initial_dot = domain_initial_dot
+        self.port = port or None
+        self.port_specified = bool(port)
+
+    @property
+    def name(self):
+        return self.morsel.name
+
+    @property
+    def value(self):
+        return self.morsel.value
+
+    @property
+    def comment(self):
+        return self.morsel.comment
+
+    @property
+    def secure(self):
+        return self.morsel.secure
+
+    @property
+    def path(self):
+        return self.morsel.path
+
+    @property
+    def path_specified(self):
+        return self.morsel.path is not None
+
+    @property
+    def version(self):
+        return 1 # always supposed to be a cookie
+
+    def get_nonstandard_attr(self, name, default=None): 
+        name = name.lower()
+        if name == 'httponly':
+            return self.morsel.httponly
+        elif name == 'max-age':
+            return self.morsel.max_age
+        return default
+    
+
+def render_view_to_response_with_derived_request(context_factory, request, name='', secured=False, route=None, retoucher=None, cookie_policy=default_cookie_policy):
+    if hasattr(request, 'registry'):
+        registry = request.registry
+    else:
+        registry = get_current_registry()
+    subrequest = request.copy()
+    response = request.response
+    subrequest.response = request.response
+    subrequest.registry = registry
+    for k in set(dir(request)).difference(dir(subrequest)):
+        setattr(subrequest, k, getattr(request, k))
+    provides = list(providedBy(request))
+    if route is not None:
+        request_iface = registry.getUtility(IRouteRequest, route[0])
+        provides.append(request_iface)
+        mapper = registry.getUtility(IRoutesMapper)
+        route_ = mapper.get_route(route[0])
+        subrequest.environ['PATH_INFO'] = route_.generate(route[1])
+    directlyProvides(subrequest, provides)
+    if retoucher is not None:
+        retoucher(subrequest)
+    cookies_going_to_be_sent = response.headers.getall('Set-Cookie')
+    u2req = RequestWrapper(subrequest)
+    cookies_to_set = {}
+    if cookies_going_to_be_sent:
+        for set_cookie_header_value in cookies_going_to_be_sent:
+            cookies = Cookie()
+            cookies.load(set_cookie_header_value)
+            for m in cookies.values():
+                if cookie_policy.set_ok(MorselWrapper(m, subrequest), u2req):
+                    cookies_to_set[m.name] = m.value
+    subrequest.cookies.update(cookies_to_set)
+    context = context_factory(subrequest)
+    subrequest.context = context
+    return render_view_to_response(context, subrequest, name, secured)
+
+def coerce_extra_form_data(request, extra_form_data):
+    attributes = {}
+    for k, v in extra_form_data.items():
+        if isinstance(v, list):
+            v = ','.join(v)
+        elif isinstance(v, datetime):
+            v = v.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(v, date):
+            v = v.strftime("%Y-%m-%d")
+        elif isinstance(v, time):
+            v = v.strftime("%H:%M:%S")
+        attributes[k] = v
+    return attributes
+
+def is_booster_cart(context, request):
+    return context.booster_cart
+
+def is_fc_cart(context, request):
+    return context.fc_cart
+
+def is_booster_or_fc_cart(context, request):
+    return context.booster_or_fc_cart
+
+

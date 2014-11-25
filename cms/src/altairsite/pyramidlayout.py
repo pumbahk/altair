@@ -121,9 +121,12 @@ class MyLayout(object):
 
 def get_top_category_genres(request, strict=False):
     root = request.allowable(Genre).filter(Genre.is_root==True).first()
-    if not strict:
-        return root.children_with_joined_pageset
-    return [g for g in root.children_with_joined_pageset if g.category_top_pageset_id]
+    ret = []
+    if not strict and root:
+        ret = root.children_with_joined_pageset
+    if root:
+        ret = [g for g in root.children_with_joined_pageset if g.category_top_pageset_id]
+    return ret
 
 def get_system_tags_from_genres(request, genres):
     genres = [g.label for g in genres]

@@ -4,6 +4,7 @@ import sys
 import time
 import argparse
 import datetime
+import logging
 import transaction
 import pyramid.paster
 import pyramid.testing
@@ -28,6 +29,8 @@ from altair.app.ticketing.orders.models import (
     OrderNotification,
     )
 from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
+
+logger = logging.getLogger(__name__)
 
 def get_target_order_nos():
     today = datetime.datetime.combine(datetime.date.today(), datetime.time())

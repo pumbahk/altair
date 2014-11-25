@@ -7,7 +7,7 @@ import itertools
 import transaction
 from decimal import Decimal
 from datetime import date, datetime
-from dateutil.parser import parse as parsedata
+from dateutil.parser import parse as parsedate
 
 from sqlalchemy.sql.expression import and_, or_, desc
 from sqlalchemy.sql import functions as safunc
@@ -78,7 +78,7 @@ from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
-from .exceptions import OrderCreationError, MassOrderCreationError
+from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
 from functools import partial
 get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
                                                          name=METADATA_NAME_ORDERED_PRODUCT)
@@ -138,7 +138,7 @@ class SearchQueryBuilderBase(object):
                 if callable:
                     query = callable(query, v)
         for fn, value in self.post_queue:
-            query = fn(self, queue, value)
+            query = fn(self, query, value)
         if self.sort:
             query = self.handle_sort(query)
         return query
@@ -995,7 +995,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         )
     if prev_order is not None:
         order.branch_no = (prev_order.branch_no or 0) + 1
-        for k in ['channel', 'browserid', 'card_ahead_com_code', 'card_ahead_com_name', 'card_brand', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at']:
+        for k in ['channel', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at', 'manual_point_grant', 'refund_total_amount', 'refund_system_fee', 'refund_transaction_fee', 'refund_delivery_fee', 'refund_special_fee', 'cart_setting_id']:
             setattr(order, k, getattr(prev_order, k))
     return order
 

@@ -1,5 +1,5 @@
 <%inherit file="./base.html"/>
-<%namespace file="./tags_mobile.html" name="mobile" />
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
 <form method="post" action="${request.current_route_path()}">
 <div>
@@ -61,7 +61,7 @@
     ${h.error_list(request, form, 'email_1_confirm')}
   </div>
 </div>
-<p>※ 注文受付完了、確認メール等をメールでご案内します。「kissent@tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+<p>${view_context.mail_filter_domain_notice}</p>
 
 <div>
 <%mobile:form_header>住所</%mobile:form_header>

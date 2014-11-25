@@ -1,28 +1,25 @@
 #-*- coding: utf-8 -*-
 import time
+import os.path
 import itertools
+import collections
+
+from abc import ABCMeta, abstractmethod
+from pyramid.decorator import reify
+
 from altair.app.ticketing.core.models import (
     Seat,
     Stock,
     StockHolder,
     SeatStatusEnum,
-    )
-from altair.augus.protocols.putback import (
-    PutbackResponse,
-    PutbackResponseRecord,
+    AugusStockInfo,
+    AugusPerformance,
+    AugusPutback,
+    AugusVenue,
     )
 
-import os.path
-import time
-import itertools
-import collections
-from abc import ABCMeta, abstractmethod
-from zope.interface import Interface, Attribute, implementer
-from sqlalchemy.orm.exc import NoResultFound
-from pyramid.decorator import reify
 from altair.app.ticketing.core.models import (
     Venue,
-    Seat,
     AugusVenue,
     AugusSeat,
     AugusPerformance,
@@ -243,7 +240,7 @@ class AugusVenueImporter(object):
             if data.is_enable():
                 # remove link
                 if other_augus_seat and other_augus_seat.id != augus_seat.id:
-                    other_augus_seat.seat_id = Nonen
+                    other_augus_seat.seat_id = None
                     other_augus_seat.save()
 
                 # make link
@@ -298,6 +295,8 @@ class AugusPerformanceImpoter(object):
                 ag_performance.save()
             else: # already exist
                 pass
+
+
 class CannotPutbackTicket(Exception):
     pass
 
@@ -328,9 +327,9 @@ def putback(stock_holder):
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
                                    .one()
-        for seat in sesat_in_performance:
+        for seat in seat_in_performance:
             if seat.status not in can_putback_statuses:
-                raise CannnotPutbackTicket()
+                raise CannotPutbackTicket()
             ag_seat = AugusSeat.query.filter(AugusSeat.augus_venue_id==AugusVenue.id)\
                                      .filter(AugusSeat.seat_id==Seat.id)\
                                      .filter(Seat.l0_id==seat.l0_id)\
@@ -341,7 +340,7 @@ def putback(stock_holder):
                                           .one()
             ag_putback = AugusPutback()
             ag_putback.augus_putback_code = putback_code
-            ag_putback.quantity = 1 # 指定席は1
+            ag_putback.quantity = 1  # 指定席は1
             ag_putback.augus_stock_info_id = ag_stock_info.id
 
             seat.stock_id = unallocation_stock.id

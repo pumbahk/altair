@@ -12,15 +12,19 @@
 
 <%block name="css">
 <style>
+  .button_box{
+    width: 40%;
+    vertical-align: top;
+  }
   #btn-back {
-    width: 46%;
+    width: 100%;
     height: 46px;
     vertical-align: top;
     padding: 1px;
     margin-right: 10px;
   }
   #btn-complete {
-    width: 46%;
+    width: 100%;
     height: 46px;
     margin-left: 10px;
   }
@@ -47,6 +51,9 @@
   .titleSpace {
     width: 90px;
   }
+  .message-complete {
+    color: red;
+  }
 </style>
 </%block>
 
@@ -58,7 +65,7 @@
 
 <div style="color: red;">まだ申し込みは完了していません</div>
 ご注文内容をご確認いただき「購入する」ボタンで購入してください。
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
 
@@ -231,16 +238,28 @@
   </div>
   % endif
 
-  <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" />
-  % if delegator:
-    ${delegator['submit']}
-  % else:
-    <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
-  % endif
-  <div class="dispBox">
-    <div class="dispBoxInner">
-      ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
-    </div>
-  </div>
-
+  <table>
+    <tr>
+      <td class="button_box">
+        <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" />
+        <div class="dispBox">
+          <div class="dispBoxInner">
+            ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+          </div>
+        </div>
+      </td>
+      <td class="button_box">
+        % if delegator:
+          ${delegator['submit']}
+        % else:
+          <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
+          <div class="dispBox">
+            <div class="dispBoxInner message-complete">
+              ※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。
+            </div>
+          </div>
+        % endif
+      </td>
+    </tr>
+  </table>
 </form>

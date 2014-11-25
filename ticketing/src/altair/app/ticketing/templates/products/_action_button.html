@@ -9,7 +9,12 @@ var get_selected_sales_segment_id;
       url='javascript:new_product(get_selected_sales_segment_id());',
       icon='icon-plus',
     ),
+    'copy':dict(
+      label=u'コピー',
+      url='javascript:copy_product(get_selected_sales_segment_id());',
+      icon='icon-file',
+    ),
   }
-  order = iter(order or ['new'])
+  order = iter(order or ['new', 'copy'])
 %>
 ${HH.action_button(actions, order)}

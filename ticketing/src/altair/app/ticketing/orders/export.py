@@ -6,6 +6,7 @@ from collections import OrderedDict
 from paste.util.multidict import MultiDict
 from sqlalchemy.sql.expression import and_, or_
 
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
@@ -21,9 +22,9 @@ logger = logging.getLogger(__name__)
 def format_number(value):
     return _format_number(float(value))
 
-def _create_mailsubscription_cache(organization_id):
+def _create_mailsubscription_cache(organization_id, session):
     D = dict()
-    query = MailSubscription.query\
+    query = session.query(MailSubscription)\
         .filter(MailSubscription.segment_id == MailMagazine.id)\
         .filter(or_(MailSubscription.status == None, MailSubscription.status == MailSubscriptionStatus.Subscribed.v))
     if organization_id:
@@ -363,7 +364,7 @@ class OrderCSV(object):
                 ),
             ]
 
-    def __init__(self, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False):
+    def __init__(self, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession):
         self.export_type = export_type
         column_renderers = None
         if export_type == self.EXPORT_TYPE_ORDER:
@@ -389,11 +390,12 @@ class OrderCSV(object):
         self.organization_id = organization_id
         self._mailsubscription_cache = None
         self.localized_columns = localized_columns
+        self.session = session
 
     @property
     def mailsubscription_cache(self):
         if self._mailsubscription_cache is None:
-            self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id)
+            self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id, self.session)
         return self._mailsubscription_cache
 
     def iter_records(self, order):

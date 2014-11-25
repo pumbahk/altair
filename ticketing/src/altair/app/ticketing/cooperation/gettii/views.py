@@ -21,6 +21,7 @@ from . import (
 class _GettiiBaseView(BaseView):
     pass
 
+
 @view_defaults(route_name='gettii.venue', decorator=with_bootstrap, permission='event_editor')
 class VenueView(_GettiiBaseView):
 

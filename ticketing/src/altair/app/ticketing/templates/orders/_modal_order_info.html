@@ -1,0 +1,17 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="modal-edit-order_info" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>予約情報編集</h3>
+  </div>
+
+  <div class="modal-body">
+    <%include file="./_form_order_info.html" args="form=form, action='javascript:save_order_info();'" />
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-edit-order_info').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>
