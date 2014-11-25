@@ -11,6 +11,10 @@
 <div>￥${h.format_number(order.ordered_products[0].product.price)}</div>
 <%mobile:form_header>決済手数料</%mobile:form_header>
 <div>￥${h.format_number(order.transaction_fee)}</div>
+% if order.delivery_fee > 0:
+<%mobile:form_header>配送手数料</%mobile:form_header>
+<div>￥${h.format_number(order.delivery_fee)}</div>
+% endif
 % if order.system_fee > 0:
 <%mobile:form_header>システム手数料</%mobile:form_header>
 <div>￥${h.format_number(order.system_fee)}</div>
