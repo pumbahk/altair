@@ -109,8 +109,6 @@ class PurchaseCompleteMail(object):
         mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))
         value = self._body_tmpl_vars(mail_request, order, traverser)
         template_body = template_body or value.get("template_body")
-        organization = order.organization
-        mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))
         try:
             if template_body and template_body.get("use") and template_body.get("value"):
                 value = build_value_with_render_event(mail_request, value)
