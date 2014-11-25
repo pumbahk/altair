@@ -24,6 +24,20 @@
         <td> </td>
         <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
       </tr>
+% if order.system_fee > 0:
+      <tr>
+        <td>システム手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+% endif
+% if order.special_fee > 0:
+      <tr>
+        <td>${order.special_fee_name}</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+% endif
     </tbody>
     <tfoot>
       <tr>

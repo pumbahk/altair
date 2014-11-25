@@ -43,7 +43,7 @@ def do_authenticate(request, membership, username, password):
 
 def login_url(request, event_id=None):
     organization = cart_api.get_organization(request)
-    url = request.route_url('fc_auth.login', membership=organization.short_name)
+    url = request.route_url('fc_auth.login', membership=u'-')
 
     # EventIDから、会員種別を辿り、それが、Organizationのショートネームと違う場合、第二の会員種別として扱う。
     if event_id:
@@ -55,7 +55,7 @@ def login_url(request, event_id=None):
             if len(salessegment_group.membergroups) > 0:
                 membership = salessegment_group.membergroups[0].membership
                 if organization.short_name != membership.name:
-                    url = request.route_url('fc_auth.fixed.login', membership=membership.name)
+                    url = request.route_url('fc_auth.login', membership=membership.name)
 
     logger.debug("login url %s" % url)
     return url 
