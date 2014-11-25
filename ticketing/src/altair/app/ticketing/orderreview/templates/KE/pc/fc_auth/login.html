@@ -1,0 +1,110 @@
+<%inherit file="../layout.html" />
+<h2>購入履歴の確認</h2>
+<table class="nobdr">
+  <tr>
+    <td>
+      <table class="loginbox">
+        <thead>
+          <tr>
+            <th>一般の方のチケット確認<small> はこちらから</small></th>
+          </tr>
+        </thead>
+        <tr>
+          <td>
+          <form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
+            <table width="323" height="357" border="0" cellpadding="0" cellspacing="0" class="nobdr" align="center">
+              <tbody>
+              <tr>
+                <td colspan="2" id="btn_login" align="center">
+                  <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
+      <table class="loginbox">
+        <thead>
+          <tr>
+            <th>各種会員の方<small> はこちらから</small></th>
+          </tr>
+        </thead>
+        <tr>
+          <td>
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member " align="center">
+              <tbody>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  ログインする会員組織
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" align="left">
+                <div class="tal">
+                  <select name="membership" style="width: 100%">
+                    % for membership in _context.available_memberships:
+                      <option value="${membership.name}" ${u'selected="selected"' if request.params.get('membership') == membership.name else u''}>${membership.memo}</option>
+                    % endfor
+                  </select>
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  会員ID(半角英数字)<br/>
+                  ※FC会員番号orユーザーID(BTOBのみ)<br/>
+                  ※キッスエンタ会員受付の場合は、ご登録のメールアドレスになります。<br/>
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" align="left">
+                <div class="tal">
+                  <input type="text" class="text" name="username">
+                  %if message:
+                  <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                  %endif
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  パスワード(半角英数字)<br/>
+                  ※ファンクラブorキッスエンタにご登録のお電話番号下4ケタ
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" style="text-align:left">
+                <div class="tal">
+                  <input type="password" name="password">
+                </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <br/>
+            <div style="text-align: center;">
+              <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+            </div>
+          </td>
+        </tr>
+      </table>
+      </form>
+    </td>
+  </tr>
+</table>
+<h3>注意事項</h3>
+<ul class="notes">
+    <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
+<span style="color:#f00;">kissent@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
+    <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
+    <li>本サイトで使用する会員IDは、各ファンクラブの会員番号(BTOBのみユーザーID)となります。</li>
+    <li>キッスエンタ会員受付の場合は、ご登録のメールアドレスになります。</li>
+    <li>パスワードは、ファンクラブorキッスエンタにご登録のお電話番号下4ケタとなります。</li>
+    <li>ファンクラブ会員・パスワードをお忘れの方は各ファンクラブ事務局へ、キッスエンタ.jp会員ID・パスワードをお忘れの方はキッスエンタ.jpへお問い合わせください。</li>
+</ul>
+    <!-- wrapperおわり -->

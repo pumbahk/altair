@@ -30,13 +30,6 @@ def access_log(prefix, identity):
 
 @view_defaults(route_name="login.status", request_method="GET", renderer="json")
 class LoginInfoView(BaseView):
-    ## permissionでdispatchできなかったっけ？
-    @view_config(permission="everybady")
-    def for_guest_user_view(self):
-        logger.info("*login status no login user")
-        return {"login": False}
-
-
     @view_config(permission="sales_counter")
     def for_login_user_view(self):
         access_log("*login status start", self.context.identity)

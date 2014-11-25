@@ -2,9 +2,11 @@
 import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.users.models import Membership
+from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import SalesSegment
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart.interfaces import ICartResource
 import altair.app.ticketing.users.models as u_m
 import altair.app.ticketing.core.models as c_m
 
@@ -41,21 +43,34 @@ def do_authenticate(request, membership, username, password):
         return None
     return { 'user_id': user.id }
 
-def login_url(request, event_id=None):
+def login_url(request):
     organization = cart_api.get_organization(request)
-    url = request.route_url('fc_auth.login', membership=organization.short_name)
+    url = request.route_url('fc_auth.login', membership=u'-')
 
-    # EventIDから、会員種別を辿り、それが、Organizationのショートネームと違う場合、第二の会員種別として扱う。
-    if event_id:
+    if ICartResource.providedBy(request.context):
         session = get_db_session(request, 'slave')
-        salessegment_group = session.query(c_m.SalesSegmentGroup) \
-            .filter(c_m.SalesSegmentGroup.event_id==event_id).first()
-
-        if salessegment_group:
-            if len(salessegment_group.membergroups) > 0:
-                membership = salessegment_group.membergroups[0].membership
-                if organization.short_name != membership.name:
-                    url = request.route_url('fc_auth.detail_login', membership=organization.short_name, detail_membership=membership.name)
+        source = None
+        performance = None
+        try:
+            performance = request.context.performance
+        except:
+            pass
+        if performance is not None:
+            source = performance
+        else:
+            event = None
+            try:
+                event = request.context.event
+            except:
+                pass
+            if event is not None:
+                source = event
+        if source is not None:
+            logger.info("source=%r" % source)
+            membership = source.query_sales_segments(type='available', now=request.context.now).join(SalesSegment.membergroups).join(MemberGroup.membership).with_entities(Membership).first()
+            logger.info("membership=%s" % (membership and membership.name))
+            if membership is not None:
+                url = request.route_url('fc_auth.login', membership=membership.name)
 
     logger.debug("login url %s" % url)
     return url 

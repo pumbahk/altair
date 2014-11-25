@@ -38,10 +38,6 @@ class Liaison(fields.Field):
         return self._wrapped.data
 
     @property
-    def form(self):
-        return self._form
-
-    @property
     def data(self):
         return self._data
 

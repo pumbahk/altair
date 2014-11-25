@@ -1,16 +1,54 @@
 <%inherit file="${context['main_template'].uri}" />
+<style type="text/css">
+dl.wish-detail {
+  overflow: hidden;
+}
+
+dl.wish-detail > dt {
+  clear: both;
+  float: left;
+  color: #000;
+}
+
+dl.wish-detail > dd {
+  float: right;
+  text-align: right;
+}
+
+dl.cost-detail {
+  border-left: 4px solid #ccc;
+  padding-left: 6px;
+  overflow: hidden;
+}
+
+dl.cost-detail > dt {
+  clear: both;
+  float: left;
+  font-size: 10px;
+  padding: 0;
+  color: #888;
+}
+
+dl.cost-detail > dd {
+  float: right;
+  text-align: right;
+  font-size: 10px;
+  padding: 0;
+}
+</style>
 <div id="main">
-  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/KT/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
-  <div class="confirmBox">
-    <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
-      <div class="confirmBoxText">${entry.entry_no}</div>
-    </div>
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">申込番号</p></dt>
+      <dd><div class="subInner2">${entry.entry_no}</div></dd>
+    </dl>
   </div>
-  <div class="confirmBox">
-    <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
-      <div class="confirmBoxText">
+
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">抽選結果</p></dt>
+      <dd>
+        <div class="subInner2">
         % if entry.is_ordered:
 抽選の結果、お客様はご当選されました。
 <a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
@@ -19,115 +57,91 @@
         % elif not entry.lot.is_elected():
 抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
         % endif
-      </div>
-    </div>
+      </dd>
+    </dl>
   </div>
-
   
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      <h2 class="title">お申込内容</h2>
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-          <table>
-            <tr>
-              <th>決済方法</th>
-              <td>${entry.payment_delivery_method_pair.payment_method.name}</td>
-            </tr>
-            <tr class="settlementSelectEnd">
-              <th>引取方法</th>
-              <td>${entry.payment_delivery_method_pair.delivery_method.name}</td>
-            </tr>
-          </table>
+  <div class="subbox">
+    <dl>
+      <dt>
+        <p class="lineRead">お申込内容</p>
+      </dt>
+      <dd>
+        <dl class="creditList">
+          <dt>決済方法</dt>
+          <dd>${entry.payment_delivery_method_pair.payment_method.name}</dd>
+          <dt>引取方法</dt>
+          <dd>${entry.payment_delivery_method_pair.delivery_method.name}</dd>
+        </dl>
+        <div class="subInner2">
+          <dl class="creditList">
+            %for wish in wishes:
+            <dt class="creditHl">第${wish.wish_order + 1}希望</dt>
+            <dd>
+              <dl class="wish-detail">
+                <dt>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</dt>
+                % for lot_product in wish.products:
+                <dt class="product-name">${lot_product.product.name}</dt>
+                <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚</dd>
+                % endfor
+              </dl>
+                <dl class="cost-detail">
+                    <dt class="ticket-amount">チケット代金</dt>
+                    <dd class="ticket-amount">${h.format_currency(wish.tickets_amount)}</dd>
+                    <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
+                    <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
+                    <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                    <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
+                    <dt class="delivery-method">システム利用料</dt>
+                    <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
+                    %if wish.special_fee > 0:
+                      <dt class="delivery-method">${wish.special_fee_name}</dt>
+                      <dd class="delivery-fee">${h.format_currency(wish.special_fee)}</dd>
+                    %endif
+                    <dt class="total-amount">合計</dt>
+                    <dd class="total-amount">${h.format_currency(wish.total_amount)} (税込)</dd>
+                  </dl>
+                </dd>
+              </dl>
+            </dd>
+            %endfor
+          </dl>
         </div>
       </div>
-      %for wish in wishes:
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-          <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
-          <table summary="第一希望">
-            <tr>
-              <th>公演日・会場</th>
-              <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
-            </tr>
-            <tr class="settlementSelectEnd">
-              <th>希望内容と手数料</th>
-              <td>
-                <dl class="cost-summary">
-                %for lot_product in wish.products:
-                  <dt class="product-name">${lot_product.product.name}</dt>
-                  <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
-                %endfor
-                  <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
-                  <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
-                  <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
-                  <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
-                  <dt class="delivery-method">システム利用料</dt>
-                  <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
-                  %if wish.special_fee > 0:
-                  <dt class="delivery-method">${wish.special_fee_name}</dt>
-                  <dd class="delivery-fee">${h.format_currency(wish.special_fee)}</dd>
-                  %endif
-                  <dt class="total-amount">合計</dt>
-                  <dd class="total-amount">${h.format_currency(wish.total_amount)} (税込)</dd>
-                </dl>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      %endfor
     </div>
   </div> 
 
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-          <table summary="お支払・お引取り方法選択">
-            <tr>
-              <th>購入者氏名</th>
-              <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
-            </tr>
-            <tr>
-              <th>購入者氏名（カナ）</th>
-              <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
-            </tr>
-            <tr>
-              <th>メールアドレス</th>
-              <td>${shipping_address.email_1}</td>
-            </tr>
-            <tr>
-              <th>電話番号 (自宅)</th>
-              <td>${shipping_address.tel_1}</td>
-            </tr>
-            <tr>
-              <th>電話番号 (携帯電話)</th>
-              <td>${shipping_address.tel_2}</td>
-            </tr>
-            <tr>
-              <th>住所</th>
-              <td>
-                〒${shipping_address.zip}<br />
-                ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
-                ${shipping_address.address_2}</td>
-            </tr>
-            <tr>
-              <th>生年月日</th>
-              <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
-            </tr>
-            <tr>
-              <th>性別</th>
-              <td>${h.format_gender(request, gender)}</td>
-            </tr>
-            <tr class="settlementSelectEnd">
-              <th><label>メモ欄</label></th>
-              <td>${memo|h.nl2br}</td>
-            </tr>
-          </table>
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">購入者情報</p></dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            <dt class="creditHl">購入者氏名</dt>
+            <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
+            <dt class="creditHl">購入者氏名（カナ）</dt>
+            <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
+            <dt class="creditHl">メールアドレス</dt>
+            <dd>${shipping_address.email_1}</dd>
+            <dt class="creditHl">電話番号 (自宅)</dt>
+            <dd>${shipping_address.tel_1}</dd>
+            <dt class="creditHl">電話番号 (携帯電話)</dt>
+            <dd>${shipping_address.tel_2}</dd>
+            <dt class="creditHl">住所</dt>
+            <dd>
+              〒${shipping_address.zip}<br />
+              ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+              ${shipping_address.address_2}</td>
+            </d>
+            <dt class="creditHl">生年月日</dt>
+            <dd>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</dd>
+            <dt class="creditHl">性別</dt>
+            <dd>${h.format_gender(request, gender)}</dd>
+            <dt class="creditHl">メモ欄</dt>
+            <dd>${memo|h.nl2br}</dd>
+          </dl>
         </div>
-      </div>
-    </div>
+      </dd>
+    </dl>
   </div>
 </div>

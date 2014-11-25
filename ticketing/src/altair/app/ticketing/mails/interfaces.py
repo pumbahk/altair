@@ -75,53 +75,33 @@ class IPointGrantHistoryEntryInfoMail(IMailBuilder):
 class ILotEntryInfoMail(IMailBuilder):
     pass
 
-class ICompleteMailPayment(Interface):
-    """ 完了メールの配送ビューレットのコンテキスト"""
+class ICompleteMailResource(Interface):
+    """ 完了メールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"注文内容")
 
-class ICompleteMailDelivery(Interface):
-    """ 完了メールの配送ビューレットのコンテキスト"""
+class IOrderCancelMailResource(Interface):
+    """ 購入キャンセルメールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"注文内容")
 
-class IOrderCancelMailPayment(Interface):
-    """ 購入キャンセルメールの配送ビューレットのコンテキスト"""
+class IRemindMailResource(Interface):
+    """ リマインドメールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"注文内容")
 
-class IOrderCancelMailDelivery(Interface):
-    """ 購入キャンセルメールの配送ビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"注文内容")
-
-class ILotsAcceptedMailPayment(Interface):
-    """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
+class ILotsAcceptedMailResource(Interface):
+    """ 抽選申し込み完了メールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
 
-class ILotsAcceptedMailDelivery(Interface):
-    """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
+class ILotsElectedMailResource(Interface):
+    """ 抽選通知メールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
 
-class ILotsElectedMailPayment(Interface):
-    """ 抽選通知メールの配送ビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
-
-class ILotsElectedMailDelivery(Interface):
-    """ 抽選通知メールの配送ビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
-
-class ILotsRejectedMailPayment(Interface):
-    """ 抽選落選通知メールの配送ビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
-
-class ILotsRejectedMailDelivery(Interface):
-    """ 抽選落選通知メールの配送ビューレットのコンテキスト"""
+class ILotsRejectedMailResource(Interface):
+    """ 抽選落選通知メールのビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
 
@@ -134,3 +114,6 @@ class IMessagePartFactory(Interface):
 class IFakeObjectFactory(Interface):
     def __call__(request, interface, args):
         pass
+
+class IMailRequest(Interface):
+    pass

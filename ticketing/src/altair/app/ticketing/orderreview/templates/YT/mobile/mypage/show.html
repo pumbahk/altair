@@ -1,0 +1,53 @@
+<%inherit file="../layout.html" />
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>マイページ</%mobile:header>
+
+<h3>購入履歴照会</h3>
+% if orders:
+  ${render_orders(orders)}
+% else:
+  購入履歴がありません。
+% endif
+
+<%def name="render_shipping_address(shipping)">
+氏名（漢字）：
+${shipping.first_name}<br/>
+氏名（カナ）：
+${shipping.first_name_kana}<br/>
+電話番号：
+${shipping.tel_1}<br/>
+住所：
+${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+</%def>
+
+<%def name="render_lot_entries(lot_entries)">
+</%def>
+
+<%def name="render_pager(result)">
+${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
+</%def>
+
+<%def name="render_orders(orders)">
+  % for order in orders:
+<form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
+受付番号：
+${order.order_no}<br/>
+予約日時：
+${h.japanese_datetime(order.created_at)}<br/>
+ステータス：
+${h.get_order_status(order)}<br/>
+支払状況：
+${h.get_payment_status(order)}<br/>
+<input type="hidden" name="order_no" value="${order.order_no}"/>
+公演名：
+${order.performance.name}<br/>
+公演開始時間：
+${h.japanese_datetime(order.performance.start_on)}<br/>
+会場名：
+${order.performance.venue.name}
+<input type="submit" value="チケット詳細">
+</form>
+<hr/>
+  % endfor
+${render_pager(orders)}
+</%def>

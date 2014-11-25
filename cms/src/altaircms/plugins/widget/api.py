@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from ..api import list_from_setting_value
+from markupsafe import escape
 from altaircms.plugins.api import get_widget_utility
 
 
@@ -16,10 +17,9 @@ def get_rendering_function_via_page(widget, bname, bsettings, type_=None):
             utility = get_widget_utility(request, page, type_ or widget.type)
             return utility.render_action(request, page, widget, bsettings)
         except Exception, e:
-            logger.exception(str(e))
             _type = type_ or widget.type
-            logger.warn("%s_merge_settings. info is empty" % _type)
-            return u"%s widget: %s" % (_type, str(e))
+            logger.info("(%r) page=%s, _type=%s" % (e, page, _type), exc_info=True)
+            return u'''<div style="background-color: #fff; border: 2px solid #f88; border-radius: 8px; padding: 8px; margin-bottom: 4px;" ><span style="color:#f88; font-weight:bold">ERROR</span> [%s widget] %s</div>''' % (escape(_type), escape(str(e)))
     return closure
 
 def safe_execute(name):

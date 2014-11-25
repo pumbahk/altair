@@ -1,14 +1,16 @@
 # -*- coding:utf-8 -*-
+import logging
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
 from pyramid.compat import text_type
-import logging
+from altair.app.ticketing.cart import helpers as ch ##
+from altair.app.ticketing.core import models as c_models
+from zope.interface import implementer
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
-from altair.app.ticketing.cart import helpers as ch ##
-from .interfaces import IPurchaseInfoMail
-from zope.interface import implementer
-from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, get_default_contact_reference
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, get_default_contact_reference, create_mail_request
+from .resources import MailForOrderContext
+from .interfaces import IPurchaseInfoMail, IOrderCancelMailResource
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,11 @@ def get_subject_info_default():
 
 def get_mailtype_description():
     return u"購入キャンセルメール"
+
+@implementer(IOrderCancelMailResource)
+class OrderCancelMailResource(MailForOrderContext):
+    """ キャンセルメール """
+    mtype = c_models.MailTypeEnum.PurchaseCancelMail
 
 @implementer(IPurchaseInfoMail)    
 class CancelMail(object):
@@ -117,7 +124,9 @@ class CancelMail(object):
         return value
 
     def build_mail_body(self, request, order, traverser):
-        value = self._body_tmpl_vars(request, order, traverser)
-        retval = render(self.mail_template, value, request=request)
+        organization = order.organization
+        mail_request = create_mail_request(request, organization, lambda request: OrderCancelMailResource(request, order))
+        value = self._body_tmpl_vars(mail_request, order, traverser)
+        retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval

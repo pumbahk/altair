@@ -1264,11 +1264,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def performance_selector(self):
         event_setting = self.setting
-        if event_setting is not None and event_setting.performance_selector:
-            return event_setting.performance_selector
+        if event_setting is not None and event_setting.cart_setting is not None and event_setting.cart_setting.performance_selector:
+            return event_setting.cart_setting.performance_selector
         organization_setting = self.organization.setting
-        if organization_setting is not None and organization_setting.performance_selector:
-            return organization_setting.performance_selector
+        if organization_setting is not None and organization_setting.cart_setting is not None and organization_setting.cart_setting.performance_selector:
+            return organization_setting.cart_setting.performance_selector
         return DEFAULT_PERFORMANCE_SELECTOR
 
     def sorted_performances(self):
@@ -3594,7 +3594,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     organization = relationship('Organization', backref='settings')
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
-    performance_selector = AnnotatedColumn(Unicode(255), doc=u"カートでの公演絞り込み方法", _a_label=u"公演絞り込み方式")
+    performance_selector = association_proxy('cart_setting', 'performance_selector')
     margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"販売手数料率")
     refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"払戻手数料率")
     printing_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"印刷代金(円/枚)")
@@ -3627,6 +3627,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
     enable_mypage = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"マイページの使用", _a_label=u"マイページの使用")
 
+    cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
+    cart_setting = relationship('CartSetting')
+
     @property
     def container(self):
         return self.organization
@@ -3637,13 +3640,15 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
-    performance_selector = AnnotatedColumn(Unicode(255), doc=u"カートでの公演絞り込み方法", _a_label=u'カートでの公演絞り込み方法', _a_visible_column=True)
-    performance_selector_label1_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル1', _a_visible_column=True)
-    performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
+    performance_selector = association_proxy('cart_setting', 'performance_selector')
+    performance_selector_label1_override = association_proxy('cart_setting', 'performance_selector_label1_override')
+    performance_selector_label2_override = association_proxy('cart_setting', 'performance_selector_label2_override')
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     middle_stock_threshold = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (残席数)'), _a_visible_column=True)
     middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
+    cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
+    cart_setting = relationship('CartSetting')
 
     @property
     def super(self):

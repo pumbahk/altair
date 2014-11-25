@@ -3,7 +3,6 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.renderers import RendererHelper
-from pyramid.mako_templating import IMakoLookup
 from pyramid.decorator import reify
 from zope.interface import Interface, implementer, Attribute
 from datetime import datetime
@@ -267,9 +266,9 @@ class FrontPageRenderer(object):
                                 registry=request.registry, 
                                 )
         ## black magic
-        LookupWrapper = self.request.registry.adapters.lookup([IMakoLookup], ILookupWrapperFactory, name="intercept", default=None)
-        if LookupWrapper:
-            logger.debug("lookup wrapper found")
-            helper.renderer.lookup = LookupWrapper(helper.renderer.lookup, layout)
+        factory = self.request.registry.queryUtility(ILookupWrapperFactory)
+        if factory:
+            logger.debug("lookup wrapper factory found")
+            helper.renderer.lookup = factory(helper.renderer.lookup, layout)
         ###
         return helper.render_to_response(value, None, request=request)
