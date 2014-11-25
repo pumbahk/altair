@@ -48,10 +48,10 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
     config.include('altair.app.ticketing.setup_beaker_cache')
-    config.registry['sa.engine'] = engine
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
-    config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
+
+    config.include('pyramid_mako')
+    config.add_mako_renderer('.html')
+
     config.include("altair.cdnpath")
     config.add_static_view('static', 'altair.app.ticketing.cart:static', cache_max_age=3600)
     config.include('altair.app.ticketing.setup_beaker_cache')
@@ -63,15 +63,14 @@ def main(global_config, **local_config):
     config.include('altair.sqlahelper')
     config.include("altair.preview")
     config.include("altair.app.ticketing.carturl")
-
-    ### selectable renderer
-    config.include('altair.app.ticketing.cart.selectable_renderer')
+    config.include('altair.pyramid_dynamic_renderer')
 
     config.include(install_backend_login)
     config.include(install_cms_accesskey)
     config.include('.')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.mobile')
+    config.include('altair.app.ticketing.cart.request')
     config.include('altair.app.ticketing.cart.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)

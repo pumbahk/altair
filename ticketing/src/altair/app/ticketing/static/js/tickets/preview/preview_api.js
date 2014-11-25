@@ -1,4 +1,3 @@
-// use: static/js/spin.js
 // use: static/js/altair/spinner.js
 // api-params: {svg: <>,  ticket_format: <>,  model_name: <>,  model: <>}
 var svg_preview = (function(){
@@ -35,7 +34,6 @@ var svg_preview = (function(){
     }
 })();
 
-// use: static/js/spin.js
 // use: static/js/altair/spinner.js
 // use: static/js/tickets/modal/api.js
 function svg_preview_component($el, $modalArea, apiurl, callback){

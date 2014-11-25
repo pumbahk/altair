@@ -58,7 +58,8 @@ def main(global_config, **local_config):
                           root_factory=".resources.CheckinStationResource")
     config.include('altair.app.ticketing.setup_beaker_cache')
     config.include('altair.httpsession.pyramid')
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.include('pyramid_mako')
+    config.add_mako_renderer('.html')
     config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')
 
     ## login/logout

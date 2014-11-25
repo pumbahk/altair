@@ -6,7 +6,7 @@
 
 from collections import OrderedDict
 from zope.interface import implementer
-from .interfaces import IPerformanceSelector, ICartContext
+from .interfaces import IPerformanceSelector, ICartResource
 from .helpers import create_date_label, create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
@@ -97,7 +97,7 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         self.sales_segments = self.context.available_sales_segments
 
         context = request.context
-        if ICartContext.providedBy(context):
+        if ICartResource.providedBy(context):
             event_setting = context.event.setting
             if event_setting is not None:
                 label1 = event_setting.performance_selector_label1_override
@@ -126,7 +126,7 @@ class MatchUpPerformanceSelector2(MatchUpPerformanceSelector):
     def __init__(self, request):
         super(MatchUpPerformanceSelector2, self).__init__(request)
         context = request.context
-        if ICartContext.providedBy(context):
+        if ICartResource.providedBy(context):
             event_setting = context.event.setting
             if event_setting is not None:
                 label1 = event_setting.performance_selector_label1_override
@@ -149,11 +149,18 @@ class DatePerformanceSelector(_PerformanceSelector):
         self.sales_segments = self.context.available_sales_segments
 
         context = request.context
-        if ICartContext.providedBy(context):
+        if ICartResource.providedBy(context):
             event_setting = context.event.setting
-            if event_setting is not None:
-                label1 = event_setting.performance_selector_label1_override
-                label2 = event_setting.performance_selector_label2_override
+            cart_setting = None
+            if event_setting is not None and event_setting.cart_setting is not None:
+                cart_setting = event_setting.cart_setting
+            else:
+                organization_setting = request.organization.setting
+                if organization_setting is not None and organization_setting.cart_setting is not None:
+                    cart_setting = organization_setting.cart_setting
+            if cart_setting is not None:
+                label1 = cart_setting.performance_selector_label1_override
+                label2 = cart_setting.performance_selector_label2_override
                 if label1 is not None:
                     self.label = label1
                 if label2 is not None:

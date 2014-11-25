@@ -1264,7 +1264,7 @@ class OrderDetailView(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        f = ClientOptionalForm(self.request.POST)
+        f = ClientOptionalForm(self.request.POST, context=self.context)
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel_1.data
@@ -1839,10 +1839,7 @@ class OrdersReserveView(BaseView):
             }))
 
         # 古いカートのセッションが残っていたら削除
-        old_cart = api.get_cart(self.request)
-        if old_cart:
-            old_cart.release()
-            api.remove_cart(self.request)
+        api.remove_cart(self.request)
 
         # 古い確保座席がセッションに残っていたら削除
         self.clear_inner_cart_session()
@@ -1912,10 +1909,7 @@ class OrdersReserveView(BaseView):
             }))
 
         # 古いカートのセッションが残っていたら削除
-        old_cart = api.get_cart(self.request)
-        if old_cart:
-            old_cart.release()
-            api.remove_cart(self.request)
+        api.remove_cart(self.request)
 
         try:
             post_data.update(self.get_inner_cart_session())
@@ -1957,7 +1951,7 @@ class OrdersReserveView(BaseView):
 
             # create cart
             sales_segment = SalesSegment.get(f.sales_segment_id.data)
-            cart = api.order_products(self.request, sales_segment.id, order_items, selected_seats=seats)
+            cart = api.order_products(self.request, sales_segment, order_items, selected_seats=seats)
             cart.sales_segment = sales_segment
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
@@ -2052,7 +2046,7 @@ class OrdersReserveView(BaseView):
                 utils.enqueue_for_order(self.request, operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
 
             # clear session
-            api.remove_cart(self.request)
+            api.disassociate_cart_from_session(self.request)
             if self.request.session.get('altair.app.ticketing.inner_cart'):
                 del self.request.session['altair.app.ticketing.inner_cart']
 
@@ -2068,9 +2062,6 @@ class OrdersReserveView(BaseView):
     def reserve_reselect(self):
         try:
             # release cart
-            cart = api.get_cart(self.request)
-            if cart:
-                cart.release()
             api.remove_cart(self.request)
 
             # clear session

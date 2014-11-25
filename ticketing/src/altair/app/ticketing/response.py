@@ -11,7 +11,7 @@ from zope.interface import Interface
 def verify_static_renderer(config, renderer):
     def register():
         try:
-            assert RendererHelper(renderer, registry=config.registry).renderer.implementation()
+            assert RendererHelper(renderer, registry=config.registry).renderer
         except ConfigurationError:
             raise
         except Exception as e:

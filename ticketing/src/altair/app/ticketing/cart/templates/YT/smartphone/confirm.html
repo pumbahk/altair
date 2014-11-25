@@ -59,7 +59,7 @@
 <div style="color: red;">まだ申し込みは完了していません</div>
 ご注文内容をご確認いただき「購入する」ボタンで購入してください。<br/>
 「購入する」ボタンを押すとお申込が確定され、変更・キャンセルができません。ご注意ください。<br/>
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
 
