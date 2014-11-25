@@ -1,0 +1,15 @@
+<%inherit file="altair.app.ticketing:templates/layout_2cols.html" />
+<%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
+<%include file="altair.app.ticketing:templates/sales_segments/_extra_form_editor_button.html" />
+<% from altair.app.ticketing.cart.models import CartSetting %>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+    names=[u'カート設定', u'カート設定編集'],
+    urls=[request.route_path('cart_setting.index')]
+)}
+</%block>
+<h2>カート設定編集</h2>
+<form method="POST" action="${request.current_route_path()}">
+  <%include file="./_form.html" />
+  <input type="submit" value="保存" />
+</form>

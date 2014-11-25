@@ -3,6 +3,7 @@ import hashlib
 from zope.interface import implementer
 from .interfaces import ITemporaryStore
 from datetime import datetime
+from urlparse import urlparse
 
 class TemporaryStoreError(Exception):
     pass
@@ -31,7 +32,8 @@ class TemporaryCookieStore(object):
         encoded_value = '%s:%s' % (digest, value)
         kwargs = dict(self.set_cookie_args)
         if self.applies_to_route is not None:
-            kwargs['path'] = request.route_path(self.applies_to_route)
+            # path may contain a query portion ?session=XXX
+            kwargs['path'] = urlparse(request.route_path(self.applies_to_route)).path
         request.response.set_cookie(
             self.key,
             encoded_value,
@@ -39,7 +41,9 @@ class TemporaryCookieStore(object):
             )
 
     def get(self, request):
-        encoded_value = request.cookies[self.key]
+        encoded_value = request.cookies.get(self.key)
+        if encoded_value is None:
+            raise TemporaryStoreError('no such cookie: %s' % self.key)
         digest, _, value = encoded_value.partition(':')
         if self.extra_secret_provider is not None:
             extra_secret = self.extra_secret_provider(request, value)
@@ -58,6 +62,8 @@ class TemporaryCookieStore(object):
     def clear(self, request):
         if self.applies_to_route is not None:
             path = request.route_path(self.applies_to_route)
+            # path may contain a query portion ?session=XXX
+            path = urlparse(path).path
         else:
             path = self.set_cookie_args.get('path')
         if self.key in request.cookies or path is not None:

@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/style2.css')}" media="all" />
+  <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+  <%block name="javascript"></%block>
+</head>
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${view_context.static_url('pc/images/head_title.png')}" alt="${view_context.team_name}" width="780" height="135" />
+    </div>
+    <h1 class="title">${view_context.title}</h1>
+    <div class="main">
+      <h2><%block name="title"></%block></h2>
+      ${self.body()}
+    </div>
+    <%include file="../../commons/footer.inc" />
+  </div>
+</body>
+</html>

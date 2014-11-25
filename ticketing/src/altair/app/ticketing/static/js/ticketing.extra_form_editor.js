@@ -1,4 +1,6 @@
-var extra_form_editor = (function () {
+(function (fn) {
+  define(['altair.dynpredicate'], fn);
+})(function (dynpredicate) {
   var translations = {
     'ja': {
       'kind': {
@@ -8,6 +10,7 @@ var extra_form_editor = (function () {
         'multiple_select': 'リストボックス (複数選択可)',
         'radio': 'ラジオボタン',
         'checkbox': 'チェックボックス',
+        'date': '日付',
         'description_only': '説明文のみ'
       },
       'placeholder': {
@@ -15,6 +18,7 @@ var extra_form_editor = (function () {
         'display_name': '表示名',
         'description': '説明文 (上)',
         'note': '説明文 (下)',
+        'conditional_expressions': '条件式'
       },
       'action': {
         'add_new_value': '値を追加'
@@ -23,13 +27,23 @@ var extra_form_editor = (function () {
         'label_already_exists': 'ラベル{}はすでに存在します',
         'must_be_equal_to_or_greater_than': '{}以上の数値を指定してください',
         'must_be_equal_to_or_less_than': '{}以下の数値を指定してください',
-        'must_be_less_than': '{}未満の数値を指定してください'
+        'must_be_less_than': '{}未満の数値を指定してください',
+        'must_be_a_number': '数値を指定してください'
       },
       'label': 'ラベル',
       'value': '値',
       'required': '必須',
       'max_length': '最大入力文字数',
-      'remove': '削除'
+      'remove': '削除',
+      'validators': '入力値の制限',
+      'activation_conditions': '有効化条件',
+      'validator': {
+        'numerics': '数字',
+        'alphabets': 'アルファベット',
+        'hiragana': 'ひらがな',
+        'katakana': 'カタカナ',
+        'other_characters': 'その他の文字'
+      },
     }
   };
 
@@ -159,18 +173,70 @@ var extra_form_editor = (function () {
     }
   });
 
-  DescriptionOnlyRowConfigurationView = Backbone.View.extend({
+  var renderJapaneseDateFields = function ($el, year, month, day) {
+    var date = new Date();
+    var $year = $('<select style="width:6em"></select>');
+    for (var i = Math.max(0, date.getYear() - 50) + 1900, e = date.getYear() + 50 + 1900; i < e; i++) {
+      var option = $('<option></option>').text(i +  "");
+      if (i == year)
+        option.attr('selected', 'selected');
+      $year.append(option);
+    }
+    var $month = $('<select style="width:4em"></select>');
+    for (var i = 1; i <= 12; i++) {
+      var option = $('<option></option>').text(i + "");
+      if (i == month)
+        option.attr('selected', 'selected');
+      $month.append(option);
+    }
+    var $day = $('<select style="width:4em"></select>');
+    for (var i = 1; i <= 31; i++) {
+      var option =$('<option></option>').text(i + "");
+      if (i == day)
+        option.attr('selected', 'selected');
+      $day.append(option);
+    }
+    return $el
+      .append($year)
+      .append(document.createTextNode('年'))
+      .append($month)
+      .append(document.createTextNode('月'))
+      .append($day)
+      .append(document.createTextNode('日'));
+  };
+
+  var dateFieldRenderers = {
+    'ja': renderJapaneseDateFields
+  };
+
+  var DateFieldPreviewView = Backbone.View.extend({
+    tagName: 'div',
+    dateFieldRenderers: dateFieldRenderers,
+
+    initialize: function () {
+      this.model.on('change:type', this.render, this);
+    },
+
+    render: function () {
+      var date = new Date();
+      var year = date.getYear() + 1900, month = date.getMonth() + 1, day = date.getDate();
+      this.dateFieldRenderers['ja'](this.$el.css('white-space', 'nowrap').empty(), year, month, day);
+      return this.$el;
+    }
+  });
+
+  var DescriptionOnlyRowConfigurationView = Backbone.View.extend({
     initialize: function (options) {
       this.$outer = options ? options.outer: null;
     },
 
     render: function () {
-      this.$outer.find('textarea.note, input.required').attr('disabled', 'disabled');
+      this.$outer.find('textarea[name="note"], input[name="required"], input[name="display_name"], input[name="activation_conditions"]').attr('disabled', 'disabled');
       return this;
     },
 
     remove: function () {
-      this.$outer.find('textarea.note, input.required').attr('disabled', null);
+      this.$outer.find('textarea[name="note"], input[name="required"], input[name="display_name"], input[name="activation_conditions"]').attr('disabled', null);
       Backbone.View.prototype.remove.apply(this, arguments);
     }
   });
@@ -222,6 +288,16 @@ var extra_form_editor = (function () {
           return new CheckboxPreviewView({ model: model, type: 'checkbox' });
         },
         configuration_form_content_view: configuration_form_content_view_select
+      };
+    },
+    'date': function () {
+      return {
+        preview_view: function (model) {
+          return new DateFieldPreviewView({ model: model });
+        },
+        configuration_form_content_view: function (model, $el) {
+          return new DateConfigurationView({ model: model, el: $('<div></div>') });
+        }
       };
     },
     'description_only': function () {
@@ -338,6 +414,44 @@ var extra_form_editor = (function () {
     }
   });
 
+  var DefaultValidatorSetting = Backbone.Model.extend({
+    defaults: {
+      enabled: null
+    }
+  });
+
+  var validatorDefs = [
+    { name: 'numerics', model: DefaultValidatorSetting },
+    { name: 'alphabets', model: DefaultValidatorSetting },
+    { name: 'hiragana', model: DefaultValidatorSetting },
+    { name: 'katakana', model: DefaultValidatorSetting },
+    { name: 'other_characters', model: DefaultValidatorSetting }
+  ];
+
+  var Validators = Backbone.Model.extend({
+    defaults: {
+      numerics: null,
+      alphabets: null,
+      hiragana: null,
+      katakana: null,
+      other_characters: null
+    },
+
+    initialize: function () {
+      var self = this;
+      _.each(validatorDefs, function (validatorDef) {
+        var validatorSetting = new validatorDef.model(self.attributes[validatorDef.name]);
+        self.attributes[validatorDef.name] = validatorSetting;
+        if (validatorSetting.get('enabled') === null)
+          validatorSetting.set('enabled', validatorDef.enabledByDefault == 'boolean' ? validatorDef.enabledByDefault: true);
+      });
+    }
+  });
+
+  function compile_predicate(s) {
+    new dynpredicate.Parser(new dynpredicate.Tokenizer(s)).parse();
+  }
+
   var Field = Backbone.Model.extend({
     defaults: {
       index: 0,
@@ -347,13 +461,19 @@ var extra_form_editor = (function () {
       description: '',
       note: '',
       required: false,
-      max_length: 1,
+      activation_conditions: '',
+      max_length: null,
+      validators: null,
       choices: null
     },
 
+    _errors: null,
+
     initialize: function () {
       this.attributes['choices'] = new Choices(this.attributes['choices']);
-      this.attributes['max_length'] = this.max_length_limit();
+      this.attributes['validators'] = new Validators(this.attributes['validators']);
+      if (this.attributes['max_length'] === null)
+        this.attributes['max_length'] = this.max_length_limit();
       if (config['make_name_idential_to_display_name']) {
         this.on('change:display_name', function () {
           this.set('name', this.get('display_name'));
@@ -367,10 +487,24 @@ var extra_form_editor = (function () {
 
     validate: function (attributes, options) {
       var max_length_limit = this.max_length_limit();
+      var errors = {};
       if (attributes['max_length'] < 1) {
-        return translations['ja']['message']['must_be_equal_to_or_greater_than'].replace('{}', '' + 1);
+        errors['max_length'] = translations['ja']['message']['must_be_equal_to_or_greater_than'].replace('{}', '' + 1);
       } else if (attributes['max_length'] > max_length_limit) {
-        return translations['ja']['message']['must_be_equal_to_or_less_than'].replace('{}', '' + max_length_limit);
+        errors['max_length'] = translations['ja']['message']['must_be_equal_to_or_less_than'].replace('{}', '' + max_length_limit);
+      } else if (isNaN(attributes['max_length'])) {
+        errors['max_length'] = translations['ja']['message']['must_be_a_number'].replace('{}', '' + max_length_limit);
+      }
+      if (attributes['activation_conditions']) {
+        try {
+          compile_predicate(attributes['activation_conditions']);
+        } catch (e) {
+          errors['activation_conditions'] = e.message;
+        }
+      }
+      if (!_.isEmpty(errors)) {
+        this._errors = errors;
+        return errors;
       }
     }
   });
@@ -391,6 +525,17 @@ var extra_form_editor = (function () {
       }, this);
       this.model.on("change:note", function () {
         this.$el.find('> td.preview > div.note').html(this.model.get('note'));
+      }, this);
+      this.model.on("change", function (model) {
+        this.$el.removeClass("error");
+        this.$el.find('.control-group').removeClass('error');
+      }, this);
+      this.model.on("error", function (model, errors) {
+        var self = this;
+        _.each(errors, function (error, k) {
+          self.$el.find('*[name="' + k + '"]').closest(".control-group").addClass('error');
+        });
+        this.$el.addClass("error");
       }, this);
     },
 
@@ -427,7 +572,7 @@ var extra_form_editor = (function () {
 
     render_kind_selector: function () {
       var self = this;
-      var retval = $('<select class="input-small"></select>');
+      var retval = $('<select class="span2"></select>');
       var selected_kind = this.model.get('kind');
       _.map(self.handler_factories, function (v, k) {
         retval.append(
@@ -444,7 +589,7 @@ var extra_form_editor = (function () {
     },
 
     render_display_name: function () {
-      var retval = $('<input type="text" class="input-small" />')
+      var retval = $('<input type="text" name="display_name" class="span2" />')
         .attr("placeholder", translations['ja']['placeholder']['display_name'])
         .val(this.model.get('display_name'));
       var self = this;
@@ -457,7 +602,7 @@ var extra_form_editor = (function () {
     },
 
     render_description: function () {
-      var retval = $('<textarea class="description" style="width:90%; height:49px"></textarea>')
+      var retval = $('<textarea name="description" style="width:90%; height:49px"></textarea>')
         .attr("placeholder", translations['ja']['placeholder']['description'])
         .text(this.model.get('description'));
       var self = this;
@@ -466,7 +611,7 @@ var extra_form_editor = (function () {
     },
 
     render_note: function () {
-      var retval = $('<textarea class="note" style="width:90%; height:49px"></textarea>')
+      var retval = $('<textarea name="note" style="width:90%; height:49px"></textarea>')
         .attr("placeholder", translations['ja']['placeholder']['note'])
         .text(this.model.get('note'));
       var self = this;
@@ -482,13 +627,26 @@ var extra_form_editor = (function () {
 
     render_requisite_checkbox: function () {
       var self = this;
-      return $('<label></label>')
-        .addClass('checkbox')
+      return $('<label class="checkbox span1"></label>')
         .text(translations['ja']['required'])
         .prepend(
-          $('<input class="required" type="checkbox" />')
+          $('<input name="required" type="checkbox" />')
           .attr('checked', this.model.get('required') ? 'checked': null)
           .on('click', function () { self.model.set('required', this.checked); })
+        );
+    },
+
+    render_activation_conditions: function () {
+      var self = this;
+      return (
+          $('<label class="control-label"></label>')
+          .text(translations['ja']['activation_conditions'])
+          .add(
+            $('<input type="text" name="activation_conditions" />')
+            .attr("placeholder", translations['ja']['placeholder']['conditional_expressions'])
+            .attr('value', this.model.get('activation_conditions'))
+            .on('change', function () { self.model.set('activation_conditions', this.value); })
+          )
         );
     },
 
@@ -517,20 +675,15 @@ var extra_form_editor = (function () {
         .append(
           $('<td class="name-and-kind"></td>')
           .append(
-            $('<div class="display_name"></div>')
+            $('<div class="controls controls-row"></div>')
             .append(this.render_display_name())
-          )
-          .append(
-            $('<div class="kind"></div>')
             .append(this.render_kind_selector())
-          )
-          .append(
-            $('<div class="required"></div>')
             .append(this.render_requisite_checkbox())
           )
-        )
-        .append(
-          $('<td class="description-and-note"></td>')
+          .append(
+            $('<div class="form-inline control-group" style="margin-bottom: 6px"></div>')
+            .append(this.render_activation_conditions())
+          )
           .append(
             $('<div class="description"></div>')
             .append(this.render_description())
@@ -556,29 +709,47 @@ var extra_form_editor = (function () {
 
     render_max_length: function () {
       var self = this;
-      return $('<label></label>').text(translations['ja']['max_length'])
+      return $('<label class="control-label"></label>').text(translations['ja']['max_length'])
         .add(
-          $('<input type="text" class="input-small" />')
+          $('<input type="text" name="max_length" class="input-small" />')
           .val(this.model.get('max_length'))
           .on('change', function () {
-            var v = parseIntExactly(this.value);
-            console.log(v);
-            if (isNaN(v)) {
-              $(this.parentNode).addClass('error');
-            } else {
-              self.model.set('max_length', v);
-              $(this.parentNode).removeClass('error');
-            }
+            self.model.set('max_length', parseIntExactly(this.value));
           })
         );
+    },
+
+    render_validator_settings: function () {
+      var self = this;
+      var retval = $('<label class="control-label"></label>').text(translations['ja']['validators']);
+      var $div = $('<div class="controls"></div>');
+      var settings = self.model.get('validators');
+      $.each(validatorDefs, function (_, validatorDef) {
+        var setting = settings.get(validatorDef.name);
+        $div.append(
+          $('<label class="control-label"></label>')
+          .append(
+            $('<input type="checkbox" />')
+            .attr('name', 'validators-' + self.model.cid)
+            .attr('value', validatorDef.name)
+            .attr('checked', setting.get('enabled'))
+            .on('change', function () {
+              setting.set('enabled', this.checked);
+            })
+          )
+          .append(document.createTextNode(translations['ja']['validator'][validatorDef.name]))
+        )
+      });
+      retval.append($div);
+      return retval;
     },
 
     render: function () {
       var self = this;
       this.$el
-        .addClass('control-group')
         .empty()
-        .append(this.render_max_length());
+        .append($('<div class="control-group"></div>').append(this.render_max_length()))
+        .append($('<div class="control-group"></div>').append(this.render_validator_settings()));
       return this;
     }
   });
@@ -670,6 +841,14 @@ var extra_form_editor = (function () {
         var choice_view = self.get_choice_view(choice);
         choice_view.render().$el.insertBefore(self.$el.find('> tbody > tr.last'));
       });
+      return this;
+    }
+  });
+
+  var DateConfigurationView = Backbone.View.extend({
+    initialize: function (options) {},
+
+    render: function () {
       return this;
     }
   });
@@ -823,7 +1002,7 @@ var extra_form_editor = (function () {
     _elements.add_new_field_btn.on('click', function () { new_row(); return false });
     return fields;
   };
-})();
+});
 /*
  * vim: sts=2 sw=2 ts=2 et
  */

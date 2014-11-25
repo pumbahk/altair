@@ -360,7 +360,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
     def _payment_methods(field):
         return [
             (pm.id, pm.name)
-            for pm in PaymentMethod.filter_by_organization_id(field.form.organization_id)
+            for pm in PaymentMethod.filter_by_organization_id(field._form.organization_id)
             ]
     payment_method_id = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_method_id)['label'],
@@ -372,7 +372,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
     def _delivery_methods(field):
         return [
             (dm.id, dm.name)
-            for dm in DeliveryMethod.filter_by_organization_id(field.form.organization_id)
+            for dm in DeliveryMethod.filter_by_organization_id(field._form.organization_id)
             ]
     delivery_method_id = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_method_id)['label'],

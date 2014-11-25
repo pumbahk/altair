@@ -1,0 +1,135 @@
+<div class="section">
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th><span>受付番号</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="textC font20">${order.order_no}</td>
+      </tr>
+    </tbody>
+  </table>
+  
+</div>
+<!-- sectionおわり -->
+
+%if order.status == 'canceled' or order.payment_status == 'refunded':
+<div class="section">
+  <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+  <p>
+  キャンセル処理は、下記のような理由によりおこなっております。<br />
+  ・お客様からキャンセルのご連絡があったため<br />
+  ・期限内のご入金がなくキャンセル扱いとしたため<br />
+  ・二重注文により、ひとつをキャンセル処理したため<br />
+  </p>
+</div>
+% else:
+<%
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+shipping_address = order.shipping_address
+%>
+<div class="section">
+  <h3>購入情報</h3>
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="2"><span>${view_context.title}</span></th>
+        </thead>
+      </tr>
+      <tr>
+        <td>新規／継続</td>
+        <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+      </tr>
+      % if pm.get('old_id_number') and pm.get('cont') == 'yes':
+      <tr>
+        <td>2013-14会員番号</td>
+        <td class="textR">${pm.get('old_id_number')}</td>
+      </tr>
+      % endif
+      <tr>
+        <td>会員種別</td>
+        <td class="textR">${order.items[0].product.name}</td>
+      </tr>
+      <tr>
+        <td>氏名</td>
+        <td class="textR">${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <td>氏名（フリガナ）</td>
+        <td class="textR">${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <td>誕生日</td>
+        <td class="textR">${pm['birthday']}</td>
+      </tr>
+      <tr>
+        <td>性別</td>
+        <td class="textR">
+          ${pm['sex']}
+        </td>
+      </tr>
+         <td>郵便番号</td>
+         <td class="textR">${shipping_address.zip}</td>
+      <tr>
+        <td>住所</td>
+        <td class="textR">${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <td>電話番号</td>
+        <td class="textR">${shipping_address.tel_1 or shipping_address.tel_2}</td>
+      </tr>
+      <tr>
+        <td>メールアドレス</td>
+        <td class="textR">${shipping_address.email_1}</td>
+      </tr>
+      <tr>
+        <td>${view_context.team_name}からのメールマガジンの配信	</td>
+        <td class="textR">${pm['mail_permission']}</td>
+      </tr>
+      <tr>
+        <td>FAX番号</td>
+        <td class="textR">${shipping_address.fax}</td>
+      </tr>
+      <tr>
+        <td>Tシャツサイズ</td>
+        <td class="textR">${pm.get("t_shirts_size") or u"-"}</td>
+      </tr>
+      <tr>
+        <td>会員特典受取方法</td>
+        <td class="textR">${order.payment_delivery_pair.delivery_method.name}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>お支払</h3>
+  ${h.render_payment_finished_viewlet(request, order)}
+</div>
+% endif
+
+<div class="section">
+  <h3>注意事項</h3>
+  <ul>
+    <li>受付完了後の会員種別の変更及び会費の返金はいかなる場合も応じかねます。</li>
+    <li>ご登録いただいた個人情報は、会員証やグッズ、各種イベント等の案内を送付する目的以外で使用することはございません。
+      　弊社では収集した個人情報の漏えいまたは減失または破棄の防止及び目的以外使用防止のために必要かつ適切な安全措置を講じております。</li>
+    <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。
+    （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+  </ul>
+</div>
+<!-- sectionおわり -->
+
+
+<div class="section">
+  <h3>お問い合わせ先</h3>
+  <ul class="markNone font14">
+    <li>${view_context.contact_name}</li>
+    <li>${view_context.contact_tel} (${view_context.contact_office_hours})</li>
+  </ul>
+  
+</div>
+<!-- sectionおわり -->

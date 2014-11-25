@@ -1,13 +1,14 @@
 # -*- coding:utf-8 -*-
 
-from pyramid.view import view_config
-from altair.mobile import mobile_view_config
 from altair.app.ticketing.payments.interfaces import IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery
-from altair.app.ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsElectedMailDelivery
-from altair.app.ticketing.mails.interfaces import ILotsRejectedMailDelivery
+from altair.app.ticketing.mails.interfaces import (
+    ICompleteMailResource,
+    IOrderCancelMailResource,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
 
 from . import models as m
 from altair.app.ticketing.core import models as core_models
@@ -15,6 +16,7 @@ from . import logger
 import qrcode
 import StringIO
 from pyramid.response import Response
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.qr import qr
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.core import models as c_models
@@ -33,14 +35,13 @@ def _overridable(path):
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_confirm.html"))
+@lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_confirm.html"))
 def deliver_confirm_viewlet(context, request):
     return dict()
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_complete.html"))
-@mobile_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_complete_mobile.html"))
+@lbr_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_complete.html"))
 def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
@@ -66,19 +67,19 @@ def deliver_completion_viewlet(context, request):
         tickets = tickets,
         )
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html"))
+@lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html"))
 def deliver_completion_mail_viewlet(context, request):
     shipping_address = context.order.shipping_address
     return dict(h=cart_helper, shipping_address=shipping_address, 
-                notice=context.mail_data("notice")
+                notice=context.mail_data("D", "notice")
                 )
 
-@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
-    return Response(text=u"＜スマートフォンアプリでお受取りの方＞\n{0}".format(context.mail_data("notice")))
+    return Response(text=u"＜スマートフォンアプリでお受取りの方＞\n{0}".format(context.mail_data("D", "notice")))
 
 class OrionTicketDeliveryPlugin(object):
     def validate_order(self, request, order_like):

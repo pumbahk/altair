@@ -93,6 +93,10 @@ def main(global_config, **local_config):
    
         config.include(setup_beaker_cache)
         config.include("pyramid_fanstatic")
+
+        config.include('pyramid_mako')
+        config.add_mako_renderer('.html')
+        config.add_mako_renderer('.txt')
     
         config.add_route("index", "/")
    
@@ -105,6 +109,7 @@ def main(global_config, **local_config):
         config.include('altair.mq')
         config.include('altair.auth.config')
         config.include('altair.auth:register_who_api_registry')
+        config.include('altair.pyramid_dynamic_renderer')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
@@ -145,11 +150,8 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.payments.plugins')
         config.include('altair.app.ticketing.pkginfo')
         config.include('altair.app.ticketing.lots.authcancel')
-        config.include('altair.app.ticketing.booster.setup_order_product_attribute_metadata')
-        config.include('altair.app.ticketing.booster.89ers.setup_order_product_attribute_metadata')
-        config.include('altair.app.ticketing.booster.bambitious.setup_order_product_attribute_metadata')
-        config.include('altair.app.ticketing.booster.bigbulls.setup_order_product_attribute_metadata')
         config.include('altair.app.ticketing.lots_admin')
+        config.include('altair.app.ticketing.admin')
 
         config.include('altair.app.ticketing.carturl')
         config.include('altair.app.ticketing.description')
@@ -165,7 +167,7 @@ def main(global_config, **local_config):
         config.add_route("qr.make", "___________") ##xxx:
         config.include('altair.app.ticketing.cart.import_mail_module')
         config.include('altair.app.ticketing.cart.setup_mq')
-        config.include('altair.app.ticketing.cart.setup_renderers')
+        config.include('altair.app.ticketing.cart.setup_payment_renderers')
         config.include('.renderers')
 
         config.scan('altair.app.ticketing.cart.workers')

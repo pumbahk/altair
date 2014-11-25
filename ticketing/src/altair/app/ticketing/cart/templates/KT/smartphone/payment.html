@@ -77,7 +77,7 @@
       </div>
       %endfor
 
-      <p class="dispBoxInner">※ 予約受付完了メール等をメールでご案内します。「ktohoku@tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+      <p class="dispBoxInner">${view_context.mail_filter_domain_notice}</p>
     </div>
 
   <h2 class="headerTitle">購入者情報</h2>
@@ -125,7 +125,7 @@
         ${h.error_list(request, form, 'email_1_confirm')}
       </div>
       <p class="dispBox">
-        予約受付完了メール等をメールでご案内します。「ktohoku@tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。
+        ${view_context.mail_filter_domain_notice}
       </p>
     </div>
 
