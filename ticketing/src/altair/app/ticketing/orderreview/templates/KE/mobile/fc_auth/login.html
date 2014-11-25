@@ -5,7 +5,7 @@
 
 
 <%mobile:header>各種会員の方はこちら</%mobile:header>
-<form method="post" action="${request.route_path('fc_auth.login', _query=dict(return_to=request.route_path('mypage.show')))}">
+<form method="post" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
 ログインする会員組織<br/>
 <select name="membership" style="width: 100%">
 % for membership in _context.available_memberships:

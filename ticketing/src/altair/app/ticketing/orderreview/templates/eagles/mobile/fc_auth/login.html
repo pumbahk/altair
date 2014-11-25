@@ -1,7 +1,7 @@
 <%inherit file="../layout.html" />
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>各種会員の方はこちら</%mobile:header>
-<form method="post" action="${request.route_path('fc_auth.login', _query=dict(return_to=request.route_path('mypage.show')))}">
+<form method="post" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
 会員ID<br/>
 <input type="text" class="text" name="username"><br/>
 パスワード<br/>

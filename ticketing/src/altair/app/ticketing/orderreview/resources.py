@@ -50,7 +50,7 @@ class OrderReviewResourceBase(object):
         return get_auth_info(self.request)
 
 
-class LandingVierwResource(OrderReviewResourceBase):
+class LandingViewResource(OrderReviewResourceBase):
     pass
 
 class MyPageListViewResource(OrderReviewResourceBase):

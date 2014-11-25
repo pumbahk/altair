@@ -23,8 +23,8 @@ def setup_static_views(config):
 
 def includeme(config):
     ## review
-    config.add_route('order_review.index', '/', factory='.resources.LandingVierwResource')
-    config.add_route('order_review.form', '/form', factory='.resources.LandingVierwResource')
+    config.add_route('order_review.index', '/', factory='.resources.LandingViewResource')
+    config.add_route('order_review.form', '/form', factory='.resources.LandingViewResource')
     config.add_route('order_review.show', '/show', factory='.resources.OrderReviewResource')
 
     ## qr
