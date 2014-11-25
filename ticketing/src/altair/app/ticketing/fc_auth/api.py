@@ -48,7 +48,6 @@ def login_url(request):
     url = request.route_url('fc_auth.login', membership=u'-')
 
     if ICartResource.providedBy(request.context):
-        # resource から会員種別を辿り、それが、Organizationのショートネームと違う場合、第二の会員種別として扱う。
         session = get_db_session(request, 'slave')
         source = None
         performance = None
@@ -67,8 +66,10 @@ def login_url(request):
             if event is not None:
                 source = event
         if source is not None:
+            logger.info("source=%r" % source)
             membership = source.query_sales_segments(type='available', now=request.context.now).join(SalesSegment.membergroups).join(MemberGroup.membership).with_entities(Membership).first()
-            if membership is not None and organization.short_name != membership.name:
+            logger.info("membership=%s" % (membership and membership.name))
+            if membership is not None:
                 url = request.route_url('fc_auth.login', membership=membership.name)
 
     logger.debug("login url %s" % url)
