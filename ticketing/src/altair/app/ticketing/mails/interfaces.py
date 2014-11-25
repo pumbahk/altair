@@ -85,6 +85,11 @@ class IOrderCancelMailResource(Interface):
     request = Attribute("r")
     order = Attribute(u"注文内容")
 
+class IRemindMailResource(Interface):
+    """ リマインドメールのビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"注文内容")
+
 class ILotsAcceptedMailResource(Interface):
     """ 抽選申し込み完了メールのビューレットのコンテキスト"""
     request = Attribute("r")
