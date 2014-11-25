@@ -26,7 +26,7 @@ class MServeCommand(object):
         setup_logging(args.config)
 
         request = app['request']
-        request.browserid = "mserve worker"
+        request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = "mserve worker"
         consumer = get_consumer(request, args.consumer)
 
         logger.info("into loop")

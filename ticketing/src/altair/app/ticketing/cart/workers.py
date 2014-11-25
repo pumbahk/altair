@@ -16,6 +16,7 @@ def includeme(config):
     config.include('altair.sqlahelper')
     config.include('.setup_components')
     config.include('.import_mail_module')
+    config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.app.ticketing.qr')
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.organization_settings')

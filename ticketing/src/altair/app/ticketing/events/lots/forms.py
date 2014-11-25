@@ -86,7 +86,7 @@ class LotForm(Form):
 
     def _auth_types(field):
         retval = [('', u'なし')]
-        for name, _ in get_who_api_factory_registry(field.form.context.request):
+        for name, _ in get_who_api_factory_registry(field._form.context.request):
             retval.append((name, name))
         return retval
 

@@ -3,10 +3,11 @@ import logging
 import itertools
 from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.threadlocal import get_current_request
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import Authenticated
 from zope.interface import implementer
 from . import api
 from ..core import api as core_api
-from pyramid.httpexceptions import HTTPNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class InvalidMemberGroupException(Exception):
 class MypageAuthorizationPolicy(object):
 
     def permits(self, context, principals, permission):
-        return "auth_type:rakuten" in principals
+        return Authenticated in principals
 
     def principals_allowed_by_permission(self, context, permission):
         raise NotImplementedError

@@ -25,7 +25,7 @@ def get_renderer(name, package, factory=None):
 @implementer(ITrackingCodeInjector)
 @provider(ITrackingCodeInjectorFactory)
 class GoogleAnalyticsInjector(object):
-    def __init__(self, type_, tracking_id, domain='', base_domain='', renderer_factory='pyramid.mako_templating.renderer_factory', template=None):
+    def __init__(self, type_, tracking_id, domain='', base_domain='', renderer_factory='altair_gaq.compat.pyramid_mako_compatible_renderer_factory', template=None):
         self.tracking_id = tracking_id
         self.domain = domain
         self.base_domain = base_domain

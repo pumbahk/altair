@@ -19,6 +19,7 @@ class IOrderedProductItemLike(Interface):
 class IPurchase(Interface):
     organization_id       = Attribute('')
     order_no              = Attribute('')
+    cart_setting_id       = Attribute('')
     browserid             = Attribute('')
     sales_segment         = Attribute('')
     performance           = Attribute('') # primary performance
