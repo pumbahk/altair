@@ -25,6 +25,7 @@ from .interfaces import (
     IMailSettingDefault,
     IMessagePartFactory,
     IFakeObjectFactory,
+    IMailRequest,
 )
 from .fake import FakeObject
 from .fake import create_fake_order as _create_fake_order
@@ -109,15 +110,25 @@ class MailTraverserFromOrder(object):
         return EmailInfoTraverser(access=self.access, default=self.default).visit(performance)
 
 @implementer(ITraverserFactory)
-class MailTraverserFromLotsEntry(object):
+class MailTraverserFromLot(object):
     def __init__(self, mtype, default=""):
         self.mtype = mtype
         self.default = default
         self.access = ExtraMailInfoAccessor(mtype=mtype, default=default)
 
-    def __call__(self, lots_entry):
-        event = lots_entry.lot.event
+    def __call__(self, lot):
+        event = lot.event
         return EmailInfoTraverser(access=self.access, default=self.default).visit(event)
+
+
+@implementer(ITraverserFactory)
+class MailTraverserFromLotsEntry(object):
+    def __init__(self, mtype, default=""):
+        self.inner = MailTraverserFromLot(mtype, default)
+
+    def __call__(self, lots_entry):
+        return self.inner(lots_entry.lot)
+
 
 @implementer(ITraverserFactory)
 class MailTraverserFromPointGrantHistoryEntry(object):
@@ -138,6 +149,17 @@ class MailTraverserFromPointGrantHistoryEntry(object):
 
     def __call__(self, point_grant_history_entry):
         return self.order_mail_traverser(point_grant_history_entry.order)
+
+@implementer(ITraverserFactory)
+class MailTraverserFromPerformanceEventOrOrganization(object):
+    def __init__(self, mtype, default=""):
+        self.mtype = mtype
+        self.default = default
+        self.access = ExtraMailInfoAccessor(mtype=mtype, default=default)
+
+    def __call__(self, performance):
+        return EmailInfoTraverser(access=self.access, default=self.default).visit(performance)
+
 
 @implementer(IMailUtility)
 class MailUtility(object):
@@ -350,3 +372,37 @@ def get_default_contact_reference(request, organization, recipient):
     else:
         # その他の場合は URL そのまま
         return contact_url
+
+def get_sender_address(request, mail_type, performance=None, lot=None, event=None, organization=None, name=''):
+    mail_type = str(int(mail_type))
+    if performance is not None:
+        if lot is not None or event is not None or organization is not None:
+            raise ValueError("any one of performance, lot, event or organization can be specified")
+        organization = performance.event.organization
+        traverser = MailTraverserFromPerformanceEventOrOrganization(mail_type)(performance)
+    elif lot is not None:
+        if event is not None or organization is not None:
+            raise ValueError("any one of performance, lot, event or organization can be specified")
+        organization = lot.event.organization
+        traverser = MailTraverserFromLot(mail_type)(lot)
+    elif event is not None:
+        if organization is not None:
+            raise ValueError("any one of performance, lot, event or organization can be specified")
+        organization = event.organization
+        traverser = MailTraverserFromPerformanceEventOrOrganization(mail_type)(event)
+    else:
+        traverser = MailTraverserFromPerformanceEventOrOrganization(mail_type)(organization)
+
+    mail_setting_default = get_mail_setting_default(request, name)
+    return mail_setting_default.get_sender(request, traverser, organization)
+
+def create_mail_request(request, organization, context_factory):
+    from altair.app.ticketing.cart.view_context import get_cart_view_context_factory
+    mail_request = request.copy()
+    mail_request.registry = request.registry
+    mail_request.organization = organization
+    mail_request.view_context = get_cart_view_context_factory(request.registry)(mail_request)
+    mail_request.matchdict = {}
+    directlyProvides(mail_request, IMailRequest)
+    mail_request.context = context_factory(request)
+    return mail_request

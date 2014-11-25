@@ -5,3 +5,4 @@ from .select import *
 from .switcher import *
 from .serializer import *
 from .percentage import *
+from .list import *

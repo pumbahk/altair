@@ -105,6 +105,7 @@
               <tr>
                 <th>メールアドレス</th>
                 <td>
+                  <p>${form['email_1']._description}</p>
                   <div class="form-field">
                     ${form['email_1'].label}
                     ${form['email_1']}
@@ -166,10 +167,8 @@
               <tr>
                 <th>生年月日</th>
                 <td>
-                  ${form['year']} 年
-                　${form['month']} 月
-                　${form['day']} 日
-                  ${self.error(form, 'year')}
+                  ${form['birthday']}
+                  ${self.error(form, 'birthday')}
                 </td>
               </tr>
               <tr>

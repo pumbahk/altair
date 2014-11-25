@@ -1,0 +1,7 @@
+<%inherit file="altair.app.ticketing:templates/layout_2cols.html" />
+<% from altair.app.ticketing.cart.models import CartSetting %>
+<h2>新規カート設定</h2>
+<form method="POST" action="${request.current_route_path()}">
+  <%include file="./_form.html" />
+  <input type="submit" value="登録" />
+</form>

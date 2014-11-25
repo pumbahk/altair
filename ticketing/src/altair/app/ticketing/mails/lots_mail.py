@@ -1,16 +1,24 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.payments import plugins
+import logging
 from pyramid_mailer.message import Message
 from pyramid.compat import text_type
 from zope.interface import implementer
-from .interfaces import ILotEntryInfoMail
 from pyramid.renderers import render
-from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part
+from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.payments import plugins
+from altair.app.ticketing.lots.helpers import announce_time_label
+from altair.app.ticketing.cart import helpers as ch
+from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part, create_mail_request
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
-from altair.app.ticketing.lots.helpers import announce_time_label
-import logging
-from altair.app.ticketing.cart import helpers as ch
+from .resources import MailForLotContext
+from .interfaces import (
+    ILotEntryInfoMail,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
+
 logger = logging.getLogger(__name__)
 
 def get_mailtype_description():
@@ -45,6 +53,27 @@ class LotsInfoDefault(SubjectInfoDefault):
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, _: "") #xxx:
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, _: "") #xxx:
     entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda request, subject: subject.entry_no)
+
+
+@implementer(ILotsAcceptedMailResource)
+class LotsAcceptedMailResource(MailForLotContext):
+    """ 申し込み完了メール """
+    mtype = c_models.MailTypeEnum.LotsAcceptedMail
+
+@implementer(ILotsElectedMailResource)
+class LotsElectedMailResource(MailForLotContext):
+    """ 当選メール """
+    mtype = c_models.MailTypeEnum.LotsElectedMail
+
+    @property
+    def order(self):
+        return self.lot_entry.order
+
+@implementer(ILotsRejectedMailResource)
+class LotsRejectedMailResource(MailForLotContext):
+    """ 落選メール """
+    mtype = c_models.MailTypeEnum.LotsRejectedMail
+
 
 @implementer(ILotEntryInfoMail)
 class LotsMail(object):
@@ -103,8 +132,10 @@ class LotsMail(object):
         return value
 
     def build_mail_body(self, request, subject, traverser):
-        value = self._body_tmpl_vars(request, subject, traverser)
-        retval = render(self.mail_template, value, request=request)
+        organization = subject[0].organization
+        mail_request = create_mail_request(request, organization, self.build_context_factory(subject))
+        value = self._body_tmpl_vars(mail_request, subject, traverser)
+        retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval
 
@@ -114,10 +145,16 @@ class LotsAcceptedMail(LotsMail):
         return (traverser.data["subject"] or 
                 u'抽選申込受付完了のお知らせ 【{organization}】'.format(organization=organization.name))
 
+    def build_context_factory(self, subject):
+        return lambda request: LotsAcceptedMailResource(request, subject)
+
 class LotsElectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'抽選当選のお知らせ 【{organization}】'.format(organization=organization.name))
+
+    def build_context_factory(self, subject):
+        return lambda request: LotsElectedMailResource(request, subject)
 
 class LotsRejectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
@@ -130,3 +167,7 @@ class LotsRejectedMail(LotsMail):
         message.bcc = []
         logger.info('send rejected mail ({recipients})'.format(recipients=message.recipients))
         return message
+
+    def build_context_factory(self, subject):
+        return lambda request: LotsRejectedMailResource(request, subject)
+

@@ -27,24 +27,6 @@ __all__ = [
     "safe_get_contact_url", # from altair.app.ticketing.cart.api
     ]
 
-def error(names):
-    request = get_current_request()
-    if not hasattr(request, 'errors'):
-        return ''
-    if not isinstance(names, list):
-        names = [names]
-    errs = dict()
-    for name in names:
-        for err in request.errors.get(name,[]):
-            errs[err] = err
-    if not errs:
-        return u''
-    errs = ", ".join(errs.values())
-    if is_mobile_request(request):
-        return Markup('<font color="red">%s</font><br />' % errs)
-    else:
-        return Markup('<p class="error">%s</p>' % errs)
-
 def order_desc(order):
     profile = None
     t_shirts = None

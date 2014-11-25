@@ -1,18 +1,21 @@
 # -*- coding:utf-8 -*-
-from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part
-from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
-from mako.template import Template
-from altair.app.ticketing.cart import helpers as ch ##
+import sys
 import logging
-logger = logging.getLogger(__name__)
-
+import traceback
+from mako.template import Template
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
 from pyramid.compat import text_type
-from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
-import traceback
-import sys
+from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart import helpers as ch ##
+from altair.app.ticketing.core import models as c_models
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, create_mail_request
+from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
+from .interfaces import IPurchaseInfoMail, ICompleteMailResource
+from .resources import MailForOrderContext
+
+logger = logging.getLogger(__name__)
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
     template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda request, order : ""))
@@ -48,7 +51,14 @@ def get_mailtype_description():
 
 def get_subject_info_default():
     return OrderCompleteInfoDefault
-   
+  
+
+@implementer(ICompleteMailResource)
+class PurchaseCompleteMailResource(MailForOrderContext):
+    """ 完了メール """
+    mtype = c_models.MailTypeEnum.PurchaseCompleteMail
+
+
 @implementer(IPurchaseInfoMail)
 class PurchaseCompleteMail(object):
     def __init__(self, mail_template):
@@ -81,7 +91,7 @@ class PurchaseCompleteMail(object):
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
-                     extra_form_data=order.get_order_attribute_pair_pairs(),
+                     extra_form_data=order.get_order_attribute_pair_pairs(request),
                      get=info_renderder.get, 
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),
                      payment_method_name=pair.payment_method.name, 
@@ -95,14 +105,18 @@ class PurchaseCompleteMail(object):
         return value
 
     def build_mail_body(self, request, order, traverser, template_body=None):
-        value = self._body_tmpl_vars(request, order, traverser)
+        organization = order.organization
+        mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))
+        value = self._body_tmpl_vars(mail_request, order, traverser)
         template_body = template_body or value.get("template_body")
         try:
             if template_body and template_body.get("use") and template_body.get("value"):
-                value = build_value_with_render_event(request, value)
+                value = build_value_with_render_event(mail_request, value)
                 return Template(template_body["value"]).render(**value)
             else:
-                retval = render(self.mail_template, value, request=request)
+                cart_setting = cart_api.get_cart_setting_from_order_like(request, order)
+                mail_template = self.mail_template % dict(cart_type=(cart_setting.type if cart_setting is not None else 'standard'))
+                retval = render(mail_template, value, request=mail_request)
                 assert isinstance(retval, text_type)
                 return retval
         except:
@@ -110,7 +124,6 @@ class PurchaseCompleteMail(object):
             raise
 
 
-from pyramid.interfaces import IRendererGlobalsFactory
 from pyramid.events import BeforeRender
 def build_value_with_render_event(request, value, system_values=None):
     if system_values is None:
@@ -124,13 +137,6 @@ def build_value_with_render_event(request, value, system_values=None):
             }
     system_values = BeforeRender(system_values, value)
     registry = request.registry
-    globals_factory = registry.queryUtility(IRendererGlobalsFactory)
-
-    if globals_factory is not None:
-        renderer_globals = globals_factory(system_values)
-        if renderer_globals:
-            system_values.update(renderer_globals)
-
     registry.notify(system_values)
     system_values.update(value)
     return system_values

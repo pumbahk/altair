@@ -14,7 +14,7 @@ from altair.viewhelpers.datetime_ import (
 from altair.app.ticketing.core.models import DateCalculationBase
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
-
+from altair.app.ticketing.fanstatic import get_resource_url
 
 
 def render_label(label_text, label_type=None):
@@ -383,3 +383,6 @@ class AdminHelperAdapter(object):
                 elif pdmp.payment_period_days < 0:
                     return u'販売終了の%d日前' % -pdmp.payment_period_days
         return u'未設定'
+
+    def fanstatic_resource_url(self, resource):
+        return get_resource_url(self.request, resource)

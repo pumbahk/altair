@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 
 from wtforms import fields
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 import warnings
-from ..utils import atom, days_of_month
+import json
+from .core import OurField
 from ..widgets.datetime import OurDateTimeWidget, OurDateWidget, OurTimeWidget
 
 __all__ = (
@@ -19,6 +20,12 @@ __all__ = (
     'TimeField',
     )
 
+def atom(name):
+    return type(name, (object,), dict(__str__=lambda self:name, __repr__=lambda self:'%s()' % name))
+
+def days_of_month(year, month):
+    return ((date(year, month, 1) + timedelta(31)).replace(day=1) - timedelta(1)).day
+
 Automatic = atom('Automatic')
 Max = atom('Max')
 Min = atom('Min')
@@ -33,7 +40,7 @@ def _raise_undefined_maximum_error(field):
         raise ValueError('maximum value for %s is not defined' % field)
     return _
 
-class OurDateTimeFieldBase(fields.Field):
+class OurDateTimeFieldBase(OurField):
     _missing_value_defaults = dict(
         year=u'',
         month=u'1',
@@ -70,13 +77,42 @@ class OurDateTimeFieldBase(fields.Field):
             }
         }
 
+    _js_min_max = {
+        'year': {
+            Min: u'function (d) { return NaN; }',
+            Max: u'function (d) { return NaN; }',
+            },
+        'month': {
+            Min: u'function (d) { return 1; }',
+            Max: u'function (d) { return 12; }',
+            },
+        'day': {
+            Min: u'function (d) { return 1; }',
+            Max: u"function (d) { var m = d['month'], y = d['year']; return m !== null && m > 0 && m < 13 ? [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 31, 31 ][m - 1] + ((y % 4 == 0) - (y % 100 == 0) + (y % 400 == 0)): null; }",
+            },
+        'hour': {
+            Min: u'function (d) { return 0; }',
+            Max: u"function (d) { return 23; }",
+            },
+        'minute': {
+            Min: u'function (d) { return 0; }',
+            Max: u"function (d) { return 59; }",
+            },
+        'second': {
+            Min: u'function (d) { return 0; }',
+            Max: u"function (d) { return 59; }",
+            }
+        }
+
+    _js_extra_exprs = {
+        'month': u' - 1',
+        }
+
     _format = '%Y-%m-%d %H:%M:%S'
     _raw_data_format = "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d"
 
-    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format=None, value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
+    def __init__(self, label=None, validators=None, format=None, value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
         super(OurDateTimeFieldBase, self).__init__(label, validators, **kwargs)
-        self.form = _form
-        self.hide_on_new = hide_on_new
         self.name_prefix = self.name + u'.'
         self.id_prefix = self.id + u'.'
         self.format = format or self._format
@@ -186,6 +222,47 @@ class OurDateTimeFieldBase(fields.Field):
             except ValueError as e:
                 self.process_errors.append(e.args[0])
 
+    def _append_coercer_prologue(self, retval, fields):
+        retval.append(u'function (d) { var value_defaults = {')
+        for i, k in enumerate(fields):
+            if i > 0:
+                retval.append(u',')
+            v = self.missing_value_defaults[k]
+            if isinstance(v, basestring):
+                v = u'function (d) { return %s; }' % json.dumps(v)
+            else:
+                v = self._js_min_max[k][v]
+            retval.append(json.dumps(k))
+            retval.append(u':')
+            retval.append(v)
+        retval.append(u'};')
+        retval.append(u'''function getValueFor(k) { var s = d[k].replace(/^\s+|\s+$/g, ''); return s == '' ? null: (s|0); }''')
+        retval.append(u'''var values = {''')
+        for i, k in enumerate(fields):
+            if i > 0:
+                retval.append(u',')
+            _k = json.dumps(k)
+            retval.append(_k)
+            retval.append(u':')
+            if k in self._fields:
+                retval.append(u'getValueFor(%s)%s' % (_k, self._js_extra_exprs.get(k, u'')))
+            else:
+                retval.append(u'null')
+        retval.append(u'};')
+
+    def build_js_coercer(self):
+        retval = []
+        self._append_coercer_prologue(retval, self._fields)
+        retval.append(u'return new Date(')
+        for i, k in enumerate(self._fields):
+            if i > 0:
+                retval.append(u',')
+            _k = json.dumps(k)
+            retval.append(u'values[{k}] != null ? values[{k}]: value_defaults[{k}](values)'.format(k=_k))
+        retval.append(u'); }')
+        return u''.join(retval)
+
+
 class OurDateTimeField(OurDateTimeFieldBase):
     widget = OurDateTimeWidget()
     _fields = ['year', 'month', 'day', 'hour', 'minute', 'second']
@@ -207,11 +284,9 @@ class OurDateTimeField(OurDateTimeFieldBase):
         except (TypeError, ValueError):
             self.process_errors.append(self.gettext('Not a valid datetime value'))
 
-    def __call__(self, widget=None, **kwargs):
-        if widget is None:
-            widget = self.widget
+    def __call__(self, **kwargs):
         omit_second = self.format == '%Y-%m-%d %H:%M' # XXX
-        return widget(self, omit_second=omit_second, **kwargs)
+        return super(OurDateTimeField, self).__call__(omit_second=omit_second, **kwargs)
 
 DateTimeField = OurDateTimeField # for compatibility
 
@@ -239,11 +314,6 @@ class OurDateField(OurDateTimeFieldBase):
             return date(**values)
         except (TypeError, ValueError):
             self.process_errors.append(self.gettext('Not a valid date value'))
-
-    def __call__(self, widget=None, **kwargs):
-        if widget is None:
-            widget = self.widget
-        return widget(self, **kwargs)
 
 DateField = OurDateField
 
@@ -289,10 +359,19 @@ class OurTimeField(OurDateTimeFieldBase):
         except (TypeError, ValueError):
             self.process_errors.append(self.gettext('Not a valid time value'))
 
-    def __call__(self, widget=None, **kwargs):
-        if widget is None:
-            widget = self.widget
-        return widget(self, **kwargs)
+    def build_js_coercer(self):
+        retval = []
+        self._append_coercer_prologue(retval, self._fields)
+        retval.append(u'return { ')
+        for i, (k, fn) in enumerate( [('hour', 'getHours'), ('minute', 'getMinutes'), ('second', 'getSeconds')]):
+            if i > 0:
+                retval.append(u',')
+            retval.append(fn)
+            retval.append(u':')
+            _k = json.dumps(k)
+            retval.append(u'values[{k}] != null ? values[{k}]: value_defaults[{k}](values)'.format(k=_k))
+        retval.append(u'}')
+        return u''.join(retval)
 
 TimeField = OurTimeField
 
