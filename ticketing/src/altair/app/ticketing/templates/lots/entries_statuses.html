@@ -40,7 +40,7 @@
     <% statuses = lot_status.performance_seat_type_statuses %>
     %for status in statuses:
     <tr>
-      <td>${status.performance.start_on}</td>
+      <td>${vh.datetime(status.performance.start_on, with_weekday=True)}</td>
       <td>${status.performance.venue.name}</td>
       <td>${status.seat_type.name}</td>
       <td>${status.entry_quantity}</td>
