@@ -1,5 +1,7 @@
-from wtforms.widgets.core import HTMLString, html_params
 import re
+import json
+from wtforms.widgets.core import html_params
+from .context import Rendrant
 
 def first_last_iter(iterable):
     i = iter(iterable)
@@ -23,8 +25,46 @@ def update_classes(dest, src):
         except TypeError:
             pass
 
+class ListRendrant(Rendrant):
+    def __init__(self, field, html, id_, subfield_ids, coercer):
+        super(ListRendrant, self).__init__(field, html)
+        self.id = id_
+        self.subfield_ids = subfield_ids
+        self.coercer = coercer
+
+    def render_js_data_provider(self, registry_var_name):
+        return u'''<script type="text/javascript">
+(function(name, id, subfieldIds, coercer) {
+  var n = [];
+  for (var i = 0; i < subfieldIds.length; i++) {
+    n.push(document.getElementById(subfieldIds[i]));
+  }
+  window[%(registry_var_name)s].registerProvider(name, {
+    getValue: function () {
+      var v = null;
+      for (var i = 0; i < n.length; i++) {
+        if (n[i].checked)
+          v = n[i].value;
+      }
+      return coercer(v);
+    },
+    getUIElements: function() {
+      return n;
+    }
+  });
+})(%(name)s, %(id)s, %(subfield_ids)s, %(coercer)s);
+</script>''' % dict(name=json.dumps(self.field.short_name), id=json.dumps(self.id), subfield_ids=json.dumps(self.subfield_ids), coercer=self.coercer, registry_var_name=json.dumps(registry_var_name))
+
+
+def default_subfield_id_formatter(id_, i):
+    return u'%s-%d' % (id_, i)
+
 class OurListWidget(object):
-    def __init__(self, outer_html_tag='ul', inner_html_tag='li', inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None, prefix_label=True):
+    def __init__(self, outer_html_tag='ul', inner_html_tag='li', inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None, prefix_label=True, rendrant_factory=None, subfield_id_formatter=None):
+        if rendrant_factory is None:
+            rendrant_factory = ListRendrant
+        if subfield_id_formatter is None:
+            subfield_id_formatter = default_subfield_id_formatter
         self.outer_html_tag = outer_html_tag
         self.inner_html_tag = inner_html_tag
         self.inner_html_pre = inner_html_pre
@@ -33,14 +73,18 @@ class OurListWidget(object):
         self.first_inner_tag_classes = first_inner_tag_classes
         self.last_inner_tag_classes = last_inner_tag_classes
         self.prefix_label = prefix_label
+        self.rendrant_factory = rendrant_factory
+        self.subfield_id_formatter = subfield_id_formatter
 
     def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
+        id_ = kwargs.setdefault('id', field.id)
+        kwargs.pop('context', None)
         html = []
+        subfield_ids = [];
         if self.outer_html_tag:
             html.append('<%s %s>' % (self.outer_html_tag, html_params(**kwargs)))
 
-        for first, last, subfield in first_last_iter(field):
+        for i, (first, last, subfield) in enumerate(first_last_iter(field)):
             if self.inner_html_tag:
                 html.append('<%s' % self.inner_html_tag)
                 inner_tag_classes = []
@@ -56,15 +100,18 @@ class OurListWidget(object):
                 html.append('>')
             if self.inner_html_pre:
                 html.append(self.inner_html_pre)
+            subfield_id = self.subfield_id_formatter(id_, i)
+            subfield_html = subfield(id=subfield_id)
             if self.prefix_label:
-                html.append('%s: %s' % (subfield.label, subfield()))
+                html.append('%s: %s' % (subfield.label, subfield_html))
             else:
-                html.append('%s %s' % (subfield(), subfield.label))
+                html.append('%s %s' % (subfield_html, subfield.label))
             if self.inner_html_post:
                 html.append(self.inner_html_post)
             if self.inner_html_tag:
                 html.append('</%s>' % self.inner_html_tag)
+            subfield_ids.append(subfield_id)
         if self.outer_html_tag:
             html.append('</%s>' % self.outer_html_tag)
-        return HTMLString(''.join(html))
+        return self.rendrant_factory(field, ''.join(html), id_, subfield_ids, u'function (v) { return v; }')
 

@@ -40,13 +40,14 @@ from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 
 from altair.app.ticketing.utils import sensible_alnum_encode
-from altair.app.ticketing.models import Identifier
+from altair.models import Identifier, JSONEncodedDict, LogicallyDeleted, WithTimestamp, MutationDict
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.core.interfaces import IOrderedProductLike, IOrderedProductItemLike
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
+from .interfaces import ICartSetting
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -77,7 +78,7 @@ class Cart(Base, c_models.CartMixin):
     query = DBSession.query_property()
 
     id = sa.Column(Identifier, primary_key=True)
-    cart_session_id = sa.Column(sa.Unicode(255), unique=True)
+    cart_session_id = sa.Column(sa.VARBINARY(72), unique=False)
     performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'))
 
     performance = orm.relationship('Performance')
@@ -100,10 +101,10 @@ class Cart(Base, c_models.CartMixin):
     channel = sa.Column(sa.Integer, nullable=True)
 
     sales_segment_group_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
-    sales_segment_group = orm.relationship('SalesSegmentGroup', backref='carts')
+    sales_segment_group = orm.relationship('SalesSegmentGroup')
 
     sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
-    sales_segment = orm.relationship('SalesSegment', backref='carts')
+    sales_segment = orm.relationship('SalesSegment')
 
     disposed = False
 
@@ -111,7 +112,15 @@ class Cart(Base, c_models.CartMixin):
 
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
-    organization = orm.relationship('Organization', backref='carts')
+    organization = orm.relationship('Organization')
+
+    cart_setting_id = sa.Column(Identifier, sa.ForeignKey('CartSetting.id'), nullable=False)
+    cart_setting = orm.relationship('CartSetting')
+
+    user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
+
+    membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
+    membership = orm.relationship('Membership')
 
     has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
     different_amount = 0
@@ -532,3 +541,285 @@ class CartedProductItem(Base):
             if seat_status.status != int(c_models.SeatStatusEnum.InCart):
                 return False
         return True
+
+
+@implementer(ICartSetting)
+class CartSetting(Base, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'CartSetting'
+
+    id = sa.Column(Identifier, primary_key=True)
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization')
+    name = AnnotatedColumn(sa.Unicode(128), nullable=False, default=u'', _a_label=_(u"設定名称"))
+    type = AnnotatedColumn(sa.Unicode(64), nullable=False, default=u'', _a_label=_(u"設定のタイプ"))
+    data = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
+    performance_selector = AnnotatedColumn(sa.Unicode(128), doc=u"カートでの公演絞り込み方法", _a_label=_(u"公演絞り込み方式"))
+    performance_selector_label1_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル1'), _a_visible_column=True)
+    performance_selector_label2_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル2'), _a_visible_column=True)
+
+    @property
+    def default_prefecture(self):
+        return self.data.get('default_prefecture')
+
+    @default_prefecture.setter
+    def default_prefecture(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['default_prefecture'] = value
+
+    @property
+    def flavors(self):
+        return self.data.get('flavors')
+
+    @flavors.setter
+    def flavors(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['flavors'] = value
+
+    @property
+    def title(self):
+        return self.data.get('title')
+
+    @title.setter
+    def title(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['title'] = value
+
+    @property
+    def contact_url(self):
+        return self.data.get('contact_url')
+
+    @contact_url.setter
+    def contact_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['contact_url'] = value
+
+    @property
+    def contact_url_mobile(self):
+        return self.data.get('contact_url_mobile')
+
+    @contact_url_mobile.setter
+    def contact_url_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['contact_url_mobile'] = value
+
+    @property
+    def contact_tel(self):
+        return self.data.get('contact_tel')
+
+    @contact_tel.setter
+    def contact_tel(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['contact_tel'] = value
+
+    @property
+    def contact_office_hours(self):
+        return self.data.get('contact_office_hours')
+
+    @contact_office_hours.setter
+    def contact_office_hours(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['contact_office_hours'] = value
+
+    @property
+    def contact_name(self):
+        return self.data.get('contact_name')
+
+    @contact_name.setter
+    def contact_name(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['contact_name'] = value
+
+    @property
+    def mobile_marker_color(self):
+        return self.data.get('mobile_marker_color')
+
+    @mobile_marker_color.setter
+    def mobile_marker_color(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['mobile_marker_color'] = value
+
+    @property
+    def mobile_required_marker_color(self):
+        return self.data.get('mobile_required_marker_color')
+
+    @mobile_required_marker_color.setter
+    def mobile_required_marker_color(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['mobile_required_marker_color'] = value
+
+    @property
+    def mobile_header_background_color(self):
+        return self.data.get('mobile_header_background_color')
+
+    @mobile_header_background_color.setter
+    def mobile_header_background_color(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['mobile_header_background_color'] = value
+
+    @property
+    def fc_announce_page_url(self):
+        return self.data.get('fc_announce_page_url')
+
+    @fc_announce_page_url.setter
+    def fc_announce_page_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['fc_announce_page_url'] = value
+
+    @property
+    def fc_announce_page_url_mobile(self):
+        return self.data.get('fc_announce_page_url_mobile')
+
+    @fc_announce_page_url_mobile.setter
+    def fc_announce_page_url_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['fc_announce_page_url_mobile'] = value
+
+    @property
+    def fc_announce_page_title(self):
+        return self.data.get('fc_announce_page_title')
+
+    @fc_announce_page_title.setter
+    def fc_announce_page_title(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['fc_announce_page_title'] = value
+
+    @property
+    def privacy_policy_page_url(self):
+        return self.data.get('privacy_policy_page_url')
+
+    @privacy_policy_page_url.setter
+    def privacy_policy_page_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['privacy_policy_page_url'] = value
+
+    @property
+    def privacy_policy_page_url_mobile(self):
+        return self.data.get('privacy_policy_page_url_mobile')
+
+    @privacy_policy_page_url_mobile.setter
+    def privacy_policy_page_url_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['privacy_policy_page_url_mobile'] = value
+
+    @property
+    def legal_notice_page_url(self):
+        return self.data.get('legal_notice_page_url')
+
+    @legal_notice_page_url.setter
+    def legal_notice_page_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['legal_notice_page_url'] = value
+
+    @property
+    def legal_notice_page_url_mobile(self):
+        return self.data.get('legal_notice_page_url_mobile')
+
+    @legal_notice_page_url_mobile.setter
+    def legal_notice_page_url_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['legal_notice_page_url_mobile'] = value
+
+    @property
+    def orderreview_page_url(self):
+        return self.data.get('orderreview_page_url')
+
+    @orderreview_page_url.setter
+    def orderreview_page_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['orderreview_page_url'] = value
+
+    @property
+    def extra_footer_links(self):
+        return self.data.get('extra_footer_links')
+
+    @extra_footer_links.setter
+    def extra_footer_links(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['extra_footer_links'] = value
+
+    @property
+    def extra_footer_links_mobile(self):
+        return self.data.get('extra_footer_links_mobile')
+
+    @extra_footer_links_mobile.setter
+    def extra_footer_links_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['extra_footer_links_mobile'] = value
+
+    @property
+    def mail_filter_domain_notice_template(self):
+        return self.data.get('mail_filter_domain_notice_template')
+
+    @mail_filter_domain_notice_template.setter
+    def mail_filter_domain_notice_template(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['mail_filter_domain_notice_template'] = value
+
+    @property
+    def extra_form_fields(self):
+        return self.data.get('extra_form_fields')
+
+    @extra_form_fields.setter
+    def extra_form_fields(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['extra_form_fields'] = value
+
+    @property
+    def header_image_url(self):
+        return self.data.get('header_image_url')
+
+    @header_image_url.setter
+    def header_image_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['header_image_url'] = value
+
+    @property
+    def header_image_url_mobile(self):
+        return self.data.get('header_image_url_mobile')
+
+    @header_image_url_mobile.setter
+    def header_image_url_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['header_image_url_mobile'] = value
+
+    @property
+    def booster_or_fc_cart(self):
+        from .api import is_booster_or_fc_cart
+        return is_booster_or_fc_cart(self.type)
+
+    @property
+    def booster_cart(self):
+        from .api import is_booster_cart
+        return is_booster_cart(self.type)
+
+    @property
+    def fc_cart(self):
+        from .api import is_fc_cart
+        return is_fc_cart(self.type)
+

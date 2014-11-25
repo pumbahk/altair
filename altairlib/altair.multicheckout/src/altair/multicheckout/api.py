@@ -187,7 +187,8 @@ class Multicheckout3DAPI(object):
             ECI=eci,
             CAVV=cavv,
             CavvAlgorithm=cavv_algorithm,
-        )
+            card_brand=detect_card_brand(self.request, card_no)
+            )
         self.session.add(params)
         try:
             res = self.impl.request_card_auth(self, order_no, params)
@@ -325,6 +326,7 @@ class Multicheckout3DAPI(object):
             PayCount=None,
             SecureKind=u'2',
             SecureCode=secure_code,
+            card_brand=detect_card_brand(self.request, card_no)
             )
         self.session.add(params)
         try:

@@ -142,6 +142,8 @@ class MultiCheckoutRequestCard(Base):
     CAVV = sa.Column(sa.Unicode(28), doc=u"CAVV")
     CavvAlgorithm = sa.Column(sa.Unicode(1), doc=u"CAVVアルゴリズム")
 
+    card_brand = sa.Column(sa.Unicode(20), doc=u"カード会社")
+
 def _mask_sensitive_information(mapper, conn, target):
     card_number = target.CardNo
     if isinstance(card_number, basestring) and len(card_number) >= 8:

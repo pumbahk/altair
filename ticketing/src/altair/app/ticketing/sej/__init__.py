@@ -58,14 +58,20 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
     config.set_root_factory('.resources.TicketingApiResource')
-    config.registry['sa.engine'] = engine
+    config.include('altair.app.ticketing.setup_beaker_cache')
+    config.include('altair.pyramid_dynamic_renderer')
 
-    config.include('.')
+    config.include('altair.app.ticketing.payments')
+    config.include('altair.app.ticketing.payments.plugins')
+    config.include('altair.app.ticketing.cart.setup__renderers')
+    config.include('altair.app.ticketing.cart.setup_payment_renderers')
     config.include('altair.app.ticketing.mails')
     config.include('altair.app.ticketing.setup_mailtraverser')
     config.include('altair.app.ticketing.orders.setup_subscribers')
     config.add_tween('.tweens.encoding_converter_tween_factory')
     config.include(setup_routes, "/altair/sej/")
+
+    config.include('.')
     config.scan('.views')
 
     return config.make_wsgi_app()

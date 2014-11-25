@@ -15,6 +15,7 @@
         <tr>
           <th>&nbsp;</th>
           <th>公演</th>
+          <th>公演日時</th>
           <th>商品名</th>
           <th>席種</th>
           <th>金額</th>
@@ -26,7 +27,8 @@
         %for product in lot.products:
         <tr>
           <td><input type="checkbox" name="product_id" value="${product.id}"></td>
-          <td>${product.performance.name} (${vh.datetime(product.performance.start_on, with_weekday=True)}開演)</td>
+          <td>${product.performance.name}</td>
+          <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
           <td>${product.name}</td>
           <td>${product.seat_stock_type.name}</td>
           <td style="text-align: right;">${format_currency(product.price)}</td>

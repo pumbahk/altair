@@ -58,7 +58,7 @@ class SeatAugusSeatPairs(object):
         seat_id__ex_seat = {}
         if ex_venue:
             if ex_venue.venue.id != self._venue.id:
-                raise IllegalDatabaseError('Illegal data of AugusVenue: Venue.id={} AugusVenue.id={}'.format(self._venue.id, ex_venue.id))
+                raise IllegalDataError('Illegal data of AugusVenue: Venue.id={} AugusVenue.id={}'.format(self._venue.id, ex_venue.id))
             venue = ex_venue.venue
             logger.debug('AUGUS VENUE: create seat_id ex_seat dictionary')
             seat_id__ex_seat = dict([(ex_seat.seat_id, ex_seat)
@@ -67,7 +67,7 @@ class SeatAugusSeatPairs(object):
         for seat in venue.seats:
             yield seat, seat_id__ex_seat.get(seat.id, None)
 
-    def _find_augus_seat(self): # co routine
+    def _find_augus_seat(self):  # co routine
         augus_seats = self.get_augus_seats()
         length = len(augus_seats)
         augus_seat = None

@@ -23,6 +23,18 @@
               </td>
             </tr>
             <tr>
+                <th>支払期日</th>
+                <td>${vh.datetime(order.payment_due_at)}</td>
+            </tr>
+            <tr>
+                <th>発券開始日時</th>
+                <td>${vh.datetime(order.issuing_start_at)}</td>
+            </tr>
+            <tr>
+                <th>発券期限日時</th>
+                <td>${vh.datetime(order.issuing_end_at)}</td>
+            </tr>
+            <tr>
               <th>最終発券 (印字) 日時</th>
               <td>
                 % if order.issued_at:

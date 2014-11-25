@@ -6,16 +6,17 @@ import logging
 import re
 import transaction
 
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
 
+from altair.pyramid_dynamic_renderer import lbr_view_config
+
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
-from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.models import DBSession
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
@@ -23,6 +24,7 @@ from .stocker import NotEnoughStockException
 from . import api
 from . import helpers as h
 from . import schemas
+from .rendering import selectable_renderer
 from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts, assert_quantity_within_bounds
 from .resources import PerformanceOrientedTicketingCartResource
 from .exceptions import (
@@ -42,7 +44,7 @@ from .views import limiter
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
+@view_defaults(renderer=selectable_renderer('index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileIndexView(IndexViewMixin):
     """モバイルのパフォーマンス選択
     """
@@ -52,7 +54,7 @@ class MobileIndexView(IndexViewMixin):
         self.context = request.context
         self.prepare()
 
-    @view_config(route_name='cart.index')
+    @lbr_view_config(route_name='cart.index')
     def event_based_landing_page(self):
         logger.debug('mobile index')
 
@@ -119,7 +121,7 @@ class MobileIndexView(IndexViewMixin):
             )
 
 
-    @view_config(route_name='cart.index2')
+    @lbr_view_config(route_name='cart.index2')
     def performance_based_landing_page(self):
         logger.debug('mobile index')
 
@@ -158,7 +160,7 @@ class MobileIndexView(IndexViewMixin):
             preferred_performance=None
             )
 
-@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
+@view_defaults(renderer=selectable_renderer('seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileSelectSeatTypeView(object):
     """モバイルの商品選択
     """
@@ -166,7 +168,7 @@ class MobileSelectSeatTypeView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.seat_types')
+    @lbr_view_config(route_name='cart.seat_types')
     def seat_type(self):
         selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
@@ -208,7 +210,7 @@ class MobileSelectSeatTypeView(object):
             )
         return data
 
-    @view_config(route_name='cart.seat_types2')
+    @lbr_view_config(route_name='cart.seat_types2')
     def seat_type2(self):
         selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
@@ -250,7 +252,7 @@ class MobileSelectSeatTypeView(object):
             )
         return data
 
-@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
+@view_defaults(renderer=selectable_renderer('products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileSelectProductView(object):
     """モバイルの商品選択
     """
@@ -293,8 +295,8 @@ class MobileSelectProductView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
-    @view_config(route_name='cart.products')
-    @view_config(route_name='cart.products2')
+    @lbr_view_config(route_name='cart.products')
+    @lbr_view_config(route_name='cart.products2')
     def products(self):
         seat_type_id = self.request.matchdict['seat_type_id']
 
@@ -362,8 +364,8 @@ class MobileSelectProductView(object):
         )
 
     @limiter.acquire
-    @view_config(route_name='cart.products', request_method="POST")
-    @view_config(route_name='cart.products2', request_method="POST")
+    @lbr_view_config(route_name='cart.products', request_method="POST")
+    @lbr_view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """
@@ -375,9 +377,8 @@ class MobileSelectProductView(object):
         old_cart = api.get_cart(self.request) # これは get_cart でよい
         if old_cart:
             limiter._release(self.request)
-            # !!! ここでトランザクションをコミットする !!!
-            api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
+            # !!! ここでトランザクションをコミットする !!!
             transaction.commit()
 
         # セールスセグメント必須
@@ -412,7 +413,7 @@ class MobileSelectProductView(object):
             # カート生成(席はおまかせ)
             cart = api.order_products(
                 self.request,
-                sales_segment.id,
+                sales_segment,
                 ordered_items,
                 separate_seats=separate_seats)
             cart.sales_segment = sales_segment
@@ -457,13 +458,13 @@ class MobileSelectProductView(object):
 
         return HTTPFound(self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=query))
 
-@view_defaults(route_name='cart.order', request_method="GET", renderer=selectable_renderer('%(membership)s/mobile/reserve.html'), request_type='altair.mobile.interfaces.IMobileRequest')
+@view_defaults(route_name='cart.order', request_method="GET", renderer=selectable_renderer('reserve.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileReserveView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config()
+    @lbr_view_config()
     def reserve_mobile(self):
         cart = self.request.context.cart
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import csv
 import json
 from pyramid.view import view_defaults, view_config
@@ -183,7 +184,7 @@ class CooperationView(BaseView):
     def achievement_get(self):
         return self._stub()
 
-    @view_config(route_name='cooperation2.putback', request_method='POST',
+    @view_config(route_name='cooperation2.achievement', request_method='POST',
                  renderer='altair.app.ticketing:templates/cooperation/achievement.html')
     def achievement_post(self):
         return self._stub()

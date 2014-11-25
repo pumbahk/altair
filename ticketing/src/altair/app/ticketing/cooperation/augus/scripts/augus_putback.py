@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
+import logging
 import transaction
 from pyramid.paster import (
     bootstrap,
@@ -22,6 +23,8 @@ from ..errors import (
     IllegalImportDataError,
     AugusDataImportError,
     )
+
+logger = logging.getLogger(__name__)
 
 def mkdir_p(path):
     if not os.path.isdir(path):

@@ -13,8 +13,10 @@ from altair.app.ticketing.core.models import (
     )
 logger = logging.getLogger(__name__)
 
+
 class GettiiVenueImportError(Exception):
     pass
+
 
 def get_or_create_gettii_venue(code, venue_id):
     """
@@ -27,14 +29,14 @@ def get_or_create_gettii_venue(code, venue_id):
     """
     gettii_venue = None
     try:
-        gettii_venue = GettiiVenue.query.filter(GettiiVenue.code==code).one()
+        gettii_venue = GettiiVenue.query.filter(GettiiVenue.code == code).one()
         if gettii_venue.venue_id is None:
             gettii_venue.venue_id = venue_id
         elif gettii_venue.venue_id != venue_id:
             raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
     except NoResultFound:
-        other_gettii_venue = GettiiVenue.query.filter(GettiiVenue.code!=code)\
-                                              .filter(GettiiVenue.venue_id==venue_id)\
+        other_gettii_venue = GettiiVenue.query.filter(GettiiVenue.code != code)\
+                                              .filter(GettiiVenue.venue_id == venue_id)\
                                               .all()
         if other_gettii_venue:
             raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
@@ -46,10 +48,11 @@ def get_or_create_gettii_venue(code, venue_id):
         raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
     return gettii_venue
 
+
 def get_or_create_gettii_seat(external_venue, external_l0_id):
     try:
-        external_seat = GettiiSeat.query.filter(GettiiSeat.gettii_venue_id==external_venue.id)\
-                                        .filter(GettiiSeat.l0_id==external_l0_id)\
+        external_seat = GettiiSeat.query.filter(GettiiSeat.gettii_venue_id == external_venue.id)\
+                                        .filter(GettiiSeat.l0_id == external_l0_id)\
                                         .one()
     except NoResultFound:
         external_seat = GettiiSeat()
@@ -65,7 +68,7 @@ class GettiiVenueImpoter(object):
         gettii_venue = get_or_create_gettii_venue(record.gettii_venue_code, venue_id)
         gettii_venue.save()
         try:
-            seat = Seat.query.filter(Seat.id==record.id_).one()
+            seat = Seat.query.filter(Seat.id == record.id_).one()
         except NoResultFound:
             raise GettiiVenueImportError('Seat not found: Seat.id={}'.format(record.id_))
 
@@ -100,7 +103,7 @@ class GettiiVenueImpoter(object):
             gettii_seat.seat_id = seat.id
         else:
             try:
-                gettii_seat = GettiiSeat.query.filter(GettiiSeat.seat_id==seat.id).one()
+                gettii_seat = GettiiSeat.query.filter(GettiiSeat.seat_id == seat.id).one()
                 gettii_seat.seat_id = None
             except NoResultFound:
                 return
@@ -157,7 +160,6 @@ class GettiiVenueImpoter(object):
             }
         return record_data == db_data
 
-
     def update_gettii_seat_from_record(self, record, gettii_seat):
         gettii_seat.l0_id = record.gettii_l0_id
         gettii_seat.coordx = record.gettii_coodx
@@ -184,7 +186,7 @@ class GettiiVenueImpoter(object):
         logger.debug('GETTII VENUE SYNC: start import gettii venue: venue_id={}'.format(venue_id))
         records = [record for record in csvdata]
 
-        venue = Venue.query.filter(Venue.id==venue_id).one()
+        venue = Venue.query.filter(Venue.id == venue_id).one()
         gettii_venue_codes = list(set([record.gettii_venue_code for record in records if record.gettii_venue_code]))
         if len(gettii_venue_codes) != 1:
             raise GettiiVenueImportError('GettiiVenue is multiple')
