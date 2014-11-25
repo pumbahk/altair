@@ -105,9 +105,6 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.sales_segment = SalesSegment(sales_segment_group=self.sales_segment_group, payment_delivery_method_pairs=self.payment_delivery_method_pairs)
         self.products = self._create_products(self.stocks)
         self.config = testing.setUp(settings={
-            'altair.pc.asid': 'xxx',
-            'altair.mobile.asid': 'xxx',
-            'altair.smartphone.asid': 'xxx',
             'altair.cart.completion_page.temporary_store.cookie_name': 'xxx',
             'altair.cart.completion_page.temporary_store.secret': 'xxx',
             })
