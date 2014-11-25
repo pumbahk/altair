@@ -9,6 +9,10 @@ class GenericSerializerWidget(object):
         self.delimiter = delimiter
         self.head = head
         self.tail = tail
+        self.prologue = prologue
+        self.epilogue = epilogue
+        self.separator = separator
+        self.prefix_label = prefix_label
 
     def __call__(self, field, **kwargs):
         html = []
@@ -19,13 +23,13 @@ class GenericSerializerWidget(object):
                 html.append(self.delimiter)
             html.append(self.head)
             if self.prefix_label:
-                html.append(subfield.label)
+                html.append(subfield.label.text)
                 html.append(self.separator)
                 html.append(subfield())
             else:
                 html.append(subfield())
                 html.append(self.separator)
-                html.append(subfield.label)
+                html.append(subfield.label.text)
             html.append(self.tail)
             first = False
         html.append(self.epilogue)

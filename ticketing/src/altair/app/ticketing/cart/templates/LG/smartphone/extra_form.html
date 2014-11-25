@@ -34,17 +34,17 @@ form {
         <%t:header>${field['field'].label}</%t:header>
         <div class="dispBoxInner">
           % if field['description']:
-          <div>${field['description']|n}</div>
+          <div>${field['field']._description}</div>
           % endif
           <div>
             ${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}
             ${h.error_list(request, field['field'])}
           </div>
           % if field['note']:
-          <div>${field['note']|n}</div>
+          <div>${field['field']._note}</div>
           % endif
       % else:
-        <div>${field['description']|n}</div>
+        <div>${field['field']._description}</div>
       % endif
       % endfor
     </div>

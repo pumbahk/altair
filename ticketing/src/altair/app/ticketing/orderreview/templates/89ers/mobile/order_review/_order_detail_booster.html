@@ -1,0 +1,98 @@
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:form_header>受付番号</%mobile:form_header>
+${order.order_no}
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+<%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
+<hr/>
+<font size="-2">
+キャンセル処理は、下記のような理由によりおこなっております。<br />
+・お客様からキャンセルのご連絡があったため<br />
+・期限内のご入金がなくキャンセル扱いとしたため<br />
+・二重注文により、ひとつをキャンセル処理したため
+</font>
+<br/>
+<hr/>
+%else:
+<%
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+shipping_address = order.shipping_address
+%>
+<%mobile:form_header>購入情報</%mobile:form_header>
+${view_context.title}
+<%mobile:form_header>新規／継続</%mobile:form_header>
+${pm['cont']}
+% if pm.get('old_id_number'):
+<%mobile:form_header>2013-14会員番号</%mobile:form_header>
+${pm['old_id_number']}
+% endif
+<%mobile:form_header>会員種別</%mobile:form_header>
+${order.items[0].product.name}
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping_address.last_name} ${shipping_address.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+<%mobile:form_header>誕生日</%mobile:form_header>
+${pm['birthday']}日
+<%mobile:form_header>性別</%mobile:form_header>
+${pm['sex']}
+<%mobile:form_header>郵便番号</%mobile:form_header>
+${shipping_address.zip}
+<%mobile:form_header>住所</%mobile:form_header>
+${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+${shipping_address.address_2}
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping_address.tel_1 or shipping_address.tel_2}<br />
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${shipping_address.email_1}<br />
+<%mobile:form_header>${view_context.team_name}からのメールマガジンの配信	</%mobile:form_header>
+${pm['mail_permission']}
+% if 'publicity' in pm:
+<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
+${pm['publicity']}
+% endif
+% if 't_shirts_size' in pm:
+<%mobile:form_header>ClubナイナーズＴシャツサイズ </%mobile:form_header>
+${pm['t_shirts_size']}
+% endif
+% if 'official_ball' in pm:
+<%mobile:form_header>オリジナル公式球への記載希望 </%mobile:form_header>
+${pm['official_ball']}
+% endif
+% if 'coupon' in pm:
+<%mobile:form_header>特典の会場受け取り希望 </%mobile:form_header>
+${pm['coupon']}
+% endif
+% if 'motivation' in pm:
+<%mobile:form_header>クラブナイナーズに入会しようと思ったきっかけは？</%mobile:form_header>
+${pm['motivation']}
+% endif
+% if 'num_times_at_venue' in pm:
+<%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
+${pm['num_times_at_venue']}回
+% endif
+<%mobile:form_header>お支払い</%mobile:form_header>
+${h.render_delivery_finished_viewlet(request, order)}
+% endif
+<div>
+&#xe737;注意事項<br />
+<font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+%endif
+</font>
+<font size="-2">
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br /> 
+（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
+・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
+・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
+・お申込内容は、「<a href="${view_context.orderreview_page_url}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。<br />
+</font>
+</div>
+<%mobile:form_header>お問い合わせ先</%mobile:form_header>
+<div>
+${view_context.contact_name}<br />
+TEL: ${view_context.contact_tel} (${view_context.contact_office_hours})<br />
+メール: <a href="${view_context.contact_url_mobile}">${view_context.contact_name}</a><br>
+</div>

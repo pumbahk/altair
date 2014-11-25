@@ -265,8 +265,8 @@ class CookieSessionBinder(object):
                 warnings.warn('Python 2.6+ is required to use httponly')
         if self.beaker_compatible and self.request is not None:
             # for Beaker compatibility
-            self.request['set_cookie'] = True
-            self.request['cookie_out'] = self.cookie[self.key].output(header='')
+            self.request.environ['set_cookie'] = True
+            self.request.environ['cookie_out'] = self.cookie[self.key].output(header='')
 
     def bind(self, id_):
         expires = None

@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 import json
-#import functools
 import logging
 import sqlahelper
+import urllib
 
 from pyramid.config import Configurator
-#from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.compat import string_types
+from pyramid.renderers import RendererHelper
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
 from pyramid.exceptions import ConfigurationError
@@ -23,6 +24,14 @@ from ..api.impl import bind_communication_api ## cmsとの通信
 from altair.mobile import PC_ACCESS_COOKIE_NAME
 PC_SWITCH_COOKIE_NAME = PC_ACCESS_COOKIE_NAME
 
+CART_STATIC_URL_PREFIX = '/static/'
+CART_CDN_URL_PREFIX = '/cart/static/'
+CART_STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
+FC_AUTH_URL_PREFIX = '/static.fc_auth/'
+FC_AUTH_CDN_URL_PREFIX = '/fc_auth/static/'
+FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+
+
 def empty_resource_factory(request):
     return None
 
@@ -31,12 +40,9 @@ def exception_message_renderer_factory(show_traceback):
         from pyramid.httpexceptions import HTTPInternalServerError
         from pyramid.renderers import render
         from pyramid import security
-        from .selectable_renderer import selectable_renderer
+        from .rendering import selectable_renderer
         from altair.mobile.api import is_mobile_request
-        if is_mobile_request(request):
-            renderer = selectable_renderer('%(membership)s/mobile/error.html')
-        else:
-            renderer = selectable_renderer('%(membership)s/pc/message.html')
+        renderer = selectable_renderer('error.html')
         return HTTPInternalServerError(body=render(renderer, { 'message': u'システムエラーが発生しました。大変お手数ですが、しばらく経ってから再度トップ画面よりアクセスしてください。(このURLに再度アクセスしてもエラーが出続けることがあります)' }, request), headers=security.forget(request))
     return exception_message_renderer
 
@@ -92,7 +98,6 @@ def setup_components(config):
     setup_asid(config) # XXX: MOVE THIS
     setup_temporary_store(config)
 
-
 def setup_asid(config):
     pc = config.registry.settings.get('altair.pc.asid')
     mobile = config.registry.settings.get('altair.mobile.asid')
@@ -124,7 +129,189 @@ def setup_asid(config):
 def setup_mq(config):
     config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')
 
-def includeme(config):
+def setup_payment_renderers(config):
+    from zope.interface import implementer
+    from altair.app.ticketing.payments.interfaces import IPaymentViewRendererLookup
+    from . import rendering
+    from .interfaces import ICartResource
+
+    @implementer(IPaymentViewRendererLookup)
+    class SelectByOrganization(object):
+        def __init__(self, selectable_renderer_helper_factory):
+            self.selectable_renderer_helper_factory = selectable_renderer_helper_factory
+
+        def __call__(self, request, path_or_renderer_name, for_, plugin_type, plugin_id, package, registry, **kwargs):
+            if isinstance(path_or_renderer_name, string_types) and \
+               '.' in path_or_renderer_name and \
+               ':' not in path_or_renderer_name and \
+               ICartResource.providedBy(request.context):
+                if request.context.booster_cart:
+                    path_or_renderer_name = 'booster/' + path_or_renderer_name
+                elif request.context.fc_cart:
+                    path_or_renderer_name = 'fc/' + path_or_renderer_name
+            return self.selectable_renderer_helper_factory(
+                path_or_renderer_name,
+                package,
+                registry,
+                request=request,
+                **kwargs
+                )
+
+    @implementer(IPaymentViewRendererLookup)
+    class DynamicRendererHelperFactoryAdapter(object):
+        def __init__(self, renderer_helper_factory):
+            self.renderer_helper_factory = renderer_helper_factory
+
+        def __call__(self, request, path_or_renderer_name, for_, plugin_type, plugin_id, package, registry, **kwargs):
+            return self.renderer_helper_factory(path_or_renderer_name, package=package, registry=registry, request=request)
+
+    config.add_payment_view_renderer_lookup(
+        SelectByOrganization(
+            rendering.selectable_renderer_helper_factory
+            ),
+        'select_by_organization'
+        )
+    config.add_payment_view_renderer_lookup(
+        DynamicRendererHelperFactoryAdapter(
+            rendering.OverridableTemplateRendererHelperFactory(
+                config.registry.__name__,
+                lambda name, package, registry, request, **kwargs: request.view_context,
+                [
+                    'templates/%(organization_short_name)s/%(ua_type)s/plugins/%(path)s',
+                    'templates/%(organization_short_name)s/plugins/%(path)s',
+                    'templates/__default__/%(ua_type)s/plugins/%(path)s',
+                    'templates/__default__/plugins/%(path)s',
+                    '%(their_package)s:templates/%(ua_type)s/%(path)s',
+                    ]
+                )
+            ),
+        'overridable'
+        )
+
+def import_mail_module(config):
+    config.include('altair.app.ticketing.mails')
+    config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
+
+def setup_auth(config):
+    config.include('altair.auth')
+    config.include('altair.rakuten_auth')
+    config.include('altair.app.ticketing.fc_auth')
+
+    config.set_who_api_decider('altair.app.ticketing.security:OrganizationSettingBasedWhoDecider')
+    from altair.auth import set_auth_policy
+    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
+    from authorization import MembershipAuthorizationPolicy
+    config.set_authorization_policy(MembershipAuthorizationPolicy())
+
+    # 楽天認証URL
+    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
+    config.add_route('cart.logout', '/logout')
+
+class CartInterface(object):
+    def get_cart(self, request):
+        from .api import get_cart_safe
+        return get_cart_safe(request)
+
+    def get_success_url(self, request):
+        return request.route_url('payment.confirm')
+
+def setup_cart_interface(config):
+    config.set_cart_interface(CartInterface())
+
+def setup__renderers(config):
+    config.include('pyramid_mako')
+    config.add_mako_renderer('.html')
+    config.add_mako_renderer('.txt')
+
+def setup_static_views(config):
+    settings = config.registry.settings
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+        settings["s3.bucket_name"],
+        exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
+        mapping={
+            FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_CDN_URL_PREFIX,
+            CART_STATIC_ASSET_SPEC: CART_CDN_URL_PREFIX
+            }
+        ))
+    config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
+
+def setup_mobile(config):
+    config.include('altair.mobile')
+    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
+
+def setup_payment_delivery_plugins(config):
+    config.include('altair.app.ticketing.checkout')
+    config.include('altair.app.ticketing.multicheckout')
+    config.include('altair.app.ticketing.sej')
+    config.include('altair.app.ticketing.sej.userside_impl')
+    config.include('altair.app.ticketing.qr')
+    config.include('altair.app.ticketing.payments')
+    config.include('altair.app.ticketing.payments.plugins')
+    config.add_subscriber(
+        'altair.app.ticketing.payments.events.cancel_on_delivery_error',
+        'altair.app.ticketing.payments.events.DeliveryErrorEvent'
+        )
+
+def setup_cms_communication_api(config):
+    ## cmsとの通信
+    bind_communication_api(config,
+                            "..api.impl.CMSCommunicationApi",
+                            config.registry.settings["altair.cms.api_url"],
+                            config.registry.settings["altair.cms.api_key"]
+                            )
+
+def setup_tweens(config):
+    config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
+    config.add_tween('.tweens.OrganizationPathTween', over=EXCVIEW)
+    config.add_tween('.tweens.response_time_tween_factory', over=MAIN)
+    config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.add_tween('.tweens.CacheControlTween')
+
+def setup_layouts(config):
+    config.include("pyramid_layout")
+    from altair.pyramid_dynamic_renderer import RendererHelperProxy, RequestSwitchingRendererHelperFactory
+    selectable_renderer_helper_factory = RequestSwitchingRendererHelperFactory(
+        fallback_renderer='notfound.html',
+        name_builder=lambda name, view_context, request: 'altair.app.ticketing.cart:templates/__layouts__/%(ua_type)s/%(path)s' % dict(ua_type=view_context.ua_type, path=name),
+        view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context
+        )
+    def layout_selector(name):
+        return RendererHelperProxy(
+            selectable_renderer_helper_factory,
+            name
+            )
+    config.add_lbr_layout(".layouts.Layout", template=layout_selector("booster.html"), name='booster')
+    config.add_lbr_layout(".layouts.Layout", template=layout_selector("fc.html"), name='fc')
+
+def setup_panels(config):
+    from .rendering import selectable_renderer
+    config.add_panel(
+        'altair.app.ticketing.cart.panels.input_form',
+        'input_form',
+        renderer=selectable_renderer('booster/_form.html')
+        )
+    config.add_panel(
+        'altair.app.ticketing.cart.panels.complete_notice',
+        'complete_notice',
+        renderer=selectable_renderer('booster/_complete_notice.html')
+        )
+    config.add_panel(
+        'altair.app.ticketing.cart.panels.input_form',
+        'mobile_input_form',
+        renderer=selectable_renderer('booster/_form.html')
+        )
+    config.add_panel(
+        'altair.app.ticketing.cart.panels.complete_notice',
+        'mobile_complete_notice',
+        renderer=selectable_renderer('booster/_complete_notice.html')
+        )
+
+def setup_routes(config):
     # 規約
     config.add_route('cart.agreement', 'events/{event_id}/agreement', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2', 'performances/{performance_id}/agreement', factory='.resources.PerformanceOrientedTicketingCartResource')
@@ -144,14 +331,8 @@ def includeme(config):
     config.add_route('cart.seat_adjacencies', 'performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
     config.add_route('cart.venue_drawing', 'performances/{performance_id}/venues/{venue_id}/drawing/{part}')
     config.add_route('cart.products', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products', factory='.resources.EventOrientedTicketingCartResource')
-
     config.add_route('cart.products2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
 
-    # obsolete
-    config.add_route('cart.info.obsolete', 'events/{event_id}/sales_segment/{sales_segment_id}/info', factory='.resources.EventOrientedTicketingCartResource')
-    config.add_route('cart.seats.obsolete', 'events/{event_id}/sales_segment/{sales_segment_id}/seats', factory='.resources.EventOrientedTicketingCartResource')
-    config.add_route('cart.seat_adjacencies.obsolete', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}', factory='.resources.EventOrientedTicketingCartResource')
-    config.add_route('cart.venue_drawing.obsolete', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing/{part}', factory='.resources.EventOrientedTicketingCartResource')
     # order / payment / release
     config.add_route('cart.order', 'order/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
@@ -161,125 +342,16 @@ def includeme(config):
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm', factory='.resources.CartBoundTicketingCartResource')
-    config.add_route('payment.finish', 'completed')
+    config.add_route('payment.finish.mobile', 'completed', request_method='POST', factory='.resources.CartBoundTicketingCartResource')
+    config.add_route('payment.finish', 'completed', factory='.resources.CompleteViewTicketingCartResource')
 
-    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    config.add_route('cart.contact', 'contact')
 
     # PC/Smartphone切替
     config.add_route('cart.switchpc', 'switchpc/{event_id}')
     config.add_route('cart.switchsp', 'switchsp/{event_id}')
     config.add_route('cart.switchpc.perf', 'switchpc/{event_id}/{performance}')
     config.add_route('cart.switchsp.perf', 'switchsp/{event_id}/{performance}')
-
-    # 楽天認証URL
-    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
-    config.add_route('cart.logout', '/logout')
-
-    setup_components(config)
-
-def setup_renderers(config):
-    import os
-    import functools
-    from zope.interface import implementer
-    from pyramid.interfaces import IRendererFactory
-    from pyramid.renderers import RendererHelper
-    from pyramid.path import AssetResolver
-    from pyramid_selectable_renderer import SelectableRendererFactory
-    from altair.app.ticketing.payments.interfaces import IPaymentViewRendererLookup
-    from . import selectable_renderer
-
-    @implementer(IPaymentViewRendererLookup)
-    class SelectByOrganization(object):
-        def __init__(self, selectable_renderer_factory, key_factory):
-            self.selectable_renderer_factory = selectable_renderer_factory
-            self.key_factory = key_factory
-
-        def __call__(self, path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
-            info_ = RendererHelper(
-                name=self.key_factory(path_or_renderer_name),
-                package=None,
-                registry=info.registry
-                )
-            return self.selectable_renderer_factory(info_)
-
-    @implementer(IPaymentViewRendererLookup)
-    class Overridable(object):
-        def __init__(self, selectable_renderer_factory, key_factory, resolver):
-            self.bad_templates = set()
-            self.selectable_renderer_factory = selectable_renderer_factory
-            self.key_factory = key_factory
-            self.resolver = resolver
-
-        def get_template_path(self, path):
-            return '%%(membership)s/plugins/%s' % path
-
-        def __call__(self, path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
-            info_ = RendererHelper(
-                self.key_factory(self.get_template_path(path_or_renderer_name)),
-                package=None,
-                registry=info.registry
-                )
-            renderer = self.selectable_renderer_factory(info_)
-
-            resolved_uri = "templates/%s" % renderer.implementation().uri # XXX hack: this needs to be synchronized with the value in mako.directories
-            if resolved_uri in self.bad_templates:
-                return None
-            else:
-                asset = self.resolver.resolve(resolved_uri)
-                if not asset.exists():
-                    logger.debug('template %s does not exist' % resolved_uri)
-                    self.bad_templates.add(resolved_uri)
-                    return None
-            return renderer
-
-    config.include(selectable_renderer)
-
-    renderer_factory = functools.partial(
-        SelectableRendererFactory,
-        selectable_renderer.selectable_renderer.select_fn
-        ) # XXX
-
-    config.add_payment_view_renderer_lookup(
-        SelectByOrganization(
-            renderer_factory,
-            selectable_renderer.selectable_renderer
-            ),
-        'select_by_organization'
-        )
-    config.add_payment_view_renderer_lookup(
-        Overridable(
-            renderer_factory,
-            selectable_renderer.selectable_renderer,
-            AssetResolver(__name__)
-            ),
-        'overridable'
-        )
-
-def import_mail_module(config):
-    config.include('altair.app.ticketing.mails')
-    config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
-
-
-class CartInterface(object):
-    def get_cart(self, request):
-        from .api import get_cart_safe
-        return get_cart_safe(request)
-
-    def get_success_url(self, request):
-        return request.route_url('payment.confirm')
-
-
-def setup_cart_interface(config):
-    config.set_cart_interface(CartInterface())
-
-
-STATIC_URL_PREFIX = '/static/'
-STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
-FC_AUTH_URL_PREFIX = '/fc_auth/static/'
-FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -294,82 +366,54 @@ def main(global_config, **local_config):
         root_factory='.resources.PerformanceOrientedTicketingCartResource'
         )
     config.include('altair.app.ticketing.setup_beaker_cache')
-    config.registry['sa.engine'] = engine
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
-    config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
-    config.include("altair.cdnpath")
-    from altair.cdnpath import S3StaticPathFactory
-    config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"],
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
-            mapping={FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX}))
-    config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
     ### includes altair.*
-    config.include('altair.auth')
-    config.include('altair.httpsession.pyramid')
-    config.include('altair.exclog')
     config.include('altair.browserid')
-    config.include('altair.sqlahelper')
-
-    ## mail
-    config.include(import_mail_module)
-
-    config.include('.')
+    config.include('altair.exclog')
+    config.include('altair.httpsession.pyramid')
     config.include('altair.mq')
-    config.include('altair.app.ticketing.qr')
-    config.include('altair.rakuten_auth')
-    config.include('altair.app.ticketing.users')
-
-    config.set_who_api_decider('altair.app.ticketing.security:OrganizationSettingBasedWhoDecider')
-    from altair.auth import set_auth_policy
-    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
-
-    from authorization import MembershipAuthorizationPolicy
-    config.set_authorization_policy(MembershipAuthorizationPolicy())
-    config.add_tween('.tweens.CacheControlTween')
-    config.include('altair.app.ticketing.organization_settings')
-    config.include('altair.app.ticketing.fc_auth')
-    config.include('altair.app.ticketing.checkout')
-    config.include('altair.app.ticketing.multicheckout')
-    config.include('altair.app.ticketing.sej')
-    config.include('altair.app.ticketing.sej.userside_impl')
-    config.include('altair.mobile')
-    config.add_smartphone_support_predicate('altair.app.ticketing.cart.predicates.smartphone_enabled')
-    config.include('altair.app.ticketing.venues.setup_components')
-    config.include('altair.app.ticketing.payments')
-    config.include('altair.app.ticketing.payments.plugins')
-    config.add_subscriber('altair.app.ticketing.payments.events.cancel_on_delivery_error',
-                          'altair.app.ticketing.payments.events.DeliveryErrorEvent')
-
-    config.include('.errors')
-    config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
-    config.add_tween('.tweens.OrganizationPathTween', over=EXCVIEW)
-    config.add_tween('.tweens.response_time_tween_factory', over=MAIN)
-    config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
-    config.include(setup_cart_interface)
-    config.include(setup_mq)
-    config.include(setup_renderers)
-    config.scan()
-
-    ## cmsとの通信
-    bind_communication_api(config,
-                            "..api.impl.CMSCommunicationApi",
-                            config.registry.settings["altair.cms.api_url"],
-                            config.registry.settings["altair.cms.api_key"]
-                            )
-
-    ### s3 assets
+    config.include('altair.pyramid_dynamic_renderer')
+    config.include('altair.sqlahelper')
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
     config.include('altair.pyramid_boto.s3.assets')
 
-    ### preview
-    config.include(".preview")
+    config.include('altair.app.ticketing.users')
+    config.include('altair.app.ticketing.orders')
+    config.include('altair.app.ticketing.organization_settings')
+    config.include('altair.app.ticketing.venues.setup_components')
+
+    config.include(setup_components)
+    config.include(setup_tweens)
+    config.include(setup_auth)
+    config.include(setup__renderers)
+    config.include(setup_payment_delivery_plugins)
+    config.include(setup_mobile)
+    config.include(setup_cart_interface)
+    config.include(setup_mq)
+    config.include(setup_payment_renderers)
+    config.include(setup_cms_communication_api)
+    config.include(setup_static_views)
+    config.include(setup_layouts)
+    config.include(import_mail_module)
+    config.include(setup_panels)
+    config.include(setup_routes)
+
+    config.include('.')
+    config.include('.view_context')
+    config.include('.errors')
+    config.include('.preview')
+
+    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+
+    config.scan()
+
     app = config.make_wsgi_app()
 
     return direct_static_serving_filter_factory({
-        STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
+        CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
         FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
     })(global_config, app)
+
+def includeme(config):
+    config.include('.request')
