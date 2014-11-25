@@ -1473,11 +1473,11 @@ SalesSegment_PaymentDeliveryMethodPair = Table(
 class DateCalculationBase(StandardEnum):
     Absolute             = 0
     OrderDate            = 1
-    OrderDateTime        = 2
-    PerformanceStartDate = 3
-    PerformanceEndDate   = 4
-    SalesStartDate       = 5
-    SalesEndDate         = 6
+    PerformanceStartDate = 2
+    PerformanceEndDate   = 3
+    SalesStartDate       = 4
+    SalesEndDate         = 5
+    OrderDateTime        = 6
 
 class DateCalculationBias(StandardEnum):
     Exact       = 0
@@ -1506,7 +1506,7 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
     if base_type == DateCalculationBase.Absolute.v:
         assert period is None or period == 0, 'Should no be specified period when specified absolute. There is a possibility that the data migration has failed.'
         return abs_date
-    elif base_type == DateCalculationBase.OrderDateTime:
+    elif base_type == DateCalculationBase.OrderDateTime.v:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
         base = get_base_datetime_from_order_like(order_like, base_type)
