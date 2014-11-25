@@ -221,7 +221,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     entry = build_lot_entry(
         lot=lot,
         wishes=wishes,
-        membergroup=cart_api.get_member_group(info),
+        membergroup=cart_api.get_member_group(request, info),
         membership=cart_api.get_membership(info),
         payment_delivery_method_pair=payment_delivery_method_pair,
         shipping_address=shipping_address,

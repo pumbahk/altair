@@ -323,6 +323,8 @@ class TicketingCartResourceBase(object):
 
     @reify
     def switch_pc_url(self):
+        if self.event is None:
+            return ''
         performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
         if performance_id is not None:
             return self.request.route_url('cart.switchpc', event_id=self.event.id, _query=dict(performance=performance_id))
@@ -331,6 +333,8 @@ class TicketingCartResourceBase(object):
 
     @reify
     def switch_sp_url(self):
+        if self.event is None:
+            return ''
         performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
         if performance_id is not None:
             return self.request.route_url('cart.switchsp', event_id=self.event.id, _query=dict(performance=performance_id))
@@ -615,10 +619,14 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @reify
     def switch_pc_url(self):
+        if self.performance is None:
+            return ''
         return self.request.route_url('cart.switchpc.perf', performance_id=self.performance.id)
 
     @reify
     def switch_sp_url(self):
+        if self.performance is None:
+            return ''
         return self.request.route_url('cart.switchsp.perf', performance_id=self.performance.id)
 
 

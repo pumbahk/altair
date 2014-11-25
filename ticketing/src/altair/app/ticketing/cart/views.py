@@ -1485,7 +1485,7 @@ def _create_response_perf(request, params=None):
     response = HTTPFound(performance_id and request.route_url('cart.index2', performance_id=performance_id, _query=params) or '/')
     return response
 
-@lbr_view_config(route_name='cart.switchpc')
+@view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
     api.remove_cart(request)
     response = _create_response(request=request, params=request.GET)
@@ -1499,7 +1499,7 @@ def switch_pc_perf(context, request):
     set_we_need_pc_access(response)
     return response
 
-@lbr_view_config(route_name='cart.switchsp')
+@view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
     api.remove_cart(request)
     response = _create_response(request=request, params=request.GET)

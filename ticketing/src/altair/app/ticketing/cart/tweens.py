@@ -72,7 +72,6 @@ class OrganizationPathTween(object):
                     request.path_info = path_info
                     break
 
-            import sys
             make_transient(host)
             make_transient(host.organization)
             request.altair_host_info = host

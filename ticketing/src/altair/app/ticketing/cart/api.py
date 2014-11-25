@@ -408,7 +408,7 @@ def get_membership(d):
         q = q.filter(u_models.Membership.organization_id == d['organization_id'])
     return q.first()
 
-def get_member_group(info):
+def get_member_group(request, info):
     membership_name = info.get('membership')
     member_group_name = info.get('membergroup')
     if membership_name is None or member_group_name is None:
@@ -572,17 +572,6 @@ def safe_get_contact_url(request, default=""):
     except Exception as e:
         logger.warn(str(e))
         return default
-
-def get_order_desc(request, order):
-    shipping = order.shipping_address
-    return shipping, get_user_profile_from_order(request, order)
-
-def set_user_profile_for_order(request, order, user_profile):
-    return get_persistent_userprofile(request).set_user_profile(order, user_profile)
-
-def get_user_profile_from_order(request, order):
-    return get_persistent_userprofile(request).get_user_profile(order)
-
 
 def store_extra_form_data(request, data):
     request.session['extra_form'] = data
