@@ -1,0 +1,67 @@
+<%page args="form"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<form method="post" action="${request.current_route_path()}">
+<%def name="render_field(field, label=True, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field._description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div>
+% if label:
+<%mobile:form_header required="${h.is_required(field)}">${label}</%mobile:form_header>
+% endif
+${h.error(field.name)}
+${_render_field(field, None, _description, _note, _suffix, **kwargs)}
+</div>
+</%def>
+<%def name="render_field_group(fields, label, labels=True, **kwargs)">
+% if label:
+<%mobile:form_header required="${all(h.is_required(field) for field in fields)}">${label}</%mobile:form_header>
+% endif
+${h.error([field.name for field in fields])}
+% for field in fields:
+${_render_field(field, field.label.text if labels else None, _description, _note, **kwargs)}
+% endfor
+</div>
+</%def>
+<%def name="_render_field(field, _label, _description, _note, _suffix=u'', **kwargs)">
+% if _description:
+<font size="-1">${_description}</font><br />
+% endif
+<div>
+% if _label:
+${_label}
+% endif
+<% from altair.formhelpers.widgets.datetime import OurDateWidget %>
+${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</div>
+% if _note:
+<font size="-1">${_note}</font><br />
+% endif
+</div>
+</%def>
+${render_field(form['extra']['cont'])}
+${render_field(form['extra']['old_id_number'], istyle="4")}
+${render_field(form['extra']['member_type'])}
+${render_field(form['extra']['t_shirts_size'])}
+${render_field_group(label=u'氏名', fields=[form['last_name'], form['first_name']], size="10", istyle="1")}
+${render_field_group(label=u'フリガナ', fields=[form['last_name_kana'], form['first_name_kana']], size="10", istyle="2")}
+${render_field(form['extra']['birthday'])}
+${render_field(form['extra']['sex'])}
+${render_field(form['zip'], size="7", maxlength="7", istyle="4")}
+${render_field(form['prefecture'], iprof="address1")}
+${render_field(form['city'], size="10", istyle="1", iprof="address2")}
+${render_field(form['address_1'], size="10", istyle="1", iprof="address3")}
+${render_field(form['address_2'], size="10", istyle="1", iprof="address4")}
+${render_field(form['tel_2'], size="12", istyle="4")}
+${render_field(form['tel_1'], size="12", istyle="4")}
+${render_field(form['fax'], size="12", istyle="4")}
+${render_field(form['email_1'], size="12", istyle="3", iprof="mail1")}
+${render_field(form['email_1_confirm'], size="12", istyle="3", iprof="mail1")}
+${render_field(form['extra']['mail_permission'])}
+${render_field(form['extra']['product_delivery_method'])}
+<div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</font></div>
+<hr />
+<input type="submit" value="次に進む" />
+</form>

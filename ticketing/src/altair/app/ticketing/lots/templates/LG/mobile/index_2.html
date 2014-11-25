@@ -69,12 +69,8 @@ ${h.japanese_date(performance.start_on)}<br />
 
 <%mobile:form_header>誕生日</%mobile:form_header>
 <div>
-  ${form['year'](istyle="4")}年
-  ${form['month'](istyle="4")}月
-  ${form['day'](istyle="4")}日
-  ${h.mobile_error_list(request, form, 'year', with_label=True)}
-  ${h.mobile_error_list(request, form, 'month', with_label=True)}
-  ${h.mobile_error_list(request, form, 'day', with_label=True)}
+  ${form['birthday'](istyle="4")}
+  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}</%mobile:form_header>

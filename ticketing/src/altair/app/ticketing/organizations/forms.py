@@ -218,13 +218,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
             (u'rakuten', u'楽天会員認証'),
             ]
         )
-    performance_selector = OurSelectField(
-        label=get_annotations_for(c_models.OrganizationSetting.performance_selector)['label'],
-        choices=[
-            (u'matchup', u'公演名でグルーピング'),
-            (u'date', u'日付でグルーピング'),
-            ]
-        )
     margin_ratio = OurDecimalField(
         label=get_annotations_for(c_models.OrganizationSetting.margin_ratio)['label'],
         validators=[Optional()]

@@ -3,30 +3,34 @@ import logging
 import transaction
 from datetime import datetime
 from zope.interface import implementer
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
 from wtforms import fields
-from wtforms.ext.csrf.session import SessionSecureForm
+from altair.formhelpers.form import OurSessionSecureForm
 from wtforms.validators import Regexp, Length
 
 import markupsafe
 
 from altair.multicheckout import helpers as m_h
-from altair.multicheckout.api import detect_card_brand, get_card_ahead_com_name, get_multicheckout_3d_api
+from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.multicheckout.models import (
     MultiCheckoutStatusEnum,
 )
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
-from altair.app.ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsElectedMailPayment
-from altair.app.ticketing.mails.interfaces import ILotsRejectedMailPayment
+from altair.app.ticketing.mails.interfaces import (
+    ICompleteMailResource,
+    IOrderCancelMailResource,
+    ILotsAcceptedMailResource,
+    ILotsElectedMailResource,
+    ILotsRejectedMailResource,
+    )
 from altair.formhelpers import (
     Required,
     Translations,
@@ -46,7 +50,7 @@ from altair.app.ticketing.payments.api import get_cart, get_confirm_url
 
 logger = logging.getLogger(__name__)
 
-from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
+from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PLUGIN_ID
 
 SALES_PART_CANCEL_ENABLED_SINCE = datetime.strptime('2012-12-03 08:00', "%Y-%m-%d %H:%M")
 
@@ -78,7 +82,7 @@ def complete_url(request):
 
 def includeme(config):
     # 決済系(マルチ決済)
-    config.add_payment_plugin(MultiCheckoutPlugin(), PAYMENT_ID)
+    config.add_payment_plugin(MultiCheckoutPlugin(), PLUGIN_ID)
     config.add_route("payment.secure3d", 'payment/3d')
     config.add_route("payment.secure3d_result", 'payment/3d/result')
     config.add_route("payment.secure_code", 'payment/scode')
@@ -89,14 +93,14 @@ def _selectable_renderer(path_fmt):
     if _template is None:
         return None
     else:
-        return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
+        return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID)
 
 def _overridable(path):
     from . import _template
     if _template is None:
         return '%s:templates/%s' % (__name__, path)
     else:
-        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
+        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID)
 
 error_messages = {
     '001002': u'注文が不正です最初からお試しください。',
@@ -108,7 +112,7 @@ error_messages = {
 }
 
 
-class CSRFSecureForm(SessionSecureForm):
+class CSRFSecureForm(OurSessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
 CARD_NUMBER_REGEXP = r'^\d{14,16}$'
@@ -183,20 +187,12 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
         order_no = order['order_no']
-        card_brand = None
         card_number = order.get('card_number')
-        if card_number:
-            card_brand = detect_card_brand(request, card_number)
-
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
         checkout_sales_result = self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
 
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
-        order.card_brand = card_brand
-        order.card_ahead_com_code = checkout_sales_result.AheadComCd
-        order.card_ahead_com_name = get_card_ahead_com_name(request, order.card_ahead_com_code)
-        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()
 
@@ -415,7 +411,7 @@ def card_number_mask(number):
     return "*" * (len(number) - 4) + number[-4:]
 
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("card_confirm.html"))
+@lbr_view_config(context=ICartPayment, name="payment-%d" % PLUGIN_ID, renderer=_overridable("card_confirm.html"))
 def confirm_viewlet(context, request):
     """ 確認画面表示
     :param context: ICartPayment
@@ -424,31 +420,31 @@ def confirm_viewlet(context, request):
     order_session = request.session["order"]
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("card_complete.html"))
+@lbr_view_config(context=IOrderPayment, name="payment-%d" % PLUGIN_ID, renderer=_overridable("card_complete.html"))
 def completion_viewlet(context, request):
     """ 完了画面表示
     :param context: IOrderPayment
     """
     return dict()
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("card_mail_complete.html"))
-@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_ID, renderer=_overridable("checkout_mail_complete.html"))
+@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("card_mail_complete.html"))
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
 def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    notice=context.mail_data("notice")
+    notice=context.mail_data("P", "notice")
     order=context.order
     return dict(notice=notice, order=order)
 
-@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
-@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_ID)
-@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_ID)
+@lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name="payment-%d" % PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name="payment-%d" % PLUGIN_ID)
 def cancel_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("notice")))
+    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("P", "notice")))
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class MultiCheckoutView(object):
@@ -459,9 +455,7 @@ class MultiCheckoutView(object):
         self.request = request
 
     @clear_exc
-    @view_config(route_name='payment.secure3d', request_method="GET", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
+    @lbr_view_config(route_name='payment.secure3d', request_method="GET", renderer=_selectable_renderer('card_form.html'))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
         get_cart(self.request) # in expectation of raising NoCartError if the cart is already invalidated
@@ -469,9 +463,7 @@ class MultiCheckoutView(object):
         return dict(form=form)
 
     @clear_exc
-    @view_config(route_name='payment.secure_code', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
-    @view_config(route_name='payment.secure_code', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure_code', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
+    @lbr_view_config(route_name='payment.secure_code', request_method="POST", renderer=_selectable_renderer('card_form.html'))
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
         get_cart(self.request) # in expectation of raising NoCartError if the cart is already invalidated
@@ -488,9 +480,7 @@ class MultiCheckoutView(object):
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
     @clear_exc
-    @view_config(route_name='payment.secure3d', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
+    @lbr_view_config(route_name='payment.secure3d', request_method="POST", renderer=_selectable_renderer('card_form.html'))
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
@@ -605,7 +595,7 @@ class MultiCheckoutView(object):
             return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
     @clear_exc
-    @view_config(route_name='payment.secure3d_result', request_method="POST", renderer=_selectable_renderer("%(membership)s/pc/confirm.html"))
+    @lbr_view_config(route_name='payment.secure3d_result', request_method="POST", renderer=_selectable_renderer("confirm.html"))
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得

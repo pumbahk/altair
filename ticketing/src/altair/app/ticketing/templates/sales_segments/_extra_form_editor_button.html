@@ -11,8 +11,8 @@
   </div>
 </div>
 <script type="text/javascript">
-$(function () {
-  (function ($extra_form_editor_modal, $extra_form_editor) {
+(function ($extra_form_editor_modal, $extra_form_editor) {
+	require([${HH.json(request.static_path('altair.app.ticketing:static/js/ticketing.extra_form_editor.js'))|n}], function (extra_form_editor) {
     $('.action-open_extra_form_editor').click(function () {
       var $this = $(this);
       var for_ = $this.data('for')
@@ -49,9 +49,9 @@ $(function () {
       }
       return false;
     });
-  })(
-    $('#modal_extra_form_editor').appendTo($(document.body)),
-    $('#extra_form_editor')
-  );
-});
+  });
+})(
+  $('#modal_extra_form_editor').appendTo($(document.body)),
+  $('#extra_form_editor')
+);
 </script>

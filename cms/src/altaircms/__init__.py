@@ -130,11 +130,12 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+    config.include("pyramid_mako")
     config.include("altair.sqlahelper")
     set_cache_regions_from_settings(settings)
     config.include("altair.browserid")
     config.include("altair.exclog")
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_mako_renderer('.html')
     config.include("altair.now")
 
     config.include("altaircms.lib.crud")    
