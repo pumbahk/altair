@@ -409,6 +409,12 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 )
             ),
         (
+            DateCalculationBase.OrderDateTime.v,
+            dict(
+                template=u'<予約日時から> {widget} 日後'
+                )
+            ),
+        (
             DateCalculationBase.PerformanceStartDate.v,
             dict(
                 template=u'<公演開始から> {widget} 日後'

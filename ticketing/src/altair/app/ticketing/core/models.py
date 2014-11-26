@@ -1477,6 +1477,7 @@ class DateCalculationBase(StandardEnum):
     PerformanceEndDate   = 3
     SalesStartDate       = 4
     SalesEndDate         = 5
+    OrderDateTime        = 6
 
 class DateCalculationBias(StandardEnum):
     Exact       = 0
@@ -1488,6 +1489,8 @@ def get_base_datetime_from_order_like(order_like, base_type):
         return None
     elif base_type == DateCalculationBase.OrderDate.v:
         return order_like.created_at # TODO: created_at is not part of IOrderLike interface
+    elif base_type == DateCalculationBase.OrderDateTime.v:
+        return order_like.created_at
     elif base_type == DateCalculationBase.PerformanceStartDate.v:
         performance = order_like.performance
         return performance and performance.start_on
@@ -1503,6 +1506,13 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
     if base_type == DateCalculationBase.Absolute.v:
         assert period is None or period == 0, 'Should no be specified period when specified absolute. There is a possibility that the data migration has failed.'
         return abs_date
+    elif base_type == DateCalculationBase.OrderDateTime.v:
+        if period is None:
+            raise ValueError('period must be specified if base_type is not Absolute')
+        base = get_base_datetime_from_order_like(order_like, base_type)
+        if base is None:
+            raise ValueError('could not determine base date')
+        return base + timedelta(days=period)
     else:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
