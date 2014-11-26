@@ -170,6 +170,7 @@ setup(name='altair.app.ticketing',
       entry_points = """\
       [paste.app_factory]
       main = altair.app.ticketing:main
+      zea-admin = altair.app.ticketing.project_specific.zea:main
       [console_scripts]
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
       release_carts=altair.app.ticketing.cart.commands:release_carts
