@@ -19,8 +19,8 @@ def model_to_dict(obj):
 def show_cms_detail_page(request, page):
     if page is None:
         return u"-"
-    url= request.route_path("page_detail", page_id=page.id)
-    return Markup(u'<a href="%s">%s</a>' % (url, page.name))
+    url= request.route_path("preview_pageset", pageset_id=page.id)
+    return Markup(u'<a href="%s" target="_blank">%s</a>' % (url, page.name))
 
 def label_from_genre(genre_id_list):
     return u", ".join([g.label for g in Genre.query.filter(Genre.id.in_(genre_id_list))])
