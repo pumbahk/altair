@@ -106,7 +106,7 @@ columns = [
     (u'販売区分', u'{.sales_segment.sales_segment_group.name}'),
     (u'誕生日', u'{.attributes[誕生日]._as_datetime:%Y-%m-%d}'),
     (u'ニックネーム', u'{.attributes[ニックネーム]}'),
-    (u'メールマガジンの配信', u'''{.attributes[ZE_A's Japanメールマガジンの配信]}'''),
+    (u'メールマガジンの配信', u'''{.attributes[メールマガジンの配信]}'''),
     (u'好きなメンバー', u'{.attributes[好きなメンバー]}'),
     ]
 
