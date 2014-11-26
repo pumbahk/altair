@@ -1,0 +1,258 @@
+@charset "euc-jp";
+
+/* reset */
+div#grpRakutenLinkArea div, div#grpRakutenLinkArea h1, div#grpRakutenLinkArea h2, div#grpRakutenLinkArea h3, div#grpRakutenLinkArea p, div#grpRakutenLinkArea ul, div#grpRakutenLinkArea ol, div#grpRakutenLinkArea dl, div#grpRakutenLinkArea dt, div#grpRakutenLinkArea dd {
+	margin: 0;
+	padding: 0;
+	font-size: 100%;
+}
+div#grpRakutenLinkArea ul,
+div#grpRakutenLinkArea ol {
+	list-style: none outside;
+}
+div#grpRakutenLinkArea a img {
+	border: none;
+}
+
+/* layout */
+div#grpRakutenLinkArea {
+	/* width: 950px; */
+	margin: auto auto 1em auto;
+	color: #333333;
+	font-size: 82%;
+}
+
+/* about ul#grpSpelinlk */
+div#grpRakutenLinkArea ul#grpSpelinlk {
+	padding:0.5em;
+	border-top:1px solid #808080;
+	text-align:center;
+}
+div#grpRakutenLinkArea ul#grpSpelinlk li {
+	border-right:1px solid #ADADAD;
+	display:inline;
+	list-style-type:none;
+	padding-left:0.45em;
+	padding-right:0.5em;
+	zoom:1;
+}
+div#grpRakutenLinkArea ul#grpSpelinlk li.grpLast {
+	border:none;
+}
+
+/* about dl#grpKeyword */
+div#grpRakutenLinkArea dl#grpKeyword {
+	clear:both;
+	margin-bottom:0.75em;
+	padding:0.75em;
+	border:1px solid #DDDDDD;
+	background:#FCFCFC;
+	text-align:center;
+}
+div#grpRakutenLinkArea dl#grpKeyword dt,
+div#grpRakutenLinkArea dl#grpKeyword dd,
+div#grpRakutenLinkArea dl#grpKeyword ul {
+	display:inline;
+	zoom:1;
+}
+div#grpRakutenLinkArea dl#grpKeyword dt {
+	padding:0 1.5em 0 0.75em;
+	text-align:center;
+	font-weight:bold;
+}
+div#grpRakutenLinkArea dl#grpKeyword li {
+	display:inline;
+	padding-right:1em;
+}
+
+/* about div#groupServiceFooter */
+
+div#grpRakutenLinkArea div#groupServiceFooter {
+	border-top: 1px solid #808080;
+	background: #F4F4F4;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title {
+	margin-bottom: 3px;
+	padding: 6px 10px;
+	border-bottom: 1px solid #DDDDDD;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dt {
+	float: left;
+	margin: 4px 10px 0 0;
+	color: #BF0000;
+	font-weight: bold;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService {
+	float: left;
+	margin-top: 2px;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.inquiryList {
+	margin-left: 5px;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span {
+	display: block;
+	float: left;
+	padding-right: 2px;
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat 100% 0;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {
+	display: table-cell;
+	height: 18px;
+	vertical-align: middle;
+	padding: 0 10px 0 17px;
+	color: #333333;
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat 0 0;
+	text-decoration: none;
+}
+* html div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {  /* for IE6 */
+	display: inline-block;
+	line-height: 18px;
+	vertical-align: baseline;
+}
+*:first-child+html div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {  /* for IE7 */
+	display: inline-block;
+	line-height: 18px;
+	vertical-align: baseline;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a:hover {
+	color: #bf0000;
+}
+
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.csr {
+	float: right;
+	text-indent: -999px;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.csr a {
+	display: block;
+	overflow: hidden;
+	width: 80px;
+	height: 20px;
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat 0 -35px;
+	text-decoration: none;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.Introduce {
+	width: 100%;
+	overflow: hidden;
+	margin-bottom: 3px;
+	padding: 2px 0;
+	background: #F7F7F7 url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat -68px -200px;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.Introduce dt.IntroduceTitle {
+	float: left;
+	width: 110px;
+	margin-right: -130px;
+	padding: 8px 10px;
+	font-weight: bold;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.Introduce dd.IntroduceDetail {
+	overflow: hidden;
+	zoom: 1;
+}
+div#grpRakutenLinkArea div#groupServiceFooter dl.Introduce dd.IntroduceDetail ul {
+	padding-left: 130px;
+}
+div#grpRakutenLinkArea ul.serviceCol3 li {
+	width: 33%;
+}
+div#grpRakutenLinkArea ul.serviceCol4 li {
+	width: 24.9%;
+}
+div#grpRakutenLinkArea ul.serviceCol5 li {
+	width: 19.9%;
+}
+div#grpRakutenLinkArea #grpRakutenRecommend {
+	margin-left: 130px;
+	padding: 8px 10px 8px 26px;
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat -179px -24px;
+}
+
+div#grpRakutenLinkArea ul#selectedService li {
+	float: left;
+	margin-left: -1px;
+	background: url('data:image/gif;base64,R0lGODlhAQAGAIABAMrKyv///yH5BAEAAAEALAAAAAABAAYAAAIDRGJRADs=') repeat-y;
+}
+* html div#grpRakutenLinkArea ul#selectedService li {
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/bg_dotted.gif') repeat-y;
+}
+*:first-child+html div#grpRakutenLinkArea ul#selectedService li {
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/bg_dotted.gif') repeat-y;
+}
+div#grpRakutenLinkArea ul#selectedService li.first {
+	background: none !important;
+}
+div#grpRakutenLinkArea ul#selectedService dl {
+	padding: 8px 10px 8px 27px;
+	background: url('//jp.rakuten-static.com/1/bu/sitemap/img/sprite_grpfooter.gif') no-repeat -178px -24px;
+}
+div#grpRakutenLinkArea ul#selectedService dt {
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+div#grpRakutenLinkArea ul#selectedService dd {
+	color: #666666;
+}
+div#grpRakutenLinkArea div#serviceList {
+	font-size:100%;
+	clear:both;
+	padding: 10px 0;
+	border-top: 1px solid #DDDDDD;
+	background: #FFFFFF;
+}
+div#grpRakutenLinkArea div#serviceList dl {
+	padding: 0 5px 5px;
+	line-height: 1.4;
+}
+div#grpRakutenLinkArea div#serviceList dt {
+	float: left;
+	width: 8em;
+	font-weight: bold;
+}
+div#grpRakutenLinkArea div#serviceList dd {
+	margin-left: 8.5em;
+}
+div#grpRakutenLinkArea div#serviceList li {
+	float: left;
+	margin-right: 10px;
+	white-space: nowrap;
+}
+div#grpRakutenLinkArea div#serviceList li a {
+	color: #666666;
+	text-decoration: none !important;
+}
+
+
+div#grpRakutenLinkArea div#companyFooter {	
+	padding: 10px 10px 10px 5px;
+	border-top: 1px solid #808080;
+	overflow: hidden;
+}
+div#grpRakutenLinkArea div#companyFooter ul {
+	width: 100%;
+	margin-bottom: 8px;
+}
+div#grpRakutenLinkArea div#companyFooter ul li {
+	float: left;
+	margin-left: -1px;
+	padding: 0 6px 0 5px;
+	border-left: 1px solid #ADADAD;
+}
+div#grpRakutenLinkArea div#companyFooter ul li:first-child {
+	border: none;
+}
+div#grpRakutenLinkArea div#companyFooter p#copyright {
+	margin: 0 0 0px 5px;
+}
+
+
+
+
+/* clearfix */
+div#grpRakutenLinkArea div#groupServiceFooter dl.title,
+div#grpRakutenLinkArea div#companyFooter ul,
+ul#selectedService,
+div#grpRakutenLinkArea div#serviceList,
+div#grpRakutenLinkArea div#serviceList dl {
+	display: block;
+	overflow: hidden;
+	zoom: 1;
+}
