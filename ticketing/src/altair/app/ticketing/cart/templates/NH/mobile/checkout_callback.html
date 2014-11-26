@@ -1,0 +1,20 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+
+<div align="center">
+  <%mobile:header>予約受付を完了する</%mobile:header>
+  <br/>
+  <div>
+    楽天ID決済でのお支払い手続きが完了いたしました。<br>
+    「チケット購入」ボタンをクリックして、予約受付を完了してください。
+  </div>
+  <br/>
+  <form id="checkout-form" action="${request.route_url('payment.finish')}" method="post">
+    <input type="submit" value="チケット購入" />
+    <input type="hidden" id="csrf_token" name="csrf_token" value="${csrf_token}">
+    % for id in mailmagazine_ids:
+    <input type="hidden" name="mailmagazine" id="mailmagazine-${id}" value="${id}" />
+    % endfor
+  </form>
+  <br/>
+</div>

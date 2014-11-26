@@ -18,9 +18,11 @@ from pyramid.decorator import reify
 from pyramid.threadlocal import get_current_request
 from zope.interface import implementer
 from zope.deprecation import deprecation
+from dateutil.parser import parse as parsedate
 
 from altair.sqla import session_partaken_by, HybridRelation
 from altair.models import WithTimestamp, LogicallyDeleted, MutationDict, JSONEncodedDict, Identifier
+from altair.viewhelpers.datetime_ import create_date_time_formatter
 
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.utils import StandardEnum
@@ -243,7 +245,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
 
-    multicheckout_approval_no = sa.Column(sa.Unicode(255), doc=u"マルチ決済受領番号")
+    @property
+    def multicheckout_approval_no(self):
+        return u''
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
@@ -273,9 +277,22 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _attributes = orm.relationship("OrderAttribute", backref='order', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
 
-    card_brand = sa.Column(sa.Unicode(20))
-    card_ahead_com_code = sa.Column(sa.Unicode(20), doc=u"仕向け先企業コード")
-    card_ahead_com_name = sa.Column(sa.Unicode(20), doc=u"仕向け先企業名")
+    cart_setting_id = sa.Column(Identifier, nullable=True)
+
+    membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
+    membership = orm.relationship('Membership')
+
+    @property
+    def card_brand(self):
+        return u'' # FIXME
+
+    @property
+    def card_ahead_com_code(self):
+        return u'' # FIXME
+
+    @property
+    def card_ahead_com_name(self):
+        return u'' # FIXME
 
     fraud_suspect = sa.Column(sa.Boolean, nullable=True, default=None)
     browserid = sa.Column(sa.Unicode(40))
@@ -669,7 +686,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             issuing_start_at=cart.issuing_start_at,
             issuing_end_at=cart.issuing_end_at,
             payment_start_at=cart.payment_start_at,
-            payment_due_at=cart.payment_due_at
+            payment_due_at=cart.payment_due_at,
+            cart_setting_id=cart.cart_setting_id,
+            membership_id=cart.membership_id
             )
 
         for product in cart.items:
@@ -724,10 +743,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
-    def get_order_attribute_pair_pairs(self):
+    def get_order_attribute_pair_pairs(self, request, context=None):
         if self.sales_segment is None:
             return []
-        extra_form_fields = self.sales_segment.setting.extra_form_fields
+        if context is None:
+            context = getattr(request, 'context', None)
+        from altair.app.ticketing.cart.view_support import get_extra_form_schema
+        extra_form_fields = get_extra_form_schema(context, request, self.sales_segment)
         if not extra_form_fields:
             return []
         retval = []
@@ -758,6 +780,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     else:
                         v = c
                     display_value.append(v)
+            elif field_desc['kind'] == 'bool':
+                field_value = bool(field_value)
+                display_value = u'はい' if field_value else u'いいえ'
+            elif field_desc['kind'] == 'date':
+                dtf = create_date_time_formatter(request)
+                field_value = parsedate(field_value)
+                display_value = dtf.format_date(field_value)
             else:
                 logger.warning('unsupported kind: %s' % field_desc['kind'])
                 display_value = field_value
@@ -1176,9 +1205,6 @@ class OrderSummary(Base):
             Order.__table__.c.refund_special_fee,
             Order.__table__.c.refund_total_amount,
             Order.__table__.c.note,
-            Order.__table__.c.card_brand,
-            Order.__table__.c.card_ahead_com_code,
-            Order.__table__.c.card_ahead_com_name,
             Order.__table__.c.payment_delivery_method_pair_id,
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
@@ -1241,9 +1267,6 @@ class OrderSummary(Base):
     refund_special_fee = Order.refund_special_fee
     refund_total_amount = Order.refund_total_amount
     note = Order.note
-    card_brand = Order.card_brand
-    card_ahead_com_code = Order.card_ahead_com_code
-    card_ahead_com_name = Order.card_ahead_com_name
     payment_delivery_method_pair_id = Order.payment_delivery_method_pair_id
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
@@ -1424,3 +1447,19 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
+
+    @property
+    def multicheckout_approval_no(self):
+        return u'' # FIXME
+
+    @property
+    def card_brand(self):
+        return u'' # FIXME
+
+    @property
+    def card_ahead_com_code(self):
+        return u'' # FIXME
+
+    @property
+    def card_ahead_com_name(self):
+        return u'' # FIXME

@@ -5,6 +5,7 @@ import json
 import transaction
 import time
 from datetime import datetime, timedelta
+from urlparse import urlparse
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
@@ -14,7 +15,7 @@ from zope.interface import provider, implementer
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTPMovedPermanently
 from pyramid.response import Response
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_defaults, view_config
 from pyramid.threadlocal import get_current_request
 from webob.multidict import MultiDict
 
@@ -22,6 +23,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.request.adapters import UnicodeMultiDictAdapter
 
 from altair.mobile.api import is_mobile_request
+from altair.pyramid_dynamic_renderer import lbr_view_config
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
@@ -47,7 +49,7 @@ from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
-from .selectable_renderer import selectable_renderer
+from .rendering import selectable_renderer
 from .view_support import (
     IndexViewMixin,
     get_amount_without_pdmp,
@@ -55,6 +57,12 @@ from .view_support import (
     assert_quantity_within_bounds,
     build_dynamic_form,
     get_extra_form_data_pair_pairs,
+    back,
+    back_to_top,
+    gzip_preferred,
+    is_booster_or_fc_cart,
+    render_view_to_response_with_derived_request,
+    coerce_extra_form_data,
     )
 from .exceptions import (
     NoSalesSegment,
@@ -74,7 +82,7 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
 )
-from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
+from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource, CompleteViewTicketingCartResource
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
@@ -85,7 +93,6 @@ limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreat
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
-    api.release_cart(request, cart)
     api.remove_cart(request)
     return HTTPFound(
         request.route_url(
@@ -94,63 +101,6 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
-
-def back_to_top(request):
-    event_id = None
-    performance_id = None
-
-    try:
-        event_id = long(request.matchdict.get('event_id'))
-    except (ValueError, TypeError):
-        pass
-    if isinstance(request.context, PerformanceOrientedTicketingCartResource) and \
-       request.context.performance:
-        performance_id = request.context.performance.id
-    else:
-        try:
-            performance_id = long(request.params.get('pid') or request.params.get('performance'))
-        except (ValueError, TypeError):
-            pass
-
-    if event_id is None:
-        if performance_id is None:
-            cart = api.get_cart(request)
-            if cart is not None:
-                performance_id = cart.performance.id
-                event_id = cart.performance.event_id
-        else:
-            try:
-                event_id = DBSession.query(c_models.Performance).filter_by(id=performance_id).one().event_id
-            except:
-                pass
- 
-    extra = {}
-    if performance_id is not None:
-        extra['_query'] = { 'performance': performance_id }
-
-    ReleaseCartView(request)()
-
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
-
-def back(pc=back_to_top, mobile=None):
-    if mobile is None:
-        mobile = pc
-
-    def factory(func):
-        def retval(*args, **kwargs):
-            request = get_current_request()
-            if request.params.has_key('back'):
-                if IMobileRequest.providedBy(request):
-                    return mobile(request)
-                else:
-                    return pc(request)
-            return func(*args, **kwargs)
-        return retval
-    return factory
-
-def gzip_preferred(request, response):
-    if 'gzip' in request.accept_encoding:
-        response.encode_content('gzip')
 
 @provider(IPageFlowPredicate)
 def flow_predicate_extra_form(pe, flow_context, context, request):
@@ -163,6 +113,10 @@ def flow_predicate_point_input_required(pe, flow_context, context, request):
 @provider(IPageFlowPredicate)
 def flow_predicate_prepared(pe, flow_context, context, request):
     return flow_context['prepared']
+
+@provider(IPageFlowPredicate)
+def flow_predicate_non_booster_cart(pe, flow_context, context, request):
+    return not is_booster_or_fc_cart(context, request)
 
 @implementer(flow.IPageFlowAction)
 class PaymentAction(flow.PageFlowActionBase):
@@ -205,6 +159,7 @@ flow_graph = flow.PageFlowGraph(
             predicates=[
                 flow.RouteIs('cart.payment'),
                 flow_predicate_extra_form,
+                flow_predicate_non_booster_cart,
                 ],
             route_name='cart.extra_form'
             ),
@@ -247,17 +202,18 @@ flow_graph = flow.PageFlowGraph(
         ]
     )
 
-
-@view_defaults(route_name='cart.agreement', decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+@view_defaults(
+    route_name='cart.agreement',
+    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), 
+    renderer=selectable_renderer("agreement.html"),
+    xhr=False, permission="buy")
 class PerEventAgreementView(IndexViewMixin):
     """ 規約表示画面 """
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.IMobileRequest", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    @lbr_view_config(request_method="GET")
     def get(self):
         # 会場
         try:
@@ -306,14 +262,7 @@ class PerEventAgreementView(IndexViewMixin):
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             event_id=event_id, performance=performance_id)
 
-    @view_config(request_method="POST",
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
-    @view_config(request_method="POST",
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
-                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
-    @view_config(request_method="POST",
-                 request_type="altair.mobile.interfaces.IMobileRequest",
-                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    @lbr_view_config(request_method="POST")
     def post(self):
         try:
             event_id = long(self.request.params.get('event_id'))
@@ -339,18 +288,18 @@ class PerEventAgreementView(IndexViewMixin):
         return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
 
 
-@view_defaults(route_name='cart.agreement2', decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+@view_defaults(
+    route_name='cart.agreement2',
+    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
+    renderer=selectable_renderer("agreement.html"),
+    xhr=False, permission="buy")
 class PerPerformanceAgreementView(object):
     """ 規約表示画面 """
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
-    @view_config(renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
-    @view_config(request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
-                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
-    @view_config(request_type="altair.mobile.interfaces.IMobileRequest",
-                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
+    @lbr_view_config(request_method="GET")
     def get(self):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
@@ -365,14 +314,7 @@ class PerPerformanceAgreementView(object):
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             performance=performance_id)
 
-    @view_config(request_method="POST",
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
-    @view_config(request_method="POST",
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
-                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
-    @view_config(request_method="POST",
-                 request_type="altair.mobile.interfaces.IMobileRequest",
-                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    @lbr_view_config(request_method="POST")
     def post(self):
         try:
             performance_id = long(self.request.params.get('performance'))
@@ -399,19 +341,19 @@ class CompatAgreementView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(request_method="GET", route_name='cart.agreement.compat')
+    @lbr_view_config(request_method="GET", route_name='cart.agreement.compat')
     def get_agreement(self):
         return HTTPMovedPermanently(self.request.route_path('cart.agreement', _query=self.request.GET, **self.request.matchdict))
 
-    @view_config(request_method="POST", route_name='cart.agreement.compat')
+    @lbr_view_config(request_method="POST", route_name='cart.agreement.compat')
     def post_agreement(self):
         return PerEventAgreementView(self.request).post()
 
-    @view_config(request_method="GET", route_name='cart.agreement2.compat')
+    @lbr_view_config(request_method="GET", route_name='cart.agreement2.compat')
     def get_agreement2(self):
         return HTTPMovedPermanently(self.request.route_path('cart.agreement2', _query=self.request.GET, **self.request.matchdict))
 
-    @view_config(request_method="POST", route_name='cart.agreement2.compat')
+    @lbr_view_config(request_method="POST", route_name='cart.agreement2.compat')
     def post_agreement2(self):
         return PerPerformanceAgreementView(self.request).post()
 
@@ -419,17 +361,17 @@ class CompatAgreementView(object):
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
-    def __init__(self, request):
+    def __init__(self, context, request):
         IndexViewMixin.__init__(self)
+        self.context = context
         self.request = request
-        self.context = request.context
         self.prepare()
 
-    @view_config(route_name='cart.index',
-                 renderer=selectable_renderer("%(membership)s/pc/index.html"))
-    @view_config(route_name='cart.index',
+    @lbr_view_config(route_name='cart.index',
+                 renderer=selectable_renderer("index.html"))
+    @lbr_view_config(route_name='cart.index',
                  request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 renderer=selectable_renderer("%(membership)s/smartphone/index.html"))
+                 renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
         # 会場
         try:
@@ -497,11 +439,11 @@ class IndexView(IndexViewMixin):
             )
 
     # パフォーマンスベースのランディング画面
-    @view_config(route_name='cart.index2',
-                 renderer=selectable_renderer("%(membership)s/pc/index.html"))
-    @view_config(route_name='cart.index2',
+    @lbr_view_config(route_name='cart.index2',
+                 renderer=selectable_renderer("index.html"))
+    @lbr_view_config(route_name='cart.index2',
                  request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 renderer=selectable_renderer("%(membership)s/smartphone/index.html"))
+                 renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
@@ -571,7 +513,7 @@ class IndexAjaxView(object):
                 retval[name] = url
         return retval
 
-    @view_config(route_name='cart.seat_types2')
+    @lbr_view_config(route_name='cart.seat_types2')
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
@@ -644,8 +586,8 @@ class IndexAjaxView(object):
             )
         return data
 
-    @view_config(route_name='cart.products')
-    @view_config(route_name='cart.products2')
+    @lbr_view_config(route_name='cart.products')
+    @lbr_view_config(route_name='cart.products2')
     def get_products(self):
         """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
@@ -654,8 +596,7 @@ class IndexAjaxView(object):
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
         return dict(products=product_dicts)
 
-    @view_config(route_name='cart.info', renderer="json")
-    @view_config(route_name='cart.info.obsolete', renderer="json")
+    @lbr_view_config(route_name='cart.info', renderer="json")
     def get_info(self):
         """会場情報"""
         venue = self.context.performance.venue
@@ -681,8 +622,7 @@ class IndexAjaxView(object):
             pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
             )
 
-    @view_config(route_name='cart.seats')
-    @view_config(route_name='cart.seats.obsolete')
+    @lbr_view_config(route_name='cart.seats')
     def get_seats(self):
         """会場&座席情報"""
         venue = self.context.performance.venue
@@ -761,8 +701,7 @@ class IndexAjaxView(object):
             seat_groups=seat_groups
             )
 
-    @view_config(route_name='cart.seat_adjacencies')
-    @view_config(route_name='cart.seat_adjacencies.obsolete')
+    @lbr_view_config(route_name='cart.seat_adjacencies')
     def get_seat_adjacencies(self):
         """連席情報"""
         try:
@@ -770,6 +709,10 @@ class IndexAjaxView(object):
         except (ValueError, TypeError):
             venue_id = None
 
+        if venue_id is None:
+            raise HTTPNotFound()
+
+        venue = DBSession.query(c_models.Venue).filter_by(id=venue_id).one()
         length_or_range = self.request.matchdict['length_or_range']
         return dict(
             seat_adjacencies={
@@ -777,14 +720,13 @@ class IndexAjaxView(object):
                     [seat.l0_id for seat in seat_adjacency.seats_filter_by_venue(venue_id)]
                     for seat_adjacency_set in \
                         DBSession.query(c_models.SeatAdjacencySet)\
-                            .filter_by(site_id=performance.venue.site_id, seat_count=length_or_range)
+                            .filter_by(site_id=venue.site_id, seat_count=length_or_range)
                     for seat_adjacency in seat_adjacency_set.adjacencies
                     ]
                 }
             )
 
-    @view_config(route_name="cart.venue_drawing", request_method="GET")
-    @view_config(route_name="cart.venue_drawing.obsolete", request_method="GET")
+    @lbr_view_config(route_name="cart.venue_drawing", request_method="GET")
     def get_venue_drawing(self):
         try:
             venue_id = long(self.request.matchdict.get('venue_id'))
@@ -850,7 +792,7 @@ class ReserveView(object):
 
 
     @limiter.acquire
-    @view_config(route_name='cart.order', request_method="POST")
+    @lbr_view_config(route_name='cart.order', request_method="POST")
     def reserve(self):
         h.form_log(self.request, "received order")
         ordered_items = self.ordered_items
@@ -871,7 +813,7 @@ class ReserveView(object):
             assert_quantity_within_bounds(sales_segment, ordered_items)
             cart = api.order_products(
                 self.request,
-                sales_segment.id,
+                sales_segment,
                 ordered_items,
                 selected_seats=selected_seats,
                 separate_seats=separate_seats)
@@ -985,47 +927,37 @@ class ReleaseCartView(object):
         self.request = request
 
     @limiter.release
-    @view_config(route_name='cart.release', request_method="POST", renderer="json")
+    @lbr_view_config(route_name='cart.release', request_method="POST", renderer="json")
     def __call__(self):
-        try:
-            cart = self.request.context.cart
-            api.release_cart(self.request, cart)
-            api.remove_cart(self.request)
-        except NoCartError:
-            import sys
-            logger.info('exception ignored', exc_info=sys.exc_info())
+        api.remove_cart(self.request)
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(route_name='cart.payment', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("payment.html"), permission="buy")
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
 
     class ValidationFailed(Exception):
         pass
 
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
-    @property
-    def sales_segment(self):
-        # contextから取れることを期待できないので
-        # XXX: 会員区分からバリデーションしなくていいの?
-        return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
+    def get_payment_delivery_method_pairs(self, sales_segment):
+        return [
+            pdmp
+            for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
+            if pdmp.payment_method.public
+            ]
 
-    @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
-    @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
-    def __call__(self):
+    @lbr_view_config(request_method="GET")
+    def get(self):
         """ 支払い方法、引き取り方法選択
         """
         start_on = self.request.context.cart.performance.start_on
         sales_segment = self.request.context.sales_segment
-        payment_delivery_methods = [pdmp
-                                    for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
-                                    if pdmp.payment_method.public]
-        
+        payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
@@ -1053,7 +985,14 @@ class PaymentView(object):
         else:
             formdata = None
 
-        form = schemas.ClientForm(formdata=formdata)
+        form = schemas.ClientForm(
+            formdata=formdata,
+            context=self.context,
+            flavors=(self.context.cart_setting.flavors or {})
+            )
+        default_prefecture = self.context.cart_setting.default_prefecture
+        if default_prefecture is not None:
+            form['prefecture'].data = default_prefecture
         return dict(
             form=form,
             payment_delivery_methods=payment_delivery_methods
@@ -1093,9 +1032,7 @@ class PaymentView(object):
                 raise self.ValidationFailed(u'購入者情報の入力内容を確認してください')
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
-    @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
+    @lbr_view_config(request_method="POST")
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -1105,7 +1042,7 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
-        self.form = schemas.ClientForm(formdata=self.request.params)
+        self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
         shipping_address_params = self.get_validated_address_data()
 
         try:
@@ -1194,15 +1131,13 @@ class PaymentView(object):
         )
 
 
-@view_defaults(route_name='cart.extra_form', decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(route_name='cart.extra_form', renderer=selectable_renderer("extra_form.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ExtraFormView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
-    @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"))
+    @lbr_view_config(request_method="GET")
     def get(self):
         extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
         if extra_form_field_descs is None:
@@ -1215,9 +1150,7 @@ class ExtraFormView(object):
             )
         return dict(form=form, form_fields=form_fields)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
-    @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
-    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"))
+    @lbr_view_config(request_method="POST")
     def post(self):
         form = form_fields = None
         extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
@@ -1232,12 +1165,11 @@ class ExtraFormView(object):
             )
         if not form.validate():
             return dict(form=form, form_fields=form_fields)
-        self.request.session['extra_form'] = form.data
-
+        api.store_extra_form_data(self.request, form.data)
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
-@view_defaults(route_name='cart.point', decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
 class PointAccountEnteringView(object):
     def __init__(self, request):
         self.request = request
@@ -1250,9 +1182,7 @@ class PointAccountEnteringView(object):
             )
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"))
+    @lbr_view_config(request_method="GET")
     def point(self):
         cart = self.request.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
@@ -1289,9 +1219,7 @@ class PointAccountEnteringView(object):
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"))
+    @lbr_view_config(request_method="POST")
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
@@ -1304,7 +1232,7 @@ class PointAccountEnteringView(object):
 
         form = self.form
         if not form.validate():
-            asid = None
+            asid = self.request.altair_pc_asid
             if is_mobile_request(self.request):
                 asid = self.request.altair_mobile_asid
 
@@ -1330,18 +1258,19 @@ class PointAccountEnteringView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(
+    route_name='payment.confirm',
+    decorator=with_jquery.not_when(mobile_request),
+    renderer=selectable_renderer("confirm.html"),
+    permission="buy")
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
-    @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
-    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
+    @lbr_view_config(request_method="GET")
     def get(self):
-
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.request.context.cart
         if cart.shipping_address is None:
@@ -1355,35 +1284,39 @@ class ConfirmView(object):
         payment.call_validate()
         delegator = payment.call_delegator()
 
+        raw_extra_form_data = api.load_extra_form_data(self.request)
+        extra_form_data = None
+        if raw_extra_form_data is not None:
+            extra_form_data = get_extra_form_data_pair_pairs(
+                self.context,
+                self.request,
+                self.context.sales_segment,
+                raw_extra_form_data
+                )
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
-            extra_form_data=get_extra_form_data_pair_pairs(
-                self.request,
-                self.request.context.sales_segment,
-                self.request.session.get('extra_form')
-                ),
+            extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else ""
         )
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
     """ 決済完了画面"""
     """permisson="buy" 不要"""
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
         # TODO: Orderを表示？
 
     @limiter.release
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
-    @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
-    def complete_post(self):
+    @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")
+    @lbr_view_config(route_name='payment.confirm', request_method="POST")
+    def post(self):
         try:
             form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
             if not form.validate():
@@ -1407,7 +1340,11 @@ class CompleteView(object):
                     if _cart is not None:
                         return self.render_complete_page(_cart.order_no)
                     else:
-                        return self.complete_get()
+                        return render_view_to_response_with_derived_request(
+                            context_factory=CompleteViewTicketingCartResource,
+                            request=self.request,
+                            route=('payment.finish',{})
+                            )
                 except:
                     return None
             retval = _()
@@ -1423,14 +1360,9 @@ class CompleteView(object):
         order_id = order.id
         order_no = order.order_no
 
-        extra_form_data = self.request.session.get('extra_form')
+        extra_form_data = api.load_extra_form_data(self.request)
         if extra_form_data is not None:
-            attributes = {}
-            for k, v in extra_form_data.items():
-                if isinstance(v, list):
-                    v = ','.join(v)
-                attributes[k] = v
-            order.attributes = attributes
+            order.attributes = coerce_extra_form_data(self.request, extra_form_data)
 
         notify_order_completed(self.request, order)
 
@@ -1450,20 +1382,20 @@ class CompleteView(object):
         self.request.response.expires = datetime.now() + timedelta(seconds=3600)
         api.get_temporary_store(self.request).set(self.request, order_no)
         if IMobileRequest.providedBy(self.request):
-            api.remove_cart(self.request)
+            api.disassociate_cart_from_session(self.request)
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
-            # transaction をコミットしたので、再度読み直し
-            order = order_models.Order.query.filter_by(id=order_id).one()
-            return dict(order=order)
+            return render_view_to_response_with_derived_request(
+                context_factory=CompleteViewTicketingCartResource,
+                request=self.request,
+                route=('payment.finish', {})
+                )
         else:
             # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
-            return HTTPFound(self.request.current_route_path(), headers=self.request.response.headers)
+            return HTTPFound(self.request.route_path('payment.finish'), headers=self.request.response.headers)
 
-    @view_config(route_name='payment.finish', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
-    @view_config(route_name='payment.finish', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
-    def complete_get(self):
+    @lbr_view_config(context=CompleteViewTicketingCartResource)
+    def get(self):
         try:
             order_no = api.get_temporary_store(self.request).get(self.request)
         except:
@@ -1471,7 +1403,7 @@ class CompleteView(object):
         return self.render_complete_page(order_no)
 
     def render_complete_page(self, order_no):
-        api.remove_cart(self.request)
+        api.disassociate_cart_from_session(self.request)
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         if order is None:
             raise CompletionPageNotRenderered()
@@ -1479,13 +1411,14 @@ class CompleteView(object):
         self.request.response.cache_control = 'max-age=3600'
         return dict(order=order)
 
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config(context='.authorization.InvalidMemberGroupException')
+    @lbr_view_config(context='.authorization.InvalidMemberGroupException')
     def __call__(self):
         event_id = self.context.event.id
         event = c_models.Event.query.filter(c_models.Event.id==event_id).one()
@@ -1499,46 +1432,18 @@ def is_kt_organization(out_term_exception, request):
     organization = get_organization(request)
     return organization.code == 'KT'
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request), context='.exceptions.OutTermSalesException')
+@view_defaults(
+    decorator=with_jquery.not_when(mobile_request),
+    context='.exceptions.OutTermSalesException')
 class OutTermSalesView(object):
     def __init__(self, context, request):
-        self.request = request
         self.context = context
+        self.request = request
 
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_event.html'),
-                 custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ))
-    def pc_event(self):
-        return self._render_event()
-
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/smartphone/out_term_sales_event.html'),
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), is_kt_organization))
-    def smartphone_event(self):
-        return self._render_event()
-
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_event.html'),
-                 request_type='altair.mobile.interfaces.IMobileRequest',
-                 custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ))
-    def mobile_event(self):
-        return self._render_event()
-
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_performance.html'),
-                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), ))
-    def pc_performance(self):
-        return self._render_performance()
-
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/smartphone/out_term_sales_performance.html'),
-                 request_type='altair.mobile.interfaces.ISmartphoneRequest',
-                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), is_kt_organization))
-    def smartphone_performance(self):
-        return self._render_performance()
-
-    @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_performance.html'),
-                 request_type='altair.mobile.interfaces.IMobileRequest',
-                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), ))
-    def mobile_performance(self):
-        return self._render_performance()
-
-    def _render_event(self):
+    @lbr_view_config(
+        custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ),
+        renderer=selectable_renderer('out_term_sales_event.html'))
+    def for_event(self):
         api.logout(self.request)
         if self.context.next is None:
             datum = self.context.last
@@ -1548,7 +1453,11 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, outer=self.context, **datum)
 
-    def _render_performance(self):
+    @lbr_view_config(
+        custom_predicates=(lambda context, _: issubclass(context.type_, PerformanceOrientedTicketingCartResource), ),
+        renderer=selectable_renderer('out_term_sales_performance.html'),
+        )
+    def for_performance(self):
         if self.context.next is None:
             datum = self.context.last
             which = 'last'
@@ -1564,51 +1473,46 @@ class OutTermSalesView(object):
         api.logout(self.request)
         return dict(which=which, outer=self.context, available_sales_segments=available_sales_segments, **datum)
 
-@view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
+@lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
 def logout(request):
     api.logout(request)
     return back_to_top(request)
 
-def _create_response(request, param):
+def _create_response(request, params=None):
     event_id = request.matchdict.get('event_id')
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, _query=params) or '/')
+    return response
+
+def _create_response_perf(request, params=None):
+    performance_id = request.matchdict.get('performance_id')
+    response = HTTPFound(performance_id and request.route_url('cart.index2', performance_id=performance_id, _query=params) or '/')
     return response
 
 @view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
-    ReleaseCartView(request)()
-    response = _create_response(request=request, param="")
+    api.remove_cart(request)
+    response = _create_response(request=request, params=request.GET)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_perf(context, request):
+    api.remove_cart(request)
+    response = _create_response_perf(request=request, params=request.GET)
     set_we_need_pc_access(response)
     return response
 
 @view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
-    ReleaseCartView(request)()
-    response = _create_response(request=request, param="")
+    api.remove_cart(request)
+    response = _create_response(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
-    return response
-
-@view_config(route_name='cart.switchpc.perf')
-def switch_pc_performance(context, request):
-    ReleaseCartView(request)()
-    performance = request.matchdict.get('performance')
-    param = _create_performance_param(performance=performance)
-    response = _create_response(request=request, param=param)
-    set_we_need_pc_access(response)
     return response
 
 @view_config(route_name='cart.switchsp.perf')
-def switch_sp_performance(context, request):
-    ReleaseCartView(request)()
-    performance = request.matchdict.get('performance')
-    param = _create_performance_param(performance=performance)
-    response = _create_response(request=request, param=param)
+def switch_sp_perf(context, request):
+    api.remove_cart(request)
+    response = _create_response_perf(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
     return response
-
-def _create_performance_param(performance):
-    param = ""
-    if performance:
-        param = "?performance=" + str(performance)
-    return param

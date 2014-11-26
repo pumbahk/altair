@@ -10,21 +10,20 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTP
 from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
-from altair.mobile import mobile_view_config, smartphone_view_config
 from altair.pyramid_tz.api import get_timezone
-
+from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
+from altair.app.ticketing.cart.rendering import selectable_renderer
 
 from altair.now import get_now
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
@@ -72,15 +71,15 @@ def my_render_view_to_response(context, request, view_name=''):
         return None
     return view_callable(context, request)
 
-@view_config(context=NoResultFound)
+@lbr_view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)
     return HTTPNotFound()
 
-@view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/pc/timeout.html"))
-@mobile_view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/mobile/timeout.html"))
-@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("%(membership)s/smartphone/timeout.html"))
+@lbr_view_config(context=NoCartError, renderer=selectable_renderer("timeout.html"))
+@lbr_view_config(context=NoCartError, request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("timeout.html"))
+@lbr_view_config(context=NoCartError, request_type='altair.mobile.interfaces.ISmartphoneRequest', renderer=selectable_renderer("timeout.html"))
 def no_cart_error(context, request):
     request.response.status = 404
     return {}
@@ -97,14 +96,7 @@ class AgreementLotView(object):
             return None
         return url
 
-    @view_config(request_method="GET",
-                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"))
-    @view_config(request_method="GET",
-                 request_type='altair.mobile.interfaces.IMobileRequest',
-                 renderer=selectable_renderer("%(membership)s/mobile/agreement.html"))
-    @view_config(request_method="GET",
-                 request_type='altair.mobile.interfaces.ISmartphoneRequest',
-                 renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"))
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("agreement.html"))
     def get(self):
         event = self.context.event
         lot = self.context.lot
@@ -125,7 +117,7 @@ class AgreementLotView(object):
             agreement_body=Markup(sales_segment.setting.agreement_body)
             )
 
-    @view_config(request_method="POST")
+    @lbr_view_config(request_method="POST")
     def post(self):
         event = self.context.event
         lot = self.context.lot
@@ -145,22 +137,22 @@ class AgreementLotView(object):
         return HTTPFound(return_to)
 
 
-@view_defaults(route_name='lots.entry.agreement.compat', renderer=selectable_renderer("%(membership)s/pc/agreement.html"), permission="lots")
+@view_defaults(route_name='lots.entry.agreement.compat', renderer=selectable_renderer("agreement.html"), permission="lots")
 class CompatAgreementLotView(object):
     def __init__(self, context, request):
         self.request = request
         self.context = context
 
-    @view_config(request_method="GET")
+    @lbr_view_config(request_method="GET")
     def get(self):
         return HTTPMovedPermanently(self.request.route_path('lots.entry.agreement', _query=self.request.GET, **self.request.matchdict))
 
-    @view_config(request_method="POST")
+    @lbr_view_config(request_method="POST")
     def post(self):
         return AgreementLotView(self.context, self.request).post()
 
 
-@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("%(membership)s/pc/index.html"), permission="lots")
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("index.html"), permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
@@ -200,7 +192,7 @@ class EntryLotView(object):
     def _create_form(self):
         return api.create_client_form(self.context, self.request)
 
-    @view_config()#request_method="GET")
+    @lbr_view_config()#request_method="GET")
     def get(self, form=None):
         """
 
@@ -264,7 +256,7 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map)
 
-    @view_config(request_method="POST")
+    @lbr_view_config(request_method="POST")
     def post(self):
         """ 抽選申し込み作成(一部)
         商品、枚数チェック
@@ -283,7 +275,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
 
-        cform = schemas.ClientFormFactory(self.request)(formdata=self.request.params)
+        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -322,13 +314,7 @@ class EntryLotView(object):
             self.request.session.flash(u"お支払お引き取り方法を選択してください")
             validated = False
 
-        birthday = None
-        try:
-            birthday = datetime(int(cform['year'].data),
-                                int(cform['month'].data),
-                                int(cform['day'].data))
-        except (ValueError, TypeError):
-            pass
+        birthday = cform['birthday'].data
 
         # 購入者情報
         if not cform.validate() or not birthday:
@@ -373,9 +359,7 @@ class ConfirmLotEntryView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
-    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("confirm.html"))
     def get(self):
         # セッションから表示
         entry = api.get_lot_entry_dict(self.request)
@@ -420,7 +404,7 @@ class ConfirmLotEntryView(object):
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
 
-    @view_config(request_method="POST")
+    @lbr_view_config(request_method="POST")
     def post(self):
         if 'back' in self.request.params or 'back.x' in self.request.params:
             return self.back_to_form()
@@ -497,9 +481,7 @@ class CompletionLotEntryView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("completion.html"))
     def get(self):
         """ 完了画面 """
         if 'lots.entry_no' not in self.request.session:
@@ -546,15 +528,13 @@ class LotReviewView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/review_form.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/review_form.html"))
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/review_form.html"))
-    @mobile_view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/review_form.html"))
+    @lbr_view_config(request_method="POST", renderer=selectable_renderer("review_form.html"))
     def post(self):
         """ 申し込み情報表示"""
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
@@ -572,8 +552,7 @@ class LotReviewView(object):
         # XXX: hack
         return my_render_view_to_response(lot_entry, self.request)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/review.html"), context=LotEntry)
-    @mobile_view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/review.html"), context=LotEntry)
+    @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), context=LotEntry)
     def post_validated(self):
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
@@ -589,20 +568,20 @@ class LotReviewView(object):
             birthday=lot_entry.birthday,
             memo=lot_entry.memo)
 
-@view_config(context=".exceptions.OutTermException",
-             renderer=selectable_renderer("%(membership)s/pc/out_term_exception.html"))
-@mobile_view_config(context=".exceptions.OutTermException",
-             renderer=selectable_renderer("%(membership)s/mobile/out_term_exception.html"))
+@lbr_view_config(
+    context=".exceptions.OutTermException",
+    renderer=selectable_renderer("out_term_exception.html")
+    )
 def out_term_exception(context, request):
     return dict(lot=context.lot)
 
 
 
 
-@view_config(context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
-             renderer=selectable_renderer('%(membership)s/pc/message.html'))
-@mobile_view_config(context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
-             renderer=selectable_renderer('%(membership)s/mobile/error.html'))
+@lbr_view_config(
+    context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
+    renderer=selectable_renderer('message.html')
+    )
 def payment_plugin_exception(context, request):
     if context.back_url is not None:
         return HTTPFound(location=context.back_url)

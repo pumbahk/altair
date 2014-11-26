@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
 import sys
-import time
 import argparse
 import datetime
+import logging
+
 import transaction
 import pyramid.paster
-import pyramid.testing
-
-from sqlalchemy import or_
+import pyramid.threadlocal
 
 import altair.sqlahelper
 import altair.multilock
@@ -29,6 +28,9 @@ from altair.app.ticketing.orders.models import (
     )
 from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
 
+logger = logging.getLogger(__name__)
+
+
 def get_target_order_nos():
     today = datetime.datetime.combine(datetime.date.today(), datetime.time())
     tomorrow = today + datetime.timedelta(1)
@@ -44,21 +46,21 @@ def get_target_order_nos():
         .join(PaymentDeliveryMethodPair)\
         .join(PaymentMethod)\
         .join(OrderNotification)\
-        .filter(PaymentMethod.payment_plugin_id==SEJ_PAYMENT_PLUGIN_ID)\
-        .filter(OrganizationSetting.notify_remind_mail==True)\
-        .filter(Order.canceled_at==None)\
-        .filter(Order.canceled_at==None)\
-        .filter(Order.refunded_at==None)\
-        .filter(Order.refund_id==None)\
-        .filter(Order.paid_at==None)\
-        .filter(OrderNotification.sej_remind_at==None)\
+        .filter(PaymentMethod.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID)\
+        .filter(OrganizationSetting.notify_remind_mail == True)\
+        .filter(Order.canceled_at == None)\
+        .filter(Order.refunded_at == None)\
+        .filter(Order.refund_id == None)\
+        .filter(Order.paid_at == None)\
+        .filter(OrderNotification.sej_remind_at == None)\
         .filter(Order.order_no.in_(subqs))\
         .with_entities(Order.order_no)\
         .all()
     return [order_no_named_tuple[0] for order_no_named_tuple in order_nos]
 
+
 def send_sej_remind_mail(settings):
-    request = pyramid.testing.DummyRequest()
+    request = pyramid.threadlocal.get_current_request()
 
     order_nos = get_target_order_nos()
     utility = get_mail_utility(request, MailTypeEnum.PurcacheSejRemindMail)
@@ -88,7 +90,6 @@ def main(argv=sys.argv[1:]):
             send_sej_remind_mail(settings)
     except altair.multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
-
 
 
 if __name__ == '__main__':

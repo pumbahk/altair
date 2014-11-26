@@ -8,7 +8,8 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'pyramid == 1.3.4',
+    'pyramid == 1.5.1',
+    'pyramid_mako == 1.0.2',
     'webhelpers',
     'pyramid_tm',
     "pyramid_fanstatic",
@@ -39,7 +40,7 @@ requires = [
     'altair.formhelpers',
     "altair.preview",
     "altair.extracodecs",
-    'pyramid_layout',
+    'pyramid_layout >= 0.9',
     'lxml',
     'waitress'
     ]

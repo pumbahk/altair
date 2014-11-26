@@ -12,6 +12,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Organization, OrganizationSetting, Host, Event, Account, MailTypeChoices, SejTenant
+from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.operators.models import Operator, OperatorRole, OperatorAuth
 from altair.app.ticketing.users.models import User
 from altair.app.ticketing.master.models import BankAccount
@@ -88,7 +89,18 @@ class Organizations(BaseView):
                 OrganizationSetting(
                     name='default',
                     performance_selector='matchup',
-                    default_mail_sender=f.default_mail_sender.data
+                    default_mail_sender=f.default_mail_sender.data,
+                    cart_setting=CartSetting(
+                        organization=organization,
+                        name=u'デフォルトの設定',
+                        type=u'standard',
+                        performance_selector=u'matchup',
+                        performance_selector_label1_override=None,
+                        performance_selector_label2_override=None,
+                        mobile_marker_color=u'#000000',
+                        mobile_header_background_color=u'#000000',
+                        mobile_required_marker_color=u'#ff0000',
+                        mail_filter_domain_notice_template=u'注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')
                     )
                 ]
             organization.operators = [
@@ -201,7 +213,6 @@ class OrganizationSettings(BaseView):
 
         organization_setting.name = f.name.data
         organization_setting.auth_type = f.auth_type.data
-        organization_setting.performance_selector = f.performance_selector.data
         organization_setting.margin_ratio = f.margin_ratio.data
         organization_setting.refund_ratio = f.refund_ratio.data
         organization_setting.printing_fee = f.printing_fee.data

@@ -91,18 +91,6 @@ def get_event(request):
     event_id = request.matchdict['event_id']
     return Event.query.filter(Event.id==event_id).one()
 
-def get_member_group(request):
-    org = cart_api.get_organization(request)
-    auth_info = cart_api.get_auth_info(request)
-    member_ship = auth_info.get('membership')
-    member_group_name = auth_info.get('membergroup')
-    if member_ship is None or member_group_name is None:
-        return None
-    # TODO: membershipの条件
-    return MemberGroup.query.join(Membership, Membership.id == MemberGroup.membership_id) \
-        .filter(MemberGroup.name==member_group_name)\
-        .filter(Membership.organization_id == org.id).one()
-
 def get_sales_segment(request, event, membergroup):
     # TODO: membergroup が Noneであるときにguestとしてよいか検討 guest membergroupを作らなくてもよい？
     if membergroup is None:
@@ -154,7 +142,7 @@ def build_lot_entry_wish(wish_order, wish_rec):
             wish.products.append(product)
     return wish
 
-def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None, channel=None):
+def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None, channel=None, membership=None):
     entry = LotEntry(
         lot=lot,
         user=user,
@@ -165,7 +153,8 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
         gender=gender,
         birthday=birthday,
         memo=memo,
-        channel=channel
+        channel=channel,
+        membership=membership
         )
     for i, wish_rec in enumerate(wishes):
         wish = build_lot_entry_wish(i, wish_rec)
@@ -228,10 +217,12 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     """
 
     channel = core_api.get_channel(request=request)
+    info = request.altair_auth_info
     entry = build_lot_entry(
         lot=lot,
         wishes=wishes,
-        membergroup=get_member_group(request),
+        membergroup=cart_api.get_member_group(request, info),
+        membership=cart_api.get_membership(info),
         payment_delivery_method_pair=payment_delivery_method_pair,
         shipping_address=shipping_address,
         user=user,
@@ -558,7 +549,7 @@ def create_client_form(context, request):
     if user is not None:
         user_profile = user.user_profile
 
-    retval = schemas.ClientFormFactory(request)()
+    retval = schemas.ClientForm(formdata=request.POST, context=context)
 
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v
@@ -582,10 +573,8 @@ def create_client_form(context, request):
             sex = user_profile.sex
         if user_profile.birthday:
             birthday = user_profile.birthday
-    retval.sex.data = unicode(sex or u'')
-    retval.year.data = unicode(birthday.year)
-    retval.month.data = unicode(birthday.month)
-    retval.day.data = unicode(birthday.day)
+    retval.sex.process_data(unicode(sex or u''))
+    retval.birthday.process_data(birthday)
     return retval
 
 def get_lotting_announce_timezone(timezone):

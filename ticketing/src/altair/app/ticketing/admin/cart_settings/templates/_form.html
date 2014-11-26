@@ -1,0 +1,47 @@
+<%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%fh:render_block>
+${ch.form_item(form.name)}
+${ch.form_item(form.type)}
+<fieldset>
+  <legend>カート全般の設定</legend>
+  ${ch.form_item(form.title)}
+  ${ch.form_item(form.orderreview_page_url)}
+  ${ch.form_item(form.contact_url)}
+  ${ch.form_item(form.contact_url_mobile)}
+  ${ch.form_item(form.contact_name)}
+  ${ch.form_item(form.contact_tel)}
+  ${ch.form_item(form.contact_office_hours)}
+  ${ch.form_item(form.privacy_policy_page_url)}
+  ${ch.form_item(form.privacy_policy_page_url_mobile)}
+  ${ch.form_item(form.legal_notice_page_url)}
+  ${ch.form_item(form.legal_notice_page_url_mobile)}
+  ${ch.form_item(form.mail_filter_domain_notice_template)}
+</fieldset>
+<fieldset>
+  <legend>PCカートの外観の設定</legend>
+  ${ch.form_item(form.header_image_url)}
+</fieldset>
+<fieldset>
+  <legend>携帯カートの外観の設定</legend>
+  ${ch.form_item(form.mobile_marker_color)}
+  ${ch.form_item(form.mobile_header_background_color)}
+  ${ch.form_item(form.mobile_required_marker_color)}
+  ${ch.form_item(form.header_image_url_mobile)}
+</fieldset>
+<fieldset>
+  <legend>公演選択プルダウンの設定</legend>
+  ${ch.form_item(form.performance_selector)}
+  ${ch.form_item(form.performance_selector_label1_override)}
+  ${ch.form_item(form.performance_selector_label2_override)}
+</fieldset>
+<fieldset>
+  <legend>購入者情報の設定</legend>
+  ${ch.form_item(form.default_prefecture)}
+  ${ch.form_item(form.flavors)}
+  ${ch.form_item(form.extra_form_fields)}
+</fieldset>
+<%def name="__post__(registry_var)">
+${fh.inject_js(registry_var)}
+</%def>
+</%fh:render_block>
