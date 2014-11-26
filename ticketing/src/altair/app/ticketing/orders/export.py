@@ -111,6 +111,7 @@ japanese_columns = {
     u'ordered_product_item.print_histories': u'発券作業者',
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
     u'seat.name': u'座席名',
+    u'stock_holder.name': u'枠名',
     }
 
 def get_japanese_columns(request):
@@ -358,6 +359,7 @@ class OrderCSV(object):
             CurrencyRenderer(u'ordered_product_item.refund_price'),
             PrintHistoryRenderer(u'ordered_product_item', u'ordered_product_item.print_histories'),
             PlainTextRenderer(u'seat.name'),
+            PlainTextRenderer(u'stock_holder.name'),
             AttributeRenderer(
                 u'ordered_product_item.attributes',
                 u'attribute'
@@ -426,6 +428,7 @@ class OrderCSV(object):
                         for seat in ordered_product_item.seats:
                             record = dict(common_record)
                             record[u'seat'] = seat
+                            record[u'stock_holder'] = ordered_product_item.product_item.stock.stock_holder
                             record[u'ordered_product_item'] = ordered_product_item
                             record[u'ordered_product'] = ordered_product
                             yield record
