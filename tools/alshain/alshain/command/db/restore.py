@@ -12,7 +12,7 @@ class StatusError(Exception):
     pass
 
 def generate_snapshot_url():
-    cmd = "s3cmd ls `s3cmd ls s3://ticketstar-db-dev-snapshots | tail -n 1 | awk '{print $2}'` | awk '{print $4}'"
+    cmd = "s3cmd ls `s3cmd ls s3://ticketstar-db-dev-snapshots | grep -v 'tainted' | tail -n 1 | awk '{print $2}'` | awk '{print $4}'"
     out = tempfile.TemporaryFile()
     child = utils.call(cmd, shell=True, stdout=out)
     if 0 == child.wait():
