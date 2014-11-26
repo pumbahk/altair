@@ -462,7 +462,7 @@ class QRView(object):
                         message=u"Emailの形式が正しくありません")
 
         try:
-            sender = self.context.membership.organization.setting.default_mail_sender
+            sender = self.context.organization.setting.default_mail_sender
             api.send_qr_mail(self.request, self.context, mail, sender)
         except Exception, e:
             logger.error(e.message, exc_info=1)
