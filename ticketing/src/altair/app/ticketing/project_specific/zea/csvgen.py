@@ -2,6 +2,25 @@
 import csv
 from dateutil.parser import parse as parsedate
 
+
+def alt_getattr(obj, k):
+    try:
+        return getattr(obj, k)
+    except AttributeError:
+        for _k in dir(obj):
+            if k == _k.replace(':', '_'):
+                return getattr(obj, _k)
+    raise AttributeError(k)
+
+def alt_getitem(obj, k):
+    try:
+        return obj[k]
+    except KeyError:
+        for _k in obj:
+            if k == _k.replace(':', '_'):
+                return obj[_k]
+    raise AttributeError(k)
+
 class Wrapper(object):
     def __init__(self, inner):
         self.__inner = inner
@@ -14,7 +33,7 @@ class Wrapper(object):
             retval = self.__item_cache[k]
         else:
             try:
-                retval = self.__class__(self.__inner[k])
+                retval = self.__class__(alt_getitem(self.__inner, k))
             except:
                 retval = self.__class__(None)
             self.__item_cache[k] = retval
@@ -25,7 +44,7 @@ class Wrapper(object):
             retval = self.__attr_cache[k]
         else:
             try:
-                retval = self.__class__(getattr(self.__inner, k))
+                retval = self.__class__(alt_getattr(self.__inner, k))
             except:
                 retval = self.__class__(None)
             self.__attr_cache[k] = retval
@@ -66,7 +85,7 @@ columns = [
     (u'支払日時', u'{.paid_at:%Y-%m-%d %H:%M:%S}'),
     (u'キャンセル日時', u'{.canceled_at:%Y-%m-%d %H:%M:%S}'),
     (u'決済方法', u'{.payment_delivery_method_pair.payment_method.name}'),
-    (u'合計金額', u'{.total_amount}'),
+    (u'合計金額', u'{.total_amount:.0f}'),
     (u'姓', u'{.shipping_address.last_name}'),
     (u'名', u'{.shipping_address.first_name}'),
     (u'セイ', u'{.shipping_address.last_name_kana}'),
@@ -87,7 +106,7 @@ columns = [
     (u'販売区分', u'{.sales_segment.sales_segment_group.name}'),
     (u'誕生日', u'{.attributes[誕生日]._as_datetime:%Y-%m-%d}'),
     (u'ニックネーム', u'{.attributes[ニックネーム]}'),
-    (u'メールマガジンの配信', u'{.attributes[メールマガジンの配信]}'),
+    (u'メールマガジンの配信', u'''{.attributes[ZE_A's Japanメールマガジンの配信]}'''),
     (u'好きなメンバー', u'{.attributes[好きなメンバー]}'),
     ]
 
