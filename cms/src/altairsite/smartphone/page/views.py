@@ -22,13 +22,26 @@ class StaticKindView(object):
         }
 
     @smartphone_site_view_config(match_param="kind=canceled", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/canceled.html'))
-    @smartphone_site_view_config(match_param="kind=canceled_detail", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/canceled_detail.html'))
     def move_canceled(self):
-        canceled_events = self.context.getInfo(kind="canceled", system_tag_id=None)
+        canceled_topics = self.context.getInfo(kind="canceled", system_tag_id=None)
 
         return {
               'helper':SmartPhoneHelper()
-            , 'canceled_events':canceled_events
+            , 'canceled_topics':canceled_topics
+            , 'sns':{
+                'url':"https://ticket.rakuten.co.jp/change",
+                'title':u"楽天チケット-公演中止・変更情報"
+            }
+        }
+
+    @smartphone_site_view_config(match_param="kind=canceled_detail", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/canceled_detail.html'))
+    def move_canceled_detail(self):
+        topicid = self.request.GET['topic_id']
+        canceled_topic = self.context.get_canceled_topic(topicid)
+
+        return {
+              'helper':SmartPhoneHelper()
+            , 'canceled_topic':canceled_topic
             , 'sns':{
                 'url':"https://ticket.rakuten.co.jp/change",
                 'title':u"楽天チケット-公演中止・変更情報"
