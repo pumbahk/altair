@@ -3636,9 +3636,11 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
 
     enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
     enable_mypage = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"マイページの使用", _a_label=u"マイページの使用")
-
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
     cart_setting = relationship('CartSetting')
+    asid = AnnotatedColumn(Unicode(255), doc=u"asid", _a_label=u"asid")
+    asid_mobile = AnnotatedColumn(Unicode(255), doc=u"asid_mobile", _a_label=u"asid_mobile")
+    asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
 
     @property
     def container(self):

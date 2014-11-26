@@ -19,9 +19,7 @@ def _setup_db(echo=False):
         )
 
 class TestIt(unittest.TestCase):
-    _settings = {'altair.pc.asid': 'test',
-                 'altair.mobile.asid': 'test',
-                 'altair.smartphone.asid': 'test',
+    _settings = {
                  'altair.cart.completion_page.temporary_store.cookie_name': '',
                  'altair.cart.completion_page.temporary_store.secret': '',
                  }
@@ -332,10 +330,7 @@ class CartedProductItemTests(unittest.TestCase):
 
 
 class TicketingCartResourceTestBase(object):
-    _settings = {'altair.pc.asid': 'test',
-                 'altair.mobile.asid': 'test',
-                 'altair.smartphone.asid': 'test',
-                 'altair.cart.completion_page.temporary_store.cookie_name': '',
+    _settings = {'altair.cart.completion_page.temporary_store.cookie_name': '',
                  'altair.cart.completion_page.temporary_store.secret': '',
                  }        
     def setUp(self):
