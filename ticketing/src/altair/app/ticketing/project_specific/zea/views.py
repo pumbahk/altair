@@ -1,12 +1,15 @@
 import codecs
 import csv
 import io
+import logging
 from pyramid.view import view_defaults, view_config
 from webhelpers.paginate import Page
 from sqlalchemy.sql.expression import desc
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.models import Order
 from .csvgen import make_csv_gen
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
 class ZeaAdminEventView(object):
@@ -52,15 +55,12 @@ class ZeaAdminEventView(object):
                 for order in orders:
                     writer.writerow([encoder(v)[0] for v in csvgen.data_row(order)])
                     if f.tell() > block_size:
-                        import sys
-                        print >>sys.stderr, f.tell()
                         yield f.getvalue()
                         f.truncate(0)
                         f.seek(0)
                 yield f.getvalue()
             except:
-                import sys, traceback
-                traceback.print_exc(file=sys.stderr)
+                logger.exception(u'failed to send CSV file')
         response.content_type = 'text/csv'
         response.content_disposition = 'attachment; filename=download.csv'
         response.app_iter = _(self.context.orders.order_by(desc(Order.id)))
