@@ -29,5 +29,6 @@ btmv1.1a.vpc.altr	worker
 apnl1.1a.vpc.altr	newsletter
 apvv1.1a.vpc.altr	venueadmin
 apcv1.1c.vpc.altr	sej
+apcv1.1a.vpc.altr	sej
 apsv1.1b.vpc.altr	solr
 # vim: noet
