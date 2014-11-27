@@ -100,12 +100,13 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         if ICartResource.providedBy(context):
             event_setting = context.event.setting
             if event_setting is not None:
-                label1 = event_setting.performance_selector_label1_override
-                label2 = event_setting.performance_selector_label2_override
-                if label1 is not None:
-                    self.label = label1
-                if label2 is not None:
-                    self.second_label = label2
+                if event_setting.cart_setting:
+                    label1 = event_setting.performance_selector_label1_override
+                    label2 = event_setting.performance_selector_label2_override
+                    if label1 is not None:
+                        self.label = label1
+                    if label2 is not None:
+                        self.second_label = label2
 
     def select_value(self, sales_segment):
         """キーになる値"""
