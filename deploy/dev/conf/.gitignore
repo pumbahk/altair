@@ -2,11 +2,11 @@ altair.cms.admin.ini
 altair.cms.usersite.ini
 altair.newsletter.admin.ini
 altair.ticketing.admin.ini
+altair.ticketing.zea-admin.ini
 altair.ticketing.cart.ini
 altair.ticketing.worker.lots.ini
 altair.ticketing.worker.cart.ini
 altair.ticketing.lots.ini
-altair.ticketing.mypage.ini
 altair.ticketing.orderreview.ini
 altair.ticketing.qrreader.ini
 altair.ticketing.sej.ini
