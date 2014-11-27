@@ -116,7 +116,7 @@ var add_point_grant_setting, remove_point_grant_settings;
 (function (form) {
   get_selected_point_grant_setting_ids = function get_selected_point_grant_setting_ids() {
     var retval = [];
-    form.find('input[name="point_grant_setting_id"]:checked').each(function (_, n) {
+    form.find('input[name="point_grant_setting_id[]"]:checked').each(function (_, n) {
       retval.push(n.value);
     });
     return retval;
