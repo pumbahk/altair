@@ -3,29 +3,48 @@ import logging
 logger = logging.getLogger(__name__)
 
 import itertools
-from wtforms import Form
-from wtforms import fields
-from wtforms import widgets
+from altair.formhelpers.form import OurForm
+from altair.formhelpers import fields
+from altair.formhelpers import widgets
 from wtforms import validators
 from collections import namedtuple, OrderedDict
 from altair.app.ticketing.cart import helpers as ch
 
 
-SubjectInfo = namedtuple("SubjectInfo", "name label getval")
-SubjectInfoWithValue = namedtuple("SubjectInfoWithValue", "name label getval value")
+class SubjectInfo(object):
+    def __init__(self, name, label, getval, form_label=None, use=True):
+        self.name = name
+        self.label = label
+        self.getval = getval
+        self.form_label = form_label or label
+        self.use = use
+
+class SubjectInfoWithValue(object):
+    def __init__(self, name, label, getval, value, form_label=None, use=True):
+        self.name = name
+        self.label = label
+        self.getval = getval
+        self.value = value
+        self.form_label = form_label or label
+        self.use = use
+
 RenderVal = namedtuple("RenderVal", "status label, body")
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
 
-class SubjectInfoForm(Form):
-    use = fields.BooleanField(u"使う")
-    kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
+class SubjectInfoForm(OurForm):
+    use = fields.OurBooleanField(u"有効にする")
+    kana = fields.OurTextField(u"ラベル名", validators=[validators.Required()])
 
-class SubjectInfoWithValueForm(Form):
-    use = fields.BooleanField(u"使う")
-    kana = fields.TextField(u"ラベル名", validators=[validators.Optional()])
-    value = fields.TextField(label=u"内容", widget=widgets.TextArea(), 
+class SubjectInfoWithValueForm(OurForm):
+    use = fields.OurBooleanField(u"有効にする")
+    kana = fields.OurTextField(u"ラベル名", validators=[validators.Optional()])
+    value = fields.OurTextField(label=u"内容", widget=widgets.OurTextArea(), 
                              validators=[validators.Optional()])
 
+class SubjectInfoWithValueButLabelForm(OurForm):
+    use = fields.OurBooleanField(u"有効にする")
+    value = fields.OurTextField(label=u"内容", widget=widgets.OurTextArea(), 
+                             validators=[validators.Optional()])
 
 class SubjectInfoDefaultBase(object):
     @classmethod
@@ -49,7 +68,7 @@ class SubjectInfoDefaultMixin(object):
     tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda request, subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda request, subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda request, order: ch.mail_date(order.created_at))
-    bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda request, order: None, value=None)
+    bcc = SubjectInfoWithValue(name="bcc", label=None, form_label=u"bcc", getval=lambda request, order: None, value=None)
    
 
 def sensible_text_coerce(v):
@@ -159,8 +178,8 @@ class SubjectInfoRenderer(object):
 
 def MailInfoFormFactory(template, mutil=None, request=None):
     attrs = OrderedDict()
-    attrs["subject"] = fields.TextField(label=u"メール件名")
-    attrs["sender"] = fields.TextField(label=u"メールsender")
+    attrs["subject"] = fields.OurTextField(label=u"メール件名")
+    attrs["sender"] = fields.OurTextField(label=u"メールsender")
 
     try:
         default = mutil.get_subject_info_default()
@@ -169,16 +188,21 @@ def MailInfoFormFactory(template, mutil=None, request=None):
         default = SubjectInfoDefault
 
     for k, v in default.get_form_field_candidates():
+        dv = getattr(default, k, None)
         if hasattr(v, "value"):
-            attrs[k] = fields.FormField(SubjectInfoWithValueForm, label=v.label, 
-                                        default=dict(use=True, kana=v.label, doc=v, value=v.value)) ##xxx:
+            if dv is None or dv.label is not None:
+                attrs[k] = fields.OurFormField(SubjectInfoWithValueForm, label=v.form_label, 
+                                               default=dict(use=v.use, kana=v.label, doc=v, value=v.value)) ##xxx:
+            else:
+                attrs[k] = fields.OurFormField(SubjectInfoWithValueButLabelForm, label=v.form_label, 
+                                               default=dict(use=v.use, doc=v, value=v.value)) ##xxx:
         else:
-            attrs[k] = fields.FormField(SubjectInfoForm, label=v.label, 
-                                        default=dict(use=True, kana=v.label, doc=v)) ##xxx:
+            attrs[k] = fields.OurFormField(SubjectInfoForm, label=v.form_label, 
+                                           default=dict(use=v.use, kana=v.label, doc=v)) ##xxx:
 
     for e in template.template_keys():
-        attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
-                                         validators=[validators.Optional()])
+        attrs[e.name] = fields.OurTextField(label=e.label, widget=widgets.OurTextArea(), description=e.method, 
+                                            validators=[validators.Optional()])
         
     attrs["payment_types"] = [e[0] for e in template.payment_methods_choices()]
     attrs["delivery_types"] = [e[0] for e in template.delivery_methods_choices()]
@@ -203,16 +227,16 @@ def MailInfoFormFactory(template, mutil=None, request=None):
         return {k:v for k, v in self.data.iteritems()}
     attrs["as_mailinfo_data"] = as_mailinfo_data
 
-    return type("MailInfoForm", (Form, ), attrs)
+    return type("MailInfoForm", (OurForm, ), attrs)
 
 def MethodChoicesFormFactory(template):
     attrs = {}
     choices = [(m.id, m.name) for m in template.organization.payment_method_list]
-    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")    
+    attrs["payment_methods"] = fields.OurSelectField(label=u"決済方法", choices=choices, id="payment_methods")    
 
     choices = [(m.id, m.name) for m in template.organization.delivery_method_list]
-    attrs["delivery_methods"] = fields.SelectField(label=u"引取方法", choices=choices, id="delivery_methods")
-    return type("MethodChoiceForm", (Form, ), attrs)
+    attrs["delivery_methods"] = fields.OurSelectField(label=u"引取方法", choices=choices, id="delivery_methods")
+    return type("MethodChoiceForm", (OurForm, ), attrs)
 
 
 class MailInfoTemplate(object):

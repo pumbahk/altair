@@ -19,7 +19,10 @@ class OurForm(form.Form):
         super(OurForm, self).__init__(*args, **kwargs)
 
     def __setitem__(self, overridden, name, value):
-        self._field[name] = value.bind(form=self, name=name, prefix=self._prefix, name_builder=self._name_builder)
+        self._fields[name] = value.bind(form=self, name=name, prefix=self._prefix, name_builder=self._name_builder)
+
+    def __contains__(self, k):
+        return k in self._fields
 
     def process(self, formdata=None, obj=None, **kwargs):
         if not self._liaisons:

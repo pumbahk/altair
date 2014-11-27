@@ -1,20 +1,53 @@
 # -*- coding:utf-8 -*-
+import sys
+import traceback
 import logging
+from mako.template import Template
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
 from pyramid.compat import text_type
 from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.core import models as c_models
 from zope.interface import implementer
+from altair.app.ticketing.cart import api as cart_api
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, get_default_contact_reference, create_mail_request
 from .resources import MailForOrderContext
 from .interfaces import IPurchaseInfoMail, IOrderCancelMailResource
+from .utils import build_value_with_render_event
 
 logger = logging.getLogger(__name__)
 
 class OrderCancelInfoDefault(OrderInfoDefault):
+    template_body = SubjectInfoWithValue(name="template_body",  label=None, form_label=u"テンプレート", value="", getval=(lambda request, order : ""), use=False)
+
+    @classmethod
+    def validate(cls, form, request, mutil):
+        data = form.data
+
+        ## template_bodyが渡された場合には実際にレンダリングしてシミュレート
+        template_body = data.get("template_body")
+        if template_body and template_body.get("use"):
+            if not template_body.get("value"):
+                ## templateが空文字の時はuse = Falseとして扱う
+                form.template_body.use.data = False
+                return True
+            try:
+                mail = CancelMail(None)
+                payment_id, delivery_id = 1, 1 #xxx
+                fake_order = create_fake_order(request, request.context.organization, payment_id, delivery_id)
+                traverser = mutil.get_traverser(request, fake_order)
+                mail.build_mail_body(request, fake_order, traverser, template_body=template_body)
+                ##xx:
+            except Exception as e:
+                etype, value, tb = sys.exc_info()
+                exc_message = ''.join(traceback.format_exception(etype, value, tb, 10)).replace("\n", "<br/>")
+                form.template_body.errors[exc_message] = [exc_message] ##xxx.
+                logger.exception(str(e))
+                return False
+        return True
+
     def get_shipping_address_info(request, order):
         sa = order.shipping_address
         if sa is None:
@@ -33,8 +66,8 @@ class OrderCancelInfoDefault(OrderInfoDefault):
 {address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda request, order: order.ordered_from.name)
-    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
-    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
     address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
     def get_contact(request, order):
         # XXX: 本来は recipient の情報を含んだ context を SubjectInfoRenderer
@@ -120,13 +153,25 @@ class CancelMail(object):
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
                      header = traverser.data["header"],
+                     template_body = traverser.data["template_body"] #xxxx:
                      )
         return value
 
-    def build_mail_body(self, request, order, traverser):
+    def build_mail_body(self, request, order, traverser, template_body=None):
         organization = order.organization
         mail_request = create_mail_request(request, organization, lambda request: OrderCancelMailResource(request, order))
         value = self._body_tmpl_vars(mail_request, order, traverser)
-        retval = render(self.mail_template, value, request=mail_request)
-        assert isinstance(retval, text_type)
-        return retval
+        template_body = template_body or value.get("template_body")
+        try:
+            if template_body and template_body.get("use") and template_body.get("value"):
+                value = build_value_with_render_event(mail_request, value, context=mail_request.context)
+                retval = Template(template_body["value"]).render(**value)
+            else:
+                cart_setting = cart_api.get_cart_setting_from_order_like(request, order)
+                mail_template = self.mail_template % dict(cart_type=(cart_setting.type if cart_setting is not None else 'standard'))
+                retval = render(mail_template, value, request=mail_request)
+            assert isinstance(retval, text_type)
+            return retval
+        except:
+            logger.error("failed to render mail body (template_body=%s)" % template_body)
+            raise

@@ -63,29 +63,75 @@ ${ch.breadcrumbs(
 <h4>公演「(${performance.name})」に対するメール文言テンプレートの変更</h4>
 </div>
 
-<ul class="nav nav-tabs">
-  %for i, label in choices:
-    %if unicode(mailtype) == unicode(i):
-  <li class="active"><a href="#">${label}</a></li>
-    %else:
-  <li><a href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a></li>
-    %endif
-  %endfor
-</ul>
-
-<div class="well">
-  <form id="submitForm" class="form-horizontal" action="#" method="POST">
-	<fieldset>
-	  %for field in form:
-	  <div class="${field.description}">
-	    ${ch.form_item(field)}
-	  </div>
-	  %endfor
-	</fieldset>
-	<div class="form-actions">
-	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
-	</div>
-  </form>
+<div class="tabbable tabs-top">
+  <ul class="nav nav-tabs">
+    %for i, label in choices:
+      %if unicode(mailtype) == unicode(i):
+    <li class="active"><a href="#">${label}</a></li>
+      %else:
+    <li><a href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a></li>
+      %endif
+    %endfor
+  </ul>
+  <div class="tab-content">
+    <form id="submitForm" action="#" method="POST">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>項目名</th>
+            <th>内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          %for field in form:
+          <tr class="${u'field-%s' % field.id} ${field.description}">
+            <th class="span3">
+              <label class="inline">
+              ${field.label.text}
+              </label>
+            </th>
+            % if hasattr(field, '__iter__'):
+            <td>
+              <div class="form-horizontal">
+                <div class="control-group">
+                % if hasattr(field, '__iter__'):
+                  ${field['use'].label(class_='inline control-label')}
+                  <div class="controls">${field['use'](style='width:2em')}</div>
+                % endif
+                </div>
+                <div class="control-group">
+                % if 'kana' in field:
+                  ${field['kana'].label(class_='inline control-label')}
+                  <div class="controls">${field['kana']()}</div>
+                % endif
+                </div>
+                <div class="control-group">
+                % if 'value' in field:
+                  ${field['value'].label(class_='inline control-label')}
+                  <div class="controls">${field['value']()}</div>
+                % endif
+                </div>
+              </div>
+            </td>
+            % else:
+            <td>
+              <div class="form-horizontal">
+                <div class="control-group">
+                  <label class="control-label">内容</label>
+                  <div class="controls">${field()}</div>
+                </div>
+              </div>
+            </td>
+            % endif
+          </tr>
+          %endfor
+        </tbody>
+      </table>
+      <div class="form-actions">
+        <input class="btn btn-primary" type="submit" name="submit" value="登録">
+      </div>
+    </form>
+  </div>
 </div>
 
 <div class="modal hide" id="PreviewModal">

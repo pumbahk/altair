@@ -47,7 +47,6 @@ class MailInfoNewView(BaseView):
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
-        logger.debug("mailinfo.post: %s" % self.request.POST)
         mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
 
         event = Event.filter_by(organization_id=self.context.user.organization_id,
@@ -62,7 +61,6 @@ class MailInfoNewView(BaseView):
         else:
             mailtype = self.request.matchdict["mailtype"]
             mailinfo = mutil.create_or_update_mailinfo(self.request, form.as_mailinfo_data(), event=event, kind=mailtype)
-            logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
         return {"event": event,

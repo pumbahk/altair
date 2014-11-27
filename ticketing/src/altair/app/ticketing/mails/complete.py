@@ -11,14 +11,17 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.core import models as c_models
 from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, create_mail_request
-from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
+from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue, SubjectInfo
 from .interfaces import IPurchaseInfoMail, ICompleteMailResource
 from .resources import MailForOrderContext
+from .utils import build_value_with_render_event
 
 logger = logging.getLogger(__name__)
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
-    template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda request, order : ""))
+    template_body = SubjectInfoWithValue(name="template_body",  label=None, form_label=u"テンプレート", value="", getval=(lambda request, order : ""), use=False)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
 
     @classmethod
     def validate(cls, form, request, mutil):
@@ -34,7 +37,7 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
             try:
                 mail = PurchaseCompleteMail(None)
                 payment_id, delivery_id = 1, 1 #xxx
-                fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
+                fake_order = create_fake_order(request, request.context.organization, payment_id, delivery_id)
                 traverser = mutil.get_traverser(request, fake_order)
                 mail.build_mail_body(request, fake_order, traverser, template_body=template_body)
                 ##xx:
@@ -111,33 +114,14 @@ class PurchaseCompleteMail(object):
         template_body = template_body or value.get("template_body")
         try:
             if template_body and template_body.get("use") and template_body.get("value"):
-                value = build_value_with_render_event(mail_request, value)
-                return Template(template_body["value"]).render(**value)
+                value = build_value_with_render_event(mail_request, value, context=mail_request.context)
+                retval = Template(template_body["value"]).render(**value)
             else:
                 cart_setting = cart_api.get_cart_setting_from_order_like(request, order)
                 mail_template = self.mail_template % dict(cart_type=(cart_setting.type if cart_setting is not None else 'standard'))
                 retval = render(mail_template, value, request=mail_request)
-                assert isinstance(retval, text_type)
-                return retval
+            assert isinstance(retval, text_type)
+            return retval
         except:
             logger.error("failed to render mail body (template_body=%s)" % template_body)
             raise
-
-
-from pyramid.events import BeforeRender
-def build_value_with_render_event(request, value, system_values=None):
-    if system_values is None:
-        system_values = {
-            'view':None,
-            'renderer_name':"*dummy", # b/c
-            'renderer_info':"*dummy",
-#            'context':getattr(request, 'context', None),
-            'request':request,
-            'req':request,
-            }
-    system_values = BeforeRender(system_values, value)
-    registry = request.registry
-    registry.notify(system_values)
-    system_values.update(value)
-    return system_values
-

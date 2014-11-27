@@ -62,8 +62,9 @@ def field_class_factory(name, bases, attrs):
                     if not isinstance(args, list):
                         args = list(args)
                     args[i] = _kwargs[k]
+                    del _kwargs[k]
         if my_init is not None:
-            my_init(self, *args, **kwargs)
+            my_init(self, *args, **_kwargs)
         for mixin_init_post in mixin_init_post_list:
             mixin_init_post(self, **_kwargs)
 

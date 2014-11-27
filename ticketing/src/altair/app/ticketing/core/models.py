@@ -3125,21 +3125,18 @@ class MailTypeEnum(StandardEnum):
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
-    BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (
-    u"購入完了メール",
-    u"購入キャンセルメール",
-    u"リマインドメール",
-    u"抽選申し込み完了メール",
-    u"抽選当選通知メール",
-    u"抽選落選通知メール",
-    u"ポイント付与失敗通知メール",
-    u"ブースター購入完了メール",
-    )
+_mail_type_labels = {
+    MailTypeEnum.PurchaseCompleteMail.v: u"購入完了メール",
+    MailTypeEnum.PurchaseCancelMail.v: u"購入キャンセルメール",
+    MailTypeEnum.PurcacheSejRemindMail.v: u"リマインドメール",
+    MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了メール",
+    MailTypeEnum.LotsElectedMail.v: u"抽選当選通知メール",
+    MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知メール",
+    MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知メール",
+    }
 
-assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
-MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
+MailTypeChoices = [(str(e) , _mail_type_labels[e.v]) for e in sorted(iter(MailTypeEnum), key=lambda e: e.v)]
 MailTypeEnum.dict = dict(MailTypeChoices)
 MailTypeEnum.as_string = classmethod(lambda cls, e: cls.dict.get(str(e), ""))
 
