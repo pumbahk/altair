@@ -100,7 +100,7 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         if ICartResource.providedBy(context):
             event_setting = context.event.setting
             if event_setting is not None:
-                if event_setting.cart_setting:
+                if event_setting.cart_setting is not None:
                     label1 = event_setting.performance_selector_label1_override
                     label2 = event_setting.performance_selector_label2_override
                     if label1 is not None:
