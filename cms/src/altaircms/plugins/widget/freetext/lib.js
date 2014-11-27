@@ -39,7 +39,7 @@ if(!widget){
             we.bind_retry(we, 10, 1.43, 15, 
                       function(){return $(text_area_expr)}, 
                       function(elt){
-                          $(text_area_expr).cleditor();
+                          $(text_area_expr).cleditor({width:600, height:350});
                           var freetext = we.get_data(we.where).freetext;            
                           $(submit_expr).click(function(){we.finish_dialog(this);});
                           $(default_body_submit_expr).click(on_default_text_yanked);
