@@ -1,0 +1,134 @@
+<div class="frame frame-inner">
+  <h3>お申込内容</h3>
+  <p>ステータス: ${h.order_status(order)}</p>
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th colspan="3">${order.performance.event.title}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${order.ordered_products[0].product.name}</td>
+        <td>　</td>
+        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)}</td>
+      </tr>
+      <tr>
+        <td>決済手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+% if order.system_fee > 0:
+      <tr>
+        <td>システム手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+% endif
+% if order.special_fee > 0:
+      <tr>
+        <td>${order.special_fee_name}</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+% endif
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>合計金額</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+  
+<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% shipping_address = order.shipping_address %>
+<div class="frame">
+  <div class="frame-inner">
+    <h3>購入者情報</h3>
+  </div>
+  <table class="form">
+    <colgroup>
+      <col style="width:180px;" />
+      <col style="width:310px;" />
+    </colgroup>
+    <tbody>
+      <% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
+      <tr>
+        <th>氏名</th>
+        <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th>氏名（フリガナ）</th>
+        <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th>郵便番号</th>
+        <td>${shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <th>住所</th>
+        <td>${shipping_address.prefecture} ${shipping_address.city} ${shipping_address.address_1} ${shipping_address.address_2}</td>
+      </tr>
+      % if view_context.cart_setting.flavors.get('mobile_and_landline_phone_number'):
+      <tr>
+        <th>電話番号（自宅）</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      % if shipping_address.tel_2:
+      <tr>
+        <th>電話番号（携帯）</th>
+        <td>${shipping_address.tel_2}</td>
+      </tr>
+      % endif
+      % else:
+      <tr>
+        <th>電話番号</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      % endif
+      % if view_context.flavors.get('pc_and_mobile_email_address'):
+      <tr>
+        <th>メールアドレス</th>
+        <td>${shipping_address.email_1}</td>
+      </tr>
+      % if shipping_address.email_2:
+      <tr>
+        <th>携帯メールアドレス</th>
+        <td>${shipping_address.email_2}</td>
+      </tr>
+      % endif
+      % else:
+      <tr>
+        <th>メールアドレス</th>
+        <td>${shipping_address.email_1}</td>
+      </tr>
+      % endif
+      % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th>${display_name}</th>
+        <td>${display_value}</td>
+      </tr>
+      % endfor
+    </tbody>
+  </table>
+</div>
+
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+<div class="frame frame-inner">
+  <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+  <p>
+  キャンセル処理は、下記のような理由によりおこなっております。<br />
+  ・お客様からキャンセルのご連絡があったため<br />
+  ・期限内のご入金がなくキャンセル扱いとしたため<br />
+  ・二重注文により、ひとつをキャンセル処理したため<br />
+  </p>
+</div>
+% else:
+<div class="frame frame-inner">
+  <h3>お支払</h3>
+  ${h.render_payment_finished_viewlet(request, order)}
+</div>
+% endif

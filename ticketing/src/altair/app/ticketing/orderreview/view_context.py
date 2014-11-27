@@ -55,12 +55,7 @@ def get_orderreview_view_context_factory(default_package):
 
         @property
         def title(self):
-            if self.cart_setting.title:
-                return self.cart_setting.title
-            elif isinstance(self.context, PerformanceOrientedTicketingCartResource):
-                return self.context.performance.name
-            else:
-                return self.context.event.title
+            return u'申込履歴確認'
 
         @property
         def contact_url(self):
