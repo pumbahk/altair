@@ -149,6 +149,7 @@ class Events(BaseView):
                         max_quantity_per_user=f.max_quantity_per_user.data,
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
+                        carft_setting_id=self.context.organization.setting.cart_setting_id
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -226,6 +227,7 @@ class Events(BaseView):
                             max_quantity_per_user=f.max_quantity_per_user.data,
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
+                            carft_setting_id=self.context.organization.setting.cart_setting_id
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
                             # performance_selector_label2_override=f.performance_selector_label2_override.data,
