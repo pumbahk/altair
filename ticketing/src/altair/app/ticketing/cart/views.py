@@ -215,16 +215,9 @@ class PerEventAgreementView(IndexViewMixin):
 
     @lbr_view_config(request_method="GET")
     def get(self):
-        # 会場
-        try:
-            performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
-        except (ValueError, TypeError):
-            performance_id = None
-
         sales_segments = self.context.available_sales_segments
-
+        performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
         selected_sales_segment = None
-        preferred_performance = None
         if not performance_id:
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
             selected_sales_segment = sales_segments[0]
@@ -243,49 +236,19 @@ class PerEventAgreementView(IndexViewMixin):
             else:
                 # 該当する物がないので、デフォルト (選択肢の1つ目)
                 selected_sales_segment = sales_segments[0]
-                preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
-                if preferred_performance is not None:
-                    if preferred_performance.event_id != self.context.event.id:
-                        preferred_performance = None
-
-        event_id = self.request.matchdict.get('event_id')
-        if event_id:
-            event_id = long(event_id)
 
         if not selected_sales_segment.setting.disp_agreement:
-            extra = {}
-            if performance_id is not None:
-                extra['_query'] = { 'performance': performance_id }
-
-            return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
-
-        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
-            event_id=event_id, performance=performance_id)
+            return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
     def post(self):
-        try:
-            event_id = long(self.request.params.get('event_id'))
-        except:
-            event_id = None
-
-        try:
-            performance_id = long(self.request.params.get('performance'))
-        except (ValueError, TypeError):
-            performance_id = None
-
-
-        extra = {}
-        if performance_id is not None:
-            extra['_query'] = { 'performance': performance_id }
-
         agree = self.request.params.get('agree')
-
-        if agree is None:
+        if not agree:
             self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
-            return HTTPFound(event_id and self.request.route_url('cart.agreement', event_id=event_id, **extra))
-
-        return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
+            return HTTPFound(self.request.current_route_path(_query=self.request.GET))
+        else:
+            return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
 
 
 @view_defaults(
@@ -303,35 +266,18 @@ class PerPerformanceAgreementView(object):
     def get(self):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
-        performance_id = self.request.matchdict.get('performance_id')
         if not selected_sales_segment.setting.disp_agreement:
-            extra = {}
-            if performance_id is not None:
-                extra['_query'] = { 'performance': performance_id }
-
-            return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
-
-        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
-            performance=performance_id)
+            return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
     def post(self):
-        try:
-            performance_id = long(self.request.params.get('performance'))
-        except (ValueError, TypeError):
-            performance_id = None
-
-        extra = {}
-        if performance_id is not None:
-            extra['_query'] = { 'performance': performance_id }
-
         agree = self.request.params.get('agree')
-
-        if agree is None:
-            self.request.session.flash(u"全ての規約に同意しないと購入できません。")
-            return HTTPFound(performance_id and self.request.route_url('cart.agreement2', performance_id=performance_id, **extra))
-
-        return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
+        if not agree:
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            return HTTPFound(self.request.current_route_path(_query=self.request.GET))
+        else:
+            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
 
 
 @view_defaults(xhr=False, permission="buy")
