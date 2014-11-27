@@ -7,6 +7,13 @@
   <h1>チケットリスト(価格表)</h1>
 </div>
 
+<style type="text/css">
+.caption {
+   width: 80%;
+   height: 100px;
+}
+</style>
+
 <div class="box">
   <table class="table">
     <tbody>
@@ -15,7 +22,8 @@
       ${co.formfield(form, "display_type")}
       ${co.formfield(form, "target_performance_id")}
       ${co.formfield(form, "target_salessegment_id")}
-      ${co.formfield(form, "caption")}
+      ${co.formfield2(form, "caption", class_="caption" )}
+
     </tbody>
   </table>
   <button type="button" id="ticketlist_submit">登録</button>

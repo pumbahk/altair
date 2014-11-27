@@ -23,16 +23,10 @@
   <div class="content" class="float">
 	   見出しを表示する?<input id="show_label" type="checkbox" ${"checked" if widget.show_label else ""|n}></input></p>
     <div id="create-content">
-      <table class="table table-describe" width="100%">
-        <tr>
-          <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
-          <td><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" ></textarea></label></td>
-        </tr>
-        <tr>
-          <td width="15%"><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
-          <td width="15%"><button id="additem_button" type="button" class="btn btn-success"><i class="icon-plus icon-white"></i>追加する</button></td>
-        </tr>
-      </table>
+          <div><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" style="width: 100%;"/></label></div>
+          <div><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" style="width: 100%; height: 100px;"></textarea></label></div>
+          <div width="15%"><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></div>
+          <div width="15%"><button id="additem_button" type="button" class="btn btn-success"><i class="icon-plus icon-white"></i>追加する</button></div>
     </div>
     <span class="clear"/>
 
