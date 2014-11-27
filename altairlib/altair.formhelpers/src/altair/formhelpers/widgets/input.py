@@ -26,6 +26,12 @@ class InputRendrant(Rendrant):
 
 
 class OurInput(Input):
+    def _render_prefix(self, field, **kwargs):
+        return u''
+
+    def _render_suffix(self, field, **kwargs):
+        return u''
+
     def __call__(self, field, **kwargs):
         placeholder = kwargs.get('placeholder', False)
         if isinstance(placeholder, bool):
@@ -42,7 +48,9 @@ class OurInput(Input):
         kwargs.pop('context', None)
         return InputRendrant(
             field,
-            super(OurInput, self).__call__(field, id=id, **kwargs),
+            self._render_prefix(field, **kwargs) \
+                + super(OurInput, self).__call__(field, id=id, **kwargs) \
+                + self._render_suffix(field, **kwargs),
             id,
             js_coercer
             )
