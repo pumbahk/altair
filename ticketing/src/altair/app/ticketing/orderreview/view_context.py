@@ -15,7 +15,7 @@ def get_orderreview_view_context_factory(default_package):
     class OrderReviewViewContext(object):
         def __init__(self, request):
             self.request = request
-            self.context = request.context
+            self.context = getattr(request, 'context', None) # will not be available for exception views
 
         @reify
         def ua_type(self):

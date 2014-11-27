@@ -192,6 +192,13 @@ class OrderReviewView(object):
 
     @lbr_view_config(
         route_name='order_review.show',
+        request_method="GET"
+        )
+    def get(self):
+        return HTTPFound(self.request.route_path('order_review.form'))
+
+    @lbr_view_config(
+        route_name='order_review.show',
         request_method="POST",
         renderer=selectable_renderer("order_review/show.html")
         )
