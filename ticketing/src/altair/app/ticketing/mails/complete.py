@@ -14,7 +14,7 @@ from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting
 from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue, SubjectInfo
 from .interfaces import IPurchaseInfoMail, ICompleteMailResource
 from .resources import MailForOrderContext
-from .utils import build_value_with_render_event
+from .utils import build_value_with_render_event, unescape
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
             except Exception as e:
                 etype, value, tb = sys.exc_info()
                 exc_message = ''.join(traceback.format_exception(etype, value, tb, 10)).replace("\n", "<br/>")
-                form.template_body.errors[exc_message] = [exc_message] ##xxx.
+                form.template_body.errors = list(form.template_body.errors) + [exc_message] ##xxx.
                 logger.exception(str(e))
                 return False
         return True
@@ -107,7 +107,7 @@ class PurchaseCompleteMail(object):
                      )
         return value
 
-    def build_mail_body(self, request, order, traverser, template_body=None):
+    def build_mail_body(self, request, order, traverser, template_body=None, kind='plain'):
         organization = order.organization
         mail_request = create_mail_request(request, organization, lambda request: PurchaseCompleteMailResource(request, order))
         value = self._body_tmpl_vars(mail_request, order, traverser)
@@ -115,12 +115,16 @@ class PurchaseCompleteMail(object):
         try:
             if template_body and template_body.get("use") and template_body.get("value"):
                 value = build_value_with_render_event(mail_request, value, context=mail_request.context)
-                retval = Template(template_body["value"]).render(**value)
+                retval = Template(template_body["value"], default_filters=['h']).render(**value)
             else:
                 cart_setting = cart_api.get_cart_setting_from_order_like(request, order)
                 mail_template = self.mail_template % dict(cart_type=(cart_setting.type if cart_setting is not None else 'standard'))
                 retval = render(mail_template, value, request=mail_request)
+            import sys
+            print >>sys.stderr, retval.encode('utf-8')
             assert isinstance(retval, text_type)
+            if kind == 'plain':
+                retval = unescape(retval)
             return retval
         except:
             logger.error("failed to render mail body (template_body=%s)" % template_body)

@@ -16,4 +16,6 @@ def build_value_with_render_event(request, value, system_values=None, context=No
     system_values.update(value)
     return system_values
 
-
+def unescape(s):
+    from HTMLParser import HTMLParser
+    return HTMLParser.unescape.__func__(HTMLParser, s)

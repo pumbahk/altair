@@ -73,11 +73,11 @@ ${get("total_amount").label} ${get("total_amount").body} （円）
 
 %if get("payment_method").status:
 ■${get("payment_method").label}: ${payment_method_name}
-${h.render_payment_cancel_mail_viewlet(request,order)}
+${h.render_payment_finished_mail_viewlet(request,order)}
 %endif
 %if get("delivery_method").status:
 ■${get("delivery_method").label}: ${delivery_method_name}
-${h.render_delivery_cancel_mail_viewlet(request,order)}
+${h.render_delivery_finished_mail_viewlet(request,order)}
 %endif
 
 なお、本メールと行き違いでお支払いいただいております折は、なにとぞご容赦ください。

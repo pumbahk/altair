@@ -13,6 +13,7 @@ from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 from .resources import MailForLotContext
 from .interfaces import (
+    ICompleteMailResource,
     ILotEntryInfoMail,
     ILotsAcceptedMailResource,
     ILotsElectedMailResource,
@@ -60,7 +61,7 @@ class LotsAcceptedMailResource(MailForLotContext):
     """ 申し込み完了メール """
     mtype = c_models.MailTypeEnum.LotsAcceptedMail
 
-@implementer(ILotsElectedMailResource)
+@implementer(ILotsElectedMailResource, ICompleteMailResource)
 class LotsElectedMailResource(MailForLotContext):
     """ 当選メール """
     mtype = c_models.MailTypeEnum.LotsElectedMail

@@ -741,7 +741,6 @@ def sej_payment_confirm_viewlet(context, request):
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
-@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
 def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -770,7 +769,6 @@ def payment_mail_viewlet(context, request):
     )
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
-@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
 def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
