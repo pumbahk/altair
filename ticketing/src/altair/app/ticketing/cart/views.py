@@ -1152,12 +1152,9 @@ class PointAccountEnteringView(object):
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            if user:
+            if enable_auto_input_form(user) and user:
                 acc = api.get_user_point_account(user.id)
                 form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
-
-        if not enable_auto_input_form(user):
-            form['accountno'].data = ''
 
         return dict(
             form=form,
