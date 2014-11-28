@@ -113,6 +113,16 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lots')
 
+    @staticmethod
+    def create_from_template(template, **kwds):
+        obj = Lot.clone(template)
+        if 'event_id' in kwds:
+            obj.event_id = kwds['event_id']
+        if 'sales_segment_id' in kwds:
+            obj.sales_segment_id = kwds['sales_segment_id']
+        obj.save()
+        return obj
+
     @property
     def electing_works(self):
         return LotElectWork.query.filter(
