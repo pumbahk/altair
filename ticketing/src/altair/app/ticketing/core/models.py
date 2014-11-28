@@ -1085,7 +1085,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
-                    logger.warn('[COPY] CONVERT: {}: {} -> {}'.format(key, src, dst))
+                    logger.info('[COPY] CONVERT: {}: {} -> {}'.format(key, src, dst))
             # create Lot
             for lot_src in template_event.lots:
 
@@ -1101,7 +1101,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     sales_segment_id=convert_map['sales_segment'][ss_src.id],
                     )
                 convert_map['lot'][lot_src.id] = lot.id
-                logger.warn('[COPY] Lot id={}'.format(lot.id))
+                logger.info('[COPY] Lot id={}'.format(lot.id))
 
                 for prod_src in ss_src.products:
 
@@ -1113,7 +1113,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         **convert_map
                         )
                     convert_map['product'].update(res)
-                    logger.warn('[COPY] Lot Product id = {}'.format(res))
+                    logger.info('[COPY] Lot Product id = {}'.format(res))
                     for pitem_src in ProductItem.query.filter(ProductItem.product_id == prod_src.id):
                         res = ProductItem.create_from_template_for_lot(
                             pitem_src,
@@ -1128,7 +1128,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
-                    logger.warn('[COPY] LOT COPIED: {}: {} -> {}'.format(key, src, dst))
+                    logger.info('[COPY] LOT COPIED: {}: {} -> {}'.format(key, src, dst))
 
             # other
             convert_map['payment_delivery_method_pair'] = {}
