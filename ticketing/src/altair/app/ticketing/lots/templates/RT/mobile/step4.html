@@ -44,7 +44,7 @@ ${lot.name}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
-<p>${form['email_1']._description}</p>
+<p>${form['email_1'].description}</p>
 <div>
   ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}

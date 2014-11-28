@@ -2,7 +2,7 @@ import json
 from wtforms import fields
 from wtforms.fields.core import _unset_value
 from wtforms.compat import iteritems
-from ..widgets import OurInput, OurTextInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget
+from ..widgets import OurInput, OurTextInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget, OurTableWidget
 from ..widgets.select import SelectRendrant
 from zope.deprecation import deprecation
 from .select import (
@@ -92,6 +92,7 @@ class OurFieldMixin(object):
         if callable(description):
             description = description(self)
         self._description = description
+        kwargs['description'] = description
         note = kwargs.pop('note', u'')
         if callable(note):
             note = note(self)
@@ -243,6 +244,8 @@ class SimpleElementNameHandler(object):
 
 
 class OurFormField(OurField):
+    widget = OurTableWidget()
+ 
     def __init__(self, form_factory, label=None, validators=None, name_handler='-', field_error_formatter='%(name)s: %(message)s', **kwargs):
         super(OurFormField, self).__init__(label, validators, **kwargs)
         self.form_factory = form_factory
@@ -305,8 +308,14 @@ class OurFormField(OurField):
     def data(self):
         return self._contained_form.data
 
+    def __len__(self):
+        return len(self._contained_form._fields)
+
     def __iter__(self):
         return iter(self._contained_form)
+
+    def __contains__(self, k):
+        return k in self._contained_form
 
     def __getitem__(self, k):
         return self._contained_form[k]

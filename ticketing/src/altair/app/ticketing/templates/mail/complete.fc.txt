@@ -50,6 +50,11 @@ ${get("for_seat").body}
 ${get("for_product").body}
 %endif
 
+%if get("extra_form_data").status:
+■${get("extra_form_data").label}
+${get("extra_form_data").body}
+%endif
+
 ■サービス利用料・手数料
 %if get("system_fee").status:
 ${get("system_fee").label}: ${get("system_fee").body}
@@ -70,13 +75,19 @@ ${get("total_amount").body}
 %endif
 
 -----
-■お支払
-お支払方法： ${payment_method_name}
+%if get("payment_method").status:
+■${get("payment_method").label}
+${payment_method_name}
 ${h.render_payment_finished_mail_viewlet(request, order)}
+% endif
+%if get("payment_method").status and get("delivery_method").status:
 -----
-■お受取
-お受取方法： ${delivery_method_name}
+%endif
+%if get("delivery_method").status:
+■${get("delivery_method").label}
+${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
+% endif
 
 ${notice}
 

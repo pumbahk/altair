@@ -14,7 +14,7 @@ var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.car
 % endif
 <%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
-_description = _description or field._description
+_description = _description or field.description
 _note = _note or field._note
 if label is None or label is True:
   label = field.label

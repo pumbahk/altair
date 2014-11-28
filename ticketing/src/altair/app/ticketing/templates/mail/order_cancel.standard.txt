@@ -1,14 +1,18 @@
 ${header}
 ${name}　様
 
-ご利用いただきありがとうございます。
-このたびお申込いただきました下記内容の入金期限についてお知らせ申し上げます。
+「${title}」のご注文キャンセル手続きが
+完了しましたのでご連絡させていただきます。
 
-お客様のお申し込みいただいたご予約の支払期限が【 ${payment_du_at} まで】となっております。
-支払手続きがお済みでないお客様は、入金状況・入金方法等をご確認の上
-期限までにお手続きいただくようお願いいたします。
+このキャンセル処理は、下記のような理由によりおこなっております。
 
-お申し込み内容
+%if get("cancel_reason").status:
+${get("cancel_reason").label}
+${get("cancel_reason").body}
+%endif
+
+ご不明な点がございましたら、${order.ordered_from.name}までお問い合わせください。
+
 =====================================================================
 %if get("ordered_from").status:
 ■${get("ordered_from").label}
@@ -25,7 +29,7 @@ ${get("order_datetime").label} ${get("order_datetime").body}
 ${get("name_kana").label} ${get("name_kana").body} 様
 %endif
 %if get("payment_method").status:
-${get("payment_method").label} ${get("payment_method").body}
+${get("payment_method").label} ${get("payment_method").body} 
 %endif
 %if get("delivery_method").status:
 ${get("delivery_method").label} ${get("delivery_method").body}
@@ -70,17 +74,6 @@ ${get("delivery_fee").label} ${get("delivery_fee").body}
 ********************************************************************
 ${get("total_amount").label} ${get("total_amount").body} （円）
 %endif
-
-%if get("payment_method").status:
-■${get("payment_method").label}: ${payment_method_name}
-${h.render_payment_cancel_mail_viewlet(request,order)}
-%endif
-%if get("delivery_method").status:
-■${get("delivery_method").label}: ${delivery_method_name}
-${h.render_delivery_cancel_mail_viewlet(request,order)}
-%endif
-
-なお、本メールと行き違いでお支払いいただいております折は、なにとぞご容赦ください。
 
 ${notice}
 

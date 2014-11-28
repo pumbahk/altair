@@ -7,8 +7,8 @@
 <div>
 <%mobile:form_header>${field['field'].label}</%mobile:form_header>
 </div>
-% if field['field']._description:
-<div><font size="-1">${field['field']._description}</font></div>
+% if field['field'].description:
+<div><font size="-1">${field['field'].description}</font></div>
 % endif
 <div>
 ${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}

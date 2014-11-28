@@ -40,11 +40,6 @@ ${get("pdate").label}: ${get("pdate").body}(予定)
 ${get("venue").label}: ${get("venue").body}
 %endif
 
-%if get("for_seat").status:
-■${get("for_seat").label}
-${get("for_seat").body}
-%endif
-
 %if get("for_product").status:
 ■${get("for_product").label}
 ${get("for_product").body}
@@ -75,13 +70,11 @@ ${get("total_amount").body}
 %endif
 
 -----
-■お支払
-お支払方法： ${payment_method_name}
+%if get("payment_method").status:
+■${get("payment_method").label}
+${payment_method_name}
 ${h.render_payment_finished_mail_viewlet(request, order)}
------
-■お受取
-お受取方法： ${delivery_method_name}
-${h.render_delivery_finished_mail_viewlet(request, order)}
+% endif
 
 ${notice}
 

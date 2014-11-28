@@ -25,7 +25,7 @@ def install_mail_utility(config):
                                   ".complete", PurchaseCompleteMail, "altair.app.ticketing:templates/mail/complete.%(cart_type)s.txt")
     from altair.app.ticketing.mails.order_cancel import CancelMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail,
-                                  ".order_cancel", CancelMail, "altair.app.ticketing:templates/mail/order_cancel.txt")
+                                  ".order_cancel", CancelMail, "altair.app.ticketing:templates/mail/order_cancel.%(cart_type)s.txt")
     from altair.app.ticketing.mails.remindmail import SejRemindMail
     config.add_order_mail_utility(MailTypeEnum.PurcacheSejRemindMail,
                                   ".remindmail", SejRemindMail, "altair.app.ticketing:templates/mail/remindmail.txt")

@@ -1,7 +1,9 @@
-if(!window.h)
-	window.h = {};
-
-(function(h){
+(function (fn) {
+    if (typeof module != 'undefined')
+        fn(module.exports);
+    else if (typeof define != 'undefined' && define.amd !== void(0))
+        define(['exports'], fn);
+})(function(h) {
   // _.object
   h.object = function object(list, values) {
     if (list === null) return {};
@@ -46,4 +48,6 @@ if(!window.h)
       }
     }));
   };
-})(window.h);
+
+  return h;
+});
