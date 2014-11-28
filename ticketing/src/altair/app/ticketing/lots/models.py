@@ -113,47 +113,6 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lots')
 
-    def copy(self, sales_segment_group, **kwds):
-        """
-        sales_segment_group: コピーする先の販売区分グループ
-        """
-        logger.info('[copy] Lot start lot_id={}'.format(self.id))
-        lot = self.create_from_template(self, **kwds)
-
-        # create a sales segment
-        old_new = SalesSegment.create_from_template(self.sales_segment)
-        new_ss_id = old_new.values()[0]
-        lot.sales_segment_id = new_ss_id
-        lot.save()
-
-        # create products
-        for template_product in self.sales_segment.products:
-            logger.info('[copy] Lot Product start product.id={}'.format(template_product.id))
-            old_new = template_product.create_from_template(template_product, with_product_items=True, **kwds)
-            new_product_id = old_new.values()[0]
-            product = Product.get(id=new_product_id)
-            product.sales_segment_id = new_ss_id
-            product.save()
-
-            # update product item
-            ProductItem\
-                .query\
-                .filter(ProductItem.product_id == product.id)\
-                .update({'product_id': product.id})
-            logger.info('[copy] Lot Product start lot_id {} -> {}'.format(template_product.id, product.id))
-
-        logger.info('[copy] Lot start lot_id {} -> {}'.format(self.id, lot.id))
-
-    @staticmethod
-    def create_from_template(template, **kwds):
-        obj = Lot.clone(template)
-        if 'event_id' in kwds:
-            obj.event_id = kwds['event_id']
-        if 'sales_segment_id' in kwds:
-            obj.sales_segment_id = kwds['sales_segment_id']
-        obj.save()
-        return obj
-
     @property
     def electing_works(self):
         return LotElectWork.query.filter(
