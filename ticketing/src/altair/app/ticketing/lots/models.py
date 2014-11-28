@@ -482,6 +482,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     shipping_address = orm.relationship('ShippingAddress', backref="lot_entries")
 
     # 申し込み時会員種別
+    # membergroupだけではなくmembershipも必要なのは、"rakuten" や "nogizaka46" のように
+    # membergroup を伴わない認証方式があるため
+    membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'))
+    membership = orm.relationship("Membership", backref="lot_entries")
     membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'))
     membergroup = orm.relationship("MemberGroup", backref="lot_entries")
 

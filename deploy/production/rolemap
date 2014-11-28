@@ -3,8 +3,8 @@ apbv2.1c.vpc.altr	adminapp
 apbv3.1a.vpc.altr	adminapp
 apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
-apmv4.1c.vpc.altr	userapp-with-booster
-apmv4.1a.vpc.altr	userapp-with-booster
+apmv4.1c.vpc.altr	userapp-cart
+apmv4.1a.vpc.altr	userapp-cart
 apmv6.1a.vpc.altr	userapp-api
 apmv2.1c.vpc.altr	userapp-usersite
 apmv2.1a.vpc.altr	userapp-usersite
@@ -29,5 +29,6 @@ btmv1.1a.vpc.altr	worker
 apnl1.1a.vpc.altr	newsletter
 apvv1.1a.vpc.altr	venueadmin
 apcv1.1c.vpc.altr	sej
+apcv1.1a.vpc.altr	sej
 apsv1.1b.vpc.altr	solr
 # vim: noet

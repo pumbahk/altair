@@ -22,13 +22,13 @@ dates = ${dates_json | n}
 
 function timestamp_to_arr(s) {
   if (s === '') {
-    return [[], []];
+    return [['', '', ''], ['', '', '']];
   }
   var dt = s.split('T');
   var ymd = dt[0].split('-');
   var hms = dt[1].split(':');
 
-  return Array.concat(ymd, hms);
+  return [ymd, hms];
 }
 
 function updateSalesSegmentGroupById(j) {
@@ -36,25 +36,25 @@ function updateSalesSegmentGroupById(j) {
   var start_at_arr = timestamp_to_arr(d.start_at);
   var end_at_arr = timestamp_to_arr(d.end_at);
 
-  if (start_at_arr.length < 6) {
-    start_at_arr = ['', '', '', '', '', ''];
+  if (start_at_arr.length < 2) {
+    start_at_arr = [['', '', ''], ['', '', '']];
   }
-  $('#start_at\\.year').val(start_at_arr[0]);
-  $('#start_at\\.month').val(start_at_arr[1]);
-  $('#start_at\\.day').val(start_at_arr[2]);
-  $('#start_at\\.hour').val(start_at_arr[3]);
-  $('#start_at\\.minute').val(start_at_arr[4]);
-  $('#start_at\\.second').val(start_at_arr[5]);
+  $('#start_at\\.year').val(start_at_arr[0][0]);
+  $('#start_at\\.month').val(start_at_arr[0][1]);
+  $('#start_at\\.day').val(start_at_arr[0][2]);
+  $('#start_at\\.hour').val(start_at_arr[1][0]);
+  $('#start_at\\.minute').val(start_at_arr[1][1]);
+  $('#start_at\\.second').val(start_at_arr[1][2]);
 
-  if (end_at_arr.length < 6) {
-    end_at_arr = ['', '', '', '', '', ''];
+  if (end_at_arr.length < 2) {
+    end_at_arr = [['', '', ''], ['', '', '']];
   }
-  $('#end_at\\.year').val(end_at_arr[0]);
-  $('#end_at\\.month').val(end_at_arr[1]);
-  $('#end_at\\.day').val(end_at_arr[2]);
-  $('#end_at\\.hour').val(end_at_arr[3]);
-  $('#end_at\\.minute').val(end_at_arr[4]);
-  $('#end_at\\.second').val(end_at_arr[5]);
+  $('#end_at\\.year').val(end_at_arr[0][0]);
+  $('#end_at\\.month').val(end_at_arr[0][1]);
+  $('#end_at\\.day').val(end_at_arr[0][2]);
+  $('#end_at\\.hour').val(end_at_arr[1][0]);
+  $('#end_at\\.minute').val(end_at_arr[1][1]);
+  $('#end_at\\.second').val(end_at_arr[1][2]);
 }
 </script>
 

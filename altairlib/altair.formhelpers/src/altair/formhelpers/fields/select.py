@@ -1,4 +1,4 @@
-from wtforms import fields, widgets
+from wtforms import fields
 from wtforms.compat import text_type
 from .. import widgets as our_widgets
 
@@ -188,10 +188,13 @@ class SelectFieldDataMixin(object):
             valuelist = raw_input_filter(valuelist)
         coerce = self.coerce
         if valuelist:
-            try:
-                self.data = coerce(valuelist[0])
-            except ValueError:
-                raise ValueError(self.gettext('Invalid Choice: could not coerce'))
+            if coerce is not None:
+                try:
+                    self.data = coerce(valuelist[0])
+                except ValueError:
+                    raise ValueError(self.gettext('Invalid Choice: could not coerce'))
+            else:
+                self.data = valuelist[0]
 
 class SelectMultipleFieldDataMixin(object):
     def process_data(self, value):
@@ -208,17 +211,44 @@ class SelectMultipleFieldDataMixin(object):
         except ValueError:
             raise ValueError(self.gettext('Invalid Choice(s): one or more data inputs could not be coerced'))
 
+class SelectMultipleDictFieldDataMixin(object):
+    def process_data(self, value):
+        coerce = self.coerce
+        data = { k: False for k in self.model }
+        try:
+            if hasattr(value, 'items'):
+                for k, v in value.items():
+                    data[k] = bool(v)
+            else: 
+                for k in value:
+                    data[k] = True
+        except (ValueError, TypeError) as e:
+            data = None
+        self.data = data
+
+    def process_formdata(self, valuelist):
+        coerce = self.coerce
+        data = { k: False for k in self.model }
+        try:
+            for v in valuelist:
+                data[coerce(v)] = True
+        except (ValueError, TypeError):
+            data = None
+        self.data = data
+        if data is None:
+            raise ValueError(self.gettext('Invalid Choice(s): one or more data inputs could not be coerced'))
+
 class LazySelectFieldBase(fields.SelectFieldBase):
-    widget = widgets.Select()
+    widget = our_widgets.OurSelectWidget()
 
     def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, encoder=None, **kwargs):
-        _form = kwargs.pop('_form', None)
+        _form = kwargs.get('_form')
         hide_on_new = kwargs.pop('hide_on_new', False)
         raw_input_filters = kwargs.pop('raw_input_filters', [])
         if callable(label):
             label = label()
         super(LazySelectFieldBase, self).__init__(label, validators, **kwargs)
-        self.form = _form
+        self._form = _form
         self.hide_on_new = hide_on_new
         self.raw_input_filters = raw_input_filters
         for base in self.__class__.__bases__[1:]:
@@ -253,11 +283,13 @@ class LazySelectFieldBase(fields.SelectFieldBase):
         if self._coerce is not None:
             return self._coerce
         else:
-            decoder = getattr(self.model, 'decoder', None)
-            if decoder:
-                return decoder
-            else:
-                raise TypeError('no decoder is provided for %r' % self.model)
+            if self._model is not None:
+                decoder = getattr(self._model, 'decoder', None)
+                if decoder:
+                    return decoder
+                else:
+                    raise TypeError('no decoder is provided for %r' % self._model)
+            return None
 
     def _set_coerce(self, value):
         self._coerce = value
@@ -265,7 +297,10 @@ class LazySelectFieldBase(fields.SelectFieldBase):
     coerce = property(_get_coerce, _set_coerce)
 
     def _get_choices(self):
-        return [(encoded_value, label) for encoded_value, model_value, label in self._model.items()]
+        if self._model is not None:
+            return [(encoded_value, label) for encoded_value, model_value, label in self._model.items()]
+        else:
+            return []
 
     def _set_choices(self, value):
         self._model = WTFormsChoicesWrapper(value, lambda: self._coerce or text_type, lambda: self._encoder or text_type)
@@ -278,8 +313,9 @@ class LazySelectFieldBase(fields.SelectFieldBase):
         return self._model
 
     def iter_choices(self):
-        for encoded_value, model_value, label in self.model.items():
-            yield (encoded_value, label, model_value == self.data)
+        if self._model is not None: 
+            for encoded_value, model_value, label in self._model.items():
+                yield (encoded_value, label, model_value == self.data)
 
     def pre_validate(self, form):
         if self.data not in self.model:
@@ -289,7 +325,7 @@ class LazySelectField(SelectFieldDataMixin, LazySelectFieldBase):
     pass
 
 class LazySelectMultipleField(SelectMultipleFieldDataMixin, LazySelectFieldBase):
-    widget = widgets.Select(multiple=True)
+    widget = our_widgets.OurSelectWidget(multiple=True)
 
     def iter_choices(self):
         for encoded_value, model_value, label in self.model.items():
@@ -302,9 +338,35 @@ class LazySelectMultipleField(SelectMultipleFieldDataMixin, LazySelectFieldBase)
                 if d not in self.model:
                     raise ValueError(self.gettext("'%(value)s' is not a valid choice for this field" % dict(value=d)))
 
+class LazySelectMultipleDictField(SelectMultipleDictFieldDataMixin, LazySelectFieldBase):
+    widget = our_widgets.OurSelectWidget(multiple=True)
+
+    def iter_choices(self):
+        for encoded_value, model_value, label in self.model.items():
+            yield (encoded_value, label, self.data is not None and \
+                                         self.data[model_value])
+
+    def pre_validate(self, form):
+        if self.data:
+            for d in self.data:
+                if d not in self.model:
+                    raise ValueError(self.gettext("'%(value)s' is not a valid choice for this field" % dict(value=d)))
+
+
 class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
     def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, encoder=None, **kwargs):
+        _form = kwargs.get('_form')
+        hide_on_new = kwargs.pop('hide_on_new', False)
+        raw_input_filters = kwargs.pop('raw_input_filters', [])
+        if callable(label):
+            label = label()
         super(LazyGroupedSelectFieldBase, self).__init__(label, validators, **kwargs)
+        self._form = _form
+        self.hide_on_new = hide_on_new
+        self.raw_input_filters = raw_input_filters
+        for base in self.__class__.__bases__[1:]:
+            if hasattr(base, '__mixin_init__'):
+                base.__mixin_init__(self, label, validators, coerce, choices, model, cachable, **kwargs)
         if choices is not None:
             if callable(choices):
                 self._model = LazyWrapper(

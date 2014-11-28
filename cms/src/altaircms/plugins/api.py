@@ -57,5 +57,4 @@ def get_widget_utility(request, page,_type):
         request._widget_utilities[(page.organization_id, _type)] = utility
         return utility
     except KeyError:
-        logger.warn("widget utility is not found page=%s, type=%s" % (page.id,  _type))
         raise Exception("widget utility is not found page=%s, type=%s" % (page.id,  _type))

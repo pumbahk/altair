@@ -149,7 +149,8 @@ def set_auth_policy(config, callback):
 
 def register_auth_policy(config):
     callback = config.registry.settings.get('altair.auth.callback')
-    set_auth_policy(config, callback)
+    if callback is not None:
+        set_auth_policy(config, callback)
 
 def register_default_identifier(config):
     setting_name = 'altair.auth.identifier'

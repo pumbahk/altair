@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import json
 import logging
 from datetime import timedelta
 from collections import namedtuple
@@ -9,6 +10,7 @@ from wtforms import Form
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput, Input, HTMLString
+from altair.formhelpers.widgets.context import Rendrant
 from markupsafe import escape
 from sqlalchemy.sql import or_, and_, select
 
@@ -51,7 +53,7 @@ propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registrati
 
 logger = logging.getLogger(__name__)
 
-UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
+UPPER_LIMIT_OF_MAX_QUANTITY = 99  # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 DummyPerformance = namedtuple('DummyPerformance', ['start_on', 'end_on'])
 DummyPDMP = namedtuple('DummyPDMP', [
@@ -130,17 +132,53 @@ class ExtraFormEditorWidget(Input):
 
     def __call__(self, field, **kwargs):
         class_ = kwargs.pop('class_', None)
+        id_ = kwargs.pop('id', None) or field.id
         classes = ['action-open_extra_form_editor']
         if class_ is not None:
             classes.extend(re.split(ur'\s+', class_))
-        html = [super(ExtraFormEditorWidget, self).__call__(field, **kwargs)]
+        button_id = u'%s-btn' % id_
+        html = [super(ExtraFormEditorWidget, self).__call__(field, id=id_, **kwargs)]
         html.append('<ul data-for="{name}">'.format(name=escape(field.name)))
         if field.data is not None:
             for f in field.data:
                 html.append(u'<li>{display_name} ({name})</li>'.format(display_name=escape(f['display_name']), name=escape(f['name'])))
         html.append('</ul>')
-        html.append(u'<button class="{classes}" data-for="{name}">編集</button>'.format(classes=u' '.join(escape(class_) for class_ in classes), name=escape(field.name)))
-        return HTMLString(u''.join(html))
+        html.append(u'<button id="{id}" class="{classes}" data-for="{name}">編集</button>'.format(id=escape(button_id), classes=u' '.join(escape(class_) for class_ in classes), name=escape(field.name)))
+        js_coercer = getattr(field, 'build_js_coercer', None)
+        if js_coercer is not None:
+            js_coercer = js_coercer()
+        else:
+            js_coercer = u'function (v) { return v; }'
+        return ExtraFormEditorWidgetRendrant(
+            field,
+            HTMLString(u''.join(html)),
+            id_,
+            button_id,
+            js_coercer
+            )
+
+class ExtraFormEditorWidgetRendrant(Rendrant):
+    def __init__(self, field, html, id_, button_id, coercer):
+        super(ExtraFormEditorWidgetRendrant, self).__init__(field, html)
+        self.id = id_
+        self.button_id = button_id
+        self.coercer = coercer
+
+    def render_js_data_provider(self, registry_var_name):
+        return u'''<script type="text/javascript">
+(function(name, id, buttonId, coercer) {
+  var n = document.getElementById(id);
+  var bn = document.getElementById(buttonId);
+  window[%(registry_var_name)s].registerProvider(name, {
+    getValue: function () {
+      return coercer(n.value);
+    },
+    getUIElements: function() {
+      return [n, bn];
+    }
+  });
+})(%(name)s, %(id)s, %(button_id)s, %(coercer)s);
+</script>''' % dict(name=json.dumps(self.field.short_name), id=json.dumps(self.id), button_id=json.dumps(self.button_id), coercer=self.coercer, registry_var_name=json.dumps(registry_var_name))
 
 
 class SalesSegmentForm(OurForm):
@@ -264,8 +302,8 @@ class SalesSegmentForm(OurForm):
                     pdmp.id,
                     u'%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)
                     )
-                for pdmp in field.form.context.sales_segment_group.payment_delivery_method_pairs
-                ] if field.form.context.sales_segment_group else [],
+                for pdmp in field._form.context.sales_segment_group.payment_delivery_method_pairs
+                ] if field._form.context.sales_segment_group else [],
         coerce=lambda x : int(x) if x else u'',
         widget=CheckboxMultipleSelect(multiple=True)
     )
@@ -431,8 +469,8 @@ class SalesSegmentForm(OurForm):
         label=u'コピー先の公演(複数選択可)',
         validators=[Optional()],
         choices=lambda field: [
-            (p.id, u'%s' % p.name) for p in field.form.context.event.performances
-        ] if field.form.context.event else [],
+            (p.id, u'%s' % p.name) for p in field._form.context.event.performances
+        ] if field._form.context.event else [],
         coerce=lambda x : int(x) if x else u''
     )
     copy_products = OurBooleanField(

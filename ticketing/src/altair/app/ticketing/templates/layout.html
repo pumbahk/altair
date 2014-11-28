@@ -14,6 +14,16 @@
         padding-top: 50px; /* 50px to make the container go all the way to the bottom of the topbar */
       }
     </style>
+    <script type="text/javascript" src="/static/js/require.js"></script>
+		<% from altair.dynpredicate.fanstatic import js as dynpredicate_js %>
+		<script type="text/javascript">
+		  requirejs.config({
+			  baseUrl: ${HH.json(request.static_path('altair.app.ticketing:static/js'))|n},
+        paths: {
+          "altair.dynpredicate": ${HH.json(HH.fanstatic_resource_url(dynpredicate_js).replace('.js', ''))|n}
+        }
+			});
+		</script>
     <script type="text/javascript" src="/static/js/ticketing.common.js"></script>
     <%block name="style"/>
     <%block name="javascript"/>

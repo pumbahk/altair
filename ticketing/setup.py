@@ -10,13 +10,14 @@ requires = [
     'nose',
     'webtest',
     'testfixtures',
-    'pyramid == 1.3.4',
+    'pyramid == 1.5.1',
+    'pyramid_mako == 1.0.2',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
     'pyramid_tm',
     'pyramid_mailer',
     'pyramid_beaker',
-    'pyramid_layout',
+    'pyramid_layout >= 0.9',
     'pyramid_selectable_renderer >= 0.0.4',
     'pymysql',
     'mako',
@@ -103,6 +104,7 @@ requires = [
     'altair.models',
     'altair.httpsession',
     'altair.samarker',
+    'altair.pyramid_dynamic_renderer',
     ]
 
 tests_require = [
@@ -207,6 +209,7 @@ setup(name='altair.app.ticketing',
       sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
+      send_mail=altair.app.ticketing.scripts.send_mail:main
       """,
       paster_plugins=['pyramid'],
       )

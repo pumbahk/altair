@@ -45,7 +45,7 @@ class LimiterDataManager(object):
         try:
             for id_, count in self.counts:
                 self.cache.put(id_, count)
-        except exception as e:
+        except Exception as e:
             import sys
             logger.error('failed to store counter values', exc_info=sys.exc_info())
 

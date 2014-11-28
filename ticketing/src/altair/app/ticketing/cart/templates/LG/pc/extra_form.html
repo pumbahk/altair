@@ -18,21 +18,25 @@
         <tr>
           <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
           <td>
-            <div class="extra-form-description">${field['description']|n}</div>
+            % if field['field']._description:
+            <div class="extra-form-description">${field['field']._description}</div>
+            % endif
             <ul>
               <li>
                 ${field['field']()}
                 ${h.error_list(request, field['field'])}
               </li>
             </ul>
-            <div class="extra-form-note">${field['note']|n}</div>
+            % if field['field']._note:
+            <div class="extra-form-note">${field['field']._note}</div>
+            % endif
           </td>
         </tr>
         % else:
       % if not beginning_of_group:
       </table>
       % endif
-      <div class="confirmBoxContent">${field['description']|n}</div>
+      <div class="confirmBoxContent">${field['description']}</div>
       <% beginning_of_group = True %>
       % endif
       % endfor

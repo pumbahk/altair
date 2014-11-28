@@ -1,17 +1,37 @@
 # -*- coding:utf-8 -*-
-from pyramid.renderers import render
-from pyramid_mailer.message import Message
-from pyramid.compat import text_type
 import logging
-from .forms import SubjectInfoRenderer, RenderVal
-from .forms import OrderInfoDefaultMixin, SubjectInfoDefaultBase, SubjectInfo, SubjectInfoWithValue
+from zope.interface import implementer
+from pyramid.decorator import reify
+from pyramid.renderers import render
+from pyramid.compat import text_type
+from pyramid_mailer.message import Message
 from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.loyalty.models import PointGrantStatusEnum, PointGrantHistoryEntry
-from .interfaces import IPointGrantHistoryEntryInfoMail
-from zope.interface import implementer
-from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part
+from .interfaces import IPointGrantHistoryEntryInfoMail, IMailDataStoreGetter
+from .forms import SubjectInfoRenderer, RenderVal
+from .forms import OrderInfoDefaultMixin, SubjectInfoDefaultBase, SubjectInfo, SubjectInfoWithValue
+from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part, create_mail_request, get_default_contact_reference
+from .resources import MailContextBase
 
 logger = logging.getLogger(__name__)
+
+class MailForPointGrantHistoryEntryContext(MailContextBase):
+    mtype = None
+
+    def __init__(self, request, point_grant_history_entry):
+        self.request = request
+        self.point_grant_history_entry = point_grant_history_entry
+
+    @property
+    def payment_delivery_method_pair(self):
+        return self.point_grant_history_entry.order.payment_delivery_pair
+
+    @reify
+    def mail_data_store(self):
+        getter = self.request.registry.getUtility(IMailDataStoreGetter)
+        return getter(self.request, self.point_grant_history_entry, self.__class__.mtype)
+
+
 
 class PointGrantingFailureInfoDefault(SubjectInfoDefaultBase, OrderInfoDefaultMixin):
     failure_reasons = {
@@ -149,7 +169,9 @@ class PointGrantingFailureMail(object):
         return value
 
     def build_mail_body(self, request, point_grant_history_entry, traverser):
-        value = self._body_tmpl_vars(request, point_grant_history_entry, traverser)
-        retval = render(self.mail_template, value, request=request)
+        organization = point_grant_history_entry.order.organization
+        mail_request = create_mail_request(request, organization, lambda request: MailForPointGrantHistoryEntryContext(request, point_grant_history_entry))
+        value = self._body_tmpl_vars(mail_request, point_grant_history_entry, traverser)
+        retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
         return retval

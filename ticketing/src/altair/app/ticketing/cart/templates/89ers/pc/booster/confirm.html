@@ -1,0 +1,111 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="title">申込内容確認</%block>
+<form id="form1" action="${request.route_path('payment.confirm')}" method="post">
+  ${form.csrf_token()}
+  <table class="frame form">
+    <colgroup>
+      <col style="width:180px;" />
+      <col style="width:310px;" />
+    </colgroup>
+    <tbody>
+      <% pm = dict((p[0], dp[1]) for p, dp in extra_form_data) %>
+      <tr>
+        <th>新規／継続</th>
+        <td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+      </tr>
+      % if pm.get('old_id_number'):
+    　<tr>
+        <th>2013-14会員番号</th>
+        <td>${pm.get('old_id_number')}</td>
+      </tr>
+      % endif
+      <tr>
+        <th>会員種別</th>
+        <td>${cart.items[0].product.name}</td>
+      </tr>
+      <tr>
+        <th>氏名</th>
+        <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th>氏名（フリガナ）</th>
+        <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th>誕生日</th>
+        <td>${pm['birthday']}</td>
+      </tr>
+      <tr>
+        <th>性別</th>
+        <td>${pm['sex']}</td>
+      </tr>
+      <tr>
+        <th>郵便番号</th>
+        <td>${cart.shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <th>住所</th>
+        <td>${cart.shipping_address.prefecture} ${cart.shipping_address.city} ${cart.shipping_address.address_1} ${cart.shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <th>電話番号（携帯）</th>
+        <td>${cart.shipping_address.tel_1}</td>
+      </tr>
+      <tr>
+        <th>電話番号（自宅）</th>
+        <td>${cart.shipping_address.tel_2}</td>
+      </tr>
+      <tr>
+        <th>メールアドレス</th>
+        <td>${cart.shipping_address.email_1}</td>
+      </tr>
+      <tr>
+        <th>${view_context.team_name}からのメールマガジンの配信	</th>
+        <td>${pm['mail_permission']}</td>
+      </tr>
+      % if pm['publicity'] is not None:
+      <tr>
+        <th>メモリアルブックへの掲載希望</th>
+        <td>${u'はい' if pm['publicity'] == 'yes' else u'いいえ'}</td>
+      </tr>
+      % endif
+      % if pm['t_shirts_size'] is not None:
+      <tr>
+        <th>ClubナイナーズＴシャツサイズ</th>
+        <td>${pm['t_shirts_size']}</td>
+      </tr>
+      % endif
+      % if pm['official_ball'] is not None:
+      <tr>
+        <th> オリジナル公式球への記載希望名</th>
+        <td>${pm['official_ball']}</td>
+      </tr>
+      % endif
+      % if pm['coupon'] is not None:
+      <tr>
+        <th>会員証以外の特典受取方法</th>
+        <td>${pm['coupon']}</td>
+      </tr>
+      % endif
+      <tr>
+        <th>クラブナイナーズに入会しようと思ったきっかけは？</th>
+        <td>${pm['motivation']}</td>
+      </tr>
+      <tr>
+        <th>昨シーズンの会場での観戦回数</th>
+        <td>
+          % if pm['num_times_at_venue']:
+            ${pm['num_times_at_venue']}回
+          % else:
+            -
+          % endif
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="frame frame-inner textC">
+    <input type="submit" name="back" value="戻る" class="submit" style="width:200px;height:50px;" />
+    <input type="submit" value="申し込む" class="submit" style="width:200px;height:50px;" />
+  </div>
+</form>
