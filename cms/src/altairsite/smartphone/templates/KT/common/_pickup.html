@@ -14,12 +14,14 @@ $(document).ready(function(){
         mode: 'fade',
         autoControls: true
     });
+    $(".bx-viewport").css("height","200px");
 });
 </script>
 
+
 <% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
 <div class="frameline">
-  <ul class="bxslider">
+  <ul class="bxslider" style="height: 200px">
     % for event, promotion in promotions:
       <li>
           % if promotion.link:
