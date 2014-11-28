@@ -8,7 +8,7 @@ from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.core import models as c_models
 
 from .resources import MailForOrderContext
-from .interfaces import IRemindMail, IRemindMailResource
+from .interfaces import IRemindMail, IRemindMailResource, ICompleteMailResource
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from .api import (
@@ -62,7 +62,7 @@ def get_mailtype_description():
     return u"リマインドメール"
 
 
-@implementer(IRemindMailResource)
+@implementer(IRemindMailResource, ICompleteMailResource)
 class RemindMailResource(MailForOrderContext):
     """ リマインドメール """
     mtype = c_models.MailTypeEnum.PurcacheSejRemindMail
