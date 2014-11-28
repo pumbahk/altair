@@ -212,6 +212,14 @@ class AdminHelperAdapter(object):
                     return u'購入から%d日後' % pdmp.issuing_interval_days
                 else:
                     return u'不正な値'
+        elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+            if pdmp.issuing_interval_days is not None:
+                if pdmp.issuing_interval_days == 0:
+                    return u'購入日時'
+                elif pdmp.issuing_interval_days > 0:
+                    return u'購入日時から%d日後' % pdmp.issuing_interval_days
+                else:
+                    return u'不正な値'
         elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
             if pdmp.issuing_interval_days is not None:
                 if pdmp.issuing_interval_days == 0:
@@ -256,6 +264,14 @@ class AdminHelperAdapter(object):
                     return u'購入日'
                 elif pdmp.issuing_end_in_days > 0:
                     return u'購入から%d日後' % pdmp.issuing_end_in_days
+                else:
+                    return u'不正な値'
+        elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+            if pdmp.issuing_end_in_days is not None:
+                if pdmp.issuing_end_in_days == 0:
+                    return u'購入日時'
+                elif pdmp.issuing_end_in_days > 0:
+                    return u'購入日時から%d日後' % pdmp.issuing_end_in_days
                 else:
                     return u'不正な値'
         elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
@@ -304,6 +320,14 @@ class AdminHelperAdapter(object):
                     return u'購入から%d日後' % pdmp.payment_start_in_days
                 else:
                     return u'不正な値'
+        elif pdmp.payment_start_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+            if pdmp.payment_start_in_days is not None:
+                if pdmp.payment_start_in_days == 0:
+                    return u'購入日時'
+                elif pdmp.payment_start_in_days > 0:
+                    return u'購入日時から%d日後' % pdmp.payment_start_in_days
+                else:
+                    return u'不正な値'
         elif pdmp.payment_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
             if pdmp.payment_start_in_days is not None:
                 if pdmp.payment_start_in_days == 0:
@@ -348,6 +372,14 @@ class AdminHelperAdapter(object):
                     return u'購入日'
                 elif pdmp.payment_period_days > 0:
                     return u'購入から%d日後' % pdmp.payment_period_days
+                else:
+                    return u'不正な値'
+        elif pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+            if pdmp.payment_period_days is not None:
+                if pdmp.payment_period_days == 0:
+                    return u'購入日時'
+                elif pdmp.payment_period_days > 0:
+                    return u'購入日時から%d日後' % pdmp.payment_period_days
                 else:
                     return u'不正な値'
         elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
