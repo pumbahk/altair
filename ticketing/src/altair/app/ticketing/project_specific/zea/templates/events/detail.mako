@@ -14,7 +14,13 @@
 </table>
 </div>
 <div class="well">
-  <a href="${request.path}/download" class="btn btn-primary btn-large">CSVダウンロードする</a>
+  <form action="${request.path}/download">
+    <input type="submit" class="btn btn-primary btn-large" value="CSVダウンロードする" />
+    <select name="encoding">
+      <option value="CP932">Shift_JIS</option>
+      <option value="UTF-8">UTF-8</option>
+    </select>
+  </form>
 </div>
 <div class="container">
 ${h.render_bootstrap_pager(paged_orders)}

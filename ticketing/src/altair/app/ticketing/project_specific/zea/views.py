@@ -46,14 +46,15 @@ class ZeaAdminEventView(object):
         f = io.BytesIO()
         writer = csv.writer(f)
         block_size = 131072
+        errors = 'replace_with_geta'
         def _(orders):
             try:
-                writer.writerow([encoder(v)[0] for v in csvgen.header_row()])
+                writer.writerow([encoder(v, errors=errors)[0] for v in csvgen.header_row()])
                 yield f.getvalue()
                 f.truncate(0)
                 f.seek(0)
                 for order in orders:
-                    writer.writerow([encoder(v)[0] for v in csvgen.data_row(order)])
+                    writer.writerow([encoder(v, errors=errors)[0] for v in csvgen.data_row(order)])
                     if f.tell() > block_size:
                         yield f.getvalue()
                         f.truncate(0)
