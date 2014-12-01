@@ -171,6 +171,12 @@ ${ch.breadcrumbs(
             </a>
           </li>
           <li>
+            <a href="#" class="id-action"
+	     data-base-url="${request.route_path("events.tickets.bundles.edit_attributes", bundle_id="__id__", event_id=event.id)}">
+            <i class="icon-edit"></i> 属性一括編集
+            </a>
+          </li>
+          <li>
             <a href="#" class="id-action ajax-modal"
              data-base-url="${request.route_path("events.tickets.bundles.delete", bundle_id="__id__", event_id=event.id)}" 
              data-toggle="modal" data-target="#AjaxModal">

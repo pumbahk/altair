@@ -297,6 +297,29 @@ class BundleAttributeView(BaseView):
                       bundle_id=attribute.ticket_bundle_id)
         return HTTPFound(self.request.route_url("events.tickets.bundles.show", **kwargs))
 
+    @view_config(route_name="events.tickets.bundles.edit_attributes", request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/attributes/edit.html")
+    def multi_edit(self):
+        bundle_id = self.request.matchdict["bundle_id"]
+        event_id = self.request.matchdict["event_id"]
+
+        attrs = TicketBundleAttribute.query.filter_by(ticket_bundle=self.context.bundle)
+        form = forms.AttributesForm.append_fields(attrs)(formdata=self.request.POST, attrs=attrs)
+        return dict(event=self.context.event, bundle=self.context.bundle, form=form)
+
+    @view_config(route_name="events.tickets.bundles.edit_attributes", request_method="POST",
+                 renderer="altair.app.ticketing:templates/tickets/events/attributes/edit.html")
+    def multi_edit_post(self):
+        attrs = TicketBundleAttribute.query.filter_by(ticket_bundle=self.context.bundle)
+        form = forms.AttributesForm.append_fields(attrs)(formdata=self.request.POST, attrs=attrs)
+        for attr in attrs:
+            if "attr_%u" % attr.id in form.data:
+                attr.value = form.data["attr_%u" % attr.id]
+                attr.save()
+
+        self.request.session.flash(u'属性(TicketBundleAttribute)を更新しました')
+        return HTTPFound(self.request.route_url("events.tickets.index", event_id=self.request.matchdict["event_id"]))
+
     @view_config(route_name='events.tickets.attributes.delete', request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/_deleteform.html")
     def delete(self):
