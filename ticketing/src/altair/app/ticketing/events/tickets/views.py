@@ -300,9 +300,6 @@ class BundleAttributeView(BaseView):
     @view_config(route_name="events.tickets.bundles.edit_attributes", request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/edit.html")
     def multi_edit(self):
-        bundle_id = self.request.matchdict["bundle_id"]
-        event_id = self.request.matchdict["event_id"]
-
         attrs = TicketBundleAttribute.query.filter_by(ticket_bundle=self.context.bundle)
         form = forms.AttributesForm.append_fields(attrs)(formdata=self.request.POST, attrs=attrs)
         return dict(event=self.context.event, bundle=self.context.bundle, form=form)
