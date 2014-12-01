@@ -60,9 +60,6 @@ class TestDeliveryError(unittest.TestCase):
         self.config.add_delivery_plugin(FailingDeliveryPlugin(self.Exception), 0)
         self.config.add_payment_plugin(DummyPaymentPlugin(self.dummy_order), 0)
         self.delivery_error_event_subscriber = mock.Mock()
-        self.config.add_subscriber(
-            self.delivery_error_event_subscriber,
-            'altair.app.ticketing.payments.events.DeliveryErrorEvent')
 
     def test_delivery_error(self):
         from altair.app.ticketing.payments.payment import Payment
@@ -93,26 +90,3 @@ class TestDeliveryError(unittest.TestCase):
         self.assertEqual(self.delivery_error_event_subscriber.call_args[0][0].exception, raised_exception)
         self.assertEqual(self.delivery_error_event_subscriber.call_args[0][0].request, request)
         self.assertEqual(self.delivery_error_event_subscriber.call_args[0][0].order, self.dummy_order)
-
-class TestCancelOnDeliveryError(unittest.TestCase):
-    def _getTarget(self):
-        from ..events import cancel_on_delivery_error
-        return cancel_on_delivery_error
-
-    def _callFUT(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    @mock.patch('transaction.commit')
-    @mock.patch('sqlahelper.get_session')
-    def test_it(self, get_session_fn, commit_fn):
-        from ..events import DeliveryErrorEvent
-        order = mock.Mock()
-        event = DeliveryErrorEvent(
-            testing.DummyModel(),
-            DummyRequest(),
-            order
-            )
-        self._callFUT(event)
-        order.cancel.assert_called_once_with(event.request)
-        get_session_fn.assert_called_once_with()
-        commit_fn.assert_called_once_with()
