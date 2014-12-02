@@ -301,6 +301,7 @@ class ReportSettingForm(OurForm):
         label=u'送信終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max)
     )
     period = SelectField(
         label=u'レポート対象期間',
