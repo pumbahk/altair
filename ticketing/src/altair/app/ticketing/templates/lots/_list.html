@@ -27,7 +27,12 @@
           </tr>
         </thead>
         <tbody>
-          %for lot in sorted(lots, key=lambda x:(x.start_at, x.end_at, x.lotting_announce_datetime, x.id)):
+          <%
+             import datetime
+             early = datetime.datetime(1,1,1)
+             late = datetime.datetime(2999, 12, 31)
+             %>
+          %for lot in sorted(lots, key=lambda x:((x.start_at or early), (x.end_at or late), (x.lotting_announce_datetime or x.end_at or late), x.id)):
           <%
              resource = lotid_viewresource[lot.id]
              %>

@@ -177,6 +177,9 @@ class OrderReviewView(object):
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
+    @lbr_view_config(route_name='order_review.guest')
+    def guest(self):
+        return HTTPFound(location=self.request.route_path("order_review.form"))
 
     @lbr_view_config(
         route_name='order_review.form',
@@ -186,6 +189,13 @@ class OrderReviewView(object):
     def form(self):
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
+
+    @lbr_view_config(
+        route_name='order_review.show',
+        request_method="GET"
+        )
+    def get(self):
+        return HTTPFound(self.request.route_path('order_review.form'))
 
     @lbr_view_config(
         route_name='order_review.show',

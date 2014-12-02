@@ -75,11 +75,6 @@ ${get("delivery_fee").label} ${get("delivery_fee").body}
 ${get("total_amount").label} ${get("total_amount").body} （円）
 %endif
 
-お支払方法： ${payment_method_name}
-${h.render_payment_cancel_mail_viewlet(request,order)}
-お受取方法： ${delivery_method_name}
-${h.render_delivery_cancel_mail_viewlet(request,order)}
-
 ${notice}
 
 %if get("contact").status:

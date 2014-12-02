@@ -23,6 +23,7 @@ btn_bg_hover = [
 <html lang="ja">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="width=320,user-scalable=no">
   <title>${view_context.title}</title>
   <style type="text/css">
 body {
@@ -255,7 +256,7 @@ input.submit {
     text-shadow: 0 0 5px rgba(0, 0, 0, .5);
     text-align: center;
     color: #fff;
-    padding: 5px;
+    padding: 3px;
     border: 2px solid ${btn_bg[0]};
     margin: 0px auto;
     font-size: 20px;
@@ -399,7 +400,6 @@ table.purchasedContents tfoot td .paymentCoupon:active {
     margin: 0;
     color: red;
     font-weight: bold;
-    font-size: 12px;
 }
 
 .form-field-message {
@@ -435,7 +435,7 @@ $(function() {
         <ul>
           <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
           <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
-          <li class="last"><a target="_blank" href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+          <li class="last"><a target="_blank" href="${view_context.legal_notice_page_url}">特定商取引法に基づく表示</a></li>
         </ul>
       </div>
       <div class="copyright">

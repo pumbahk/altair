@@ -516,7 +516,6 @@ class MailInfoNewView(BaseView):
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
-        logger.debug("mailinfo.post: %s" % self.request.POST)
         mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
 
         organization_id = int(self.request.matchdict.get("organization_id", 0))
@@ -530,7 +529,6 @@ class MailInfoNewView(BaseView):
             self.request.session.flash(u"入力に誤りがあります。")
         else:
             mailinfo = mutil.create_or_update_mailinfo(self.request, form.as_mailinfo_data(), organization=organization, kind=mailtype)
-            logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
         return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form,

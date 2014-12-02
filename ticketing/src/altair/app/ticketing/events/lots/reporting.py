@@ -10,7 +10,6 @@ from pyramid_mailer.message import Message
 from pyramid_mailer import get_mailer
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import (
-    DBSession,
     ReportFrequencyEnum,
     ReportPeriodEnum,
 )
@@ -22,6 +21,7 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 class ReportCondition(object):
     """
@@ -38,7 +38,7 @@ class ReportCondition(object):
 
     @property
     def from_date(self):
-        
+
         if self.setting.frequency == ReportFrequencyEnum.Daily.v[0]:
             # 日単位では本日分のみ
             return self.to_date
@@ -46,7 +46,7 @@ class ReportCondition(object):
             # 週単位では本日から7日前からのもの
             return self.now - timedelta(days=7)
         else:
-            return self.now # XXX?
+            return self.now  # XXX?
 
     @property
     def to_date(self):
@@ -89,9 +89,8 @@ class ReportCondition(object):
         return True
 
 
-
 class LotEntryReporter(object):
-    subject_prefix = u"[抽選申込状況レポート]"
+    subject_format = u'[抽選申込状況レポート|{organization_name}] {event_name} - {lot_name}'
     body_template = "altair.app.ticketing:templates/lots_reports/_mail_body.html"
 
     def __init__(self, sender, mailer, report_setting):
@@ -103,13 +102,19 @@ class LotEntryReporter(object):
     def lot(self):
         return self.report_setting.lot
 
+    @property
+    def subject(self):
+        return self.subject_format.format(
+            organization_name=self.lot.organization.name,
+            event_name=self.lot.event.title,
+            lot_name=self.lot.name,
+            )
 
     def create_report_mail(self, status):
-        subject = self.subject_prefix + u" " + self.report_setting.lot.name
         body = render_to_response(self.body_template,
                                   dict(lot=self.lot,
                                        lot_status=status))
-        return Message(subject=subject,
+        return Message(subject=self.subject,
                        recipients=[x.email for x in self.report_setting.recipients],
                        html=body.text,
                        sender=self.sender)
@@ -121,6 +126,7 @@ class LotEntryReporter(object):
         message = self.create_report_mail(status)
         # 送信
         self.mailer.send(message)
+
 
 def send_lot_report_mails(request, sender):
     logger.info("start send_lot_report_mails")

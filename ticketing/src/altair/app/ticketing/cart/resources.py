@@ -509,7 +509,7 @@ class TicketingCartResourceBase(object):
 
     @reify
     def cart_setting(self):
-        cart_setting = (self.event and self.event.setting.cart_setting) or cart_api.get_organization(self.request).setting.cart_setting
+        cart_setting = (self.event and self.event.setting and self.event.setting.cart_setting) or cart_api.get_organization(self.request).setting.cart_setting
         if cart_setting is not None:
             make_transient(cart_setting)
         else:

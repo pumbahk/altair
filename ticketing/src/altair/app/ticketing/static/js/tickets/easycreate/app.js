@@ -1,7 +1,6 @@
-if (!window.app)
-  window.app = {};
-
-(function(app){
+(function (fn) {
+  define(['exports', 'ZeroClipboard.min', 'tickets/easycreate/helpers'], fn);
+})(function(app, ZeroClipboard, h) {
   "use strict";
 
   /// これはsubmitする前の状態での値。settingの範囲ではこちら
@@ -470,5 +469,7 @@ if (!window.app)
   app.SettingAreaModule = SettingAreaModule;
   app.SubmitAreaModule = SubmitAreaModule;
   app.BrokerModule = BrokerModule;
-})(window.app);
+
+  return app;
+});
 

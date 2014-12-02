@@ -1101,11 +1101,11 @@ class LotEntries(BaseView):
 
     @view_config(route_name='lots.entries.shipping_address.edit', request_method='GET', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_get(self):
-        return dict(form=ClientOptionalForm(obj=self.context.entry.shipping_address), action=self.request.current_route_path())
+        return dict(form=ClientOptionalForm(obj=self.context.entry.shipping_address, context=self.context), action=self.request.current_route_path())
 
     @view_config(route_name='lots.entries.shipping_address.edit', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_post(self):
-        f = ClientOptionalForm(self.request.POST)
+        f = ClientOptionalForm(self.request.POST, context=self.context)
         if f.validate():
             entry = self.context.entry
             shipping_address = entry.shipping_address

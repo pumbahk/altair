@@ -8,7 +8,7 @@
 <form method="post" action="${request.current_route_path()}">
 <%def name="render_field(field, label=True, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
-_description = _description or field._description
+_description = _description or field.description
 _note = _note or field._note
 if label is None or label is True:
   label = field.label

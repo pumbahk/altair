@@ -194,11 +194,9 @@ ${getattr(form,attrname).label(class_="required control-label")}
 </div>
 
 
-<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/helpers.js")}"></script>
-<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/app.js")}"></script>
-<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.min.js")}"></script>
 <script type="text/javascript">
-
+$(function() {
+require(['tickets/easycreate/app'], function (app) {
 // loading component, the trigger is preview type radio button of above area.
 app.BrokerData = {
   userhandle: {value: null, writable: true},
@@ -210,82 +208,81 @@ app.BrokerData = {
 };
 app.broker = Object.create(app.BrokerModule, app.BrokerData);
 
-$(function(){
-  app.ComponentAreaData = {
-    broker: {value: app.broker},
-    $el: {value: $(".component-area"), writable: false},
-    ticket_formats_iterable: {value: [], writable: true},
-    loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
-    gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
-    gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
-    gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
-    gettingvarsvals_url: {value: "${request.route_path("events.tickets.easycreate.gettingvarsvals", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"}
-  };
+app.ComponentAreaData = {
+  broker: {value: app.broker},
+  $el: {value: $(".component-area"), writable: false},
+  ticket_formats_iterable: {value: [], writable: true},
+  loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
+  gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
+  gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
+  gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
+  gettingvarsvals_url: {value: "${request.route_path("events.tickets.easycreate.gettingvarsvals", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"}
+};
 
-  app.UserHandleAreaData = {
-    broker: {value: app.broker},
-    $el: {value: $(".userhandle-area"),writable: false}
-  };
+app.UserHandleAreaData = {
+  broker: {value: app.broker},
+  $el: {value: $(".userhandle-area"),writable: false}
+};
 
-  app.ChooseAreaData = {
-    broker: {value: app.broker},
-    $el: {value: $(".choose-area"), writable: false}
-  }
+app.ChooseAreaData = {
+  broker: {value: app.broker},
+  $el: {value: $(".choose-area"), writable: false}
+}
 
-  app.SettingAreaData = {
-    broker: {value: app.broker},
-    $el: {value: $(".setting-area"), writable: false}
-  }
+app.SettingAreaData = {
+  broker: {value: app.broker},
+  $el: {value: $(".setting-area"), writable: false}
+}
 
-  app.SubmitAreaData = {
-    broker: {value: app.broker},
-    $el: {value: $(".submit-area"), writable: false}
-  }
+app.SubmitAreaData = {
+  broker: {value: app.broker},
+  $el: {value: $(".submit-area"), writable: false}
+}
 
-  app.MessageServiceData = {
-    $el: {value: $("body")},
-    success: {value: "#succes_message"},
-    alert: {value: "#alert_message"},
-    info: {value: "#info_message"},
-    error: {value: "#error_message"}
-  };
+app.MessageServiceData = {
+  $el: {value: $("body")},
+  success: {value: "#succes_message"},
+  alert: {value: "#alert_message"},
+  info: {value: "#info_message"},
+  error: {value: "#error_message"}
+};
 
-  app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
-  app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
-  app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
-  app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
-  app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
-  app.message = Object.create(app.MessageServiceModule, app.MessageServiceData);
+app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
+app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
+app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
+app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
+app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
+app.message = Object.create(app.MessageServiceModule, app.MessageServiceData);
 
-  app.broker.choose = app.choose;
-  app.broker.setting = app.setting;
-  app.broker.submit = app.submit;
-  app.broker.component = app.component;
-  app.broker.userhandle = app.userhandle;
-  app.broker.message = app.message;
+app.broker.choose = app.choose;
+app.broker.setting = app.setting;
+app.broker.submit = app.submit;
+app.broker.component = app.component;
+app.broker.userhandle = app.userhandle;
+app.broker.message = app.message;
 
-  // binding observer event
-  app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
-  app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
+// binding observer event
+app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
+app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
 
-  var radio_btn_kind = app.choose.$el.find('input[name="event_id"]:radio');
-  radio_btn_kind.on("change", function(e){ app.choose.onChangeTemplateKind($(this))});
-  var radio_btn_preview_type = app.choose.$el.find('input[name="preview_type"]:radio');
-  radio_btn_preview_type.on("change", function(e){ app.choose.onChangePreviewType($(this))});
+var radio_btn_kind = app.choose.$el.find('input[name="event_id"]:radio');
+radio_btn_kind.on("change", function(e){ app.choose.onChangeTemplateKind($(this))});
+var radio_btn_preview_type = app.choose.$el.find('input[name="preview_type"]:radio');
+radio_btn_preview_type.on("change", function(e){ app.choose.onChangePreviewType($(this))});
 
-  app.setting.$el.find('select[name="templates"]').on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
-  app.setting.$el.find(".sticky-button").on("click", function(){app.setting.onClickStickyButton($(this).parents(".help-box"));});
-  app.setting.bindClipboardCopy(app.setting.$el.find(".help-box"), "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}")
-  app.setting.bindHelpPopOver(app.setting.$el.find(".help-box"));
+app.setting.$el.find('select[name="templates"]').on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
+app.setting.$el.find(".sticky-button").on("click", function(){app.setting.onClickStickyButton($(this).parents(".help-box"));});
+app.setting.bindClipboardCopy(app.setting.$el.find(".help-box"), "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}")
+app.setting.bindHelpPopOver(app.setting.$el.find(".help-box"));
 
-  app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
-  app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
-  app.submit.$el.find('input[name="principal"]').on("change", function(e){app.submit.onChangeIsPriced($(this));});
-  app.submit.$el.find('input[name="always_reissueable"]').on("change", function(e){app.submit.onChangeIsAlwaysReissueable($(this));});
-  app.submit.$el.find('input[name="create"]').on('click', function(){app.submit.onSubmitCreate($(this)); return false;})
-  app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})
+app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
+app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
+app.submit.$el.find('input[name="principal"]').on("change", function(e){app.submit.onChangeIsPriced($(this));});
+app.submit.$el.find('input[name="always_reissueable"]').on("change", function(e){app.submit.onChangeIsAlwaysReissueable($(this));});
+app.submit.$el.find('input[name="create"]').on('click', function(){app.submit.onSubmitCreate($(this)); return false;})
+app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})
 
-  // template_id query string is found in url, then autoload component.
+// template_id query string is found in url, then autoload component.
 %if ticket_template:
   app.choose.pseudoNewTicket("${ticket_template.id}");
 %endif
@@ -296,7 +293,7 @@ $(function(){
     app.choose.onChangePreviewType(radio_btn_preview_type.parent().find(":checked"))
   }
 });
-
+});
 </script>
 
 <div class="component-area">

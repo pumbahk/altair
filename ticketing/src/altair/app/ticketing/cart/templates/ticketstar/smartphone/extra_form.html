@@ -35,8 +35,8 @@ form {
       % if field['field']:
         <%t:header>${field['field'].label}</%t:header>
         <div class="dispBoxInner">
-          % if field['field']._description:
-          <div>${field['field']._description}</div>
+          % if field['field'].description:
+          <div>${field['field'].description}</div>
           % endif
           <div>
             ${fh.render(field['field'], _widget=h.sensible_widget(request, field['field'].widget))}

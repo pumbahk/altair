@@ -11,7 +11,7 @@
 <%
 import json
 
-f = lambda x: dict(start_at=x.start_at.strftime('%Y-%m-%dT%H:%M:%S'), end_at=x.end_at.strftime('%Y-%m-%dT%H:%M:%S') if x.end_at else '')
+f = lambda x: dict(start_at=(x.start_at.strftime('%Y-%m-%dT%H:%M:%S') if x.start_at else ''), end_at=(x.end_at.strftime('%Y-%m-%dT%H:%M:%S') if x.end_at else ''))
 
 dates_json = json.dumps(dict([(x.id, f(x)) for x in event.sales_segment_groups]))
 %>

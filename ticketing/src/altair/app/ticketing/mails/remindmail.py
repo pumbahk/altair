@@ -8,7 +8,7 @@ from altair.app.ticketing.cart import helpers as ch ##
 from altair.app.ticketing.core import models as c_models
 
 from .resources import MailForOrderContext
-from .interfaces import IRemindMail, IRemindMailResource
+from .interfaces import IRemindMail, IRemindMailResource, ICompleteMailResource
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from .api import (
@@ -21,6 +21,7 @@ from .api import (
     get_default_contact_reference,
     create_mail_request,
     )
+from .utils import unescape
 
 class RemindInfoDefault(OrderInfoDefault):
     def get_shipping_address_info(request, order):
@@ -41,8 +42,8 @@ class RemindInfoDefault(OrderInfoDefault):
 {address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda request, order: order.ordered_from.name)
-    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
-    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払方法", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取方法", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
     address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
     def get_contact(request, order):
         # XXX: 本来は recipient の情報を含んだ context を SubjectInfoRenderer
@@ -62,7 +63,7 @@ def get_mailtype_description():
     return u"リマインドメール"
 
 
-@implementer(IRemindMailResource)
+@implementer(IRemindMailResource, ICompleteMailResource)
 class RemindMailResource(MailForOrderContext):
     """ リマインドメール """
     mtype = c_models.MailTypeEnum.PurcacheSejRemindMail
@@ -76,12 +77,14 @@ class SejRemindMail(object):
         return (traverser.data["subject"] or
                 u'<<重要>> 支払期限についてのご案内【{organization}】'.format(organization=organization.name))
 
-    def build_mail_body(self, request, something, traverser):
+    def build_mail_body(self, request, something, traverser, kind='plain'):
         organization = something.organization or request.context.organization
         mail_request = create_mail_request(request, organization, lambda request: RemindMailResource(request, something))
         value = self._body_tmpl_vars(mail_request, something, traverser)
         retval = render(self.mail_template, value, request=mail_request)
         assert isinstance(retval, text_type)
+        if kind == 'plain':
+            retval = unescape(retval)
         return retval
 
     def _body_tmpl_vars(self, request, order, traverser):

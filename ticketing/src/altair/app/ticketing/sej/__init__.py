@@ -60,6 +60,7 @@ def main(global_config, **local_config):
     config.set_root_factory('.resources.TicketingApiResource')
     config.include('altair.app.ticketing.setup_beaker_cache')
     config.include('altair.pyramid_dynamic_renderer')
+    config.include('altair.sqlahelper')
 
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
