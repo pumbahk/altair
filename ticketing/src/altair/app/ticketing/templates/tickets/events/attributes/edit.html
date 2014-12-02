@@ -1,0 +1,37 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%;}
+</style>
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'イベント', event.title, u'券面', u'チケット券面構成(TicketBundle)', u"属性(TicketBundleAttribute)"],
+  urls=[request.route_path('events.index'), 
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.tickets.index', event_id=event.id),
+        request.route_path('events.tickets.bundles.show', event_id=event.id, bundle_id=request.matchdict["bundle_id"]),
+       ]
+)}
+</%block>
+
+<div class="page-header">
+  <h3>属性(TicketBundleAttribute)一括編集</h3>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${request.route_path("events.tickets.bundles.edit_attributes", event_id=event.id, bundle_id=bundle.id)}" method="POST">
+	%for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
+	<fieldset>
+	  ${ch.form_item(form["attr_%u" % attribute.id])}
+	</fieldset>
+	%endfor
+	
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="更新" />
+	</div>
+  </form>
+</div>
