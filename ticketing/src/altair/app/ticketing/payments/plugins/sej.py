@@ -552,7 +552,7 @@ class SejPaymentPlugin(object):
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         sej_order = sej_api.get_sej_order(order.order_no)
-        assert sej_order_like.payment_type == SejPaymentType.PrepaymentOnly.v
+        assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
 
 @implementer(ISejDeliveryPlugin)
