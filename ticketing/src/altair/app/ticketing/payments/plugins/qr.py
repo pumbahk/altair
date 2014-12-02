@@ -29,12 +29,9 @@ def includeme(config):
     config.add_delivery_plugin(QRTicketDeliveryPlugin(), DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
-def _overridable(path):
+def _overridable(path, fallback_ua_type=None):
     from . import _template
-    if _template is None:
-        return '%s:templates/%s' % (__name__, path)
-    else:
-        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
+    return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_confirm.html"))
 def deliver_confirm_viewlet(context, request):
@@ -68,7 +65,7 @@ def deliver_completion_viewlet(context, request):
         tickets = tickets,
         )
 
-@lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html"))
+@lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html", fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
     shipping_address = context.order.shipping_address
     return dict(h=cart_helper, shipping_address=shipping_address, 

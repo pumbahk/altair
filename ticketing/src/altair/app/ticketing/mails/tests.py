@@ -5,20 +5,8 @@
 
 import unittest
 from pyramid import testing
+from altair.app.ticketing.testing import DummyRequest
 from datetime import datetime
-
-def setUpModule():
-    from altair.app.ticketing.testing import _setup_db
-    _setup_db(modules=[
-            "altair.app.ticketing.models",
-            "altair.app.ticketing.orders.models",
-            "altair.app.ticketing.core.models",
-            "altair.app.ticketing.cart.models",
-            ])
-
-def tearDownModule():
-    from altair.app.ticketing.testing import _teardown_db
-    _teardown_db()
 
 def create_initial_settings():
     from pyramid.path import AssetResolver
@@ -29,8 +17,18 @@ def create_initial_settings():
 
 class CompletMailSettingsTest(unittest.TestCase):
     def setUp(self):
+        from altair.app.ticketing.testing import _setup_db
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        self.session = _setup_db(modules=[
+                "altair.app.ticketing.models",
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.cart.models",
+                ])
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        self.config.include('pyramid_mako')
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.add_mako_renderer('.html')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
         ## TBA
         self.config.add_route("qr.make", "__________")
@@ -38,8 +36,15 @@ class CompletMailSettingsTest(unittest.TestCase):
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.config.add_subscriber('altair.app.ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
+        from altair.app.ticketing.testing import _teardown_db
+        _teardown_db()
         testing.tearDown()
 
     def _getTarget(self):
@@ -111,17 +116,39 @@ class CompletMailSettingsTest(unittest.TestCase):
 
 class CreateMailFromFakeOrderTests(unittest.TestCase):
     def setUp(self):
+        from altair.app.ticketing.testing import _setup_db
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        self.session = _setup_db(modules=[
+                "altair.app.ticketing.models",
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.cart.models",
+                ])
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+        self.config.include('pyramid_mako')
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails.install_mail_utility')
         ## TBA
         self.config.add_route("qr.make", "__________")
 
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
+        from mock import patch
+        self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
+        p = self._patch_get_cart_setting_from_order_like.start()
+        p.return_value.type = 'standard'
 
     def tearDown(self):
+        from altair.app.ticketing.testing import _teardown_db
+        self._patch_get_cart_setting_from_order_like.stop()
+        _teardown_db()
         testing.tearDown()
 
     def test_it(self):
@@ -132,7 +159,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         org = Organization()
         org.settings.append(OrganizationSetting(name="default", contact_pc_url='pc@example.com', contact_mobile_url='mobile@exmaple.com'))
         org.extra_mail_info=None
-        request = testing.DummyRequest()
+        request = DummyRequest()
         order = FakeOrderFactory(object())(request, { "organization": org })
 
         mutil = get_mail_utility(request, MailTypeEnum.PurchaseCompleteMail)
@@ -149,7 +176,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         org.settings.append(OrganizationSetting(name="default"))
         org.extra_mail_info=None
         performance = Performance(event=Event(title=u"example"), start_on=datetime(2014, 1, 1, 0, 0, 0), end_on=datetime(2014, 1, 2, 23, 59, 59), venue=Venue(name=u'テスト会場'))
-        request = testing.DummyRequest()
+        request = DummyRequest()
         request.context = testing.DummyResource(organization=org)
 
         subject = FakeLotEntryElectedWishPairFactory(object())(request, { "organization": org, "performance": performance })
@@ -171,9 +198,26 @@ class GetDefaultContactReferenceTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def setUp(self):
-        self.request = testing.DummyRequest()
+        from altair.app.ticketing.testing import _setup_db
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        self.session = _setup_db(modules=[
+                "altair.app.ticketing.models",
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.cart.models",
+                ])
+        self.request = DummyRequest()
         self.config = testing.setUp(request=self.request)
         self.config.include('altair.mobile')
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
+
+    def tearDown(self):
+        from altair.app.ticketing.testing import _teardown_db
+        _teardown_db()
 
     def test_http(self):
         organization = testing.DummyModel(
@@ -221,6 +265,5 @@ class GetDefaultContactReferenceTest(unittest.TestCase):
         self.assertEqual('', result)
 
 if __name__ == "__main__":
-    # setUpModule()
     unittest.main()
     
