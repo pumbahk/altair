@@ -38,7 +38,7 @@ class ResetForm(Form):
 
     email = TextField(u'メールアドレス', validators=[Required()])
 
-    def validate_email(form, field):
+    def validate_email(self, field):
         if not Operator.filter_by(email=field.data).count():
             raise ValidationError(u'入力されたメールアドレスは登録されていません')
 
@@ -59,8 +59,8 @@ class OperatorForm(Form):
     password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません')])
     expire_at = HiddenField(u'パスワード有効期限', validators=[Optional()])
     
-    def validate_login_id(form, field):
+    def validate_login_id(self, field):
         operator_auth = OperatorAuth.get_by_login_id(field.data)
         if operator_auth is not None:
-            if operator_auth.operator_id != form.request.context.user.id:
+            if operator_auth.operator_id != self.request.context.user.id:
                 raise ValidationError(u'ログインIDが重複しています。')

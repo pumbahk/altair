@@ -7,6 +7,8 @@ from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
 from altair.formhelpers.validators import DynSwitchDisabled
 from wtforms.validators import Length, Regexp, Optional
+from wtforms.compat import iteritems
+from wtforms.form import WebobInputWrapper
 
 from altair.formhelpers import Translations, Required, Phone, Email
 from altair.app.ticketing.models import DBSession
@@ -112,9 +114,33 @@ class OrganizationForm(OurForm):
 class NewOrganizationForm(OrganizationForm):
     login = FormField(form_class=OperatorForm)
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        if 'request' in kwargs:
+            self.request = kwargs['request']
+        super(NewOrganizationForm, self).__init__(formdata, obj, prefix, **kwargs)
+
     default_mail_sender = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
         )
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        if formdata is not None and not hasattr(formdata, 'getlist'):
+            if hasattr(formdata, 'getall'):
+                formdata = WebobInputWrapper(formdata)
+            else:
+                raise TypeError("formdata should be a multidict-type wrapper that supports the 'getlist' method")
+
+        for name, field, in iteritems(self._fields):
+            kw = {}
+            if isinstance(field, FormField):
+                kw['request'] = self.request
+
+            if obj is not None and hasattr(obj, name):
+                field.process(formdata, getattr(obj, name), data=kw)
+            elif name in kwargs:
+                field.process(formdata, kwargs[name], data=kw)
+            else:
+                field.process(formdata, data=kw)
 
 
 class SejTenantForm(OurForm):

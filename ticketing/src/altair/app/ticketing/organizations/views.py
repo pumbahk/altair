@@ -71,14 +71,14 @@ class Organizations(BaseView):
     @view_config(route_name='organizations.new', request_method='GET', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def new_get(self):
         return {
-            'form': NewOrganizationForm(),
+            'form': NewOrganizationForm(request=self.request),
             'route_name': u'登録',
             'new_user': True,
             }
 
     @view_config(route_name='organizations.new', request_method='POST', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def new_post(self):
-        f = NewOrganizationForm(self.request.POST)
+        f = NewOrganizationForm(self.request.POST, request=self.request)
 
         if f.validate():
             organization = merge_session_with_post(Organization(), f.data)
@@ -116,7 +116,14 @@ class Organizations(BaseView):
                         )
                     )
                 ]
-            organization.save()
+            try:
+                organization.save()
+            except:
+                return {
+                    'form': f,
+                    'route_name': u'登録',
+                    'new_user': True,
+                }
 
             self.request.session.flash(u'配券先／配券元を保存しました')
             return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization.id))

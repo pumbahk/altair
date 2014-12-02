@@ -84,13 +84,20 @@ def merge_session_with_post(session, post, filters={}, excludes=set()):
     else:
         raise Exception(u'Invalid post type type= %s' % type(post))
 
+def _flush_or_rollback():
+    try:
+        DBSession.flush()
+    except:
+        DBSession.rollback()
+        raise
+
 def add_and_flush(session):
     DBSession.add(session)
-    DBSession.flush()
+    _flush_or_rollback()
 
 def merge_and_flush(session):
     DBSession.merge(session)
-    DBSession.flush()
+    _flush_or_rollback()
 
 class Cloner(object):
     def __init__(self, deep):
@@ -197,19 +204,19 @@ class BaseModel(object):
                 self.created_at = datetime.now()
             self.updated_at = datetime.now()
         DBSession.add(self)
-        DBSession.flush()
+        _flush_or_rollback()
 
     def update(self):
         if isinstance(self, WithTimestamp):
             self.updated_at = datetime.now()
         DBSession.merge(self)
-        DBSession.flush()
+        _flush_or_rollback()
 
     def delete(self):
         if isinstance(self, LogicallyDeleted):
             self.deleted_at = datetime.now()
         DBSession.merge(self)
-        DBSession.flush()
+        _flush_or_rollback()
 
 class CustomizedRelationshipProperty(RelationshipProperty):
     def _determine_joins(self):
