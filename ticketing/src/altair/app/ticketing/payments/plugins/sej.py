@@ -293,7 +293,7 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
 def refund_order(request, tenant, order, refund_record, now=None):
-    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_orders = sej_api.get_valid_sej_orders(order.order_no)
     if order.paid_at is None:
         raise SejPluginFailure(u'cannot refund an order that is not paid yet')
     if order.issued_at is not None:
@@ -301,23 +301,26 @@ def refund_order(request, tenant, order, refund_record, now=None):
     refund = refund_record.refund
     performance = order.performance
     try:
-        sej_api.refund_sej_order(
-            request,
-            tenant=tenant,
-            sej_order=sej_order,
-            performance_name=performance.name,
-            performance_code=performance.code,
-            performance_start_on=order.performance.start_on,
-            per_order_fee=refund_record.refund_per_order_fee,
-            per_ticket_fee=refund_record.refund_per_ticket_fee,
-            refund_start_at=refund.start_at,
-            refund_end_at=refund.end_at,
-            need_stub=refund.need_stub,
-            ticket_expire_at=refund.end_at + timedelta(days=+7),
-            ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(sej_ticket.product_item_id),
-            refund_total_amount=refund_record.refund_total_amount,
-            now=now
-            )
+        for sej_order in sej_orders:
+            if int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly):
+                continue
+            sej_api.refund_sej_order(
+                request,
+                tenant=tenant,
+                sej_order=sej_order,
+                performance_name=performance.name,
+                performance_code=performance.code,
+                performance_start_on=order.performance.start_on,
+                per_order_fee=refund_record.refund_per_order_fee,
+                per_ticket_fee=refund_record.refund_per_ticket_fee,
+                refund_start_at=refund.start_at,
+                refund_end_at=refund.end_at,
+                need_stub=refund.need_stub,
+                ticket_expire_at=refund.end_at + timedelta(days=+7),
+                ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(sej_ticket.product_item_id),
+                refund_total_amount=refund_record.refund_total_amount,
+                now=now
+                )
     except SejErrorBase:
         raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
