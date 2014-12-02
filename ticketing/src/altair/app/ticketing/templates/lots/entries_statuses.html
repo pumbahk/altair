@@ -55,9 +55,9 @@
     %endfor
     <tr>
       <td colspan="3">合計</td>
-      <td>${lot_status.total_quantity}</td>
+      <td>${lot_status.total_quantity or 0}</td>
       %for i in range(lot_status.lot.limit_wishes):
-      <td>${lot_status.wish_statuses[i].quantity}</td>
+      <td>${lot_status.wish_statuses[i].quantity or 0}</td>
       %endfor
       <td>${sum([st.elected_quantity for st in statuses])}</td>
       <td>${sum([st.ordered_quantity for st in statuses])}</td>
