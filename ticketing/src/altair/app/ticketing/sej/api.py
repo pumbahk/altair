@@ -28,6 +28,10 @@ def do_sej_order(request, tenant, sej_order, now=None, session=None):
         try:
             sej_order = request_order(request, tenant, sej_order)
         finally:
+            versions = session.query(SejOrder.version_no).filter(SejOrder.order_no == sej_order.order_no).with_lockmode('update').order_by(desc(SejOrder.version_no)).all()
+            if sej_order.branch_no is None:
+                # バージョン番号は 0 スタート
+                sej_order.version_no = versions[-1][0] + 1 if len(versions) > 0 else 0
             sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
@@ -190,7 +194,7 @@ def get_sej_order(order_no, session=None):
         session = _session 
     retval = session.query(SejOrder) \
         .filter_by(order_no=order_no) \
-        .order_by(desc(SejOrder.branch_no)) \
+        .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)) \
         .first()
     return retval
 
@@ -206,7 +210,7 @@ def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_n
         q = q.filter_by(exchange_number=exchange_number)
     if billing_number:
         q = q.filter_by(billing_number=billing_number)
-    return q.order_by(desc(SejOrder.branch_no)).first()
+    return q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)).first()
 
 def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:
@@ -215,6 +219,7 @@ def get_sej_orders(order_no, fetch_canceled=False, session=None):
     q = q.filter_by(order_no=order_no)
     if not fetch_canceled:
         q = q.filter_by(cancel_at=None)
+    q = q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
     return q.all()
 
 def get_default_sej_tenant(request_or_registry):
