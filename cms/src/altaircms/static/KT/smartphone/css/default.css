@@ -803,11 +803,11 @@ h2.glitter.orange {
 
 h2.glitter.gray {
 border-top: 2px solid #BF0000;
-border-bottom: 1px solid #E2E2E2;
+border-bottom: 1px solid #BEBEBE;
 padding: 7px 10px;
 font-weight: bold;
 color: #BF0000;
-background: linear-gradient(to bottom, #FFF 0%, #EEE 100%) repeat scroll 0% 0% transparent;
+background: linear-gradient(to bottom, #FFF 0%, #BEBEBE 100%) repeat scroll 0% 0% transparent;
 margin: 0px;
 padding: 0px;
 border: 0px none;
