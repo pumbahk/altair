@@ -1,6 +1,7 @@
 from pyramid.path import DottedNameResolver
 from pyramid.testing import DummyRequest as _DummyRequest
-from pyramid.interfaces import IRequest
+from pyramid.interfaces import IRequest, IRequestExtensions
+from pyramid.util import InstancePropertyMixin
 from zope.interface import alsoProvides
 
 def _setup_db(modules=[], echo=False):
@@ -38,6 +39,26 @@ class DummyRequest(_DummyRequest):
             self.POST = MultiDict(self.POST)
         self.browserid = kwargs.get("browserid")
         self.request_iface = kwargs.get('request_iface', IRequest)
+
+    def __getattr__(self, k):
+        extensions = self.registry.queryUtility(IRequestExtensions)
+        if extensions is not None:
+            self._set_extensions(extensions)
+        if not hasattr(self.__class__, k):
+            raise AttributeError(k)
+        return getattr(self, k)
+
+    def copy(self):
+        return self.__class__(
+            params=self.params.copy() if self.params is not None else None,
+            environ=self.environ.copy() if self.environ is not None else None,
+            headers=self.headers.copy() if self.headers is not None else None,
+            path=self.path,
+            cookies=self.cookies.copy() if self.cookies is not None else None,
+            post=self.POST,
+            **dict((k, v) for k, v in self.__dict__.items() if k not in ('params', 'environ', 'headers', 'path', 'cookies', 'post'))
+            )
+
 
 class ElementTreeTestMixin(object):
     def assertEqualsEtree(self, result, expected, msg):

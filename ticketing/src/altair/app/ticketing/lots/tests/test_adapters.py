@@ -1,5 +1,5 @@
 import unittest
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from pyramid import testing 
 
 class LotSessionCartTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class LotSessionCartTest(unittest.TestCase):
             DeliveryMethod,
             FeeTypeEnum,
             )
-        self.request = testing.DummyRequest()
+        self.request = DummyRequest()
         self.session = _setup_db([
             'altair.app.ticketing.lots.models',
             'altair.app.ticketing.orders.models',

@@ -122,6 +122,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         self.config = testing.setUp(settings={
             'altair.sej.template_file': ''
             })
+        self.config.include('altair.pyramid_dynamic_renderer')
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
@@ -143,9 +144,9 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         patch = mock.patch('altair.app.ticketing.sej.api.cancel_sej_order')
         patches.append(patch)
         self.sej_cancel_sej_order = patch.start()
-        patch = mock.patch('altair.app.ticketing.sej.api.refund_sej_order')
+        patch = mock.patch('altair.app.ticketing.payments.plugins.sej.refund_order')
         patches.append(patch)
-        self.sej_refund_sej_order = patch.start()
+        self.sej_refund_order = patch.start()
         patch = mock.patch('altair.app.ticketing.payments.plugins.multicheckout.get_multicheckout_3d_api')
         patches.append(patch)
         self.multicheckout_get_multicheckout_3d_api = patch.start()
@@ -173,7 +174,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
 
     def _makeOne(self, *args, **kwargs):
         from altair.app.ticketing.payments import plugins as p
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from altair.app.ticketing.orders.models import OrderedProduct, OrderedProductItem
         from .models import Performance
         from datetime import datetime
@@ -193,6 +194,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
             )
         self.session.add(performance)
         cart = Cart(
+            cart_setting=CartSetting(),
             performance=performance,
             payment_delivery_pair=retval.payment_delivery_pair,
             _order_no=retval.order_no
@@ -277,6 +279,8 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         from datetime import datetime
         from altair.multicheckout.models import MultiCheckoutStatusEnum
         from altair.app.ticketing.payments import plugins as p
+        from .exceptions import OrderCancellationError
+
         request = testing.DummyRequest()
         for pn, payment_plugin_id in self.payment_plugins.items():
             for dn, delivery_plugin_id in self.delivery_plugins.items():
@@ -291,30 +295,60 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     delivery_fee=0,
                     paid_at=datetime(2014, 1, 1)
                     )
-                if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
-                    from .models import Refund
-                    refund = Refund(
-                        start_at=datetime(2014, 1, 1),
-                        end_at=datetime(2014, 2, 1)
-                        )
-                    self.session.add(refund)
-                    target.refund = refund
-                    target = self._getTarget().clone(target)
-                    target.refund = refund
-                    self.session.add(target)
-                    self.session.flush()
                 self.multicheckout_get_multicheckout_3d_api.return_value.checkout_inquiry.return_value = mock.Mock(
                     CmnErrorCd='000000',
                     CardErrorCd='000000',
                     Status=str(MultiCheckoutStatusEnum.Settled),
                     SalesAmount=target.total_amount
                     )
-                target.cancel(request)
-                self.assertEqual(target.payment_status, 'refunded', description)
                 if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
-                    self.assertTrue(self.sej_refund_sej_order.called)
+                    self.assertFalse(target.cancel(request))
                 else:
+                    target.cancel(request)
                     self.assertTrue(target.is_canceled(), description)
+
+    def test_cancel_paid_refund_cvs(self):
+        from datetime import datetime
+        from altair.multicheckout.models import MultiCheckoutStatusEnum
+        from altair.app.ticketing.payments import plugins as p
+        from altair.app.ticketing.core.models import PaymentMethod
+        request = testing.DummyRequest()
+        dn = 'sej'
+        delivery_plugin_id = self.delivery_plugins[dn]
+        sej_payment_method = PaymentMethod(payment_plugin_id=p.SEJ_PAYMENT_PLUGIN_ID)
+        for pn, payment_plugin_id in self.payment_plugins.items():
+            description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
+            payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=payment_delivery_method_pair,
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=datetime(2014, 1, 1)
+                )
+            from .models import Refund
+            refund = Refund(
+                start_at=datetime(2014, 1, 1),
+                end_at=datetime(2014, 2, 1)
+                )
+            self.session.add(refund)
+            target.refund = refund
+            target = self._getTarget().clone(target)
+            target.refund = refund
+            self.session.add(target)
+            self.session.flush()
+            self.assertEqual(target.payment_status, 'refunding', description)
+            self.multicheckout_get_multicheckout_3d_api.return_value.checkout_inquiry.return_value = mock.Mock(
+                CmnErrorCd='000000',
+                CardErrorCd='000000',
+                Status=str(MultiCheckoutStatusEnum.Settled),
+                SalesAmount=target.total_amount
+                )
+            target.cancel(request, payment_method=sej_payment_method)
+            self.assertEqual(target.payment_status, 'refunded', description)
+            self.assertTrue(self.sej_refund_order.called, description)
 
     def test_payment_status_changable_unpaid_non_inner(self):
         from datetime import datetime
@@ -590,6 +624,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         seats = self._create_seats([self.stocks[0]])
         cart = c_models.Cart.create(
             request,
+            cart_setting=c_models.CartSetting(),
             performance=self.performance,
             sales_segment=core_models.SalesSegment(sales_segment_group=self.sales_segment_group),
             payment_delivery_pair=self._create_payment_delivery_method_pair(

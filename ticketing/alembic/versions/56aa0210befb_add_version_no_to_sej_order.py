@@ -24,6 +24,6 @@ def upgrade():
     op.create_unique_constraint('ix_SejOrder_order_version_no_branch_no', 'SejOrder', ['order_no', 'version_no', 'branch_no'])
 
 def downgrade():
-    op.drop_constraint('ix_SejOrder_order_no_branch_no', 'SejOrder', type_='unique')
+    op.drop_constraint('ix_SejOrder_order_version_no_branch_no', 'SejOrder', type_='unique')
     op.drop_column('SejOrder', 'version_no')
     op.create_unique_constraint('ix_SejOrder_order_no_branch_no', 'SejOrder', ['order_no', 'branch_no'])

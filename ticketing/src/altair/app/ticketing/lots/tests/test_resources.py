@@ -13,6 +13,7 @@ class LotResourceTests(unittest.TestCase):
             ])
         from altair.sqlahelper import register_sessionmaker_with_engine
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart.request')
         register_sessionmaker_with_engine(
             self.config.registry,
             'slave',

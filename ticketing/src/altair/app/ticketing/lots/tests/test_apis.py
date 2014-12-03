@@ -3,7 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from ..testing import _create_products, login
 
 dependency_modules = [
@@ -19,7 +19,7 @@ dependency_modules = [
 #         return get_products(*args, **kwargs)
 
 #     def test_it(self):
-#         request = testing.DummyRequest()
+#         request = DummyRequest()
 #         sales_segment = mock.Mock()
 #         performances = [
 #             testing.DummyModel()
@@ -79,7 +79,7 @@ dependency_modules = [
 #         shipping_address = ShippingAddress()
 #         sales_segment = SalesSegment()
 
-#         request = testing.DummyRequest()
+#         request = DummyRequest()
 #         lot_entry = LotEntry(
 #             payment_delivery_method_pair=payment_delivery_method_pair,
 #             shipping_address=shipping_address,
@@ -134,7 +134,7 @@ dependency_modules = [
 # 
 #     def test_it(self):
 #         from ..testing import _add_lot
-#         request = testing.DummyRequest()
+#         request = DummyRequest()
 #         event = testing.DummyModel(id=1111)
 #         sales_segment = testing.DummyModel(id=12345)
 #         l = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
@@ -154,6 +154,7 @@ class entry_lotTests(unittest.TestCase):
     def setUp(self):
         from altair.sqlahelper import register_sessionmaker_with_engine
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart.request')
         self.session = _setup_db(modules=dependency_modules)
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -186,8 +187,8 @@ class entry_lotTests(unittest.TestCase):
         from altair.app.ticketing.users.models import Membership, MemberGroup
         from ..testing import _add_lot
 
-        request = testing.DummyRequest(host='example.com:80')
-        login(self.config, {"username": "test", "membership": "test", "membergroup": "test"})
+        request = DummyRequest(host='example.com:80', organization=self.organization)
+        login(self.config, {"auth_type": "fc_auth", "username": "test", "membership": "test", "membergroup": "test"})
         
         event = testing.DummyModel(id=1111)
         sales_segment = testing.DummyModel(id=12345)
@@ -195,7 +196,7 @@ class entry_lotTests(unittest.TestCase):
         lot.event.organization = self.organization
         lot_id = lot.id
         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
-        membership = Membership(name="test", organization=self.organization)
+        membership = Membership(organization=self.organization, name="test")
         performances = lot.performances
         shipping_address = ShippingAddress()
         self.session.add(shipping_address)
@@ -244,6 +245,7 @@ class entry_lotTests(unittest.TestCase):
 
         #self.assertTrue(result.entry_no.startswith("LOTtest"))
         self.assertEqual(result.membergroup.name, "test")
+        self.assertEqual(result.membership.name, "test")
 
 
 class get_entryTests(unittest.TestCase):
@@ -252,6 +254,7 @@ class get_entryTests(unittest.TestCase):
         from altair.sqlahelper import register_sessionmaker_with_engine
         cls.session = _setup_db(modules=dependency_modules)
         cls.config = testing.setUp()
+        cls.config.include('altair.app.ticketing.cart.request')
         register_sessionmaker_with_engine(
             cls.config.registry,
             'slave',
@@ -277,7 +280,7 @@ class get_entryTests(unittest.TestCase):
     def test_it(self):
         from altair.app.ticketing.core.models import ShippingAddress, DBSession
         from altair.app.ticketing.lots.models import LotEntry
-        request = testing.DummyRequest()
+        request = DummyRequest()
         entry_no = u'LOTtest000001'
         tel_no = '0123456789'
         shipping_address = ShippingAddress(tel_1=tel_no)
@@ -378,6 +381,7 @@ class entry_infoTests(unittest.TestCase):
 class notify_entry_lotTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart.request')
 
     def tearDown(self):
         testing.tearDown()
@@ -396,7 +400,7 @@ class notify_entry_lotTests(unittest.TestCase):
         self.config.add_subscriber(handler, LotEntriedEvent)
 
         entry = testing.DummyModel()
-        request = testing.DummyRequest()
+        request = DummyRequest()
         self._callFUT(request, entry)
 
         self.assertEqual(called[0].lot_entry, entry)

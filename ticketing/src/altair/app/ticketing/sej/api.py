@@ -4,6 +4,8 @@ from datetime import timedelta
 import logging
 logger = logging.getLogger(__name__)
 
+from collections import OrderedDict
+
 from sqlalchemy import update
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import asc, desc
@@ -13,7 +15,7 @@ from sqlalchemy.orm.session import make_transient
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType
+from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType, SejPaymentType
 from .models import _session
 from .interfaces import ISejTenant, ISejNWTSUploader, ISejNWTSUploaderFactory
 from .exceptions import SejServerError, SejError, SejErrorBase, RefundTotalAmountOverError
@@ -108,81 +110,79 @@ def refund_sej_order(request,
         raise SejError(u'No tickets associated', sej_order.order_no)
 
     try:
-        try:
-            # create SejRefundEvent
-            re = session.query(SejRefundEvent).filter(and_(
-                SejRefundEvent.shop_id==tenant.shop_id,
-                SejRefundEvent.nwts_endpoint_url==tenant.nwts_endpoint_url,
-                SejRefundEvent.nwts_terminal_id==tenant.nwts_terminal_id,
-                SejRefundEvent.nwts_password==tenant.nwts_password,
-                SejRefundEvent.event_code_01==performance_code
-            )).first()
-            if not re:
-                re = SejRefundEvent(
-                    shop_id=tenant.shop_id,
-                    nwts_endpoint_url=tenant.nwts_endpoint_url,
-                    nwts_terminal_id=tenant.nwts_terminal_id,
-                    nwts_password=tenant.nwts_password,
-                    event_code_01=performance_code
-                    )
+        # create SejRefundEvent
+        re = session.query(SejRefundEvent).filter(and_(
+            SejRefundEvent.shop_id==tenant.shop_id,
+            SejRefundEvent.nwts_endpoint_url==tenant.nwts_endpoint_url,
+            SejRefundEvent.nwts_terminal_id==tenant.nwts_terminal_id,
+            SejRefundEvent.nwts_password==tenant.nwts_password,
+            SejRefundEvent.event_code_01==performance_code
+        )).first()
+        if not re:
+            re = SejRefundEvent(
+                shop_id=tenant.shop_id,
+                nwts_endpoint_url=tenant.nwts_endpoint_url,
+                nwts_terminal_id=tenant.nwts_terminal_id,
+                nwts_password=tenant.nwts_password,
+                event_code_01=performance_code
+                )
+            session.add(re)
 
-            re.available = 1
-            re.title = performance_name
-            re.event_at = performance_start_on
-            re.start_at = refund_start_at
-            re.end_at = refund_end_at
-            re.event_expire_at = refund_end_at
-            re.ticket_expire_at = ticket_expire_at
-            re.refund_enabled = 1
-            re.need_stub = need_stub
-            re = session.merge(re)
+        re.available = 1
+        re.title = performance_name
+        re.event_at = performance_start_on
+        re.start_at = refund_start_at
+        re.end_at = refund_end_at
+        re.event_expire_at = refund_end_at
+        re.ticket_expire_at = ticket_expire_at
+        re.refund_enabled = 1
+        re.need_stub = need_stub
 
-            # create SejRefundTicket
-            i = 0
-            sum_amount = 0
-            for sej_ticket in sej_tickets:
-                # 主券でかつバーコードがあるものだけ払戻する
-                if sej_ticket.barcode_number is not None and \
-                   int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
-                    ticket_amount = ticket_price_getter(sej_ticket)
-                    rt = session.query(SejRefundTicket).filter(and_(
-                        SejRefundTicket.order_no==sej_order.order_no,
-                        SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-                    )).first()
-                    if not rt:
-                        rt = SejRefundTicket()
+        # create SejRefundTicket
+        i = 0
+        sum_amount = 0
+        for sej_ticket in sej_tickets:
+            # 主券でかつバーコードがあるものだけ払戻する
+            if sej_ticket.barcode_number is not None and \
+               int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
+                ticket_amount = ticket_price_getter(sej_ticket)
+                rt = session.query(SejRefundTicket).filter(and_(
+                    SejRefundTicket.order_no==sej_order.order_no,
+                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+                )).first()
+                if not rt:
+                    rt = SejRefundTicket()
 
-                    # すべてが0の場合はデータを追加しない refs #9766
-                    if ticket_amount == 0 and (per_order_fee == 0 or i > 0) and per_ticket_fee == 0:
-                        if rt.id is not None:
-                            session.delete(rt)
-                        continue
+                # すべてが0の場合はデータを追加しない refs #9766
+                if ticket_amount == 0 and (per_order_fee == 0 or i > 0) and per_ticket_fee == 0:
+                    if rt.id is not None:
+                        session.delete(rt)
+                    continue
 
-                    rt.available = 1
-                    rt.refund_event_id = re.id
-                    rt.event_code_01 = performance_code
-                    rt.order_no = sej_order.order_no
-                    rt.ticket_barcode_number = sej_ticket.barcode_number
-                    rt.refund_ticket_amount = ticket_amount
-                    rt.refund_other_amount = per_ticket_fee
-                    # 手数料などの払戻があったら1件目に含める
-                    if per_order_fee > 0 and i == 0:
-                        rt.refund_other_amount += per_order_fee
+                rt.available = 1
+                rt.refund_event_id = re.id
+                rt.event_code_01 = performance_code
+                rt.order_no = sej_order.order_no
+                rt.ticket_barcode_number = sej_ticket.barcode_number
+                rt.refund_ticket_amount = ticket_amount
+                rt.refund_other_amount = per_ticket_fee
+                # 手数料などの払戻があったら1件目に含める
+                if per_order_fee > 0 and i == 0:
+                    rt.refund_other_amount += per_order_fee
 
-                    # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする
-                    sum_amount += rt.refund_ticket_amount + rt.refund_other_amount
-                    if refund_total_amount < sum_amount:
-                        logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
-                        raise RefundTotalAmountOverError(u'refund total amount over: {0} < {1}'.format(refund_total_amount, sum_amount))
+                # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする
+                sum_amount += rt.refund_ticket_amount + rt.refund_other_amount
+                if refund_total_amount < sum_amount:
+                    logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
+                    raise RefundTotalAmountOverError(u'refund total amount over: {0} < {1}'.format(refund_total_amount, sum_amount))
 
-                    session.add(rt)
-                    i += 1
-            if i == 0:
-                logger.warning(u'No refundable tickets found: %s' % sej_order.order_no)
+                session.add(rt)
+                i += 1
+        if i == 0:
+            logger.warning(u'No refundable tickets found: %s' % sej_order.order_no)
 
-            return re
-        finally:
-            session.commit()
+        session.commit()
+        return re
     except (RefundTotalAmountOverError, SejErrorBase):
         raise
     except Exception as e:
@@ -221,6 +221,35 @@ def get_sej_orders(order_no, fetch_canceled=False, session=None):
         q = q.filter_by(cancel_at=None)
     q = q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
     return q.all()
+
+def get_valid_sej_orders(order_no, session=None):
+    if session is None:
+        session = _session
+    q = session.query(SejOrder) \
+        .filter_by(order_no=order_no) \
+        .filter_by(cancel_at=None) \
+        .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
+    lists = OrderedDict()
+    for sej_order in q:
+        payment_type = int(sej_order.payment_type)
+        if payment_type == int(SejPaymentType.CashOnDelivery):
+            if not sej_order.billing_number:
+                continue
+            key = (sej_order.billing_number, None)
+        elif payment_type == int(SejPaymentType.Prepayment):
+            if not sej_order.billing_number or not sej_order.exchange_number:
+                continue
+            key = (sej_order.billing_number, sej_order.exchange_number)
+        elif payment_type == int(SejPaymentType.Paid):
+            if not sej_order.exchange_number:
+                continue
+            key = (None, sej_order.exchange_number)
+        elif payment_type == int(SejPaymentType.PrepaymentOnly):
+            if not sej_order.billing_number:
+                continue
+            key = (sej_order.billing_number, None)
+        lists.setdefault(key, []).append(sej_order)
+    return [v[0] for v in lists.values()]
 
 def get_default_sej_tenant(request_or_registry):
     if IRequest.providedBy(request_or_registry):

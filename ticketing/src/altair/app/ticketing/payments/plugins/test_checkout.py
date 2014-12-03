@@ -26,7 +26,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             PaymentDeliveryMethodPair,
             DateCalculationBase,
             )
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from altair.app.ticketing.checkout.models import RakutenCheckoutSetting
         from . import CHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID
         from datetime import datetime
@@ -38,6 +38,8 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             'altair.app.ticketing.checkout.models',
             ])
         CoreTestMixin.setUp(self)
+        self.cart_setting = CartSetting(type='standard')
+        self.session.add(self.cart_setting)
         self.session.add(RakutenCheckoutSetting(
             organization=self.organization,
             channel=1,
@@ -87,9 +89,12 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             },
             root_factory=self._dummy_root_factory,
             session_factory=self._dummy_session_factory)
-        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        config.include('pyramid_mako')
+        config.include('altair.pyramid_dynamic_renderer')
+        config.add_mako_renderer('.html')
         config.include('altair.mobile')
         config.include('altair.browserid')
+        config.include('altair.app.ticketing.cart.request')
         config.include('altair.app.ticketing.payments')
         config.include('altair.app.ticketing.payments.plugins')
         config.add_view(self._set_cart, route_name='set_cart')
@@ -98,6 +103,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         config.add_route('payment.checkout.order_complete', self.COMPLETE_URL)
         self.cart = Cart(
             id=10,
+            cart_setting=self.cart_setting,
             performance=self.sales_segment.performance,
             sales_segment=self.sales_segment,
             payment_delivery_pair=self.payment_delivery_method_pair,

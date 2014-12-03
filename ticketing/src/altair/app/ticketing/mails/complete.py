@@ -120,8 +120,6 @@ class PurchaseCompleteMail(object):
                 cart_setting = cart_api.get_cart_setting_from_order_like(request, order)
                 mail_template = self.mail_template % dict(cart_type=(cart_setting.type if cart_setting is not None else 'standard'))
                 retval = render(mail_template, value, request=mail_request)
-            import sys
-            print >>sys.stderr, retval.encode('utf-8')
             assert isinstance(retval, text_type)
             if kind == 'plain':
                 retval = unescape(retval)

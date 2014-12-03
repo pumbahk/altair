@@ -5,6 +5,7 @@
 
 import unittest
 from pyramid import testing
+from altair.app.ticketing.testing import DummyRequest
 
 def _setup_db():
     from sqlalchemy import create_engine
@@ -27,6 +28,7 @@ def _teardown_db():
 class OrderReviewResourceTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart.request')
         self.session = _setup_db()
         from altair.sqlahelper import register_sessionmaker_with_engine
         register_sessionmaker_with_engine(
@@ -47,26 +49,10 @@ class OrderReviewResourceTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_organization_id(self):
-        from altair.app.ticketing.core.models import Host, Organization
-        from altair.app.ticketing.users.models import Membership
-        request = testing.DummyRequest()
-        host = Host(host_name=request.host,
-                    organization=Organization(short_name="testing"))
-        organization = host.organization
-        membership = Membership(organization=organization, name="89ers")
-        self.session.add(host)
-        self.session.add(membership)
-        self.session.flush()
-
-        target = self._makeOne(request)
-        self.assertEqual(target.organization_id, host.organization.id)
-        self.assertEqual(target.membership.id, membership.id)
-
     def test_order_no(self):
         from altair.app.ticketing.core.models import Host, Organization
         from altair.app.ticketing.users.models import Membership
-        request = testing.DummyRequest(params=dict(order_no='000000000001'))
+        request = DummyRequest(params=dict(order_no='000000000001'))
         host = Host(host_name=request.host,
                     organization=Organization(short_name="testing"))
         organization = host.organization
@@ -77,4 +63,4 @@ class OrderReviewResourceTests(unittest.TestCase):
 
         target = self._makeOne(request)
         self.assertEqual(target.order_no, '000000000001')
-        self.assertEqual(target.membership.id, membership.id)
+        self.assertEqual(target.primary_membership.id, membership.id)

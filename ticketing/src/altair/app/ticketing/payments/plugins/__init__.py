@@ -88,7 +88,7 @@ payment_plugin_renderer_helper_factory = PaymentPluginRendererHelperFactory(
                    plugin_type, plugin_id, package, registry, \
                    **kwargs: \
                 RendererHelper(
-                    '%s:templates/%s' % (__name__, path_or_renderer_name),
+                    '%s:templates/%s/%s' % (__name__, kwargs.get('fallback_ua_type', 'UNSPECIFIED'), path_or_renderer_name),
                     package=package,
                     registry=registry
                     )

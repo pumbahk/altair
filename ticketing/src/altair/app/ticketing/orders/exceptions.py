@@ -71,35 +71,27 @@ class MassOrderCreationError(Exception):
         return u'\n'.join(buf)
 
 class OrderCancellationError(Exception):
-    def __init__(self, order_no, format, fargs={}, nested_exc_info=None):
-        super(OrderCancellationError, self).__init__(order_no, format, fargs, nested_exc_info)
+    def __init__(self, order_no, message, nested_exc_info=None):
+        super(OrderCancellationError, self).__init__(order_no, message, nested_exc_info)
 
     @property
     def order_no(self):
         return self.args[0]
 
     @property
-    def format(self):
-        return self.args[1]
-
-    @property
-    def fargs(self):
+    def nested_exc_info(self):
         return self.args[2]
 
     @property
-    def nested_exc_info(self):
-        return self.args[3]
-
-    @property
     def message(self):
-        return (TranslationString(self.format) % self.fargs).interpolate()
+        return self.args[1]
 
     def __str__(self):
         return self.__unicode__()
 
     def __unicode__(self):
         buf = []
-        buf.append(u'%s (%s): %s\n' % (self.ref, self.order_no, self.message))
+        buf.append(u'%s: %s\n' % (self.order_no, self.message))
         if self.nested_exc_info:
             buf.append('\n  -- nested exception --\n')
             for line in traceback.format_exception(*self.nested_exc_info):

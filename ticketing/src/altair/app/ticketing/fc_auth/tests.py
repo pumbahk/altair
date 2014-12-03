@@ -2,7 +2,7 @@ import unittest
 from pyramid import testing
 from altair.auth import REQUEST_KEY
 from altair.auth.testing import DummySession
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from altair.sqlahelper import register_sessionmaker_with_engine
 from .testing import add_credential
 
@@ -34,7 +34,7 @@ class FCAuthPluginTests(unittest.TestCase):
 
 
     def _makeEnv(self, *kwargs):
-        environ = { REQUEST_KEY: testing.DummyRequest() }
+        environ = { REQUEST_KEY: DummyRequest() }
         from wsgiref.util import setup_testing_defaults
         setup_testing_defaults(environ)
         environ.update(kwargs)
@@ -93,8 +93,9 @@ class FCAuthPluginTests(unittest.TestCase):
 
 class TestIt(unittest.TestCase):
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'), params={'event_id': 58})
+        self.request = DummyRequest(matched_route=testing.DummyModel(name='dummy'), params={'event_id': 58})
         self.config = testing.setUp(request=self.request)
+        self.config.include('altair.app.ticketing.cart.request')
         self.config.add_route('dummy', '/dummy')
         self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
@@ -199,6 +200,10 @@ class TestIt(unittest.TestCase):
         
     def test_challenge_redirect(self):
         from . import SESSION_KEY
+        from mock import Mock
+        from datetime import datetime
+        from zope.interface import directlyProvides
+        from altair.app.ticketing.cart.interfaces import ICartResource
 
         self.config.add_route('fc_auth.login', '/membership/{membership}/login')
 
@@ -210,8 +215,21 @@ class TestIt(unittest.TestCase):
                             "fc")
 
         request = self.request
-        request.context = testing.DummyResource()
-        request.context.memberships = [testing.DummyModel()]
+        membership = testing.DummyModel(name="fc")
+        query = Mock()
+        query.join.return_value = query
+        query.with_entities.return_value = query
+        query.first.return_value = membership
+        request.context = testing.DummyResource(
+            performance=testing.DummyModel(
+                query_sales_segments=lambda *args, **kwargs: query
+                ),
+            memberships=[
+                membership,
+                ],
+            now=datetime(2014, 1, 1, 0, 0, 0)
+            )
+        directlyProvides(request.context, ICartResource)
         request.session = DummySession()
 
         factory = self._makeAPIFactory()
@@ -251,14 +269,14 @@ class guest_authenticateTests(unittest.TestCase):
         return guest_authenticate(*args, **kwargs)
 
     def test_empty(self):
-        environ = { REQUEST_KEY: testing.DummyRequest() }
+        environ = { REQUEST_KEY: DummyRequest() }
         identity = {}
         result = self._callFUT(environ, identity)
 
         self.assertIsNone(result)
 
     def test_no_guest_membergroup(self):
-        environ = { REQUEST_KEY: testing.DummyRequest() }
+        environ = { REQUEST_KEY: DummyRequest() }
         identity = { "membership": 'testing' }
         result = self._callFUT(environ, identity)
 
@@ -275,7 +293,7 @@ class guest_authenticateTests(unittest.TestCase):
 
     def test_it(self):
         import pickle
-        environ = { REQUEST_KEY: testing.DummyRequest() }
+        environ = { REQUEST_KEY: DummyRequest() }
         identity = { "membership": 'testing' }
 
         self._create_guest(identity['membership'])
@@ -314,10 +332,14 @@ class LoginViewTests(unittest.TestCase):
         from . import SESSION_KEY
         from repoze.who.interfaces import IAPIFactory
 
-        request = testing.DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
+        request = DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
+        context = request.context = testing.DummyResource(
+            request=request,
+            primary_membership=testing.DummyResource(name='XX')
+            )
 
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         result = target.guest_login()
         self.assertEqual(result.location, "/return/to/url")
@@ -325,11 +347,16 @@ class LoginViewTests(unittest.TestCase):
     def test_guest_login(self):
         from . import SESSION_KEY
         from repoze.who.interfaces import IAPIFactory
+        from .resources import FCAuthResource
 
-        request = testing.DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
+        request = DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
+        context = request.context = testing.DummyResource(
+            request=request,
+            primary_membership=testing.DummyResource(name='XX')
+            )
 
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         result = target.guest_login()
 

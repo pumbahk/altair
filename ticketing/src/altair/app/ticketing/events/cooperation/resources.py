@@ -66,4 +66,4 @@ class CooperationEventResource(TicketingAdminResource):
         try:
             self.event = Event.query.filter(Event.id==event_id).one()
         except NoResultFound:
-            return HTTPNotFound('event_id={}'.format(event_id))
+            raise HTTPNotFound('event_id={}'.format(event_id))

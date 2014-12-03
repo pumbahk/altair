@@ -71,7 +71,7 @@ class CartTests(unittest.TestCase):
         from . import models
         if created_at is None:
             created_at = datetime.now()
-        cart = models.Cart.create(self.request, cart_session_id=cart_session_id, created_at=created_at, performance=performance)
+        cart = models.Cart(cart_session_id=cart_session_id, created_at=created_at, performance=performance, cart_setting=models.CartSetting(type='standard'))
         self.session.add(cart)
         return cart
 
@@ -344,6 +344,8 @@ class TicketingCartResourceTestBase(object):
             'slave',
             self.session.bind
             )
+        from .models import CartSetting
+        self.cart_setting = CartSetting(type='standard')
         self.organization = self._add_organization(1)
         self.session.add(self.organization)
         self.session.flush()
@@ -367,6 +369,11 @@ class TicketingCartResourceTestBase(object):
                 models.Host(
                     organization_id=organization_id,
                     host_name='example.com:80'
+                    )
+                ],
+            settings=[
+                models.OrganizationSetting(
+                    cart_setting=self.cart_setting
                     )
                 ]
             )
@@ -560,7 +567,7 @@ class TicketingCartResourceTestBase(object):
         self.session.add(other)
         orders = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 user=user, cart=cart,
                 sales_segment=sales_segment,
@@ -576,7 +583,7 @@ class TicketingCartResourceTestBase(object):
 
         cancels = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 user=user, cart=cart,
                 sales_segment=sales_segment,
@@ -592,7 +599,7 @@ class TicketingCartResourceTestBase(object):
 
         others = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 user=other, cart=cart,
                 sales_segment=sales_segment,
@@ -621,13 +628,14 @@ class TicketingCartResourceTestBase(object):
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 email_1="testing@example.com"
                 )
             )
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(request)
         result = target.check_order_limit()
         self.assert_(True)
@@ -644,13 +652,14 @@ class TicketingCartResourceTestBase(object):
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 email_1="testing@example.com"
                 )
             )
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(request)
 
         with self.assertRaises(OverOrderLimitException):
@@ -667,13 +676,14 @@ class TicketingCartResourceTestBase(object):
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 email_1="testing@example.com"
                 )
             )
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(request)
 
         try:
@@ -712,7 +722,7 @@ class TicketingCartResourceTestBase(object):
         self.session.add(sales_segment)
         orders = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 sales_segment=sales_segment,
@@ -729,7 +739,7 @@ class TicketingCartResourceTestBase(object):
 
         cancel = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 sales_segment=sales_segment,
@@ -746,7 +756,7 @@ class TicketingCartResourceTestBase(object):
 
         others = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
+            cart = Cart(sales_segment=sales_segment, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 sales_segment=sales_segment,
@@ -775,6 +785,7 @@ class TicketingCartResourceTestBase(object):
         validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 email_1="testing@example.com"
@@ -782,7 +793,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(get_cart_safe.return_value)
         self.session.flush()
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(request)
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
@@ -796,6 +807,7 @@ class TicketingCartResourceTestBase(object):
         validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 email_1="testing@example.com"
@@ -803,7 +815,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(get_cart_safe.return_value)
         self.session.flush()
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(request)
 
         try:
@@ -878,6 +890,7 @@ class TicketingCartResourceTestBase(object):
         get_cart_safe.return_value = Cart(
             created_at=now,
             sales_segment=ss,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 )
@@ -931,6 +944,7 @@ class TicketingCartResourceTestBase(object):
         get_cart_safe.return_value = Cart(
             created_at=now,
             sales_segment=ss,
+            cart_setting=self.cart_setting,
             shipping_address=ShippingAddress(
                 user=user,
                 )
@@ -944,7 +958,7 @@ class TicketingCartResourceTestBase(object):
     @mock.patch("altair.app.ticketing.cart.api.get_organization")
     @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_invalid_cart(self, get_cart_safe, get_organization, authenticated_user):
-        from .models import Cart
+        from .models import Cart, CartSetting
         from altair.app.ticketing.core.models import ShippingAddress
         from altair.app.ticketing.users.models import User, Membership, MemberGroup
         from .exceptions import InvalidCartStatusError
@@ -986,6 +1000,7 @@ class TicketingCartResourceTestBase(object):
         get_cart_safe.return_value = Cart(
             created_at=now,
             sales_segment=ss,
+            cart_setting=CartSetting(type='standard'),
             shipping_address=ShippingAddress(
                 user=user,
                 )
@@ -1075,7 +1090,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
-    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.request.get_organization")
     def test_it(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,
@@ -1091,6 +1106,7 @@ class ReserveViewTests(unittest.TestCase):
             ProductItem,
             Performance,
             Event,
+            EventSetting,
             SalesSegment,
             SalesSegmentSetting,
             SalesSegmentGroup,
@@ -1101,11 +1117,12 @@ class ReserveViewTests(unittest.TestCase):
             SeatIndex,
             SeatIndexType,
             )
-        from .models import Cart
+        from .models import Cart, CartSetting
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta
 
+        self.config.include('.request')
         self.config.add_route('cart.payment', 'payment')
         # 在庫
         stock_id = 1
@@ -1128,7 +1145,13 @@ class ReserveViewTests(unittest.TestCase):
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue, l0_id='s%s' % i) for i in range(2)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
-        event = Event(id=event_id, organization=organization)
+        event = Event(
+            id=event_id,
+            organization=organization,
+            setting=EventSetting(
+                cart_setting=CartSetting(type='standard')
+                )
+            )
         performance = Performance(id=performance_id, event=event, public=True)
         sales_segment_group = SalesSegmentGroup(id=sales_segment_group_id, event=event, kind=SalesSegmentKindEnum.normal.k, public=True)
         sales_segment = SalesSegment(
@@ -1227,7 +1250,7 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
 
-    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.request.get_organization")
     def test_it_no_stock(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,
@@ -1257,6 +1280,8 @@ class ReserveViewTests(unittest.TestCase):
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta
+
+        self.config.include('.request')
 
         now = datetime.now()
 
@@ -1401,41 +1426,52 @@ class PaymentViewTests(unittest.TestCase):
         from .resources import EventOrientedTicketingCartResource
         validate_sales_segment.return_value = None
         request = DummyRequest()
-        request.context = EventOrientedTicketingCartResource(request)
+        context = request.context = EventOrientedTicketingCartResource(request)
         request.registry.settings = { 'altair_cart.expire_time': "15" }
-        target = self._makeOne(request)
-        self.assertRaises(NoCartError, lambda: target())
+        target = self._makeOne(context, request)
+        with self.assertRaises(NoCartError):
+            target.get()
 
     def test_it(self):
         from datetime import datetime, timedelta
         self._register_starndard_payment_methods()
         request = DummyRequest()
         request.registry.settings = { 'altair_cart.expire_time': "15" }
-        request.context = testing.DummyResource(
-            cart=testing.DummyModel(
-                performance=testing.DummyModel(
-                    event=testing.DummyModel(
-                        id="this-is-event-id",
-                    ),
-                    start_on=datetime(2013, 1, 1, 0, 0, 0)
-                ),
-                is_expired=lambda minutes, now: False,
-                finished_at=None,
-            )
-        )
 
         payment_method = testing.DummyModel()
         payment_method.public = True
         
         payment_delivery_method = testing.DummyModel()
         payment_delivery_method.payment_method = payment_method
-        
-        request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
-        request.context.authenticated_user = lambda: { 'auth_type': 'rakuten', 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
-        request.context.get_payment_delivery_method_pair = lambda: None
-        request.context.sales_segment = testing.DummyModel()
-        target = self._makeOne(request)
-        result = target()
+
+        cart_setting = testing.DummyModel(type='standard', flavors={}, default_prefecture=u'沖縄県')
+        context = request.context = testing.DummyResource(
+            request=request,
+            cart_setting=cart_setting,
+            cart=testing.DummyModel(
+                cart_setting=cart_setting,
+                performance=testing.DummyModel(
+                    event=testing.DummyModel(
+                        id="this-is-event-id",
+                        ),
+                    start_on=datetime(2013, 1, 1, 0, 0, 0)
+                    ),
+                is_expired=lambda minutes, now: False,
+                finished_at=None,
+                ),
+            available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method],
+            authenticated_user = lambda: {
+                'auth_type': 'rakuten',
+                'claimed_id': 'http://ticketstar.example.com/user/1',
+                'auth_identifier': 'http://ticketstar.example.com/user/1',
+                'membership': 'membership',
+                'organization_id': 1
+                },
+            get_payment_delivery_method_pair = lambda: None,
+            sales_segment = testing.DummyModel()
+            )
+        target = self._makeOne(context, request)
+        result = target.get()
         self.assertEqual(result['payment_delivery_methods'], [payment_delivery_method])
 
 class PaymentContext(testing.DummyResource):

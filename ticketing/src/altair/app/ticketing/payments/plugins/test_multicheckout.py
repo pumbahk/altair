@@ -38,6 +38,7 @@ def _setup_test_db(config):
 class MultiCheckoutViewTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart.request')
         self._register_dummy_card_brand_detector()
         self._register_cart_interface()
         self.session, self.organization = _setup_test_db(self.config)

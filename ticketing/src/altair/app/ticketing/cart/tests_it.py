@@ -32,6 +32,13 @@ class ReserveViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.session = _setup_db(echo=False)
+        from .models import CartSetting
+        cls.cart_setting = CartSetting()
+        cls.session.add(cls.cart_setting)
+
+    @classmethod
+    def teardownClass(cls):
+        _teardown_db()
 
     def setUp(self):
         self.config = testing.setUp()
@@ -77,14 +84,42 @@ class ReserveViewTests(unittest.TestCase):
         stock4 = c_m.Stock(stock_type=quantity_only_stock_type, quantity=30, performance=performance)
         stock4_status = c_m.StockStatus(stock=stock4, quantity=0)
 
-        product1 = c_m.Product(price=100)
-        product2 = c_m.Product(price=200)
-        product3 = c_m.Product(price=300)
-        product4 = c_m.Product(price=400)
-        product_item1 = c_m.ProductItem(price=100, product=product1, stock=stock1, performance=performance)
-        product_item2 = c_m.ProductItem(price=200, product=product2, stock=stock2, performance=performance)
-        product_item3 = c_m.ProductItem(price=300, product=product3, stock=stock3, performance=performance)
-        product_item4 = c_m.ProductItem(price=400, product=product4, stock=stock4, performance=performance)
+        product1 = c_m.Product(
+            name='product1',
+            price=100,
+            sales_segment=sales_segment,
+            items=[
+                c_m.ProductItem(price=100, quantity=1, stock=stock1, performance=performance)
+                ]
+            )
+        product2 = c_m.Product(
+            name='product2',
+            price=200,
+            sales_segment=sales_segment,
+            items=[
+                c_m.ProductItem(price=200, quantity=1, stock=stock2, performance=performance)
+                ]
+            )
+        product3 = c_m.Product(
+            name='product3',
+            price=300,
+            sales_segment=sales_segment,
+            items=[
+                c_m.ProductItem(price=300, quantity=1, stock=stock3, performance=performance)
+                ]
+            )
+        product4 = c_m.Product(
+            name='product4',
+            price=400,
+            sales_segment=sales_segment,
+            items=[
+                c_m.ProductItem(price=400, quantity=1, stock=stock4)
+                ]
+            )
+        self.session.add(product1)
+        self.session.add(product2)
+        self.session.add(product3)
+        self.session.add(product4)
 
         seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
         seat1 = c_m.Seat(stock=stock1, venue=venue, l0_id="test-1", name=u"テスト１")
@@ -123,7 +158,7 @@ class ReserveViewTests(unittest.TestCase):
 
         params = MultiDict([('product-%d' % product3.id, 1)])
 
-        context = mock.Mock()
+        context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(request)
@@ -138,7 +173,7 @@ class ReserveViewTests(unittest.TestCase):
 
         params = MultiDict([('product-%d' % product4.id, 1)])
         
-        context = mock.Mock()
+        context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(request)
@@ -153,7 +188,7 @@ class ReserveViewTests(unittest.TestCase):
 
         params = MultiDict([('product-%d' % product1.id, 2)])
 
-        context = mock.Mock()
+        context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
         request = testing.DummyRequest(params=params, context=context)
@@ -183,7 +218,7 @@ class ReserveViewTests(unittest.TestCase):
             ('selected_seat', seat3.l0_id),
         ])
 
-        context = mock.Mock()
+        context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
         request = testing.DummyRequest(params=params, 
@@ -213,7 +248,7 @@ class ReserveViewTests(unittest.TestCase):
             ('selected_seat', seat4.l0_id),
         ])
 
-        context = mock.Mock()
+        context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, 
             context=context)
