@@ -8,6 +8,8 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 class SalesSegmentGroupsTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
         self.config.include('altair.app.ticketing.renderers')
         self.session = _setup_db(
             [

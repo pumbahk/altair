@@ -17,6 +17,8 @@ class SalesSegmentsTests(unittest.TestCase):
             "altair.app.ticketing.core.models",
         ])
         self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
         self.config.include('altair.app.ticketing.renderers')
         self.config.add_route('sales_segments.show', '/sales_segments/show/')
         self.config.add_route('sales_segments.edit', '/sales_segments/edit/')
