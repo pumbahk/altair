@@ -5,7 +5,6 @@ from pyramid.renderers import (
     render_to_response,
     RendererHelper
 )
-from pyramid.interfaces import PHASE2_CONFIG
 from zope.interface import Interface
 
 def verify_static_renderer(config, renderer):
@@ -23,9 +22,8 @@ def verify_static_renderer(config, renderer):
         except ConfigurationError:
             raise
         except Exception as e:
-            raise ConfigurationError("reason: " + repr(e))
-    ## renderer factory registration on PHASE1_CONFIG(=-20). so.
-    config.action((Interface, renderer), register, order=PHASE2_CONFIG)
+            raise ConfigurationError("%s - reason: %s" % (renderer.name, repr(e)))
+    config.action((Interface, renderer), register, order=10)
 
 def static_renderer(renderer, venusian_=venusian):
     """decoratorで渡したtemplateが存在することをconfiguration timeに確認する"""
