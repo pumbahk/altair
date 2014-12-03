@@ -1,6 +1,7 @@
 from pyramid.path import DottedNameResolver
 from pyramid.testing import DummyRequest as _DummyRequest
-from pyramid.interfaces import IRequest
+from pyramid.interfaces import IRequest, IRequestExtensions
+from pyramid.util import InstancePropertyMixin
 from zope.interface import alsoProvides
 
 def _setup_db(modules=[], echo=False):
@@ -38,6 +39,12 @@ class DummyRequest(_DummyRequest):
             self.POST = MultiDict(self.POST)
         self.browserid = kwargs.get("browserid")
         self.request_iface = kwargs.get('request_iface', IRequest)
+
+    def __getattr__(self, k):
+        self._set_extensions(self.registry.queryUtility(IRequestExtensions))
+        if not hasattr(self.__class__, k):
+            raise AttributeError(k)
+        return getattr(self, k)
 
     def copy(self):
         return self.__class__(

@@ -327,7 +327,8 @@ class StockerTests(unittest.TestCase):
         stock = self._add_stock(10)
         product = stock.product_items[0].product
         other_performance_id = stock.performance_id + 1
-        self.assertRaises(InvalidProductSelectionException, target.take_stock, other_performance_id, [(product, 1)])
+        with self.assertRaises(InvalidProductSelectionException):
+            target.take_stock(other_performance_id, [(product, 1)])
 
     def testtake_stock_by_stock_id(self):
         stock = self._add_stock(10)
@@ -372,8 +373,8 @@ class pop_seatTests(unittest.TestCase):
         venue = c_m.Venue(site=site, organization=org, performance=performance)
         stock1 = c_m.Stock(performance=performance)
         stock2 = c_m.Stock(performance=performance)
-        product_item1 = c_m.ProductItem(price=100, stock=stock1)
-        product_item2 = c_m.ProductItem(price=200, stock=stock2)
+        product_item1 = c_m.ProductItem(price=100, stock=stock1, performance=performance)
+        product_item2 = c_m.ProductItem(price=200, stock=stock2, performance=performance)
         seat1 = c_m.Seat(stock=stock1, venue=venue)
         seat2 = c_m.Seat(stock=stock2, venue=venue)
         seat3 = c_m.Seat(stock=stock1, venue=venue)
@@ -411,12 +412,26 @@ class CartFactoryTests(unittest.TestCase):
 
     def _add_seats(self):
         import altair.app.ticketing.core.models as c_m
+        from .models import CartSetting
+        # cart_setting
+        cart_setting = CartSetting(type='standard')
         # organization
-        org = c_m.Organization(code="TEST", short_name="testing")
+        org = c_m.Organization(
+            code="TEST",
+            short_name="testing",
+            settings=[
+                c_m.OrganizationSetting(
+                    cart_setting=cart_setting
+                    )
+                ])
         # event
         event = c_m.Event(organization=org)
         # performance
         performance = c_m.Performance(event=event)
+        # sales_segment_group
+        sales_segment_group = c_m.SalesSegmentGroup(event=event)
+        # sales_segment
+        sales_segment = c_m.SalesSegment(performance=performance, sales_segment_group=sales_segment_group)
         # site
         site = c_m.Site()
         # venue
@@ -426,9 +441,9 @@ class CartFactoryTests(unittest.TestCase):
         stock1 = c_m.Stock(performance=performance, stock_type=stock_type)
         stock2 = c_m.Stock(performance=performance, stock_type=stock_type)
         stock3 = c_m.Stock(performance=performance, stock_type=quantity_only_stock_type)
-        product1 = c_m.Product(price=100)
-        product2 = c_m.Product(price=200)
-        product3 = c_m.Product(price=300)
+        product1 = c_m.Product(price=100, sales_segment=sales_segment)
+        product2 = c_m.Product(price=200, sales_segment=sales_segment)
+        product3 = c_m.Product(price=300, sales_segment=sales_segment)
         product_item1 = c_m.ProductItem(price=100, product=product1, stock=stock1, performance=performance)
         product_item2 = c_m.ProductItem(price=200, product=product2, stock=stock2, performance=performance)
         product_item3 = c_m.ProductItem(price=300, product=product3, stock=stock3, performance=performance)
@@ -440,15 +455,17 @@ class CartFactoryTests(unittest.TestCase):
 
         seats = [ seat1, seat2, seat3, seat4, seat5 ]
 
+        self.session.add(sales_segment)
         self.session.add(stock1)
         self.session.add(stock2)
         self.session.add(stock3)
         self.session.flush()
 
-        return performance, product1, product2, product3, seats
+        return sales_segment, product1, product2, product3, seats
 
     def test_create_cart(self):
-        performance, product1, product2, product3, seats = self._add_seats()
+        from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup
+        sales_segment, product1, product2, product3, seats = self._add_seats()
 
         seat1 = seats[0]
         seat2 = seats[1]
@@ -457,7 +474,6 @@ class CartFactoryTests(unittest.TestCase):
         seat5 = seats[4]
 
         request = testing.DummyRequest()
-        performance_id = performance.id
         ordered_products = [
             (product1, 2),
             (product2, 3),
@@ -465,7 +481,7 @@ class CartFactoryTests(unittest.TestCase):
         ]
 
         target = self._makeOne(request)
-        result = target.create_cart(performance_id, seats, ordered_products)
+        result = target.create_cart(sales_segment, seats, ordered_products)
         self.assertEqual(len(result.items), 3)
         self.assertEqual(result.items[0].elements[0].seats, [seat1, seat3])
         self.assertEqual(result.items[0].quantity, 2)
@@ -477,19 +493,20 @@ class CartFactoryTests(unittest.TestCase):
     def test_create_cart_invalid_product(self):
         import altair.app.ticketing.core.models as c_m
         from altair.app.ticketing.cart.stocker import InvalidProductSelectionException
-        performance, product1, product2, product3, seats = self._add_seats()
+        sales_segment, product1, product2, product3, seats = self._add_seats()
 
         request = testing.DummyRequest()
         ordered_products = [
             (product1, 2),
             ]
 
-        other_performance = c_m.Performance(event=performance.event)
-        self.session.add(other_performance)
+        other_sales_segment = c_m.SalesSegment(performance=sales_segment.performance, sales_segment_group=sales_segment.sales_segment_group)
+        self.session.add(other_sales_segment)
         self.session.flush()
 
         target = self._makeOne(request)
-        self.assertRaises(InvalidProductSelectionException, target.create_cart, other_performance.id, seats, ordered_products)
+        with self.assertRaises(InvalidProductSelectionException):
+            target.create_cart(other_sales_segment, seats, ordered_products)
 
     def test_pop_seats(self):
 
@@ -553,15 +570,15 @@ class order_productsTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], IReserving, "", DummyReserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", DummyCartFactory)
 
-        sales_segment_id = 1
-        self.session.add(SalesSegment(id=sales_segment_id))
+        sales_segment = SalesSegment(id=1)
+        self.session.add(sales_segment)
         self.session.flush()
         product_requires = [
             (testing.DummyModel(), 10),
             (testing.DummyModel(), 20),
         ]
 
-        result = self._callFUT(request, sales_segment_id, product_requires)
+        result = self._callFUT(request, sales_segment, product_requires)
         self.assertIsNotNone(result)
 
     def test_one_order(self):
@@ -577,11 +594,14 @@ class order_productsTests(unittest.TestCase):
             StockStatus,
             StockType,
             SalesSegment,
+            SalesSegmentGroup,
             Product,
             ProductItem,
             Event,
+            EventSetting,
             Performance,
             Organization,
+            OrganizationSetting,
             Venue,
             Site
             )
@@ -590,6 +610,7 @@ class order_productsTests(unittest.TestCase):
         from .stocker import Stocker, NotEnoughStockException
         from .reserving import Reserving
         from .carting import CartFactory
+        from .models import CartSetting
         request = testing.DummyRequest()
         request.registry.adapters.register([IRequest], IStocker, "", Stocker)
         request.registry.adapters.register([IRequest], IReserving, "", Reserving)
@@ -604,10 +625,28 @@ class order_productsTests(unittest.TestCase):
         sales_segment_id = 6
         event_id = 7
 
-        organization = Organization(id=organization_id, short_name='', code='XX')
-        event = Event(id=event_id, organization=organization)
+        cart_setting = CartSetting()
+        organization = Organization(
+            id=organization_id, short_name='', code='XX',
+            settings=[
+                OrganizationSetting(cart_setting=cart_setting)
+                ]
+            )
+        event = Event(
+            id=event_id,
+            organization=organization,
+            setting=EventSetting(
+                cart_setting=cart_setting
+                )
+            )
         performance = Performance(id=performance_id, event=event)
-        sales_segment = SalesSegment(id=sales_segment_id, performance_id=performance_id)
+        sales_segment = SalesSegment(
+            id=sales_segment_id,
+            performance_id=performance_id,
+            sales_segment_group=SalesSegmentGroup(
+                event=event
+                )
+            )
         site = Site(id=site_id)
         venue = Venue(id=venue_id, organization=organization, site=site, performance=performance)
         stock = Stock(id=stock_id, quantity=5, performance=performance, stock_type=StockType())
@@ -638,7 +677,7 @@ class order_productsTests(unittest.TestCase):
 
         # 注文 S席 2枚
         ordered_products = [(product, 2)]
-        cart1 = self._callFUT(request, sales_segment_id, ordered_products)
+        cart1 = self._callFUT(request, sales_segment, ordered_products)
 
         self.assertIsNotNone(cart1)
         self.assertEqual(len(cart1.items), 1)
@@ -652,7 +691,7 @@ class order_productsTests(unittest.TestCase):
 
         assertQuantity(3)
 
-        cart2 = self._callFUT(request, sales_segment_id, ordered_products)
+        cart2 = self._callFUT(request, sales_segment, ordered_products)
 
         self.assertIsNotNone(cart2)
         self.assertEqual(len(cart2.items), 1)
@@ -662,7 +701,8 @@ class order_productsTests(unittest.TestCase):
 
         assertQuantity(1)
 
-        self.assertRaises(NotEnoughStockException, lambda:self._callFUT(request, sales_segment_id, ordered_products))
+        with self.assertRaises(NotEnoughStockException):
+            self._callFUT(request, sales_segment, ordered_products)
 
 
 class DummyStocker(object):
@@ -804,7 +844,13 @@ class UserApiTest(unittest.TestCase):
 
     def test_get_or_create_user_create(self):
         from . import api as a
-        result = a.get_or_create_user({ 'auth_type': 'rakuten', 'membership': 'raluten', 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
+        result = a.get_or_create_user({
+            'auth_type': 'rakuten',
+            'membership': 'rakuten',
+            'claimed_id': 'http://example.com/claimed_id',
+            'auth_identifier': 'http://example.com/claimed_id',
+            'organization_id': 1,
+            })
         self.assertIsNone(result.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
@@ -813,7 +859,13 @@ class UserApiTest(unittest.TestCase):
         from . import api as a
         
         user = self._add_user('http://example.com/claimed_id')
-        result = a.get_or_create_user({ 'auth_type': 'rakuten', 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
+        result = a.get_or_create_user({
+            'auth_type': 'rakuten',
+            'membership': 'rakuten',
+            'claimed_id': 'http://example.com/claimed_id',
+            'auth_identifier': 'http://example.com/claimed_id',
+            'organization_id': 1,
+            })
         self.assertEqual(result.id, user.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
