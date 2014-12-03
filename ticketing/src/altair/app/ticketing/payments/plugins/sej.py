@@ -229,9 +229,25 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
     # 代引もしくは前払後日発券の場合は payment_type の決定を再度行う (refs. #10350)
     if int(sej_order.payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
         payment_type = int(determine_payment_type(current_date, order))
-        if payment_type != int(sej_order.payment_type):
-            logger.info('payment type will change: %d => %d' % (int(sej_order.payment_type), payment_type))
-        ticket_dicts = get_tickets(request, order)
+    else:
+        payment_type = int(sej_order.payment_type)
+
+    sej_args = build_sej_args(payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
+    ticket_dicts = get_tickets(request, order)
+
+    if is_same_sej_order(sej_order, sej_args, ticket_dicts):
+        logger.info('the resulting order is the same as the old one; will do nothing')
+        return
+
+    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v:
+        if order.paid_at is not None:
+            raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
+    else:
+        if order.delivered_at is not None:
+            raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
+
+    if payment_type != int(sej_order.payment_type):
+        logger.info('new sej order will be created as payment type is being changed: %d => %d' % (int(sej_order.payment_type), payment_type))
 
         new_sej_order = sej_order.new_branch()
         new_sej_order.tickets = sej_api.build_sej_tickets_from_dicts(
@@ -239,7 +255,6 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
             ticket_dicts,
             lambda idx: None
             )
-        sej_args = build_sej_args(payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
         for k, v in sej_args.items():
             setattr(new_sej_order, k, v)
         new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
@@ -255,19 +270,6 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
         except SejErrorBase:
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
     else:
-        sej_args = build_sej_args(sej_order.payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
-        ticket_dicts = get_tickets(request, order)
-
-        if is_same_sej_order(sej_order, sej_args, ticket_dicts):
-            logger.info('the resulting order is the same as the old one; will do nothing')
-            return
-
-        if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v:
-            if order.paid_at is not None:
-                raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
-        else:
-            if order.delivered_at is not None:
-                raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
         new_sej_order = sej_order.new_branch()
         new_sej_order.tickets = sej_api.build_sej_tickets_from_dicts(
             sej_order.order_no,
