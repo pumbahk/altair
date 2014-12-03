@@ -41,7 +41,9 @@ class DummyRequest(_DummyRequest):
         self.request_iface = kwargs.get('request_iface', IRequest)
 
     def __getattr__(self, k):
-        self._set_extensions(self.registry.queryUtility(IRequestExtensions))
+        extensions = self.registry.queryUtility(IRequestExtensions)
+        if extensions is not None:
+            self._set_extensions(extensions)
         if not hasattr(self.__class__, k):
             raise AttributeError(k)
         return getattr(self, k)

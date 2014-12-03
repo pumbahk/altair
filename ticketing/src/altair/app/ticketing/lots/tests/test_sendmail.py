@@ -2,12 +2,16 @@
 
 import unittest
 from pyramid import testing
+from altair.app.ticketing.testing import DummyRequest
 from altair.app.ticketing.mails.testing import MailTestMixin
 
 class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
         self.config.include('altair.app.ticketing.renderers')
         self.registerDummyMailer()
@@ -29,9 +33,8 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
         #from altair.app.ticketing import txt_renderer_factory
         self.config.add_route('lots.review.index', 'review')
         #self.config.add_renderer('.txt' , txt_renderer_factory)
-        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         request.registry.settings['altair.mailer'] = 'pyramid_mailer.testing'
         self.config.include('altair.app.ticketing.lots.sendmail')
 
