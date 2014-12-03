@@ -16,6 +16,10 @@ class DummyVenusian(object):
 class RefreshResponseTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(autocommit=False)
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
+        self.config.commit()
+
     def tearDown(self):
         testing.tearDown()
 

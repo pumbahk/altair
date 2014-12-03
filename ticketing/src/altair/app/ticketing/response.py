@@ -9,13 +9,21 @@ from pyramid.interfaces import PHASE2_CONFIG
 from zope.interface import Interface
 
 def verify_static_renderer(config, renderer):
+    try:
+        from pyramid_mako import MakoLookupTemplateRenderer
+    except:
+        MakoLookupTemplateRenderer = None
+    if not isinstance(renderer, RendererHelper):
+        renderer = RendererHelper(renderer, registry=config.registry)
     def register():
         try:
-            assert RendererHelper(renderer, registry=config.registry).renderer
+            renderer_impl = renderer.renderer
+            if MakoLookupTemplateRenderer and isinstance(renderer_impl, MakoLookupTemplateRenderer):
+                assert renderer_impl.template
         except ConfigurationError:
             raise
         except Exception as e:
-            raise ConfigurationError(repr(e))
+            raise ConfigurationError("reason: " + repr(e))
     ## renderer factory registration on PHASE1_CONFIG(=-20). so.
     config.action((Interface, renderer), register, order=PHASE2_CONFIG)
 

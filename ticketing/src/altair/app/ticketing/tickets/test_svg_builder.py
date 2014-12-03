@@ -119,7 +119,6 @@ class OrderAttributesDataTests(unittest.TestCase):
             transaction_fee=200, 
             delivery_fee=300, 
             special_fee=400, 
-            multicheckout_approval_no=":multicheckout_approval_no", 
             order_no="no", 
             paid_at=datetime(2000, 1, 1, 1, 10), 
             delivered_at=None, 

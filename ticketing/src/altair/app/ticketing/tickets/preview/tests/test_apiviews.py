@@ -25,7 +25,9 @@ class APIViewDispatchTests(unittest.TestCase):
         testing.tearDown()
 
     def setUp(self):
-        self.config = testing.setUp()        
+        self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
 
     def test_router_dummy_view_is_exactly_select(self):
         config = self.config
@@ -42,7 +44,6 @@ class APIViewDispatchTests(unittest.TestCase):
         m.return_value = {"result": "preview.base64 is called"}
 
         config = self.config
-        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         config.include('altair.app.ticketing.tickets.preview.include_views')
         router = _make_router(config)
 
@@ -58,7 +59,6 @@ class APIViewDispatchTests(unittest.TestCase):
         m.return_value = {"result": "sej version is called"}
 
         config = self.config
-        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         config.include('altair.app.ticketing.tickets.preview.include_views')
         router = _make_router(config)
 
