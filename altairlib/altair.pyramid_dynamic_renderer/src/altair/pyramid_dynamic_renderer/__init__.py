@@ -39,11 +39,20 @@ class RendererHelperProxy(RendererHelper):
             )
 
     def render(self, value, system_values, request=None):
+        if system_values is None:
+            system_values = {
+                'view':None,
+                'context':getattr(request, 'context', None),
+                'request':request,
+                'req':request,
+                }
         renderer_helper = self._get_renderer_helper(
             request=request,
             value=value,
             system_values=system_values,
             )
+        system_values['renderer_name'] = renderer_helper.name
+        system_values['renderer_info'] = renderer_helper
         return renderer_helper.render(value, system_values, request)
 
     def clone(self, name, package, registry):
