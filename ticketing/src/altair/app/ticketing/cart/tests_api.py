@@ -989,7 +989,7 @@ class GetContactURLTest(unittest.TestCase):
         from altair.mobile.carriers import NonMobile
         from . import api
         request.mobile_ua.carrier = NonMobile
-        get_organization.return_value = None
+        request.organization = self._patch_get_organization.return_value = None
         with self.assertRaises(ValueError):
             api.get_contact_url(request)
 
