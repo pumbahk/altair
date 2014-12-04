@@ -891,6 +891,8 @@ class GetContactURLTest(unittest.TestCase):
                'altair.app.ticketing.cart.organization_path': '/path/to/org',
                }
         request = DummyRequest(environ=env)
+        from altair.mobile.carriers import NonMobile
+        request.mobile_ua = testing.DummyModel(carrier=NonMobile)
         return request
 
     def setUp(self):
