@@ -18,15 +18,7 @@ from pyramid import testing
 from datetime import datetime
 import mock
 
-from altair.app.ticketing.testing import _setup_db, _teardown_db
-
-def setUpModule():
-    _setup_db(['altair.app.ticketing.core.models',
-               'altair.app.ticketing.orders.models',
-               'altair.app.ticketing.lots.models'])
-
-def tearDownModule():
-    _teardown_db()
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 ORGANIZATION_ID = 12345
 AUTH_ID = 23456
@@ -181,7 +173,6 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         transaction_fee=200, 
         delivery_fee=300, 
         special_fee=400, 
-        multicheckout_approval_no=":multicheckout_approval_no", 
         order_no=order_no, 
         paid_at=datetime(2000, 1, 1, 1, 10), 
         delivered_at=None, 
@@ -240,7 +231,7 @@ def setup_eleted_wish(lot_entry, order):
     return wish
 
 def _make_request(organization): #xxx:
-    request = testing.DummyRequest()
+    request = DummyRequest()
     request.organization = organization
     class context:
         organization = request.organization
@@ -251,23 +242,47 @@ def _make_request(organization): #xxx:
 class MailTemplateCreationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        session = _setup_db([
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models'
+            ])
         cls.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        cls.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        cls.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+        cls.config.include('pyramid_mako')
+        cls.config.include('altair.pyramid_dynamic_renderer')
+        cls.config.add_mako_renderer('.html')
+        cls.config.add_mako_renderer('.txt')
         cls.config.include('altair.app.ticketing.mails.install_mail_utility')
         cls.config.include('altair.app.ticketing.payments')
         cls.config.include('altair.app.ticketing.payments.plugins')
+        register_sessionmaker_with_engine(
+            cls.config.registry,
+            'slave',
+            session.bind
+            )
         
     @classmethod
     def tearDownClass(cls):
         testing.tearDown()
+        _teardown_db()
+
+    def setUp(self):
+        from mock import patch
+        self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
+        p = self._patch_get_cart_setting_from_order_like.start()
+        p.return_value.type = 'standard'
+
+
+    def tearDown(self):
+        self._patch_get_cart_setting_from_order_like.stop()
 
     def _getTarget(self, request, mtype):
         from .api import get_mail_utility        
         return get_mail_utility(request, mtype)
 
     def _callAction(self, request, subject, mtype):
-        from pyramid.mako_templating import MakoRenderingException
+        from pyramid_mako import MakoRenderingException
         try:
             target = self._getTarget(request, mtype)
             return target.build_message(request, subject)
@@ -321,13 +336,11 @@ class MailTemplateCreationTest(unittest.TestCase):
                             order_no=order_no)
         request = _make_request(operator.organization)
 
-        with mock.patch("altair.app.ticketing.mails.order_cancel.ch.render_payment_cancel_mail_viewlet") as prender:
-            with mock.patch("altair.app.ticketing.mails.order_cancel.ch.render_delivery_cancel_mail_viewlet") as drender:
-                result = self._callAction(request, order, MailTypeEnum.PurchaseCancelMail)
-                self.assertTrue(result.body.data, str) #xxx:
-                self.assertIn("*orderno*", result.body.data)
-                self.assertTrue(prender.called)
-                self.assertTrue(drender.called)
+        result = self._callAction(request, order, MailTypeEnum.PurchaseCancelMail)
+        self.assertTrue(result.body.data, str) #xxx:
+        self.assertIn("*orderno*", result.body.data)
+        self.assertIn(order.payment_delivery_pair.payment_method.name, result.body.data)
+        self.assertIn(order.payment_delivery_pair.delivery_method.name, result.body.data)
 
 
     def test_lot_accepted_mail(self):

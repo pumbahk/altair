@@ -14,6 +14,9 @@ class SalesSegmentTests(unittest.TestCase):
                 "altair.app.ticketing.users.models",
                 "altair.app.ticketing.cart.models",
             ])
+        from altair.app.ticketing.cart.models import CartSetting
+        self.cart_setting = CartSetting()
+        self.session.add(self.cart_setting)
 
     def tearDown(self):
         _teardown_db()
@@ -51,23 +54,27 @@ class SalesSegmentTests(unittest.TestCase):
         for i in range(2):
             cart = Cart(
                 sales_segment=target,
-                payment_delivery_pair=pdmp
+                payment_delivery_pair=pdmp,
+                cart_setting=self.cart_setting
                 )
-            order = Order(user=user, cart=cart,
-                          total_amount=0,
-                          system_fee=0, transaction_fee=0, delivery_fee=0,
-                          sales_segment=target,
-                          payment_delivery_pair=pdmp,
-                          issuing_start_at=datetime(1970, 1, 1),
-                          issuing_end_at=datetime(1970, 1, 1),
-                          payment_start_at=datetime(1970, 1, 1),
-                          payment_due_at=datetime(1970, 1, 1)
-                          )
+            order = Order(
+                user=user, cart=cart,
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                sales_segment=target,
+                payment_delivery_pair=pdmp,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             orders.append(order)
 
         others = []
         for i in range(2):
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 user=other, cart=cart,
                 total_amount=0,
@@ -82,7 +89,7 @@ class SalesSegmentTests(unittest.TestCase):
 
         cancels = []
         for i in range(2):
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 user=user, cart=cart, canceled_at=datetime.now(),
                 total_amount=0,
@@ -118,7 +125,7 @@ class SalesSegmentTests(unittest.TestCase):
         orders = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr)
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 shipping_address=shipping_address,
@@ -134,7 +141,7 @@ class SalesSegmentTests(unittest.TestCase):
 
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 shipping_address=shipping_address,
@@ -152,7 +159,7 @@ class SalesSegmentTests(unittest.TestCase):
         cancels = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr)
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart, canceled_at=datetime.now(),
                 shipping_address=shipping_address,
@@ -169,7 +176,7 @@ class SalesSegmentTests(unittest.TestCase):
         others = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr_other)
-            cart = Cart(sales_segment=target)
+            cart = Cart(sales_segment=target, cart_setting=self.cart_setting)
             order = Order(
                 cart=cart,
                 shipping_address=shipping_address,

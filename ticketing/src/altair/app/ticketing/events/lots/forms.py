@@ -56,6 +56,7 @@ class LotForm(Form):
 
     lotting_announce_datetime = DateTimeField(
         label=u"抽選結果発表予定日",
+        format='%Y-%m-%d %H:%M',
         validators=[
             Required(),
         ],

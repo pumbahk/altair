@@ -529,7 +529,6 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
                       special_fee_name=u'特別手数料',
                       transaction_fee=200,
                       delivery_fee=300,
-                      multicheckout_approval_no=":multicheckout_approval_no",
                       order_no=":order_no",
                       paid_at=datetime(2000, 1, 1, 1, 10),
                       delivered_at=None,
@@ -553,7 +552,6 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             self.assertEqual(sub[u'special_fee_name'],  u'特別手数料')
             self.assertEqual(sub[u'transaction_fee'],  200)
             self.assertEqual(sub[u'delivery_fee'],  300)
-            self.assertEqual(sub[u'multicheckout_approval_no'],  ":multicheckout_approval_no")
             self.assertEqual(sub[u'order_no'],  ":order_no")
             self.assertEqual(sub[u'paid_at'],  datetime_as_dict(datetime(2000, 1, 1, 1, 10)))
             self.assertEqual(sub[u'delivered_at'],  datetime_as_dict(None))
@@ -860,7 +858,6 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         transaction_fee=200,
         delivery_fee=300,
         special_fee=400,
-        multicheckout_approval_no=":multicheckout_approval_no",
         order_no=order_no,
         paid_at=datetime(2000, 1, 1, 1, 10),
         delivered_at=None,

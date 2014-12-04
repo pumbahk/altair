@@ -73,7 +73,29 @@ class AttributeForm(Form):
         widget=TextArea()
         )
 
+class AttributesForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix="", **kwargs):
+        if 'attrs' in kwargs:
+            for a in kwargs['attrs']:
+                kwargs['attr_%u' % a.id] = a.value;
+        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
 
+    @classmethod
+    def append_fields(cls, attrs):
+        for attr in attrs:
+            cls = cls.append_field(attr)
+        return cls
+
+    @classmethod
+    def append_field(cls, attr):
+        setattr(cls, 'attr_%u' % attr.id, TextField(
+            label = attr.name,
+            validators=[
+                    ], 
+            widget=TextArea()
+            )
+        )
+        return cls
 
 class BundleForm(Form):
     def _get_translations(self):

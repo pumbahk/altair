@@ -5,6 +5,17 @@ from altair.mq.testing import DummyMessage
 
 
 class lot_wish_cartTests(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.cart.models',
+            ])
+   
+    def tearDown(self):
+        _teardown_db()
+
     def _callFUT(self, *args, **kwargs):
         from ..workers import lot_wish_cart
         return lot_wish_cart(*args, **kwargs)
@@ -15,54 +26,80 @@ class lot_wish_cartTests(unittest.TestCase):
             PaymentMethod, DeliveryMethod,
             SalesSegment,
             Event,
+            EventSetting,
             Organization,
             FeeTypeEnum,
         )
+        from altair.app.ticketing.cart.models import CartSetting
         from ..models import LotEntryWish, LotEntry, Lot, LotEntryProduct
         product1 = Product(price=100,
-                           items=[ProductItem(quantity=1)])
+                           items=[ProductItem(quantity=1, price=100)])
         product2 = Product(price=150,
-                           items=[ProductItem(quantity=1), ProductItem(quantity=9)])
+                           items=[ProductItem(quantity=1, price=75), ProductItem(quantity=9, price=75)])
 
+        event = Event(
+            organization=Organization(short_name=u'test', name=u'test'),
+            setting=EventSetting(
+                cart_setting=CartSetting()
+                )
+            )
+        self.session.add(event)
         wish = LotEntryWish(
             performance=Performance(
-                event=Event(organization=Organization()),
-            ),
-            lot_entry=LotEntry(lot=Lot(system_fee=9999999999999999999,# not used
-                                       sales_segment=SalesSegment(),
-                                   ), 
-                               entry_no='testing-entry',
-                               payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=11,
-                                                                                      system_fee_type=FeeTypeEnum.Once.v[0],
-                                                                                      transaction_fee=111,
-                                                                                      delivery_fee_per_order=0,
-                                                                                      delivery_fee_per_principal_ticket=0,
-                                                                                      delivery_fee_per_subticket=0,
-                                                                                      payment_method=PaymentMethod(),
-                                                                                      delivery_method=DeliveryMethod(),
-                                                                                  ),
-                               
-                           ),
-            products=[LotEntryProduct(quantity=3,
-                                      product=product1),
-                      LotEntryProduct(quantity=4,
-                                      product=product2)])
+                event=event
+                ),
+            lot_entry=LotEntry(
+                lot=Lot(
+                    event=event,
+                    organization=event.organization,
+                    system_fee=9999999999999999999,# not used
+                    sales_segment=SalesSegment(),
+                    ), 
+                entry_no='testing-entry',
+                payment_delivery_method_pair=PaymentDeliveryMethodPair(
+                    system_fee=11,
+                    system_fee_type=FeeTypeEnum.Once.v[0],
+                    transaction_fee=111,
+                    delivery_fee_per_order=0,
+                    delivery_fee_per_principal_ticket=0,
+                    delivery_fee_per_subticket=0,
+                    payment_method=PaymentMethod(fee=0),
+                    delivery_method=DeliveryMethod(fee_per_order=0),
+                    discount=0
+                    ),
+               ),
+            products=[
+                LotEntryProduct(
+                    quantity=3,
+                    product=product1
+                    ),
+                LotEntryProduct(
+                    quantity=4,
+                    product=product2
+                    ),
+                ]
+            )
         wish2 = LotEntryWish(
             performance=wish.performance,
-            products=[LotEntryProduct(quantity=10,
-                                      product=product1)])
+            products=[
+                LotEntryProduct(
+                    quantity=10,
+                    product=product1
+                    ),
+                ]
+            )
 
         wish.lot_entry.wishes.append(wish2)
 
         # precondition
-        self.assertEqual(wish.lot_entry.max_amount, 1011) # 100 * 10 + 11
+        self.assertEqual(wish.lot_entry.max_amount, 1122) # 100 * 10 + 111 + 11
 
         result = self._callFUT(wish)
 
         self.assertEqual(result.order_no, 'testing-entry')
         self.assertTrue(result.has_different_amount)
-        self.assertEqual(result.different_amount, 1011 - 911)
-        self.assertEqual(result.total_amount, 911)
+        self.assertEqual(result.different_amount, 1122 - 1022)
+        self.assertEqual(result.total_amount, 1022)
         self.assertEqual(len(result.items), 2)
         self.assertEqual(result.items[0].quantity, 3)
         self.assertEqual(result.items[0].product, product1)

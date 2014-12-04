@@ -212,7 +212,6 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         transaction_fee=200, 
         delivery_fee=300, 
         special_fee=400, 
-        multicheckout_approval_no=":multicheckout_approval_no", 
         order_no=order_no, 
         paid_at=datetime(2000, 1, 1, 1, 10), 
         delivered_at=None, 
@@ -269,7 +268,8 @@ class BaseTestMixin(object):
     @classmethod
     def setUpClass(cls):
         cls.config = testing.setUp()
-        cls.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        cls.config.include('pyramid_mako')
+        cls.config.add_mako_renderer('.html')
         cls.config.include('altair.app.ticketing.qr', route_prefix='qr')
         cls.config.include("altair.app.ticketing.printqr")
 

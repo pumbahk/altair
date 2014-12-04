@@ -598,7 +598,7 @@ def cancel_order(request, order, now=None):
     warnings = []
     now = now or datetime.now()
     if not order.can_cancel():
-        raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})'),  dict(status=order.status, payment_status=order.payment_status))
+        raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate())
 
     '''
     決済方法ごとに払戻処理
@@ -648,7 +648,7 @@ def refund_order(request, order, payment_method=None, now=None):
     warnings = []
     now = now or datetime.now()
     if not order.can_refund() or order.payment_status != 'refunding':
-        raise OrderCancellationError(order.order_no, _(u'予約が払戻できる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})'),  dict(status=order.status, payment_status=order.payment_status))
+        raise OrderCancellationError(order.order_no, _(u'予約が払戻できる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate())
 
     '''
     決済方法ごとに払戻処理

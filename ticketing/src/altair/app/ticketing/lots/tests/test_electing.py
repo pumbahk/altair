@@ -1,6 +1,7 @@
 import unittest
 import mock
 from pyramid import testing
+from altair.app.ticketing.testing import DummyRequest
 
 class ElectingTests(unittest.TestCase):
 
@@ -29,7 +30,7 @@ class ElectingTests(unittest.TestCase):
     def test_it(self):
         from ..interfaces import IElecting
         from zope.interface.verify import verifyObject
-        request = testing.DummyRequest()
+        request = DummyRequest()
         lot = testing.DummyResource()
         target = self._makeOne(request, lot)
 
@@ -37,7 +38,7 @@ class ElectingTests(unittest.TestCase):
 
     def test_elect_lot_entries(self):
         publisher = self._set_publisher()
-        request = testing.DummyRequest(registry=self.config.registry)
+        request = DummyRequest(registry=self.config.registry)
         mock_lot = mock.Mock(id=89889891)
         #elected_wishes = [mock.Mock(entry=mock_lot.entry)]
         #rejected_wishes = [mock.Mock(entry=mock_lot.entry)]

@@ -10,6 +10,9 @@ class send_refund_reserve_mailTests(unittest.TestCase, MailTestMixin):
 
     def setUp(self):
         self.config = setUp()
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
         self.config.include('altair.app.ticketing.renderers')
         self.registerDummyMailer()
@@ -59,6 +62,9 @@ class send_refund_complete_mailTests(unittest.TestCase, MailTestMixin):
 
     def setUp(self):
         self.config = setUp()
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
         self.config.include('altair.app.ticketing.renderers')
         self.registerDummyMailer()
@@ -108,6 +114,9 @@ class send_refund_error_mailTests(unittest.TestCase, MailTestMixin):
 
     def setUp(self):
         self.config = setUp()
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
         self.config.include('altair.app.ticketing.renderers')
         self.registerDummyMailer()

@@ -2,7 +2,7 @@
 
 import unittest
 from pyramid import testing
-from ..testing import SetUpTearDownManager
+from altair.app.ticketing.testing import DummyRequest, SetUpTearDownManager
 """
 traverser 無視して良いのでは
 git revert aa554213 でチェック
@@ -22,14 +22,26 @@ class PluginViewletTestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        cls.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        cls.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+        cls.config.include('pyramid_mako')
+        cls.config.include('altair.pyramid_dynamic_renderer')
+        cls.config.add_mako_renderer('.html')
+        cls.config.add_mako_renderer('.txt')
         cls.config.include('altair.app.ticketing.mails.install_mail_utility')
         cls.config.include('altair.app.ticketing.payments')
         cls.config.include('altair.app.ticketing.payments.plugins')
+
     @classmethod
     def tearDownClass(cls):
         testing.tearDown()
+
+    def setUp(self):
+        from mock import patch
+        self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
+        p = self._patch_get_cart_setting_from_order_like.start()
+        p.return_value.type = 'standard'
+
+    def tearDown(self):
+        self._patch_get_cart_setting_from_order_like.stop()
 
     def register_fake_storedata(self, data):
         from zope.interface import provider
@@ -44,8 +56,10 @@ class PluginViewletTestBase(unittest.TestCase):
 """
 失敗した時にはexceptionが出てくれる？
 """
-def _make_request(*args, **kwargs):
-    request = testing.DummyRequest()
+def _make_request(context_factory, *args, **kwargs):
+    from mock import Mock
+    request = DummyRequest()
+    request.context = context_factory(request, *args, **kwargs)
     return request
 
 def _make_order_for_delivery(self, delivery_plugin_id, total_amount=10000):
@@ -67,6 +81,7 @@ def _make_order_for_delivery(self, delivery_plugin_id, total_amount=10000):
 
 def _make_lot_entry_for_delivery(self, delivery_plugin_id):
     from altair.app.ticketing.lots.models import LotEntry
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.core.models import (
         PaymentDeliveryMethodPair, 
         DeliveryMethod, 
@@ -75,7 +90,14 @@ def _make_lot_entry_for_delivery(self, delivery_plugin_id):
     delivery_method = DeliveryMethod(delivery_plugin_id=delivery_plugin_id)
     pdmp = PaymentDeliveryMethodPair(delivery_method=delivery_method)
     shipping_address = ShippingAddress() #xxx:
-    return LotEntry(payment_delivery_method_pair=pdmp, shipping_address=shipping_address)
+    return LotEntry(
+        payment_delivery_method_pair=pdmp,
+        shipping_address=shipping_address,
+        order=Order(
+            payment_delivery_pair=pdmp,
+            shipping_address=shipping_address
+            )
+        )
 
 def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
     from altair.app.ticketing.core.models import (
@@ -84,9 +106,7 @@ def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
         DeliveryMethod, 
         ShippingAddress
     )
-    from altair.app.ticketing.orders.models import (
-        Order,
-        )
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
     payment_method = PaymentMethod(payment_plugin_id=payment_plugin_id)
     delivery_method = DeliveryMethod(delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID)
@@ -98,6 +118,7 @@ def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
 
 def _make_lot_entry_for_payment(self, payment_plugin_id):
     from altair.app.ticketing.lots.models import LotEntry
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.core.models import (
         PaymentDeliveryMethodPair, 
         PaymentMethod, 
@@ -109,13 +130,24 @@ def _make_lot_entry_for_payment(self, payment_plugin_id):
     delivery_method = DeliveryMethod(delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID)
     pdmp = PaymentDeliveryMethodPair(payment_method=payment_method, delivery_method=delivery_method)
     shipping_address = ShippingAddress() #xxx:
-    return LotEntry(payment_delivery_method_pair=pdmp, shipping_address=shipping_address)
+    return LotEntry(
+        payment_delivery_method_pair=pdmp,
+        shipping_address=shipping_address,
+        order=Order(
+            payment_delivery_pair=pdmp,
+            shipping_address=shipping_address
+            )
+        )
 
 class DeliveryFinishedViewletTest(PluginViewletTestBase):
     _make_subject = _make_order_for_delivery
     def _getTarget(self):
         from .helpers import render_delivery_finished_mail_viewlet
         return render_delivery_finished_mail_viewlet
+
+    def _make_request(self, subject):
+        from .complete import PurchaseCompleteMailResource
+        return _make_request(PurchaseCompleteMailResource, subject)
 
     def test_shipping(self):
         from altair.app.ticketing.payments import plugins
@@ -125,8 +157,8 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_sej(self):
@@ -135,6 +167,7 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
 
         def setup():
             DBSession.add(SejOrder(order_no=order_no))
+
         def teardown():
             import transaction
             transaction.abort()
@@ -153,8 +186,8 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
             k = plugins.SEJ_PAYMENT_PLUGIN_ID
             subject.payment_delivery_pair.payment_method = PaymentMethod(payment_plugin_id=k)
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -165,8 +198,8 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_qr(self):
@@ -177,12 +210,17 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class DeliveryCancelViewletTest(PluginViewletTestBase):
     _make_subject = _make_order_for_delivery
+
+    def _make_request(self, subject):
+        from .order_cancel import OrderCancelMailResource
+        return _make_request(OrderCancelMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_delivery_cancel_mail_viewlet
         return render_delivery_cancel_mail_viewlet
@@ -195,8 +233,8 @@ class DeliveryCancelViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_sej(self):
@@ -205,6 +243,7 @@ class DeliveryCancelViewletTest(PluginViewletTestBase):
 
         def setup():
             DBSession.add(SejOrder(order_no=order_no))
+
         def teardown():
             import transaction
             transaction.abort()
@@ -220,8 +259,8 @@ class DeliveryCancelViewletTest(PluginViewletTestBase):
             subject = self._make_subject(k)
             subject.order_no = order_no
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -232,8 +271,8 @@ class DeliveryCancelViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_qr(self):
@@ -244,12 +283,21 @@ class DeliveryCancelViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class DeliveryLotsAcceptedViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_delivery
+    def _make_subject(self, delivery_plugin_id):
+        return (
+            _make_lot_entry_for_delivery(self, delivery_plugin_id),
+            None
+            )
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsAcceptedMailResource
+        return _make_request(LotsAcceptedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_delivery_lots_accepted_mail_viewlet
         return render_delivery_lots_accepted_mail_viewlet
@@ -262,8 +310,8 @@ class DeliveryLotsAcceptedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_sej(self):## sej order無いはず
@@ -275,8 +323,8 @@ class DeliveryLotsAcceptedViewletTest(PluginViewletTestBase):
 
         subject = self._make_subject(k)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -287,8 +335,8 @@ class DeliveryLotsAcceptedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_qr(self):
@@ -299,12 +347,23 @@ class DeliveryLotsAcceptedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_delivery
+    def _make_subject(self, delivery_plugin_id):
+        from mock import Mock
+        lot_entry_wish = Mock()
+        return (
+            _make_lot_entry_for_delivery(self, delivery_plugin_id),
+            lot_entry_wish
+            )
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsElectedMailResource
+        return _make_request(LotsElectedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_delivery_lots_elected_mail_viewlet
         return render_delivery_lots_elected_mail_viewlet
@@ -317,8 +376,8 @@ class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_sej(self):
@@ -340,14 +399,14 @@ class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
             self.register_fake_storedata(data)
 
             subject = self._make_subject(k)
-            subject.order = _make_order_for_delivery(self, k, total_amount=10000)
+            subject[0].order = _make_order_for_delivery(self, k, total_amount=10000)
             from altair.app.ticketing.core.models import PaymentMethod
             k = plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID #check with sej?
-            subject.payment_delivery_method_pair.payment_method = PaymentMethod(payment_plugin_id=k)
-            subject.order.order_no = order_no
+            subject[0].order.payment_delivery_pair.payment_method = PaymentMethod(payment_plugin_id=k)
+            subject[0].order.order_no = order_no
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -358,8 +417,8 @@ class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_qr(self):
@@ -370,12 +429,22 @@ class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class DeliveryLotsRejectedViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_delivery
+    def _make_subject(self, delivery_plugin_id):
+        return (
+            _make_lot_entry_for_delivery(self,delivery_plugin_id),
+            None
+            )
+
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsRejectedMailResource
+        return _make_request(LotsRejectedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_delivery_lots_rejected_mail_viewlet
         return render_delivery_lots_rejected_mail_viewlet
@@ -388,8 +457,8 @@ class DeliveryLotsRejectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_sej(self):## sej order無いはず
@@ -401,8 +470,8 @@ class DeliveryLotsRejectedViewletTest(PluginViewletTestBase):
 
         subject = self._make_subject(k)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -413,8 +482,8 @@ class DeliveryLotsRejectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
     def test_qr(self):
@@ -425,14 +494,17 @@ class DeliveryLotsRejectedViewletTest(PluginViewletTestBase):
         data = {"D{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
-
-
 
 class PaymentFinishedViewletTest(PluginViewletTestBase):
     _make_subject = _make_order_for_payment
+
+    def _make_request(self, subject):
+        from .complete import PurchaseCompleteMailResource
+        return _make_request(PurchaseCompleteMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_payment_finished_mail_viewlet
         return render_payment_finished_mail_viewlet
@@ -445,8 +517,8 @@ class PaymentFinishedViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         self.assertIn("10,000", result)
 
@@ -458,8 +530,8 @@ class PaymentFinishedViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         self.assertIn("10,000", result)
 
@@ -484,8 +556,8 @@ class PaymentFinishedViewletTest(PluginViewletTestBase):
             subject = self._make_subject(k)
             subject.order_no = order_no
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -496,12 +568,17 @@ class PaymentFinishedViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class PaymentCancelViewletTest(PluginViewletTestBase):
     _make_subject = _make_order_for_payment
+
+    def _make_request(self, subject):
+        from .order_cancel import OrderCancelMailResource
+        return _make_request(OrderCancelMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_payment_cancel_mail_viewlet
         return render_payment_cancel_mail_viewlet
@@ -514,8 +591,8 @@ class PaymentCancelViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         # self.assertIn("10,000", result)
 
@@ -527,8 +604,8 @@ class PaymentCancelViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         # self.assertIn("10,000", result)
 
@@ -553,8 +630,8 @@ class PaymentCancelViewletTest(PluginViewletTestBase):
             subject = self._make_subject(k)
             subject.order_no = order_no
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -565,12 +642,21 @@ class PaymentCancelViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class PaymentLotsAcceptViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_payment
+    def _make_subject(self, payment_plugin_id):
+        return (
+            _make_lot_entry_for_payment(self, payment_plugin_id),
+            None
+            )
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsAcceptedMailResource
+        return _make_request(LotsAcceptedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_payment_lots_accepted_mail_viewlet
         return render_payment_lots_accepted_mail_viewlet
@@ -583,8 +669,8 @@ class PaymentLotsAcceptViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 
@@ -596,8 +682,8 @@ class PaymentLotsAcceptViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 
@@ -621,8 +707,8 @@ class PaymentLotsAcceptViewletTest(PluginViewletTestBase):
 
             subject = self._make_subject(k)
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -633,12 +719,23 @@ class PaymentLotsAcceptViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class PaymentLotsElectedViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_payment
+    def _make_subject(self, payment_plugin_id):
+        from mock import Mock
+        lot_entry_wish = Mock()
+        return (
+            _make_lot_entry_for_payment(self, payment_plugin_id),
+            lot_entry_wish
+            )
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsElectedMailResource
+        return _make_request(LotsElectedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_payment_lots_elected_mail_viewlet
         return render_payment_lots_elected_mail_viewlet
@@ -647,13 +744,13 @@ class PaymentLotsElectedViewletTest(PluginViewletTestBase):
         from altair.app.ticketing.payments import plugins
         k = plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID
         subject = self._make_subject(k)
-        subject.order = _make_order_for_payment(self, k, total_amount=10000)
+        subject[0].order = _make_order_for_payment(self, k, total_amount=10000)
 
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         self.assertIn("10,000", result)
 
@@ -662,13 +759,13 @@ class PaymentLotsElectedViewletTest(PluginViewletTestBase):
         from altair.app.ticketing.payments import plugins
         k = plugins.CHECKOUT_PAYMENT_PLUGIN_ID
         subject = self._make_subject(k)
-        subject.order = _make_order_for_payment(self, k, total_amount=10000)
+        subject[0].order = _make_order_for_payment(self, k, total_amount=10000)
 
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
         self.assertIn("10,000", result)
 
@@ -692,11 +789,11 @@ class PaymentLotsElectedViewletTest(PluginViewletTestBase):
             self.register_fake_storedata(data)
 
             subject = self._make_subject(k)
-            subject.order = _make_order_for_payment(self, k, total_amount=10000)
-            subject.order.order_no = order_no
+            subject[0].order = _make_order_for_payment(self, k, total_amount=10000)
+            subject[0].order.order_no = order_no
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -707,12 +804,21 @@ class PaymentLotsElectedViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
 
 class PaymentLotsRejectViewletTest(PluginViewletTestBase):
-    _make_subject = _make_lot_entry_for_payment
+    def _make_subject(self, payment_plugin_id):
+        return (
+            _make_lot_entry_for_payment(self, payment_plugin_id),
+            None
+            )
+
+    def _make_request(self, subject):
+        from .lots_mail import LotsRejectedMailResource
+        return _make_request(LotsRejectedMailResource, subject)
+
     def _getTarget(self):
         from .helpers import render_payment_lots_rejected_mail_viewlet
         return render_payment_lots_rejected_mail_viewlet
@@ -725,10 +831,9 @@ class PaymentLotsRejectViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
-
 
     def test_checkout(self):
         from altair.app.ticketing.payments import plugins
@@ -738,10 +843,9 @@ class PaymentLotsRejectViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)
-
 
     def test_sej(self):
         from altair.app.ticketing.models import DBSession
@@ -763,8 +867,8 @@ class PaymentLotsRejectViewletTest(PluginViewletTestBase):
 
             subject = self._make_subject(k)
 
-            request = _make_request()
-            result = self._getTarget()(request, subject)
+            request = self._make_request(subject)
+            result = self._getTarget()(request)
             self.assertIn("*notice*", result)
 
     def test_reserve_number(self):
@@ -775,6 +879,6 @@ class PaymentLotsRejectViewletTest(PluginViewletTestBase):
         data = {"P{}notice".format(k): "*notice*"}
         self.register_fake_storedata(data)
 
-        request = _make_request()
-        result = self._getTarget()(request, subject)
+        request = self._make_request(subject)
+        result = self._getTarget()(request)
         self.assertIn("*notice*", result)

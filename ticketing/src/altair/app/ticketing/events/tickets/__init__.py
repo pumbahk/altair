@@ -20,6 +20,7 @@ def includeme(config):
 
     add_route("events.tickets.bundles.new", "/event/{event_id}/bundle/new")
     add_route("events.tickets.bundles.edit", "/event/{event_id}/bundle/{bundle_id}/edit")
+    add_route("events.tickets.bundles.edit_attributes", "/event/{event_id}/bundle/{bundle_id}/attributes")
     add_route("events.tickets.bundles.copy", "/event/{event_id}/bundle/{bundle_id}/copy")
     add_route("events.tickets.bundles.delete", "/event/{event_id}/bundle/{bundle_id}/delete")
     add_route("events.tickets.bundles.show", "/event/{event_id}/bundle/{bundle_id}")

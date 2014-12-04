@@ -427,12 +427,18 @@ class MobileSelectProductView(object):
             # バラ席でのおすすめが可能なら確認画面を挟む
             organization = api.get_organization(self.request)
             if organization.setting.entrust_separate_seats:
-                data = dict(
-                    form=schemas.CSRFSecureForm(csrf_context=self.request.session),
-                    params=dict([(k, v) for k, v in self.request.params.items() if k != 'csrf_token'])
-                )
-                return render_to_response(selectable_renderer('%(membership)s/mobile/separate_seat.html'), data, request=self.request)
-            raise e
+                renderer = selectable_renderer('separate_seat.html')
+                renderer.bind(self.request.registry, self.request.registry.__name__)
+                return renderer.render_to_response(
+                    value=dict(
+                        form=schemas.CSRFSecureForm(csrf_context=self.request.session),
+                        params=dict([(k, v) for k, v in self.request.params.items() if k != 'csrf_token'])
+                        ),
+                    system_values=None,
+                    request=self.request
+                    )
+            else:
+                raise e
         except InvalidSeatSelectionException as e:
             # モバイルだとここにはこないかも
             transaction.abort()

@@ -102,11 +102,11 @@ class EntryLotViewTests(unittest.TestCase):
        
         organization = Organization(code='XX', short_name='example')
         membergroup = MemberGroup(
-            membership=Membership(organization=organization),
+            membership=Membership(organization=organization, name='test-membership'),
             name='test-group'
             )
         self.session.add(membergroup)
-        login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
+        login(self.config, {"auth_type": "fc_auth", "username": "test", "membership": "test-membership", "membergroup": "test-group"})
         #event = testing.DummyModel(id=1111)
         #sales_segment = testing.DummyModel(id=12345)
         #lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3, membergroups=[membergroup])
@@ -118,8 +118,9 @@ class EntryLotViewTests(unittest.TestCase):
         )
 
         context = DummyAuthenticatedResource(
+            request=request,
             event=event, lot=lot,
-            user={'is_guest': True, 'organization_id': 1})
+            user={'auth_identifier': 'test', 'is_guest': True, 'organization_id': 1, 'membership': "test-membership", 'membergroup': "test-group"})
         target = self._makeOne(context, request)
         result = target.get()
 
@@ -132,7 +133,7 @@ class EntryLotViewTests(unittest.TestCase):
 
         organization = Organization(code='XX', short_name='example')
         membergroup = MemberGroup(
-            membership=Membership(organization=organization),
+            membership=Membership(organization=organization, name='test-membership'),
             name='test-group'
             )
         self.session.add(membergroup)
@@ -167,7 +168,28 @@ class EntryLotViewTests(unittest.TestCase):
                                              name=preparer_name)
         performances = lot.performances
 
-        wishes = {
+        data = self._params(**{
+            "first_name": u'あ',
+            "first_name_kana": u'イ',
+            "last_name": u'う',
+            "last_name_kana": u'エ',
+            "tel_1": u"01234567899",
+            "fax": u"01234567899",
+            "zip": u'1234567',
+            "prefecture": u'東京都',
+            "city": u'渋谷区',
+            "address_1": u"代々木１丁目",
+            "address_2": u"森京ビル",
+            "email_1": u"test@example.com",
+            "email_1_confirm": u"test@example.com",
+            "email_2": u"test2@example.com",
+            "email_2_confirm": u"test2@example.com",
+            "sex": '1',
+            "birthday.year": '1980',
+            "birthday.month": '05',
+            "birthday.day": '03',
+            "payment_delivery_method_pair_id": str(payment_delivery_method_pair.id),
+
             "performanceDate-1": str(products[0].performance_id),
             "performanceDate-2": str(products[1].performance_id),
             "product-id-1-1" : str(products[0].id),
@@ -176,37 +198,18 @@ class EntryLotViewTests(unittest.TestCase):
             "product-quantity-1-2" : "5",
             "product-id-2-1" : str(products[2].id),
             "product-quantity-2-1" : "5",
-        }
+            })
 
-        data = self._params(
-            first_name=u'あ',
-            first_name_kana=u'イ',
-            last_name=u'う',
-            last_name_kana=u'エ',
-            tel_1=u"01234567899",
-            fax=u"01234567899",
-            zip=u'1234567',
-            prefecture=u'東京都',
-            city=u'渋谷区',
-            address_1=u"代々木１丁目",
-            address_2=u"森京ビル",
-            email_1=u"test@example.com",
-            email_1_confirm=u"test@example.com",
-            email_2=u"test2@example.com",
-            email_2_confirm=u"test2@example.com",
-            sex='1',
-            year='1980', month='05', day='03',
-            payment_delivery_method_pair_id=str(payment_delivery_method_pair.id),
-            **wishes
-        )
         request = DummyRequest(
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
         )
-        context = testing.DummyResource(event=lot.event, lot=lot,
-                                        organization=lot.event.organization,
-                                        check_entry_limit=lambda wishes, user, email: True,
-                                        authenticated_user=lambda:{'is_guest':True, 'organization_id': 1})
+        context = testing.DummyResource(
+            request=request,
+            event=lot.event, lot=lot,
+            organization=lot.event.organization,
+            check_entry_limit=lambda wishes, user, email: True,
+            authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"})
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
@@ -245,7 +248,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
         organization = Organization(name='test', short_name='test')
         host = Host(organization=organization, host_name='example.com:80')
-        membership = Membership(name='test-membership', organization=organization)
+        membership = Membership(organization=organization, name='test-membership')
         membergroup = MemberGroup(name='test-group', membership=membership)
         self.session.add(organization)
         self.session.add(host)
@@ -270,6 +273,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.config.include('altair.auth')
         self.config.include('pyramid_layout')
         self.config.include('altair.app.ticketing.lots')
+        self.config.include('altair.app.ticketing.lots.setup_routes')
+        self.config.include('altair.app.ticketing.cart.request')
 
     def tearDown(self):
         import transaction
@@ -457,7 +462,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'altair.app.ticketing:templates/lots_accept_entry.txt'
-        context = DummyAuthenticatedResource(user={ 'is_guest': True, 'organization_id': 1 })
+        context = DummyAuthenticatedResource(user={ 'auth_identifier': None, 'is_guest': True, 'organization_id': 1, 'membership': 'test' })
         context.lot = lot
         context.event = lot.event
         request.context = context
