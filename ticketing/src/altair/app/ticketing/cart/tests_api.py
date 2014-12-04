@@ -3,7 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
-from ..testing import _setup_db as _setup_db_, _teardown_db
+from ..testing import _setup_db as _setup_db_, _teardown_db, DummyRequest
 
 def _setup_db(echo=False):
     return _setup_db_(
@@ -890,10 +890,21 @@ class GetContactURLTest(unittest.TestCase):
         env = {'altair.app.ticketing.cart.organization_id': 1,
                'altair.app.ticketing.cart.organization_path': '/path/to/org',
                }
-        request = mock.Mock()
-        request.organization = organization
-        request.environ = env
+        request = DummyRequest(environ=env)
         return request
+
+    def setUp(self):
+        patch = mock.patch('altair.app.ticketing.core.api.get_organization_setting')
+        self._patch_get_organization_setting = patch.start()
+        patches.append(patch)
+        patch = mock.patch('altair.app.ticketing.cart.request.get_organization')
+        self._patch_get_organization = patch.start()
+        patches.append(patch)
+        self.patches = patches
+
+    def tearDown(self):
+        for patch in self.patches:
+            patch.stop()
 
     @staticmethod
     def _create_organization():
@@ -912,23 +923,19 @@ class GetContactURLTest(unittest.TestCase):
         setting.contact_pc_url = cls.pc_url
         return setting
 
-    @classmethod
-    def _setup_normal_mock(cls, get_organization, get_organization_setting):
+    def _setup_normal_mock(self):
         """Set up normal data to mock objects.
         """
-        get_organization.return_value \
-            = organization = cls._create_organization()
-        organization.setting = get_organization_setting.return_value = setting = cls._create_setting()
+        self._patch_get_organization.return_value \
+            = organization = self._create_organization()
+        organization.setting = self._patch_get_organization_setting.return_value = setting = self._create_setting()
         request = cls._create_request(organization)
         return request, organization, setting
 
-    @mock.patch('altair.app.ticketing.core.api.get_organization_setting')
-    @mock.patch('altair.app.ticketing.cart.api.get_organization')
-    def normal_test(self, get_organization, get_organization_setting):
+    def normal_test(self):
         """Normal case.
         """
-        request, organization, setting \
-            = self._setup_normal_mock(get_organization, get_organization_setting)
+        request, organization, setting  = self._setup_normal_mock()
 
         from altair.mobile.carriers import NonMobile, DoCoMo
         from . import api
@@ -942,14 +949,11 @@ class GetContactURLTest(unittest.TestCase):
         url = api.get_contact_url(request)
         self.assertEqual(url, self.pc_url)
 
-    @mock.patch('altair.app.ticketing.core.api.get_organization_setting')
-    @mock.patch('altair.app.ticketing.cart.api.get_organization')
-    def invalid_url_test(self, get_organization, get_organization_setting):
+    def invalid_url_test(self):
 
         """Invalid request case.
         """
-        request, organization, setting \
-            = self._setup_normal_mock(get_organization, get_organization_setting)
+        request, organization, setting = self._setup_normal_mock()
         error = _TestException
 
         from altair.mobile.carriers import NonMobile, DoCoMo
@@ -973,19 +977,15 @@ class GetContactURLTest(unittest.TestCase):
         with self.assertRaises(error):
             api.get_contact_url(request, error)
 
-    @mock.patch('altair.app.ticketing.core.api.get_organization_setting')
-    @mock.patch('altair.app.ticketing.cart.api.get_organization')
-    def cannot_get_organization_test(self, get_organization, get_organization_setting):
+    def cannot_get_organization_test(self):
         """No organization case.
         """
-        request, organization, setting \
-            = self._setup_normal_mock(get_organization, get_organization_setting)
+        request, organization, setting = self._setup_normal_mock()
 
         from altair.mobile.carriers import NonMobile
         from . import api
         request.mobile_ua.carrier = NonMobile
         get_organization.return_value = None
-
         with self.assertRaises(ValueError):
             api.get_contact_url(request)
 
