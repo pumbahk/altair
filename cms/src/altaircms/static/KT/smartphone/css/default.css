@@ -801,18 +801,9 @@ h2.glitter.orange {
   background-image: url(../img/textures.png);
 }
 
-h2.glitter.gray {
-border-top: 2px solid #BF0000;
-border-bottom: 1px solid #BEBEBE;
-padding: 7px 10px;
-font-weight: bold;
-color: #BF0000;
-background: linear-gradient(to bottom, #FFF 0%, #BEBEBE 100%) repeat scroll 0% 0% transparent;
-margin: 0px;
-padding: 0px;
-border: 0px none;
-outline: 0px none;
-vertical-align: baseline;
+h2.glitter.red {
+color: #FFFFFF;
+background: red;
 line-height: 1.4;
 }
 
