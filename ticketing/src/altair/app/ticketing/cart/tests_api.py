@@ -930,7 +930,7 @@ class GetContactURLTest(unittest.TestCase):
         self._patch_get_organization.return_value \
             = organization = self._create_organization()
         organization.setting = self._patch_get_organization_setting.return_value = setting = self._create_setting()
-        request = cls._create_request(organization)
+        request = self._create_request(organization)
         return request, organization, setting
 
     def normal_test(self):
