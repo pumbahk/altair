@@ -279,3 +279,56 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 issuing_start_at=None,
                 issuing_interval_days=None
                 )
+
+    def test_validate_issuing_start_at_in_term_with_sales_segment_end_at_being_none(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
+        pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_start_at=None,
+            issuing_interval_days=0,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=None,
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+            self.assert_(True)
+        except:
+            self.fail()
+
+    def test_validate_issuing_start_at_out_term_with_sales_segment_end_at_being_none(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        from altair.app.ticketing.core.models import DateCalculationBase
+        pdmp = DummyResource(
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_start_at=None,
+            issuing_interval_days=1,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                performance_start_on=datetime(2014, 1, 10, 0, 0, 0),
+                performance_end_on=datetime(2014, 1, 10, 10, 0, 0),
+                sales_segment_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                sales_segment_end_at=None,
+                pdmp=pdmp,
+                issuing_start_day_calculation_base=None,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+            self.fail()
+        except:
+            self.assert_(True)
+

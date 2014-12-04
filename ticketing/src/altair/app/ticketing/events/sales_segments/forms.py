@@ -117,7 +117,7 @@ def validate_issuing_start_at(
         issuing_start_day_calculation_base=issuing_start_day_calculation_base,
         issuing_start_at=issuing_start_at,
         issuing_interval_days=issuing_interval_days,
-        created_at=sales_segment_end_at
+        created_at=sales_segment_end_at or performance_end_on or performance_start_on
         ).issuing_start_at
     # 複数日にまたがる公演のケースがあるので公演終了日で算出
     logger.debug('performance_end_on={}, issuing_start_at={}'.format(performance_end_on, issuing_start_at))
