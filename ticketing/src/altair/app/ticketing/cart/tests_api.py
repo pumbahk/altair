@@ -894,6 +894,7 @@ class GetContactURLTest(unittest.TestCase):
         return request
 
     def setUp(self):
+        patches = []
         patch = mock.patch('altair.app.ticketing.core.api.get_organization_setting')
         self._patch_get_organization_setting = patch.start()
         patches.append(patch)
