@@ -16,6 +16,35 @@ from .resources import CartSettingResource
 
 cart_setting_types_dict = dict(cart_setting_types)
 
+def populate_cart_setting_with_form_data(cart_setting, form):
+    cart_setting.name = form.data['name']
+    cart_setting.type = form.data['type']
+    cart_setting.performance_selector = form.data['performance_selector']
+    cart_setting.performance_selector_label1_override = form.data['performance_selector_label1_override']
+    cart_setting.performance_selector_label2_override = form.data['performance_selector_label2_override']
+    cart_setting.default_prefecture = form.data['default_prefecture']
+    cart_setting.flavors = form.data['flavors']
+    cart_setting.title = form.data['title']
+    cart_setting.contact_url = form.data['contact_url']
+    cart_setting.contact_url_mobile = form.data['contact_url_mobile']
+    cart_setting.contact_tel = form.data['contact_tel']
+    cart_setting.contact_office_hours = form.data['contact_office_hours']
+    cart_setting.contact_name = form.data['contact_name']
+    cart_setting.mobile_marker_color = form.data['mobile_marker_color']
+    cart_setting.mobile_required_marker_color = form.data['mobile_required_marker_color']
+    cart_setting.mobile_header_background_color = form.data['mobile_header_background_color']
+    cart_setting.privacy_policy_page_url = form.data['privacy_policy_page_url']
+    cart_setting.privacy_policy_page_url_mobile = form.data['privacy_policy_page_url_mobile']
+    cart_setting.legal_notice_page_url = form.data['legal_notice_page_url']
+    cart_setting.legal_notice_page_url_mobile = form.data['legal_notice_page_url_mobile']
+    cart_setting.mail_filter_domain_notice_template = form.data['mail_filter_domain_notice_template']
+    cart_setting.orderreview_page_url = form.data['orderreview_page_url']
+    cart_setting.header_image_url = form.data['header_image_url']
+    cart_setting.header_image_url_mobile = form.data['header_image_url_mobile']
+    # cart_setting.extra_footer_links = form.data['extra_footer_links']
+    # cart_setting.extra_footer_links_mobile = form.data['extra_footer_links_mobile']
+    cart_setting.extra_form_fields = form.data['extra_form_fields']
+
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):
         return cart_setting_types_dict.get(cart_setting.type)
@@ -59,9 +88,22 @@ class NewCartSettingView(CartSettingViewBase):
         permission='event_editor'
         )
     def get(self):
-        return dict(
-            form=CartSettingForm()
-            )
+        cart_setting_id = self.request.params.get('cart_setting_id')
+        try:
+            cart_setting_id = long(cart_setting_id)
+        except (TypeError, ValueError):
+            cart_setting_id = None
+        original_cart_setting = None
+        if cart_setting_id is not None:
+            original_cart_setting = DBSession.query(CartSetting) \
+                .filter_by(organization_id=self.context.organization.id, id=cart_setting_id) \
+                .first()
+        if original_cart_setting is None:
+            original_cart_setting = self.context.organization.setting.cart_setting
+                
+        form = CartSettingForm(obj=original_cart_setting)
+        form.name.data = u''
+        return dict(form=form)
 
     @view_config(
         route_name='cart_setting.new',
@@ -74,8 +116,11 @@ class NewCartSettingView(CartSettingViewBase):
             return dict(
                 form=form
                 )
+        cart_setting = CartSetting(organization_id=self.context.organization.id)
+        populate_cart_setting_with_form_data(cart_setting, form)
+        DBSession.add(cart_setting)
         self.request.session.flash(_(u'設定を登録しました'))
-        return HTTPFound(self.request.current_route_path())
+        return HTTPFound(self.request.route_path('cart_setting.index'))
 
 @view_defaults(
     decorator=with_bootstrap,
@@ -104,33 +149,7 @@ class EditCartSettingListView(CartSettingViewBase):
                 form=form
                 )
         cart_setting = self.context.cart_setting
-        cart_setting.name = form.data['name']
-        cart_setting.type = form.data['type']
-        cart_setting.performance_selector = form.data['performance_selector']
-        cart_setting.performance_selector_label1_override = form.data['performance_selector_label1_override']
-        cart_setting.performance_selector_label2_override = form.data['performance_selector_label2_override']
-        cart_setting.default_prefecture = form.data['default_prefecture']
-        cart_setting.flavors = form.data['flavors']
-        cart_setting.title = form.data['title']
-        cart_setting.contact_url = form.data['contact_url']
-        cart_setting.contact_url_mobile = form.data['contact_url_mobile']
-        cart_setting.contact_tel = form.data['contact_tel']
-        cart_setting.contact_office_hours = form.data['contact_office_hours']
-        cart_setting.contact_name = form.data['contact_name']
-        cart_setting.mobile_marker_color = form.data['mobile_marker_color']
-        cart_setting.mobile_required_marker_color = form.data['mobile_required_marker_color']
-        cart_setting.mobile_header_background_color = form.data['mobile_header_background_color']
-        cart_setting.privacy_policy_page_url = form.data['privacy_policy_page_url']
-        cart_setting.privacy_policy_page_url_mobile = form.data['privacy_policy_page_url_mobile']
-        cart_setting.legal_notice_page_url = form.data['legal_notice_page_url']
-        cart_setting.legal_notice_page_url_mobile = form.data['legal_notice_page_url_mobile']
-        cart_setting.mail_filter_domain_notice_template = form.data['mail_filter_domain_notice_template']
-        cart_setting.orderreview_page_url = form.data['orderreview_page_url']
-        cart_setting.header_image_url = form.data['header_image_url']
-        cart_setting.header_image_url_mobile = form.data['header_image_url_mobile']
-        # cart_setting.extra_footer_links = form.data['extra_footer_links']
-        # cart_setting.extra_footer_links_mobile = form.data['extra_footer_links_mobile']
-        cart_setting.extra_form_fields = form.data['extra_form_fields']
+        populate_cart_setting_with_form_data(cart_setting, form)
         self.request.session.flash(_(u'設定を編集しました'))
         import transaction
         transaction.commit()

@@ -72,6 +72,7 @@ class CartSettingForm(OurForm):
 
     name = OurTextField(
         label=label_text_for(CartSetting.name),
+        validators=[Required()],
         filters=[blank_as_none]
         )
 
