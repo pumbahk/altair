@@ -514,11 +514,12 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         )
         self._session.add(order)
 
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         cart = Cart(
             id=111,
             order_id=1,
             _order_no=order.order_no,
+            cart_setting=CartSetting()
         )
         self._session.add(cart)
         self._session.flush()
@@ -570,12 +571,13 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         from lxml import etree
         from base64 import b64decode
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         target = self._buildTarget()
         cart = Cart(
             id=10,
             _order_no='XX0000000000',
             sales_segment=SalesSegment(),
+            cart_setting=CartSetting(),
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=80,
                 delivery_fee_per_order=60,
@@ -630,7 +632,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_create_checkout_request_xml_with_items(self):
         from lxml import etree
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, FeeTypeEnum
-        from altair.app.ticketing.cart.models import Cart, CartedProduct
+        from altair.app.ticketing.cart.models import Cart, CartedProduct, CartSetting
         from decimal import Decimal
         from base64 import b64decode
         target = self._buildTarget()
@@ -638,6 +640,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             id=10,
             _order_no='XX0000000000',
             sales_segment=SalesSegment(),
+            cart_setting=CartSetting(),
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=80,
                 delivery_fee_per_order=60,
@@ -714,7 +717,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_create_checkout_request_xml_with_items_and_special_fee(self):
         from lxml import etree
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, FeeTypeEnum
-        from altair.app.ticketing.cart.models import Cart, CartedProduct
+        from altair.app.ticketing.cart.models import Cart, CartedProduct, CartSetting
         from decimal import Decimal
         from base64 import b64decode
         target = self._buildTarget()
@@ -722,6 +725,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             id=10,
             _order_no='XX0000000000',
             sales_segment=SalesSegment(),
+            cart_setting=CartSetting(),
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=80,
                 delivery_fee_per_order=60,
@@ -805,7 +809,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
     def test_create_checkout_request_xml_without_tmode(self):
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, FeeTypeEnum
-        from altair.app.ticketing.cart.models import Cart, CartedProduct
+        from altair.app.ticketing.cart.models import Cart, CartedProduct, CartSetting
         from decimal import Decimal
         from lxml import etree
         from base64 import b64decode
@@ -823,6 +827,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             id=10,
             _order_no='XX0000000000',
             sales_segment=SalesSegment(),
+            cart_setting=CartSetting(),
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=80,
                 delivery_fee_per_order=60,
@@ -898,7 +903,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
     def test_save_order_complete(self):
         from lxml import etree
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from .models import Checkout
         xml = etree.fromstring(
             '<orderCompleteRequest>'
@@ -925,7 +930,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</items>'
             '</orderCompleteRequest>'
         )
-        self._session.add(Cart(id=10, _order_no='XX0000000000'))
+        self._session.add(Cart(id=10, _order_no='XX0000000000', cart_setting=CartSetting()))
         self._session.flush()
         self.session.add(Checkout(orderCartId='XX0000000000'))
         self.session.flush()
@@ -938,7 +943,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_request_cancel_order_normal(self):
         from lxml import etree
         from .models import Checkout
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from altair.multicheckout.testing import DummyHTTPLib
 
         res_data = etree.fromstring(
@@ -966,7 +971,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.flush()
 
         cart = Cart(
-            _order_no='XX0000000000'
+            _order_no='XX0000000000',
+            cart_setting=CartSetting()
             )
         self._session.add(cart)
         self._session.flush()
@@ -979,7 +985,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_request_cancel_order_with_error(self):
         from lxml import etree
         from altair.multicheckout.testing import DummyHTTPLib
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from .models import Checkout
         from .exceptions import AnshinCheckoutAPIError
 
@@ -1010,7 +1016,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.flush()
 
         cart = Cart(
-            _order_no='XX0000000000'
+            _order_no='XX0000000000',
+            cart_setting=CartSetting()
             )
         self._session.add(cart)
         self._session.flush()
@@ -1025,7 +1032,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         from lxml import etree
         from .models import Checkout
         from altair.multicheckout.testing import DummyHTTPLib
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
 
         res_data = etree.fromstring(
             '<root>'
@@ -1052,7 +1059,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.flush()
 
         cart = Cart(
-            _order_no='XX0000000000'
+            _order_no='XX0000000000',
+            cart_setting=CartSetting()
             )
         self._session.add(cart)
         self._session.flush()
@@ -1065,7 +1073,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_request_fixation_order_with_error(self):
         from lxml import etree
         from altair.multicheckout.testing import DummyHTTPLib
-        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.cart.models import Cart, CartSetting
         from .models import Checkout
         from .exceptions import AnshinCheckoutAPIError
 
@@ -1097,7 +1105,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
         cart = Cart(
             id=10,
-            _order_no='XX0000000000'
+            _order_no='XX0000000000',
+            cart_setting=CartSetting()
             )
         self._session.add(cart)
         self._session.flush()

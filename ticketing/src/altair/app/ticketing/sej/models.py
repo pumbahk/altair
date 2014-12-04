@@ -184,9 +184,14 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
 
-    # 枝番 (もとい、バージョン番号. 1スタートで1づつ単調増加)
+    # 枝番 (もとい、リビジョン番号. 1スタートで1づつ単調増加)
     # Order.branch_no とは直接関係ない。再付番の際に増える
     branch_no               = Column(Integer, nullable=False, default=1, server_default='1')
+
+
+    # バージョン番号 (0スタートで1づつ単調増加)
+    # 同じ order_no で注文を何個も作れるので、その区別に使う
+    version_no              = Column(Integer, nullable=False, default=0, server_default='0')
 
     def mark_canceled(self, now=None):
         self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE

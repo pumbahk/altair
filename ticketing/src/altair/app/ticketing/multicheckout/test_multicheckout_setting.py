@@ -1,7 +1,7 @@
 import unittest
 import mock
-from pyramid.testing import setUp, tearDown, DummyRequest
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from pyramid.testing import setUp, tearDown
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 class MulticheckoutSettingTest(unittest.TestCase):
     def setUp(self):
@@ -20,6 +20,7 @@ class MulticheckoutSettingTest(unittest.TestCase):
             'slave',
             self.session.bind
             )
+        self.config.include('altair.app.ticketing.cart.request')
         self.config.include('altair.app.ticketing.multicheckout')
         self.config.include('altair.multicheckout')
         organization_settings = []

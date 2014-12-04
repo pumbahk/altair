@@ -140,6 +140,7 @@ class Cart(Base, c_models.CartMixin):
         return str(self.performance.id)
 
     @classmethod 
+    @deprecate("this function does not take it account that a cart is not associated to a single performance")
     def create(cls, request, **kwargs):
         performance_id = kwargs.pop('performance_id', None)
         if performance_id is None:

@@ -31,19 +31,13 @@ def includeme(config):
     config.add_payment_plugin(ReservedNumberPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.scan(__name__)
 
-def _overridable_payment(path):
+def _overridable_payment(path, fallback_ua_type=None):
     from . import _template
-    if _template is None:
-        return '%s:templates/%s' % (__name__, path)
-    else:
-        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
+    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
-def _overridable_delivery(path):
+def _overridable_delivery(path, fallback_ua_type=None):
     from . import _template
-    if _template is None:
-        return '%s:templates/%s' % (__name__, path)
-    else:
-        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
+    return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
 @lbr_view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_completion.html"))
 def reserved_number_viewlet(context, request):
@@ -123,7 +117,7 @@ class CompletionMailViewlet(object):
         self.context = context
         self.request = request
 
-    @lbr_view_config(name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_mail_complete.html"))
+    @lbr_view_config(name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_mail_complete.html", fallback_ua_type='mail'))
     def payment(self):
         """ 完了メール表示
         :param context: ICompleteMailDelivery
@@ -131,7 +125,7 @@ class CompletionMailViewlet(object):
         notice = self.context.mail_data("P", "notice")
         return dict(notice=notice)
 
-    @lbr_view_config(name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_mail_complete.html"))
+    @lbr_view_config(name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_mail_complete.html", fallback_ua_type='mail'))
     def delivery(self):
         """ 完了メール表示
         :param context: ICompleteMailDelivery

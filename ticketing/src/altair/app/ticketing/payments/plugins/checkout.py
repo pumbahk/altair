@@ -48,12 +48,9 @@ from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
-def _overridable(path):
+def _overridable(path, fallback_ua_type=None):
     from . import _template
-    if _template is None:
-        return '%s:templates/%s' % (__name__, path)
-    else:
-        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
+    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
 def includeme(config):
     # 決済系(楽天ID決済)
@@ -223,8 +220,8 @@ def completion_viewlet(context, request):
     """
     return Response(text=u"楽天ID決済")
 
-@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
-@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
+@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html", fallback_ua_type='mail'))
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html", fallback_ua_type='mail'))
 def payment_mail_viewlet(context, request):
     notice=context.mail_data("P", "notice")
     order=context.order

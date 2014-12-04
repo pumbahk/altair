@@ -208,7 +208,7 @@ class PaymentTests(unittest.TestCase):
         self.assertEqual(cart.order, order)
         self.assertEqual(order.organization_id, order.performance.event.organization.id)
         payment_delivery_plugin.finish.assert_called_with(request, cart)
-        mock_commit.assert_called_with()
+        self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
     @mock.patch("altair.app.ticketing.payments.api.get_preparer")
@@ -258,7 +258,7 @@ class PaymentTests(unittest.TestCase):
         self.assertEqual(order.organization_id, order.performance.event.organization.id)
         payment_plugin.finish.assert_called_with(request, cart)
         delivery_plugin.finish.assert_called_with(request, cart)
-        mock_commit.assert_called_with()
+        self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
     @mock.patch("altair.app.ticketing.payments.api.get_preparer")
@@ -310,8 +310,7 @@ class PaymentTests(unittest.TestCase):
 
         self.assertRaises(PaymentPluginException, target.call_payment)
 
-        # エラー発生時でもコミットされること。
-        mock_commit.assert_called_with()
+        self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
 # class on_delivery_errorTests(unittest.TestCase):

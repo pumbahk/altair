@@ -2,7 +2,7 @@
 
 import unittest
 from pyramid import testing
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 dependency_modules = [
     'altair.app.ticketing.core.models',
@@ -112,13 +112,13 @@ class validate_tokenTests(unittest.TestCase):
         return helpers.validate_token(*args, **kwargs)
 
     def test_without_session(self):
-        request = testing.DummyRequest()
+        request = DummyRequest()
         result = self._callFUT(request)
 
         self.assertFalse(result)
 
     def test_without_session_token(self):
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {}}
         )
         result = self._callFUT(request)
@@ -126,7 +126,7 @@ class validate_tokenTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_without_remote_token(self):
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {'token': 'test-token'}}
         )
         result = self._callFUT(request)
@@ -134,7 +134,7 @@ class validate_tokenTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_different_tokens(self):
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {'token': 'test-token'}},
             params={'token': 'other-token'}
         )
@@ -143,7 +143,7 @@ class validate_tokenTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_it(self):
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {'token': 'test-token'}},
             params={'token': 'test-token'}
         )

@@ -90,17 +90,11 @@ def includeme(config):
 
 def _selectable_renderer(path_fmt):
     from . import _template
-    if _template is None:
-        return None
-    else:
-        return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID)
+    return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID)
 
-def _overridable(path):
+def _overridable(path, fallback_ua_type=None):
     from . import _template
-    if _template is None:
-        return '%s:templates/%s' % (__name__, path)
-    else:
-        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID)
+    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
 error_messages = {
     '001002': u'注文が不正です最初からお試しください。',
@@ -427,8 +421,8 @@ def completion_viewlet(context, request):
     """
     return dict()
 
-@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("card_mail_complete.html"))
-@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html"))
+@lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("card_mail_complete.html", fallback_ua_type='mail'))
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html", fallback_ua_type='mail'))
 def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment

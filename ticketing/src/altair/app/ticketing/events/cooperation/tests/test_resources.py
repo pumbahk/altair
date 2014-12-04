@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from pyramid import testing
-
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class CooperationEventResourceTest(TestCase):
 
@@ -10,10 +10,17 @@ class CooperationEventResourceTest(TestCase):
             Event,
             Organization,
             )
+        self.session = _setup_db([
+            'altair.app.ticketing.core.models'
+            ])
         organization = Organization(id=1, short_name=u'', code=u'XX')
         event = Event(title=u'テスト', organization=organization)
-        event.save()
+        self.session.add(event)
+        self.session.flush()
         self.event_id = event.id
+
+    def tearDown(self):
+        _teardown_db()
 
     def test_create(self):
         from ..resources import CooperationEventResource

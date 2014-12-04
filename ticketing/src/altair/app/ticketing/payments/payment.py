@@ -2,10 +2,10 @@
 import logging
 import transaction
 from zope.interface import implementer 
+from datetime import datetime
 from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
-from .events import DeliveryErrorEvent
 from .exceptions import PaymentDeliveryMethodPairNotFound
 from .interfaces import IPayment, IPaymentCart
 
@@ -15,11 +15,14 @@ logger = logging.getLogger(__name__)
 class Payment(object):
     """ 決済
     """
-    def __init__(self, cart, request, session=None):
+    def __init__(self, cart, request, session=None, now=None):
+        if now is None:
+            now = datetime.now()
         self.request = request
         self.cart = cart
         self.sales_segment = cart.sales_segment
         self.session = session or DBSession
+        self.now = now
         from .api import get_preparer, lookup_plugin
         self.get_preparer = get_preparer
         self.lookup_plugin = lookup_plugin
@@ -72,13 +75,7 @@ class Payment(object):
         if payment_delivery_plugin is not None:
             if IPaymentCart.providedBy(self.cart):
                 order = payment_delivery_plugin.finish(self.request, self.cart)
-                self.session.add(order)
                 self._bind_order(order)
-                # 注文確定として、他の処理でロールバックされないようにコミット
-                transaction.commit()
-                if _is_mapped_class(self.cart.__class__):
-                    self.session.add(self.cart)
-                self.session.add(order)
             else:
                 payment_delivery_plugin.finish2(self.request, self.cart)
                 order = self.cart
@@ -86,32 +83,18 @@ class Payment(object):
             # 決済と配送を別々に処理する            
             if IPaymentCart.providedBy(self.cart):
                 order = payment_plugin.finish(self.request, self.cart)
-                self.session.add(order)
                 self._bind_order(order)
-                # 注文確定として、他の処理でロールバックされないようにコミット
-                transaction.commit()
-                if _is_mapped_class(self.cart.__class__):
-                    self.session.add(self.cart)
                 try:
                     delivery_plugin.finish(self.request, self.cart)
                 except Exception as e:
-                    logger.exception("???")
-                    self.session.add(order)
-                    self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
-                    raise
-                transaction.commit()
-                # transaction.commit() で order がデタッチされるので再度アタッチ
-                self.session.add(self.cart)
-                self.session.add(order)
+                    payment_plugin.cancel(self.request, order)
+                    order.deleted_at = self.now
+                    raise e
             else:
                 logger.info('cart is not a IPaymentCart')
                 payment_plugin.finish2(self.request, self.cart)
                 order = self.cart
-                try:
-                    delivery_plugin.finish2(self.request, self.cart)
-                except Exception as e:
-                    self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
-                    raise
+                delivery_plugin.finish2(self.request, self.cart)
         return order
 
     def call_payment2(self, order):
@@ -123,8 +106,9 @@ class Payment(object):
             try:
                 delivery_plugin.finish2(self.request, self.cart)
             except Exception as e:
-                self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
-                raise
+                payment_plugin.cancel(self.request, order)
+                order.deleted_at = self.now
+                raise e
         return order
 
     def call_delivery(self, order):

@@ -8,8 +8,9 @@ these tests are obsolete, partially?
 import unittest
 from pyramid import testing
 from datetime import datetime
-from altair.app.ticketing.cart import helpers as h
+from altair.app.ticketing.testing import DummyRequest
 from altair.app.ticketing.mails.testing import MailTestMixin
+from . import helpers as h
 
 def _build_order(*args, **kwargs):
     from altair.app.ticketing.orders.models import (
@@ -147,7 +148,10 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             "altair.multicheckout.endpoint.base_url": "http://example.com/",
             "altair.multicheckout.endpoint.timeout": "0",
             })
-        #self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
 
@@ -161,12 +165,17 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.config.add_subscriber('altair.app.ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
         self.registerDummyMailer()
+        from mock import patch
+        self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
+        p = self._patch_get_cart_setting_from_order_like.start()
+        p.return_value.type = 'standard'
 
     def tearDown(self):
         from altair.app.ticketing.testing import _teardown_db
         from altair.multicheckout import api as multicheckout_api
         from altair.app.ticketing.sej import api as sej_api
         import transaction
+        self._patch_get_cart_setting_from_order_like.stop()
         self._get_mailer().outbox = []
         transaction.abort()
         testing.tearDown()
@@ -219,7 +228,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         from altair.app.ticketing.mails.config import register_order_mailutility
         from altair.app.ticketing.core.models import MailTypeEnum
         register_order_mailutility(self.config, MailTypeEnum.PurchaseCompleteMail, DummyMailUtilityModule, DummyPurchaseCompleteMail, None)
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         self._callFUT(request, order)
@@ -244,7 +253,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
 
         with mock.patch("altair.app.ticketing.cart.sendmail.logger") as m:
             self.config.registry.adapters.register([IRequest], ICompleteMail, "", RaiseExceptionPurchaseCompleteMail)
-            request = testing.DummyRequest()
+            request = DummyRequest()
             order = testing.DummyResource(id=121212)
             self._callFUT(request, order)
 
@@ -260,7 +269,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order(
             shipping_address__email_1="purchase@user.ne.jp", 
@@ -291,7 +300,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order(
             shipping_address__first_name=u"first-name", 
@@ -380,17 +389,15 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         
+        from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from altair.app.ticketing.payments.plugins.multicheckout import PAYMENT_ID
-        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
-
+        self.assertEquals(payment_method.payment_plugin_id, MULTICHECKOUT_PAYMENT_PLUGIN_ID)
         delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
-        from altair.app.ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+        self.assertEquals(delivery_method.delivery_plugin_id, QR_DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -410,7 +417,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
 
@@ -427,13 +434,11 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.session.flush()
         order.order_no = sej_order.order_no
         
+        from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from altair.app.ticketing.payments.plugins.multicheckout import PAYMENT_ID
-        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
-
+        self.assertEquals(payment_method.payment_plugin_id, MULTICHECKOUT_PAYMENT_PLUGIN_ID)
         delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
-        from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+        self.assertEquals(delivery_method.delivery_plugin_id, SEJ_DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -458,7 +463,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order(
             shipping_address__first_name=u"first-name", 
@@ -473,13 +478,11 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             shipping_address__address_2=u"()", 
             )
         
+        from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from altair.app.ticketing.payments.plugins.multicheckout import PAYMENT_ID
-        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
-
+        self.assertEquals(payment_method.payment_plugin_id, MULTICHECKOUT_PAYMENT_PLUGIN_ID)
         delivery_method = DeliveryMethod(delivery_plugin_id=1, name=u"郵送")
-        from altair.app.ticketing.payments.plugins.shipping import PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
+        self.assertEquals(delivery_method.delivery_plugin_id, SHIPPING_DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -502,7 +505,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         
@@ -522,14 +525,11 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.session.flush()
         order.order_no = sej_order.order_no
         
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
-        from altair.app.ticketing.payments.plugins.sej import PAYMENT_PLUGIN_ID
-        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_PLUGIN_ID)
-
-
+        self.assertEquals(payment_method.payment_plugin_id, SEJ_PAYMENT_PLUGIN_ID)
         delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
-        from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+        self.assertEquals(delivery_method.delivery_plugin_id, SEJ_DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -555,7 +555,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         
@@ -575,14 +575,11 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.session.flush()
         order.order_no = sej_order.order_no
         
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
-        from altair.app.ticketing.payments.plugins.sej import PAYMENT_PLUGIN_ID
-        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_PLUGIN_ID)
-
-
+        self.assertEquals(payment_method.payment_plugin_id, SEJ_PAYMENT_PLUGIN_ID)
         delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
-        from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+        self.assertEquals(delivery_method.delivery_plugin_id, SEJ_DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -610,7 +607,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             PaymentMethod, 
             DeliveryMethod
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         
@@ -632,7 +629,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             ExtraMailInfo, 
             MailTypeEnum
          )
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         order = _build_order()
         order.ordered_from.extra_mailinfo = ExtraMailInfo(

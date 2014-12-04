@@ -6,7 +6,6 @@ import sys
 import time
 import random
 import string
-import random
 import datetime
 import argparse
 from selenium.webdriver.common.keys import Keys
@@ -14,6 +13,7 @@ from pywad.part import Part
 from pywad.runner import Runner
 from pywad.decorator import url_match
 from pit import Pit
+
 
 class BackendOperationError(Exception):
     pass
@@ -23,6 +23,7 @@ def get_code(num):
     CANUSE_CHARS = list(string.uppercase)
     random.shuffle(CANUSE_CHARS)
     return unicode(''.join(CANUSE_CHARS[:num]))
+
 
 class BackendLogin(Part):
     """ログインページ
@@ -34,9 +35,9 @@ class BackendLogin(Part):
     def run(self, browser, status):
         entries = browser.find_elements_by_css_selector('input')
         backendtest = Pit.get('backendtest',
-                              {'require':{'username':'',
-                                          'password':'',
-                                          }})
+                              {'require': {'username': '',
+                                           'password': '',
+                                           }})
 
         name_value = {
             'text': backendtest['username'],
@@ -59,6 +60,7 @@ class BackendLogin(Part):
                 break
         else:
             raise BackendOperationError()
+
 
 class Events(Part):
     """イベント一覧
@@ -97,7 +99,6 @@ class EventsNew(Part):
     def __init__(self, title='TEST'):
         self.title = title
 
-
     @url_match('/events/new$')
     def is_target(self, browser, status):
         return True
@@ -112,7 +113,7 @@ class EventsNew(Part):
 
         for id_, value in id_value.items():
             tag = browser.find_element_by_id(id_)
-            tag.send_keys(Keys.BACK_SPACE*10)
+            tag.send_keys(Keys.BACK_SPACE * 10)
             tag.send_keys(value)
 
         entries = browser.find_elements_by_css_selector('input')
@@ -172,9 +173,9 @@ class StockTypeCreator(Part):
             else:
                 tag.send_keys(value)
 
-        atags = modal.find_elements_by_tag_name('a')
+        atags = modal.find_elements_by_tag_name('input')
         for tag in atags:
-            if tag.text == u'保存':
+            if tag.get_attribute('value') == u'保存':
                 tag.click()
                 break
         else:
@@ -187,6 +188,7 @@ class StockTypeCreator(Part):
             if message.text == u'席種を保存しました':
                 return True
         return False
+
 
 class _TicketCreator(Part):
     """イベント詳細ページ 券面 作成
@@ -218,6 +220,7 @@ class BreadCrumbMixin:
         else:
             raise BackendOperationError()
 
+
 class ReturnEventPageFromTicketPage(Part, BreadCrumbMixin):
     @url_match('/events/tickets/event/(?P<event_id>\d+)/$')
     def is_target(self, browser, status):
@@ -247,7 +250,6 @@ class TicketCreator(Part):
 
         if not self.ticket_bundle_created_at:
             self.create_ticket_bundle(browser, status)
-
 
     def jump_tickets_page(self, browser, status):
         tags = browser.find_elements_by_css_selector('a.btn')
@@ -316,13 +318,12 @@ class TicketCreator(Part):
 
         self.operate_modal_create_ticket_bundle(browser, status)
 
-
     def operate_modal_create_ticket_bundle(self, browser, status):
         """券面構成作成のモーダル操作
         """
         modal = browser.find_element_by_id('AjaxModal')
         name = modal.find_element_by_id('name')
-        name.send_keys(Keys.BACK_SPACE*50)
+        name.send_keys(Keys.BACK_SPACE * 50)
         name.send_keys(u'TEST')
 
         option = modal.find_element_by_tag_name('option')
@@ -348,6 +349,7 @@ class TicketCreator(Part):
                 self.ticket_bundle_created_at = datetime.datetime.now()
                 return True
         return False
+
 
 class SalesSegmentGroupCreator(Part):
     """イベント詳細ページ 販売区分グループ作成
@@ -382,7 +384,7 @@ class SalesSegmentGroupCreator(Part):
         modal = browser.find_element_by_id('modal-sales_segment_group')
 
         name = modal.find_element_by_id('name')
-        name.send_keys(Keys.BACK_SPACE*50)
+        name.send_keys(Keys.BACK_SPACE * 50)
         name.send_keys(u'TEST')
 
         # calender control
@@ -401,7 +403,7 @@ class SalesSegmentGroupCreator(Part):
 
         atags = modal.find_elements_by_tag_name('a')
 
-        browser.maximize_window() # <=_(-_-;) Last resort
+        browser.maximize_window()  # <=_(-_-;) Last resort
         for atag in atags:
             if atag.text == u'保存':
                 atag.click()
@@ -441,10 +443,11 @@ class JumpSalesSegmentGroupShowPage(Part):
         table = tag.find_element_by_tag_name('table')
         atags = table.find_elements_by_tag_name('a')
         if len(atags) >= 1:
-            atags[-1].click() # last
+            atags[-1].click()  # last
             self.count += 1
         else:
             raise BackendOperationError()
+
 
 class Datepicker(object):
     def __init__(self, switch):
@@ -481,18 +484,22 @@ class Datepicker(object):
         else:
             raise BackendOperationError()
 
+
 class SalesSegmentGroupShowPageMixin(object):
     def get_btn_groups(self, browser, status):
         btn_groups = browser.find_elements_by_css_selector('div.btn-group')
         ssg_btn_group = btn_groups[0]
-        pdmp_btn_group = btn_groups[1]
-        mbg_btn_group = btn_groups[2]
-        ss_btn_group = btn_groups[3]
+        lot_btn_group = btn_groups[1]
+        pdmp_btn_group = btn_groups[2]
+        mbg_btn_group = btn_groups[3]
+        ss_btn_group = btn_groups[4]
         return {'ssg': ssg_btn_group,
+                'lot': lot_btn_group,
                 'pdmp': pdmp_btn_group,
                 'mbg': mbg_btn_group,
                 'ss': ss_btn_group,
                 }
+
 
 class SalesSegmentGroupEdit(Part, SalesSegmentGroupShowPageMixin):
     """販売区分グループ詳細ページ 販売区分グループ編集
@@ -526,7 +533,7 @@ class SalesSegmentGroupEdit(Part, SalesSegmentGroupShowPageMixin):
         public = modal.find_element_by_css_selector('input#public')
         public.click()
 
-        browser.maximize_window() # <=_(-_-;) Last resort
+        browser.maximize_window()  # <=_(-_-;) Last resort
         atags = modal.find_elements_by_css_selector('a.btn')
         for tag in atags:
             if tag.text == u'保存':
@@ -580,7 +587,7 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
             raise BackendOperationError()
 
     def edit_pdmp_page(self, browser, status):
-        method  = browser.find_element_by_css_selector('#payment_method_id')
+        method = browser.find_element_by_css_selector('#payment_method_id')
         options = method.find_elements_by_tag_name('option')
         for option in options:
             if u'インナー' in option.text:
@@ -592,7 +599,7 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
         else:
             raise BackendOperationError()
 
-        method  = browser.find_element_by_css_selector('#delivery_method_id')
+        method = browser.find_element_by_css_selector('#delivery_method_id')
         options = method.find_elements_by_tag_name('option')
         for option in options:
             if u'インナー' in option.text:
@@ -615,7 +622,6 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
         else:
             raise BackendOperationError()
 
-
     def could_saved(self, browser, status):
         msg = u'決済・引取方法を登録しました'
 
@@ -626,7 +632,6 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
                 self.created_at = datetime.datetime.now()
                 return True
         return False
-
 
 
 class PerformanceCreator(Part):
@@ -644,7 +649,6 @@ class PerformanceCreator(Part):
 
     def run(self, *args, **kwds):
         self.create_performance(*args, **kwds)
-
 
     def create_performance(self, browser, status):
         self.push_create_button(browser, status)
@@ -673,7 +677,7 @@ class PerformanceCreator(Part):
 
         for name, value in name_value.items():
             tag = browser.find_element_by_id(name)
-            tag.send_keys(Keys.BACK_SPACE*50)
+            tag.send_keys(Keys.BACK_SPACE * 50)
             tag.send_keys(value)
 
         self._input_start_on(browser, status)
@@ -710,6 +714,7 @@ class PerformanceCreator(Part):
                 return True
         return False
 
+
 class PerformanceDetailPage(Part):
     @url_match('/events/performances/show/(?P<performance_id>\d+)$')
     def is_target(self, browser, status):
@@ -719,6 +724,7 @@ class PerformanceDetailPage(Part):
         tab = browser.find_element_by_id('seat-allocation-tab')
         tab = tab.find_element_by_css_selector('a')
         tab.click()
+
 
 class SeatAllocatorr(Part):
     """イベント詳細ページ Performance作成
@@ -776,6 +782,7 @@ class SeatAllocatorr(Part):
         time.sleep(3)
         self.created_at = datetime.datetime.now()
 
+
 class ProductCreator(Part, BreadCrumbMixin):
     """商品作成page
     """
@@ -795,7 +802,7 @@ class ProductCreator(Part, BreadCrumbMixin):
 
     def jump_performance_list_page(self, browser, status):
         breadcrumb = self.get_bread_crumb(browser, status)
-        link = breadcrumb[2] # パフォーマンス一覧
+        link = breadcrumb[2]  # パフォーマンス一覧
         link.click()
 
     def create_product(self, browser, status):
@@ -807,6 +814,7 @@ class ProductCreator(Part, BreadCrumbMixin):
 
         script_ = "$('#modal-product').find('form').submit()"
         browser.execute_script(script_)
+
 
 class PerformancePublicChanger(Part):
     @url_match('/events/performances/(?P<event_id>\d+)$')
@@ -829,7 +837,7 @@ class PerformancePublicChanger(Part):
                 break
 
         breadcrumb = self.get_bread_crumb(browser, status)
-        link = breadcrumb[1] # イベントページ
+        link = breadcrumb[1]  # イベントページ
         link.click()
 
 
@@ -845,9 +853,9 @@ def main(argv=sys.argv[1:]):
     basic_auth_pair = ''
     if 'stg2' in url or 'dev' in url:
         backendtest = Pit.get('backendtest',
-                            {'require':{'basic_username':'',
-                                        'basic_password':'',
-                                    }})
+                              {'require': {'basic_username': '',
+                                           'basic_password': '',
+                                           }})
         basic_username = backendtest['basic_username']
         basic_password = backendtest['basic_password']
         if basic_username and basic_password:

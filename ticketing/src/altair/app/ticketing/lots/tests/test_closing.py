@@ -1,6 +1,7 @@
 import unittest
 import mock
 from pyramid import testing
+from altair.app.ticketing.testing import DummyRequest
 
 class DummyEntry(object):
     def __init__(self, entry_no):
@@ -44,7 +45,7 @@ class LotCloseTests(unittest.TestCase):
     def test_one(self):
         entry = DummyEntry(entry_no="testing-entry-no")
         lot = DummyLot(id=989898989, remained_entries=[entry])
-        request = testing.DummyRequest()
+        request = DummyRequest()
         target = self._makeOne(lot, request)
 
         target.close()

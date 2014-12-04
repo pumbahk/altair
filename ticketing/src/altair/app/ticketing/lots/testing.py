@@ -49,9 +49,12 @@ def _add_lots(session, organization, product_data, membergroups):
     return lot, products
 
 def login(config, info):
+    auth_type = info.get('auth_type')
     membership = info.get('membership')
     membergroup = info.get('membergroup')
     groups = []
+    if auth_type is not None:
+        groups.append('auth_type:%s' % auth_type)
     if membership is not None:
         groups.append('membership:%s' % membership)
     if membergroup is not None:

@@ -2140,6 +2140,9 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 pass
         config.registry.registerUtility(DummySejPaymentAPICommunicator, ISejPaymentAPICommunicatorFactory)
         CoreTestMixin.setUp(self)
+        from altair.app.ticketing.cart.models import CartSetting
+        self.cart_setting = CartSetting(type='standard')
+        self.session.add(self.cart_setting)
         self.session.add(self.organization)
         self.session.add(self.event)
         self._setup_fixture()
@@ -2236,6 +2239,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             cart = self._create_cart(
                 zip(self.products, [1]),
                 sales_segment=self.sales_segment,
+                cart_setting=self.cart_setting,
                 pdmp=self.applicable_pdmps[0]
                 )
             cart.performance = self.performance
@@ -2280,6 +2284,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             exchange_number=u'22222222',
             order_at=order.created_at,
             regrant_number_due_at=(order.created_at + timedelta(days=5)),
+            shop_id='30520',
             tickets=tickets
             )
         if int(payment_type) != SejPaymentType.Prepayment.v:

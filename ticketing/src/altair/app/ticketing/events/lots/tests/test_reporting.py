@@ -125,6 +125,9 @@ class ReportConditionTests(unittest.TestCase):
 class LotEntryReporterTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
+        self.config.add_subscriber('altair.app.ticketing.register_globals', 'pyramid.events.BeforeRender')
         self.config.include('pyramid_mailer.testing')
         self.config.include('altair.app.ticketing.renderers')
 
@@ -161,11 +164,12 @@ class LotEntryReporterTests(unittest.TestCase):
         request = testing.DummyRequest()
         sender = u"sender@example.com"
         mailer = get_mailer(request)
-        organization = Organization(id="1", short_name="testing")
+        organization = Organization(id="1", short_name="testing", name="testing")
         lot = testing.DummyModel(
             id=123,
             name=u"テスト抽選",
             lotting_announce_datetime=datetime(2013, 2, 3, 12),
+            organization=organization,
             event=testing.DummyModel(
                 title=u"テストイベント",
             ),
@@ -232,7 +236,7 @@ class LotEntryReporterTests(unittest.TestCase):
         result = target.create_report_mail(status)
 
         self.assertEqual(result.subject,
-                         u"[testing抽選申込状況レポート] テスト抽選")
+                         u"[抽選申込状況レポート|testing] テストイベント - テスト抽選")
         self.assertEqual(result.recipients,
                          [u"testing-recipient@example.com"])
         self.assertEqual(result.sender,
@@ -250,6 +254,9 @@ class send_lot_report_mailsTests(unittest.TestCase):
             "altair.app.ticketing.events.lots.models",
         ])
         self.config = testing.setUp()
+        self.config.include('pyramid_mako')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
         self.config.include('pyramid_mailer.testing')
         self.config.include('altair.app.ticketing.renderers')
 
@@ -280,13 +287,15 @@ class send_lot_report_mailsTests(unittest.TestCase):
         )
 
         organization = Organization(
-            short_name="testing"
+            short_name="testing",
+            name="testing"
         )
         self.session.add(organization)
         self.session.flush()
 
         lot = Lot(
             name=u"テスト抽選",
+            organization=organization,
             sales_segment=SalesSegment(
                 start_at=datetime(2013, 2, 1, 10, 33),
                 end_at=datetime(2013, 2, 7, 10, 33),
@@ -323,7 +332,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
         mailer = get_mailer(request)
         self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(len(mailer.outbox[0].recipients), 1)
-        self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート] テスト抽選")
+        self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート|testing] テストイベント - テスト抽選")
 
     @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
     def test_it_multi(self, mock_dt):

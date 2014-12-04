@@ -223,10 +223,6 @@ def setup_payment_delivery_plugins(config):
     config.include('altair.app.ticketing.qr')
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
-    config.add_subscriber(
-        'altair.app.ticketing.payments.events.cancel_on_delivery_error',
-        'altair.app.ticketing.payments.events.DeliveryErrorEvent'
-        )
 
 def setup_cms_communication_api(config):
     ## cmsとの通信
