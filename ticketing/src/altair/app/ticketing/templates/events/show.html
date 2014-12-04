@@ -102,7 +102,7 @@ $(function(){
       </td>
     </tr>
     %if event.setting:
-      %for k, v, label in event.setting.describe_iter():
+      %for (k, _), (label, v) in HH.describe_iter(event.setting):
         <tr>
           <th>${label}</th>
           <td colspan="7">${v or u'-'}</td>

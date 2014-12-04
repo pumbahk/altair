@@ -95,7 +95,7 @@ class Events(BaseView):
 
         return {
             'form_search': form_search,
-            'form':EventForm(),
+            'form':EventForm(context=self.context),
             'events':events,
             'search_query':search_query,
             'h':EventHelper()
@@ -121,7 +121,7 @@ class Events(BaseView):
             'cart_url': cart_url,
             'agreement_url': agreement_url,
             "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id),
-            'form':EventForm(),
+            'form':EventForm(context=self.context),
             'form_performance':PerformanceForm(),
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id)
@@ -129,7 +129,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code), organization_id=self.context.user.organization.id)
+        f = EventForm(MultiDict(code=self.context.user.organization.code), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -138,7 +138,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='POST', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_post(self):
-        f = EventForm(self.request.POST, organization_id=self.context.user.organization.id)
+        f = EventForm(self.request.POST, context=self.context)
 
         if f.validate():
             event = merge_session_with_post(
@@ -149,7 +149,7 @@ class Events(BaseView):
                         max_quantity_per_user=f.max_quantity_per_user.data,
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                        cart_setting_id=self.context.organization.setting.cart_setting_id
+                        cart_setting_id=f.cart_setting_id.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -184,11 +184,12 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(organization_id=self.context.organization.id, obj=event)
+        f = EventForm(context=self.context, obj=event)
         f.order_limit.data = event.setting and event.setting.order_limit
         f.max_quantity_per_user.data = event.setting and event.setting.max_quantity_per_user
         f.middle_stock_threshold.data = event.setting and event.setting.middle_stock_threshold
         f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
+        f.cart_setting_id.data = event.setting and event.setting.cart_setting_id
         # f.performance_selector.data = (event.setting.performance_selector or '') if event.setting else ''
         # f.performance_selector_label1_override.data = event.setting.performance_selector_label1_override if event.setting else ''
         # f.performance_selector_label2_override.data = event.setting.performance_selector_label2_override if event.setting else ''
@@ -216,7 +217,7 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(self.request.POST, organization_id=self.context.organization.id)
+        f = EventForm(self.request.POST, context=self.context)
         if f.validate():
             if self.request.matched_route.name == 'events.copy':
                 event = merge_session_with_post(
@@ -227,7 +228,7 @@ class Events(BaseView):
                             max_quantity_per_user=f.max_quantity_per_user.data,
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                            cart_setting_id=self.context.organization.setting.cart_setting_id
+                            cart_setting_id=f.cart_setting_id.data
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
                             # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -252,6 +253,7 @@ class Events(BaseView):
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
                 event.setting.middle_stock_threshold = f.middle_stock_threshold.data
                 event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
+                event.setting.cart_setting_id = f.cart_setting_id.data
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

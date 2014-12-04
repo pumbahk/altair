@@ -13,6 +13,7 @@ from altair.viewhelpers.datetime_ import (
 
 from altair.app.ticketing.core.models import DateCalculationBase
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
+from altair.app.ticketing.core.interfaces import ISettingRenderer
 from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
 from altair.app.ticketing.fanstatic import get_resource_url
 
@@ -418,3 +419,8 @@ class AdminHelperAdapter(object):
 
     def fanstatic_resource_url(self, resource):
         return get_resource_url(self.request, resource)
+
+    def describe_iter(self, setting, renderer_name=''):
+        from altair.app.ticketing.core.helpers import DefaultSettingRenderer
+        setting_renderer = self.request.registry.queryAdapter(setting, ISettingRenderer, name=renderer_name, default=DefaultSettingRenderer)
+        return setting_renderer.get_iter(self.request)
