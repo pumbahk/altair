@@ -173,9 +173,9 @@ class StockTypeCreator(Part):
             else:
                 tag.send_keys(value)
 
-        atags = modal.find_elements_by_tag_name('a')
+        atags = modal.find_elements_by_tag_name('input')
         for tag in atags:
-            if tag.text == u'保存':
+            if tag.get_attribute('value') == u'保存':
                 tag.click()
                 break
         else:
@@ -489,10 +489,12 @@ class SalesSegmentGroupShowPageMixin(object):
     def get_btn_groups(self, browser, status):
         btn_groups = browser.find_elements_by_css_selector('div.btn-group')
         ssg_btn_group = btn_groups[0]
-        pdmp_btn_group = btn_groups[1]
-        mbg_btn_group = btn_groups[2]
-        ss_btn_group = btn_groups[3]
+        lot_btn_group = btn_groups[1]
+        pdmp_btn_group = btn_groups[2]
+        mbg_btn_group = btn_groups[3]
+        ss_btn_group = btn_groups[4]
         return {'ssg': ssg_btn_group,
+                'lot': lot_btn_group,
                 'pdmp': pdmp_btn_group,
                 'mbg': mbg_btn_group,
                 'ss': ss_btn_group,
