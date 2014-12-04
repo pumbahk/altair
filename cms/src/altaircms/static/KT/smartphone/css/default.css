@@ -203,10 +203,10 @@ ul.buttonset._4cols li .button.embedded {
   line-height: 30px;
   width: 100%;
   font-size: 12px;
-  background: #88BB55;
+  background: #FFF;
   border-left: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
-  color: #fff;
+  color: #000;
   font-weight: bold;
   padding: 0 0;
   text-align: center;
@@ -221,11 +221,10 @@ ul.buttonset._4cols li .button.embedded2 {
   line-height: 30px;
   width: 100%;
   font-size: 12px;
-  background: #FF8631;
-  background-image: url(../img/textures.png);
+  background: #FFF;
   border-left: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
-  color: #fff;
+  color: #000;
   font-weight: bold;
   padding: 0 0;
   text-align: center;
@@ -800,6 +799,12 @@ h2.glitter.orange {
   -webkit-user-select: none;
   -moz-user-select: none;
   background-image: url(../img/textures.png);
+}
+
+h2.glitter.red {
+color: #FFFFFF;
+background: red;
+line-height: 1.4;
 }
 
 
