@@ -44,6 +44,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     # cart_setting.extra_footer_links = form.data['extra_footer_links']
     # cart_setting.extra_footer_links_mobile = form.data['extra_footer_links_mobile']
     cart_setting.extra_form_fields = form.data['extra_form_fields']
+    cart_setting.embedded_body = form.data['embedded_body']
 
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):

@@ -41,6 +41,10 @@ ${ch.form_item(form.type)}
   ${ch.form_item(form.flavors)}
   ${ch.form_item(form.extra_form_fields)}
 </fieldset>
+<fieldset>
+  <legend>完了画面への埋め込みHTMLの設定</legend>
+  ${ch.form_item(form.embedded_body)}
+</fieldset>
 <%def name="__post__(registry_var)">
 ${fh.inject_js(registry_var)}
 </%def>

@@ -213,3 +213,9 @@ class CartSettingForm(OurForm):
     header_image_url_mobile = OurTextField(
         label=_(u'ヘッダ画像のURL (モバイル)')
         )
+
+    embedded_body = OurTextField(
+        label=_(u'埋め込みHTML文言'),
+        widget=OurTextArea()
+        )
+

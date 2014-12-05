@@ -824,3 +824,12 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         from .api import is_fc_cart
         return is_fc_cart(self.type)
 
+    @property
+    def embedded_body(self):
+        return self.data.get('embedded_body')
+
+    @embedded_body.setter
+    def embedded_body(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_body'] = value
