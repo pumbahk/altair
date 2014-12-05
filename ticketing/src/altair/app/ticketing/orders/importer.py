@@ -324,7 +324,7 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'%s: %s' % (message, string))
         return None
 
-    def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp):
+    def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp, cart_setting):
         # create TemporaryCart
         cart = self.carts.get(order_no_or_key)
         if cart is None:
@@ -469,7 +469,8 @@ class ImportCSVParserContext(object):
                 issuing_start_at      = issuing_start_at,
                 issuing_end_at        = issuing_end_at,
                 payment_start_at      = payment_start_at,
-                payment_due_at        = payment_due_at
+                payment_due_at        = payment_due_at,
+                cart_setting_id       = cart_setting.id
                 )
         return cart
 
@@ -688,7 +689,6 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'引取方法が指定されていません')
             return self.default_delivery_method
 
-
     def get_pdmp(self, row, sales_segment):
         payment_method = self.get_payment_method(row)
         delivery_method = self.get_delivery_method(row)
@@ -788,6 +788,26 @@ class ImportCSVParserContext(object):
                 return seats[0]
         assert False # never get here
 
+    def get_cart_setting(self, row, event):
+        name = row.get(u'order.cart_setting_id', u'').strip()
+        cart_setting = None
+        if name:
+            try:
+                cart_setting = cart_api.get_cart_setting_by_name(None, name, organization_id=self.organization.id, session=self.session)
+            except NoResultFound:
+                pass
+            except MultipleResultsFound:
+                raise self.exc_factory(u'同名のカート設定が複数あります: %s' % name)
+        else:
+            if event is not None and event.setting is not None:
+                cart_setting_id = event.setting.cart_setting_id
+            else:
+                cart_setting_id = self.organization.setting.cart_setting_id
+            cart_setting = cart_api.get_cart_setting(None, cart_setting_id, session=self.session)
+        if cart_setting is None:
+            raise self.exc_factory(u'カート設定が見つかりません: %s' % name)
+        return cart_setting
+
 
 class ImportCSVParser(object):
     def __init__(self, request, session, order_import_task, organization, performance=None, event=None, default_payment_method=None, default_delivery_method=None):
@@ -832,7 +852,8 @@ class ImportCSVParser(object):
                     raise exc(u'インポート対象の公演「%s」とCSVで指定された公演「%s」が異なっています' % (self.performance.name, performance.name))
                 sales_segment = context.get_sales_segment(row, performance)
                 pdmp = context.get_pdmp(row, sales_segment)
-                cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp)
+                cart_setting = context.get_cart_setting(row, event)
+                cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp, cart_setting)
                 product = context.get_product(row, cart.sales_segment, performance)
                 item = context.get_ordered_product(row, order_no_or_key, cart, product)
                 product_item = context.get_product_item(row, product)

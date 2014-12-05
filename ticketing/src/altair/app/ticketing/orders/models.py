@@ -1121,6 +1121,8 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     new_order_created_at = sa.Column(sa.TIMESTAMP, nullable=True, default=None)
     new_order_paid_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
+    cart_setting_id = sa.Column(Identifier, nullable=True)
+
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
 

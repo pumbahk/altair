@@ -7,6 +7,7 @@ from paste.util.multidict import MultiDict
 from sqlalchemy.sql.expression import and_, or_
 
 from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.cart.api import get_cart_setting
 from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
@@ -65,6 +66,7 @@ japanese_columns = {
     u'order.issuing_end_at': u'発券期限',
     u'order.payment_start_at': u'支払開始日時',
     u'order.payment_due_at': u'支払期限',
+    u'order.cart_setting_id': u'カート設定',
     u'sej_order.billing_number': u'SEJ払込票番号',
     u'sej_order.exchange_number': u'SEJ引換票番号',
     u'user_profile.last_name': u'姓',
@@ -137,6 +139,29 @@ class MarginRenderer(object):
         return [
             ((u"", self.column_name, u""), unicode(rendered_value))
         ]
+
+class CartSettingRenderer(object):
+    def __init__(self, key, column_name):
+        self.key = key
+        self.column_name = column_name
+        self.outer = None
+
+    def __call__(self, record):
+        cart_setting_id = dereference(record, self.key)
+
+        if not cart_setting_id:
+            cart_setting_id = record['organization'].setting.cart_setting_id
+        cart_setting = get_cart_setting(None, cart_setting_id, session=outer.session)
+        if cart_setting is not None:
+            rendered_value = cart_setting.name
+        else:
+            rendered_value = u''
+        return [
+            (
+                (u"", self.column_name, u""),
+                rendered_value
+                )
+            ]
 
 class PerSeatQuantityRenderer(object):
     def __init__(self, key, column_name):
@@ -270,6 +295,7 @@ class OrderCSV(object):
         PlainTextRenderer(u'performance.code'),
         PlainTextRenderer(u'performance.start_on'),
         PlainTextRenderer(u'venue.name'),
+        # CartSettingRenderer(u'order.cart_setting_id'),
         ]
 
     per_order_columns = \
@@ -380,6 +406,9 @@ class OrderCSV(object):
             if isinstance(column_renderer, MailMagazineSubscriptionStateRenderer):
                 column_renderer = MailMagazineSubscriptionStateRenderer(column_renderer.key, column_renderer.column_name)
                 column_renderer.outer = self
+            elif isinstance(column_renderer, CartSettingRenderer):
+                column_renderer = CartSettingRenderer(column_renderer.key, column_renderer.column_name)
+                column_renderer.outer = self
             elif isinstance(column_renderer, PlainTextRenderer) and column_renderer.fancy and not excel_csv:
                 column_renderer = PlainTextRenderer(
                     column_renderer.key,
@@ -413,6 +442,7 @@ class OrderCSV(object):
             u'shipping_address': order.shipping_address,
             u'payment_method': order.payment_delivery_pair.payment_method,
             u'delivery_method': order.payment_delivery_pair.delivery_method,
+            u'organization': order.organization,
             u'event': order.performance.event,
             u'performance': order.performance,
             u'venue': order.performance.venue,
