@@ -69,6 +69,10 @@ class MailForLotContext(MailContextBase):
         self.elected_wish = elected_wish
 
     @property
+    def order(self):
+        return self.lot_entry.order
+
+    @property
     def payment_delivery_method_pair(self):
         return self.lot_entry.payment_delivery_method_pair
 
