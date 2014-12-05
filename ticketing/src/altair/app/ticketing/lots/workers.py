@@ -180,6 +180,7 @@ def _elect_lots_task(context, message, lot, work, history):
             wish.lot_entry.elect(wish)
             wish.order_id = order.id
             wish.lot_entry.order_id = order.id
+            DBSession.flush()
             event = LotElectedEvent(request, wish)
             request.registry.notify(event)
 

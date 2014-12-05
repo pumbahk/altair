@@ -66,9 +66,6 @@ class LotsElectedMailResource(MailForLotContext):
     """ 当選メール """
     mtype = c_models.MailTypeEnum.LotsElectedMail
 
-    @property
-    def order(self):
-        return self.lot_entry.order
 
 @implementer(ILotsRejectedMailResource)
 class LotsRejectedMailResource(MailForLotContext):
