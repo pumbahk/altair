@@ -1424,7 +1424,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         payment_due_at=payment_due_at,
         original_order=original_order,
         new_order_created_at=original_order.created_at,
-        caert_setting_id=original_order.cart_setting_id,
+        cart_setting_id=original_order.cart_setting_id,
         note=original_order.note,
         attributes=attributes
         )
