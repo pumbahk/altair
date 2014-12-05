@@ -87,7 +87,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         return result
 
     def setUp(self):
-        from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
+        from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, OrganizationSetting
         self.request = testing.DummyRequest()
         self.session = _setup_db(
             modules=[
@@ -97,6 +97,15 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                 ]
             )
         CoreTestMixin.setUp(self)
+        self.cart_settings = [
+            CartSetting(organization=self.organization, name=u'default'),
+            CartSetting(organization=self.organization, name=u'second'),
+            ]
+        for cart_setting in self.cart_settings:
+            self.session.add(cart_setting)
+        self.organization.settings = [
+            OrganizationSetting(cart_setting=self.cart_settings[0]),
+            ]
         self.stock_types = self._create_stock_types(4)
         self.stocks = self._create_stocks(self.stock_types, 10)
         self.seats = self._create_seats(self.stocks)
@@ -181,6 +190,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
         self.assertEqual(modified_order.order_no, order.order_no)
         self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(modified_order.cart_setting_id, order.cart_setting_id)
         self.assertEqual(len(modified_order.items), 1)
         self.assertEqual(modified_order.items[0].quantity, 2)
         self.assertEqual(len(modified_order.items[0].elements), 1)
@@ -240,6 +250,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
         self.assertEqual(modified_order.order_no, order.order_no)
         self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(modified_order.cart_setting_id, order.cart_setting_id)
         self.assertEqual(len(modified_order.items), 1)
         self.assertEqual(modified_order.items[0].quantity, 2)
         self.assertEqual(len(modified_order.items[0].elements), 1)
@@ -296,6 +307,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
         self.assertEqual(modified_order.order_no, order.order_no)
         self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(modified_order.cart_setting_id, order.cart_setting_id)
         self.assertEqual(len(modified_order.items), 1)
         self.assertEqual(modified_order.items[0].quantity, 1)
         self.assertEqual(len(modified_order.items[0].elements), 1)
@@ -367,6 +379,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
         self.assertEqual(modified_order.order_no, order.order_no)
         self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(modified_order.cart_setting_id, order.cart_setting_id)
         self.assertEqual(len(modified_order.items), 1)
         self.assertEqual(modified_order.items[0].quantity, 1)
         self.assertEqual(len(modified_order.items[0].elements), 1)
@@ -447,6 +460,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
         self.assertEqual(modified_order.order_no, order.order_no)
         self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(modified_order.cart_setting_id, order.cart_setting_id)
         self.assertEqual(len(modified_order.items), 2)
         self.assertEqual(modified_order.items[0].quantity, 2)
         self.assertEqual(len(modified_order.items[0].elements), 1)
