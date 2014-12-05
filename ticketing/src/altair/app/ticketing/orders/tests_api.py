@@ -88,6 +88,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
 
     def setUp(self):
         from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, OrganizationSetting
+        from altair.app.ticketing.cart.models import CartSetting
         self.request = testing.DummyRequest()
         self.session = _setup_db(
             modules=[
