@@ -596,9 +596,23 @@ def is_fc_cart(type_):
 def is_booster_cart(type_):
     return is_booster_or_fc_cart(type_) and not is_fc_cart(type_)
 
-def get_cart_setting(request, cart_setting_id):
-    session = get_db_session(request, 'slave')
+def get_cart_setting(request, cart_setting_id, session=None):
+    if session is None:
+        if request is not None:
+            session = get_db_session(request, 'slave')
+        else:
+            raise ValueError('either request or session must be non-null')
     return session.query(CartSetting).filter_by(id=cart_setting_id).first()
+
+def get_cart_setting_by_name(request, name, organization_id=None, session=None):
+    if session is None:
+        if request is not None:
+            session = get_db_session(request, 'slave')
+        else:
+            raise ValueError('either request or session must be non-null')
+    if organization_id is None:
+        organization_id = request.organization.id
+    return session.query(CartSetting).filter(CartSetting.organization_id == organization_id, CartSetting.name == name).one()
 
 def get_cart_setting_from_order_like(request, order_like):
     session = get_db_session(request, 'slave')

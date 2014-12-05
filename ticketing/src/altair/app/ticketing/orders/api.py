@@ -991,11 +991,12 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         attributes=proto_order.attributes or {},
         items=[build_item(item) for item in proto_order.items],
         created_at=proto_order.new_order_created_at or (prev_order and prev_order.created_at),
-        paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at)
+        paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at),
+        cart_setting_id=proto_order.cart_setting_id
         )
     if prev_order is not None:
         order.branch_no = (prev_order.branch_no or 0) + 1
-        for k in ['channel', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at', 'manual_point_grant', 'refund_total_amount', 'refund_system_fee', 'refund_transaction_fee', 'refund_delivery_fee', 'refund_special_fee', 'cart_setting_id']:
+        for k in ['channel', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at', 'manual_point_grant', 'refund_total_amount', 'refund_system_fee', 'refund_transaction_fee', 'refund_delivery_fee', 'refund_special_fee']:
             setattr(order, k, getattr(prev_order, k))
     return order
 
@@ -1423,6 +1424,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         payment_due_at=payment_due_at,
         original_order=original_order,
         new_order_created_at=original_order.created_at,
+        caert_setting_id=original_order.cart_setting_id,
         note=original_order.note,
         attributes=attributes
         )

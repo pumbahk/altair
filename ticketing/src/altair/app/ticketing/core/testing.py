@@ -216,7 +216,7 @@ class CoreTestMixin(object):
             for _ in range(quantity)
             ]
 
-    def _create_order(self, product_quantity_pairs, sales_segment=None, pdmp=None, order_no=None):
+    def _create_order(self, product_quantity_pairs, sales_segment=None, pdmp=None, order_no=None, cart_setting_id=None):
         from altair.app.ticketing.core.models import SeatStatusEnum, FeeTypeEnum, Ticket, StockTypeEnum
         from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 
@@ -289,6 +289,15 @@ class CoreTestMixin(object):
         delivery_fee = Decimal(pdmp and pdmp.delivery_fee or 0.)
         special_fee = Decimal(special_fee)
         total_amount = Decimal(sum(product.price * quantity for product, quantity in product_quantity_pairs)) + transaction_fee + delivery_fee + special_fee
+
+        if cart_setting_id is None:
+            try:
+                if performance is not None and performance.event is not None and performance.event.setting is not None:
+                    cart_setting_id = performance.event.setting.cart_setting_id
+                else:
+                    cart_setting_id = self.organization.setting.cart_setting_id
+            except:
+                pass
         return Order(
             order_no=order_no,
             organization_id=self.organization.id,
@@ -306,5 +315,6 @@ class CoreTestMixin(object):
             payment_due_at=datetime(1970, 1, 1),
             issued=False,
             items=items,
-            performance=performance
+            performance=performance,
+            cart_setting_id=cart_setting_id
             )
