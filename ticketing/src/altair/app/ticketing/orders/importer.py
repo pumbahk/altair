@@ -799,7 +799,7 @@ class ImportCSVParserContext(object):
             except MultipleResultsFound:
                 raise self.exc_factory(u'同名のカート設定が複数あります: %s' % name)
         else:
-            if event is not None and event.setting is not None:
+            if event is not None and event.setting is not None and event.setting.cart_setting_id is not None:
                 cart_setting_id = event.setting.cart_setting_id
             else:
                 cart_setting_id = self.organization.setting.cart_setting_id
