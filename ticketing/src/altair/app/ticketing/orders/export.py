@@ -12,7 +12,7 @@ from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
-from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem
+from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem, Organization
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.orders.models import Order
 from .api import get_ordered_product_metadata_provider_registry
@@ -422,6 +422,7 @@ class OrderCSV(object):
         self._mailsubscription_cache = None
         self.localized_columns = localized_columns
         self.session = session
+        self.organization = session.query(Organization).filter_by(id=self.organization_id).one()
 
     @property
     def mailsubscription_cache(self):
@@ -442,7 +443,7 @@ class OrderCSV(object):
             u'shipping_address': order.shipping_address,
             u'payment_method': order.payment_delivery_pair.payment_method,
             u'delivery_method': order.payment_delivery_pair.delivery_method,
-            u'organization': order.organization,
+            u'organization': self.organization, # XXX
             u'event': order.performance.event,
             u'performance': order.performance,
             u'venue': order.performance.venue,
