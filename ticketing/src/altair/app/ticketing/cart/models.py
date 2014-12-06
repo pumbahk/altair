@@ -213,8 +213,6 @@ class Cart(Base, c_models.CartMixin):
         try:
             return c_api.calculate_total_amount(self)
         except Exception as e:
-            logger.exception('?')
-            raise
             raise InvalidCartStatusError(self.id)
 
 
