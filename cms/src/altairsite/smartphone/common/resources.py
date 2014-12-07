@@ -54,12 +54,15 @@ class CommonResource(object):
         }
 
     def get_genre_render_param(self, genre_id):
+        org = get_organization_from_request(request=self.request)
         form = GenreSearchForm()
         genre_id = genre_id or self.request.matchdict.get('genre_id')
         form.genre_id.data = genre_id
         genre = self.get_genre(id=genre_id)
         promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:15]
         topcontents = self.getInfo(kind="topcontent", system_tag_id=genre_id)[0:5]
+        if org.code == 'YT':
+            topcontents = self.getInfo(kind="topcontent", system_tag_id=genre_id).all()
         topics = self.getInfo(kind="topic", system_tag_id=genre_id)[0:5]
         hotwords = self.get_hotword()[0:5]
         genretree = self.get_genre_tree(parent=genre)
