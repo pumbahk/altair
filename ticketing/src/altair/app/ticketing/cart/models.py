@@ -825,11 +825,31 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         return is_fc_cart(self.type)
 
     @property
-    def embedded_body(self):
-        return self.data.get('embedded_body')
+    def embedded_html_complete_page(self):
+        return self.data.get('embedded_html_complete_page')
 
-    @embedded_body.setter
-    def embedded_body(self, value):
+    @embedded_html_complete_page.setter
+    def embedded_html_complete_page(self, value):
         if self.data is None:
             self.data = {}
-        self.data['embedded_body'] = value
+        self.data['embedded_html_complete_page'] = value
+
+    @property
+    def embedded_html_complete_page_mobile(self):
+        return self.data.get('embedded_html_complete_page_mobile')
+
+    @embedded_html_complete_page_mobile.setter
+    def embedded_html_complete_page_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_html_complete_page_mobile'] = value
+
+    @property
+    def embedded_html_complete_page_smartphone(self):
+        return self.data.get('embedded_html_complete_page_smartphone')
+
+    @embedded_html_complete_page_smartphone.setter
+    def embedded_html_complete_page_smartphone(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_html_complete_page_smartphone'] = value

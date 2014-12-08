@@ -77,4 +77,4 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <a href="${request.context.host_base_url}">チケットTOP</a>
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}">他のチケットを購入</a>
 
-${view_context.embedded_body|n}
+${view_context.embedded_html_complete_page_mobile|n}

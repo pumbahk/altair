@@ -214,8 +214,18 @@ class CartSettingForm(OurForm):
         label=_(u'ヘッダ画像のURL (モバイル)')
         )
 
-    embedded_body = OurTextField(
-        label=_(u'埋め込みHTML文言'),
+    embedded_html_complete_page = OurTextField(
+        label=_(u'埋め込みHTML文言(PC)'),
+        widget=OurTextArea()
+        )
+
+    embedded_html_complete_page_mobile = OurTextField(
+        label=_(u'埋め込みHTML文言(モバイル)'),
+        widget=OurTextArea()
+        )
+
+    embedded_html_complete_page_smartphone = OurTextField(
+        label=_(u'埋め込みHTML文言(スマートフォン)'),
         widget=OurTextArea()
         )
 
