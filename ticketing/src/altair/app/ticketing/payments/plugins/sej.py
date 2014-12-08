@@ -384,7 +384,7 @@ def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
         raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_like.order_no, back_url=None)
 
     return dict(
-        payment_type        = payment_type,
+        payment_type        = u'%d' % int(payment_type),
         order_no            = order_like.order_no,
         user_name           = build_user_name(shipping_address),
         user_name_kana      = build_user_name_kana(shipping_address),
