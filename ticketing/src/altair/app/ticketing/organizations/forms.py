@@ -20,9 +20,6 @@ from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.core.models import OrganizationSetting
 
-import logging
-logger = logging.getLogger(__name__)
-
 class OrganizationForm(OurForm):
 
     def _get_translations(self):
@@ -133,6 +130,15 @@ class NewOrganizationForm(OrganizationForm):
         org = query.first()
         if org is not None:
             raise ValidationError(u'既に同名の取引先名が登録されています')
+
+    def validate_code(self, field):
+        query = c_models.Organization.filter_by(code=field.data)
+        if query is None:
+            return
+        org = query.first()
+        if org is not None:
+            raise ValidationError(u'既に同じ短縮コードの取引先名が登録されています')
+
 
 class SejTenantForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
