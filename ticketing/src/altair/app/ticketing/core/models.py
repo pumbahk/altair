@@ -1849,8 +1849,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), _a_label=_(u'オーガニゼーション'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
 
-
-    delivery_plugin_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethodPlugin.id'), _a_label=_(u'決済方法'))
+    delivery_plugin_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethodPlugin.id'), _a_label=_(u'引取方法'))
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
 
