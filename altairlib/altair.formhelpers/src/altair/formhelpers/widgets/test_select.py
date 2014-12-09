@@ -14,4 +14,4 @@ class OurSelectWidgetTest(unittest.TestCase):
         target = self._makeOne()
         r = target(f('ID', 'VALUE', 'NAME', 'SHORT_NAME', lambda: [('A', 'A', False)]))
         self.assertIsInstance(r, unicode)
-        print r.render_js_data_provider()
+        r.render_js_data_provider('var')

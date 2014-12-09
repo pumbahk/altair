@@ -4,7 +4,7 @@ from pyramid import testing
 
 class ConfigurationTests(unittest.TestCase):
     def _getTarget(self):
-        from altair.findable_label import AppendHeaderElementOutput
+        from . import AppendHeaderElementOutput
         return AppendHeaderElementOutput
 
     def test_create_from_settings__success(self):
@@ -25,18 +25,26 @@ class IncludeTests(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
-        from altair.findable_label import includeme
+        from . import includeme
         return includeme(*args, **kwargs)
 
     def _get_tweens(self):
         from pyramid.interfaces import ITweens
         return self.config.registry.queryUtility(ITweens)
 
+    def _get_tween_names(self):
+        tweens = self._get_tweens()
+        if tweens.explicit:
+            _tweens = tweens.explicit
+        else:
+            _tweens = tweens.implicit()
+        return [name for name, _ in _tweens]
+
     def test_it(self):
         self.config.registry.settings = {"altair.findable_label.label": "this-is-label-value"}
         self._callFUT(self.config)
-        self.assertEquals(['pyramid.tweens.excview_tween_factory', 'altair.findable_label.findable_label_tween_factory'], 
-                          self._get_tweens().names)
+        self.assertEquals(['altair.findable_label.findable_label_tween_factory', 'pyramid.tweens.excview_tween_factory'], 
+                          self._get_tween_names())
 
     def test_missing_label(self):
         self.config.registry.settings = {}

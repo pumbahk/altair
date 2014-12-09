@@ -88,7 +88,6 @@ def cookies(request, secret=None, cookie_factory=None, **kwargs):
     cookie_header_value = request.environ.get('HTTP_COOKIE')
     return CookieSessionBinder(
         cookie=cookie_factory(input=cookie_header_value),
-        request=request,
         **kwargs
         )
 

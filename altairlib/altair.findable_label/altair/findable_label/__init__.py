@@ -1,4 +1,5 @@
 import sys
+from pyramid.tweens import EXCVIEW
 from zope.interface import Interface
 from zope.interface import implementer
 
@@ -10,7 +11,7 @@ def includeme(config):
     try:
         output = OutputClass.from_settings(config.registry.settings)
         config.registry.registerUtility(output, IFindableLabelOutput)
-        config.add_tween("altair.findable_label.findable_label_tween_factory")
+        config.add_tween("altair.findable_label.findable_label_tween_factory", over=EXCVIEW)
     except MissingValue as e:
         sys.stderr.write("altair.findable_label: {}".format(str(e)))
 
