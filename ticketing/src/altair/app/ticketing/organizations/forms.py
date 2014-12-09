@@ -6,7 +6,7 @@ from altair.formhelpers import filters
 from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
 from altair.formhelpers.validators import DynSwitchDisabled
-from wtforms.validators import Length, Regexp, Optional
+from wtforms.validators import Length, Regexp, Optional, ValidationError
 from wtforms.compat import iteritems
 from wtforms.form import WebobInputWrapper
 
@@ -19,6 +19,9 @@ from altair.app.ticketing.cart import models as cart_models
 from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.core.models import OrganizationSetting
+
+import logging
+logger = logging.getLogger(__name__)
 
 class OrganizationForm(OurForm):
 
@@ -123,25 +126,13 @@ class NewOrganizationForm(OrganizationForm):
         label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
         )
 
-    def process(self, formdata=None, obj=None, **kwargs):
-        if formdata is not None and not hasattr(formdata, 'getlist'):
-            if hasattr(formdata, 'getall'):
-                formdata = WebobInputWrapper(formdata)
-            else:
-                raise TypeError("formdata should be a multidict-type wrapper that supports the 'getlist' method")
-
-        for name, field, in iteritems(self._fields):
-            kw = {}
-            if isinstance(field, FormField):
-                kw['request'] = self.request
-
-            if obj is not None and hasattr(obj, name):
-                field.process(formdata, getattr(obj, name), data=kw)
-            elif name in kwargs:
-                field.process(formdata, kwargs[name], data=kw)
-            else:
-                field.process(formdata, data=kw)
-
+    def validate_name(self, field):
+        query = c_models.Organization.filter_by(name=field.data)
+        if query is None:
+            return
+        org = query.first()
+        if org is not None:
+            raise ValidationError(u'既に同名の取引先名が登録されています')
 
 class SejTenantForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
