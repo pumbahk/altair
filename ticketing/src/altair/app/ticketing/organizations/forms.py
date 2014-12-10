@@ -19,6 +19,7 @@ from altair.app.ticketing.cart import models as cart_models
 from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.core.models import OrganizationSetting
+from altair.app.ticketing.operators.models import OperatorAuth, ensure_ascii
 
 class OrganizationForm(OurForm):
 
@@ -114,12 +115,9 @@ class OrganizationForm(OurForm):
 
 class NewOrganizationOperatorForm(OperatorForm):
     def validate_login_id(self, field):
-        query = c_models.Operator.filter_by(name=field.data)
-        if query is None:
-            return
-        login_id = query.first()
-        if login_id is not None:
-            raise ValidationError(u'既に同名のログインIDが登録されています')
+        operator_auth = OperatorAuth.get_by_login_id(ensure_ascii(field.data))
+        if operator_auth is not None:
+            raise ValidationError(u'ログインIDが重複しています。')
         return True
 
 class NewOrganizationForm(OrganizationForm):
