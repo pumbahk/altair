@@ -111,8 +111,19 @@ class OrganizationForm(OurForm):
         validators=[Phone()]
     )
 
+
+class NewOrganizationOperatorForm(OperatorForm):
+    def validate_login_id(self, field):
+        query = c_models.Operator.filter_by(name=field.data)
+        if query is None:
+            return
+        login_id = query.first()
+        if login_id is not None:
+            raise ValidationError(u'既に同名のログインIDが登録されています')
+        return True
+
 class NewOrganizationForm(OrganizationForm):
-    login = FormField(form_class=OperatorForm)
+    login = FormField(form_class=NewOrganizationOperatorForm)
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         if 'request' in kwargs:
@@ -130,6 +141,7 @@ class NewOrganizationForm(OrganizationForm):
         org = query.first()
         if org is not None:
             raise ValidationError(u'既に同名の取引先名が登録されています')
+        return True
 
     def validate_code(self, field):
         query = c_models.Organization.filter_by(code=field.data)
@@ -138,6 +150,7 @@ class NewOrganizationForm(OrganizationForm):
         org = query.first()
         if org is not None:
             raise ValidationError(u'既に同じ短縮コードの取引先名が登録されています')
+        return True
 
 
 class SejTenantForm(OurForm):
