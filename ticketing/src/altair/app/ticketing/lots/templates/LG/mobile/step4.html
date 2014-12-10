@@ -44,7 +44,6 @@ ${lot.name}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
-<p>${form['email_1'].description}</p>
 <div>
   ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}
@@ -55,6 +54,7 @@ ${lot.name}
   ${form['email_1_confirm'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
+<p>${view_context.mail_filter_domain_notice}</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
