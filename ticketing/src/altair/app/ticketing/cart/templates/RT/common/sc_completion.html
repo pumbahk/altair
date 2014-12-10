@@ -10,4 +10,5 @@ for ordered_product in order.ordered_products:
 trackingParam.products = "${','.join(product_list)}"
 trackingParam.events="purchase"
 trackingParam.purchaseID="${order.order_no}"
+trackingParam.eVar1="${order.id}"
 </script>
