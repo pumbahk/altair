@@ -31,8 +31,8 @@ from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
 logger = logging.getLogger(__name__)
 
 
-def get_target_order_nos():
-    today = datetime.datetime.combine(datetime.date.today(), datetime.time())
+def get_target_order_nos(today):
+    today = datetime.datetime.combine(today, datetime.time())
     tomorrow = today + datetime.timedelta(1)
     day_after_tomorrow = today + datetime.timedelta(2)
 
@@ -62,7 +62,7 @@ def get_target_order_nos():
 def send_sej_remind_mail(settings):
     request = pyramid.threadlocal.get_current_request()
 
-    order_nos = get_target_order_nos()
+    order_nos = get_target_order_nos(datetime.date.today())
     utility = get_mail_utility(request, MailTypeEnum.PurcacheSejRemindMail)
 
     for order_no in order_nos:
