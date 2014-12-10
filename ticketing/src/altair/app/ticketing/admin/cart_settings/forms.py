@@ -72,6 +72,7 @@ class CartSettingForm(OurForm):
 
     name = OurTextField(
         label=label_text_for(CartSetting.name),
+        validators=[Required()],
         filters=[blank_as_none]
         )
 
@@ -212,3 +213,19 @@ class CartSettingForm(OurForm):
     header_image_url_mobile = OurTextField(
         label=_(u'ヘッダ画像のURL (モバイル)')
         )
+
+    embedded_html_complete_page = OurTextField(
+        label=_(u'埋め込みHTML文言(PC)'),
+        widget=OurTextArea()
+        )
+
+    embedded_html_complete_page_mobile = OurTextField(
+        label=_(u'埋め込みHTML文言(モバイル)'),
+        widget=OurTextArea()
+        )
+
+    embedded_html_complete_page_smartphone = OurTextField(
+        label=_(u'埋め込みHTML文言(スマートフォン)'),
+        widget=OurTextArea()
+        )
+
