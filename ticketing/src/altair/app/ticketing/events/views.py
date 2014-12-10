@@ -253,7 +253,8 @@ class Events(BaseView):
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
                 event.setting.middle_stock_threshold = f.middle_stock_threshold.data
                 event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
-                event.setting.cart_setting_id = f.cart_setting_id.data
+                if f.cart_setting_id.data is not None:
+                    event.setting.cart_setting_id = f.cart_setting_id.data
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

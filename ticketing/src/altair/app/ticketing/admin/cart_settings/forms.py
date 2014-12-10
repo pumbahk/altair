@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from pyramid.i18n import TranslationString as _
-from wtforms.validators import Length
+from wtforms.validators import Length, Optional
 from altair.app.ticketing.helpers import label_text_for
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import (
@@ -27,6 +27,7 @@ from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     OurTextArea,
     )
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.events.sales_segments.forms import ExtraFormEditorWidget
@@ -76,9 +77,18 @@ class CartSettingForm(OurForm):
         filters=[blank_as_none]
         )
 
+    def _cart_setting_types(field):
+        retval = list(cart_setting_types)
+        keys = set(k for k, _ in cart_setting_types)
+        for (k, ) in DBSession.query(CartSetting.type).filter_by(organization_id=field._form.context.organization.id).distinct():
+            if k not in keys:
+                retval.append((k, k))
+        return retval
+
     type = OurSelectField(
         label=label_text_for(CartSetting.type),
-        choices=cart_setting_types
+        validators=[Optional()],
+        choices=_cart_setting_types
         )
 
     title = OurTextField(
@@ -213,3 +223,7 @@ class CartSettingForm(OurForm):
     header_image_url_mobile = OurTextField(
         label=_(u'ヘッダ画像のURL (モバイル)')
         )
+
+    def __init__(self, *args, **kwargs):
+        self.context = kwargs.pop('context', None)
+        super(CartSettingForm, self).__init__(*args, **kwargs)
