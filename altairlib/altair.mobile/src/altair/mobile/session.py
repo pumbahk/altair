@@ -82,18 +82,18 @@ class HybridHTTPBackend(object):
             cookie_header_value = request.environ.get('HTTP_COOKIE')
 
         self.inner = CookieSessionBinder(
-            request=request,
             key=key,
             cookie=cookie_factory(input=cookie_header_value),
             **kwargs
             )
         request.environ[self.ENV_QUERY_STRING_KEY_KEY] = query_string_key
+        self.request = request
 
     def bind(self, id_):
         self.inner.bind(id_)
         try:
             cookie_item = self.inner.cookie[self.inner.key]
-            self.inner.request.environ[self.ENV_SESSION_RESTORER_KEY] = cookie_item.coded_value if cookie_item.value else None
+            self.request.environ[self.ENV_SESSION_RESTORER_KEY] = cookie_item.coded_value if cookie_item.value else None
         except KeyError:
             pass
 
@@ -121,7 +121,6 @@ def http_backend_factory(request, query_string_key, secret=None, key='beaker.ses
     else:
         return CookieSessionBinder(
             cookie=get_cookie_factory(secret)(input=request.environ.get('HTTP_COOKIE')),
-            request=request,
             key=key,
             **kwargs
             )
