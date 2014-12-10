@@ -50,7 +50,7 @@ def get_target_order_nos(today, skip_already_notified=True):
         .filter(Order.canceled_at == None)\
         .filter(Order.refunded_at == None)\
         .filter(Order.refund_id == None)\
-        .filter(Order.paid_at == None)\
+        .filter((Order.paid_at == None) | (Order.paid_at >= today))\
         .filter(Order.order_no.in_(subqs))
 
     if skip_already_notified:

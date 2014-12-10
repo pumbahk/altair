@@ -55,6 +55,30 @@ class TestGetTargetOrderNos(unittest.TestCase, CoreTestMixin):
         order_nos = self._callFUT(date(2014, 1, 1))
         self.assertEqual({order_1.order_no, order_2.order_no}, set(order_nos))
 
+    def test_paid(self):
+        from datetime import date, datetime
+        from altair.app.ticketing.sej.models import SejOrder
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
+        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.orders.models import Order, OrderNotification
+        self.organization.settings = [OrganizationSetting(notify_remind_mail=True)]
+        order_0 = self._create_order([(self.products[0], 1)], pdmp=[pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID][0])
+        self.session.add(order_0)
+        self.session.add(SejOrder(order_no=order_0.order_no, payment_due_at=datetime(2014, 1, 2, 0, 0, 0)))
+        order_1 = self._create_order([(self.products[0], 1)], pdmp=[pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID][0])
+        self.session.add(order_1)
+        self.session.add(SejOrder(order_no=order_1.order_no, payment_due_at=datetime(2014, 1, 3, 0, 0, 0)))
+        order_2 = self._create_order([(self.products[0], 1)], pdmp=[pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID][0])
+        order_2.paid_at = datetime(2014, 1, 1, 10, 0, 0)
+        self.session.add(order_2)
+        self.session.add(SejOrder(order_no=order_2.order_no, payment_due_at=datetime(2014, 1, 3, 0, 0, 0)))
+        self.session.flush()
+        order_nos = self._callFUT(date(2014, 1, 1))
+        self.assertEqual({order_0.order_no, order_1.order_no, order_2.order_no}, set(order_nos))
+        order_nos = self._callFUT(date(2014, 1, 2))
+        self.assertEqual({order_1.order_no}, set(order_nos))
+
+
     def test_disabled_by_organization_setting(self):
         from datetime import date, datetime
         from altair.app.ticketing.sej.models import SejOrder
