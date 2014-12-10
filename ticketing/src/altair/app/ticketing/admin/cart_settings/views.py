@@ -18,7 +18,8 @@ cart_setting_types_dict = dict(cart_setting_types)
 
 def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.name = form.data['name']
-    cart_setting.type = form.data['type']
+    if form.data['type'] is not None:
+        cart_setting.type = form.data['type']
     cart_setting.performance_selector = form.data['performance_selector']
     cart_setting.performance_selector_label1_override = form.data['performance_selector_label1_override']
     cart_setting.performance_selector_label2_override = form.data['performance_selector_label2_override']
@@ -104,7 +105,7 @@ class NewCartSettingView(CartSettingViewBase):
         if original_cart_setting is None:
             original_cart_setting = self.context.organization.setting.cart_setting
                 
-        form = CartSettingForm(obj=original_cart_setting)
+        form = CartSettingForm(obj=original_cart_setting, context=self.context)
         form.name.data = u''
         return dict(form=form)
 
@@ -114,7 +115,7 @@ class NewCartSettingView(CartSettingViewBase):
         permission='event_editor'
         )
     def post(self):
-        form = CartSettingForm(formdata=self.request.POST)
+        form = CartSettingForm(formdata=self.request.POST, context=self.context)
         if not form.validate():
             return dict(
                 form=form
@@ -137,7 +138,7 @@ class EditCartSettingListView(CartSettingViewBase):
         )
     def get(self):
         return dict(
-            form=CartSettingForm(obj=self.context.cart_setting)
+            form=CartSettingForm(obj=self.context.cart_setting, context=self.context)
             )
 
     @view_config(
@@ -146,7 +147,7 @@ class EditCartSettingListView(CartSettingViewBase):
         permission='event_editor'
         )
     def post(self):
-        form = CartSettingForm(formdata=self.request.POST)
+        form = CartSettingForm(formdata=self.request.POST, context=self.context)
         if not form.validate():
             return dict(
                 form=form
