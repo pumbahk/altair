@@ -98,7 +98,8 @@ class MobileIndexView(IndexViewMixin):
                     performance_id=sales_segment.performance_id,
                     sales_segment_id=sales_segment.id))
 
-
+        if not self.context.event:
+            raise HTTPNotFound()
         selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
