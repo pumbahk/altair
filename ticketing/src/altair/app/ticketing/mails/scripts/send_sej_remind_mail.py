@@ -31,8 +31,8 @@ from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
 logger = logging.getLogger(__name__)
 
 
-def get_target_order_nos():
-    today = datetime.datetime.combine(datetime.date.today(), datetime.time())
+def get_target_order_nos(today, skip_already_notified=True):
+    today = datetime.datetime.combine(today, datetime.time())
     tomorrow = today + datetime.timedelta(1)
     day_after_tomorrow = today + datetime.timedelta(2)
 
@@ -40,29 +40,29 @@ def get_target_order_nos():
       .filter(SejOrder.payment_due_at.between(tomorrow, day_after_tomorrow))\
       .with_entities(SejOrder.order_no)
 
-    order_nos = DBSession.query(Order)\
+    q = DBSession.query(Order)\
         .join(Organization)\
         .join(OrganizationSetting)\
         .join(PaymentDeliveryMethodPair)\
         .join(PaymentMethod)\
-        .join(OrderNotification)\
         .filter(PaymentMethod.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID)\
         .filter(OrganizationSetting.notify_remind_mail == True)\
         .filter(Order.canceled_at == None)\
         .filter(Order.refunded_at == None)\
         .filter(Order.refund_id == None)\
-        .filter(Order.paid_at == None)\
-        .filter(OrderNotification.sej_remind_at == None)\
-        .filter(Order.order_no.in_(subqs))\
-        .with_entities(Order.order_no)\
-        .all()
-    return [order_no_named_tuple[0] for order_no_named_tuple in order_nos]
+        .filter((Order.paid_at == None) | (Order.paid_at >= today))\
+        .filter(Order.order_no.in_(subqs))
+
+    if skip_already_notified:
+        q = q.join(OrderNotification).filter(OrderNotification.sej_remind_at == None)
+
+    return [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
 
 
 def send_sej_remind_mail(settings):
     request = pyramid.threadlocal.get_current_request()
 
-    order_nos = get_target_order_nos()
+    order_nos = get_target_order_nos(datetime.date.today())
     utility = get_mail_utility(request, MailTypeEnum.PurcacheSejRemindMail)
 
     for order_no in order_nos:
