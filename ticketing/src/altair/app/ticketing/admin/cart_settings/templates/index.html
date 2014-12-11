@@ -1,6 +1,34 @@
 <%inherit file="altair.app.ticketing:templates/layout_2cols.html" />
 <%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
 <% from altair.app.ticketing.cart.models import CartSetting %>
+<button id="newItem" class="btn"><i class="icon icon-plus"></i>新規カート設定</button>
+<form id="newItemModal" class="modal hide" method="GET" action="${request.route_path('cart_setting.new')}">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>新規カート設定</h3>
+  </div>
+
+  <div class="modal-body">
+    <label for="cart_setting_id">元にするカート設定</label>
+    <select name="cart_setting_id" id="cart_setting_id">
+    % for item in items:
+      <option value="${item['cart_setting'].id}">${item['cart_setting'].name or u'(名称なし)'}</option>
+    % endfor
+    </select>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <input type="submit" class="btn" value="保存" />
+  </div>
+</form>
+<script type="text/javascript">
+$(function () {
+$('#newItem').on('click', function () {
+  $('#newItemModal').on('submit', function () { $(this).modal('hide'); }).modal('toggle');
+});
+});
+</script>
 <table class="table">
   <thead>
     <tr>

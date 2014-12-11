@@ -11,8 +11,10 @@ class Multicheckout3DAPITests(unittest.TestCase):
         from sqlalchemy.orm import Session
         from ..testing import DummyCheckout3D
         import sqlahelper
+        from ..interfaces import ICardBrandDetecter
 
         self.config = testing.setUp()
+        self.config.registry.registerUtility(lambda card_number: 'DUMMY', ICardBrandDetecter)
         self.dummy_impl = DummyCheckout3D(shop_code=self.shop_code)
         self.request = testing.DummyRequest()
         engine = create_engine("sqlite:///")
@@ -121,6 +123,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         self.assertEqual(result.OrderNo, order_no)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure3d')
+        self.assertEqual(result.request.card_brand, 'DUMMY')
         self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
     def test_checkout_sales(self):

@@ -887,10 +887,13 @@ class GetContactURLTest(unittest.TestCase):
         """Create Mock of request object.
         """
         # dummy data
-        env = {'altair.app.ticketing.cart.organization_id': 1,
+        env = {'altair.app.ticketing.cart.organization_id': organization.id,
                'altair.app.ticketing.cart.organization_path': '/path/to/org',
                }
         request = DummyRequest(environ=env)
+        from altair.mobile.carriers import NonMobile
+        request.mobile_ua = testing.DummyModel(carrier=NonMobile)
+        request.organization = organization
         return request
 
     def setUp(self):
@@ -986,7 +989,7 @@ class GetContactURLTest(unittest.TestCase):
         from altair.mobile.carriers import NonMobile
         from . import api
         request.mobile_ua.carrier = NonMobile
-        get_organization.return_value = None
+        request.organization = self._patch_get_organization.return_value = None
         with self.assertRaises(ValueError):
             api.get_contact_url(request)
 

@@ -74,3 +74,7 @@ class IOrderQueryable(Interface):
 
     def query_orders_by_mailaddresses(mail_addresses, filter_canceled, query=None):
         pass
+
+class ISettingRenderer(Interface):
+    def __iter__():
+        pass

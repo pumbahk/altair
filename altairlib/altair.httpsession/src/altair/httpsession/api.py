@@ -229,16 +229,14 @@ class DummyHTTPBackend(object):
 
 
 class CookieSessionBinder(object):
-    def __init__(self, cookie, key='beaker.session.id', cookie_expires=None, cookie_domain=None, cookie_path='/', secure=False, httponly=False, request=None, beaker_compatible=True, now=None, **kwargs):
+    def __init__(self, cookie, key='beaker.session.id', cookie_expires=None, cookie_domain=None, cookie_path='/', secure=False, httponly=False, now=None, **kwargs):
         self.key = key
         self.cookie_expires = cookie_expires
         self.cookie_domain = cookie_domain
         self.cookie_path = cookie_path
         self.secure = secure
         self.httponly = httponly
-        self.beaker_compatible = beaker_compatible
         self.cookie = cookie
-        self.request = request
         if now is None:
             now = datetime.datetime.utcnow()
         else:
@@ -263,10 +261,6 @@ class CookieSessionBinder(object):
                 if 'Invalid Attribute httponly' not in str(e):
                     raise
                 warnings.warn('Python 2.6+ is required to use httponly')
-        if self.beaker_compatible and self.request is not None:
-            # for Beaker compatibility
-            self.request.environ['set_cookie'] = True
-            self.request.environ['cookie_out'] = self.cookie[self.key].output(header='')
 
     def bind(self, id_):
         expires = None

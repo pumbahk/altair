@@ -5,12 +5,15 @@ from wtforms.fields import PasswordField, HiddenField, FormField
 from altair.formhelpers import filters
 from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
+from altair.formhelpers.validators import DynSwitchDisabled
 from wtforms.validators import Length, Regexp, Optional
 
 from altair.formhelpers import Translations, Required, Phone, Email
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.users import models as u_models
+from altair.app.ticketing.cart import models as cart_models
 from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.core.models import OrganizationSetting
@@ -196,12 +199,62 @@ class OrganizationSettingSimpleForm(OurForm):
         label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
         )
 
-class OrganizationSettingForm(OrganizationSettingSimpleForm):
-    id = HiddenField(
-        label=u'ID',
+    contact_pc_url = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.contact_pc_url)['label']
+        )
+    contact_mobile_url = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.contact_mobile_url)['label']
+        )
+    point_type = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_type)['label'],
         validators=[Optional()],
-    )
+        coerce=lambda x: int(x) if x else None,
+        choices=[(0, u'無効')] + [(int(e.v), e.k) for e in u_models.UserPointAccountTypeEnum._values]
+        )
+    point_fixed = OurDecimalField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_fixed)['label'],
+        validators=[
+            Optional(),
+            DynSwitchDisabled('{point_type} = 0'),
+            ]
+        )
+    point_rate = OurDecimalField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_rate)['label'],
+        validators=[
+            Optional(),
+            DynSwitchDisabled('{point_type} = 0'),
+            ]
+        )
+    notify_point_granting_failure = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.notify_point_granting_failure)['label']
+        )
+    entrust_separate_seats = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
+        )
+    bcc_recipient = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.bcc_recipient)['label']
+        )
+    default_mail_sender = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
+        )
+    sales_report_type = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.sales_report_type)['label'],
+        coerce=lambda x: int(x) if x else None,
+        choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
+        )
+    cart_setting_id = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.cart_setting_id)['label'],
+        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(cart_models.CartSetting).filter_by(organization_id=field._form.context.organization.id)],
+        coerce=int
+        )
 
+    def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
+        super(OrganizationSettingSimpleForm, self).__init__(*args, **kwargs)
+        self.context = context
+
+
+class OrganizationSettingForm(OrganizationSettingSimpleForm):
     name = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.name)['label'],
         validators=[
@@ -234,6 +287,11 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         label=get_annotations_for(c_models.OrganizationSetting.registration_fee)['label'],
         validators=[Optional()]
         )
+    point_type = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_type)['label'],
+        coerce=lambda x: int(x) if x else None,
+        choices=[(0, u'無効')] + [(int(e.v), e.k) for e in u_models.UserPointAccountTypeEnum._values]
+        )
     multicheckout_shop_name = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.multicheckout_shop_name)['label']
         )
@@ -248,42 +306,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         )
     cart_item_name = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.cart_item_name)['label']
-        )
-    contact_pc_url = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.contact_pc_url)['label']
-        )
-    contact_mobile_url = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.contact_mobile_url)['label']
-        )
-    point_type = OurSelectField(
-        label=get_annotations_for(c_models.OrganizationSetting.point_type)['label'],
-        coerce=lambda x: int(x) if x else None,
-        choices=[(0, u'無効')] + [(int(e.v), e.k) for e in u_models.UserPointAccountTypeEnum._values]
-        )
-    point_fixed = OurDecimalField(
-        label=get_annotations_for(c_models.OrganizationSetting.point_fixed)['label'],
-        validators=[Optional()]
-        )
-    point_rate = OurDecimalField(
-        label=get_annotations_for(c_models.OrganizationSetting.point_rate)['label'],
-        validators=[Optional()]
-        )
-    notify_point_granting_failure = OurBooleanField(
-        label=get_annotations_for(c_models.OrganizationSetting.notify_point_granting_failure)['label']
-        )
-    bcc_recipient = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.bcc_recipient)['label']
-        )
-    default_mail_sender = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
-        )
-    entrust_separate_seats = OurBooleanField(
-        label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
-        )
-    sales_report_type = OurSelectField(
-        label=get_annotations_for(c_models.OrganizationSetting.sales_report_type)['label'],
-        coerce=lambda x: int(x) if x else None,
-        choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
         )
     enable_smartphone_cart = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_smartphone_cart)['label']

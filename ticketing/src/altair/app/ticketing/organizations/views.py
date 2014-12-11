@@ -185,7 +185,7 @@ class OrganizationSettings(BaseView):
         organization_setting = OrganizationSetting.query.filter_by(organization_id=organization_id, id=organization_setting_id).first()
         if organization_setting is None:
             return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
-        f = OrganizationSettingForm(self.request.POST, obj=organization_setting)
+        f = OrganizationSettingForm(obj=organization_setting, context=self.context)
         return {
             'organization': organization,
             'form':f,
@@ -202,7 +202,7 @@ class OrganizationSettings(BaseView):
         if organization_setting is None:
             return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
 
-        f = OrganizationSettingForm(self.request.POST, obj=organization_setting)
+        f = OrganizationSettingForm(self.request.POST, obj=organization_setting, context=self.context)
         if not f.validate():
             return {
                 'organization': organization,
@@ -212,6 +212,7 @@ class OrganizationSettings(BaseView):
             }
 
         organization_setting.name = f.name.data
+        organization_setting.cart_setting_id = f.cart_setting_id.data
         organization_setting.auth_type = f.auth_type.data
         organization_setting.margin_ratio = f.margin_ratio.data
         organization_setting.refund_ratio = f.refund_ratio.data
@@ -243,9 +244,6 @@ class OrganizationSettings(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="organization_editor")
 class OrganizationSettingSimples(BaseView):
-
-
-
     @view_config(route_name='organizations.settings.edit.simple', request_method='GET',
                  renderer='altair.app.ticketing:templates/organizations/organization_setting/edit_simple.html')
     def edit_get(self):
@@ -272,7 +270,7 @@ class OrganizationSettingSimples(BaseView):
             if self.context.organization \
               and organization and organization_setting\
               and organization.id == self.context.organization.id:
-                f = OrganizationSettingSimpleForm(self.request.POST, obj=organization_setting)
+                f = OrganizationSettingSimpleForm(obj=organization_setting, context=self.context)
                 return {
                     'organization': organization,
                     'form':f,
@@ -306,10 +304,11 @@ class OrganizationSettingSimples(BaseView):
               .filter(OrganizationSetting.organization_id==organization_id)\
               .filter(OrganizationSetting.id==organization_setting_id)\
               .first()
+            formdata = self.request.POST
             if self.context.organization \
               and organization and organization_setting\
               and organization.id == self.context.organization.id:
-                f = OrganizationSettingSimpleForm(self.request.POST, obj=organization_setting)
+                f = OrganizationSettingSimpleForm(formdata=formdata, context=self.context)
                 if not f.validate():
                     return {
                         'organization': organization,
@@ -318,6 +317,18 @@ class OrganizationSettingSimples(BaseView):
                         'route_path': self.request.path,
                         }
                 else:
+                    organization_setting.notify_remind_mail = f['notify_remind_mail'].data
+                    organization_setting.contact_pc_url = f['contact_pc_url'].data
+                    organization_setting.contact_mobile_url = f['contact_mobile_url'].data
+                    organization_setting.point_fixed = f['point_fixed'].data
+                    organization_setting.point_rate = f['point_rate'].data
+                    organization_setting.notify_point_granting_failure = f['notify_point_granting_failure'].data
+                    organization_setting.entrust_separate_seats = f['entrust_separate_seats'].data
+                    organization_setting.bcc_recipient = f['bcc_recipient'].data
+                    organization_setting.default_mail_sender = f['default_mail_sender'].data
+                    organization_setting.sales_report_type = f['sales_report_type'].data
+                    organization_setting.cart_setting_id = f['cart_setting_id'].data
+
                     organization_setting.notify_remind_mail = f.notify_remind_mail.data
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(

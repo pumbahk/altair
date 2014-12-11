@@ -10,7 +10,9 @@ from altair.formhelpers.fields import OurTextField, OurIntegerField, OurBooleanF
 from altair.formhelpers.widgets import OurTextInput, OurDateWidget
 from altair.formhelpers.filters import replace_ambiguous, zero_as_none, blank_as_none
 from altair.app.ticketing.helpers import label_text_for
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event, EventSetting, Account
+from altair.app.ticketing.cart.models import CartSetting
 
 class EventSearchForm(OurForm):
     def _get_translations(self):
@@ -104,11 +106,11 @@ class EventSearchForm(OurForm):
 
 class EventForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        context = kwargs.pop('context')
         super(EventForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if 'organization_id' in kwargs:
-            self.account_id.choices = [
-                (account.id, account.name) for account in Account.filter_by(organization_id=kwargs['organization_id'])
-            ]
+        self.context = context
+        if self.cart_setting_id.data is None:
+            self.cart_setting_id.data = self.context.organization.setting.cart_setting_id
 
     def _get_translations(self):
         return Translations()
@@ -117,10 +119,10 @@ class EventForm(OurForm):
         label=u'ID',
         validators=[Optional()],
     )
-    account_id = SelectField(
+    account_id = OurSelectField(
         label=u'配券元',
         validators=[Required(u'選択してください')],
-        choices=[],
+        choices=lambda field: [(str(account.id), account.name) for account in Account.query.filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
     )
     code = TextField(
@@ -188,6 +190,12 @@ class EventForm(OurForm):
         default=1,
         hide_on_new=True,
     )
+    cart_setting_id = OurSelectField(
+        label=label_text_for(EventSetting.cart_setting_id),
+        default=lambda field: field.context.organization.setting.cart_setting_id,
+        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
+        coerce=int
+        )
 
     def validate_code(form, field):
         if field.data:

@@ -28,7 +28,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.interface import implementer
-from altair.saannotation import AnnotatedColumn, get_annotations_for
+from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 
 from zope.deprecation import deprecation
@@ -3668,17 +3668,8 @@ class SalesReportTypeEnum(StandardEnum):
     Default = 1
     Simple = 2
 
-class SettingMixin(object):
-    def describe_iter(self):
-        for prop in self.__mapper__.iterate_properties:
-            annotations = get_annotations_for(prop)
-            if hasattr(self, prop.key):
-                v = getattr(self, prop.key, None)
-                if annotations and annotations.get('visible_column'):
-                    yield prop.key, v, annotations.get('label') or prop.key
-
 @implementer(ISetting)
-class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
     id = Column(Identifier, primary_key=True)
     DEFAULT_NAME = u"default"
@@ -3725,12 +3716,15 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     asid_mobile = AnnotatedColumn(Unicode(255), doc=u"asid_mobile", _a_label=u"asid_mobile")
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
 
+    def _render_cart_setting_id(self):
+        return link_to_cart_setting(self.cart_setting)
+
     @property
     def container(self):
         return self.organization
 
 @implementer(ISetting, IAllAppliedSetting, IChainedSetting)
-class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "EventSetting"
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
@@ -3762,7 +3756,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
 
 
 @implementer(IAllAppliedSetting)
-class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SalesSegmentGroupSetting"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
@@ -3784,7 +3778,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
 
 
 @implementer(ISetting, IAllAppliedSetting, IChainedSetting)
-class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SalesSegmentSetting"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
@@ -3829,7 +3823,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
         return setting
 
 @implementer(ISetting, IAllAppliedSetting, IChainedSetting)
-class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))

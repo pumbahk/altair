@@ -213,8 +213,6 @@ class Cart(Base, c_models.CartMixin):
         try:
             return c_api.calculate_total_amount(self)
         except Exception as e:
-            logger.exception('?')
-            raise
             raise InvalidCartStatusError(self.id)
 
 
@@ -824,3 +822,32 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         from .api import is_fc_cart
         return is_fc_cart(self.type)
 
+    @property
+    def embedded_html_complete_page(self):
+        return self.data.get('embedded_html_complete_page')
+
+    @embedded_html_complete_page.setter
+    def embedded_html_complete_page(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_html_complete_page'] = value
+
+    @property
+    def embedded_html_complete_page_mobile(self):
+        return self.data.get('embedded_html_complete_page_mobile')
+
+    @embedded_html_complete_page_mobile.setter
+    def embedded_html_complete_page_mobile(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_html_complete_page_mobile'] = value
+
+    @property
+    def embedded_html_complete_page_smartphone(self):
+        return self.data.get('embedded_html_complete_page_smartphone')
+
+    @embedded_html_complete_page_smartphone.setter
+    def embedded_html_complete_page_smartphone(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['embedded_html_complete_page_smartphone'] = value
