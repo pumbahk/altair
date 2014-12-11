@@ -65,7 +65,7 @@ class SettingRendererWithCartSetting(DefaultSettingRenderer):
     def _render_cart_setting_id(self, request, k, v):
         return Markup(u'<a href="%s">%s</a>' % (
             request.route_path('cart_setting.index'),
-            self.setting.cart_setting.name or u'(名称なし)',
+            self.setting.cart_setting and self.setting.cart_setting.name or u'(名称なし)',
             ))
 
 OrganizationSettingRenderer = SettingRendererWithCartSetting
