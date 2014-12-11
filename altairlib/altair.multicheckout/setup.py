@@ -20,6 +20,7 @@ requires = [
     "standardenum",
     "altair.sqla",
     "altair.models",
+    "mako",
 ]
 
 tests_require = [

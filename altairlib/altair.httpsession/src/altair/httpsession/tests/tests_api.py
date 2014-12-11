@@ -315,12 +315,10 @@ class CookieSessionBinderTest(TestCase):
     def test__set_cookie(self):
         from datetime import datetime
 
-        request = {}
         dummy_cookie = DummyCookie()
         target = self._makeOne(
             cookie=dummy_cookie,
             key='key',
-            request=request,
             cookie_domain='test.example.com',
             cookie_path='/path/',
             secure=True,
@@ -334,8 +332,6 @@ class CookieSessionBinderTest(TestCase):
         self.assertEqual(dummy_cookie.params['key']['secure'], True)
         self.assertEqual(dummy_cookie.params['key']['path'], '/path/')
         self.assertEqual(dummy_cookie.params['key']['httponly'], True) 
-        self.assertEqual(request['set_cookie'], True)
-        self.assertEqual(request['cookie_out'], 'cookie_out')
 
     def test_bind(self):
         from datetime import datetime, timedelta

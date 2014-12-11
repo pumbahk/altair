@@ -1,0 +1,23 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>楽天スーパーポイント口座</%mobile:header>
+<form method="post" action="${request.current_route_path()}">
+<div>
+お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。
+</div>
+<br/>
+
+<div>
+  ${form['accountno'].label}(半角数字)<br/>
+  ${form['accountno']}<br/>
+  (例: 1111-2222-3333-4444)<br/><br/>
+  楽天ポイント口座を確認するには、<a href="https://p.rakuten.co.jp/PointAccount/PointAccountSet/?asid=${asid}" target=”_blank”>こちら</a>
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'accountno')}
+  </div>
+</div>
+
+<hr />
+<div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
+<div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
+</form>

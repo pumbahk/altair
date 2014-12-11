@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
 
 <style>
   .form-horizontal .control-label {
@@ -25,9 +26,25 @@
 </div>
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
+    <%fh:render_block>
     <fieldset>
+      ${ch.form_item(form.cart_setting_id)}
+      ${ch.form_item(form.point_type, disabled="disabled")}
+      ${ch.form_item(form.point_fixed)}
+      ${ch.form_item(form.point_rate)}
+      ${ch.form_item(form.notify_point_granting_failure)}
       ${ch.form_item(form.notify_remind_mail)}
+      ${ch.form_item(form.contact_pc_url)}
+      ${ch.form_item(form.contact_mobile_url)}
+      ${ch.form_item(form.bcc_recipient)}
+      ${ch.form_item(form.default_mail_sender)}
+      ${ch.form_item(form.entrust_separate_seats)}
+      ${ch.form_item(form.sales_report_type)}
     </fieldset>
+    <%def name="__post__(registry_var)">
+    ${fh.inject_js(registry_var)}
+    </%def>
+    </%fh:render_block>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>

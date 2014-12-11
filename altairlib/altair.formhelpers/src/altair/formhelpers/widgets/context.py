@@ -6,9 +6,6 @@ class Rendrant(text_type):
     def bind(self, context):
         self.context = context
 
-    def render_js_data_provider(self):
-        pass
-
     def __html__(self):
         return self
 
