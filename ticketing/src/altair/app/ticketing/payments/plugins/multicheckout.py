@@ -141,14 +141,6 @@ class CardForm(CSRFSecureForm):
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
-def get_multicheckout_order_no(request, order_no):
-    if request.registry.settings.get('multicheckout.testing', False):
-        return order_no + "00"
-    return order_no
-
-def get_order_no(request, order_like):
-    return get_multicheckout_order_no(request, order_like.order_no)
-
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
     def validate_order(self, request, order_like):
@@ -163,7 +155,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def validate(self, request, cart):
         """ 確定前の状態確認 """
-        order_no = get_order_no(request, cart)
+        order_no = cart.order_no
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order_no)
@@ -200,7 +192,7 @@ class MultiCheckoutPlugin(object):
 
     def _finish2_inner(self, request, order_like, override_name=None):
         multicheckout_api = get_multicheckout_3d_api(request, override_name)
-        mc_order_no = get_order_no(request, order_like)
+        mc_order_no = order_like.order_no
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
         amount_to_cancel = 0
         if authorized_amount is None:
@@ -271,7 +263,7 @@ class MultiCheckoutPlugin(object):
     def refresh(self, request, order):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         if order.is_inner_channel:
             logger.info('order %s is inner order' % order.order_no)
@@ -318,7 +310,7 @@ class MultiCheckoutPlugin(object):
     def refund(self, request, order, refund_record):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         res = multicheckout_api.checkout_inquiry(real_order_no)
         if res.CmnErrorCd != '000000':
@@ -362,7 +354,7 @@ class MultiCheckoutPlugin(object):
         # 売り上げキャンセル
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         order_no = order.order_no
         if request.registry.settings.get('multicheckout.testing', False):
@@ -509,7 +501,7 @@ class MultiCheckoutView(object):
 
         order = self.request.session.get('order', dict())
         order.update(
-            order_no=get_order_no(self.request, cart),
+            order_no=cart.order_no,
             card_holder_name=card_holder_name,
             card_number=card_number,
             exp_year=exp_year,
@@ -531,7 +523,7 @@ class MultiCheckoutView(object):
 
         try:
             checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
-                get_order_no(self.request, cart),
+                cart.order_no,
                 item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 order['secure_code'],
@@ -567,7 +559,7 @@ class MultiCheckoutView(object):
         cart = get_cart(self.request)
         order = self.request.session['order']
         try:
-            enrol = multicheckout_api.secure3d_enrol(get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
+            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.total_amount)
         except Exception:
             # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
             logger.exception('multicheckout plugin')
@@ -603,10 +595,10 @@ class MultiCheckoutView(object):
         md = multicheckout_api.get_md()
         order['pares'] = pares
         order['md'] = md
-        order['order_no'] = get_order_no(self.request, cart)
+        order['order_no'] = cart.order_no
 
         try:
-            auth_result = multicheckout_api.secure3d_auth(get_order_no(self.request, cart), pares, md)
+            auth_result = multicheckout_api.secure3d_auth(cart.order_no, pares, md)
             item_name = api.get_item_name(self.request, cart.name)
 
             # TODO: エラーメッセージ
@@ -638,7 +630,7 @@ class MultiCheckoutView(object):
 
             logger.debug('call checkout auth')
             checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
-                get_order_no(self.request, cart),
+                cart.order_no,
                 item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,

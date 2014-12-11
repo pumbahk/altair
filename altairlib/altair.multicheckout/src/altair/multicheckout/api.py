@@ -6,6 +6,7 @@
 import logging
 from datetime import datetime
 from zope.interface import implementer
+from sqlalchemy.orm import contains_eager
 from . import models as m
 from . import events
 from .interfaces import (
@@ -15,6 +16,7 @@ from .interfaces import (
     IMulticheckoutResponseFactory,
     IMulticheckoutImplFactory,
     IMulticheckout3DAPI,
+    IMulticheckoutOrderNoDecorator,
 )
 from .util import ahead_coms, maybe_unicode
 
@@ -33,6 +35,14 @@ def get_multicheckout_impl(request, override_name=None):
     return request.registry.getUtility(IMulticheckoutImplFactory)(request, override_name)
 
 
+def get_order_no_decorator(request):
+    reg = request.registry
+    retval = reg.queryUtility(IMulticheckoutOrderNoDecorator)
+    if retval is None:
+        retval = lambda order_no: order_no
+    return retval
+
+
 def get_multicheckout_3d_api(request, override_name=None, now=None, default_item_cd=None, currency=None):
     impl = get_multicheckout_impl(request, override_name)
     return Multicheckout3DAPI(
@@ -41,7 +51,8 @@ def get_multicheckout_3d_api(request, override_name=None, now=None, default_item
         session=m._session, # XXX
         now=now,
         default_item_cd=default_item_cd,
-        currency=currency
+        currency=currency,
+        order_no_decorator=get_order_no_decorator(request)
         )
 
 
@@ -60,7 +71,7 @@ class Multicheckout3DAPI(object):
     DEFAULT_ITEM_CODE = u"120"  # 通販
     CURRENCY = u"392" # 日本円
 
-    def __init__(self, request, impl, session, now=None, default_item_cd=None, currency=None):
+    def __init__(self, request, impl, session, order_no_decorator, now=None, default_item_cd=None, currency=None):
         if now is None:
             now = datetime.now()
         if default_item_cd is None:
@@ -70,9 +81,13 @@ class Multicheckout3DAPI(object):
         self.request = request
         self.impl = impl
         self.session = session
+        self.order_no_decorator = order_no_decorator
         self.now = now
         self.default_item_cd = default_item_cd
         self.currency = currency
+
+    def _decorate_order_no(self, order_no):
+        return self.order_no_decorator(order_no)
 
     def create_multicheckout_response_card(self):
         return m.MultiCheckoutResponseCard()
@@ -120,8 +135,8 @@ class Multicheckout3DAPI(object):
 
     def secure3d_enrol(self, order_no, card_number, exp_year, exp_month, total_amount):
         """ セキュア3D認証要求 """
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         enrol = m.Secure3DReqEnrolRequest(
             CardNumber=card_number,
             ExpYear=exp_year,
@@ -142,8 +157,8 @@ class Multicheckout3DAPI(object):
 
     def secure3d_auth(self, order_no, pares, md):
         """ セキュア3D認証結果取得"""
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         auth = m.Secure3DAuthRequest(
             Md=md,
             PaRes=pares,
@@ -164,6 +179,7 @@ class Multicheckout3DAPI(object):
         if item_cd is None:
             item_cd = self.default_item_cd
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         order_ymd = self.now.strftime('%Y%m%d').decode('ascii')
         params = m.MultiCheckoutRequestCard(
             ItemCd=item_cd,
@@ -202,8 +218,8 @@ class Multicheckout3DAPI(object):
 
     def checkout_sales(self, order_no):
         """ 売上確定 """
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         res = self.impl.request_card_sales(self, order_no)
         events.CheckoutSalesSecure3DEvent.notify(self.request, order_no, res)
         self.save_api_response(res, None)
@@ -213,6 +229,7 @@ class Multicheckout3DAPI(object):
     def checkout_auth_cancel(self, order_no):
         """ オーソリキャンセル """
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         status = self._get_order_status(order_no)
         if status is not None and status.KeepAuthFor:
             return None
@@ -226,7 +243,8 @@ class Multicheckout3DAPI(object):
         """ オーソリ差額売上確定
         オーソリ時金額で確定後に差額を一部キャンセルする
         """
-
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         res = self.checkout_sales(order_no)
         if res.CmnErrorCd != '000000':
             logger.error(u"差額売上確定中に売上確定でエラーが発生しました")
@@ -241,8 +259,8 @@ class Multicheckout3DAPI(object):
 
     def checkout_sales_part_cancel(self, order_no, sales_amount_cancellation, tax_carriage_cancellation):
         """ 一部払い戻し """
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         params = m.MultiCheckoutRequestCardSalesPartCancel(
             SalesAmountCancellation=int(sales_amount_cancellation),
             TaxCarriageCancellation=int(tax_carriage_cancellation),
@@ -259,8 +277,8 @@ class Multicheckout3DAPI(object):
 
     def checkout_sales_cancel(self, order_no):
         """ 売上キャンセル"""
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         res = self.impl.request_card_cancel_sales(self, order_no)
         events.CheckoutSalesCancelEvent.notify(self.request, order_no, res)
         self.save_api_response(res, None)
@@ -268,6 +286,7 @@ class Multicheckout3DAPI(object):
 
     def get_authorized_amount(self, order_no):
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         status = self._get_order_status(order_no)
         if status is not None:
             return status.SalesAmount
@@ -275,6 +294,8 @@ class Multicheckout3DAPI(object):
             return None
 
     def keep_authorization(self, order_no, for_what):
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         status = self._get_order_status(order_no)
         if status is None:
             return
@@ -284,6 +305,7 @@ class Multicheckout3DAPI(object):
 
     def authorization_kept_for(self, order_no):
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         status = self._get_order_status(order_no)
         if status is not None:
             # 空文字列が入っていたとしても None を返したい
@@ -293,8 +315,8 @@ class Multicheckout3DAPI(object):
 
     def checkout_inquiry(self, order_no, invoker=None):
         """ 取引照会"""
-
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         res = self.impl.request_card_inquiry(self, order_no)
         events.CheckoutInquiryEvent.notify(self.request, order_no, res)
         self.save_api_response(res, None, invoker=invoker)
@@ -306,6 +328,7 @@ class Multicheckout3DAPI(object):
         if item_cd is None:
             item_cd = self.default_item_cd
         order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         order_ymd = self.now.strftime('%Y%m%d').decode('ascii')
         params = m.MultiCheckoutRequestCard(
             ItemCd=item_cd,
@@ -344,6 +367,8 @@ class Multicheckout3DAPI(object):
         return len(card_number) == 16
 
     def get_order_status_by_order_no(self, order_no):
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
         return self.session.query(m.MultiCheckoutOrderStatus) \
             .filter(m.MultiCheckoutOrderStatus.OrderNo == order_no) \
             .first()
@@ -358,6 +383,42 @@ class Multicheckout3DAPI(object):
         """ get ``Md`` value from request
         """
         return self.request.params['MD']
+
+    def get_transaction_info(self, order_no):
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
+        q = self.session.query(m.MultiCheckoutResponseCard) \
+            .outerjoin(m.MultiCheckoutResponseCard.request) \
+            .options(contains_eager(m.MultiCheckoutResponseCard.request)) \
+            .filter(m.MultiCheckoutResponseCard.OrderNo == order_no)
+        standard_info = [
+            {
+                'status': resp.Status,
+                'approval_no': resp.ApprovalNo,
+                'ahead_com_cd': resp.AheadComCd,
+                'error_cd': resp.CmnErrorCd,
+                'card_error_cd': resp.CardErrorCd,
+                'card_no': resp.request and resp.request.CardNo,
+                'card_limit': resp.request and resp.request.CardLimit,
+                'card_limit': resp.request and resp.request.CardLimit,
+                'secure_kind': resp.request and resp.request.SecureKind,
+                'card_brand': resp.request and resp.request.card_brand,
+                }
+            for resp in q
+            ]
+
+        q = self.session.query(m.Secure3DAuthResponse) \
+            .outerjoin(m.Secure3DAuthResponse.request) \
+            .options(contains_eager(m.Secure3DAuthResponse.request)) \
+            .filter(m.Secure3DAuthResponse.OrderNo == order_no)
+        secure3d_info = [
+            {
+                'error_cd': resp.ErrorCd,
+                'secure3d_ret_cd': resp.RetCd,
+                }
+            for resp in q
+            ]
+        return standard_info, secure3d_info
 
 
 def remove_default_session():

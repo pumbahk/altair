@@ -50,9 +50,6 @@ def finish_closed_lot_entry(event):
             request,
             override_name=entry.lot.event.organization.setting.multicheckout_shop_name
             )
-        # FIXME
-        from altair.app.ticketing.payments.plugins.multicheckout import get_multicheckout_order_no
-        order_no = get_multicheckout_order_no(request, entry.entry_no)
-        multicheckout_api.keep_authorization(order_no, None)
+        multicheckout_api.keep_authorization(entry.entry_no, None)
     except Exception as e:
         logger.exception(e)

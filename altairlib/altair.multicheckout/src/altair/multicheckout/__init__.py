@@ -8,12 +8,14 @@ import functools
 import warnings
 from zope.interface import implementer
 from pyramid.config import ConfigurationError
+from pyramid.settings import asbool
 from altair.sqla import DBSessionContext, session_scope
 from .interfaces import (
     ICardBrandDetecter,
     IMulticheckoutSettingFactory,
     IMulticheckoutSettingListFactory,
     IMulticheckoutImplFactory,
+    IMulticheckoutOrderNoDecorator,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,6 +86,38 @@ def setup_components(config):
     reg.registerUtility(config.maybe_dotted(".util.detect_card_brand"), 
                         ICardBrandDetecter)
     reg.registerUtility(MulticheckoutImplFactory(config), IMulticheckoutImplFactory)
+
+    settings = reg.settings
+
+
+    order_no_decorator = settings.get('altair.multicheckout.order_no_decorator')
+    if order_no_decorator is not None:
+        order_no_decorator = config.maybe_dotted(order_no_decorator)
+
+    if order_no_decorator is None:
+        testing = settings.get('altair.multicheckout.testing', None)
+        if testing is None:
+            testing = settings.get('multicheckout.testing', None)
+            if testing is not None:
+                logger.warning('using deprecated setting "multicheckout.testing"')
+            else:
+                testing = False
+
+        testing = asbool(testing)
+
+        if testing:
+            order_no_decorator = lambda order_no: order_no + "00"
+            logger.info('altair.multicheckout operates in testing mode')
+        else:
+            logger.info('altair.multicheckout operates in normal mode')
+            order_no_decorator = lambda order_no: order_no
+    else:
+        logger.info('altair.multicheckout operates with the custom implementation of IMulticheckoutOrderNoDecorator: %s' % order_no_decorator)
+
+    if order_no_decorator is None:
+        raise ConfigurationError('no implementation of IMulticheckoutOrderNoDecorator is available')
+
+    reg.registerUtility(order_no_decorator, IMulticheckoutOrderNoDecorator)
 
 def includeme(config):
     setup_private_db_session(config)
