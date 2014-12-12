@@ -445,13 +445,13 @@ def get_user(info):
     return lookup_user_credential(info)
 
 def get_or_create_user(info):
-    user = lookup_user_credential(info)
-    if user is not None:
-        return user
-
     if info.get('is_guest', False):
         # ゲストのときはユーザを作らない
         return None
+
+    user = lookup_user_credential(info)
+    if user is not None:
+        return user
 
     logger.info('creating user account for %r' % info)
 
