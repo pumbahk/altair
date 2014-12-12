@@ -12,6 +12,9 @@ class TestGetTargetOrderNos(unittest.TestCase, CoreTestMixin):
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.sej.models'
             ])
+        from altair.app.ticketing.sej.models import _session
+        _session.remove()
+        _session.configure(bind=self.session.bind)
         CoreTestMixin.setUp(self)
         from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup
         self.sales_segment_group = SalesSegmentGroup(event=self.event)
@@ -100,6 +103,9 @@ class TestScript(unittest.TestCase, CoreTestMixin, MailTestMixin):
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.sej.models'
             ])
+        from altair.app.ticketing.sej.models import _session
+        _session.remove()
+        _session.configure(bind=self.session.bind)
         CoreTestMixin.setUp(self)
         from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, SalesSegmentSetting
         self.sales_segment_group = SalesSegmentGroup(event=self.event)

@@ -23,7 +23,7 @@ class ElectingTests(unittest.TestCase):
         publisher = DummyPublisher()
         self.config.registry.registerUtility(publisher,
                                              IPublisher,
-                                             'lots'
+                                             'lots.election'
                                              )
         return publisher
 
@@ -56,7 +56,7 @@ class ElectingTests(unittest.TestCase):
                          [('publish',
                            {'body': '{"lot_id": 89889891, "entry_no": "testing-entry-no", "wish_order": 0}',
                             'properties': {'content_type': 'application/json'},
-                            'routing_key': 'lots'})])
+                            'routing_key': 'lots.election'})])
 
         #mock_lot.entry.elect.assert_called_with(elected_wishes[0])
         #mock_lot.entry.reject.assert_called_with()

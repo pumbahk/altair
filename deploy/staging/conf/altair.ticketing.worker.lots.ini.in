@@ -1,6 +1,5 @@
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
-pyramid.includes = altair.mq altair.app.ticketing.lots.workers
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/

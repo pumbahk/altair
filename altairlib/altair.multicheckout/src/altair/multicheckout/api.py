@@ -243,8 +243,6 @@ class Multicheckout3DAPI(object):
         """ オーソリ差額売上確定
         オーソリ時金額で確定後に差額を一部キャンセルする
         """
-        order_no = maybe_unicode(order_no)
-        order_no = self._decorate_order_no(order_no)
         res = self.checkout_sales(order_no)
         if res.CmnErrorCd != '000000':
             logger.error(u"差額売上確定中に売上確定でエラーが発生しました")

@@ -5,43 +5,20 @@
 """
 import transaction
 import logging
-from altair.multicheckout import multicheckout_session
 from altair.mq.decorators import task_config
-from altair.sqlahelper import named_transaction
-from altair.app.ticketing.sej import sej_session
 
 logger = logging.getLogger(__name__)
 
-def includeme(config):
-    config.include('altair.sqlahelper')
-    config.include('.setup_components')
-    config.include('.import_mail_module')
-    config.include('altair.pyramid_dynamic_renderer')
-    config.include('altair.app.ticketing.qr')
-    config.include('altair.app.ticketing.users')
-    config.include('altair.app.ticketing.organization_settings')
-    config.include('altair.app.ticketing.checkout')
-    config.include('altair.app.ticketing.multicheckout')
-    config.include('altair.app.ticketing.payments')
-    config.include('altair.app.ticketing.payments.plugins')
-    config.include('.setup_cart_interface')
-
-    config.include('.setup_mq')
-    config.scan('.workers')
-
 class WorkerResource(object):
-    def __init__(self, message):
-        self.message = message
-        self.request = message.request
+    def __init__(self, request):
+        self.request = request
 
     @property
     def cart_id(self):
-        return self.message.params.get('cart_id')
+        return self.request.params.get('cart_id')
 
 @task_config(root_factory=WorkerResource, consumer="cart", queue="cart")
-@multicheckout_session
-@sej_session
-def cart_release(context, message):
+def cart_release(context, request):
     from .models import Cart
     from altair.app.ticketing.models import DBSession
     DBSession.remove()

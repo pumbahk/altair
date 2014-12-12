@@ -53,3 +53,6 @@ def finish_closed_lot_entry(event):
         multicheckout_api.keep_authorization(entry.entry_no, None)
     except Exception as e:
         logger.exception(e)
+
+def includeme(config):
+    config.scan('.subscribers')

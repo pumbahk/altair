@@ -1,7 +1,9 @@
 import sys
 import logging
 import argparse
-from pyramid.paster import bootstrap, setup_logging
+from pyramid.config import global_registries
+
+from pyramid.paster import get_app, setup_logging
 
 from tornado import ioloop
 from .. import get_consumer
@@ -15,23 +17,26 @@ class MServeCommand(object):
     def build_option_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("config")
-        parser.add_argument("consumer", default='pika')
+        parser.add_argument("consumers", nargs='+', default=['pika'])
         return parser
 
 
     def run(self, args):
         args = self.parser.parse_args(args)
 
-        app = bootstrap(args.config)
         setup_logging(args.config)
+        app = get_app(args.config)
+        registry = global_registries.last
 
-        request = app['request']
-        request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = "mserve worker"
-        consumer = get_consumer(request, args.consumer)
-
-        logger.info("into loop")
         io_loop = ioloop.IOLoop.instance()
-        io_loop.add_timeout(500, consumer.connect)
+        for consumer_name in args.consumers:
+            consumer = get_consumer(registry, consumer_name)
+            if consumer is None:
+                sys.stderr.write("no such consumer: %s\n" % consumer_name)
+                sys.stderr.flush()
+                return 1
+            io_loop.add_timeout(500, consumer.connect)
+        logger.info("into loop")
         io_loop.start()
         return 0
 

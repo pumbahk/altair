@@ -160,13 +160,23 @@ class MultiCheckoutPlugin(object):
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order_no)
         # オーソリ済みであること
-        if status is None or status.Status is not None and status.Status != str(MultiCheckoutStatusEnum.Authorized):
-            logger.debug('multicheckout status is not authorized (%s)' % order_no)
-            raise MultiCheckoutSettlementFailure(
-                message='multicheckout status is not authorized (%s)' % order_no,
-                order_no=order_no,
-                back_url=back_url(request)
-                )
+        if status is None or status.Status is not None:
+            if status.Status == str(MultiCheckoutStatusEnum.Authorized):
+                pass
+            elif status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+                authorized_amount = multicheckout_api.get_authorized_amount(order_no)
+                if cart.total_amount > authorized_amount:
+                    raise MultiCheckoutSettlementFailure(
+                        message='multicheckout status is settled and new total_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.total_amount, authorized_amount),
+                        order_no=order_no,
+                        back_url=back_url(request)
+                        )
+            else:
+                raise MultiCheckoutSettlementFailure(
+                    message='multicheckout status is not authorized (%s)' % order_no,
+                    order_no=order_no,
+                    back_url=back_url(request)
+                    )
 
     @clear_exc
     def finish(self, request, cart):
@@ -195,25 +205,36 @@ class MultiCheckoutPlugin(object):
         mc_order_no = order_like.order_no
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
         amount_to_cancel = 0
-        if authorized_amount is None:
-            # 互換性のため (いずれ消す)
-            if getattr(order_like, 'has_different_amount', False):
-                amount_to_cancel = order_like.different_amount
-        else:
-            # order_like.total_amount は Decimal だ...
-            amount_to_cancel = authorized_amount - int(order_like.total_amount)
+        assert authorized_amount is not None
+        # order_like.total_amount は Decimal だ...
+        amount_to_cancel = authorized_amount - int(order_like.total_amount)
 
         logger.info('finish2: amount_to_cancel=%d' % amount_to_cancel)
 
         assert amount_to_cancel >= 0
 
         try:
-            if amount_to_cancel == 0:
-                checkout_sales_result = multicheckout_api.checkout_sales(mc_order_no)
+            status = multicheckout_api.get_order_status_by_order_no(mc_order_no)
+            if status is not None:
+                if status.Status is None:
+                    status = multicheckout_api.checkout_inquiry(mc_order_no)
+                already_settled = status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled))
             else:
-                ## 金額変更での売上確定
-                checkout_sales_result = multicheckout_api.checkout_sales_different_amount(mc_order_no, amount_to_cancel)
-            if checkout_sales_result.CmnErrorCd != '000000':
+                already_settled = False # unlikely
+
+            if already_settled:
+                logger.info('finish2: order is already settled!')
+                if amount_to_cancel == 0:
+                    checkout_sales_result = None
+                else:
+                    checkout_sales_result = multicheckout_api.checkout_sales_part_cancel(mc_order_no, amount_to_cancel, 0)
+            else:
+                if amount_to_cancel == 0:
+                    checkout_sales_result = multicheckout_api.checkout_sales(mc_order_no)
+                else:
+                    ## 金額変更での売上確定
+                    checkout_sales_result = multicheckout_api.checkout_sales_different_amount(mc_order_no, amount_to_cancel)
+            if checkout_sales_result is not None and checkout_sales_result.CmnErrorCd != '000000':
                 raise MultiCheckoutSettlementFailure(
                     message='finish_secure: generic failure',
                     order_no=order_like.order_no,

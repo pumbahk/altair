@@ -91,8 +91,5 @@ def includeme(config):
                         ILotEntryStatus)
     reg.registerAdapter(Electing, [Lot, IRequest],
                         IElecting)
-    config.add_publisher_consumer('lots', 'altair.ticketing.lots.mq')
-    config.include('altair.app.ticketing.lots.sendmail')
-    config.scan("altair.app.ticketing.lots.workers")
-    config.scan('altair.app.ticketing.lots.subscribers')
+    config.include("altair.app.ticketing.lots")
 

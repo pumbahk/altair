@@ -29,7 +29,6 @@ from altair.app.ticketing.lots.models import (
     LotRejectWork,
     LotRejectedEntry,
 )
-from .events import LotRejectedEvent
 
 logger = logging.getLogger(__name__)
 
@@ -101,14 +100,16 @@ class Electing(object):
         return q.all()
 
         
-
+    @property
+    def election_publisher(self):
+        return get_publisher(self.request, 'lots.election')
 
     @property
-    def publisher(self):
-        return get_publisher(self.request, 'lots')
+    def rejection_publisher(self):
+        return get_publisher(self.request, 'lots.rejection')
 
     def elect_lot_entries(self):
-        publisher = self.publisher
+        publisher = self.election_publisher
         works = self.lot.electing_works
         logger.info("publish electing lot: lot_id = {0} : count = {1}".format(
             self.lot.id,
@@ -121,24 +122,22 @@ class Electing(object):
                     "wish_order": work.wish_order,
             }
             publisher.publish(body=json.dumps(body),
-                              routing_key="lots",
+                              routing_key="lots.election",
                               properties=dict(content_type="application/json"))
 
     def reject_lot_entries(self):
-
+        publisher = self.rejection_publisher
         works = self.lot.reject_works
-
+        logger.info("publish rejecting lot: lot_id = {0} : count = {1}".format(
+            self.lot.id,
+            len(works),
+        ))
         for work in works:
-            try:
-                logger.debug("reject : {0.lot_entry_no}".format(work))
-                lot_entry = work.lot_entry
-                lot_entry.reject()
-                #work.delete()
-                DBSession.delete(work)
-                # TODO: イベント
-                event = LotRejectedEvent(self.request, lot_entry)
-                self.request.registry.notify(event)
-            
-            except Exception as e:
-                logger.error(str(e))
+            body = {
+                "lot_id": self.lot.id,
+                "entry_no": work.lot_entry_no,
+                }
+            publisher.publish(body=json.dumps(body),
+                              routing_key="lots.rejection",
+                              properties=dict(content_type="application/json"))
 

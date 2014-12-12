@@ -79,9 +79,6 @@ def setup_auth(config):
     config.add_route('rakuten_auth.error', '/error', factory=".resources.lot_resource_factory")
 
 
-def includeme(config):
-    pass
-
 class CartInterface(object):
     def get_cart(self, request):
         from .api import get_entry_cart
@@ -109,6 +106,11 @@ def setup_mailtraverser(config):
     reg = config.registry
     traverser = EmailInfoTraverser()
     reg.registerUtility(traverser, name="lots")
+
+def includeme(config):
+    config.include('.sendmail')
+    config.include('.subscribers')
+    config.include('.workers')
 
 STATIC_URL_PREFIX = '/static/'
 STATIC_URL_S3_PREFIX = '/lots/static/'
@@ -178,17 +180,14 @@ def main(global_config, **local_config):
     config.include(setup_auth)
     config.include(setup_cart)
     config.include(setup_mailtraverser)
+    config.include(setup_routes)
 
     config.include(".")
-    config.include(".sendmail")
-
-    config.include(setup_routes)
 
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
 
-    config.scan(".subscribers")
     config.scan(".views")
     config.scan(".mobile_views")
     config.scan(".smartphone_views")

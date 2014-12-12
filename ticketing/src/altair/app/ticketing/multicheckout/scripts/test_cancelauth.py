@@ -106,9 +106,14 @@ class Testis_cancelable(unittest.TestCase):
 class Testget_auth_orders(unittest.TestCase):
 
     def setUp(self):
-        _setup_db(modules=[
+        self.session = _setup_db(modules=[
             "altair.multicheckout.models",
+            "altair.app.ticketing.cart.models",
+            "altair.app.ticketing.orders.models",
             ])
+        from altair.multicheckout.models import _session
+        _session.remove()
+        _session.configure(bind=self.session.bind)
 
     def tearDown(self):
         from altair.multicheckout.api import remove_default_session

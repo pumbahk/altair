@@ -1,6 +1,6 @@
 # This package may contain traces of nuts
 import logging
-from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher
+from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDispatcher
 from pyramid.config import ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -62,10 +62,15 @@ def add_task(config, task,
         if pika_consumer is None:
             raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
-        pika_consumer.add_task(TaskMapper(task=task,
-                                          name=name,
-                                          root_factory=root_factory,
-                                          queue_settings=queue_settings))
+        pika_consumer.add_task(
+            TaskMapper(
+                registry=reg,
+                task=task,
+                name=name,
+                root_factory=root_factory,
+                queue_settings=queue_settings
+                )
+            )
         logger.info("_root_factory = {0}".format(_root_factory))
         logger.info("register task {name} {root_factory} {queue_settings}".format(name=name,
                                                                    root_factory=root_factory,
@@ -118,6 +123,18 @@ def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
 def includeme(config):
     import sys
     from . import consumer, publisher
+
+    def register_task_dispatcher():
+        task_dispatcher = config.registry.settings.get('%s.task_dispatcher' % __name__)
+        if task_dispatcher is not None:
+            task_dispatcher = config.maybe_dotted(task_dispatcher)
+        else:
+            task_dispatcher = consumer.TaskDispatcher
+
+        config.registry.registerUtility(task_dispatcher(config.registry), ITaskDispatcher)
+    # this has to be run after all the tweens are registered
+    config.action("altair.mq.register_task_dispatcher", register_task_dispatcher, order=1)
+
     config.add_directive("add_task", add_task)
     config.add_directive("add_publisher_consumer", add_publisher_consumer)
 

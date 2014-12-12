@@ -20,8 +20,6 @@ class ICartInterface(Interface):
 
 class IPaymentCart(IOrderLike):
     performance           = Attribute(u"")
-    has_different_amount  = Attribute(u"")
-    different_amount      = Attribute(u"")
     name                  = Attribute(u"")
     order                 = Attribute(u"")
 

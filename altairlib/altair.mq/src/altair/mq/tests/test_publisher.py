@@ -11,11 +11,14 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def setUp(self):
-        from ..interfaces import IConsumer, IPublisher
+        from ..interfaces import IConsumer, IPublisher, ITaskDispatcher
         config = testing.setUp()
         self.target = self._makeOne()
+        from ..consumer import TaskDispatcher
+        self.dispatcher = TaskDispatcher(config.registry)
         config.registry.registerUtility(self.target, IConsumer)
         config.registry.registerUtility(self.target, IPublisher)
+        config.registry.registerUtility(self.dispatcher, ITaskDispatcher)
         self.config = config
 
     def tearDown(self):
@@ -28,7 +31,7 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         def task_fn(context, message):
             self.assertEqual(context, 'context')
             self.assertTrue(IMessage.providedBy(message))
-            self.assertEqual(message.method.routing_key, "route_key")
+            self.assertEqual(message.pika_method.routing_key, "route_key")
             self.assertEqual(message.body, "test body")
             task_called[0] += 1
         root_factory = mock.Mock(return_value='context')
@@ -45,7 +48,7 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         def task_fn(context, message):
             self.assertEqual(context, 'context')
             self.assertTrue(IMessage.providedBy(message))
-            self.assertEqual(message.method.routing_key, "route_key")
+            self.assertEqual(message.pika_method.routing_key, "route_key")
             self.assertEqual(message.body, "test body")
             task_called[0] += 1
         root_factory = mock.Mock(return_value='context')
@@ -66,13 +69,13 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         def task_fn_1(context, message):
             self.assertEqual(context, 'context')
             self.assertTrue(IMessage.providedBy(message))
-            self.assertEqual(message.method.routing_key, message.body)
+            self.assertEqual(message.pika_method.routing_key, message.body)
             task_called['task_fn_1'] += 1
             raise Exception
         def task_fn_2(context, message):
             self.assertEqual(context, 'context')
             self.assertTrue(IMessage.providedBy(message))
-            self.assertEqual(message.method.routing_key, message.body)
+            self.assertEqual(message.pika_method.routing_key, message.body)
             task_called['task_fn_2'] += 1
         root_factory = mock.Mock(return_value='context')
         add_task(self.config, task=task_fn_1, name='', queue="test1", root_factory=root_factory)
