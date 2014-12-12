@@ -90,9 +90,13 @@ class MailMagazinesView(BaseView):
             raise HTTPNotFound()
 
         search_text = self.request.params.get('search_text')
+        search_status = self.request.params.get('search_status')
         mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
         if search_text:
             mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
+
+        if search_status:
+            mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.status == int(search_status))
 
         mail_subscriptions = paginate.Page(
             mail_subscriptions_query,
@@ -104,6 +108,7 @@ class MailMagazinesView(BaseView):
             mailmag=mailmag,
             mail_subscriptions=mail_subscriptions,
             search_text=search_text or u'',
+            search_status=search_status or u'',
             h=helpers
             )
 
@@ -112,9 +117,13 @@ class MailMagazinesView(BaseView):
         mailmag_id = self.request.matchdict.get('id')
         mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
         search_text = self.request.params.get('search_text')
+        search_status = self.request.params.get('search_status')
         mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
         if search_text:
             mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
+
+        if search_status:
+            mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.status == search_status)
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -141,6 +150,7 @@ class MailSubscriptionsView(BaseView):
         mailmag_id = self.request.matchdict.get('id', self.request.params.get('id'))
         mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
         search_text = self.request.params.get('search_text')
+        search_status = self.request.params.get('search_status')
         mail_subscription_ids = self.request.params.getall('mail_subscription_id')
         action = self.request.params.get('action')
         for k, v in self.request.params.items():
@@ -153,11 +163,13 @@ class MailSubscriptionsView(BaseView):
                 .update(values=dict(status=status), synchronize_session=False)
         elif action == 'clear':
             search_text = None
+            search_status = None
         return HTTPFound(location=self.request.route_path(
             'mailmags.show',
             id=mailmag_id,
             _query=dict(
                 page=self.request.params.get('page'),
-                search_text=search_text or u''
+                search_text=search_text or u'',
+                search_status=search_status or u''
                 )
             ))
