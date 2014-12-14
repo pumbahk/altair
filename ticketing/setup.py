@@ -82,6 +82,7 @@ requires = [
     "radix",
     "requests",
     "pyOpenSSL",
+    'parsedatetime',
     "altair.augus",
     "altair.auth",
     "altair.sqla",

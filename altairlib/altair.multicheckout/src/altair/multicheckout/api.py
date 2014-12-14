@@ -4,7 +4,7 @@
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from zope.interface import implementer
 from sqlalchemy.orm import contains_eager
 from . import models as m
@@ -39,7 +39,8 @@ def get_order_no_decorator(request):
     reg = request.registry
     retval = reg.queryUtility(IMulticheckoutOrderNoDecorator)
     if retval is None:
-        retval = lambda order_no: order_no
+        from . import IdentityDecorator
+        retval = IdentityDecorator()
     return retval
 
 
@@ -81,7 +82,7 @@ class Multicheckout3DAPI(object):
         self.request = request
         self.impl = impl
         self.session = session
-        self.order_no_decorator = order_no_decorator
+        self.order_no_decorator = order_no_decorator.decorate
         self.now = now
         self.default_item_cd = default_item_cd
         self.currency = currency
@@ -310,6 +311,35 @@ class Multicheckout3DAPI(object):
             return status.KeepAuthFor if status.KeepAuthFor else None
         else:
             return None
+
+    def schedule_cancellation(self, order_no, scheduled_at, eventual_sales_amount=None, tax_carriage_amount_to_cancel=None):
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
+        status = self._get_order_status(order_no)
+        if status is None:
+            return
+        assert status.is_settled
+        status.CancellationScheduledAt = scheduled_at
+        if eventual_sales_amount is None:
+            eventual_sales_amount = 0
+        if tax_carriage_amount_to_cancel is None:
+            tax_carriage_amount_to_cancel = 0
+        status.EventualSalesAmount = eventual_sales_amount 
+        status.TaxCarriageAmountToCancel = tax_carriage_amount_to_cancel
+        self.session.add(status)
+        self.session.commit()
+
+    def unschedule_cancellation(self, order_no):
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
+        status = self._get_order_status(order_no)
+        if status is None:
+            return
+        status.CancellationScheduledAt = None
+        status.EventualSalesAmount = None
+        status.TaxCarriageAmountToCancel = None
+        self.session.add(status)
+        self.session.commit()
 
     def checkout_inquiry(self, order_no, invoker=None):
         """ 取引照会"""

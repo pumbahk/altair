@@ -72,6 +72,25 @@ class MulticheckoutImplFactory(object):
             )
 
 
+@implementer(IMulticheckoutOrderNoDecorator)
+class IdentityDecorator(object):
+    def decorate(self, order_no):
+        return order_no
+
+    def undecorate(self, order_no):
+        return order_no
+
+
+@implementer(IMulticheckoutOrderNoDecorator)
+class TestModeDecorator(object):
+    def decorate(self, order_no):
+        return order_no + "00"
+
+    def undecorate(self, order_no):
+        assert order_no.endswith("00")
+        return order_no[:-2]
+
+
 def setup_private_db_session(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
@@ -80,6 +99,7 @@ def setup_private_db_session(config):
     _session.remove()
     _session.configure(bind=get_engine())
     config.add_tween(".multicheckout_dbsession_tween")
+
 
 def setup_components(config):
     reg = config.registry
@@ -106,11 +126,11 @@ def setup_components(config):
         testing = asbool(testing)
 
         if testing:
-            order_no_decorator = lambda order_no: order_no + "00"
+            order_no_decorator = TestModeDecorator()
             logger.info('altair.multicheckout operates in testing mode')
         else:
             logger.info('altair.multicheckout operates in normal mode')
-            order_no_decorator = lambda order_no: order_no
+            order_no_decorator = IdentityDecorator()
     else:
         logger.info('altair.multicheckout operates with the custom implementation of IMulticheckoutOrderNoDecorator: %s' % order_no_decorator)
 

@@ -243,6 +243,7 @@ class MultiCheckoutPlugin(object):
                     card_error_code=checkout_sales_result.CardErrorCd
                     )
         except Exception as e:
+            logger.exception(str(e))
             if isinstance(e, MultiCheckoutSettlementFailure):
                 # XXX: これは本当は呼び出し元でやってほしい
                 logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))

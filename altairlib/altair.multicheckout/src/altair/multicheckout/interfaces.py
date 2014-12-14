@@ -108,5 +108,9 @@ class IMulticheckout3DAPI(Interface):
 
 
 class IMulticheckoutOrderNoDecorator(Interface):
-    def __call__(order_no):
+    def decorate(order_no):
         pass
+
+    def undecorate(order_no):
+        pass
+

@@ -265,8 +265,7 @@ sa.event.listen(MultiCheckoutInquiryResponseCard, 'before_insert', _mask_sensiti
 sa.event.listen(MultiCheckoutInquiryResponseCard, 'before_update', _mask_sensitive_information)
 
 class MultiCheckoutOrderStatus(Base, WithTimestamp):
-    """ 取引照会レスポンス
-    """
+    """ 取引状況 """
 
     __tablename__ = 'multicheckout_order_status'
     id = sa.Column(Identifier, primary_key=True)
@@ -276,6 +275,9 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     Summary = sa.Column(sa.UnicodeText, doc=u"機能追記メモ")
     KeepAuthFor = sa.Column(sa.Unicode(20), doc=u"オーソリキャンセル保持を必要とする機能名")
     SalesAmount = sa.Column(sa.Integer, doc=u"売上金額")
+    CancellationScheduledAt = sa.Column(sa.DateTime)
+    EventualSalesAmount = sa.Column(sa.Integer, doc=u"キャンセル後の売上金額")
+    TaxCarriageAmountToCancel = sa.Column(sa.Integer, doc="キャンセルする課税金額 (未使用)")
 
     @classmethod
     def by_storecd(cls, storecd):
@@ -284,6 +286,14 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     @hybrid_property
     def is_authorized(self):
         return self.Status == unicode(MultiCheckoutStatusEnum.Authorized)
+
+    @hybrid_property
+    def is_settled(self):
+        return (self.Status == unicode(MultiCheckoutStatusEnum.Settled)) | (self.Status == unicode(MultiCheckoutStatusEnum.PartCanceled))
+
+    @hybrid_property
+    def is_fully_canceled(self):
+        return (self.Status == unicode(MultiCheckoutStatusEnum.NotAuthorized)) | ((self.Status == unicode(MultiCheckoutStatusEnum.PartCanceled)) & (self.SalesAmount == 0))
 
     @hybrid_property
     def is_unknown_status(self):
@@ -314,16 +324,24 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     @classmethod
     def set_status(cls, order_no, storecd, status, amount, summary, session=None):
         s = cls.get_or_create(order_no, storecd, session)
-        if s.Status != status:
+        if status is not None:
             s.Status = status
-            if amount is not None:
-                s.SalesAmount = amount
-            s.Summary = (s.Summary or u"") + "\n" + summary
+        if amount is not None:
+            s.SalesAmount = amount
+        s.Summary = (s.Summary or u"") + "\n" + summary
+        return s
 
     @classmethod
     def keep_auth(cls, order_no, storecd, name, session=None):
         s = cls.get_or_create(order_no, storecd, session)
         s.KeepAuthFor = name
+
+    @classmethod
+    def schedule_cancellation(cls, order_no, storecd, name, session=None, now=None):
+        if now is None:
+            now = datetime.now()
+        s = cls.get_or_create(order_no, storecd, session)
+        s.CancellationScheduledAt = now
 
     @classmethod
     def by_order_no(cls, order_no):
