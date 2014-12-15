@@ -167,7 +167,14 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
               <th>Tel</th>
               <td>
                 % if shipping_address:
-                  ${shipping_address.tel_1}
+                <ul>
+                  % if shipping_address.tel_1:
+                  <li>(PC) ${shipping_address.tel_1}</li>
+                  % endif
+                  % if shipping_address.tel_2:
+                  <li>(携帯) ${shipping_address.tel_2}</li>
+                  % endif
+                </ul>
                 % endif
               </td>
             </tr>
