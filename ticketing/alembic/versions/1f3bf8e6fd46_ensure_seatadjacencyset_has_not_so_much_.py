@@ -28,5 +28,10 @@ ALTER TABLE `ticketing`.`Seat` DROP INDEX `ix_Seat_l0_id`, ADD INDEX `ix_Seat_l0
     """)
 
 def downgrade():
-    # do nothing here because it might cause severe service outage
-    pass
+    # do not perform downgrade on production because it might cause severe service outage
+#    op.execute("""
+#ALTER TABLE `ticketing`.`SeatAdjacencySet` DROP INDEX `ix_adjacencies_at_most`;
+#    """)
+    op.execute("""
+ALTER TABLE `ticketing`.`Seat` DROP INDEX `ix_Seat_l0_id_venue_id`, ADD INDEX `ix_Seat_l0_id` (`l0_id`);
+    """)
