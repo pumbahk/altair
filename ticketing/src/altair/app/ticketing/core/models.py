@@ -2247,7 +2247,8 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if event is not None:
             query = query.filter(StockHolder.event_id==event.id)
             user_id = event.organization.user_id
-        query = query.filter(Account.user_id==user_id)
+        if user_id is not None:
+            query = query.filter(Account.user_id==user_id)
         return query.order_by('StockHolder.id').all()
 
     @staticmethod
