@@ -2993,6 +2993,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                                       seat=seat)
         DBSession.add(entry)
         DBSession.flush()
+        return entry
 
     @classmethod
     def query(cls, operator, ticket_format_id, order_id=None, queue_ids=None, include_masked=False, include_unmasked=True):
@@ -3049,18 +3050,18 @@ class TicketPrintQueueEntry(Base, BaseModel):
             entry.processed_at = now
             if entry.ordered_product_item is not None and entry.ordered_product_item.ordered_product is not None:
                 order = entry.ordered_product_item.ordered_product.order
-                entries = relevant_orders.get(order)
-                if entries is None:
-                    entries = relevant_orders[order] = []
+                _entries = relevant_orders.get(order)
+                if _entries is None:
+                    _entries = relevant_orders[order] = []
                 else:
-                    if len(entries) > 1:
+                    if len(_entries) > 1:
                         logger.info("More than one entry exist for the same order (%d)" % order.id)
-                entries.append(entry)
+                _entries.append(entry)
             else:
                 logger.info("TicketPrintQueueEntry #%d is not associated with the order" % entry.id)
 
-        for order, entries in relevant_orders.items():
-            for entry in entries:
+        for order, _entries in relevant_orders.items():
+            for entry in _entries:
                 # XXX: this won't work right if multiple entries exist for the
                 # same order.
                 order.mark_issued_or_printed(issued=True, printed=True, now=now)
