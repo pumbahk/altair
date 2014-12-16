@@ -1,8 +1,10 @@
 <%inherit file="common/_base.html" />
 <%namespace file="common/tags_smartphone.html" name="m" />
 <%block name="title">トップ</%block>
-
 <img width="100%" src="${request.static_url('altaircms:static/KT/smartphone/img/point.png')}"/>
+<a href="https://www.kyodo-tohoku.com/tqs/?eid=210" class="mailmagazine">
+    最新情報のメルマガ登録はこちら
+</a>
 <%include file="common/_pickup.html" args="promotions=promotions, helper=helper"/>
 <%include file="common/_topic.html" args="topics=topics, helper=helper"/>
 <%include file="common/_topcontent.html" args="topcontents=topcontents, helper=helper"/>

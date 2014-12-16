@@ -74,6 +74,18 @@ ${ch.breadcrumbs(
         </div>
         <div class="attached-action-form pull-right">
           <div class="input-append">
+            <select id="selected_status" name="search_status">
+              <option value="">すべて</option>
+              % for status in MailSubscriptionStatus:
+                <%
+                  selected = ''
+                  if search_status:
+                      if status.v == int(search_status):
+                          selected = 'selected'
+                %>
+              <option value="${status.v}" ${selected}>${h.subscription_status(status.v)}</option>
+              % endfor
+            </select>
             <input type="text" name="search_text" placeholder="メールアドレス前方一致" value="${search_text}" />
             <input type="submit" name="do_search" value="検索" class="btn" />
             <input type="submit" name="do_clear" value="クリア" class="btn" />
@@ -116,8 +128,10 @@ ${ch.breadcrumbs(
 
 <%
 path=request.route_path('mailmags.download', id=mailmag.id)
-if search_text:
+if search_text or search_status:
     path = path + u'?' + search_text
+    if search_status:
+        path = path + u'&' + str(search_status)
 %>
 <form id="download" class="form-horizontal" action="${path}" method="POST">
 <div id="modal-download_mailmags" class="modal hide">
@@ -127,10 +141,11 @@ if search_text:
   </div>
 
   <input type="hidden" name="search_text" value="${search_text}"/>
+  <input id="download_stauts" type="hidden" name="search_status"/>
   <div class="modal-body">
     <p>メーリングリスト購読者一覧(CSV)をダウンロードします。よろしいですか？</p>
   </div>
-
+q
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-download_mailmags').modal('hide');" class="btn secondary">キャンセル</a>
     <a href="javascript:download_mailmags();" class="btn danger">ダウンロード</a>
@@ -140,6 +155,8 @@ if search_text:
 
 <script>
 function download_mailmags() {
+    var selected_val = $('#selected_status').val()
+    $('#download_stauts').val(selected_val)
     $('#download').submit();
     $('#modal-download_mailmags').modal('hide');
 }

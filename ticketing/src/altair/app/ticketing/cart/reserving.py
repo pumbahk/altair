@@ -205,8 +205,8 @@ class Reserving(object):
             .filter(Stock.id == stock_id).one()
 
         def query_selected_seats(venue, stock_id, quantity, seat_index_type_id):
-            tmp = self.session.query(Seat_SeatAdjacency.seat_adjacency_id) \
-                .join(SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
+            tmp = self.session.query(SeatAdjacency.id) \
+                .join(Seat_SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
                 .join(SeatAdjacencySet, SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) \
                 .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
                 .filter(Seat.venue_id == venue.id) \
@@ -217,7 +217,7 @@ class Reserving(object):
                 .filter(SeatIndex.seat_index_type_id == seat_index_type_id) \
                 .filter(SeatAdjacencySet.seat_count == quantity) \
                 .filter(SeatAdjacencySet.site_id == venue.site_id) \
-                .group_by(Seat_SeatAdjacency.seat_adjacency_id) \
+                .group_by(SeatAdjacency.id) \
                 .having(func.count(distinct(Seat.id)) == quantity) \
                 .order_by(func.min(SeatIndex.index), func.min(Seat.l0_id)) \
                 .first()
