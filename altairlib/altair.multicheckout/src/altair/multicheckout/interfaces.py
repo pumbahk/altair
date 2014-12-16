@@ -106,3 +106,11 @@ class IMulticheckout3DAPI(Interface):
     def checkout_auth_secure_code(order_no, item_name, amount, tax, client_name, mail_address, card_no, card_limit, card_holder_name, secure_code, free_data=None, item_cd=None):
         pass
 
+
+class IMulticheckoutOrderNoDecorator(Interface):
+    def decorate(order_no):
+        pass
+
+    def undecorate(order_no):
+        pass
+

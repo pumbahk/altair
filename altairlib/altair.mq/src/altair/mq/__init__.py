@@ -1,6 +1,6 @@
 # This package may contain traces of nuts
 import logging
-from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher
+from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDispatcher
 from pyramid.config import ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class QueueSettings(object):
 def add_task(config, task,
              name,
              root_factory=None,
+             timeout=None,
              queue="test",
              consumer="",
              durable=True, 
@@ -43,14 +44,14 @@ def add_task(config, task,
              auto_delete=False,
              nowait=False):
     from .consumer import TaskMapper
-    _root_factory = root_factory
-    logger.info("{name} root factory = {0}".format(root_factory, name=name))
-    if root_factory is None:
-        logger.info("use default root factory")
-        root_factory = 'pyramid.traversal.DefaultRootFactory'
+
+    if root_factory is not None:
+        root_factory = config.maybe_dotted(root_factory)
+        logger.info("{name} root factory = {0}".format(root_factory, name=name))
+    else:
+        logger.info("{name} use default root factory".format(name=name))
+
     reg = config.registry
-    root_factory = config.maybe_dotted(root_factory)
-    logger.info("{name} root factory = {0}".format(root_factory, name=name))
 
     def register():
         pika_consumer = get_consumer(config.registry, consumer)
@@ -62,14 +63,20 @@ def add_task(config, task,
         if pika_consumer is None:
             raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
-        pika_consumer.add_task(TaskMapper(task=task,
-                                          name=name,
-                                          root_factory=root_factory,
-                                          queue_settings=queue_settings))
-        logger.info("_root_factory = {0}".format(_root_factory))
-        logger.info("register task {name} {root_factory} {queue_settings}".format(name=name,
+        pika_consumer.add_task(
+            TaskMapper(
+                registry=reg,
+                task=task,
+                name=name,
+                root_factory=root_factory,
+                timeout=timeout,
+                queue_settings=queue_settings
+                )
+            )
+        logger.info("register task {name} {root_factory} {queue_settings} {timeout}".format(name=name,
                                                                    root_factory=root_factory,
-                                                                   queue_settings=queue_settings))
+                                                                   queue_settings=queue_settings,
+                                                                   timeout=timeout))
         reg.registerUtility(task, ITask)
 
     config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),
@@ -118,6 +125,18 @@ def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
 def includeme(config):
     import sys
     from . import consumer, publisher
+
+    def register_task_dispatcher():
+        task_dispatcher = config.registry.settings.get('%s.task_dispatcher' % __name__)
+        if task_dispatcher is not None:
+            task_dispatcher = config.maybe_dotted(task_dispatcher)
+        else:
+            task_dispatcher = consumer.TaskDispatcher
+
+        config.registry.registerUtility(task_dispatcher(config.registry), ITaskDispatcher)
+    # this has to be run after all the tweens are registered
+    config.action("altair.mq.register_task_dispatcher", register_task_dispatcher, order=1)
+
     config.add_directive("add_task", add_task)
     config.add_directive("add_publisher_consumer", add_publisher_consumer)
 

@@ -22,10 +22,8 @@ class ITask(Interface):
 
 
 class IMessage(Interface):
-    request = Attribute(u"pyramid request for registry")
-    channel = Attribute(u"channel of message")
-    method = Attribute(u"method of message")
-    header = Attribute(u"header of message")
+    pika_channel = Attribute(u"channel of message")
+    pika_method = Attribute(u"method of message")
     body = Attribute(u"body of message")
     params = Attribute(u"parameters of this message, maybe parsed body.")
 
@@ -35,3 +33,7 @@ class IPublisher(Interface):
                 body="", properties={}, mandatory=False,
                 intermmediate=False):
         """ publish to queue """
+
+class ITaskDispatcher(Interface):
+    def __call__(task, channel, method, properties, body):
+        pass

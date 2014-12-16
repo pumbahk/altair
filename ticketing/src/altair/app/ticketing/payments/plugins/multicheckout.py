@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import transaction
-from datetime import datetime
+from datetime import datetime, timedelta
 from zope.interface import implementer
 from pyramid.view import view_defaults
 from pyramid.response import Response
@@ -38,6 +38,7 @@ from altair.formhelpers import (
     capitalize,
     OurSelectField
 )
+from altair.timeparse import parse_time_spec
 
 from .models import DBSession
 from .. import logger
@@ -51,8 +52,6 @@ from altair.app.ticketing.payments.api import get_cart, get_confirm_url
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PLUGIN_ID
-
-SALES_PART_CANCEL_ENABLED_SINCE = datetime.strptime('2012-12-03 08:00', "%Y-%m-%d %H:%M")
 
 confirm_url = get_confirm_url # XXX: backwards compatibility: must be removed later! yet any code should not rely on this reference
 
@@ -79,14 +78,6 @@ def back_url(request):
 def complete_url(request):
     return request.route_url('payment.secure3d_result')
 
-
-def includeme(config):
-    # 決済系(マルチ決済)
-    config.add_payment_plugin(MultiCheckoutPlugin(), PLUGIN_ID)
-    config.add_route("payment.secure3d", 'payment/3d')
-    config.add_route("payment.secure3d_result", 'payment/3d/result')
-    config.add_route("payment.secure_code", 'payment/scode')
-    config.scan(__name__)
 
 def _selectable_renderer(path_fmt):
     from . import _template
@@ -141,16 +132,13 @@ class CardForm(CSRFSecureForm):
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
-def get_multicheckout_order_no(request, order_no):
-    if request.registry.settings.get('multicheckout.testing', False):
-        return order_no + "00"
-    return order_no
-
-def get_order_no(request, order_like):
-    return get_multicheckout_order_no(request, order_like.order_no)
-
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
+    def __init__(self, sales_cancel_moratorium=None):
+        if sales_cancel_moratorium is None:
+            sales_cancel_moratorium = timedelta()
+        self.sales_cancel_moratorium = sales_cancel_moratorium
+
     def validate_order(self, request, order_like):
         """ なにかしたほうが良い?"""
 
@@ -163,18 +151,28 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def validate(self, request, cart):
         """ 確定前の状態確認 """
-        order_no = get_order_no(request, cart)
+        order_no = cart.order_no
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order_no)
         # オーソリ済みであること
-        if status is None or status.Status is not None and status.Status != str(MultiCheckoutStatusEnum.Authorized):
-            logger.debug('multicheckout status is not authorized (%s)' % order_no)
-            raise MultiCheckoutSettlementFailure(
-                message='multicheckout status is not authorized (%s)' % order_no,
-                order_no=order_no,
-                back_url=back_url(request)
-                )
+        if status is None or status.Status is not None:
+            if status.Status == str(MultiCheckoutStatusEnum.Authorized):
+                pass
+            elif status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+                authorized_amount = multicheckout_api.get_authorized_amount(order_no)
+                if cart.total_amount > authorized_amount:
+                    raise MultiCheckoutSettlementFailure(
+                        message='multicheckout status is settled and new total_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.total_amount, authorized_amount),
+                        order_no=order_no,
+                        back_url=back_url(request)
+                        )
+            else:
+                raise MultiCheckoutSettlementFailure(
+                    message='multicheckout status is not authorized (%s)' % order_no,
+                    order_no=order_no,
+                    back_url=back_url(request)
+                    )
 
     @clear_exc
     def finish(self, request, cart):
@@ -200,28 +198,39 @@ class MultiCheckoutPlugin(object):
 
     def _finish2_inner(self, request, order_like, override_name=None):
         multicheckout_api = get_multicheckout_3d_api(request, override_name)
-        mc_order_no = get_order_no(request, order_like)
+        mc_order_no = order_like.order_no
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
         amount_to_cancel = 0
-        if authorized_amount is None:
-            # 互換性のため (いずれ消す)
-            if getattr(order_like, 'has_different_amount', False):
-                amount_to_cancel = order_like.different_amount
-        else:
-            # order_like.total_amount は Decimal だ...
-            amount_to_cancel = authorized_amount - int(order_like.total_amount)
+        assert authorized_amount is not None
+        # order_like.total_amount は Decimal だ...
+        amount_to_cancel = authorized_amount - int(order_like.total_amount)
 
         logger.info('finish2: amount_to_cancel=%d' % amount_to_cancel)
 
         assert amount_to_cancel >= 0
 
         try:
-            if amount_to_cancel == 0:
-                checkout_sales_result = multicheckout_api.checkout_sales(mc_order_no)
+            status = multicheckout_api.get_order_status_by_order_no(mc_order_no)
+            if status is not None:
+                if status.Status is None:
+                    status = multicheckout_api.checkout_inquiry(mc_order_no)
+                already_settled = status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled))
             else:
-                ## 金額変更での売上確定
-                checkout_sales_result = multicheckout_api.checkout_sales_different_amount(mc_order_no, amount_to_cancel)
-            if checkout_sales_result.CmnErrorCd != '000000':
+                already_settled = False # unlikely
+
+            if already_settled:
+                logger.info('finish2: order is already settled!')
+                if amount_to_cancel == 0:
+                    checkout_sales_result = None
+                else:
+                    checkout_sales_result = multicheckout_api.checkout_sales_part_cancel(mc_order_no, amount_to_cancel, 0)
+            else:
+                if amount_to_cancel == 0:
+                    checkout_sales_result = multicheckout_api.checkout_sales(mc_order_no)
+                else:
+                    ## 金額変更での売上確定
+                    checkout_sales_result = multicheckout_api.checkout_sales_different_amount(mc_order_no, amount_to_cancel)
+            if checkout_sales_result is not None and checkout_sales_result.CmnErrorCd != '000000':
                 raise MultiCheckoutSettlementFailure(
                     message='finish_secure: generic failure',
                     order_no=order_like.order_no,
@@ -230,6 +239,7 @@ class MultiCheckoutPlugin(object):
                     card_error_code=checkout_sales_result.CardErrorCd
                     )
         except Exception as e:
+            logger.exception(str(e))
             if isinstance(e, MultiCheckoutSettlementFailure):
                 # XXX: これは本当は呼び出し元でやってほしい
                 logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
@@ -271,7 +281,7 @@ class MultiCheckoutPlugin(object):
     def refresh(self, request, order):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         if order.is_inner_channel:
             logger.info('order %s is inner order' % order.order_no)
@@ -318,7 +328,7 @@ class MultiCheckoutPlugin(object):
     def refund(self, request, order, refund_record):
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         res = multicheckout_api.checkout_inquiry(real_order_no)
         if res.CmnErrorCd != '000000':
@@ -362,43 +372,39 @@ class MultiCheckoutPlugin(object):
         # 売り上げキャンセル
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        real_order_no = get_order_no(request, order)
+        real_order_no = order.order_no
 
         order_no = order.order_no
         if request.registry.settings.get('multicheckout.testing', False):
             order_no = order.order_no + "00"
 
-        # キャンセルAPIでなく売上一部取消APIを使う
-        # - 払戻期限を越えてもキャンセルできる為
-        # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
-        # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-        if order.created_at < SALES_PART_CANCEL_ENABLED_SINCE:
-            logger.info(u'キャンセルAPIでキャンセル %s' % order.order_no)
-            res = multicheckout_api.checkout_sales_cancel(real_order_no)
-        else:
-            res = multicheckout_api.checkout_inquiry(real_order_no)
-            if res.CmnErrorCd != '000000':
-                raise MultiCheckoutSettlementFailure(
-                    message='checkout_sales_part_cancel: generic failure',
-                    order_no=order.order_no,
-                    back_url=back_url(request),
-                    error_code=res.CmnErrorCd,
-                    card_error_code=res.CardErrorCd
-                    )
-
-            if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
-                raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
-            logger.info(u'売上一部取消APIで全額取消 %s' % order.order_no)
-            res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount, 0)
-
+        res = multicheckout_api.checkout_inquiry(real_order_no)
         if res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
-                message='checkout_sales_cancel: generic failure',
+                message='checkout_inquiry: generic failure',
                 order_no=order.order_no,
-                back_url=None,
+                back_url=back_url(request),
                 error_code=res.CmnErrorCd,
                 card_error_code=res.CardErrorCd
                 )
+
+        if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+            raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
+
+        if self.sales_cancel_moratorium:
+            logger.info(u'sales cancellation postponed at least for %d seconds: %s' % (self.sales_cancel_moratorium.seconds, order.order_no))
+            multicheckout_api.schedule_cancellation(order_no, datetime.now() + self.sales_cancel_moratorium, 0, 0)
+        else:
+            logger.info(u'sales cancellation will be done immediately: %s', order.order_no)
+            res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount, 0)
+            if res.CmnErrorCd != '000000':
+                raise MultiCheckoutSettlementFailure(
+                    message='checkout_sales_cancel: generic failure',
+                    order_no=order.order_no,
+                    back_url=None,
+                    error_code=res.CmnErrorCd,
+                    card_error_code=res.CardErrorCd
+                    )
 
 def card_number_mask(number):
     """ 下4桁以外をマスク"""
@@ -509,7 +515,7 @@ class MultiCheckoutView(object):
 
         order = self.request.session.get('order', dict())
         order.update(
-            order_no=get_order_no(self.request, cart),
+            order_no=cart.order_no,
             card_holder_name=card_holder_name,
             card_number=card_number,
             exp_year=exp_year,
@@ -531,7 +537,7 @@ class MultiCheckoutView(object):
 
         try:
             checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
-                get_order_no(self.request, cart),
+                cart.order_no,
                 item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 order['secure_code'],
@@ -567,7 +573,7 @@ class MultiCheckoutView(object):
         cart = get_cart(self.request)
         order = self.request.session['order']
         try:
-            enrol = multicheckout_api.secure3d_enrol(get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
+            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.total_amount)
         except Exception:
             # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
             logger.exception('multicheckout plugin')
@@ -603,10 +609,10 @@ class MultiCheckoutView(object):
         md = multicheckout_api.get_md()
         order['pares'] = pares
         order['md'] = md
-        order['order_no'] = get_order_no(self.request, cart)
+        order['order_no'] = cart.order_no
 
         try:
-            auth_result = multicheckout_api.secure3d_auth(get_order_no(self.request, cart), pares, md)
+            auth_result = multicheckout_api.secure3d_auth(cart.order_no, pares, md)
             item_name = api.get_item_name(self.request, cart.name)
 
             # TODO: エラーメッセージ
@@ -638,7 +644,7 @@ class MultiCheckoutView(object):
 
             logger.debug('call checkout auth')
             checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
-                get_order_no(self.request, cart),
+                cart.order_no,
                 item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
@@ -677,3 +683,18 @@ class MultiCheckoutView(object):
         self.request.session['order'] = order
 
         return HTTPFound(location=get_confirm_url(self.request))
+
+def includeme(config):
+    # 決済系(マルチ決済)
+    sales_cancel_moratorium = config.registry.settings.get('altair.payments.multicheckout.sales_cancel_moratorium')
+    if sales_cancel_moratorium is not None:
+        sales_cancel_moratorium = parse_time_spec(sales_cancel_moratorium)
+    if sales_cancel_moratorium is not None:
+        logger.info('sales_cancel_moratorium is set to %d' % sales_cancel_moratorium.seconds)
+    else:
+        logger.info('sales_cancel_moratorium is not specified')
+    config.add_payment_plugin(MultiCheckoutPlugin(sales_cancel_moratorium), PLUGIN_ID)
+    config.add_route("payment.secure3d", 'payment/3d')
+    config.add_route("payment.secure3d_result", 'payment/3d/result')
+    config.add_route("payment.secure_code", 'payment/scode')
+    config.scan(__name__)

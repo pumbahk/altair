@@ -109,6 +109,10 @@ class get_multicheckout_impl_Tests(unittest.TestCase):
 
 
 class Multicheckout3DAPITests(unittest.TestCase):
+    def setUp(self):
+        from .. import IdentityDecorator
+        self.order_no_decorator = IdentityDecorator()
+
     def _getDummyImpl(self):
         from ..testing import DummyCheckout3D
         return DummyCheckout3D()
@@ -126,18 +130,18 @@ class Multicheckout3DAPITests(unittest.TestCase):
     def test_get_pares(self):
         request = testing.DummyRequest()
         request.params = dict(PaRes='test_paras')
-        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession(), order_no_decorator=self.order_no_decorator)
         self.assertEqual(multicheckout_3d_api.get_pares(), 'test_paras')
 
     def test_get_md(self):
         request = testing.DummyRequest()
         request.params = dict(MD='test_md')
-        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession(), order_no_decorator=self.order_no_decorator)
         self.assertEqual(multicheckout_3d_api.get_md(), 'test_md')
 
     def test_is_enable_secure_3d(self):
         request = testing.DummyRequest()
-        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession(), order_no_decorator=self.order_no_decorator)
         self.assertFalse(multicheckout_3d_api.is_enable_secure3d(''))
         self.assertFalse(multicheckout_3d_api.is_enable_secure3d('123456789012345'))
         self.assertTrue(multicheckout_3d_api.is_enable_secure3d('1234567890123456'))

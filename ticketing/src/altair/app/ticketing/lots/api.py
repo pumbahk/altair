@@ -204,10 +204,7 @@ def prepare2_for_payment(request, entry_dict):
             request,
             override_name=cart.lot.event.organization.setting.multicheckout_shop_name
             )
-        # FIXME
-        from altair.app.ticketing.payments.plugins.multicheckout import get_multicheckout_order_no
-        order_no = get_multicheckout_order_no(request, cart.order_no)
-        multicheckout_api.keep_authorization(order_no, u"lots")
+        multicheckout_api.keep_authorization(cart.order_no, u"lots")
 
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """

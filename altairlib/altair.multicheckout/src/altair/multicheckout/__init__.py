@@ -8,12 +8,14 @@ import functools
 import warnings
 from zope.interface import implementer
 from pyramid.config import ConfigurationError
+from pyramid.settings import asbool
 from altair.sqla import DBSessionContext, session_scope
 from .interfaces import (
     ICardBrandDetecter,
     IMulticheckoutSettingFactory,
     IMulticheckoutSettingListFactory,
     IMulticheckoutImplFactory,
+    IMulticheckoutOrderNoDecorator,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,6 +72,25 @@ class MulticheckoutImplFactory(object):
             )
 
 
+@implementer(IMulticheckoutOrderNoDecorator)
+class IdentityDecorator(object):
+    def decorate(self, order_no):
+        return order_no
+
+    def undecorate(self, order_no):
+        return order_no
+
+
+@implementer(IMulticheckoutOrderNoDecorator)
+class TestModeDecorator(object):
+    def decorate(self, order_no):
+        return order_no + "00"
+
+    def undecorate(self, order_no):
+        assert order_no.endswith("00")
+        return order_no[:-2]
+
+
 def setup_private_db_session(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
@@ -79,11 +100,44 @@ def setup_private_db_session(config):
     _session.configure(bind=get_engine())
     config.add_tween(".multicheckout_dbsession_tween")
 
+
 def setup_components(config):
     reg = config.registry
     reg.registerUtility(config.maybe_dotted(".util.detect_card_brand"), 
                         ICardBrandDetecter)
     reg.registerUtility(MulticheckoutImplFactory(config), IMulticheckoutImplFactory)
+
+    settings = reg.settings
+
+
+    order_no_decorator = settings.get('altair.multicheckout.order_no_decorator')
+    if order_no_decorator is not None:
+        order_no_decorator = config.maybe_dotted(order_no_decorator)
+
+    if order_no_decorator is None:
+        testing = settings.get('altair.multicheckout.testing', None)
+        if testing is None:
+            testing = settings.get('multicheckout.testing', None)
+            if testing is not None:
+                logger.warning('using deprecated setting "multicheckout.testing"')
+            else:
+                testing = False
+
+        testing = asbool(testing)
+
+        if testing:
+            order_no_decorator = TestModeDecorator()
+            logger.info('altair.multicheckout operates in testing mode')
+        else:
+            logger.info('altair.multicheckout operates in normal mode')
+            order_no_decorator = IdentityDecorator()
+    else:
+        logger.info('altair.multicheckout operates with the custom implementation of IMulticheckoutOrderNoDecorator: %s' % order_no_decorator)
+
+    if order_no_decorator is None:
+        raise ConfigurationError('no implementation of IMulticheckoutOrderNoDecorator is available')
+
+    reg.registerUtility(order_no_decorator, IMulticheckoutOrderNoDecorator)
 
 def includeme(config):
     setup_private_db_session(config)

@@ -95,10 +95,10 @@ def setup_components(config):
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup2", MatchUpPerformanceSelector2)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
-    setup_temporary_store(config)
 
 def setup_mq(config):
     config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')
+    config.scan('.workers')
 
 def setup_payment_renderers(config):
     from zope.interface import implementer
@@ -351,6 +351,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.venues.setup_components')
 
     config.include(setup_components)
+    config.include(setup_temporary_store)
     config.include(setup_tweens)
     config.include(setup_auth)
     config.include(setup__renderers)

@@ -4,19 +4,19 @@
               <th class="span2">決済方法</th>
               <td class="span3">${order.payment_delivery_pair.payment_method.name}</td>
             </tr>
-            % if order.multicheckout_approval_no:
+            % if multicheckout_info:
             <tr>
               <th>マルチ決済受領番号</th>
-              <td>${order.multicheckout_approval_no}</td>
+              <td>${multicheckout_info['approval_no'] or u''}</td>
             </tr>
             <tr>
               <th>カードブランド</th>
-              <td>${order.card_brand or ''}</td>
+              <td>${multicheckout_info['card_brand'] or u''}</td>
             </tr>
             <tr>
               <th>仕向け先</th>
               <td>
-                ${order.card_ahead_com_name or ''} (${order.card_ahead_com_code or ''})
+                ${multicheckout_info['ahead_com_name'] or u''} (${multicheckout_info['ahead_com_cd'] or u''})
               </td>
             </tr>
             % endif

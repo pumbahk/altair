@@ -1,7 +1,8 @@
 import unittest
+import mock
 from pyramid import testing
-from altair.app.ticketing.testing import _setup_db, _teardown_db
-from altair.mq.testing import DummyMessage
+from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
+from altair.app.ticketing.core.testing import CoreTestMixin
 
 
 class lot_wish_cartTests(unittest.TestCase):
@@ -17,7 +18,7 @@ class lot_wish_cartTests(unittest.TestCase):
         _teardown_db()
 
     def _callFUT(self, *args, **kwargs):
-        from ..workers import lot_wish_cart
+        from .election import lot_wish_cart
         return lot_wish_cart(*args, **kwargs)
 
     def test_it(self):
@@ -97,8 +98,6 @@ class lot_wish_cartTests(unittest.TestCase):
         result = self._callFUT(wish)
 
         self.assertEqual(result.order_no, 'testing-entry')
-        self.assertTrue(result.has_different_amount)
-        self.assertEqual(result.different_amount, 1122 - 1022)
         self.assertEqual(result.total_amount, 1022)
         self.assertEqual(len(result.items), 2)
         self.assertEqual(result.items[0].quantity, 3)
@@ -112,11 +111,12 @@ class lot_wish_cartTests(unittest.TestCase):
         self.assertEqual(result.items[1].elements[1].quantity, 36)
 
 
-class WorkerResourceTests(unittest.TestCase):
+class ElectionWorkerResourceTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(modules=[
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.orders.models',
         ])
 
     def tearDown(self):
@@ -130,8 +130,8 @@ class WorkerResourceTests(unittest.TestCase):
         return lot
 
     def _getTarget(self):
-        from ..workers import WorkerResource
-        return WorkerResource
+        from .election import ElectionWorkerResource
+        return ElectionWorkerResource
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -139,21 +139,66 @@ class WorkerResourceTests(unittest.TestCase):
     def test_lot(self):
         lot = self._add_lot()
         lot_id = str(lot.id)
-        message = DummyMessage(params={'lot_id': lot_id})
-        target = self._makeOne(message=message)
+        request = DummyRequest(params={'lot_id': lot_id})
+        target = self._makeOne(request=request)
 
         self.assertEqual(target.lot_id, lot_id)
         self.assertEqual(target.lot, lot)
 
-class elect_lots_taskTests(unittest.TestCase):
+class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
+    def setUp(self):
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        self.config = testing.setUp()
+        self.session = _setup_db([
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.cart.models',
+            ])
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'lot_work_history',
+            self.session.bind
+            )
+        CoreTestMixin.setUp(self)
+        from altair.app.ticketing.core.models import OrganizationSetting, SalesSegmentGroup
+        from altair.app.ticketing.cart.models import CartSetting
+        self.sales_segment_group = SalesSegmentGroup(event=self.event)
+        self.organization.settings = [OrganizationSetting(cart_setting=CartSetting())]
+        from ..models import Lot, LotElectWork, LotEntry, LotEntryWish
+        self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(self.sales_segment_group)
+        self.lot = Lot()
+        self.session.add(self.lot)
+        self.lot_entry = LotEntry(lot=self.lot, payment_delivery_method_pair=self.payment_delivery_method_pairs[0])
+        self.session.add(self.lot_entry)
+        self.lot_entry_wish = LotEntryWish(wish_order=1, lot_entry=self.lot_entry, performance=self.performance)
+        self.session.add(self.lot_entry_wish)
+        self.work = LotElectWork(lot_entry_no='XX0000000000', wish_order=1)
+        self.session.add(self.work)
+
+        from altair.app.ticketing.cart.interfaces import IStocker
+        from pyramid.interfaces import IRequest
+        self.dummy_stocker = mock.Mock()
+        self.config.registry.registerAdapter(self.dummy_stocker, [IRequest], IStocker)
+   
+    def tearDown(self):
+        _teardown_db()
+        testing.tearDown()
+
     def _callFUT(self, *args, **kwargs):
-        from ..workers import elect_lots_task
+        from .election import elect_lots_task
         return elect_lots_task(*args, **kwargs)
 
-    def test_no_lot(self):
+    @mock.patch('altair.app.ticketing.lots.workers.election.Payment')
+    def test_no_lot(self, payment):
+        from altair.app.ticketing.orders.models import Order
+        order = Order(order_no=self.lot_entry.entry_no)
+        payment.return_value.call_payment.return_value = order
         context = testing.DummyResource(
             lot_id='testing',
-            lot=None,
+            lot=self.lot,
+            work=self.work
         )
-        dummy_message = DummyMessage()
-        self._callFUT(context, dummy_message)
+        dummy_request = DummyRequest()
+        self._callFUT(context, dummy_request)
+        self.assertEqual(self.lot_entry.order, order)

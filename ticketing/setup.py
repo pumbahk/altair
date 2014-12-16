@@ -105,6 +105,7 @@ requires = [
     'altair.httpsession',
     'altair.samarker',
     'altair.pyramid_dynamic_renderer',
+    'altair.timeparse',
     ]
 
 tests_require = [

@@ -1,11 +1,11 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pyramid.events import subscriber
-#from . import api
 from . import sendmail
 from altair.multicheckout.models import MultiCheckoutOrderStatus
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.now import get_now
+from altair.timeparse import parse_time_spec
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +41,35 @@ def finish_rejected_lot_entry(event):
         logger.exception(e)
 
 
-@subscriber('altair.app.ticketing.lots.events.LotClosedEvent')
-def finish_closed_lot_entry(event):
-    try:
-        entry = event.lot_entry
-        request = event.request
-        multicheckout_api = get_multicheckout_3d_api(
-            request,
-            override_name=entry.lot.event.organization.setting.multicheckout_shop_name
-            )
-        # FIXME
-        from altair.app.ticketing.payments.plugins.multicheckout import get_multicheckout_order_no
-        order_no = get_multicheckout_order_no(request, entry.entry_no)
-        multicheckout_api.keep_authorization(order_no, None)
-    except Exception as e:
-        logger.exception(e)
+class LotEntryCloser(object):
+    def __init__(self, registry):
+        self.registry = registry
+        moratorium = registry.settings.get('lots.election.pending_sales_cancel_moratorium', None)
+        if moratorium is None:
+            moratorium = timedelta(hours=1)
+        else:
+            moratorium = parse_time_spec(moratorium)
+        self.moratorium = moratorium
+
+    def __call__(self, event):
+        now = datetime.now()
+        try:
+            entry = event.lot_entry
+            request = event.request
+            multicheckout_api = get_multicheckout_3d_api(
+                request,
+                override_name=entry.lot.event.organization.setting.multicheckout_shop_name
+                )
+            status = multicheckout_api.get_order_status_by_order_no(entry.entry_no)
+            if status.is_authorized:
+                multicheckout_api.keep_authorization(entry.entry_no, None)
+            elif status.is_settled:
+                multicheckout_api.schedule_cancellation(entry.entry_no, now + self.moratorium, 0, 0)
+        except Exception as e:
+            logger.exception(e)
+
+def includeme(config):
+    config.scan('.subscribers')
+    config.add_subscriber(LotEntryCloser(config.registry), '.events.LotClosedEvent')
+
+

@@ -12,6 +12,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         from ..testing import DummyCheckout3D
         import sqlahelper
         from ..interfaces import ICardBrandDetecter
+        from .. import IdentityDecorator
 
         self.config = testing.setUp()
         self.config.registry.registerUtility(lambda card_number: 'DUMMY', ICardBrandDetecter)
@@ -20,6 +21,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         engine = create_engine("sqlite:///")
         sqlahelper.add_engine(engine)
         self.session = Session(bind=engine)
+        self.order_no_decorator = IdentityDecorator()
 
         from .. import models
 
@@ -35,7 +37,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         return Multicheckout3DAPI
 
     def _makeOne(self, **kwargs):
-        return self._getTarget()(self.request, self.dummy_impl, self.session, **kwargs)
+        return self._getTarget()(self.request, self.dummy_impl, self.session, self.order_no_decorator, **kwargs)
 
     def test_secure3d_enrol(self):
         from .. import models as m

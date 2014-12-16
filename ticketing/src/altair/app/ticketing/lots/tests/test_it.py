@@ -32,7 +32,6 @@ class keep_authTests(unittest.TestCase):
         cls.config.set_authorization_policy(ACLAuthorizationPolicy())
         cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
-        cls.config.include('altair.app.ticketing.lots')
 
     @classmethod
     def tearDownClass(cls):
@@ -71,7 +70,6 @@ class EntryLotViewTests(unittest.TestCase):
         cls.config.set_authorization_policy(ACLAuthorizationPolicy())
         cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
-        cls.config.include('altair.app.ticketing.lots')
         cls.config.include('altair.pyramid_tz')
 
 
@@ -272,7 +270,6 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
         self.config.include('altair.auth')
         self.config.include('pyramid_layout')
-        self.config.include('altair.app.ticketing.lots')
         self.config.include('altair.app.ticketing.lots.setup_routes')
         self.config.include('altair.app.ticketing.cart.request')
 
@@ -501,7 +498,6 @@ class LotReviewViewTests(unittest.TestCase):
         cls.config.set_authorization_policy(ACLAuthorizationPolicy())
         cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
-        cls.config.include('altair.app.ticketing.lots')
 
 
     @classmethod

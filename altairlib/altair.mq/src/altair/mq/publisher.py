@@ -3,7 +3,7 @@ from altair.mq.interfaces import IPublisher, IConsumer, IPublisherConsumerFactor
 from zope.interface import implementer, provider
 from pyramid.settings import asbool
 from pyramid.config import ConfigurationError
-import pika
+import pika, pika.connection
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,13 @@ def pika_publisher_factory(config, config_prefix):
 
 @implementer(IPublisher, IConsumer)
 class LocallyDispatchingPublisherConsumer(object):
+    class VirtualConnection(object):
+        def __init__(self, params):
+            self.params = params
+
     class VirtualChannel(object):
-        def __init__(self):
+        def __init__(self, connection):
+            self.connection = connection
             self.queue = None
             self.durable = None
             self.exclusive = None
@@ -84,6 +89,9 @@ class LocallyDispatchingPublisherConsumer(object):
         self.routes = []
         self.tasks = {}
         self.continue_on_exception = continue_on_exception
+        self.virtual_conn = self.VirtualConnection(
+            pika.connection.ConnectionParameters()
+            )
 
     def _compile_pattern(self, pattern):
         import re
@@ -96,7 +104,7 @@ class LocallyDispatchingPublisherConsumer(object):
         })
 
     def add_task(self, task_mapper):
-        channel = self.VirtualChannel()
+        channel = self.VirtualChannel(self.virtual_conn)
         task_mapper.declare_queue(channel)
         self.tasks.setdefault(task_mapper.queue_settings.queue, []).append(channel)
         channel.callback(None)

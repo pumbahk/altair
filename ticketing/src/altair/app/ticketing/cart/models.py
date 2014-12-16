@@ -122,9 +122,6 @@ class Cart(Base, c_models.CartMixin):
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
 
-    has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
-    different_amount = 0
-
     @property
     def products(self):
         return self.items

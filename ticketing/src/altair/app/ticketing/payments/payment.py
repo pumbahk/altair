@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class Payment(object):
     """ 決済
     """
-    def __init__(self, cart, request, session=None, now=None):
+    def __init__(self, cart, request, session=None, now=None, cancel_payment_on_failure=True):
         if now is None:
             now = datetime.now()
         self.request = request
@@ -26,6 +26,7 @@ class Payment(object):
         from .api import get_preparer, lookup_plugin
         self.get_preparer = get_preparer
         self.lookup_plugin = lookup_plugin
+        self.cancel_payment_on_failure = cancel_payment_on_failure
 
     def _bind_order(self, order):
         order.organization_id = order.performance.event.organization_id
@@ -87,8 +88,9 @@ class Payment(object):
                 try:
                     delivery_plugin.finish(self.request, self.cart)
                 except Exception as e:
-                    payment_plugin.cancel(self.request, order)
                     order.deleted_at = self.now
+                    if self.cancel_payment_on_failure:
+                        payment_plugin.cancel(self.request, order)
                     raise e
             else:
                 logger.info('cart is not a IPaymentCart')
@@ -106,8 +108,9 @@ class Payment(object):
             try:
                 delivery_plugin.finish2(self.request, self.cart)
             except Exception as e:
-                payment_plugin.cancel(self.request, order)
                 order.deleted_at = self.now
+                if self.cancel_payment_on_failure:
+                    payment_plugin.cancel(self.request, order)
                 raise e
         return order
 

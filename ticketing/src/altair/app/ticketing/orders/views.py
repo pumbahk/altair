@@ -102,10 +102,12 @@ from altair.app.ticketing.loyalty import api as loyalty_api
 from altair.app.ticketing.sej.api import get_sej_order
 
 from . import utils
-from .card_utils import (
+from altair.multicheckout.api import get_multicheckout_3d_api
+from altair.multicheckout.util import (
     get_multicheckout_error_message,
     get_multicheckout_card_error_message,
     get_multicheckout_status_description,
+    get_multicheckout_ahead_com_name
     )
 
 from .api import (
@@ -118,7 +120,8 @@ from .api import (
     get_order_metadata_provider_registry,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
-    get_anshin_checkout_object
+    get_anshin_checkout_object,
+    get_order_by_order_no,
 )
 from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
@@ -1060,7 +1063,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.show_by_order_no')
     def show_by_order_no(self):
         order_no = self.request.matchdict.get('order_no', None)
-        order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
+        order = get_order_by_order_no(self.request, order_no)
         if order is None:
             raise HTTPNotFound('order no %s is not found' % order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
@@ -1092,10 +1095,19 @@ class OrderDetailView(BaseView):
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
         checkout_object = None
-        try:
+        if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
             checkout_object = get_anshin_checkout_object(self.request, order)
-        except Exception as e:
-            pass
+
+        multicheckout_info = None
+        if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+            multicheckout_api = get_multicheckout_3d_api(self.request, self.context.organization.setting.multicheckout_shop_name)
+            recs, _ = multicheckout_api.get_transaction_info(order.order_no)
+            for rec in recs:
+                if rec['status'] == '110': # authorization successful
+                    multicheckout_info = rec
+                    break
+        if multicheckout_info is not None:
+            multicheckout_info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -1105,6 +1117,7 @@ class OrderDetailView(BaseView):
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':get_sej_order(order.order_no),
             'checkout': checkout_object,
+            'multicheckout_info': multicheckout_info,
             'mail_magazines':mail_magazines,
             'form_order_info':form_order_info,
             'form_shipping_address':form_shipping_address,
@@ -2392,11 +2405,6 @@ class MailInfoView(BaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
-def decorate_order_no(request, order_no):
-    if request.registry.settings.get('multicheckout.testing', False):
-        order_no = order_no + "00"
-    return order_no
-
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class CartView(BaseView):
     def __init__(self, context, request):
@@ -2441,31 +2449,28 @@ class CartView(BaseView):
             .filter(Cart.organization_id == organization_id) \
             .filter(Cart.deleted_at == None) \
             .filter(Cart.order_no == order_no).one()
-        decorated_order_no = decorate_order_no(self.request, cart.order_no)
         multicheckout_records = []
-        from altair.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard, Secure3DAuthRequest, Secure3DAuthResponse
-        for multicheckout_response in slave_session.query(MultiCheckoutResponseCard).outerjoin(MultiCheckoutResponseCard.request).filter(MultiCheckoutResponseCard.OrderNo == decorated_order_no).order_by(MultiCheckoutResponseCard.id):
-            multicheckout_records.append({
-                'status': multicheckout_response.Status,
-                'status_description': get_multicheckout_status_description(multicheckout_response.Status),
-                'ahead_com_cd': multicheckout_response.AheadComCd,
-                'error_cd': multicheckout_response.CmnErrorCd,
-                'card_error_cd': multicheckout_response.CardErrorCd,
-                'message': u'%s / %s' % (
-                    get_multicheckout_error_message(multicheckout_response.CmnErrorCd),
-                    get_multicheckout_card_error_message(multicheckout_response.CardErrorCd),
-                    ),
-                'secure3d_ret_cd': None,
-                })
-        for secure3d_auth_response in slave_session.query(Secure3DAuthResponse).outerjoin(Secure3DAuthResponse.request).filter(Secure3DAuthResponse.OrderNo == decorated_order_no):
-            multicheckout_records.append({
-                'status': None,
-                'status_description': None,
-                'ahead_com_cd': None,
-                'error_cd': secure3d_auth_response.ErrorCd,
-                'card_error_cd': None,
-                'message': get_multicheckout_error_message(secure3d_auth_response.ErrorCd),
-                'secure3d_ret_cd': secure3d_auth_response.RetCd,
-                })
+        multicheckout_api = get_multicheckout_3d_api(self.request, self.context.organization.setting.multicheckout_shop_name)
+        standard_info, secure3d_info = multicheckout_api.get_transaction_info(order_no)
+        for standard_info_rec in standard_info:
+            standard_info_rec['status_description'] = get_multicheckout_status_description(standard_info_rec['status'])
+            standard_info_rec['message'] = u'%s / %s' % (
+                    get_multicheckout_error_message(standard_info_rec['error_cd']),
+                    get_multicheckout_card_error_message(standard_info_rec['card_error_cd']),
+                    )
+            standard_info_rec['secure3d_ret_cd'] = None
+            multicheckout_records.append(standard_info_rec)
+
+        for secure3d_info_rec in secure3d_info:
+            secure3d_info_rec['status'] = None
+            secure3d_info_rec['approval_no'] = None
+            secure3d_info_rec['ahead_com_cd'] = None
+            secure3d_info_rec['card_error_cd'] = None
+            secure3d_info_rec['card_no'] = None
+            secure3d_info_rec['card_limit'] = None
+            secure3d_info_rec['secure_kind'] = None
+            secure3d_info_rec['card_brand'] = None
+            secure3d_info_rec['message'] = get_multicheckout_error_message(secure3d_info_rec['error_cd'])
+            multicheckout_records.append(secure3d_info_rec)
 
         return { 'cart': cart, 'multicheckout_records': multicheckout_records }

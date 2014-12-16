@@ -446,11 +446,13 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
-    def test_finish_success(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.get_authorized_amount')
+    def test_finish_success(self, get_authorized_amount, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from .. import api as p_api
         from altair.multicheckout import models as mc_models
         from altair.app.ticketing.cart import models as cart_models
         from altair.app.ticketing.core import models as core_models
+        get_authorized_amount.return_value = 1234
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
@@ -478,9 +480,23 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             finished_at=None,
             _order_no='000000000000',
             shipping_address=core_models.ShippingAddress(),
-            has_different_amount=False,
-            payment_delivery_pair=core_models.PaymentDeliveryMethodPair()
-        )
+            sales_segment=core_models.SalesSegment(),
+            payment_delivery_pair=core_models.PaymentDeliveryMethodPair(
+                transaction_fee=0,
+                delivery_fee_per_order=0,
+                delivery_fee_per_principal_ticket=0,
+                delivery_fee_per_subticket=0,
+                system_fee=0,
+                special_fee=0,
+                payment_method=core_models.PaymentMethod(fee_type=core_models.FeeTypeEnum.Once.v)
+                ),
+            items=[
+                cart_models.CartedProduct(
+                    product=core_models.Product(price=1234),
+                    quantity=1
+                    )
+                ]
+            )
 
         session_order = {
             'client_name': u'楽天太郎',
@@ -517,7 +533,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             target.finish(request, dummy_cart)
             self.assertTrue(True)
         except Exception as e:
-            self.fail()
+            self.fail(e)
         self.assertFalse(request_card_cancel_auth.called)
 
     @mock.patch('transaction._transaction.Transaction.commit')
@@ -526,9 +542,11 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
-    def test_finish_fail(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.get_authorized_amount')
+    def test_finish_fail(self, get_authorized_amount, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from .. import api as p_api
         from altair.multicheckout import models as mc_models
+        get_authorized_amount.return_value = 1234
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
@@ -558,7 +576,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             finished_at=None,
             order_no='000000000000',
             shipping_address=testing.DummyModel(),
-            has_different_amount=False,
             payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
@@ -606,9 +623,11 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
-    def test_finish_api_fail(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.get_authorized_amount')
+    def test_finish_api_fail(self, get_authorized_amount, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from .. import api as p_api
         from altair.multicheckout import models as mc_models
+        get_authorized_amount.return_value = 1234
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
@@ -639,7 +658,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             finished_at=None,
             order_no='000000000000',
             shipping_address=testing.DummyModel(),
-            has_different_amount=False,
             payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
@@ -687,9 +705,11 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
-    def test_finish_api_fail_keep_auth(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.get_authorized_amount')
+    def test_finish_api_fail_keep_auth(self, get_authorized_amount, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from .. import api as p_api
         from altair.multicheckout import models as mc_models
+        get_authorized_amount.return_value = 1234
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
@@ -720,7 +740,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             finished_at=None,
             order_no='000000000000',
             shipping_address=testing.DummyModel(),
-            has_different_amount=False,
             payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
