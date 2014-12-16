@@ -200,7 +200,7 @@ class TicketsUtilsTest(TestCase):
                 )
             performance = Performance(
                 event=event,
-                name=u'パフォーマンス名',
+                name=u'公演名',
                 code=u'RTTST0000000',
                 open_on=datetime(2012, 12, 31, 10, 1, 2),
                 start_on=datetime(2012, 12, 31, 11, 3, 4),
@@ -384,7 +384,7 @@ class TicketsUtilsTest(TestCase):
                 u"abbreviated_title": u"イベント名略称"
                 },
             u"performance": {
-                u"name": u"パフォーマンス名",
+                u"name": u"公演名",
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
@@ -408,8 +408,8 @@ class TicketsUtilsTest(TestCase):
                 u"seat_no": u"seat_no"
                 },
             u"イベント名": u"イベント名",
-            u"パフォーマンス名": u"パフォーマンス名",
-            u"対戦名": u"パフォーマンス名",
+            u"公演名": u"公演名",
+            u"対戦名": u"公演名",
             u"会場名": u"会場名",
             u"公演コード": u"RTTST0000000",
             u"開催日": u"2012年 12月 31日 (月)",
@@ -436,7 +436,7 @@ class TicketsUtilsTest(TestCase):
                 u"abbreviated_title": u"イベント名略称"
                 },
             u"performance": {
-                u"name": u"パフォーマンス名",
+                u"name": u"公演名",
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
@@ -475,8 +475,8 @@ class TicketsUtilsTest(TestCase):
                 u"seat_no": u"seat_no"
                 },
             u"イベント名": u"イベント名",
-            u"パフォーマンス名": u"パフォーマンス名",
-            u"対戦名": u"パフォーマンス名",
+            u"公演名": u"公演名",
+            u"対戦名": u"公演名",
             u"会場名": u"会場名",
             u"公演コード": u"RTTST0000000",
             u"開催日": u"2012年 12月 31日 (月)",
@@ -516,7 +516,7 @@ class TicketsUtilsTest(TestCase):
                 u"abbreviated_title": u"イベント名略称"
                 },
             u"performance": {
-                u"name": u"パフォーマンス名",
+                u"name": u"公演名",
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
@@ -555,8 +555,8 @@ class TicketsUtilsTest(TestCase):
                 u"seat_no": u"seat_no"
                 },
             u"イベント名": u"イベント名",
-            u"パフォーマンス名": u"パフォーマンス名",
-            u"対戦名": u"パフォーマンス名",
+            u"公演名": u"公演名",
+            u"対戦名": u"公演名",
             u"会場名": u"会場名",
             u"公演コード": u"RTTST0000000",
             u"開催日": u"2012年 12月 31日 (月)",

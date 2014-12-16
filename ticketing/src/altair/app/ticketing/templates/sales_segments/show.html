@@ -9,7 +9,7 @@ require([], function () {});
 </script>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'イベント', sales_segment.event.title, u'パフォーマンス', sales_segment.performance.name, u'販売区分', sales_segment.name],
+    names=[u'イベント', sales_segment.event.title, u'公演', sales_segment.performance.name, u'販売区分', sales_segment.name],
     urls=[
       request.route_path('events.index'),
       request.route_path('events.show', event_id=sales_segment.event.id),
@@ -105,7 +105,7 @@ require([], function () {});
 
 % if request.context.organization.point_feature_enabled:
 <h3>ポイント付与設定</h3>
-<p>ポイント付与設定は全パフォーマンス・販売区分で共通です。追加は<a href="${request.route_path('point_grant_settings.index')}">こちら</a></p>
+<p>ポイント付与設定は全公演・販売区分で共通です。追加は<a href="${request.route_path('point_grant_settings.index')}">こちら</a></p>
 <form method="post" action="#">
 <%include file="/point_grant_settings/_list.html" args="point_grant_settings=sales_segment.point_grant_settings, organization_setting=sales_segment.sales_segment_group.event.organization.setting" />
 <%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment" />

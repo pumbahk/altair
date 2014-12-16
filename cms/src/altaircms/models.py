@@ -45,7 +45,7 @@ def initialize_sql(engine, dropall=False):
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """
-    パフォーマンス
+    公演
     """
     __tablename__ = "performance"
     query = DBSession.query_property()

@@ -652,7 +652,7 @@ class EventQBuilder(QBuilderIn):
     _targets = Event.id,
 
 class PerformanceQBuilder(QBuilderIn):
-    name = u'パフォーマンス'
+    name = u'公演'
     _type = int
     _targets = Performance.id,
 

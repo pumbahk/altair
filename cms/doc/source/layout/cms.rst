@@ -32,7 +32,7 @@ CMS管理側の画面レイアウト。サイト構成は以下の通り。
    }
 
    CMSダッシュボード -> イベント;
-   CMSダッシュボード -> パフォーマンス;
+   CMSダッシュボード -> 公演;
    CMSダッシュボード -> トピック管理;
    CMSダッシュボード -> アセット管理;
    CMSダッシュボード -> ページ管理;
@@ -46,7 +46,7 @@ CMS管理側の画面レイアウト。サイト構成は以下の通り。
    group {
      color = "lightgreen";
      label = "イベント管理";
-     パフォーマンス;
+     公演;
      イベント -> 検索結果一覧 [style="dotted",label="検索"];
      イベント詳細;
    }
@@ -65,7 +65,7 @@ CMS管理側の画面レイアウト。サイト構成は以下の通り。
    :header: メニュー, 表示可能なロール, 備考
 
    イベント, event_viewer / event_editor
-   パフォーマンス, performance_viewer / performance_editor
+   公演, performance_viewer / performance_editor
    トピック, topic_viewer / topic_editor
    レイアウト, layout_viewer / layout_editor, テンプレート再設定はアプリケーションデプロイが必要なため非表示で良いかも知れない。
    ページ, page_viewer / page_editor

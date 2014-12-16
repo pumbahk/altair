@@ -139,7 +139,7 @@
     </flowRegion>
     <flowDiv
        style="line-height:100%"
-       id="flowDiv3060">{{パフォーマンス名}}<flowPara
+       id="flowDiv3060">{{公演名}}<flowPara
    style="line-height:100%"
    id="flowPara3026" />
 </flowDiv>
