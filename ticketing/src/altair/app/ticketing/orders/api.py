@@ -61,6 +61,9 @@ from altair.app.ticketing.payments.api import lookup_plugin, get_payment_deliver
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, PaymentDeliveryMethodPairNotFound, PaymentPluginException
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.multicheckout.util import get_multicheckout_ahead_com_name
+from altair.multicheckout.models import MultiCheckoutStatusEnum
+from altair.multicheckout.api import get_multicheckout_3d_api
 from .models import (
     Order,
     OrderedProduct,
@@ -1853,5 +1856,22 @@ def get_refund_ticket_price(refund, order, product_item_id):
     return 0
 
 def get_anshin_checkout_object(request, order):
-    service = checkout_api.get_checkout_service(request, order.ordered_from, core_api.get_channel(order.channel))
-    return service.get_checkout_object_by_order_no(order.order_no)
+    if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
+        service = checkout_api.get_checkout_service(request, order.ordered_from, core_api.get_channel(order.channel))
+        return service.get_checkout_object_by_order_no(order.order_no)
+    else:
+        return None
+
+def get_multicheckout_info(request, order):
+    multicheckout_info = None
+    if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+        organization = order.organization
+        multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
+        recs, _ = multicheckout_api.get_transaction_info(order.order_no)
+        for rec in recs:
+            if rec['status'] == str(MultiCheckoutStatusEnum.Authorized): # authorization successful
+                multicheckout_info = rec
+                break
+    if multicheckout_info is not None:
+        multicheckout_info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
+    return multicheckout_info

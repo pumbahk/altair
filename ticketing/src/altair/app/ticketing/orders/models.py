@@ -54,6 +54,7 @@ from altair.app.ticketing.users.models import (
     User,
     UserProfile,
     Member,
+    MemberGroup,
     Membership,
     UserCredential,
 )
@@ -71,16 +72,26 @@ logger = logging.getLogger(__name__)
 
 
 class SummarizedUser(object):
-    def __init__(self, session, id, user_profile, user_credential):
+    def __init__(self, session, id, membership_id, user_profile):
         self.session = session
         self.id = id
+        self.membership_id = membership_id
         self.user_profile = user_profile
-        self.user_credential = [user_credential]
-        self.first_user_credential = user_credential
 
-    @property
+    @reify
     def member(self):
         return self.session.query(Member).filter_by(user_id=self.id).first()
+
+    @reify
+    def user_credential(self):
+        return self.session.query(UserCredential) \
+            .join(Member, UserCredential.user_id == Member.user_id) \
+            .join(MemberGroup) \
+            .filter(User.id==UserCredential.user_id, MemberGroup.membership_id==self.membership_id).all()
+
+    @property
+    def first_user_credential(self):
+        return self.user_credential[0] if len(self.user_credential) > 0 else None
 
 class SummarizedUserCredential(object):
     def __init__(self, auth_identifier, membership):
@@ -107,11 +118,13 @@ class SummarizedUserProfile(object):
         self.sex = sex
 
 class SummarizedPaymentMethod(object):
-    def __init__(self, name):
+    def __init__(self, payment_plugin_id, name):
+        self.payment_plugin_id = payment_plugin_id
         self.name = name
 
 class SummarizedDeliveryMethod(object):
-    def __init__(self, name):
+    def __init__(self, delivery_plugin_id, name):
+        self.delivery_plugin_id = delivery_plugin_id
         self.name = name
 
 class SummarizedPaymentDeliveryMethodPair(object):
@@ -245,10 +258,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
 
-    @property
-    def multicheckout_approval_no(self):
-        return u''
-
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
 
@@ -283,16 +292,31 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     membership = orm.relationship('Membership')
 
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
+    def multicheckout_info(self):
+        from .api import get_multicheckout_info
+        request = get_current_request()
+        return get_multicheckout_info(request, self)
+
+    @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
     def card_brand(self):
-        return u'' # FIXME
+        return self.multicheckout_info and self.multicheckout_info['card_brand']
 
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
     def card_ahead_com_code(self):
-        return u'' # FIXME
+        return self.multicheckout_info and self.multicheckout_info['ahead_com_cd']
 
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
     def card_ahead_com_name(self):
-        return u'' # FIXME
+        return self.multicheckout_info and self.multicheckout_info['ahead_com_name']
+
+    @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
+    def multicheckout_approval_no(self):
+        return self.multicheckout_info and self.multicheckout_info['approval_no']
 
     fraud_suspect = sa.Column(sa.Boolean, nullable=True, default=None)
     browserid = sa.Column(sa.Unicode(40))
@@ -396,6 +420,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.payment_delivery_pair.delivery_method.delivery_plugin_id
 
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.sej.api.get_sej_order()を使ってほしい")
     def sej_order(self):
         return sej_api.get_sej_order(self.order_no)
 
@@ -1221,7 +1246,6 @@ class OrderSummary(Base):
             UserProfile.__table__.c.first_name_kana.label('user_profile_first_name_kana'),
             UserProfile.__table__.c.nick_name.label('user_profile_nick_name'),
             UserProfile.__table__.c.sex.label('user_profile_sex'),
-            UserCredential.__table__.c.auth_identifier,
             ShippingAddress.__table__.c.last_name,
             ShippingAddress.__table__.c.first_name,
             ShippingAddress.__table__.c.last_name_kana,
@@ -1238,8 +1262,11 @@ class OrderSummary(Base):
             ShippingAddress.__table__.c.email_1,
             ShippingAddress.__table__.c.email_2,
             PaymentMethod.__table__.c.name.label('payment_method_name'),
+            PaymentMethod.__table__.c.payment_plugin_id,
             DeliveryMethod.__table__.c.name.label('delivery_method_name'),
+            DeliveryMethod.__table__.c.delivery_plugin_id,
             Membership.__table__.c.name.label('membership_name'),
+            Membership.__table__.c.id.label('membership_id'),
             ],
         primary_key=[
             Order.__table__.c.id
@@ -1247,6 +1274,7 @@ class OrderSummary(Base):
         )
 
     id = Order.id
+    organization = orm.relationship('Organization', primaryjoin=(Order.organization_id == Organization.id))
     organization_id = Order.organization_id
     event_id = Performance.event_id
     performance_start_on = Performance.start_on
@@ -1301,8 +1329,11 @@ class OrderSummary(Base):
     email_2 = ShippingAddress.email_2
     payment_method_id = PaymentMethod.id
     payment_method_name = PaymentMethod.__table__.c.name
+    payment_plugin_id = PaymentMethod.__table__.c.payment_plugin_id
     delivery_method_id = DeliveryMethod.id
     delivery_method_name = DeliveryMethod.__table__.c.name
+    delivery_plugin_id = DeliveryMethod.__table__.c.delivery_plugin_id
+    membership_id = Membership.__table__.c.id
     membership_name = Membership.__table__.c.name
 
     __table__ = Order.__table__ \
@@ -1342,13 +1373,8 @@ class OrderSummary(Base):
                  UserProfile.deleted_at==None)
             ) \
         .outerjoin(
-            UserCredential.__table__,
-            and_(User.id==UserCredential.user_id,
-                 UserCredential.deleted_at==None)
-            ) \
-        .outerjoin(
             Membership.__table__,
-            and_(UserCredential.membership_id==Membership.id,
+            and_(Order.membership_id==Membership.id,
                  Membership.deleted_at==None)
             )
 
@@ -1387,6 +1413,7 @@ class OrderSummary(Base):
         return SummarizedUser(
             session_partaken_by(self),
             self.user_id,
+            self.membership_id,
             SummarizedUserProfile(
                 self.user_profile_last_name,
                 self.user_profile_first_name,
@@ -1394,18 +1421,34 @@ class OrderSummary(Base):
                 self.user_profile_first_name_kana,
                 self.user_profile_nick_name,
                 self.user_profile_sex
-                ),
-            SummarizedUserCredential(
-                self.auth_identifier,
-                SummarizedMembership(
-                    self.membership_name
-                    )
                 )
             )
 
-    @property
+    @reify
     def sej_order(self):
         return sej_api.get_sej_order(self.order_no)
+
+    @reify
+    def multicheckout_info(self):
+        from .api import get_multicheckout_info
+        request = get_current_request()
+        return get_multicheckout_info(request, self)
+
+    @property
+    def card_brand(self):
+        return self.multicheckout_info and self.multicheckout_info['card_brand']
+
+    @property
+    def card_ahead_com_code(self):
+        return self.multicheckout_info and self.multicheckout_info['ahead_com_cd']
+
+    @property
+    def card_ahead_com_name(self):
+        return self.multicheckout_info and self.multicheckout_info['ahead_com_name']
+
+    @property
+    def multicheckout_approval_no(self):
+        return self.multicheckout_info and self.multicheckout_info['approval_no']
 
     def _shipping_address(self):
         if self.shipping_address_id is None:
@@ -1433,8 +1476,8 @@ class OrderSummary(Base):
 
     def _payment_delivery_pair(self):
         return SummarizedPaymentDeliveryMethodPair(
-            SummarizedPaymentMethod(self.payment_method_name),
-            SummarizedDeliveryMethod(self.delivery_method_name))
+            SummarizedPaymentMethod(self.payment_plugin_id, self.payment_method_name),
+            SummarizedDeliveryMethod(self.delivery_plugin_id, self.delivery_method_name))
 
     rel_payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", primaryjoin=Order.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)
     payment_delivery_pair = HybridRelation(_payment_delivery_pair, rel_payment_delivery_pair)
@@ -1449,19 +1492,3 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
-
-    @property
-    def multicheckout_approval_no(self):
-        return u'' # FIXME
-
-    @property
-    def card_brand(self):
-        return u'' # FIXME
-
-    @property
-    def card_ahead_com_code(self):
-        return u'' # FIXME
-
-    @property
-    def card_ahead_com_name(self):
-        return u'' # FIXME

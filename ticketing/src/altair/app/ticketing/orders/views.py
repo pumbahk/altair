@@ -86,8 +86,6 @@ from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
-from altair.app.ticketing.orders.exceptions import InnerCartSessionException
-from altair.app.ticketing.orders.api import get_order_by_id, refresh_order
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
@@ -107,7 +105,6 @@ from altair.multicheckout.util import (
     get_multicheckout_error_message,
     get_multicheckout_card_error_message,
     get_multicheckout_status_description,
-    get_multicheckout_ahead_com_name
     )
 
 from .api import (
@@ -122,8 +119,11 @@ from .api import (
     recalculate_total_amount_for_order,
     get_anshin_checkout_object,
     get_order_by_order_no,
+    get_order_by_id,
+    refresh_order,
+    get_multicheckout_info,
 )
-from .exceptions import OrderCreationError, MassOrderCreationError
+from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
@@ -332,7 +332,8 @@ class OrderIndexView(OrderBaseView):
         if request.params:
             from .download import OrderSummary
             if form_search.validate():
-                query = OrderSummary(slave_session,
+                query = OrderSummary(self.request,
+                                    slave_session,
                                     organization_id,
                                     condition=form_search)
             else:
@@ -519,7 +520,14 @@ class OrderDownloadView(BaseView):
         order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
-        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
+        def _orders(orders):
+            prev_order = None
+            for order in orders:
+                if prev_order is not None:
+                    make_transient(prev_order)
+                prev_order = order
+                yield order
+        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(_orders(orders)))
 
         return response
 
@@ -544,11 +552,13 @@ class OrderDownloadView(BaseView):
             query_type = OrderSeatDownload
 
         if request.method == "POST" and form_search.validate():
-            query = query_type(slave_session,
-                                  organization_id,
-                                  condition=form_search)
+            query = query_type(self.request,
+                               slave_session,
+                               organization_id,
+                               condition=form_search)
         else:
-            query = OrderDownload(slave_session,
+            query = OrderDownload(self.request,
+                                  slave_session,
                                   organization_id,
                                   condition=None)
 
@@ -1094,20 +1104,8 @@ class OrderDetailView(BaseView):
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
-        checkout_object = None
-        if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
-            checkout_object = get_anshin_checkout_object(self.request, order)
-
-        multicheckout_info = None
-        if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
-            multicheckout_api = get_multicheckout_3d_api(self.request, self.context.organization.setting.multicheckout_shop_name)
-            recs, _ = multicheckout_api.get_transaction_info(order.order_no)
-            for rec in recs:
-                if rec['status'] == '110': # authorization successful
-                    multicheckout_info = rec
-                    break
-        if multicheckout_info is not None:
-            multicheckout_info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
+        checkout_object = get_anshin_checkout_object(self.request, order)
+        multicheckout_info = get_multicheckout_info(self.request, order)
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,

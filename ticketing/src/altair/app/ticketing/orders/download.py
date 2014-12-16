@@ -37,6 +37,8 @@ from altair.app.ticketing.orders.models import (
     OrderedProduct,
     OrderedProductAttribute,
     OrderedProductItem,
+    SummarizedPaymentDeliveryMethodPair,
+    SummarizedPaymentMethod,
     )
 from altair.app.ticketing.users.models import (
     User,
@@ -61,6 +63,9 @@ from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
     KeyBreakCounter,
 )
+
+from .api import get_multicheckout_info
+
 logger = logging.getLogger(__name__)
 
 japanese_columns = {
@@ -264,6 +269,7 @@ summary_columns = [
     text("'' AS card_ahead_com_code"), #-- 仕向け先コード
     text("'' AS card_ahead_com_name"), #-- 仕向け先名
     t_order.c.fraud_suspect, #-- 不正予約フラグ
+    t_payment_method.c.payment_plugin_id,
 ]
 
 # 
@@ -719,11 +725,27 @@ def header_intl(headers, col_names, ordered_product_metadata_provider_registry):
         else:
             yield col_names.get(h, h) + tail
 
+
+class OrderLikeWrapper(object):
+    def __init__(self, organization, order_no, payment_plugin_id):
+        self.organization = organization
+        self.order_no = order_no
+        self.payment_plugin_id = payment_plugin_id
+
+    @property
+    def payment_delivery_pair(self):
+        return SummarizedPaymentDeliveryMethodPair(
+            SummarizedPaymentMethod(self.payment_plugin_id, None),
+            None
+            )
+
 class OrderSearchBase(list):
 
-    def __init__(self, db_session, organization_id, condition):
+    def __init__(self, request, db_session, organization_id, condition):
+        self.request = request
         self.db_session = db_session
         self.organization_id = organization_id
+        self.organization = db_session.query(Organization).filter_by(id=organization_id).one()
         self._cond = condition
         self.condition = self.query_cond(condition)
         self.target_order_ids = []
@@ -1038,9 +1060,18 @@ class OrderSearchBase(list):
         finally:
             cur.close()
 
-
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
+
+    def retouch(self, item):
+        from api import get_multicheckout_info
+        olw = OrderLikeWrapper(self.organization, item['order_no'], item.pop('payment_plugin_id'))
+        multicheckout_info = get_multicheckout_info(self.request, olw)
+        if multicheckout_info is not None:
+            item['card_ahead_com_name'] = multicheckout_info['ahead_com_name']
+            item['card_ahead_com_code'] = multicheckout_info['ahead_com_cd']
+            item['card_brand'] = multicheckout_info['card_brand']
+        return item
 
     def execute(self, start, stop=None):
         #logger.debug("start = {0}, stop = {1}".format(start, stop))
@@ -1069,9 +1100,9 @@ class OrderSearchBase(list):
                     break
 
                 for row in rows:
-                    yield OrderedDict(
-                        row.items()
-                    )
+                    item = OrderedDict(row.items())
+                    item = self.retouch(item)
+                    yield item
                 offset = offset + limit_span
                 if stop:
                     if offset > stop:
