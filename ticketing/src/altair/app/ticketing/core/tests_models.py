@@ -905,3 +905,60 @@ class SendCMSFeatureTest(unittest.TestCase):
     def testEvent(self):
         x = self.event.get_cms_data()
         self.assertEqual(len(x['performances'][0]['sales']), 4)
+
+
+class TicketPrintQueueEntryTest(unittest.TestCase, CoreTestMixin):
+    def setUp(self):
+        self.session = _setup_db(
+            [
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.users.models",
+                "altair.app.ticketing.cart.models",
+            ])
+        from altair.app.ticketing.cart.models import CartSetting
+        from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
+        from altair.app.ticketing.operators.models import Operator
+        self.cart_setting = CartSetting()
+        self.session.add(self.cart_setting)
+        CoreTestMixin.setUp(self)
+        self.sales_segment_group = SalesSegmentGroup(event=self.event)
+        self.session.add(self.sales_segment_group)
+        self.sales_segment = SalesSegment(sales_segment_group=self.sales_segment_group)
+        self.session.add(self.sales_segment)
+        self.stock_types = self._create_stock_types(4)
+        self.stocks = self._create_stocks(self.stock_types)
+        self.products = self._create_products(self.stocks, sales_segment=self.sales_segment)
+        self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(sales_segment_group=self.sales_segment_group)
+        self.operator = Operator()
+
+    def tearDown(self):
+        _teardown_db()
+
+    def _getTarget(self):
+        from .models import TicketPrintQueueEntry
+        return TicketPrintQueueEntry
+
+    def test_regression_9471(self):
+        target = self._getTarget()
+        from altair.app.ticketing.core.models import Ticket
+        pdmp = self.payment_delivery_method_pairs[0]
+        ticket = Ticket(
+            ticket_format=self._create_ticket_format(delivery_methods=[pdmp.delivery_method])
+            )
+        orders = [self._create_order([(self.products[0], 1)], self.sales_segment, pdmp=pdmp) for i in range(4)]
+        entries = []
+        for order in orders:
+            for item in order.items:
+                for element in item.elements:
+                    entry = target.enqueue(
+                        operator=self.operator,
+                        ticket=ticket,
+                        data={},
+                        summary='summary',
+                        ordered_product_item=element
+                        )
+                    entries.append(entry)
+        result = target.dequeue([entry.id for entry in entries])
+        self.assertEqual(set(result), set(entries))
+
