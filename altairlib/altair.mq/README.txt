@@ -29,6 +29,7 @@ Consumerが受け取ったメッセージはTaskに渡されます。
 Taskの追加は ``task_config`` で行います。
 
 ::
+
     @task_config(root_factory=WorkerResource, queue="lots")
     def elect_lots_task(context, request):
         ....
