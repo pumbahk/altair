@@ -872,3 +872,15 @@ font-size: 20px;
 ul.guide-tab-index li a {
     color: #FFF;
 }
+
+.mailmagazine {
+    color: #333333;
+    link: #333333;
+    vlink: #333333;
+    alink: #333333;
+    display: block;
+    font-size: 16px;
+    text-align: center;
+    padding: 5px;
+    background-color: #EFEFEF;
+}
