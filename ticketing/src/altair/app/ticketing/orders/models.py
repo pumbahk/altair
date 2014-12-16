@@ -1130,7 +1130,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_order_like(cls, order_like):
         note = getattr(order_like, 'note', None)
         attributes = dict(getattr(order_like, 'attributes', {}))
-        proto_order_like = cls(
+        proto_order = cls(
             order_no=order_like.order_no,
             total_amount=order_like.total_amount,
             shipping_address=order_like.shipping_address,
@@ -1150,6 +1150,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             payment_due_at=order_like.payment_due_at,
             note=note,
             attributes=attributes,
+            cart_setting_id=order_like.cart_setting_id,
             items=[
                 OrderedProduct(
                     product=item.product,
@@ -1168,7 +1169,8 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                     valid=True
                                     )
                                 for i, seat in core_api.iterate_serial_and_seat(element)
-                                ]
+                                ],
+                            attributes=dict(element.attributes) if hasattr(element, 'attributes') else {}
                             )
                         for element in item.elements
                         ]
@@ -1176,7 +1178,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for item in order_like.items
                 ]
             )
-        return proto_order_like
+        return proto_order
 
 
 class OrderSummary(Base):
