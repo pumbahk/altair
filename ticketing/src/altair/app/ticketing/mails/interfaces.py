@@ -75,35 +75,34 @@ class IPointGrantHistoryEntryInfoMail(IMailBuilder):
 class ILotEntryInfoMail(IMailBuilder):
     pass
 
-class ICompleteMailResource(Interface):
+class IMailResource(Interface):
+    request = Attribute("r")
+    membership = Attribute("r")
+
+class IOrderMailResource(IMailResource):
+    order = Attribute(u"注文内容")
+
+class ICompleteMailResource(IOrderMailResource):
     """ 完了メールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"注文内容")
 
-class IOrderCancelMailResource(Interface):
+class IOrderCancelMailResource(IOrderMailResource):
     """ 購入キャンセルメールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"注文内容")
 
-class IRemindMailResource(Interface):
+class IRemindMailResource(IOrderMailResource):
     """ リマインドメールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"注文内容")
 
-class ILotsAcceptedMailResource(Interface):
+class ILotMailResource(IMailResource):
+    lot_entry = Attribute(u"抽選注文")
+
+class ILotsAcceptedMailResource(ILotMailResource):
     """ 抽選申し込み完了メールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
 
-class ILotsElectedMailResource(Interface):
+class ILotsElectedMailResource(ILotMailResource, IOrderMailResource):
     """ 抽選通知メールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
+    elected_wish = Attribute(u"当選した希望")
 
-class ILotsRejectedMailResource(Interface):
+class ILotsRejectedMailResource(ILotMailResource):
     """ 抽選落選通知メールのビューレットのコンテキスト"""
-    request = Attribute("r")
-    order = Attribute(u"抽選注文")
 
 class IMessagePartFactory(Interface):
     """ 送信されるメールのメッセージパートを生成する factory """

@@ -37,13 +37,21 @@ def get_cart_view_context_factory(default_package):
         @reify
         def membership(self):
             try:
-                membership_name = self.request.altair_auth_info['membership']
-                if membership_name is not None:
-                    return membership_name
-                matchdict = getattr(self.request, 'matchdict', None)
-                if matchdict is None:
-                    return None
-                return matchdict.get('membership')
+                if IMailRequest.providedBy(self.request):
+                    membership = self.context.membership
+                    if membership is None:
+                        logger.warning('membership is None for context %r' % self.context)
+                        return None
+                    else:
+                        return membership.name
+                else:
+                    membership_name = self.request.altair_auth_info['membership']
+                    if membership_name is not None:
+                        return membership_name
+                    matchdict = getattr(self.request, 'matchdict', None)
+                    if matchdict is None:
+                        return None
+                    return matchdict.get('membership')
             except:
                 logger.exception('WTF?')
 
