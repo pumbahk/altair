@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 """
 """
 import json
@@ -54,12 +53,14 @@ def setup_routes(config):
     #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
     #config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
     #config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
-  
+
+
 def setup_nogizaka_auth(config):
     config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
     config.add_nogizaka_entrypoint('lots.entry.agreement')
     config.add_nogizaka_entrypoint('lots.entry.agreement.compat')
     config.add_nogizaka_entrypoint('lots.entry.index')
+
 
 def setup_auth(config):
     config.include('altair.auth')
@@ -101,7 +102,7 @@ def setup_cart(config):
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
 
-    config.set_cart_interface(CartInterface()) 
+    config.set_cart_interface(CartInterface())
 
 
 def setup_mailtraverser(config):
@@ -152,8 +153,8 @@ def main(global_config, **local_config):
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            settings["s3.bucket_name"],
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
             mapping={
                 FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX,
                 CART_STATIC_ASSET_SPEC: CART_STATIC_S3_URL_PREFIX,

@@ -60,13 +60,13 @@
       <tr>
         <th scope="row">会場</th>
         <td>${performance.venue.name}</td>
-      </tr>                    
+      </tr>
     </table>
     %endfor
   </div>
 </div>
 
-<form method="post" id="wishForm" action="${request.url}">        
+<form method="post" id="wishForm" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
@@ -132,7 +132,7 @@
       </div>
       %endfor
     </div>
-  </div>          
+  </div>
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -190,6 +190,7 @@
       </div>
       %endfor
     </div>
+    <p style="margin-left:10px; font-size:90%; color:#333;">${view_context.mail_filter_domain_notice}</p>
   </div>
 
   <div class="settlementBox">
@@ -242,6 +243,7 @@
                    (例：mail@example.ne.jp)
                   ${self.error(form, 'email_1_confirm')}
                 </div>
+                <p>${view_context.mail_filter_domain_notice}</p>
               </td>
             </tr>
             <tr>
@@ -326,7 +328,7 @@
     </div>
   </div>
   <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
-</form>      
+</form>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />
 </%def>
@@ -451,7 +453,7 @@ var selected_performance_id = 0;
                 var stockTypeSelectUpdated = false;
                 if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
                     refreshStockTypeSelection(dateSelect, stockTypeSelect);
-                    stockTypeSelectUpdated = true;                    
+                    stockTypeSelectUpdated = true;
                 }
 
                 if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
@@ -489,7 +491,7 @@ var selected_performance_id = 0;
         refreshProducts(dateSelect, stockTypeSelect);
     });
 
-    $(function() { 
+    $(function() {
         $wishForm.find("select.performance-name-select").each(function(_, n) {
             var performanceNameSelect = $(n);
             var wishOrder = performanceNameSelect.data('wishorder');
@@ -497,7 +499,7 @@ var selected_performance_id = 0;
             refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
         });
         $wishForm.find("select.performance-date-select").each(function(_, n) {
-            var dateSelect = $(n); 
+            var dateSelect = $(n);
             var wishOrder = dateSelect.data('wishorder');
             var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
             refreshStockTypeSelection(dateSelect, stockTypeSelect);
