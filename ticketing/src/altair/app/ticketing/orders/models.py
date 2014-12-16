@@ -79,15 +79,26 @@ class SummarizedUser(object):
         self.user_profile = user_profile
 
     @reify
-    def member(self):
-        return self.session.query(Member).filter_by(user_id=self.id).first()
+    def _user_credential_member_pairs(self):
+        return self.session.query(Member) \
+            .join(MemberGroup, and_(Member.membergroup_id == MemberGroup.id)) \
+            .join(UserCredential, and_(UserCredential.user_id == Member.user_id, UserCredential.membership_id == MemberGroup.membership_id)) \
+            .options(orm.contains_eager(Member.membergroup)) \
+            .filter(
+                Member.user_id == self.id,
+                MemberGroup.membership_id==self.membership_id
+                ) \
+            .with_entities(UserCredential, Member) \
+            .distinct() \
+            .all()
 
     @reify
     def user_credential(self):
-        return self.session.query(UserCredential) \
-            .join(Member, UserCredential.user_id == Member.user_id) \
-            .join(MemberGroup) \
-            .filter(User.id==UserCredential.user_id, MemberGroup.membership_id==self.membership_id).all()
+        return [user_credential for user_credential, _ in self._user_credential_member_pairs]
+
+    @reify
+    def member(self):
+        return self._user_credential_member_pairs[0][1] if len(self._user_credential_member_pairs) > 0 else None
 
     @property
     def first_user_credential(self):
@@ -1492,3 +1503,7 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
+
+    @reify
+    def membership(self):
+        return SummarizedMembership(self.membership_name)
