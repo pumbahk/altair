@@ -26,6 +26,7 @@ def on_delivery_error(event):
 
 def includeme(config):
     config.include('pyramid_mako')
+    config.include('altair.mq')
     config.include('altair.pyramid_dynamic_renderer')
     # payment
     config.include('altair.app.ticketing.payments')

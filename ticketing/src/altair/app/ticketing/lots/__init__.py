@@ -182,7 +182,8 @@ def main(global_config, **local_config):
     config.include(setup_mailtraverser)
     config.include(setup_routes)
 
-    config.include(".")
+    config.include('.sendmail')
+    config.include('.subscribers')
 
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
