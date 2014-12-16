@@ -321,7 +321,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             ordered_from__name = u"ordered-from-name",
             ordered_from__setting__default_mail_sender="from@organization.ne.jp",
             bcc_recipient="bcc@organization.ne.jp", 
-            performance__name = u"何かパフォーマンス名", 
+            performance__name = u"何か公演名", 
             performance__start_on = datetime(2000, 1, 1), 
             event__title = u"何かイベント名", 
             venue__name = u"何か会場名", 
@@ -356,7 +356,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
 
         ## 公演情報
         self.assertBodyContains(u"何かイベント名", body, u"何かイベント名",)
-        self.assertBodyContains(u"何かパフォーマンス名", body, u"何かパフォーマンス名",)
+        self.assertBodyContains(u"何か公演名", body, u"何か公演名",)
         self.assertBodyContains(u"何か会場名", body, u"何か会場名")
         self.assertBodyContains(h.japanese_datetime(datetime(2000, 1, 1)), body, h.japanese_datetime(datetime(2000, 1, 1)))
 

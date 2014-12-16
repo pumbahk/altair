@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 @view_defaults(renderer=selectable_renderer('index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileIndexView(IndexViewMixin):
-    """モバイルのパフォーマンス選択
+    """モバイルの公演選択
     """
     def __init__(self, request):
         IndexViewMixin.__init__(self)
@@ -71,7 +71,7 @@ class MobileIndexView(IndexViewMixin):
         preferred_performance = None
 
         if sales_segment is None:
-            # パフォーマンスIDから販売区分の解決を試みる
+            # 公演IDから販売区分の解決を試みる
             if performance_id:
                 # performance_id で指定される Performance は
                 # available_sales_segments に関連するものでなければならない
@@ -300,7 +300,7 @@ class MobileSelectProductView(object):
     def products(self):
         seat_type_id = self.request.matchdict['seat_type_id']
 
-        # 席種(イベントとパフォーマンスにひもづいてること)
+        # 席種(イベントと公演にひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
             c_models.ProductItem.product_id==c_models.Product.id).filter(
             c_models.Product.sales_segment_id==self.context.sales_segment.id).filter(
@@ -386,7 +386,7 @@ class MobileSelectProductView(object):
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
-        # パフォーマンス
+        # 公演
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
         if performance is None:
