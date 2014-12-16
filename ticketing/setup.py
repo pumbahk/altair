@@ -82,7 +82,6 @@ requires = [
     "radix",
     "requests",
     "pyOpenSSL",
-    'parsedatetime',
     "altair.augus",
     "altair.auth",
     "altair.sqla",
@@ -106,6 +105,7 @@ requires = [
     'altair.httpsession',
     'altair.samarker',
     'altair.pyramid_dynamic_renderer',
+    'altair.timeparse',
     ]
 
 tests_require = [

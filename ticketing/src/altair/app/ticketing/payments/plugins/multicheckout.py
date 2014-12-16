@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import transaction
-from datetime import datetime
+from datetime import datetime, timedelta
 from zope.interface import implementer
 from pyramid.view import view_defaults
 from pyramid.response import Response
@@ -38,6 +38,7 @@ from altair.formhelpers import (
     capitalize,
     OurSelectField
 )
+from altair.timeparse import parse_time_spec
 
 from .models import DBSession
 from .. import logger
@@ -51,8 +52,6 @@ from altair.app.ticketing.payments.api import get_cart, get_confirm_url
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PLUGIN_ID
-
-SALES_PART_CANCEL_ENABLED_SINCE = datetime.strptime('2012-12-03 08:00', "%Y-%m-%d %H:%M")
 
 confirm_url = get_confirm_url # XXX: backwards compatibility: must be removed later! yet any code should not rely on this reference
 
@@ -79,14 +78,6 @@ def back_url(request):
 def complete_url(request):
     return request.route_url('payment.secure3d_result')
 
-
-def includeme(config):
-    # 決済系(マルチ決済)
-    config.add_payment_plugin(MultiCheckoutPlugin(), PLUGIN_ID)
-    config.add_route("payment.secure3d", 'payment/3d')
-    config.add_route("payment.secure3d_result", 'payment/3d/result')
-    config.add_route("payment.secure_code", 'payment/scode')
-    config.scan(__name__)
 
 def _selectable_renderer(path_fmt):
     from . import _template
@@ -143,6 +134,11 @@ def get_error_message(request, error_code):
 
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
+    def __init__(self, sales_cancel_moratorium=None):
+        if sales_cancel_moratorium is None:
+            sales_cancel_moratorium = timedelta()
+        self.sales_cancel_moratorium = sales_cancel_moratorium
+
     def validate_order(self, request, order_like):
         """ なにかしたほうが良い?"""
 
@@ -382,37 +378,33 @@ class MultiCheckoutPlugin(object):
         if request.registry.settings.get('multicheckout.testing', False):
             order_no = order.order_no + "00"
 
-        # キャンセルAPIでなく売上一部取消APIを使う
-        # - 払戻期限を越えてもキャンセルできる為
-        # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
-        # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-        if order.created_at < SALES_PART_CANCEL_ENABLED_SINCE:
-            logger.info(u'キャンセルAPIでキャンセル %s' % order.order_no)
-            res = multicheckout_api.checkout_sales_cancel(real_order_no)
-        else:
-            res = multicheckout_api.checkout_inquiry(real_order_no)
-            if res.CmnErrorCd != '000000':
-                raise MultiCheckoutSettlementFailure(
-                    message='checkout_sales_part_cancel: generic failure',
-                    order_no=order.order_no,
-                    back_url=back_url(request),
-                    error_code=res.CmnErrorCd,
-                    card_error_code=res.CardErrorCd
-                    )
-
-            if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
-                raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
-            logger.info(u'売上一部取消APIで全額取消 %s' % order.order_no)
-            res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount, 0)
-
+        res = multicheckout_api.checkout_inquiry(real_order_no)
         if res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
-                message='checkout_sales_cancel: generic failure',
+                message='checkout_inquiry: generic failure',
                 order_no=order.order_no,
-                back_url=None,
+                back_url=back_url(request),
                 error_code=res.CmnErrorCd,
                 card_error_code=res.CardErrorCd
                 )
+
+        if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+            raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
+
+        if self.sales_cancel_moratorium:
+            logger.info(u'sales cancellation postponed at least for %d seconds: %s' % (self.sales_cancel_moratorium.seconds, order.order_no))
+            multicheckout_api.schedule_cancellation(order_no, datetime.now() + self.sales_cancel_moratorium, 0, 0)
+        else:
+            logger.info(u'sales cancellation will be done immediately: %s', order.order_no)
+            res = multicheckout_api.checkout_sales_part_cancel(order_no, res.SalesAmount, 0)
+            if res.CmnErrorCd != '000000':
+                raise MultiCheckoutSettlementFailure(
+                    message='checkout_sales_cancel: generic failure',
+                    order_no=order.order_no,
+                    back_url=None,
+                    error_code=res.CmnErrorCd,
+                    card_error_code=res.CardErrorCd
+                    )
 
 def card_number_mask(number):
     """ 下4桁以外をマスク"""
@@ -691,3 +683,18 @@ class MultiCheckoutView(object):
         self.request.session['order'] = order
 
         return HTTPFound(location=get_confirm_url(self.request))
+
+def includeme(config):
+    # 決済系(マルチ決済)
+    sales_cancel_moratorium = config.registry.settings.get('altair.payments.multicheckout.sales_cancel_moratorium')
+    if sales_cancel_moratorium is not None:
+        sales_cancel_moratorium = parse_time_spec(sales_cancel_moratorium)
+    if sales_cancel_moratorium is not None:
+        logger.info('sales_cancel_moratorium is set to %d' % sales_cancel_moratorium.seconds)
+    else:
+        logger.info('sales_cancel_moratorium is not specified')
+    config.add_payment_plugin(MultiCheckoutPlugin(sales_cancel_moratorium), PLUGIN_ID)
+    config.add_route("payment.secure3d", 'payment/3d')
+    config.add_route("payment.secure3d_result", 'payment/3d/result')
+    config.add_route("payment.secure_code", 'payment/scode')
+    config.scan(__name__)

@@ -7,7 +7,6 @@
 import argparse
 import logging
 from datetime import datetime, timedelta
-import parsedatetime
 
 from pyramid.paster import bootstrap, setup_logging
 import sqlahelper
@@ -15,6 +14,7 @@ from sqlalchemy.sql import or_
 from altair.multicheckout import models as m
 from altair.multicheckout.api import get_multicheckout_3d_api, get_all_multicheckout_settings, get_order_no_decorator
 from altair.multicheckout.interfaces import ICancelFilter
+from altair.timeparse import parse_time_spec
 
 logger = logging.getLogger(__name__)
 
@@ -179,18 +179,6 @@ class Canceller(object):
                 break
             processed_shops.append(multicheckout_setting.shop_id)
         return processed_shops
-
-def parse_time_spec(spec):
-    s = datetime(1900, 1, 1, 0, 0, 0)
-    result, _ = parsedatetime.Calendar().parse(spec, s)
-    return datetime(
-        year=result.tm_year,
-        month=result.tm_mon,
-        day=result.tm_mday,
-        hour=result.tm_hour,
-        minute=result.tm_min,
-        second=result.tm_sec
-        ) - s
 
 def main():
     """

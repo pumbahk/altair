@@ -1,26 +1,13 @@
 import logging
 from datetime import datetime, timedelta
 from pyramid.events import subscriber
-#from . import api
 from . import sendmail
 from altair.multicheckout.models import MultiCheckoutOrderStatus
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.now import get_now
-import parsedatetime
+from altair.timeparse import parse_time_spec
 
 logger = logging.getLogger(__name__)
-
-def parse_time_spec(spec):
-    s = datetime(1900, 1, 1, 0, 0, 0)
-    result, _ = parsedatetime.Calendar().parse(spec, s)
-    return datetime(
-        year=result.tm_year,
-        month=result.tm_mon,
-        day=result.tm_mday,
-        hour=result.tm_hour,
-        minute=result.tm_min,
-        second=result.tm_sec
-        ) - s
 
 @subscriber('altair.app.ticketing.lots.events.LotEntriedEvent')
 def send_lot_accepted_mail(event):
