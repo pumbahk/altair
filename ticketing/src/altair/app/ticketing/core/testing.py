@@ -23,7 +23,7 @@ class CoreTestMixin(object):
         self.performance = Performance(
             event=self.event,
             venue=Venue(organization=self.organization, site=Site()),
-            name=u'パフォーマンス',
+            name=u'公演',
             code=u'ABCDEFGH'
             )
         payment_methods = {}

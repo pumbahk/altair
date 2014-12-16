@@ -30,7 +30,7 @@ class PutbackForm(Form):
         coerce=int,
     )
     performance_ids = MultiCheckboxField(
-        label=u'パフォーマンス',
+        label=u'公演',
         validators=[Required()],
         choices=[],
     )

@@ -101,7 +101,7 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
     performances = []
     products = []
     for i in range(num_performances):
-        p = Performance(name=u"パフォーマンス {0}".format(i),
+        p = Performance(name=u"公演 {0}".format(i),
                         venue=venue, event=event)
         session.add(p)
         performances.append(p)

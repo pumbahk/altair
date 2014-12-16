@@ -71,7 +71,7 @@ class EventAdminResource(TicketingAdminResource):
             query += form.event_name_or_code.data
             search_query.append(query)
         if form.performance_name_or_code.data:
-            query = u"パフォーマンス名（コード）："
+            query = u"公演名（コード）："
             query += form.performance_name_or_code.data
             search_query.append(query)
         if form.perf_range_start.data or form.perf_range_end.data:

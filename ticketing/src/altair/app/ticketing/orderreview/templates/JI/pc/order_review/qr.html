@@ -18,7 +18,7 @@
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign)}" /><br/>
   発券番号 ${ticket.id} <br />
   注文番号 ${order.order_no} <br />
-  パフォーマンス ${performance.code} <br />
+  公演 ${performance.code} <br />
   <font size="5">興行日 ${performance.start_on}</font> <br />
   <font size="5">商品名 ${product.name} (${product.id})</font> <br />
   %if gate:

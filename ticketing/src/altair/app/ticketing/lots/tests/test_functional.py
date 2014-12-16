@@ -49,7 +49,7 @@
 #         sales_segment = SalesSegment(event=event, membergroups=[membergroup])
 #         performances = []
 #         for i in range(10):
-#             p = Performance(name=u"パフォーマンス {0}".format(i))
+#             p = Performance(name=u"公演 {0}".format(i))
 #             v = Venue(performance=p, site=site, organization=organization)
 #             self.session.add(p)
 #             performances.append(p)
