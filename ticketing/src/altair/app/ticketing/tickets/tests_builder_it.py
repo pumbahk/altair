@@ -19,7 +19,7 @@ class _IntegrationAssertionMixin(object):
 
         self.assertEquals(data[u"aux"][u"key"], u"value")
 
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
+        self.assertEquals(data[u"公演名"], u":Performance:name")
         self.assertEquals(data[u"対戦名"], u":Performance:name")
         self.assertEquals(data[u"公演コード"], u":code")
         self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
@@ -295,7 +295,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             self.assertEqual(sub['start_on'],  datetime_as_dict(datetime(2000, 1, 1, 10)))
             self.assertEqual(sub['end_on'],  datetime_as_dict(datetime(2000, 1, 1, 23)))
 
-            self.assertEqual(result[u'パフォーマンス名'],  ":name")
+            self.assertEqual(result[u'公演名'],  ":name")
             self.assertEqual(result[u'対戦名'],  ":name")
             self.assertEqual(result[u'公演コード'],  ":code")
             self.assertEqual(result[u'開催日'],  target.formatter.format_date(model.start_on))
@@ -1217,7 +1217,7 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
 
         self.assertEquals(data[u"aux"][u"key"], u"value")
 
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
+        self.assertEquals(data[u"公演名"], u":Performance:name")
         self.assertEquals(data[u"対戦名"], u":Performance:name")
         self.assertEquals(data[u"公演コード"], u":code")
         self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")

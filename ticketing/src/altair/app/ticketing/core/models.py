@@ -694,7 +694,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:
-            raise Exception(u'パフォーマンスの日付を入力してください')
+            raise Exception(u'公演の日付を入力してください')
 
         data = {
             'id':self.id,
@@ -1268,7 +1268,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 next_sales_segment = sales_segment
             if sales_segment.end_at is not None and sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
                 last_sales_segment = sales_segment
-            # のと同時に、パフォーマンス毎の販売区分のリストをつくる
+            # のと同時に、公演毎の販売区分のリストをつくる
             per_performance_datum = per_performance_data.get(sales_segment.performance_id)
             if per_performance_datum is None:
                 per_performance_datum = per_performance_data[sales_segment.performance_id] = dict(
@@ -1285,7 +1285,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if per_performance_datum['end_at'] < sales_segment.end_at:
                     per_performance_datum['end_at'] = sales_segment.end_at
 
-        # まずは個々のパフォーマンスについて、そのパフォーマンスの全販売区分を
+        # まずは個々の公演について、その公演の全販売区分を
         # 含む期間の先頭と末尾が現在日時と被らないものを探す
         next = None
         last = None
@@ -1297,7 +1297,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if last is None or per_performance_datum['end_at'] > last['end_at']:
                     last = per_performance_datum
 
-        # もしそのようなパフォーマンスが見つからないときは、販売区分と販売区分の
+        # もしそのような公演が見つからないときは、販売区分と販売区分の
         # ちょうど合間であると考えられるので、販売区分をもとに戻り値を構築する
         if not next and not last:
             return tuple(sales_segment and \
@@ -3410,7 +3410,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     reporting = AnnotatedColumn(Boolean, nullable=False, default=True, server_default='1',
                                 _a_label=_(u'レポート対象'))
     performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'),
-                                _a_label=_(u'パフォーマンス'))
+                                _a_label=_(u'公演'))
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = AnnotatedColumn(Identifier, ForeignKey("SalesSegmentGroup.id"),
                                              _a_label=_(u'販売区分グループ'))

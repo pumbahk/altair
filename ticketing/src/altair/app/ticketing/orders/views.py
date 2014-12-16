@@ -1848,7 +1848,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
+                'message':u'公演が存在しません',
             }))
 
         # 古いカートのセッションが残っていたら削除
@@ -1918,7 +1918,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
+                'message':u'公演が存在しません',
             }))
 
         # 古いカートのセッションが残っていたら削除
@@ -2018,7 +2018,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
+                'message':u'公演が存在しません',
             }))
 
         try:

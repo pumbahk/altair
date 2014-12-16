@@ -349,7 +349,7 @@ class SalesScheduleSalesRecord(object):
 
 
 class SalesSchedulePerformanceRecord(object):
-    """販売日程管理票のパフォーマンス部分
+    """販売日程管理票の公演部分
     """
     def __init__(self, datetime_=None, open_=None, start=None,
             price_name=None, sales_end=None, submit_order=None,

@@ -206,7 +206,7 @@ class PageSet(Base,
 
     # def getc_urrent_page(self):
     #     ## not tested
-    #     ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
+    #     ## 公演上げるために本当はここキャッシュしておけたりすると良いのかなと思う
     #     return Page.filter(Page.version==self.version_counter).one()
 
 class StaticPageSet(Base, 

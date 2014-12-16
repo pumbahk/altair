@@ -143,8 +143,8 @@ dependency_modules = [
 # 
 #         self.assertEqual(result[0], l)
 #         self.assertEqual(len(result[1]), 5)
-#         self.assertEqual(result[1][0].name, u"パフォーマンス 0")
-#         self.assertEqual(result[1][4].name, u"パフォーマンス 4")
+#         self.assertEqual(result[1][0].name, u"公演 0")
+#         self.assertEqual(result[1][4].name, u"公演 4")
 #         self.assertEqual(len(result[2]), 3)
 #         self.assertEqual(result[2][0].name, u"席 0")
 #         self.assertEqual(result[2][2].name, u"席 2")

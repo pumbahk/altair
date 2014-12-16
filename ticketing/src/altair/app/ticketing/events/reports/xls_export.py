@@ -269,17 +269,17 @@ class SalesScheduleReportExporter(BaseExporter):
         return self.get_rows(self.parts_sheet, [9])
 
     def get_parts_performances_header(self):
-        """パフォーマンス情報のヘッダ
+        """公演情報のヘッダ
         """
         return self.get_rows(self.parts_sheet, [11, 12, 13, 14])
 
     def get_parts_performances_body(self):
-        """パフォーマンス情報の行
+        """公演情報の行
         """
         return self.get_rows(self.parts_sheet, [15])
 
     def get_parts_performances_footer(self):
-        """パフォーマンス情報のフッタ
+        """公演情報のフッタ
         """
         return self.get_rows(self.parts_sheet, [16])
 
@@ -334,7 +334,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.current_pos[sheet] = pos + 1
 
     def write_performance_header(self, sheet, venue_name):
-        """パフォーマンス情報ヘッダ
+        """公演情報ヘッダ
         """
         pos = self.current_pos.get(sheet)
         for i, row_data in enumerate(self._parts_performances_header):
@@ -350,7 +350,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.current_pos[sheet] = pos + 1 + len(self._parts_performances_header)
 
     def write_performance(self, sheet, row_data, use_footer=False):
-        """パフォーマンス情報
+        """公演情報
         """
         if use_footer:
             parts = self._parts_performances_footer[0]
@@ -617,12 +617,12 @@ class SeatAssignExporter(BaseExporter):
         self.update_cell_text(sheet, 6, 0, u'イベント名：%s' % value)
 
     def set_performance_name(self, sheet, value):
-        """パフォーマンス名
+        """公演名
         """
         self.update_cell_text(sheet, 7, 0, u'公演名：%s' % value)
 
     def set_performance_datetime(self, sheet, value):
-        """パフォーマンス日時
+        """公演日時
         """
         self.update_cell_text(sheet, 8, 0, u'公演日：%s' % value)
 

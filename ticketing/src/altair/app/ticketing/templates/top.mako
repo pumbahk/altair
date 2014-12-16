@@ -10,9 +10,9 @@
         <a href="${request.route_path('admin.events.show', event_id=1)}">イベント詳細表示</a>
         <ul>
           <li>
-            パフォーマンス編集
+            公演編集
             <ul>
-              <li><a href="${request.route_path('admin.performances.new', event_id=1, performance_id=1)}">パフォーマンス編集 / 新規登録</a></li>
+              <li><a href="${request.route_path('admin.performances.new', event_id=1, performance_id=1)}">公演編集 / 新規登録</a></li>
             </ul>
           </li>
         </ul>

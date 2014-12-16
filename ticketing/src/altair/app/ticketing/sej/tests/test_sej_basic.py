@@ -129,7 +129,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
                     event_name          = u'イベント名1',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = '''<TICKET>
@@ -148,7 +148,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
                     event_name          = u'イベント名2',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = '''<TICKET>
@@ -167,7 +167,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
                     event_name          = u'イベント名3',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = u'''<TICKET>
@@ -228,7 +228,7 @@ class SejTest(unittest.TestCase):
         assert sej_tickets[0].ticket_idx           == 1
         assert int(sej_tickets[0].ticket_type)     == SejTicketType.TicketWithBarcode.v # XXX: enumなので文字列として格納される
         assert sej_tickets[0].event_name           == u'イベント名1'
-        assert sej_tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_tickets[0].performance_name     == u'公演名'
         assert sej_tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
         assert sej_tickets[0].ticket_template_id   == u'TTTS000001'
         assert sej_tickets[0].ticket_data_xml      is not None
@@ -290,7 +290,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
                     event_name          = u'イベント名',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = u'''<?xml version="1.0" encoding="UTF-8" ?>
@@ -309,7 +309,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
                     event_name          = u'イベント名',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = u'''<?xml version="1.0" encoding="UTF-8" ?>
@@ -328,7 +328,7 @@ class SejTest(unittest.TestCase):
                 dict(
                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
                     event_name          = u'イベント名',
-                    performance_name    = u'パフォーマンス名',
+                    performance_name    = u'公演名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
                     xml = u'''<TICKET>
@@ -365,7 +365,7 @@ class SejTest(unittest.TestCase):
         for ticket in sej_tickets:
             assert ticket.ticket_idx == idx
             assert ticket.event_name == u'イベント名'
-            assert ticket.performance_name == u'パフォーマンス名'
+            assert ticket.performance_name == u'公演名'
             assert ticket.performance_datetime == datetime.datetime(2012,8,31,18,00)
             assert ticket.ticket_template_id == u'TTTS000001'
             idx+=1
@@ -382,7 +382,7 @@ class SejTest(unittest.TestCase):
         assert sej_tickets[0].ticket_idx           == 1
         assert sej_tickets[0].ticket_type          == '%d' % SejTicketType.TicketWithBarcode.v
         assert sej_tickets[0].event_name           == u'イベント名'
-        assert sej_tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_tickets[0].performance_name     == u'公演名'
         assert sej_tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
         assert sej_tickets[0].ticket_template_id   == u'TTTS000001'
         assert sej_tickets[0].ticket_data_xml      is not None
@@ -454,7 +454,7 @@ class SejTest(unittest.TestCase):
             ticket_type=('%d' % SejTicketType.TicketWithBarcode.v),
             barcode_number='00001000',
             event_name=u'イベント',
-            performance_name=u'パフォーマンス',
+            performance_name=u'公演',
             performance_datetime=datetime.datetime(2012,8,30,19,00),
             ticket_template_id='TTTS0001',
             ticket_data_xml=u'<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>',

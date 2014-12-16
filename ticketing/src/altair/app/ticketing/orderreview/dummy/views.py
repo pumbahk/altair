@@ -75,7 +75,7 @@ def dummy_qr_draw(context, request):
 def get_dummy_order():
     order = mock.Mock()
     order.created_at = datetime.now()
-    order.performance.name = u'パフォーマンス名'
+    order.performance.name = u'公演名'
     order.performance.venue.name = u'会場名'
     order.performance.event.title = u'イベント名'
     order.performance.start_on = datetime.now()
