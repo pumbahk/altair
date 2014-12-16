@@ -7,6 +7,7 @@ class task_config(object):
     def __init__(self,
                  name="",
                  root_factory=None,
+                 timeout=None,
                  consumer="",
                  queue="",
                  passive=False,
@@ -26,6 +27,7 @@ class task_config(object):
                  auto_delete=auto_delete, 
                  nowait=nowait, 
                  arguments=arguments)
+        self.timeout = timeout
 
 
     def __call__(self, wrapped):
@@ -34,6 +36,7 @@ class task_config(object):
             add_task(config,
                      ob,
                      root_factory=self.root_factory,
+                     timeout=self.timeout,
                      name=self.name,
                      consumer=self.consumer,
                      queue=self.queue_settings.queue,

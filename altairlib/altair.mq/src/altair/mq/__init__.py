@@ -36,6 +36,7 @@ class QueueSettings(object):
 def add_task(config, task,
              name,
              root_factory=None,
+             timeout=None,
              queue="test",
              consumer="",
              durable=True, 
@@ -43,14 +44,14 @@ def add_task(config, task,
              auto_delete=False,
              nowait=False):
     from .consumer import TaskMapper
-    _root_factory = root_factory
-    logger.info("{name} root factory = {0}".format(root_factory, name=name))
-    if root_factory is None:
-        logger.info("use default root factory")
-        root_factory = 'pyramid.traversal.DefaultRootFactory'
+
+    if root_factory is not None:
+        root_factory = config.maybe_dotted(root_factory)
+        logger.info("{name} root factory = {0}".format(root_factory, name=name))
+    else:
+        logger.info("{name} use default root factory".format(name=name))
+
     reg = config.registry
-    root_factory = config.maybe_dotted(root_factory)
-    logger.info("{name} root factory = {0}".format(root_factory, name=name))
 
     def register():
         pika_consumer = get_consumer(config.registry, consumer)
@@ -68,13 +69,14 @@ def add_task(config, task,
                 task=task,
                 name=name,
                 root_factory=root_factory,
+                timeout=timeout,
                 queue_settings=queue_settings
                 )
             )
-        logger.info("_root_factory = {0}".format(_root_factory))
-        logger.info("register task {name} {root_factory} {queue_settings}".format(name=name,
+        logger.info("register task {name} {root_factory} {queue_settings} {timeout}".format(name=name,
                                                                    root_factory=root_factory,
-                                                                   queue_settings=queue_settings))
+                                                                   queue_settings=queue_settings,
+                                                                   timeout=timeout))
         reg.registerUtility(task, ITask)
 
     config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),

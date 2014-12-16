@@ -27,5 +27,4 @@ class TestIt(unittest.TestCase):
 
         self.assertIsNotNone(consumer)
         self.assertTrue(consumer.tasks)
-        self.assertEqual(consumer.tasks[0].root_factory,
-                         self.config.maybe_dotted('pyramid.traversal.DefaultRootFactory'))
+        self.assertEqual(consumer.tasks[0].root_factory, None)

@@ -116,7 +116,8 @@ def elect_lot_wish(request, wish, order=None):
 
 @task_config(root_factory=ElectionWorkerResource,
              consumer="lots.election",
-             queue="lots.election")
+             queue="lots.election",
+             timeout=600)
 def elect_lots_task(context, request):
     with named_transaction(request, "lot_work_history") as s:
         history = lot_models.LotWorkHistory(

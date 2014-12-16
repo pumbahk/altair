@@ -15,6 +15,7 @@ from .interfaces import (
     IMessage,
     ITaskDispatcher,
 )
+from .watchdog import Watchdog
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,14 @@ def pika_client_factory(config, config_prefix):
     return PikaClient(parameters)
 
 class TaskMapper(object):
-    def __init__(self, registry, name, task=None, queue_settings=None, root_factory=None):
+    def __init__(self, registry, name, task=None, queue_settings=None, root_factory=None, timeout=None):
         self.registry = registry
         self.name = name
         self.task = task
         self.queue_settings = queue_settings
         self.channel = None
         self.root_factory = root_factory
+        self.timeout = timeout
         logger.debug(self.root_factory)
 
     def declare_queue(self, channel):
@@ -57,8 +59,9 @@ class TaskMapper(object):
     def handle_delivery(self, channel, method, properties, body):
         try:
             dispatcher = self.registry.getUtility(ITaskDispatcher)
-            dispatcher(self, channel, method, properties, body)
-            channel.basic_ack(method.delivery_tag)
+            with Watchdog(self.timeout):
+                dispatcher(self, channel, method, properties, body)
+                channel.basic_ack(method.delivery_tag)
         except:
             logger.error('failed to handle message', exc_info=True)
 

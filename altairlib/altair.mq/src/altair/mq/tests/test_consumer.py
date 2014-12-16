@@ -60,6 +60,34 @@ class TaskMapperTests(unittest.TestCase):
         target.handle_delivery(channel, method, header, body)
         dispatcher.assert_called_with(target, channel, method, header, body)
 
+    def test_handle_derivery_timeout(self):
+        settings = testing.DummyResource(queue="testing")
+        task = mock.Mock()
+        root_factory = mock.Mock()
+        class Dispatcher(object):
+            def __init__(self):
+                self.exception = None
+
+            def __call__(self, *args, **kwargs):
+                import time
+                try:
+                    time.sleep(2)
+                except Exception as e:
+                    self.exception = e
+                
+        from ..interfaces import ITaskDispatcher
+        dispatcher = Dispatcher()
+        self.config.registry.registerUtility(dispatcher, ITaskDispatcher)
+        target = self._makeOne(self.config.registry, "testing", task, settings, root_factory, timeout=1)
+        channel = mock.Mock()
+        method = mock.Mock()
+        header = mock.Mock()
+        body = mock.Mock()
+        target.handle_delivery(channel, method, header, body)
+        from ..watchdog import TimeoutError
+        self.assertIsInstance(dispatcher.exception, TimeoutError)
+
+
 
 class PikaClientFactoryTests(unittest.TestCase):
     def _getTarget(self):
