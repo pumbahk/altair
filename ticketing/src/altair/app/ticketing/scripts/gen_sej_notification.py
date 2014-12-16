@@ -27,12 +27,12 @@ def get_order(session, order_no):
 
 def get_sej_order(session, order_no, exchange_number=None, billing_number=None):
     q = session.query(sej_models.SejOrder) \
-        .filter_by(order_no=order_no) \
-        .order_by(desc(sej_models.SejOrder.branch_no)).limit(1)
+        .filter_by(order_no=order_no)
     if exchange_number is not None:
         q = q.filter_by(exchange_number=exchange_number)
     if billing_number is not None:
         q = q.filter_by(billing_number=billing_number)
+    q = q.order_by(desc(sej_models.SejOrder.branch_no)).limit(1)
     return q.one()
 
 def create_expire_notification_from_order(request, session, order_no, exchange_number, billing_number):
