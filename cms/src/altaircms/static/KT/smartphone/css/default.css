@@ -874,13 +874,13 @@ ul.guide-tab-index li a {
 }
 
 .mailmagazine {
-    color: #333333;
-    link: #333333;
-    vlink: #333333;
-    alink: #333333;
+    color: #FFF;
+    link: #FFF;
+    vlink: #FFF;
+    alink: #FFF;
     display: block;
     font-size: 16px;
     text-align: center;
     padding: 5px;
-    background-color: #EFEFEF;
+    background-color: #FF0000;
 }
