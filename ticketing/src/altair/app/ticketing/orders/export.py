@@ -437,7 +437,7 @@ class OrderCSV(object):
             u'order': order,
             u'sej_order': order.sej_order if order.sej_order else None,
             u'user_profile': order.user.user_profile if order.user else None,
-            u'membership': user_credential.membership if user_credential else None,
+            u'membership': order.membership,
             u'membergroup': member.membergroup if member else None,
             u'user_credential': user_credential,
             u'shipping_address': order.shipping_address,
