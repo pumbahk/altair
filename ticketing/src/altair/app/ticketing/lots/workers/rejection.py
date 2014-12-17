@@ -50,7 +50,7 @@ class RejectionWorkerResource(object):
              consumer="lots.rejection",
              queue="lots.rejection",
              timeout=600)
-def elect_lots_task(context, request):
+def reject_lots_task(context, request):
     with named_transaction(request, "lot_work_history") as s:
         history = lot_models.LotWorkHistory(
             lot_id=context.lot.id, # 別トランザクションなのでID指定
