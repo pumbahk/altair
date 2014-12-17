@@ -188,9 +188,7 @@ class Lots(BaseView):
                         raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         slave_session = get_db_session(self.request, name="slave")
-        performance_ids = [p.id for p in lot.performances]
-        stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
-
+        stock_holders = StockHolder.get_own_stock_holders(lot.event)
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
         options = ["%s:%s%s" % (st.id, st.name, u'(数受け)' if st.quantity_only else u'') for st in stock_types]
