@@ -1130,7 +1130,27 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_order_like(cls, order_like):
         note = getattr(order_like, 'note', None)
         attributes = dict(getattr(order_like, 'attributes', {}))
-        proto_order_like = cls(
+
+        def build_element(element):
+            retval = OrderedProductItem(
+                product_item=element.product_item,
+                price=element.price,
+                quantity=element.product_item.quantity * item.quantity,
+                seats=element.seats,
+                attributes=dict(element.attributes) if hasattr(element, 'attributes') else {}
+                )
+            _ = [
+                OrderedProductItemToken(
+                    item=retval,
+                    serial=i,
+                    seat=seat,
+                    valid=True
+                    )
+                for i, seat in core_api.iterate_serial_and_seat(element)
+                ]
+            return retval
+
+        proto_order = cls(
             order_no=order_like.order_no,
             total_amount=order_like.total_amount,
             shipping_address=order_like.shipping_address,
@@ -1150,33 +1170,18 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             payment_due_at=order_like.payment_due_at,
             note=note,
             attributes=attributes,
+            cart_setting_id=order_like.cart_setting_id,
             items=[
                 OrderedProduct(
                     product=item.product,
                     price=item.price,
                     quantity=item.quantity,
-                    elements=[
-                        OrderedProductItem(
-                            product_item=element.product_item,
-                            price=element.price,
-                            quantity=element.product_item.quantity * item.quantity,
-                            seats=element.seats,
-                            tokens=[
-                                OrderedProductItemToken(
-                                    serial=i,
-                                    seat=seat,
-                                    valid=True
-                                    )
-                                for i, seat in core_api.iterate_serial_and_seat(element)
-                                ]
-                            )
-                        for element in item.elements
-                        ]
+                    elements=[ build_element(element) for element in item.elements ]
                     )
                 for item in order_like.items
                 ]
             )
-        return proto_order_like
+        return proto_order
 
 
 class OrderSummary(Base):

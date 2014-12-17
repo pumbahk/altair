@@ -59,6 +59,9 @@ class MailForOrderContext(MailContextBase):
         from altair.app.ticketing.cart.api import get_cart_setting_from_order_like
         return get_cart_setting_from_order_like(self.request, self.order)
 
+    @reify
+    def membership(self):
+        return self.order.membership
 
 class MailForLotContext(MailContextBase):
     mtype = None
@@ -85,3 +88,6 @@ class MailForLotContext(MailContextBase):
     def cart_setting(self):
         return self.lot_entry.organization.setting.cart_setting
 
+    @reify
+    def membership(self):
+        return self.lot_entry.membership

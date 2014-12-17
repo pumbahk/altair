@@ -156,3 +156,6 @@ class ICartSetting(Interface):
     extra_footer_links_mobile = Attribute('')
     extra_form_fields = Attribute('')
 
+class ICartRequest(object):
+    organization = Attribute('')
+    altair_auth_info = Attribute('')
