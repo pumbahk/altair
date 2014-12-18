@@ -33,7 +33,7 @@ ALTER TABLE `ticketing`.`multicheckout_response_card` ADD INDEX `ix_OrderNo` (`O
 ALTER TABLE `ticketing`.`secure3d_req_auth_response` ADD INDEX `ix_OrderNo` (`OrderNo`);
     """)
     op.execute("""
-ALTER TABLE `ticketing`.`secure3d_req_enrol_response ` ADD INDEX `ix_OrderNo` (`OrderNo`);
+ALTER TABLE `ticketing`.`secure3d_req_enrol_response` ADD INDEX `ix_OrderNo` (`OrderNo`);
     """)
 
 def downgrade():
