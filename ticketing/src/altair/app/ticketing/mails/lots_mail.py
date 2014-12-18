@@ -40,13 +40,11 @@ class LotsInfoDefault(SubjectInfoDefault):
 
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 """
-
     first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda request, _: LotsInfoDefault.first_sentence_default))
     event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda request, lot_entry: lot_entry.lot.event.title)
     lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda request, lot_entry: lot_entry.lot.name)
     announce_date = SubjectInfo(name="announce_date", label=u"抽選結果発表日時", getval=get_announce_date)
-    review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda request, _ : "https://rt.tstar.jp/lots/review")
-
+    review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda request, _ : request.view_context.lots_orderreview_page_url)
     system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda request, _: "") #xxx:
     special_fee = SubjectInfo(name=u"special_fee", label=u"特別手数料", getval=lambda request, _: "") #xxx:
     special_fee_name = SubjectInfo(name=u"special_fee_name", label=u"特別手数料名", getval=lambda request, _: "") #xxx:
