@@ -139,6 +139,9 @@ class CartSettingForm(OurForm):
     orderreview_page_url = OurTextField(
         label=_(u'購入履歴確認ページのURL')
         )
+    lots_orderreview_page_url = OurTextField(
+        label=_(u'抽選の購入履歴確認ページのURL')
+        )
 
     mobile_marker_color = OurTextField(
         label=_(u'携帯向けカートの見出しにつく「■」の色')

@@ -745,6 +745,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         self.data['orderreview_page_url'] = value
 
     @property
+    def lots_orderreview_page_url(self):
+        return self.data.get('lots_orderreview_page_url')
+
+    @lots_orderreview_page_url.setter
+    def lots_orderreview_page_url(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['lots_orderreview_page_url'] = value
+
+    @property
     def extra_footer_links(self):
         return self.data.get('extra_footer_links')
 
