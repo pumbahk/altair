@@ -50,5 +50,5 @@ ALTER TABLE `ticketing`.`multicheckout_response_card` DROP INDEX `ix_OrderNo`;
 ALTER TABLE `ticketing`.`secure3d_req_auth_response` DROP INDEX `ix_OrderNo`;
     """)
     op.execute("""
-ALTER TABLE `ticketing`.`secure3d_req_enrol_response ` DROP INDEX `ix_OrderNo`;
+ALTER TABLE `ticketing`.`secure3d_req_enrol_response` DROP INDEX `ix_OrderNo`;
     """)
