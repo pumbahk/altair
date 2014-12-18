@@ -10,7 +10,7 @@
 
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-    names=[u'イベント', performance.event.title, u'公演', performance.name, u"メール付加情報"] ,
+    names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u"メール付加情報"] ,
     urls=[
       request.route_path('events.index'),
       request.route_path('events.show', event_id=performance.event.id),
@@ -24,7 +24,7 @@ ${ch.breadcrumbs(
   <h2>${mutil.get_mailtype_description()}付加情報 ${performance.name}</h2>
   <span class="label">${performance.event.organization.name}<a href="${request.route_path("organizations.mails.new", organization_id=performance.event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt;
   <span class="label">イベント<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">に移動</a></span> &gt;
-  <span class="label label-warning">公演</span>
+  <span class="label label-warning">パフォーマンス</span>
 </div>
 
 <h4>情報</h4>
@@ -50,7 +50,7 @@ ${ch.breadcrumbs(
 
 <pre>
 メールの付加情報は以下のようにして取得されます
-  1. 購入されたチケットの公演に紐づく設定を取得。
+  1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
   2. 購入されたチケットの公演が所属しているイベントに紐づく設定を取得。
   3. ${organization.name}全体で設定されているデフォルトの設定を取得。
 </pre>

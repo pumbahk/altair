@@ -390,7 +390,7 @@ class Performances(BaseView):
             accessor = SalesSegmentAccessor()
             for ssg in event.sales_segment_groups:
                 accessor.create_sales_segment_for_performance(ssg, performance)
-            self.request.session.flash(u'公演を保存しました')
+            self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
             'form':f,
@@ -487,7 +487,7 @@ class Performances(BaseView):
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
 
             performance.save()
-            self.request.session.flash(u'公演を保存しました')
+            self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         else:
             return {
@@ -504,7 +504,7 @@ class Performances(BaseView):
         location = route_path('events.show', self.request, event_id=performance.event_id)
         try:
             performance.delete()
-            self.request.session.flash(u'公演を削除しました')
+            self.request.session.flash(u'パフォーマンスを削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
@@ -530,9 +530,9 @@ class Performances(BaseView):
             performance.save()
 
             if performance.public:
-                self.request.session.flash(u'公演を公開しました')
+                self.request.session.flash(u'パフォーマンスを公開しました')
             else:
-                self.request.session.flash(u'公演を非公開にしました')
+                self.request.session.flash(u'パフォーマンスを非公開にしました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         return {

@@ -1045,7 +1045,7 @@ class SejTicketForm(Form):
         validators=[Required()],
     )
     performance_name        = TextField(
-        label=u'公演名',
+        label=u'パフォーマンス名',
         validators=[Required()],
     )
     performance_datetime    = DateTimeField(

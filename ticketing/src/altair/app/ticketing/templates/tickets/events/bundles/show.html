@@ -184,13 +184,13 @@
 </table>
 %endif
 
-  <h4>関連づけられている公演と商品</h4>
+  <h4>関連づけられているパフォーマンスと商品</h4>
   %if len(bundle.product_items) > 0:
   <table class="table table-striped table-bordered table-condensed">
 	<thead>
 	  <tr>
 		<th></th>
-		<th><a href="${request.route_path("performances.index", event_id=event.id)}">公演</a></th>
+		<th><a href="${request.route_path("performances.index", event_id=event.id)}">パフォーマンス</a></th>
 		<th>商品名</th>
 		<th>商品明細名</th>
 		<th>更新日時</th>
@@ -219,7 +219,7 @@
 	</tbody>
   </table>
   %else:
-    公演と商品は関連づけられていません.
+    パフォーマンスと商品は関連づけられていません.
   %endif
 </div>
 
@@ -241,7 +241,7 @@
       var pk = $el.parents(".box").find("input[name='id']:checked").val();
       if(!pk){ pk = $el.parents(".box").find("input[name='id']:first").val();}
       if(!pk) {
-        alert('公演と商品が無いため、プレビューできません.');
+        alert('パフォーマンスと商品が無いため、プレビューできません.');
         return;
       }
       if(!!modalView){

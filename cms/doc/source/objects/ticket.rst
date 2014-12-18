@@ -8,7 +8,7 @@
    {
        'ticket': {
            'event_id': str, # イベントID
-           'performance_id': str, # 公演ID
+           'performance_id': str, # パフォーマンスID
            'seattype': object, # 席種
            'seat': object, # 席在庫
            'title': unicode, # チケットの名前

@@ -260,7 +260,7 @@ class TicketDictBuilder(object):
                 u'start_on': datetime_as_dict(performance.start_on),
                 u'end_on': datetime_as_dict(performance.end_on)
                 },
-            u'公演名': performance.name,
+            u'パフォーマンス名': performance.name,
             u'対戦名': performance.name,
             u'公演コード': performance.code,
             u'開催日': safe_format(self.formatter.format_date, performance.start_on),

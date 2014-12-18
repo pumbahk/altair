@@ -77,7 +77,7 @@ class Candidates(object):
         return self.data[k]
 
 SectionCandidates = Candidates(("pageset", "performance", "description", "accesskey"), 
-                               [u"配下のページ", u"公演", u"文言情報", u"アクセスキー"] )
+                               [u"配下のページ", u"パフォーマンス", u"文言情報", u"アクセスキー"] )
 def in_section(info, request):
     return request.matchdict.get("section") in SectionCandidates
 

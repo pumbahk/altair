@@ -17,7 +17,7 @@
    :header: ロール名, 対象モデル, READ, CREATE, UPDATE, DELETE, 備考
 
    event_viewer, イベント, o, --, --, --, 編集はバックエンドで行う
-   ticket_viewer, チケット（公演）, o, --, --, --, 編集はバックエンドを行う
+   ticket_viewer, チケット（パフォーマンス）, o, --, --, --, 編集はバックエンドを行う
    page_viewer, レイアウト、ページ, o, --, --, --,
    page_editor, レイアウト、ページ, o, o, o, o,
    topic_viewer, トピック, o, --, --, --,

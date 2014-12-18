@@ -153,7 +153,7 @@ validate_term = TermValidator("start_on", "end_on",  u"公開開始日よりも�
 class SalesSegmentForm(Form):
     performance = dynamic_query_select_field_factory(Performance,
                                                      dynamic_query=lambda model, request, query: query.filter_by(id=request.params["performance_id"]), 
-                                                     allow_blank=False, label=u"公演", get_label=lambda obj: performance_name(obj))
+                                                     allow_blank=False, label=u"パフォーマンス", get_label=lambda obj: performance_name(obj))
     group = dynamic_query_select_field_factory(SalesSegmentGroup, 
                                                dynamic_query=lambda model, request, query: query.filter(SalesSegmentGroup.event_id==Performance.event_id, Performance.id==request.params["performance_id"]), 
                                                allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)

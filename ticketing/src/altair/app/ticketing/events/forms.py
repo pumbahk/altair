@@ -24,7 +24,7 @@ class EventSearchForm(OurForm):
         )
 
     performance_name_or_code = OurTextField(
-        label=u'公演名　または　コード',
+        label=u'パフォーマンス名　または　コード',
         widget=OurTextInput()
         )
 
