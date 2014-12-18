@@ -61,10 +61,11 @@ class LotEntryCloser(object):
                 override_name=entry.lot.event.organization.setting.multicheckout_shop_name
                 )
             status = multicheckout_api.get_order_status_by_order_no(entry.entry_no)
-            if status.is_authorized:
-                multicheckout_api.keep_authorization(entry.entry_no, None)
-            elif status.is_settled:
-                multicheckout_api.schedule_cancellation(entry.entry_no, now + self.moratorium, 0, 0)
+            if status is not None:
+                if status.is_authorized:
+                    multicheckout_api.keep_authorization(entry.entry_no, None)
+                elif status.is_settled:
+                    multicheckout_api.schedule_cancellation(entry.entry_no, now + self.moratorium, 0, 0)
         except Exception as e:
             logger.exception(e)
 
