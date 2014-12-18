@@ -13,7 +13,6 @@ import sqlahelper
 from sqlalchemy.sql import or_
 from altair.multicheckout import models as m
 from altair.multicheckout.api import get_multicheckout_3d_api, get_all_multicheckout_settings, get_order_no_decorator
-from altair.multicheckout.interfaces import ICancelFilter
 from altair.timeparse import parse_time_spec
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,6 @@ logger = logging.getLogger(__name__)
 class Canceller(object):
     def __init__(self, request, now=None, auth_cancel_expiry=None):
         self.request = request
-        self.cancel_filter = self.request.registry.queryUtility(ICancelFilter)
         self.order_no_decorator = get_order_no_decorator(request)
         if now is None:
             now = datetime.now()
@@ -42,11 +40,7 @@ class Canceller(object):
         name = status['keep_auth_for']
         if name is None:
             return True
-        if self.cancel_filter is None:
-            logger.debug('no cancel filter for {0}'.format(name))
-            return False
-        logger.debug('use cancel filter for {0}'.format(name))
-        return self.cancel_filter.is_cancelable(order_no)
+        return False
 
     def get_auth_orders(self, multicheckout_setting):
         q = m._session.query(m.MultiCheckoutOrderStatus) \
@@ -56,6 +50,7 @@ class Canceller(object):
                     m.MultiCheckoutOrderStatus.is_unknown_status,
                     )
                 ) \
+            .filter(m.MultiCheckoutOrderStatus.KeepAuthFor == None) \
             .filter(m.MultiCheckoutOrderStatus.updated_at < (self.now - self.auth_cancel_expiry)) \
             .order_by(m.MultiCheckoutOrderStatus.KeepAuthFor, m.MultiCheckoutOrderStatus.id)
         return [
