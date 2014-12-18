@@ -412,10 +412,12 @@ class Multicheckout3DAPI(object):
         """
         return self.request.params['MD']
 
-    def get_transaction_info(self, order_no):
+    def get_transaction_info(self, order_no, session=None):
+        if session is None:
+            session = self.session
         order_no = maybe_unicode(order_no)
         order_no = self._decorate_order_no(order_no)
-        q = self.session.query(m.MultiCheckoutResponseCard) \
+        q = session.query(m.MultiCheckoutResponseCard) \
             .outerjoin(m.MultiCheckoutResponseCard.request) \
             .options(contains_eager(m.MultiCheckoutResponseCard.request)) \
             .filter(m.MultiCheckoutResponseCard.OrderNo == order_no)
