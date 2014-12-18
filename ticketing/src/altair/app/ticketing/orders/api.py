@@ -14,7 +14,6 @@ from sqlalchemy.sql import functions as safunc
 from sqlalchemy import orm
 from pyramid.interfaces import IRequest
 from pyramid.i18n import TranslationString as _
-from altair.sqlahelper import get_db_session
 
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
@@ -1864,12 +1863,11 @@ def get_anshin_checkout_object(request, order):
         return None
 
 def get_multicheckout_info(request, order):
-    slave_session = get_db_session(request, name="slave")
     multicheckout_info = None
     if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
         organization = order.organization
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-        recs, _ = multicheckout_api.get_transaction_info(order.order_no, session=slave_session)
+        recs, _ = multicheckout_api.get_transaction_info(order.order_no)
         for rec in recs:
             if rec['status'] == str(MultiCheckoutStatusEnum.Authorized): # authorization successful
                 multicheckout_info = rec
