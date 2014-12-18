@@ -401,8 +401,8 @@ def create_mail_request(request, organization, context_factory):
     mail_request = request.copy()
     mail_request.registry = request.registry
     mail_request.organization = organization
-    mail_request.view_context = get_cart_view_context_factory(request.registry)(mail_request)
     mail_request.matchdict = {}
     directlyProvides(mail_request, IMailRequest)
     mail_request.context = context_factory(request)
+    mail_request.view_context = get_cart_view_context_factory(request.registry)(mail_request)
     return mail_request
