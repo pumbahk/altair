@@ -986,6 +986,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         organization_id=proto_order.organization_id,
         operator=proto_order.operator,
         user=proto_order.user,
+        membership=proto_order.membership,
         issuing_start_at=proto_order.issuing_start_at,
         issuing_end_at=proto_order.issuing_end_at,
         payment_start_at=proto_order.payment_start_at,
