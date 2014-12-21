@@ -260,7 +260,7 @@ class TicketDictBuilder(object):
                 u'start_on': datetime_as_dict(performance.start_on),
                 u'end_on': datetime_as_dict(performance.end_on)
                 },
-            u'公演名': performance.name,
+            u'パフォーマンス名': performance.name,
             u'対戦名': performance.name,
             u'公演コード': performance.code,
             u'開催日': safe_format(self.formatter.format_date, performance.start_on),
@@ -416,7 +416,6 @@ class TicketDictBuilder(object):
                 u'special_fee_name': order.special_fee_name,
                 u'transaction_fee': order.transaction_fee,
                 u'delivery_fee': order.delivery_fee,
-                u'multicheckout_approval_no': order.multicheckout_approval_no,
                 u'order_no': order.order_no,
                 u'paid_at': datetime_as_dict(order.paid_at),
                 u'delivered_at': datetime_as_dict(order.delivered_at),

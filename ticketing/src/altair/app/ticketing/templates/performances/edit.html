@@ -37,7 +37,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', event.title, u'公演', route_name],
+      names=[u'イベント', event.title, u'パフォーマンス', route_name],
       urls=[
         request.route_path('events.index'),
         request.route_path('events.show', event_id=event.id),
@@ -47,7 +47,7 @@
 </%block>
 
 <div class="page-header">
-  <h1>公演${route_name}</h1>
+  <h1>パフォーマンス${route_name}</h1>
 </div>
 
 <div class="well">

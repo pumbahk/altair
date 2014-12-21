@@ -30,7 +30,7 @@ class Stocks(BaseView):
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'公演が存在しません',
+                'message':u'パフォーマンスが存在しません',
             }))
 
         post_data = MultiDict(self.request.json_body)

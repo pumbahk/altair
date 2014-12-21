@@ -107,7 +107,7 @@ def tab():
     cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\
                 for (y, m), perfs in monthly_performances)
     return {"description": u"""
-公演が存在する月のタブを付加したカレンダー。
+パフォーマンスが存在する月のタブを付加したカレンダー。
 """,
             "renderable": RenderableAdaptor(template.render, cals=cals, months=months, visibilities=visibilities)
             }

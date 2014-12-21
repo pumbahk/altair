@@ -136,7 +136,7 @@ JSONオブジェクトは次のとおり。
  }
 
 イベント削除時は、deletedプロパティを付与したJSONオブジェクトPOSTする。
-CMSはdeletedプロパティがtrueとなる公演、チケット、イベントを削除する。
+CMSはdeletedプロパティがtrueとなるパフォーマンス、チケット、イベントを削除する。
 
 .. code-block:: javascript
 

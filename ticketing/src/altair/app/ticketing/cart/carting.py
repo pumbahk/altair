@@ -51,8 +51,8 @@ class CartFactory(object):
             cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity, organization_id=cart.organization_id)
             for ordered_product_item in ordered_product.items:
                 assert ordered_product_item.deleted_at is None
-                # 特定の公演に紐づく販売区分の場合、
-                # 商品明細に紐づく在庫の公演と合致している必要がある
+                # 特定のパフォーマンスに紐づく販売区分の場合、
+                # 商品明細に紐づく在庫のパフォーマンスと合致している必要がある
                 if sales_segment.performance_id is not None and \
                    sales_segment.performance_id != ordered_product_item.stock.performance_id:
                     logger.debug("invalid product selection: product_item.stock.performance_id (%r) != sales_segment.performace_id (%r)" % (ordered_product_item.stock.performace_id, sales_segment.performance_id))

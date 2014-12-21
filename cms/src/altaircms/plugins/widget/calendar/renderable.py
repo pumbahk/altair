@@ -62,7 +62,7 @@ class CalendarWeek(object):
     if change month durning rendeering a row, putting special th element before rendering.
     """
 
-### todo:fix 公演リストと同期した形で連番を振る必要があるのでここで連番を振るのは良くない。(タブ表示で死)
+### todo:fix パフォーマンスリストと同期した形で連番を振る必要があるのでここで連番を振るのは良くない。(タブ表示で死)
 class _Counter(object):
     def __init__(self, i):
         self.i = i
@@ -98,7 +98,7 @@ class CalendarOutput(object):
         return self.template.render_unicode(cal=rows, i=self.i)
 
 def _collect_months(performances):
-    """公演リストから月毎のカレンダーを求める
+    """パフォーマンスリストから月毎のカレンダーを求める
     e.g. 2011-7-12, 2011-7-13, 2011-9-1
     => [((2011, 7), {"start":12, "end":12}), 
         ((2011, 9), {"start":1, "end":1})]

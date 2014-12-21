@@ -480,7 +480,7 @@ class OrderDownloadView(BaseView):
             if form_search.ordered_from.data and form_search.ordered_to.data:
                 ordered_term = form_search.ordered_to.data - form_search.ordered_from.data
             if not form_search.performance_id.data and (ordered_term is None or ordered_term.days > 0):
-                if query.count() > 5000:
+                if query.count() > 10000:
                     self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
                     raise HTTPFound(location=route_path('orders.index', self.request))
 
@@ -1846,7 +1846,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'公演が存在しません',
+                'message':u'パフォーマンスが存在しません',
             }))
 
         # 古いカートのセッションが残っていたら削除
@@ -1916,7 +1916,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'公演が存在しません',
+                'message':u'パフォーマンスが存在しません',
             }))
 
         # 古いカートのセッションが残っていたら削除
@@ -2016,7 +2016,7 @@ class OrdersReserveView(BaseView):
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'公演が存在しません',
+                'message':u'パフォーマンスが存在しません',
             }))
 
         try:

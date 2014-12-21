@@ -3,7 +3,7 @@
 
 <% topcontents = [(event, content) for event, content in ((helper.get_event_from_linked_page_id(request, content.linked_page_id), content) for content in topcontents)] %>
 
-<h2 class="glitter red">▼販売中</h2>
+<h2 class="glitter red">▼取扱公演一覧</h2>
 % if topcontents:
     <ul class="panellist fullwidth navigable">
     % for event, content in topcontents:

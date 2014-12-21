@@ -17,7 +17,7 @@ class TicketlistChoiceForm(Form):
     display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[], coerce=unicode)
     target_performance_id = MaybeSelectField(
         id="target_performance_id", 
-        label=u"価格表を取得する公演", 
+        label=u"価格表を取得するパフォーマンス", 
         blank_text=u"(指定なし)", 
         choices=[]
         )

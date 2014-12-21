@@ -5,7 +5,7 @@ STAGE_SUBCATEGORY_CHOICES = [
     ("engeki-stage", u"演劇・ステージ"), 
     ("musical-show", u"ミュージカル・ショー"), 
     ("ballet-dance", u"バレエ・ダンス"), 
-    ("performance", u"公演"), 
+    ("performance", u"パフォーマンス"), 
     ("owarai", u"お笑い"), 
     ("yose-engei", u"寄席・演芸"), 
     ("dentougeinou", u"伝統芸能"), 

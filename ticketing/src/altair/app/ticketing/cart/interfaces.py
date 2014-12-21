@@ -33,7 +33,7 @@ class IStocker(Interface):
 class IReserving(Interface):
     def reserve_selected_seats(performance_id, product_requires):
         """ 座席指定
-        :param: performance_id 公演
+        :param: performance_id パフォーマンス
         :param: product_requires 商品と数量のペアのリスト
         :return: list of seat
         """

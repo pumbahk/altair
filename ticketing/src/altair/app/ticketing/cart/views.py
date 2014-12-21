@@ -222,7 +222,7 @@ class PerEventAgreementView(IndexViewMixin):
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
             selected_sales_segment = sales_segments[0]
         else:
-            # 公演IDから販売区分の解決を試みる
+            # パフォーマンスIDから販売区分の解決を試みる
             # performance_id で指定される Performance は
             # available_sales_segments に関連するものでなければならない
 
@@ -338,7 +338,7 @@ class IndexView(IndexViewMixin):
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
             selected_sales_segment = sales_segments[0]
         else:
-            # 公演IDから販売区分の解決を試みる
+            # パフォーマンスIDから販売区分の解決を試みる
             # performance_id で指定される Performance は
             # available_sales_segments に関連するものでなければならない
 
@@ -384,7 +384,7 @@ class IndexView(IndexViewMixin):
             performance=performance_id
             )
 
-    # 公演ベースのランディング画面
+    # パフォーマンスベースのランディング画面
     @lbr_view_config(route_name='cart.index2',
                  renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index2',

@@ -263,8 +263,8 @@ class TicketingCartResourceBase(object):
         #    2L: ([非guest用販売区分, ...], [guest用販売区分, ...]),
         #    ...
         # }
-        # となっていて、(キーは公演のid)
-        # 各公演で非guest用の販売区分があればそれを優先し
+        # となっていて、(キーはパフォーマンスのid)
+        # 各パフォーマンスで非guest用の販売区分があればそれを優先し
         # guest用の販売区分しかなければそれを使うということをする
         #
         # itertools.chain([[非guest用販売区分, ...], [guest用販売区分, ...], [guest用販売区分...]])
@@ -476,7 +476,7 @@ class TicketingCartResourceBase(object):
                     c_models.SalesSegment.id == sales_segment.id
                 )
                 break
-            # 次に公演
+            # 次にパフォーマンス
             performance = None
             try:
                 performance = self.performance
@@ -634,7 +634,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @reify
     def sales_segments(self):
-        """現在認証済みのユーザと公演に関連する全販売区分"""
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         if self.performance is None:
             raise HTTPNotFound()
         return self.performance.query_sales_segments(
@@ -672,7 +672,7 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @reify
     def sales_segments(self):
-        """現在認証済みのユーザと公演に関連する全販売区分"""
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         if self.sales_segment is None:
             raise HTTPNotFound()
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
@@ -695,7 +695,7 @@ class CartBoundTicketingCartResource(TicketingCartResourceBase):
 
     @reify
     def sales_segments(self):
-        """現在認証済みのユーザと公演に関連する全販売区分"""
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
 
@@ -730,7 +730,7 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
 
     @reify
     def sales_segments(self):
-        """現在認証済みのユーザと公演に関連する全販売区分"""
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment]
 
 

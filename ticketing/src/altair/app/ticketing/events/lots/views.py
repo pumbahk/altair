@@ -128,7 +128,7 @@ class Lots(BaseView):
             req.matchdict['lot_id'] = lot.id
             return LotResource(req)
 
-        lots = slave_session.query(Lot).filter(Lot.event_id==event.id).all()
+        lots = Lot.query.filter(Lot.event_id==event.id).all()
         lotid_viewresource = dict((lot.id, LotViewResource(self.request, lot.id)) for lot in lots)
 
         return dict(

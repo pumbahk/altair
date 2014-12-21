@@ -40,6 +40,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.legal_notice_page_url_mobile = form.data['legal_notice_page_url_mobile']
     cart_setting.mail_filter_domain_notice_template = form.data['mail_filter_domain_notice_template']
     cart_setting.orderreview_page_url = form.data['orderreview_page_url']
+    cart_setting.lots_orderreview_page_url = form.data['lots_orderreview_page_url']
     cart_setting.header_image_url = form.data['header_image_url']
     cart_setting.header_image_url_mobile = form.data['header_image_url_mobile']
     # cart_setting.extra_footer_links = form.data['extra_footer_links']
