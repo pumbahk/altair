@@ -2468,6 +2468,7 @@ class CartView(BaseView):
             secure3d_info_rec['card_limit'] = None
             secure3d_info_rec['secure_kind'] = None
             secure3d_info_rec['card_brand'] = None
+            secure3d_info_rec['status_description'] = None
             secure3d_info_rec['message'] = get_multicheckout_error_message(secure3d_info_rec['error_cd'])
             multicheckout_records.append(secure3d_info_rec)
 
