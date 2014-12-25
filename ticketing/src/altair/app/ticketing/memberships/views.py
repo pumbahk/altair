@@ -52,6 +52,7 @@ class MembershipView(BaseView):
             return {"form":form}
         membership = umodels.Membership(name=form.data["name"], 
                                         organization_id=form.data["organization_id"],
+                                        enable_auto_input_form=form.data['enable_auto_input_form'],
                                         memo=form.data['memo'])
         DBSession.add(membership)
         self.request.session.flash(u"membershipを保存しました")
@@ -77,6 +78,7 @@ class MembershipView(BaseView):
         membership.name=form.data["name"]
         membership.organization_id=form.data["organization_id"]
         membership.memo=form.data['memo']
+        membership.enable_auto_input_form=form.data["enable_auto_input_form"]
 
         DBSession.add(membership)
         self.request.session.flash(u"membershipを編集しました")
@@ -132,7 +134,6 @@ class MemberGroupView(BaseView):
         membergroup = umodels.MemberGroup(name=form.data["name"], 
                                           membership_id=form.data["membership_id"], 
                                           is_guest=form.data["is_guest"],
-                                          enable_auto_input_form=form.data['enable_auto_input_form'],
                                           enable_point_input=form.data['enable_point_input'],
                                           )
         DBSession.add(membergroup)
@@ -165,7 +166,6 @@ class MemberGroupView(BaseView):
         membergroup.name=form.data["name"]
         membergroup.membership_id=form.data["membership_id"]
         membergroup.is_guest=form.data["is_guest"]
-        membergroup.enable_auto_input_form=form.data["enable_auto_input_form"]
         membergroup.enable_point_input=form.data["enable_point_input"]
         DBSession.add(membergroup)
 

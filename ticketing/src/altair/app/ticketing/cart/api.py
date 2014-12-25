@@ -370,7 +370,7 @@ def enable_auto_input_form(user):
         # 楽天認証
         return True
 
-    if user.member.membergroup.enable_auto_input_form:
+    if user.member.membergroup.membership.enable_auto_input_form:
         return True
 
     return False
