@@ -583,6 +583,25 @@ class DummyForm(object):
     def _get_translations(self):
         return None
 
+
+class DummyCartContext(object):
+    def __init__(self, request, order):
+        self.request = request
+        self.order = order
+
+    @property
+    def available_payment_delivery_method_pairs(self):
+        return self.order.sales_segment.payment_delivery_method_pairs
+
+    @property
+    def available_sales_segments(self):
+        return [self.order.sales_segment]
+
+    @property
+    def cart_setting(self):
+        return self.order.cart_setting
+
+
 def build_extra_form_fields_from_form(context, request, form_class, excludes=()):
     retval = []
     form = None
@@ -688,9 +707,10 @@ def get_extra_form_class(request, event):
 
 def get_extra_form_schema(context, request, sales_segment):
     extra_form_fields = None
-    if context.fc_cart:
-        return context.cart_setting.extra_form_fields
-    elif context.booster_cart:
+    cart_setting = context.cart_setting
+    if api.is_fc_cart(cart_setting):
+        return cart_setting.extra_form_fields
+    elif api.is_booster_cart(cart_setting):
         # XXX: ブースターの互換性のため
         extra_form_class = get_extra_form_class(request, sales_segment.sales_segment_group.event)
         if extra_form_class is not None:
@@ -938,13 +958,11 @@ def coerce_extra_form_data(request, extra_form_data):
         attributes[k] = v
     return attributes
 
-def is_booster_cart(context, request):
-    return context.booster_cart
+def is_booster_cart_pred(context, request):
+    return api.is_booster_cart(context.cart_setting)
 
-def is_fc_cart(context, request):
-    return context.fc_cart
+def is_fc_cart_pred(context, request):
+    return api.is_fc_cart(context.cart_setting)
 
-def is_booster_or_fc_cart(context, request):
-    return context.booster_or_fc_cart
-
-
+def is_booster_or_fc_cart_pred(context, request):
+    return api.is_booster_or_fc_cart(context.cart_setting)

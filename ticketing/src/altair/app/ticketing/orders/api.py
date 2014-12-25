@@ -15,6 +15,8 @@ from sqlalchemy import orm
 from pyramid.interfaces import IRequest
 from pyramid.i18n import TranslationString as _
 
+from altair.viewhelpers.datetime_ import create_date_time_formatter
+
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
@@ -75,7 +77,6 @@ from .models import (
     )
 
 ## backward compatibility
-from altair.metadata.api import get_metadata_provider_registry
 from altair.app.ticketing.orders.models import OrderedProductAttribute
 from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
@@ -83,10 +84,6 @@ from .metadata import (
 )
 from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
 from functools import partial
-get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
-                                                         name=METADATA_NAME_ORDERED_PRODUCT)
-get_order_metadata_provider_registry = partial(get_metadata_provider_registry,
-                                               name=METADATA_NAME_ORDER)
 
 logger = logging.getLogger(__name__)
 
@@ -726,44 +723,23 @@ def create_inner_order(request, order_like, note, session=None):
             order_like.finish()
 
     order.note = note
-    add_booster_product_item_attributes(order, get_ordered_product_metadata_provider_registry(request))
+    add_booster_product_item_attributes(order)
     return order
 
-def add_booster_product_item_attributes(order, metadata_provider_registry):
-
-    event_id = order.performance.event.id
-    meta_data = None
-    other_attrs = None
-    if event_id == 1:
-        meta_data = metadata_provider_registry.queryProviderByName('booster.89ers').metadata
-        other_attrs = ['member_type','cont','sex','old_id_number','year','day','month']
-    if event_id == 543:
-        #bigbulls
-        other_attrs = ['extra.mail_permission','member_type','extra.parent_last_name_kana','extra.parent_first_name_kana','extra.parent_first_name','extra.parent_last_name','cont','sex','old_id_number','extra.relationship','year','day','month','extra.t_shirts_size']
-    if event_id == 1567:
-        meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
-        other_attrs = ['extra.mail_permission','fax','member_type','cont','sex','old_id_number','year','day','month']
-
-    target_ordered_product_item = None
-    for element in (element for item in order.items for element in item.elements):
-        target_ordered_product_item = element
-        break
-
-    add_attrs = []
-    if meta_data:
-        add_attrs = add_attrs + meta_data.keys()
-    if other_attrs:
-        add_attrs = add_attrs + other_attrs
-
-    if not add_attrs or not target_ordered_product_item:
-        return
-
-    for key in add_attrs:
-        attribute = OrderedProductAttribute()
-        attribute.ordered_product_item_id = target_ordered_product_item.id
-        attribute.name = key
-        attribute.value = u""
-        attribute.save()
+def add_booster_attributes(order):
+    from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
+    schema = get_extra_form_schema(
+        DummyCartContext(request, order),
+        request, 
+        order_like.sales_segment
+        )
+    for field in schema:
+        attribute = OrderAttribute(
+            order=order,
+            name=field['name'],
+            value=u''
+            )
+        DBSession.add(attribute)
 
 def refresh_order(request, session, order):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
@@ -1876,3 +1852,205 @@ def get_multicheckout_info(request, order):
     if multicheckout_info is not None:
         multicheckout_info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
     return multicheckout_info
+
+
+def get_extra_form_fields_for_order(request, order_like):
+    if order_like.sales_segment is None:
+        return []
+    from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
+    extra_form_fields = get_extra_form_schema(
+        DummyCartContext(request, order_like),
+        request,
+        order_like.sales_segment
+        )
+    if not extra_form_fields:
+        return []
+    return extra_form_fields
+
+def get_order_attribute_pair_pairs(request, order_like):
+    retval = []
+    for field_desc in get_extra_form_fields_for_order(request, order_like):
+        if field_desc['kind'] == 'description_only':
+            continue
+        field_value = order_like.attributes.get(field_desc['name'])
+        display_value = None
+        if field_desc['kind'] in ('text', 'textarea'):
+            display_value = field_value
+        elif field_desc['kind'] in ('select', 'radio'):
+            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+            if len(v) > 0:
+                display_value = v[0]['label']
+            else:
+                display_value = field_value
+        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+            field_value = field_value.strip() if field_value is not None else u''
+            if len(field_value) > 0:
+                field_value = [c.strip() for c in field_value.split(',')]
+            else:
+                field_value = []
+            display_value = []
+            for c in field_value:
+                v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                if len(v) > 0:
+                    v = v[0]['label']
+                else:
+                    v = c
+                display_value.append(v)
+        elif field_desc['kind'] == 'bool':
+            try:
+                field_value = int(field_value)
+            except (ValueError, TypeError):
+                pass
+            field_value = bool(field_value)
+            display_value = u'はい' if field_value else u'いいえ'
+        elif field_desc['kind'] == 'date':
+            dtf = create_date_time_formatter(request)
+            if field_value is not None:
+                field_value = parsedate(field_value)
+            display_value = dtf.format_date(field_value) if field_value is not None else u''
+        else:
+            logger.warning('unsupported kind: %s' % field_desc['kind'])
+            display_value = field_value
+
+        retval.append(
+            (
+                (
+                    field_desc['name'],
+                    field_value
+                ),
+                (
+                    field_desc['display_name'],
+                    display_value
+                )
+                )
+            )
+    return retval
+
+class OrderAttributeIO(object):
+    def __init__(self, blank_value=u""):
+        self.blank_value = blank_value
+
+    def blank_if_none(self, v):
+        return self.blank_value if v is None else v
+
+    def marshal(self, request, order_like):
+        retval = []
+        for field_desc in get_extra_form_fields_for_order(request, order_like):
+            if field_desc['kind'] == 'description_only':
+                continue
+            field_value = order_like.attributes.get(field_desc['name'])
+            stringized_value = None
+            if field_desc['kind'] in ('text', 'textarea'):
+                stringized_value = self.blank_if_none(field_value)
+            elif field_desc['kind'] in ('select', 'radio'):
+                v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+                if len(v) > 0:
+                    stringized_value = v[0]['label']
+                else:
+                    # 選択肢に該当する値がない => DBに入っている値をそのまま出す
+                    logger.info(u"no corresponding value for %s exists in the schema of field %s" % (field_value, field_desc['name']))
+                    stringized_value = self.blank_if_none(field_value)
+            elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+                field_value = field_value.strip() if field_value is not None else u''
+                if len(field_value) > 0:
+                    field_value = [c.strip() for c in field_value.split(',')]
+                else:
+                    field_value = []
+                stringized_value = []
+                for c in field_value:
+                    v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                    if len(v) > 0:
+                        v = v[0]['label']
+                    else:
+                        # 選択肢に該当する値がない => DBに入っている値をそのまま出す
+                        logger.info(u"no corresponding value for %s exists in the schema of field %s" % (c, field_desc['name']))
+                        v = c
+                    stringized_value.append(v)
+                stringized_value = u','.join(stringized_value)
+            elif field_desc['kind'] == 'bool':
+                if field_value is not None:
+                    try:
+                        field_value = int(field_value)
+                    except (ValueError, TypeError):
+                        pass
+                    field_value = bool(field_value)
+                    stringized_value = u'1' if field_value else u'0'
+                else:
+                    stringized_value = self.blank_value
+            elif field_desc['kind'] == 'date':
+                if field_value is not None:
+                    try:
+                        field_value = parsedate(field_value)
+                        stringized_value = u'{0.year:04d}-{0.month:02d}-{0.day:02d}'.format(field_value)
+                    except:
+                        logger.info(u"%s cannot be parsed as date, field %s" % (field_value, field_desc['name']))
+                        stringized_value = self.blank_value
+                else:
+                    stringized_value = self.blank_value
+            else:
+                logger.warning('unsupported kind: %s' % field_desc['kind'])
+                stringized_value = self.blank_if_none(field_value)
+
+            retval.append(
+                (
+                    field_desc['name'],
+                    field_desc['display_name'],
+                    stringized_value
+                    )
+                )
+        return retval
+
+    def unmarshal(self, request, order_like, params):
+        for field_desc in get_extra_form_fields_for_order(request, order_like):
+            if field_desc['kind'] == 'description_only':
+                continue
+            v = params.get(field_desc['name'])
+            stored_value = None
+            if field_desc['kind'] in ('text', 'textarea'):
+                stored_value = v
+            elif field_desc['kind'] in ('select', 'radio'):
+                for pair in field_desc['choices']:
+                    if pair['label'] == v:
+                        stored_value = pair['value']
+                        break
+                else:
+                    # 選択肢に該当する値がない => 値をそのままDBに入れる
+                    logger.info(u"no corresponding label for %s exists in the schema of field %s" % (v, field_desc['name']))
+                    stored_value = v
+            elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+                if v is not None:
+                    v = [c.strip() for c in v.split(',')]
+                    d = dict((pair['label'], pair['value']) for pair in field_desc['choices'])
+                    _stored_value = []
+                    for i in v:
+                        if i in d:
+                            _stored_value.append(d[i])
+                        else:
+                            logger.info(u"no corresponding label for %s exists in the schema of field %s" % (i, field_desc['name']))
+                            _stored_value.append(i)
+                    stored_value = u','.join(_stored_value)
+                else:
+                    stored_value = u''
+            elif field_desc['kind'] == 'bool':
+                if v is None:
+                    stored_value = self.blank_value
+                else:
+                    if v == u'0':
+                        stored_value = u'0'
+                    else:
+                        stored_value = u'1' if v != self.blank_value else None
+            elif field_desc['kind'] == 'date':
+                if v is not None:
+                    if v == self.blank_value:
+                        stored_value = None
+                    else:
+                        try:
+                            field_value = parsedate(v)
+                            stored_value = u'{0.year:04d}-{0.month:02d}-{0.day:02d}'.format(field_value)
+                        except:
+                            logger.info(u"%s cannot be parsed as date, field %s" % (v, field_desc['name']), exc_info=True)
+                            stored_value = v
+            else:
+                logger.warning('unsupported kind: %s' % field_desc['kind'])
+                stored_value = v
+            order_like.attributes[field_desc['name']] = stored_value

@@ -516,18 +516,6 @@ class TicketingCartResourceBase(object):
             cart_setting = get_default_cart_setting(self.request)
         return cart_setting
 
-    @reify
-    def booster_cart(self):
-        return self.cart_setting.booster_cart if self.cart_setting else False
-
-    @reify
-    def booster_or_fc_cart(self):
-        return self.cart_setting.booster_or_fc_cart if self.cart_setting else False
-
-    @reify
-    def fc_cart(self):
-        return self.cart_setting.fc_cart if self.cart_setting else False
-
 
 class EventOrientedTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request, event_id=None):

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import os
 import logging
+import tempfile
+from io import BytesIO
 from collections import OrderedDict
 
 from paste.util.multidict import MultiDict
@@ -15,7 +18,7 @@ from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, Collec
 from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem, Organization
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.orders.models import Order
-from .api import get_ordered_product_metadata_provider_registry
+from .api import get_order_attribute_pair_pairs
 
 logger = logging.getLogger(__name__)
 
@@ -117,20 +120,14 @@ japanese_columns = {
     }
 
 def get_japanese_columns(request):
-    retval = dict(japanese_columns)
-    registry = get_ordered_product_metadata_provider_registry(request)
-    for provider in registry.getProviders():
-        for key in provider:
-            metadata = provider[key]
-            retval[u'attribute[%s]' % metadata.key] = metadata.get_display_name('ja_JP')
-    return retval
+    return dict(japanese_columns)
 
 class MarginRenderer(object):
     def __init__(self, key, column_name):
         self.key = key
         self.column_name = column_name
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         order = dereference(record, self.key)
         rendered_value = 0
         for ordered_product in order.ordered_products:
@@ -144,14 +141,13 @@ class CartSettingRenderer(object):
     def __init__(self, key, column_name):
         self.key = key
         self.column_name = column_name
-        self.outer = None
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         cart_setting_id = dereference(record, self.key)
 
         if not cart_setting_id:
             cart_setting_id = record['organization'].setting.cart_setting_id
-        cart_setting = get_cart_setting(None, cart_setting_id, session=outer.session)
+        cart_setting = get_cart_setting(context.request, cart_setting_id, session=context.session)
         if cart_setting is not None:
             rendered_value = cart_setting.name
         else:
@@ -168,7 +164,7 @@ class PerSeatQuantityRenderer(object):
         self.key = key
         self.column_name = column_name
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         ordered_product_item = dereference(record, self.key)
         if ordered_product_item.seats:
             rendered_value = u"1"
@@ -185,26 +181,24 @@ class MailMagazineSubscriptionStateRenderer(object):
     def __init__(self, key, column_name):
         self.key = key
         self.column_name = column_name
-        self.outer = None
 
-    def __call__(self, record):
-        assert self.outer is not None
+    def __call__(self, record, context):
         emails = dereference(record, self.key, True) or []
         return [
             (
                 (u"", self.column_name, u""),
-                one_or_empty(any(self.outer.mailsubscription_cache.get(email, False) for email in emails))
+                one_or_empty(any(context.mailsubscription_cache.get(email, False) for email in emails))
                 )
             ]
 
 class CurrencyRenderer(SimpleRenderer):
-    def __call__(self, record):
+    def __call__(self, record, context):
         return [
             ((u'', self.name, u''), unicode(format_number(dereference(record, self.key))))
             ]
 
 class ZipRenderer(SimpleRenderer):
-    def __call__(self, record):
+    def __call__(self, record, context):
         zip = dereference(record, self.key, True)
         zip = ('%s-%s' % (zip[0:3], zip[3:])) if zip else ''
         return [
@@ -216,7 +210,7 @@ class PrintHistoryRenderer(object):
         self.key = key
         self.column_name = column_name
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         ordered_product_item = dereference(record, self.key)
         return [
             (
@@ -225,6 +219,62 @@ class PrintHistoryRenderer(object):
                 )
             ]
 
+
+class OrderAttributeRenderer(object):
+    def __init__(self, key, variable_name, renderer_class=PlainTextRenderer):
+        self.key = key
+        self.variable_name = variable_name
+        self.renderer_class = renderer_class
+
+    def __call__(self, record, context):
+        order = dereference(record, self.key)
+        retval = []
+        for (attr_key, attr_value), _ in get_order_attribute_pair_pairs(context.request, order):
+            renderer = self.renderer_class(u'_', u'%s[%s]' % (self.variable_name, attr_key))
+            retval.extend(renderer(dict(_=attr_value), context))
+        return retval
+
+
+class CSVRendererWrapper(object):
+    def __init__(self, renderer, temporary_file_factory, writer_factory, records, localized_columns={}, block_size=131072):
+        self.renderer = renderer
+        self.temporary_file_factory = temporary_file_factory
+        self.writer_factory = writer_factory
+        self.records = records
+        self.localized_columns = localized_columns
+        self.block_size = block_size
+        self.tf = None
+
+    def _write_rows_to_temp_file(self):
+        if self.tf is None: 
+            tf = self.temporary_file_factory()
+            tfw = self.writer_factory(tf)
+            for row in self.renderer.render(self.records):
+                tfw(row)
+            tf.seek(0, os.SEEK_SET)
+            self.tf = tf
+
+    def __iter__(self):
+        self._write_rows_to_temp_file()
+        bio = BytesIO()
+        fw = self.writer_factory(bio)
+        fw(self.renderer.render_header(self.localized_columns))
+        yield bio.getvalue()
+        try:
+            while True:
+                buf = self.tf.read(self.block_size)
+                if buf == '':
+                    break
+                yield buf
+        finally:
+            self.close()
+
+    def close(self):
+        if self.tf is not None:
+            self.tf.close()
+            self.tf = None
+
+        
 class OrderCSV(object):
     EXPORT_TYPE_ORDER = 1
     EXPORT_TYPE_SEAT = 2
@@ -365,8 +415,8 @@ class OrderCSV(object):
                         ),
                     ]
                 ),
-            AttributeRenderer(
-                u'order.attributes',
+            OrderAttributeRenderer(
+                u'order',
                 u'attribute'
                 ),
             ]
@@ -392,7 +442,8 @@ class OrderCSV(object):
                 ),
             ]
 
-    def __init__(self, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession):
+    def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession):
+        self.request = request
         self.export_type = export_type
         column_renderers = None
         if export_type == self.EXPORT_TYPE_ORDER:
@@ -401,23 +452,8 @@ class OrderCSV(object):
             column_renderers = self.per_seat_columns
         if column_renderers is None:
             raise ValueError('export_type')
-
-        def bind(column_renderer):
-            if isinstance(column_renderer, MailMagazineSubscriptionStateRenderer):
-                column_renderer = MailMagazineSubscriptionStateRenderer(column_renderer.key, column_renderer.column_name)
-                column_renderer.outer = self
-            elif isinstance(column_renderer, CartSettingRenderer):
-                column_renderer = CartSettingRenderer(column_renderer.key, column_renderer.column_name)
-                column_renderer.outer = self
-            elif isinstance(column_renderer, PlainTextRenderer) and column_renderer.fancy and not excel_csv:
-                column_renderer = PlainTextRenderer(
-                    column_renderer.key,
-                    column_renderer.name,
-                    column_renderer.empty_if_dereference_fails
-                    )
-            return column_renderer
-
-        self.column_renderers = map(bind, column_renderers)
+        self.column_renderers = column_renderers
+        self.enable_fancy = excel_csv
         self.organization_id = organization_id
         self._mailsubscription_cache = None
         self.localized_columns = localized_columns
@@ -430,7 +466,7 @@ class OrderCSV(object):
             self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id, self.session)
         return self._mailsubscription_cache
 
-    def iter_records(self, order):
+    def iter_records_for_order(self, order):
         user_credential = order.user.first_user_credential if order.user else None
         member = order.user.member if order.user and order.user.member else None
         common_record = {
@@ -472,12 +508,18 @@ class OrderCSV(object):
         else:
             raise ValueError(self.export_type)
 
-    def __call__(self, orders):
-        renderer = CSVRenderer(self.column_renderers)
-        for order in orders:
-            for record in self.iter_records(order):
-                renderer.append(record)
-        return renderer(localized_columns=self.localized_columns)
+    def __call__(self, orders, writer_factory):
+        return CSVRendererWrapper(
+            renderer=CSVRenderer(self.column_renderers, self),
+            temporary_file_factory=lambda: tempfile.SpooledTemporaryFile(max_size=16777216),
+            writer_factory=writer_factory,
+            records=(
+                record
+                for order in orders
+                for record in self.iter_records_for_order(order)
+                ),
+            localized_columns=self.localized_columns
+            )
 
 
 class RefundResultCSVExporter(object):
