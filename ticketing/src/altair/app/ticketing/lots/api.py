@@ -493,10 +493,13 @@ def clear_lot_entry(request):
         pass
 
 def get_point_user(request):
-    return request.session.get(LOT_ENTRY_POINT_USER)
+    from altair.app.ticketing.users.models import User
+    user_id = request.session.get(LOT_ENTRY_POINT_USER)
+    return User.get(user_id)
 
 def set_point_user(request, point_user):
-    request.session[LOT_ENTRY_POINT_USER] = point_user
+    clear_point_user(request)
+    request.session[LOT_ENTRY_POINT_USER] = point_user.id
 
 def clear_point_user(request):
     try:
