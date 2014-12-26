@@ -484,6 +484,7 @@ class PageSetForm(Form):
         choices=lambda field: [(unicode(obj.id) if obj is not None else u'', value) for obj, value in build_genre_choices(get_current_request())]
         )
     url = fields.TextField(label=u"URL", validators=[])
+    short_url_keyword = fields.TextField(label=u"短縮URL", validators=[])
 
     def object_validate(self, obj=None):
         data = self.data
@@ -496,4 +497,4 @@ class PageSetForm(Form):
     
     def configure(self, request):
         self.request = request
-    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]
+    __display_fields__ = ["name", "genre_id", "url", "short_url_keyword", "tags_string", "private_tags_string", "mobile_tags_string"]

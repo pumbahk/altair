@@ -18,3 +18,10 @@ def event_page(request, page):
         return request.route_path("event", id=page.event.id)
     else:
         return ""
+
+def get_short_url(keyword):
+    return "r-t.jp/" + keyword;
+
+def get_short_url_link(keyword):
+    return "https://tools.ticketstar.jp/urlshortener/search?query=" + keyword
+

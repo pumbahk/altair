@@ -43,6 +43,7 @@
     <tr><th>${getattr(form,"title").label.text}</th><td>${form.data["title"]}</td></tr>
     <tr><th>${getattr(form,"title_suffix").label.text}</th><td>${form.data["title_suffix"]}</td></tr>
     <tr><th>${getattr(form,"url").label.text}</th><td>${form.data["url"]}</td></tr>
+    <tr><th>${getattr(form,"short_url_keyword").label.text}</th><td>${form.data["short_url_keyword"]}</td></tr>
     <tr><th>${getattr(form,"publish_begin").label.text}〜 ${getattr(form,"publish_end").label.text}</th><td>${h.term_datetime(form.data["publish_begin"],form.data["publish_end"])}</td></tr>
     %if form.data["tags"]:
       <tr><th>${getattr(form,"tags").label.text}</th><td>${form.data["tags"]}</td></tr>

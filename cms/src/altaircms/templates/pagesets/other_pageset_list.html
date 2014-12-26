@@ -35,7 +35,6 @@
 
 ${panel("nav_pageset", pagetype)}
 
-
 <p>${pages.opts.get("item_count") or pages.collection.count()}件</p>
 ${pages.pager()}
 
@@ -49,6 +48,9 @@ ${pages.pager()}
       <tr>
         <th>ページ名</th>
         <th>URL</th>
+        % if pagetype.name == "document":
+        <th>短縮URL</th>
+        % endif
         <th>preview</th>
         <th>生成日時</th>
         <th>更新日時</th>
@@ -59,6 +61,15 @@ ${pages.pager()}
       <tr>
         <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
         <td>${page.url}</td>
+        % if pagetype.name == "document":
+            <td>
+            % if page.short_url_keyword:
+                <a href="${h.page.get_short_url_link(page.short_url_keyword)}">${h.page.get_short_url(page.short_url_keyword)}</a>
+            % else:
+                未設定
+            % endif
+            </td>
+        % endif
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
         </td>

@@ -9,6 +9,7 @@ now = get_now(request)
 		<th width="20px"></th>
 		<th>ページセット</th>
 		<th>URL</th>
+        <th>短縮URL</th>
 		<th>ページ</th>
 		<th>表示状況</th>
 		<th>公開開始</th>
@@ -34,6 +35,13 @@ now = get_now(request)
          </a>
         </td>
       <td rowspan="${pagesize}">${pageset.url}</td>
+      <td rowspan="${pagesize}">
+          % if pageset.short_url_keyword != None:
+            <a href="${h.page.get_short_url_link(pageset.short_url_keyword)}">${h.page.get_short_url(pageset.short_url_keyword)}</a>
+          % else:
+            未設定
+          % endif
+      </td>
 
         %if len(pages) < 1:
       </tr>
