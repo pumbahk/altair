@@ -370,12 +370,16 @@ class EntryLotView(object):
         )
         return dict()
 
-    @lbr_view_config(request_method="POST", route_name='lots.entry.rsp', custom_predicates=())
+    @lbr_view_config(request_method="POST", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
     def rsp_post(self):
         form = cart_schemas.PointForm(formdata=self.request.params)
         point_params = dict(
             accountno=form.data['accountno'],
             )
+
+        if not form.validate():
+            asid = self.request.context.asid_smartphone
+            return dict(form=form, asid=asid)
 
         if cart_api.is_point_input_required(self.context, self.request):
             point = point_params.pop("accountno", None)
