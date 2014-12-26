@@ -431,7 +431,9 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
-        user = cart_api.get_or_create_user(self.context.authenticated_user())
+        user = api.get_point_user(self.request)
+        if not user:
+            user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
@@ -464,6 +466,7 @@ class ConfirmLotEntryView(object):
             )
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
+        api.clear_point_user(self.request)
 
         try:
             api.notify_entry_lot(self.request, entry)

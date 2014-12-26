@@ -86,6 +86,7 @@ from . import schemas
 from . import urls
 
 LOT_ENTRY_DICT_KEY = 'lots.entry'
+LOT_ENTRY_POINT_USER = 'lots.entry.point_user'
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -491,6 +492,19 @@ def clear_lot_entry(request):
     except KeyError:
         pass
 
+def get_point_user(request):
+    return request.session.get(LOT_ENTRY_POINT_USER)
+
+def set_point_user(request, point_user):
+    request.session[LOT_ENTRY_POINT_USER] = point_user
+
+def clear_point_user(request):
+    try:
+        if request.session:
+            del request.session[LOT_ENTRY_POINT_USER]
+    except KeyError:
+        pass
+
 class Options(object):
     OPTIONS_KEY = 'altair.lots.options'
 
@@ -580,3 +594,20 @@ def get_lotting_announce_timezone(timezone):
     if timezone in labels:
         label = labels[timezone]
     return label
+
+def enable_auto_input_form(request, user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    info = request.altair_auth_info
+    membership = cart_api.get_membership(info)
+
+    if membership.enable_auto_input_form:
+        return True
+
+    return False
