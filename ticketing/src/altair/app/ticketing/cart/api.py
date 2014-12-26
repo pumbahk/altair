@@ -356,7 +356,7 @@ def enable_point_input(user):
         # 楽天認証
         return True
 
-    if user.member.membergroup.enable_point_input:
+    if user.member.membergroup.membership.enable_point_input:
         return True
 
     return False

@@ -7,7 +7,6 @@
     <th class="minwidth"></th>
     <th>${HH.label_text_for(MemberGroup.name)}</th>
     <th>${HH.label_text_for(MemberGroup.is_guest)}</th>
-    <th>楽天ポイント手入力</th>
   </tr>
   </thead>
   <tbody>
@@ -16,7 +15,6 @@
     <td><input type="radio" name="membergroup_id" value="${g.id}" /></td>
     <td><a href="${request.route_path("membergroups", membergroup_id=g.id, action="show")}">${g.name}</a></td>
     <td>${g.is_guest}</td>
-    <td>${g.enable_point_input}</td>
   </tr>
   %endfor
   </tbody>

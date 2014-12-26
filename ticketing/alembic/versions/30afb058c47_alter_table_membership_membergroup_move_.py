@@ -22,8 +22,12 @@ def upgrade():
     op.drop_column('MemberGroup', 'enable_auto_input_form')
     op.add_column('Membership', sa.Column('enable_auto_input_form', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
     op.execute(u"UPDATE Membership SET enable_auto_input_form = 0 WHERE id in (6, 17, 20, 25, 48)")
+    op.drop_column('MemberGroup', 'enable_point_input')
+    op.add_column('Membership', sa.Column('enable_point_input', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
 
 def downgrade():
     op.drop_column('Membership', 'enable_auto_input_form')
     op.add_column('MemberGroup', sa.Column('enable_auto_input_form', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
     op.execute(u"UPDATE MemberGroup SET enable_auto_input_form = 0 WHERE id in (300107, 300122, 300013, 300121, 300103, 300146)")
+    op.drop_column('Membership', 'enable_point_input')
+    op.add_column('MemberGroup', sa.Column('enable_point_input', sa.Boolean(), nullable=False,default=True, server_default=text('1')))

@@ -49,7 +49,10 @@ class MembershipForm(Form):
         label=u"自動フォーム入力",
         default=True
         )
-
+    enable_point_input = BooleanField(
+        label=u"楽天ポイント手入力",
+        default=True
+        )
 
 class MemberGroupDeleteForm(Form):
     def _get_translations(self):
@@ -106,11 +109,6 @@ class MemberGroupForm(Form):
 
     is_guest = BooleanField(
         label=u"ゲストログイン"
-        )
-
-    enable_point_input = BooleanField(
-        label=u"楽天ポイント手入力",
-        default=True
         )
 
     membership_id = HiddenField(
