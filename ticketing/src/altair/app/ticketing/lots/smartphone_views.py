@@ -7,6 +7,7 @@ from markupsafe import Markup
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
+from webob.multidict import MultiDict
 
 from wtforms.validators import ValidationError
 from altair.now import get_now
@@ -19,7 +20,9 @@ from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart import schemas as cart_schemas
 from altair.app.ticketing.cart.rendering import selectable_renderer
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 from . import api
 from . import helpers as h
@@ -339,5 +342,57 @@ class EntryLotView(object):
         if callable(result):
             return result
 
-        location = urls.entry_confirm(self.request)
-        return HTTPFound(location=location)
+        location = HTTPFound(urls.entry_confirm(self.request))
+        if cart_api.is_point_input_required(self.context, self.request):
+            location = HTTPFound(self.request.route_path('lots.entry.rsp'))
+        return location
+
+    @lbr_view_config(request_method="GET", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
+    def rsp(self):
+        formdata = MultiDict(
+            accountno=""
+            )
+        form = cart_schemas.PointForm(formdata=formdata)
+        asid = self.request.context.asid_smartphone
+
+        accountno = self.request.params.get('account')
+        user = cart_api.get_or_create_user(self.context.authenticated_user())
+        if accountno:
+            form['accountno'].data = accountno.replace('-', '')
+        else:
+            if api.enable_auto_input_form(self.request, user) and user:
+                acc = cart_api.get_user_point_account(user.id)
+                form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+
+        return dict(
+            form=form,
+            asid=asid
+        )
+        return dict()
+
+    @lbr_view_config(request_method="POST", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
+    def rsp_post(self):
+        form = cart_schemas.PointForm(formdata=self.request.params)
+        point_params = dict(
+            accountno=form.data['accountno'],
+            )
+
+        if not form.validate():
+            asid = self.request.context.asid_smartphone
+            return dict(form=form, asid=asid)
+
+        if cart_api.is_point_input_required(self.context, self.request):
+            point = point_params.pop("accountno", None)
+            user = cart_api.get_or_create_user(self.context.authenticated_user())
+            if point:
+                if not user:
+                    user = cart_api.get_or_create_user_from_point_no(point)
+
+                cart_api.create_user_point_account_from_point_no(
+                    user.id,
+                    type=UserPointAccountTypeEnum.Rakuten,
+                    account_number=point
+                    )
+                api.set_point_user(self.request, user)
+
+        return HTTPFound(self.request.route_url('lots.entry.confirm', event_id=self.request.context.event.id, lot_id=self.request.context.lot.id))

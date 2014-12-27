@@ -381,6 +381,12 @@ class ConfirmLotEntryView(object):
         wishes = api.build_temporary_wishes(entry['wishes'],
                                             payment_delivery_method_pair=payment_delivery_method_pair,
                                             sales_segment=lot.sales_segment)
+
+        acc = None
+        user = api.get_point_user(self.request)
+        if user:
+            acc = cart_api.get_user_point_account(user.id)
+
         for wish in wishes:
             assert wish.performance, type(wish)
 
@@ -399,7 +405,8 @@ class ConfirmLotEntryView(object):
                     gender=entry['gender'],
                     birthday=entry['birthday'],
                     memo=entry['memo'],
-                    mailmagazines_to_subscribe=magazines_to_subscribe)
+                    mailmagazines_to_subscribe=magazines_to_subscribe,
+                    accountno=acc.account_number if acc else "")
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -431,7 +438,9 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
-        user = cart_api.get_or_create_user(self.context.authenticated_user())
+        user = api.get_point_user(self.request)
+        if not user:
+            user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
@@ -464,6 +473,7 @@ class ConfirmLotEntryView(object):
             )
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
+        api.clear_point_user(self.request)
 
         try:
             api.notify_entry_lot(self.request, entry)
