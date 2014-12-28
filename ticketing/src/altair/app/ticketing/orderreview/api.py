@@ -9,6 +9,7 @@ from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
 from pyramid.threadlocal import get_current_registry
 from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
+from altair.sqlahelper import get_db_session
 import urllib
 import urllib2
 import json
@@ -116,3 +117,10 @@ def is_rakuten_auth_organization(context, request):
         if organization.id == org:
             return True
     return False
+
+def get_user_point_accounts(request, user_id):
+    from altair.app.ticketing.users.models import UserPointAccount
+    session = get_db_session(request, name="slave")
+    return session.query(UserPointAccount) \
+        .filter_by(user_id=user_id) \
+        .all()
