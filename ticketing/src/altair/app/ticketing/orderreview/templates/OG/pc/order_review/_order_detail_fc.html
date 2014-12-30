@@ -1,20 +1,124 @@
-<div class="kadomaru">
+<div class="frame frame-inner">
+  <h3>お申込内容</h3>
+  <p>ステータス: ${h.order_status(order)}</p>
+  <p>受付番号: ${order.order_no}</p/>
   <table class="purchasedContents">
     <thead>
       <tr>
-        <th><span>受付番号</span></th>
+        <th colspan="3">${order.performance.event.title}</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="textC font20">${order.order_no}</td>
+        <td>${order.ordered_products[0].product.name}</td>
+        <td>　</td>
+        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)}</td>
       </tr>
+      <tr>
+        <td>決済手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+% if order.system_fee > 0:
+      <tr>
+        <td>システム手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+% endif
+% if order.special_fee > 0:
+      <tr>
+        <td>${order.special_fee_name}</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+% endif
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>合計金額</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+  
+<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% shipping_address = order.shipping_address %>
+<div class="frame">
+  <div class="frame-inner">
+    <h3>購入者情報</h3>
+  </div>
+  <table class="form">
+    <colgroup>
+      <col style="width:180px;" />
+      <col style="width:310px;" />
+    </colgroup>
+    <tbody>
+      <% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
+      <tr>
+        <th>氏名</th>
+        <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th>氏名（フリガナ）</th>
+        <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th>郵便番号</th>
+        <td>${shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <th>住所</th>
+        <td>${shipping_address.prefecture} ${shipping_address.city} ${shipping_address.address_1} ${shipping_address.address_2}</td>
+      </tr>
+      % if view_context.cart_setting.flavors.get('mobile_and_landline_phone_number'):
+      <tr>
+        <th>電話番号（自宅）</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      % if shipping_address.tel_2:
+      <tr>
+        <th>電話番号（携帯）</th>
+        <td>${shipping_address.tel_2}</td>
+      </tr>
+      % endif
+      % else:
+      <tr>
+        <th>電話番号</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      % endif
+      % if view_context.flavors.get('pc_and_mobile_email_address'):
+      <tr>
+        <th>メールアドレス</th>
+        <td>${shipping_address.email_1}</td>
+      </tr>
+      % if shipping_address.email_2:
+      <tr>
+        <th>携帯メールアドレス</th>
+        <td>${shipping_address.email_2}</td>
+      </tr>
+      % endif
+      % else:
+      <tr>
+        <th>メールアドレス</th>
+        <td>${shipping_address.email_1}</td>
+      </tr>
+      % endif
+      % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th>${display_name}</th>
+        <td>${display_value}</td>
+      </tr>
+      % endfor
     </tbody>
   </table>
 </div>
 
 % if order.status == 'canceled' or order.payment_status == 'refunded':
-<div class="kadomaru">
+<div class="frame frame-inner">
   <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
   <p>
   キャンセル処理は、下記のような理由によりおこなっております。<br />
@@ -24,81 +128,8 @@
   </p>
 </div>
 % else:
-<%
-pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
-shipping_address = order.shipping_address
-%>
-<div class="kadomaru">
-<h3>購入情報</h3>
-  <table class="purchasedContents">
-    <thead>
-      <tr>
-        <th colspan="2"><span>${view_context.title}</span></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>新規／継続</td>
-        <td class="textR">${pm.get('cont')}</td>
-      </tr>
-      % if pm.get('old_id_number'):
- 　　 <tr>
-        <td>2013-14会員番号</td>
-        <td class="textR">${pm.get('old_id_number')}</td>
-      </tr>
-      % endif
-      <tr>
-        <td>会員種別</td>
-        <td class="textR">${order.items[0].product.name}</td>
-      </tr>
-      <tr>
-        <td>氏名</td>
-        <td class="textR">${shipping_address.last_name} ${shipping_address.first_name}</td>
-      </tr>
-      <tr>
-        <td>氏名（フリガナ）</td>
-        <td class="textR">${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
-      </tr>
-      <tr>
-        <td>郵便番号</td>
-        <td class="textR">${shipping_address.zip}</td>
-      </tr>
-      <tr>
-        <td>住所</td>
-        <td class="textR">${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
-      </tr>
-      <tr>
-        <td>電話番号</td>
-        <td class="textR">${shipping_address.tel_1 or shipping_address.tel_2}</td>
-      </tr>
-      <tr>
-          <td>メールアドレス</td>
-          <td class="textR">${shipping_address.email_1}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="kadomaru">
-  <h3>お支払い</h3>
+<div class="frame frame-inner">
+  <h3>お支払</h3>
   ${h.render_payment_finished_viewlet(request, order)}
 </div>
-%endif
-
-<div class="kadomaru">
-  <h3>注意事項</h3>
-  <ul>
-    <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br />
-      （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
-    <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
-    <li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
-  </ul>
-</div>
-
-<div class="kadomaru">
-  <h3>お問い合わせ先</h3>
-  <ul class="markNone font14">
-    <li>${view_context.contact_name}</li>
-    <li>${view_context.contact_tel} (${view_context.contact_office_hours})</li>
-  </ul>
-</div>
+% endif
