@@ -338,14 +338,12 @@ class EntryLotView(object):
             return self.back_to_form()
 
         self.request.session['lots.entry.time'] = get_now(self.request)
+        if cart_api.is_point_input_required(self.context, self.request):
+            return HTTPFound(self.request.route_path('lots.entry.rsp'))
         result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result
-
-        location = HTTPFound(urls.entry_confirm(self.request))
-        if cart_api.is_point_input_required(self.context, self.request):
-            location = HTTPFound(self.request.route_path('lots.entry.rsp'))
-        return location
+        return HTTPFound(urls.entry_confirm(self.request))
 
     @lbr_view_config(request_method="GET", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
     def rsp(self):
@@ -394,5 +392,15 @@ class EntryLotView(object):
                     account_number=point
                     )
                 api.set_point_user(self.request, user)
+
+        from .adapters import LotSessionCart
+        from altair.app.ticketing.payments.payment import Payment
+        entry = api.get_lot_entry_dict(self.request)
+        cart = LotSessionCart(entry, self.request, self.request.context.lot)
+        payment = Payment(cart, self.request)
+        # マルチ決済のみオーソリのためにカード番号入力画面に遷移する
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         return HTTPFound(self.request.route_url('lots.entry.confirm', event_id=self.request.context.event.id, lot_id=self.request.context.lot.id))
