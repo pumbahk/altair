@@ -4,20 +4,38 @@ from pyramid.interfaces import IRequest, IRequestExtensions
 from pyramid.util import InstancePropertyMixin
 from zope.interface import alsoProvides
 
-def _setup_db(modules=[], echo=False):
-    resolver = DottedNameResolver()
+def _setup_db(modules=[], echo=False, hook=None):
     from sqlalchemy import create_engine
-    engine = create_engine("sqlite:///")
-    engine.echo = echo
     import sqlahelper
     # remove existing session if exists
-    sqlahelper.get_session().remove() 
+    prev_session = sqlahelper.get_session()
+    if prev_session is not None:
+        prev_session.remove()
+    prev_engine = None
+    try:
+        prev_engine = sqlahelper.get_engine()
+    except RuntimeError:
+        pass
+    prev_base = sqlahelper.get_base()
+    if prev_engine is not None:
+        if prev_base is not None:
+            prev_base.metadata.drop_all()
+        prev_engine.dispose()
+    sqlahelper.reset()
+    sqlahelper._session = prev_session
+    sqlahelper.set_base(prev_base)
+
+    engine = create_engine("sqlite://")
+    engine.echo = echo
     sqlahelper.add_engine(engine)
+    resolver = DottedNameResolver()
+    base = sqlahelper.get_base()
+    base.metadata.bind = engine
     for module in modules:
         resolver.resolve(module)
-    base = sqlahelper.get_base()
-    base.metadata.drop_all()
-    base.metadata.create_all()
+    base.metadata.create_all(bind=engine)
+    if hook is not None:
+        hook()
     return sqlahelper.get_session()
 
 def _teardown_db():

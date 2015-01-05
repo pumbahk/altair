@@ -21,7 +21,6 @@ class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         from altair.app.ticketing import install_ld
         from altair.sqlahelper import register_sessionmaker_with_engine
-        install_ld()
         self.session = _setup_db([
             "altair.multicheckout",
             "altair.app.ticketing.orders.models",
@@ -30,7 +29,7 @@ class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
             "altair.app.ticketing.lots.models",
             "altair.app.ticketing.events.lots.models",
             "altair.app.ticketing.operators.models",
-            ])
+            ], hook=install_ld)
         self.request = DummyRequest()
         self.config = testing.setUp(
             request=self.request,

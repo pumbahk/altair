@@ -91,7 +91,9 @@ class DataOverWriteTests(unittest.TestCase):
 class OrderAttributesDataTests(unittest.TestCase):
     def setUp(self):
         from altair.app.ticketing.testing import _setup_db
-        self.session = _setup_db(["altair.app.ticketing.core.models"])
+        from altair.app.ticketing import install_ld
+        self.session = _setup_db(["altair.app.ticketing.core.models"], hook=install_ld)
+        
 
     def tearDown(self):
         import transaction

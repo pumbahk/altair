@@ -19,14 +19,46 @@ def install_ld():
     import altair.logicaldeleting
     from altair.samarker.orm import SessionFactoryFactory
     from zope.sqlalchemy import ZopeTransactionExtension
-    sqlahelper._session = orm.scoped_session(
-        orm.sessionmaker(
-            class_=SessionFactoryFactory(altair.logicaldeleting.LogicalDeletableSession),
-            extension=ZopeTransactionExtension(),
-            query_cls=altair.logicaldeleting.LogicalDeletableQuery
-            )
+    if altair.logicaldeleting.installed:
+        return
+    engine = None
+    try:
+        engine = sqlahelper.get_engine()
+    except RuntimeError:
+        pass
+    session = sqlahelper.get_session()
+    assert session is not None
+    if session is not None:
+        session.remove()
+    session_factory = orm.sessionmaker(
+        class_=SessionFactoryFactory(altair.logicaldeleting.LogicalDeletableSession),
+        extension=ZopeTransactionExtension(),
+        query_cls=altair.logicaldeleting.LogicalDeletableQuery
         )
+    session.session_factory = session.registry.createfunc = session_factory
+    base = sqlahelper.get_base()
+    if engine is not None:
+        session.configure(bind=engine)
+        base.metadata.bind = engine
     altair.logicaldeleting.installed = True
+
+def uninstall_ld():
+    import altair.logicaldeleting
+    engine = None
+    try:
+        engine = sqlahelper.get_engine()
+    except RuntimeError:
+        pass
+    prev_base = sqlahelper.get_base()
+    prev_session = sqlahelper.get_session()
+    prev_session.remove()
+    sqlahelper.reset()
+    new_session_factory = sqlahelper._session.session_factory
+    sqlahelper._session.remove()
+    prev_session.session_factory = prev_session.registry.createfunc = new_session_factory
+    sqlahelper._session = prev_session
+    sqlahelper._base = prev_base
+    altair.logicaldeleting.installed = False
 
 install_ld()
 
