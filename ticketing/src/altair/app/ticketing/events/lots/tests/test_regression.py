@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
+import sqlahelper
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from altair.app.ticketing.core.testing import CoreTestMixin
@@ -20,12 +21,14 @@ class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         from altair.app.ticketing import install_ld
         from altair.sqlahelper import register_sessionmaker_with_engine
+        install_ld()
         self.session = _setup_db([
             "altair.multicheckout",
             "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.cart.models",
             "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.events.lots.models",
             "altair.app.ticketing.operators.models",
             ])
         self.request = DummyRequest()
@@ -41,7 +44,6 @@ class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
             'slave',
             self.session.bind
             )
-        install_ld()
         import altair.multicheckout.models
         altair.multicheckout.models.Base.metadata.create_all()
         CoreTestMixin.setUp(self)
@@ -55,9 +57,9 @@ class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
         import altair.multicheckout.models
         altair.multicheckout.models.Base.metadata.drop_all()
-        _teardown_db()
 
     def _getTarget(self):
         from ..views import LotEntries
