@@ -4,12 +4,10 @@ apbv3.1a.vpc.altr	adminapp
 apbv3.1c.vpc.altr	adminapp
 apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
-apmv4.1c.vpc.altr	userapp-cart
-apmv4.1a.vpc.altr	userapp-cart
-apmv6.1a.vpc.altr	userapp-api
-apmv6.1c.vpc.altr	userapp-api
-apmv2.1c.vpc.altr	userapp-usersite
 apmv2.1a.vpc.altr	userapp-usersite
+apmv2.1c.vpc.altr	userapp-usersite
+apmv4.1a.vpc.altr	userapp-usersite
+apmv4.1c.vpc.altr	userapp-usersite
 apmv3.1a.vpc.altr	userapp-cart
 apmv3.1c.vpc.altr	userapp-cart
 apmv5.1a.vpc.altr	userapp-cart
