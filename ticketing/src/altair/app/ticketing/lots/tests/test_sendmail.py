@@ -30,6 +30,7 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
         import pyramid_mailer
         import altair.app.ticketing.core.models as core_models
         import altair.app.ticketing.lots.models as lots_models
+        import altair.app.ticketing.cart.models as cart_models
         #from altair.app.ticketing import txt_renderer_factory
         self.config.add_route('lots.review.index', 'review')
         #self.config.add_renderer('.txt' , txt_renderer_factory)
@@ -38,33 +39,39 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
         request.registry.settings['altair.mailer'] = 'pyramid_mailer.testing'
         self.config.include('altair.app.ticketing.lots.sendmail')
 
+        organization = core_models.Organization(
+            short_name='testing', 
+            name=u"テスト組織",
+            settings=[
+                core_models.OrganizationSetting(
+                    name="default",
+                    default_mail_sender="testing@sender.example.com",
+                    cart_setting=cart_models.CartSetting(
+                        lots_orderreview_page_url='http://example.com/review'
+                        )
+                    ),
+                ]
+            )
+
         entry = lots_models.LotEntry(
             created_at=datetime.now(),
             entry_no='TEST-LOT-ENTRY-NO',
+            organization=organization,
             shipping_address=core_models.ShippingAddress(
                 email_1=u"testing@example.com",
                 first_name=u"",
                 last_name=u"",
                 first_name_kana=u"",
-                last_name_kana=u"",
+                last_name_kana=u""
             ),
             lot=lots_models.Lot(
                 name=u"抽選テスト",
                 event=core_models.Event(
                     title=u"抽選テストイベント",
-                    organization=core_models.Organization(
-                        short_name='testing', 
-                        name=u"テスト組織",
-                        settings=[
-                            core_models.OrganizationSetting(
-                                name="default",
-                                default_mail_sender="testing@sender.example.com"
-                                ),
-                            ]
-                        ),
+                    organization=organization,
                 ),
                 lotting_announce_datetime=datetime.now(),
-                sales_segment=core_models.SalesSegment(),
+                sales_segment=core_models.SalesSegment()
             ),
             payment_delivery_method_pair=core_models.PaymentDeliveryMethodPair(
                 system_fee=0,

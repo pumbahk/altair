@@ -734,22 +734,30 @@ def sej_delivery_viewlet(context, request):
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
     now = datetime.now()
+
     return dict(
         order=order,
         payment_type=payment_type,
-        can_receive_from_next_day=can_receive_from_next_day(now, sej_order.ticketing_start_at),
+        can_receive_from_next_day= can_receive_from_next_day(now, sej_order),
         sej_order=sej_order,
         delivery_method=delivery_method,
     )
 
-def can_receive_from_next_day(now, ticketing_start_at):
-    if ticketing_start_at is None:
+def can_receive_from_next_day(now, sej_order):
+    if sej_order is None:
+        return False
+
+    if sej_order.ticketing_start_at is None:
+        return False
+
+    # 前払い後日発券の場合は、翌日の〜文言を出さない。
+    if int(sej_order.payment_type) == int(SejPaymentType.Prepayment):
         return False
 
     next_day = now + timedelta(days=1)
-    return bool(next_day.year == ticketing_start_at.year \
-        and next_day.month == ticketing_start_at.month \
-        and next_day.day == ticketing_start_at.day)
+    return bool(next_day.year == sej_order.ticketing_start_at.year \
+        and next_day.month == sej_order.ticketing_start_at.month \
+        and next_day.day == sej_order.ticketing_start_at.day)
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
@@ -821,7 +829,7 @@ def delivery_mail_viewlet(context, request):
         payment_type = payment_type_to_string(sej_order.payment_type)
         _can_receive_from_next_day = \
             sej_order.ticketing_start_at is not None and \
-            can_receive_from_next_day(now, sej_order.ticketing_start_at)
+            can_receive_from_next_day(now, sej_order)
     else:
         payment_type = (
             SejPaymentType.CashOnDelivery

@@ -85,6 +85,12 @@ ${shipping_address['address_2']}
 </li>
 <li>生年月日&nbsp;${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</li>
 <li>性別&nbsp;${h.format_gender(request, gender)}</li>
+% if accountno:
+<li>楽天ポイント口座&nbsp;${accountno}</li>
+% else:
+<li>楽天ポイント口座&nbsp;<span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span></li>
+% endif
+
 <li>メモ欄&nbsp;${memo|h.nl2br}</li>
 
 </ul>

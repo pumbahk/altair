@@ -11,7 +11,7 @@ from sqlalchemy.orm.exc import (
     NoResultFound,
     )
 from sqlalchemy.sql import and_
-from sqlalchemy.sql.expression import exists, desc, select, case
+from sqlalchemy.sql.expression import exists, desc, select, case, null
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from pyramid.decorator import reify
@@ -72,25 +72,35 @@ logger = logging.getLogger(__name__)
 
 
 class SummarizedUser(object):
-    def __init__(self, session, id, membership_id, user_profile):
+    def __init__(self, session, id, membership_id, membership_name, user_profile):
         self.session = session
         self.id = id
         self.membership_id = membership_id
+        self.membership_name = membership_name
         self.user_profile = user_profile
 
     @reify
     def _user_credential_member_pairs(self):
-        return self.session.query(Member) \
-            .join(MemberGroup, and_(Member.membergroup_id == MemberGroup.id)) \
-            .join(UserCredential, and_(UserCredential.user_id == Member.user_id, UserCredential.membership_id == MemberGroup.membership_id)) \
-            .options(orm.contains_eager(Member.membergroup)) \
-            .filter(
-                Member.user_id == self.id,
-                MemberGroup.membership_id==self.membership_id
-                ) \
-            .with_entities(UserCredential, Member) \
-            .distinct() \
-            .all()
+        if self.membership_name == 'rakuten':
+            return self.session.query(UserCredential, null()) \
+                .filter(
+                    UserCredential.user_id == self.id,
+                    UserCredential.membership_id==self.membership_id
+                    ) \
+                .distinct() \
+                .all()
+        else:
+            return self.session.query(Member) \
+                .join(MemberGroup, and_(Member.membergroup_id == MemberGroup.id)) \
+                .join(UserCredential, and_(UserCredential.user_id == Member.user_id, UserCredential.membership_id == MemberGroup.membership_id)) \
+                .options(orm.contains_eager(Member.membergroup)) \
+                .filter(
+                    Member.user_id == self.id,
+                    MemberGroup.membership_id==self.membership_id
+                    ) \
+                .with_entities(UserCredential, Member) \
+                .distinct() \
+                .all()
 
     @reify
     def user_credential(self):
@@ -103,11 +113,6 @@ class SummarizedUser(object):
     @property
     def first_user_credential(self):
         return self.user_credential[0] if len(self.user_credential) > 0 else None
-
-class SummarizedUserCredential(object):
-    def __init__(self, auth_identifier, membership):
-        self.auth_identifier = auth_identifier
-        self.membership = membership
 
 class SummarizedMembership(object):
     def __init__(self, name):
@@ -1159,6 +1164,12 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     cart_setting_id = sa.Column(Identifier, nullable=True)
 
+    membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
+    membership = orm.relationship('Membership')
+
+    membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
+    membergroup = orm.relationship('MemberGroup')
+
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
 
@@ -1327,7 +1338,6 @@ class OrderSummary(Base):
     user_profile_first_name_kana = UserProfile.__table__.c.first_name_kana
     user_profile_nick_name = UserProfile.__table__.c.nick_name
     user_profile_sex = UserProfile.__table__.c.sex
-    auth_identifier = UserCredential.auth_identifier
     last_name = ShippingAddress.last_name
     first_name = ShippingAddress.first_name
     last_name_kana = ShippingAddress.last_name_kana
@@ -1430,6 +1440,7 @@ class OrderSummary(Base):
             session_partaken_by(self),
             self.user_id,
             self.membership_id,
+            self.membership_name,
             SummarizedUserProfile(
                 self.user_profile_last_name,
                 self.user_profile_first_name,

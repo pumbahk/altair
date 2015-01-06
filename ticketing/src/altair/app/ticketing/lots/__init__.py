@@ -44,6 +44,7 @@ def setup_routes(config):
     config.add_route('lots.entry.sp_step2', 'events/{event_id}/entry/{lot_id}/sp_step2')
     config.add_route('lots.entry.sp_step3', 'events/{event_id}/entry/{lot_id}/sp_step3')
     config.add_route('lots.entry.sp_step4', 'events/{event_id}/entry/{lot_id}/sp_step4')
+    config.add_route('lots.entry.rsp', 'rsp', factory='.resources.LotResource')
     config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 

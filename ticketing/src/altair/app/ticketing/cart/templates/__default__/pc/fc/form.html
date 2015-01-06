@@ -82,9 +82,9 @@ if label is None or label is True:
         </th>
         <td>
           ${render_field(form['prefecture'], label=True)}
-          ${render_field(form['city'], label=True, _note=u'（例：東京都')}
-          ${render_field(form['address_1'], label=True, _note=u'（例：千代田区丸の内')}
-          ${render_field(form['address_2'], label=True, _note=u'（例：XXビル253号）')}
+          ${render_field(form['city'], label=True, _note=u'(例：千代田区)')}
+          ${render_field(form['address_1'], label=True, _note=u'(例：丸の内1-1)')}
+          ${render_field(form['address_2'], label=True, _note=u'(例：XXビル253号)')}
         </td>
       </tr>
       % if view_context.flavors.get('mobile_and_landline_phone_number'):

@@ -64,7 +64,7 @@ from altair.app.ticketing.core.interfaces import (
     IOrderedProductItemLike,
     IShippingAddress,
     )
-from altair.app.ticketing.users.models import UserCredential, Membership
+from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member
 from altair.app.ticketing.utils import sensible_alnum_encode
 from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum, ProtoOrder
 from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
@@ -328,7 +328,7 @@ class ImportCSVParserContext(object):
         # create TemporaryCart
         cart = self.carts.get(order_no_or_key)
         if cart is None:
-            user = self.get_user(row)
+            membership, membergroup, user = self.get_user(row)
             note = re.split(ur'\r\n|\r|\n', row.get(u'order.note', u'').strip())
             # SalesSegment, PaymentDeliveryMethodPair
             original_order = None
@@ -461,6 +461,8 @@ class ImportCSVParserContext(object):
                 operator              = self.order_import_task.operator,
                 sales_segment         = sales_segment,
                 payment_delivery_pair = pdmp,
+                membership            = membership,
+                membergroup           = membergroup,
                 user                  = user,
                 shipping_address      = shipping_address,
                 new_order_paid_at     = new_order_paid_at,
@@ -708,20 +710,47 @@ class ImportCSVParserContext(object):
     def get_user(self, row):
         auth_identifier = row.get(u'user_credential.auth_identifier')
         membership_name = row.get(u'membership.name')
+        membergroup_name = row.get(u'membergroup.name', '')
         if not auth_identifier or not membership_name:
-            return None
+            return None, None, None
+
+        membership = None
+        membergroup = None
+        credential = None
 
         try:
-            credential = self.session.query(UserCredential) \
-                .join(Membership) \
+            q = self.session.query(Membership) \
+                .filter(Membership.name == membership_name)
+            if membership_name == 'rakuten':
+                # これだけ特別扱い
+                q = q.filter(Membership.organization_id == None)
+            else:
+                q = q.filter(Membership.organization_id == self.organization.id)
+            membership = q.one()
+        except NoResultFound:
+            raise self.exc_factory(u'会員種別が見つかりません (membership_name=%s)' % membership_name)
+
+        if membergroup_name:
+            try:
+                q = self.session.query(MemberGroup) \
+                    .filter(MemberGroup.name == membergroup_name) \
+                    .filter(MemberGroup.membership_id == membership.id)
+                membergroup = q.one()
+            except NoResultFound:
+                raise self.exc_factory(u'会員グループが見つかりません (membergroup_name=%s)' % membergroup_name)
+
+        try:
+            q = self.session.query(UserCredential) \
                 .filter(
                     UserCredential.auth_identifier == auth_identifier,
-                    Membership.name==membership_name
-                    ) \
-                .one()
+                    Membership.id == membership.id,
+                    )
+            if membergroup is not None: 
+                q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
+            credential = q.one()
         except NoResultFound:
             raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
-        return credential.user
+        return membership, membergroup, credential.user
 
     def get_product(self, row, sales_segment, performance):
         product_name = row.get(u'ordered_product.product.name')
