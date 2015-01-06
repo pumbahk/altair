@@ -1159,6 +1159,12 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     cart_setting_id = sa.Column(Identifier, nullable=True)
 
+    membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
+    membership = orm.relationship('Membership')
+
+    membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
+    membergroup = orm.relationship('MemberGroup')
+
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
 
