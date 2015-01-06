@@ -3,6 +3,7 @@
 import logging
 import xlwt
 import xlrd
+import urllib
 from xlutils.copy import copy
 from time import strftime
 
@@ -36,6 +37,25 @@ class Reports(BaseView):
             'performances': event.sorted_performances(),
         }
 
+    def create_filename(self, report_kind, event):
+        organization = event.organization
+
+        if event.first_start_on == "":
+            start_on = ""
+        elif event.first_start_on == event.final_start_on:
+            start_on = event.first_start_on.strftime('%m%d-%H%M')
+        else:
+            start_on = event.first_start_on.strftime('%m%d') + "-" + event.final_start_on.strftime('%m%d')
+
+        filename = u"【%(event_name)s(%(start_on)s)】%(organization)s_%(report_kind)s_%(datetime)s.xls" % dict(
+            event_name=event.title,
+            start_on=start_on,
+            report_kind=report_kind,
+            organization=organization.name,
+            datetime=strftime('%Y%m%d')
+        )
+        return filename
+
     @view_config(route_name='reports.sales', request_method='POST')
     def download_sales(self):
         """販売日程管理表ダウンロード
@@ -49,14 +69,11 @@ class Reports(BaseView):
         exporter = reporting.export_for_sales(event)
 
         # 出力ファイル名
-        filename = "sales_report_%(code)s_%(datetime)s.xls" % dict(
-            code=event.code,
-            datetime=strftime('%Y%m%d%H%M%S')
-        )
+        filename = self.create_filename(report_kind=u"販売日程管理表", event=event)
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
         ]
         return Response(exporter.as_string(), headers=headers)
 
@@ -84,6 +101,12 @@ class Reports(BaseView):
                 'performances': event.sorted_performances(),
             }
 
+        report_name = dict(
+            stock=u"仕入明細",
+            unsold=u"残席明細",
+            sold=u"販売済座席明細"
+        )
+
         # CSVファイル生成
         try:
             performanceids = map(int, self.request.POST.getall('performance_id'))
@@ -92,15 +115,11 @@ class Reports(BaseView):
         exporter = reporting.exporter_factory(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
-        filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(
-            report_type=f.report_type.data,
-            code=event.code,
-            datetime=strftime('%Y%m%d%H%M%S')
-        )
+        filename = self.create_filename(report_kind=report_name[f.report_type.data], event=event)
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
         ]
         return Response(exporter.as_string(), headers=headers)
 
@@ -137,14 +156,10 @@ class Reports(BaseView):
         exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
-        filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(
-            report_type=f.report_type.data,
-            code=event.code,
-            datetime=strftime('%Y%m%d%H%M%S')
-        )
+        filename = self.create_filename(report_kind=u"配券明細", event=event)
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
         ]
         return Response(exporter.as_string(), headers=headers)
