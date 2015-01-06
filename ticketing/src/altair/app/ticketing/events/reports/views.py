@@ -43,9 +43,9 @@ class Reports(BaseView):
         if event.first_start_on == "":
             start_on = ""
         elif event.first_start_on == event.final_start_on:
-            start_on = event.first_start_on.strftime('%m%d-%H%M')
+            start_on = event.first_start_on.strftime('%Y%m%d-%H%M')
         else:
-            start_on = event.first_start_on.strftime('%m%d') + "-" + event.final_start_on.strftime('%m%d')
+            start_on = event.first_start_on.strftime('%Y%m%d') + "-" + event.final_start_on.strftime('%Y%m%d')
 
         filename = u"【%(event_name)s(%(start_on)s)】%(organization)s_%(report_kind)s_%(datetime)s.xls" % dict(
             event_name=event.title,
