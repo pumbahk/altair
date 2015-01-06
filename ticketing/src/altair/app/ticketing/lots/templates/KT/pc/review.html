@@ -118,6 +118,14 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
+          % if user_point_accounts:
+          <tr>
+            <th scope="row">楽天ポイント口座</th>
+            <td>
+              ${user_point_accounts[0].account_number}
+            </td>
+          </tr>
+          % endif
           <tr class="settlementSelectEnd">
             <th><label>メモ欄</label></th>
             <td>${memo|h.nl2br}</td>

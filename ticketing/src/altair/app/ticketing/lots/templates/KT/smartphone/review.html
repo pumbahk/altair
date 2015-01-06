@@ -137,6 +137,10 @@ dl.cost-detail > dd {
             <dd>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</dd>
             <dt class="creditHl">性別</dt>
             <dd>${h.format_gender(request, gender)}</dd>
+            % if user_point_accounts:
+            <dt class="creditHl">楽天ポイント口座</dt>
+            <dd>${user_point_accounts[0].account_number}</dd>
+            % endif
             <dt class="creditHl">メモ欄</dt>
             <dd>${memo|h.nl2br}</dd>
           </dl>
