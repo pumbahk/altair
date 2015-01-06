@@ -131,7 +131,7 @@ class LocallyDispatchingPublisherConsumer(object):
                             routing_key=routing_key,
                             exchange=exchange
                             )
-                        task.handler(task, method, None, body)
+                        task.handler(task, method, properties, body)
                         if not task.ack_called:
                             logger.warning("basic_ack was not called for task %r" % task)
                     except Exception as e:
@@ -149,7 +149,7 @@ class LocallyDispatchingPublisherConsumer(object):
             exchange=exchange,
             routing_key=routing_key,
             body=body,
-            properties=properties,
+            properties=pika.BasicProperties(**properties),
             mandatory=mandatory,
             immediate=immediate
             )

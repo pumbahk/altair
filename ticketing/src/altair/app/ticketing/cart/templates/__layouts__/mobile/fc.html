@@ -5,7 +5,7 @@
   <title>${view_context.title}</title>
 </head>
 <body>
-  <img src="${view_context.static_url('mobile/images/booster_header.jpg')}" alt="${view_context.team_name}" width="232" height="104" />
+  <img src="${view_context.header_image_url_mobile}" alt="${view_context.team_name}" width="232" height="104" />
   <div align="center">
   <%block name="header">${view_context.title}</%block>
   </div>

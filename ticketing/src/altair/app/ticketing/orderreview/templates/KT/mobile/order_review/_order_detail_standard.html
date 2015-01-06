@@ -69,6 +69,11 @@ ${shipping.address_2}
 ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
+% if user_point_accounts:
+<%mobile:form_header>楽天ポイント口座</%mobile:form_header>
+${user_point_accounts[0].account_number}<br />
+% endif
+
 % if order.status == 'canceled' or order.payment_status == 'refunded':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">

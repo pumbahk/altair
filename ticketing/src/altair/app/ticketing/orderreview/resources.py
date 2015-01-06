@@ -17,6 +17,7 @@ from altair.app.ticketing.users.models import User, UserCredential, Membership, 
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from .api import get_user_point_accounts
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,12 @@ class OrderReviewResourceBase(object):
         return self.session.query(Membership) \
             .filter_by(organization_id=self.organization.id) \
             .all()
+
+    @reify
+    def user_point_accounts(self):
+        if not self.order:
+            return None
+        return get_user_point_accounts(self.request, self.order.user_id)
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
@@ -105,7 +112,7 @@ class OrderReviewResource(OrderReviewResourceBase):
 
     def order_detail_panel(self, order):
         panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order)
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
     @reify
     def booster_cart(self):
@@ -118,8 +125,6 @@ class OrderReviewResource(OrderReviewResourceBase):
     @reify
     def fc_cart(self):
         return self.cart_setting.fc_cart if self.cart_setting else False
-
-
 
 class QRViewResource(OrderReviewResourceBase):
     pass

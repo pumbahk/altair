@@ -62,7 +62,7 @@ class ListRendrant(Rendrant):
 
 
 def default_subfield_id_formatter(id_, subfield, i):
-    return u'%s-%s' % (id_, subfield.short_name)
+    return u'%s-%s-%d' % (id_, subfield.short_name, i)
 
 class OurListWidget(object):
     def __init__(self, outer_html_tag='ul', inner_html_tag='li', inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None, prefix_label=True, rendrant_factory=None, subfield_id_formatter=None):

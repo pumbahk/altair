@@ -2,15 +2,6 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script>
-// ゲストの場合、自動入力は動作しないが、安全を二重に
-function changeCheck() {
-  if ($('#is_guest').attr("checked")) {
-    $('#enable_auto_input_form').attr("checked", false );
-    $('#enable_auto_input_form').attr("disabled", "disabled");
-  } else {
-    $('#enable_auto_input_form').removeAttr("disabled");
-  }
-}
 
 $(document).ready(function(){
   changeCheck();
@@ -27,8 +18,6 @@ $(document).ready(function(){
     <fieldset>
       ${ch.form_item(form.name, class_=u'span5', maxlength=255)}
       ${ch.form_item(form.is_guest)}
-      ${ch.form_item(form.enable_auto_input_form)}
-      ${ch.form_item(form.enable_point_input)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

@@ -40,6 +40,7 @@ def lot_wish_cart(wish):
         _order_no=wish.lot_entry.entry_no,
         sales_segment=wish.lot_entry.lot.sales_segment,
         channel=wish.lot_entry.channel,
+        membership_id=wish.lot_entry.membership_id,
         products=[
             cart_models.CartedProduct(
                 product=p.product,

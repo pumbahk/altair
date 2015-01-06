@@ -134,3 +134,86 @@ a:active {
     -moz-user-select: none;
     background-image: url("images/textures.png");
 }
+
+h3.glitter {
+    padding: 5px 5px 5px 10px;
+    background: url("../img/common/h3_textures.png") repeat scroll 0% 0% transparent;
+    border-left: 5px solid #009541;
+    margin: 2px 0px 5px;
+    color: #009541;
+}
+
+.btn-primary {
+  display: inline-block;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.btn-primary {
+  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
+  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:hover {
+  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
+  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:active {
+  box-shadow: 1px 1px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.dispBox {
+  margin: 10px;
+}
+.dispBoxInner {
+  margin-left: 17px;
+}
+
+.btn {
+  text-decoration: none;
+  padding: 0 1em;
+  font-size: 75%;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  box-align: center;
+}
+
+.btn-large {
+  font-size: 20px;
+  line-height: 40px;
+  height: 44px;
+}
+
+.buttonbox {
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  margin: 0 0;
+  padding: 10px 10px;
+  white-space: nowrap;
+}
+
+button {
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+.buttonbox .btn {
+  width: 100%;
+}

@@ -76,7 +76,6 @@ def page_formats_for_organization(organization):
 class TicketMasters(BaseView):
     @view_config(route_name='tickets.index', renderer='altair.app.ticketing:templates/tickets/index.html', request_method="GET")
     def index(self):
-
         ticket_format_sort_by, ticket_format_direction = helpers.sortparams('ticket_format', self.request, ('updated_at', 'desc'))
         page_format_sort_by, page_format_direction = helpers.sortparams('page_format', self.request, ('updated_at', 'desc'))
         ticket_template_sort_by, ticket_template_direction = helpers.sortparams('ticket_template', self.request, ('updated_at', 'desc'))
@@ -185,17 +184,18 @@ class TicketFormats(BaseView):
         self.request.session.flash(u'チケット様式を登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
 
-
     @view_config(route_name='tickets.ticketformats.delete', request_method="POST")
     def delete_post(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
                                     id=self.request.matchdict["id"]).first()
+
         if format is None:
             raise HTTPNotFound("this is not found")
-
-        format.delete()
-        self.request.session.flash(u'チケット様式を削除しました')
-
+        elif len(format.tickets) > 0:
+            self.request.session.flash(u'チケットがひもづいているためチケット様式を削除できません')
+        else:
+            format.delete()
+            self.request.session.flash(u'チケット様式を削除しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
 
     @view_config(route_name='tickets.ticketformats.show', renderer='altair.app.ticketing:templates/tickets/ticketformats/show.html')

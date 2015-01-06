@@ -63,11 +63,15 @@ def get_cart_view_context_factory(default_package):
             except Exception as e:
                 logger.warn('organization_short_name not found (%s)' % e.message)
             return organization_short_name
-      
+
         @property
         def cart_setting(self):
             if self.context is not None:
-                return self.context.cart_setting
+                try:
+                    return self.context.cart_setting
+                except AttributeError as err:
+                    logger.warn('Failed to get the cart_setting: {}: {}'.format(self.context, err))
+                    return None
             else:
                 # falls back to the default
                 return self.request.organization.setting.cart_setting
@@ -105,7 +109,10 @@ def get_cart_view_context_factory(default_package):
 
         @reify
         def mail_filter_domain_notice(self):
-            template = self.cart_setting.mail_filter_domain_notice_template or u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
+            template = u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
+            if self.cart_setting and self.cart_setting.mail_filter_domain_notice_template:
+                template = self.cart_setting.mail_filter_domain_notice_template
+
             try:
                 if hasattr(self.context, 'performance'):
                     sender = get_sender_address(self.request, performance=self.context.performance, mail_type=MailTypeEnum.PurchaseCompleteMail.v)

@@ -51,9 +51,9 @@ ${render_field_group(label=u'氏名', fields=[form['last_name'], form['first_nam
 ${render_field_group(label=u'フリガナ', fields=[form['last_name_kana'], form['first_name_kana']], size="10", istyle="2")}
 ${render_field(form['zip'], size="7", maxlength="7", istyle="4")}
 ${render_field(form['prefecture'], iprof="address1")}
-${render_field(form['city'], size="10", istyle="1", iprof="address2")}
-${render_field(form['address_1'], size="10", istyle="1", iprof="address3")}
-${render_field(form['address_2'], size="10", istyle="1", iprof="address4")}
+${render_field(form['city'], size="10", istyle="1", iprof="address2", _note=u'(例: 千代田区)')}
+${render_field(form['address_1'], size="10", istyle="1", iprof="address3", _note=u'(例: 丸の内1-1)')}
+${render_field(form['address_2'], size="10", istyle="1", iprof="address4", _note=u'(例: XXビル253号)')}
 % if view_context.flavors.get('mobile_and_landline_phone_number'):
 ${render_field(form['tel_1'], size="12", istyle="4")}
 ${render_field(form['tel_2'], size="12", istyle="4")}

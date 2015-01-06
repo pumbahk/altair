@@ -416,7 +416,6 @@ class TicketDictBuilder(object):
                 u'special_fee_name': order.special_fee_name,
                 u'transaction_fee': order.transaction_fee,
                 u'delivery_fee': order.delivery_fee,
-                u'multicheckout_approval_no': order.multicheckout_approval_no,
                 u'order_no': order.order_no,
                 u'paid_at': datetime_as_dict(order.paid_at),
                 u'delivered_at': datetime_as_dict(order.delivered_at),

@@ -28,13 +28,23 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.operators.models import Operator
     from altair.app.ticketing.core.models import Organization
     from altair.app.ticketing.core.models import OrganizationSetting
+    from altair.app.ticketing.cart.models import CartSetting
     operator = Operator.query.first()
     if operator is None:
         organization = Organization(name=":Organization:name",
                                     short_name=":Organization:short_name", 
                                     code=":Organization:code", 
                                     id=organization_id)
-        OrganizationSetting(organization=organization, name="default", contact_pc_url=u'mailto:pc@example.com', contact_mobile_url=u'mailto:mobile@example.com')
+        organization.settings = [
+            OrganizationSetting(
+                name="default",
+                contact_pc_url=u'mailto:pc@example.com',
+                contact_mobile_url=u'mailto:mobile@example.com',
+                cart_setting=CartSetting(
+                    lots_orderreview_page_url='http://example.com/review/'
+                    )
+                )
+            ]
         operator = Operator(organization_id=organization_id, organization=organization)
         OperatorAuth(operator=operator, login_id=auth_id)
     return operator
@@ -206,6 +216,7 @@ def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:en
     sales_segment = product_item.product.sales_segment
     payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0] #xxx:
     lot_entry = LotEntry(
+        organization=organization,
         created_at=datetime(2000, 1, 1, 1), 
         payment_delivery_method_pair=payment_delivery_method_pair, 
         shipping_address=setup_shipping_address(), #xxx:
@@ -233,49 +244,48 @@ def setup_eleted_wish(lot_entry, order):
 def _make_request(organization): #xxx:
     request = DummyRequest()
     request.organization = organization
-    class context:
-        organization = request.organization
+    request.view_context = testing.DummyResource()
+    context = testing.DummyResource(
+        organization=organization,
+        cart_setting=testing.DummyResource(
+            lots_orderreview_page_url=u'http://example.com/review'
+            )
+        )
     request.context = context
     return request
 
 
 class MailTemplateCreationTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        from mock import patch
         from altair.sqlahelper import register_sessionmaker_with_engine
         session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
             'altair.app.ticketing.lots.models'
             ])
-        cls.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        cls.config.include('pyramid_mako')
-        cls.config.include('altair.pyramid_dynamic_renderer')
-        cls.config.add_mako_renderer('.html')
-        cls.config.add_mako_renderer('.txt')
-        cls.config.include('altair.app.ticketing.mails.install_mail_utility')
-        cls.config.include('altair.app.ticketing.payments')
-        cls.config.include('altair.app.ticketing.payments.plugins')
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
+        self.config.include('pyramid_mako')
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
+        self.config.include('altair.app.ticketing.mails.install_mail_utility')
+        self.config.include('altair.app.ticketing.payments')
+        self.config.include('altair.app.ticketing.payments.plugins')
         register_sessionmaker_with_engine(
-            cls.config.registry,
+            self.config.registry,
             'slave',
             session.bind
             )
-        
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-        _teardown_db()
-
-    def setUp(self):
-        from mock import patch
+        self.session = session
         self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
         p = self._patch_get_cart_setting_from_order_like.start()
         p.return_value.type = 'standard'
 
-
     def tearDown(self):
         self._patch_get_cart_setting_from_order_like.stop()
+        testing.tearDown()
+        _teardown_db()
 
     def _getTarget(self, request, mtype):
         from .api import get_mail_utility        
@@ -292,6 +302,7 @@ class MailTemplateCreationTest(unittest.TestCase):
     def test_purchase_complete_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum, StockType, StockTypeEnum
         operator = setup_operator()
+        self.session.add(operator)
         order_no = "*orderno*"
         stock_type = StockType()
         stock_type.type = StockTypeEnum.Other.v
@@ -329,6 +340,7 @@ class MailTemplateCreationTest(unittest.TestCase):
     def test_purchase_cancel_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum
         operator = setup_operator()
+        self.session.add(operator)
         order_no = "*orderno*"
         order = setup_order(quantity=2,
                             quantity_only=True,
@@ -346,13 +358,13 @@ class MailTemplateCreationTest(unittest.TestCase):
     def test_lot_accepted_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum
         operator = setup_operator()
+        self.session.add(operator)
         entry_no = "*entryno*"
         lot_entry = setup_lot_entry(quantity=2,
                                     quantity_only=True,
                                     organization=operator.organization, 
                                     entry_no=entry_no)
         request = _make_request(operator.organization)
-
         with mock.patch("altair.app.ticketing.mails.lots_mail.ch.render_payment_lots_accepted_mail_viewlet") as prender:
             with mock.patch("altair.app.ticketing.mails.lots_mail.ch.render_delivery_lots_accepted_mail_viewlet") as drender:
                 result = self._callAction(request, (lot_entry, None), MailTypeEnum.LotsAcceptedMail)
@@ -364,6 +376,7 @@ class MailTemplateCreationTest(unittest.TestCase):
     def test_lot_elected_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum
         operator = setup_operator()
+        self.session.add(operator)
         entry_no = "*entryno*"
 
         quantity_settings=dict(
@@ -396,6 +409,7 @@ class MailTemplateCreationTest(unittest.TestCase):
     def test_lot_rejected_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum
         operator = setup_operator()
+        self.session.add(operator)
         entry_no = "*entryno*"
 
         lot_entry = setup_lot_entry(quantity=2,
