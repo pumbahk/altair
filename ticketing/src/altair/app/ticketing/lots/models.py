@@ -81,6 +81,7 @@ Lot_SalesSegment = sa.Table(
 
 class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Lot'
+    __clone_excluded__ = ['status']
 
     id = sa.Column(Identifier, primary_key=True)
     name = sa.Column(sa.String(255))
