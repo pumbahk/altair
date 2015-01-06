@@ -162,7 +162,10 @@ class ClientForm(OurDynamicForm):
         )
     prefecture = OurTextField(
         label=u"都道府県",
-        filters=[strip_spaces]
+        filters=[strip_spaces],
+        validators=[
+            Required()
+            ]
         )
     city = OurTextField(
         label=u"市区町村",
