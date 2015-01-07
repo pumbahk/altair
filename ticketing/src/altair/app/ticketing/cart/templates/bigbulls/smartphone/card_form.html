@@ -1,35 +1,17 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
-<meta name="keywords" content="ビッグブルズ,岩手,bigbulls,bulls,バスケット,バスケ,BJリーグ" />
-<meta name="viewport" content="width=device-width,user-scalable=no">
-<meta http-equiv="content-style-type" content="text/css">
-<meta http-equiv="content-script-type" content="text/javascript">
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/bigbulls/smartphone/css/import2.css')}" type="text/css" media="all">
-<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/bigbulls/smartphone/images/favicon.ico')}">
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/jquery.js')}"></script>
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<%inherit file="./base.html"/>
+<%block name="javascript">
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit('input[type=submit]');
   });
 </script>
-<title>ブルズチケット</title>
-</head>
-<body>
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/bigbulls/smartphone/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
-<div id="container">
+</%block>
+<%block name="css">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/bigbulls/smartphone/css/import2.css')}" type="text/css" media="all">
+</%block>
 
-<div id="header">
-<h1><img src="${request.static_url('altair.app.ticketing.cart:static/bigbulls/smartphone/images/logo.gif')}" height="45px" alt="ブルズチケット"></h1>
-<h2>チケット申込</h2>
-</div>
 
-  <!-- ========== main ========== -->
+<!-- ========== main ========== -->
 <div id="main">
 %if request.session.peek_flash():
   %for message in request.session.pop_flash():
@@ -115,26 +97,3 @@ American Expressでは、カードの表に印刷されている4桁の数字で
 
 </div>
   <!-- ========== /main ========== -->
-  <div class="footerCopy">
-    <div class="copyright">
-      Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved.
-    </div>
-  </div>
-
-<%def name="error(form, field, enclose=False)">
-%if form.errors.get(field):
-  %if enclose:
-  <div>
-  %endif
-  %for e in form.errors[field]:
-  <span class="validation-error">${e}</span>
-  %endfor
-  %if enclose:
-  </div>
-  %endif
-%endif
-</%def>
-
-</div>
-</body>
-</html>
