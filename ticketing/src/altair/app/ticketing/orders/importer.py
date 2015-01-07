@@ -64,7 +64,7 @@ from altair.app.ticketing.core.interfaces import (
     IOrderedProductItemLike,
     IShippingAddress,
     )
-from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member
+from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import sensible_alnum_encode
 from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum, ProtoOrder
 from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
@@ -439,6 +439,34 @@ class ImportCSVParserContext(object):
                 if shipping_address is None:
                     logger.info(u'[%s] shipping_address is not specified; using that of the original order' % original_order.order_no)
                     shipping_address = original_order.shipping_address
+                if membership is None:
+                    logger.info(u'[%s] user information is not specified; using that of the original order' % original_order.order_no)
+                    membership = original_order.membership
+                    user = original_order.user
+                    if user is not None and sales_segment is not None:
+                        membergroup = None
+                        try:
+                            membergroup = self.session.query(MemberGroup) \
+                                .join(Member) \
+                                .join(MemberGroup_SalesSegment) \
+                                .filter(MemberGroup.membership_id == membership.id) \
+                                .filter(Member.user_id == user.id) \
+                                .filter(MemberGroup_SalesSegment.c.sales_segment_id == sales_segment.id) \
+                                .one()
+                        except NoResultFound:
+                            logger.info(
+                                u'[%s] no corresponding Member found for Membership(id=%ld), User(id=%ld), SalesSegment(id=%ld)' % (
+                                    original_order.order_no,
+                                    membership.id, user.id, sales_segment.id
+                                    )
+                                )
+                        except MultipleResultsFound:
+                            logger.info(
+                                u'[%s] multiple Member found for Membership(id=%ld), User(id=%ld), SalesSegment(id=%ld)' % (
+                                    original_order.order_no,
+                                    membership.id, user.id, sales_segment.id
+                                    )
+                                )
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -711,7 +739,7 @@ class ImportCSVParserContext(object):
         auth_identifier = row.get(u'user_credential.auth_identifier')
         membership_name = row.get(u'membership.name')
         membergroup_name = row.get(u'membergroup.name', '')
-        if not auth_identifier or not membership_name:
+        if not membership_name:
             return None, None, None
 
         membership = None
@@ -739,18 +767,19 @@ class ImportCSVParserContext(object):
             except NoResultFound:
                 raise self.exc_factory(u'会員グループが見つかりません (membergroup_name=%s)' % membergroup_name)
 
-        try:
-            q = self.session.query(UserCredential) \
-                .filter(
-                    UserCredential.auth_identifier == auth_identifier,
-                    Membership.id == membership.id,
-                    )
-            if membergroup is not None: 
-                q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
-            credential = q.one()
-        except NoResultFound:
-            raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
-        return membership, membergroup, credential.user
+        if auth_identifier: # 空欄は未指定であるので、is not None ではない
+            try:
+                q = self.session.query(UserCredential) \
+                    .filter(
+                        UserCredential.auth_identifier == auth_identifier,
+                        Membership.id == membership.id,
+                        )
+                if membergroup is not None: 
+                    q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
+                credential = q.one()
+            except NoResultFound:
+                raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
+        return membership, membergroup, (credential.user if credential else None)
 
     def get_product(self, row, sales_segment, performance):
         product_name = row.get(u'ordered_product.product.name')
