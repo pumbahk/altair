@@ -165,6 +165,9 @@ def _mask_sensitive_information(mapper, conn, target):
     if isinstance(card_holder_name, basestring):
         card_holder_name = re.sub(ur'[^ ]', '*', card_holder_name)
         target.CardHolderName = card_holder_name
+    secure_code = target.SecureCode
+    if isinstance(secure_code, basestring):
+        target.SecureCode = u'*' * len(secure_code)
 
 sa.event.listen(MultiCheckoutRequestCard, 'before_insert', _mask_sensitive_information)
 sa.event.listen(MultiCheckoutRequestCard, 'before_update', _mask_sensitive_information)
