@@ -622,9 +622,9 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                   lot_entry_wish=wish)
         for _wish in self.wishes:
             if wish == _wish:
-                wish.elect(now)
+                _wish.elect(now)
             else:
-                wish.reject(now)
+                _wish.reject(now)
         return elected
 
     def cancel(self):
