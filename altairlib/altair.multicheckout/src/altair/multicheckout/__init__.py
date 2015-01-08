@@ -179,22 +179,3 @@ def set_multicheckout_setting_list_factory(config, factory):
                   register,
                   introspectables=intr,
                   )
-
-def main(global_conf, **settings):
-    from sqlalchemy import engine_from_config
-    from sqlalchemy.pool import NullPool
-    import sqlahelper
-    engine = engine_from_config(settings, poolclass=NullPool)
-    sqlahelper.add_engine(engine)
-
-    from pyramid.config import Configurator
-    from pyramid.session import UnencryptedCookieSessionFactoryConfig
-    my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
-    config = Configurator(
-        settings=settings,
-        session_factory=my_session_factory)
-    config.include('.')
-    config.include('.demo')
-    config.include('pyramid_fanstatic')
-
-    return config.make_wsgi_app()
