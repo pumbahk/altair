@@ -6,7 +6,7 @@ from wtforms import validators
 HIRAGANAS_REGEXP = ur'ぁ-ゖゝゞー'
 KATAKANAS_REGEXP = ur'ァ-ヶヽヾー'
 ALPHABETS_REGEXP = ur'a-zA-Zａ-ｚＡ-Ｚ'
-NUMERICS_REGEXP = ur'0-9０−９'
+NUMERICS_REGEXP = ur'0-9０-９'
 ZENKAKU_REGEXP = r"^(?:[\x81-\x9f\xe0-\xfe][\x40-\x7e\x80-\xfc])+$"
 
 Hiragana = validators.Regexp(ur'^[%s]+$' % HIRAGANAS_REGEXP, message=u'ひらがなで入力してください')

@@ -10,31 +10,23 @@ viewletのテストで良いだろう。
 これで対応できるのは各pluginの表示の所のみ
 """
 from altair.app.ticketing.testing import _setup_db, _teardown_db
-def setUpModule():
-    _setup_db(['altair.app.ticketing.core.models',
-               'altair.app.ticketing.lots.models'])
-
-def tearDownModule():
-    _teardown_db()
-
 
 class PluginViewletTestBase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
-        cls.config.include('pyramid_mako')
-        cls.config.include('altair.pyramid_dynamic_renderer')
-        cls.config.add_mako_renderer('.html')
-        cls.config.add_mako_renderer('.txt')
-        cls.config.include('altair.app.ticketing.mails.install_mail_utility')
-        cls.config.include('altair.app.ticketing.payments')
-        cls.config.include('altair.app.ticketing.payments.plugins')
-
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-
     def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.cart.models',
+            ])
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
+        self.config.include('pyramid_mako')
+        self.config.include('altair.pyramid_dynamic_renderer')
+        self.config.add_mako_renderer('.html')
+        self.config.add_mako_renderer('.txt')
+        self.config.include('altair.app.ticketing.mails.install_mail_utility')
+        self.config.include('altair.app.ticketing.payments')
+        self.config.include('altair.app.ticketing.payments.plugins')
         from mock import patch
         self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
         p = self._patch_get_cart_setting_from_order_like.start()
@@ -42,6 +34,8 @@ class PluginViewletTestBase(unittest.TestCase):
 
     def tearDown(self):
         self._patch_get_cart_setting_from_order_like.stop()
+        testing.tearDown()
+        _teardown_db()
 
     def register_fake_storedata(self, data):
         from zope.interface import provider
@@ -162,15 +156,16 @@ class DeliveryFinishedViewletTest(PluginViewletTestBase):
         self.assertIn("*notice*", result)
 
     def test_sej(self):
-        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.sej.models import _session, SejPaymentType
         order_no = "SEJ:TEST:DEMO"
 
         def setup():
-            DBSession.add(SejOrder(order_no=order_no))
+            _session.remove()
+            _session.add(SejOrder(order_no=order_no, payment_type=int(SejPaymentType.CashOnDelivery)))
+            _session.flush()
 
         def teardown():
-            import transaction
-            transaction.abort()
+            _session.remove()
 
         from altair.app.ticketing.payments import plugins
         from altair.app.ticketing.sej.models import SejOrder
@@ -381,14 +376,16 @@ class DeliveryLotsElectedViewletTest(PluginViewletTestBase):
         self.assertIn("*notice*", result)
 
     def test_sej(self):
-        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.sej.models import _session, SejPaymentType
         order_no = "SEJ:TEST:DEMO"
 
         def setup():
-            DBSession.add(SejOrder(order_no=order_no))
+            _session.remove()
+            _session.add(SejOrder(order_no=order_no, payment_type=int(SejPaymentType.CashOnDelivery)))
+            _session.flush()
+
         def teardown():
-            import transaction
-            transaction.abort()
+            _session.remove()
 
         from altair.app.ticketing.payments import plugins
         from altair.app.ticketing.sej.models import SejOrder
@@ -771,14 +768,17 @@ class PaymentLotsElectedViewletTest(PluginViewletTestBase):
 
 
     def test_sej(self):
-        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.sej.models import _session, SejPaymentType
         order_no = "SEJ:TEST:DEMO"
 
         def setup():
-            DBSession.add(SejOrder(order_no=order_no))
+            _session.remove()
+            _session.add(SejOrder(order_no=order_no, payment_type=int(SejPaymentType.CashOnDelivery)))
+            _session.flush()
+
         def teardown():
-            import transaction
-            transaction.abort()
+            _session.remove()
+
 
         from altair.app.ticketing.payments import plugins
         from altair.app.ticketing.sej.models import SejOrder
@@ -848,14 +848,16 @@ class PaymentLotsRejectViewletTest(PluginViewletTestBase):
         self.assertIn("*notice*", result)
 
     def test_sej(self):
-        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.sej.models import _session, SejPaymentType
         order_no = "SEJ:TEST:DEMO"
 
         def setup():
-            DBSession.add(SejOrder(order_no=order_no))
+            _session.remove()
+            _session.add(SejOrder(order_no=order_no, payment_type=int(SejPaymentType.CashOnDelivery)))
+            _session.flush()
+
         def teardown():
-            import transaction
-            transaction.abort()
+            _session.remove()
 
         from altair.app.ticketing.payments import plugins
         from altair.app.ticketing.sej.models import SejOrder

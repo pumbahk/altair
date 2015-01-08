@@ -24,7 +24,8 @@ class SejTest(unittest.TestCase):
             'altair.app.ticketing.sej.models'
             ])
         self.server = None
-        from altair.app.ticketing.sej.models import ThinSejTenant
+        from ..models import ThinSejTenant, _session
+        _session.remove()
         self.tenant = ThinSejTenant(
             shop_id=u'30520',
             shop_name=u'楽天チケット',

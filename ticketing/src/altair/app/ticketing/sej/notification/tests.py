@@ -51,25 +51,35 @@ def create_payment_notification_from_order(shop_id, sej_order):
 class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         from ..api import remove_default_session
+        from altair.sqlahelper import register_sessionmaker_with_engine
         remove_default_session()
+        from altair.app.ticketing import install_ld
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
             'altair.app.ticketing.lots.models',
             'altair.app.ticketing.sej.models',
-            ])
-        from altair.app.ticketing.sej.models import _session
+            ], hook=install_ld)
+        from ..models import _session
+        _session.remove()
         self._session =  _session
         CoreTestMixin.setUp(self)
         self.products = self._create_products(self._create_stocks(self._create_stock_types(5)))
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.sej')
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
         from ..api import remove_default_session
+        from altair.app.ticketing import uninstall_ld
         remove_default_session()
         _teardown_db()
+        uninstall_ld()
 
     def _getTarget(self):
         from .processor import SejNotificationProcessor

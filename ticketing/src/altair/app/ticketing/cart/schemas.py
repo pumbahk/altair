@@ -162,7 +162,10 @@ class ClientForm(OurDynamicForm):
         )
     prefecture = OurTextField(
         label=u"都道府県",
-        filters=[strip_spaces]
+        filters=[strip_spaces],
+        validators=[
+            Required()
+            ]
         )
     city = OurTextField(
         label=u"市区町村",
@@ -375,16 +378,6 @@ class _89ersExtraForm(ExtraForm):
             DynSwitchDisabled(u'NOT({member_type}="プラチナプラン")')
             ],
         note=u"（最大10文字）"
-        )
-    coupon = OurSelectField(
-        u"会員証以外の特典受取方法",
-        description=u"(レギュラー・ゴールド・プラチナ会員のみ)",
-        note=u"会場受取をお選びいただいた方には500円分のグッズクーポンをプレゼントいたします。",
-        choices=[(u'会場受取', u'会場受取'),(u'配送希望', u'配送希望')],
-        validators=[
-            DynSwitchDisabled(u'NOT(OR({member_type}="プラチナプラン",OR({member_type}="ゴールドプラン",{member_type}="レギュラープラン")))'),
-            ],
-        coerce=text_type_but_none_if_not_given
         )
 
     def configure_for_publicity(self):

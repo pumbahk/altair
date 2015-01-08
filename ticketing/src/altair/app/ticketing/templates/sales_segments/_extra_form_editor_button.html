@@ -24,7 +24,7 @@
         });
         var json_str = $element.val();
         if (json_str) {
-          fields.reset(JSON.parse(json_str));
+          fields.reset(JSON.parse(json_str), { parse: true });
         }
         $extra_form_editor_modal.on('hide', function () {
           $extra_form_editor_modal.off('hide', arguments.callee);

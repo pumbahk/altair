@@ -12,8 +12,16 @@ class LotEntriesTests(unittest.TestCase):
             [
                 "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.core.models",
+                "altair.app.ticketing.cart.models",
                 "altair.app.ticketing.lots.models",
+                "altair.app.ticketing.events.lots.models",
             ]
+            )
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
             )
 
     def tearDown(self):

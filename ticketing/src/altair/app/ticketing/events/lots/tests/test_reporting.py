@@ -130,9 +130,22 @@ class LotEntryReporterTests(unittest.TestCase):
         self.config.add_subscriber('altair.app.ticketing.register_globals', 'pyramid.events.BeforeRender')
         self.config.include('pyramid_mailer.testing')
         self.config.include('altair.app.ticketing.renderers')
+        self.session = _setup_db([
+            "altair.app.ticketing.orders.models",
+            "altair.app.ticketing.core.models",
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.events.lots.models",
+            ])
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
 
     def _getTarget(self):
         from ..reporting import LotEntryReporter
@@ -252,13 +265,19 @@ class send_lot_report_mailsTests(unittest.TestCase):
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.lots.models",
             "altair.app.ticketing.events.lots.models",
-        ])
+            ])
         self.config = testing.setUp()
         self.config.include('pyramid_mako')
         self.config.add_mako_renderer('.html')
         self.config.add_mako_renderer('.txt')
         self.config.include('pyramid_mailer.testing')
         self.config.include('altair.app.ticketing.renderers')
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
@@ -344,6 +363,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
         rs = self.session.query(LotEntryReportSetting).filter_by(time="1030").one()
         organization = self.session.query(Organization).filter_by(short_name="testing").one()
         rs.recipients.append(ReportRecipient(email=u"testing-second@example.com", organization_id=organization.id))
+        self.session.flush()
         request = testing.DummyRequest()
         sender = "testing@example.com"
 
