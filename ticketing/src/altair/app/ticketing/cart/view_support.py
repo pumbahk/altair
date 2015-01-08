@@ -454,6 +454,9 @@ class DynamicFormBuilder(object):
                 message = u'%sのみ入力できます' % u'・'.join(cdescs)
             validators.append(Regexp(concatenated_csets, message=message))
 
+        if not field_desc['required']:
+            validators.append(Optional())
+
         return validators
 
     def _build_text(self, field_desc):

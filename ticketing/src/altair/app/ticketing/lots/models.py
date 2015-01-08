@@ -81,6 +81,7 @@ Lot_SalesSegment = sa.Table(
 
 class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Lot'
+    __clone_excluded__ = ['status']
 
     id = sa.Column(Identifier, primary_key=True)
     name = sa.Column(sa.String(255))
@@ -620,7 +621,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.elected_at = now
         elected = LotElectedEntry(lot_entry=self,
                                   lot_entry_wish=wish)
-        wish.elect(now)
+        for _wish in self.wishes:
+            if wish == _wish:
+                _wish.elect(now)
+            else:
+                _wish.reject(now)
         return elected
 
     def cancel(self):

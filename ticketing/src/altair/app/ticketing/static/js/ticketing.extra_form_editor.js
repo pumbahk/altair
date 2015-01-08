@@ -28,7 +28,8 @@
         'must_be_equal_to_or_greater_than': '{}以上の数値を指定してください',
         'must_be_equal_to_or_less_than': '{}以下の数値を指定してください',
         'must_be_less_than': '{}未満の数値を指定してください',
-        'must_be_a_number': '数値を指定してください'
+        'must_be_a_number': '数値を指定してください',
+        'must_choose_at_least_one_validator_type': '少なくとも一つ選択してください'
       },
       'label': 'ラベル',
       'value': '値',
@@ -437,14 +438,50 @@
       other_characters: null
     },
 
-    initialize: function () {
-      var self = this;
+    initialize: function (_attributes, options) {
+      var self = this; 
       _.each(validatorDefs, function (validatorDef) {
-        var validatorSetting = new validatorDef.model(self.attributes[validatorDef.name]);
-        self.attributes[validatorDef.name] = validatorSetting;
-        if (validatorSetting.get('enabled') === null)
-          validatorSetting.set('enabled', validatorDef.enabledByDefault == 'boolean' ? validatorDef.enabledByDefault: true);
+        var validatorSetting = self.attributes[validatorDef.name];
+        if (validatorSetting === null) {
+          validatorSetting = new validatorDef.model({}, options);
+          if (validatorSetting.get('enabled') === null) {
+            validatorSetting.set('enabled', typeof validatorDef.enabledByDefault == 'boolean' ? validatorDef.enabledByDefault: true);
+          }
+          self.set(validatorDef.name, validatorSetting, options);
+        }
       });
+      _.each(this.attributes, function (validatorSetting, k) {
+        validatorSetting.on('change', function (_, current) {
+          self.trigger('change:' + k, self, current, options);
+          self.trigger('change', self, options);
+        });
+      });
+    },
+
+    validate: function (attributes, options) {
+      var enabled = false;
+      for (var name in attributes) {
+        if (!attributes.hasOwnProperty(name))
+          continue;
+        if (attributes[name] == null)
+          return;
+        if (attributes[name].get('enabled'))
+          enabled = true; 
+      }
+      if (!enabled) {
+        return translations['ja']['message']['must_choose_at_least_one_validator_type'];
+      }
+    },
+
+    parse: function (resp, options) {
+      resp = resp || {};
+      _.each(validatorDefs, function (validatorDef) {
+        var validatorSetting = new validatorDef.model(resp[validatorDef.name] || {}, options);
+        if (validatorSetting.get('enabled') === null)
+          validatorSetting.set('enabled', typeof validatorDef.enabledByDefault == 'boolean' ? validatorDef.enabledByDefault: true);
+        resp[validatorDef.name] = validatorSetting;
+      });
+      return resp;
     }
   });
 
@@ -469,9 +506,16 @@
 
     _errors: null,
 
-    initialize: function () {
-      this.attributes['choices'] = new Choices(this.attributes['choices']);
-      this.attributes['validators'] = new Validators(this.attributes['validators']);
+    initialize: function (attributes, options) {
+      var self = this;
+      this.attributes['choices'] = new Choices(this.attributes['choices'], options);
+      this.attributes['validators'] = new Validators(this.attributes['validators'], options);
+      this.attributes['validators'].on('change', function (item, options) {
+        self.trigger('change:validators', self, item, options); 
+        self.trigger('change', self, options); 
+        if (self.validate(self.attributes, options))
+          self.trigger('error');
+      });
       if (this.attributes['max_length'] === null)
         this.attributes['max_length'] = this.max_length_limit();
       if (config['make_name_idential_to_display_name']) {
@@ -501,6 +545,11 @@
         } catch (e) {
           errors['activation_conditions'] = e.message;
         }
+      }
+      if (attributes['validators'] !== null) {
+        var e = attributes['validators'].validate(attributes['validators'].attributes, options);
+        if (e)
+          errors['validators'] = e;
       }
       if (!_.isEmpty(errors)) {
         this._errors = errors;
@@ -727,7 +776,7 @@
       $.each(validatorDefs, function (_, validatorDef) {
         var setting = settings.get(validatorDef.name);
         $div.append(
-          $('<label class="control-label"></label>')
+          $('<label class="checkbox control-label"></label>')
           .append(
             $('<input type="checkbox" />')
             .attr('name', 'validators-' + self.model.cid)
@@ -740,7 +789,7 @@
           .append(document.createTextNode(translations['ja']['validator'][validatorDef.name]))
         )
       });
-      retval.append($div);
+      retval = retval.add($div);
       return retval;
     },
 
