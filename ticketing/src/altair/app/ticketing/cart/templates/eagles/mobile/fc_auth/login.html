@@ -32,10 +32,11 @@
 <div>
 <font color="#9b0020">■</font>一般の方はこちらから
 </div>
+今年の超先行では一般販売は行いません。
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
-<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;" /><br />
+<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;" disabled /><br />
 </div>
 </div>
 %if guest_message:
