@@ -84,7 +84,10 @@ def get_event_info_from_cms(request, event_id):
 
 def get_route_pattern(registry, name):
     mapper = registry.getUtility(IRoutesMapper)
-    return mapper.get_route(name).pattern
+    pattern = mapper.get_route(name).pattern
+    if not pattern.startswith('/'):
+        pattern = '/' + pattern
+    return pattern
 
 def set_cart(request, cart):
     request.session['altair.app.ticketing.cart_id'] = cart.id
