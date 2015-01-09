@@ -28,7 +28,7 @@ from .events import notify_order_completed
 from .exceptions import NoCartError, InvalidCSRFTokenException
 from .views import PaymentView, ConfirmView, CompleteView
 from .rendering import selectable_renderer
-from .view_support import back, is_fc_cart
+from .view_support import back, is_fc_cart_pred
 from .resources import CompleteViewTicketingCartResource
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ def extract_form_data(form):
     route_name='cart.index',
     decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
     renderer=selectable_renderer('booster/index.html'),
-    custom_predicates=(is_fc_cart,),
+    custom_predicates=(is_fc_cart_pred,),
     permission="buy"
     )
 class BoosterEventIndexView(object):
@@ -100,7 +100,7 @@ class BoosterEventIndexView(object):
     route_name='cart.index2',
     decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
     renderer=selectable_renderer('fc/form.html'),
-    custom_predicates=(is_fc_cart,),
+    custom_predicates=(is_fc_cart_pred,),
     permission="buy"
     )
 class FCIndexView(object):
@@ -192,7 +192,7 @@ class FCIndexView(object):
     route_name='cart.payment',
     decorator=with_jquery.not_when(mobile_request),
     renderer=selectable_renderer("fc/payment.html"),
-    custom_predicates=(is_fc_cart,),
+    custom_predicates=(is_fc_cart_pred,),
     permission="buy"
     )
 class FCPaymentView(PaymentView):
@@ -259,7 +259,7 @@ class FCPaymentView(PaymentView):
     route_name='payment.confirm',
     decorator=with_jquery.not_when(mobile_request),
     renderer=selectable_renderer("fc/confirm.html"),
-    custom_predicates=(is_fc_cart,),
+    custom_predicates=(is_fc_cart_pred,),
     permission="buy")
 class FCConfirmView(ConfirmView):
     @lbr_view_config(request_method="GET")
@@ -270,7 +270,7 @@ class FCConfirmView(ConfirmView):
     route_name='payment.finish',
     decorator=with_jquery.not_when(mobile_request),
     renderer=selectable_renderer("fc/completion.html"),
-    custom_predicates=(is_fc_cart,))
+    custom_predicates=(is_fc_cart_pred,))
 class FCCompleteView(CompleteView):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")

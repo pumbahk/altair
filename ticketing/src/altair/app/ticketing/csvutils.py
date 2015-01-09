@@ -18,7 +18,7 @@ class EncodingTransrator(object):
         return [s.decode(self.encoding, "utf-8") for s in row]
 
 
-class UnicodeWriter:
+class UnicodeWriter(object):
     """
     A CSV writer which will write rows to CSV file "f",
     which is encoded in the given encoding.
@@ -69,10 +69,10 @@ class PlainTextRenderer(SimpleRenderer):
         super(PlainTextRenderer, self).__init__(key, name, empty_if_dereference_fails)
         self.fancy = fancy
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         value = dereference(record, self.key, self.empty_if_dereference_fails)
         return [
-            ((u'', self.name, u''), (u'="%s"' % unicode(value) if self.fancy else unicode(value)) if value is not None else u'')
+            ((u'', self.name, u''), (u'="%s"' % unicode(value) if self.fancy and context.enable_fancy else unicode(value)) if value is not None else u'')
             ]
 
 class CollectionRenderer(object):
@@ -81,12 +81,12 @@ class CollectionRenderer(object):
         self.variable_name = variable_name 
         self.renderers = renderers
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         items = dereference(record, self.key)
         retval = []
         for i, item in enumerate(items):
             for renderer in self.renderers:
-                for column, rendered in renderer({self.variable_name: item}):
+                for column, rendered in renderer({self.variable_name: item}, context):
                     retval.append((
                         (column[0], column[1], (u'[%d]' % i) + column[2]),
                         rendered))
@@ -99,24 +99,24 @@ class AttributeRenderer(object):
         self.variable_name = variable_name
         self.renderer_class = renderer_class
 
-    def __call__(self, record):
+    def __call__(self, record, context):
         items = dereference(record, self.key)
         retval = []
         for attr_key, attr_value in items.items():
             renderer = self.renderer_class(u'_', u'%s[%s]' % (self.variable_name, attr_key))
-            retval.extend(renderer(dict(_=attr_value)))
+            retval.extend(renderer(dict(_=attr_value), context))
         return retval
 
 class CSVRenderer(object):
-    def __init__(self, column_renderers):
+    def __init__(self, column_renderers, context):
         self.column_renderers = column_renderers
         self.column_sets = {}
-        self.rows = []
+        self.context = context
 
-    def append(self, record):
+    def render_row(self, record):
         rendered_dict = {}
         for column_renderer in self.column_renderers:
-            rendered = column_renderer(record)
+            rendered = column_renderer(record, self.context)
             rendered_dict[column_renderer] = dict(rendered)
             column_set = self.column_sets.get(column_renderer)
             if column_set is None:
@@ -124,7 +124,7 @@ class CSVRenderer(object):
             for column, _ in rendered:
                 column_set[column] = True
 
-        self.rows.append(rendered_dict)
+        return rendered_dict
 
     def render_header(self, localized_columns={}):
         return [
@@ -133,19 +133,17 @@ class CSVRenderer(object):
             for column in self.column_sets.get(renderer, {}).keys()
             ]
 
-    def render_rows(self):
-        for row in self.rows:
+    def render(self, records):
+        for record in records:
+            row = self.render_row(record)
             yield [
                 row[renderer].get(column, u'')
                 for renderer in self.column_renderers \
                 for column in self.column_sets[renderer].keys()
                 ]
 
-    def render(self, localized_columns={}):
+    def __call__(self, records, localized_columns={}):
+        rows = list(self.render(records))
         yield self.render_header(localized_columns)
-        for row_data in self.render_rows():
-            yield row_data
-
-    def __call__(self, *args, **kwargs):
-        return self.render(*args, **kwargs)
-
+        for row in rows:
+            yield row

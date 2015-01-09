@@ -6,6 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.event
 import sqlalchemy.orm.collections
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -22,7 +23,6 @@ from dateutil.parser import parse as parsedate
 
 from altair.sqla import session_partaken_by, HybridRelation
 from altair.models import WithTimestamp, LogicallyDeleted, MutationDict, JSONEncodedDict, Identifier
-from altair.viewhelpers.datetime_ import create_date_time_formatter
 
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.utils import StandardEnum
@@ -49,6 +49,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddressMixin,
     ChannelEnum,
     SeatStatusEnum,
+    SalesSegment,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -302,7 +303,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _attributes = orm.relationship("OrderAttribute", backref='order', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
 
-    cart_setting_id = sa.Column(Identifier, nullable=True)
+    cart_setting_id = sa.Column(Identifier, sa.ForeignKey('CartSetting.id'), nullable=True)
+    cart_setting = declared_attr(lambda self: orm.relationship('CartSetting'))
 
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
@@ -784,67 +786,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
-    def get_order_attribute_pair_pairs(self, request, context=None):
-        if self.sales_segment is None:
-            return []
-        if context is None:
-            context = getattr(request, 'context', None)
-        from altair.app.ticketing.cart.view_support import get_extra_form_schema
-        extra_form_fields = get_extra_form_schema(context, request, self.sales_segment)
-        if not extra_form_fields:
-            return []
-        retval = []
-        for field_desc in extra_form_fields:
-            if field_desc['kind'] == 'description_only':
-                continue
-            field_value = self.attributes.get(field_desc['name'])
-            display_value = None
-            if field_desc['kind'] in ('text', 'textarea'):
-                display_value = field_value
-            elif field_desc['kind'] in ('select', 'radio'):
-                v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
-                if len(v) > 0:
-                    display_value = v[0]['label']
-                else:
-                    display_value = field_value
-            elif field_desc['kind'] in ('multiple_select', 'checkbox'):
-                field_value = field_value.strip()
-                if len(field_value) > 0:
-                    field_value = [c.strip() for c in field_value.split(',')]
-                else:
-                    field_value = []
-                display_value = []
-                for c in field_value:
-                    v = [pair for pair in field_desc['choices'] if pair['value'] == c]
-                    if len(v) > 0:
-                        v = v[0]['label']
-                    else:
-                        v = c
-                    display_value.append(v)
-            elif field_desc['kind'] == 'bool':
-                field_value = bool(field_value)
-                display_value = u'はい' if field_value else u'いいえ'
-            elif field_desc['kind'] == 'date':
-                dtf = create_date_time_formatter(request)
-                field_value = parsedate(field_value)
-                display_value = dtf.format_date(field_value)
-            else:
-                logger.warning('unsupported kind: %s' % field_desc['kind'])
-                display_value = field_value
-
-            retval.append(
-                (
-                    (
-                        field_desc['name'],
-                        field_value
-                    ),
-                    (
-                        field_desc['display_name'],
-                        display_value
-                    )
-                    )
-                )
-        return retval
+    def get_order_attribute_pair_pairs(self, request):
+        from .api import get_order_attribute_pair_pairs
+        return get_order_attribute_pair_pairs(request, self)
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1240,6 +1184,7 @@ class OrderSummary(Base):
             Performance.__table__.c.start_on,
             Performance.__table__.c.end_on,
             Order.__table__.c.performance_id,
+            Order.__table__.c.sales_segment_id,
             Order.__table__.c.order_no,
             Order.__table__.c.created_at,
             Order.__table__.c.paid_at,
@@ -1265,6 +1210,7 @@ class OrderSummary(Base):
             Order.__table__.c.user_id,
             Order.__table__.c.refund_id,
             Order.__table__.c.fraud_suspect,
+            Order.__table__.c.cart_setting_id,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
@@ -1307,6 +1253,7 @@ class OrderSummary(Base):
     performance_start_on = Performance.start_on
     performance_end_on = Performance.end_on
     performance_id = Order.performance_id
+    sales_segment_id = Order.sales_segment_id
     order_no = Order.order_no
     created_at = Order.created_at
     paid_at = Order.paid_at
@@ -1361,6 +1308,7 @@ class OrderSummary(Base):
     delivery_plugin_id = DeliveryMethod.__table__.c.delivery_plugin_id
     membership_id = Membership.__table__.c.id
     membership_name = Membership.__table__.c.name
+    cart_setting_id = Order.cart_setting_id
 
     __table__ = Order.__table__ \
         .join(
@@ -1404,15 +1352,25 @@ class OrderSummary(Base):
                  Membership.deleted_at==None)
             )
 
-    ordered_products = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
-    _attributes = orm.relationship('OrderAttribute', primaryjoin=((Order.id==OrderAttribute.order_id) & (OrderAttribute.deleted_at==None)))
+    @property
+    def ordered_products(self):
+        return self.items
+
+    _attributes = orm.relationship('OrderAttribute', primaryjoin=Order.id==OrderAttribute.order_id, lazy=False)
     @property
     def attributes(self):
         return dict((a.name, a.value) for a in self._attributes)
 
     items = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
-    refund = orm.relationship('Refund', primaryjoin=Order.refund_id==Refund.id)
+    refund = orm.relationship('Refund', primaryjoin=Order.refund_id==Refund.id, lazy=False)
     created_from_lot_entry = orm.relationship('LotEntry', foreign_keys=[Order.order_no], primaryjoin=and_(LotEntry.entry_no==Order.order_no, LotEntry.deleted_at==None), uselist=False)
+    sales_segment = orm.relationship('SalesSegment', primaryjoin=(Order.sales_segment_id == SalesSegment.id), lazy=False)
+
+    def cart_setting_primary_join():
+        from altair.app.ticketing.cart.models import CartSetting
+        return Order.cart_setting_id == CartSetting.id
+
+    cart_setting = orm.relationship('CartSetting', primaryjoin=cart_setting_primary_join)
 
     @property
     def status(self):
@@ -1458,8 +1416,7 @@ class OrderSummary(Base):
     @reify
     def multicheckout_info(self):
         from .api import get_multicheckout_info
-        request = get_current_request()
-        return get_multicheckout_info(request, self)
+        return get_multicheckout_info(self.request, self)
 
     @property
     def card_brand(self):
@@ -1510,8 +1467,7 @@ class OrderSummary(Base):
     payment_delivery_pair = HybridRelation(_payment_delivery_pair, rel_payment_delivery_pair)
 
     def _performance(self):
-        request = get_current_request()
-        return _get_performance(request, self.performance_id, self.organization_id)
+        return _get_performance(self.request, self.performance_id, self.organization_id)
 
     rel_performance = orm.relationship("Performance")
     performance = HybridRelation(_performance, rel_performance)
@@ -1523,3 +1479,9 @@ class OrderSummary(Base):
     @reify
     def membership(self):
         return SummarizedMembership(self.membership_name)
+
+    def _init_on_load(self, context):
+        self.request = context.query._request
+
+sqlalchemy.event.listen(OrderSummary, 'load', OrderSummary._init_on_load)
+

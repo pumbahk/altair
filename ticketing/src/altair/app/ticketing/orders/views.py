@@ -113,8 +113,6 @@ from .api import (
     QueryBuilderError,
     create_inner_order,
     save_order_modification,
-    get_ordered_product_metadata_provider_registry,
-    get_order_metadata_provider_registry,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
     get_anshin_checkout_object,
@@ -122,6 +120,7 @@ from .api import (
     get_order_by_id,
     refresh_order,
     get_multicheckout_info,
+    OrderAttributeIO,
 )
 from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
 from .utils import NumberIssuer
@@ -133,7 +132,6 @@ from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticke
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
-from altair.app.ticketing.core.modelmanage import OrderAttributeManager
 from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales
 
 # XXX
@@ -480,7 +478,7 @@ class OrderDownloadView(BaseView):
             if form_search.ordered_from.data and form_search.ordered_to.data:
                 ordered_term = form_search.ordered_to.data - form_search.ordered_from.data
             if not form_search.performance_id.data and (ordered_term is None or ordered_term.days > 0):
-                if query.count() > 10000:
+                if query.count() >= 100000:
                     self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
                     raise HTTPFound(location=route_path('orders.index', self.request))
 
@@ -494,14 +492,9 @@ class OrderDownloadView(BaseView):
         #    joinedload('ordered_products.ordered_product_items.print_histories'),
         #    joinedload('ordered_products.ordered_product_items.seats'),
         #    joinedload('ordered_products.ordered_product_items._attributes'),
-        #    ) \
-        #    .filter(SalesSegment.deleted_at == None) \
-        #    .filter(OrderedProduct.deleted_at == None) \
-        #    .filter(OrderedProductItem.deleted_at == None) \
-        #    .filter(Product.deleted_at == None) \
-        #    .filter(ProductItem.deleted_at == None) \
-        #    .filter(Seat.deleted_at == None) \
-        #    .filter(OrderedProductAttribute.deleted_at == None)
+        #    )
+
+        query._request = self.request # XXX
         orders = query
 
         headers = [
@@ -517,9 +510,8 @@ class OrderDownloadView(BaseView):
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
+        order_csv = OrderCSV(self.request, organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
 
-        writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         def _orders(orders):
             prev_order = None
             for order in orders:
@@ -527,8 +519,14 @@ class OrderDownloadView(BaseView):
                     make_transient(prev_order)
                 prev_order = order
                 yield order
-        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(_orders(orders)))
 
+        def writer_factory(f):
+            writer = csv.writer(f, delimiter=',', quoting=csv.QUOTE_ALL)
+            def writerow(columns):
+                writer.writerow([encode_to_cp932(column) for column in columns])
+            return writerow
+
+        response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
 
     # 新しいコードも参照用にとっておいてある
@@ -702,9 +700,7 @@ class OrderDownloadView(BaseView):
         ]
 
         response = Response(headers=headers)
-        ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
-        iheaders = header_intl(csv_headers, japanese_columns,
-                               ordered_product_metadata_provider_registry)
+        iheaders = header_intl(csv_headers, japanese_columns)
         logger.debug("csv headers = {0}".format(csv_headers))
         results = list(query)
 
@@ -1090,12 +1086,8 @@ class OrderDetailView(BaseView):
         default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
 
         joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
-        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
-            get_ordered_product_metadata_provider_registry(self.request)
-        )
-        order_attributes = dependents.get_order_attributes(
-            get_order_metadata_provider_registry(self.request)
-        )
+        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes()
+        order_attributes = dependents.get_order_attributes()
         forms = self.context.get_dependents_forms()
         form_order_info = forms.get_order_info_form()
         form_shipping_address = forms.get_shipping_address_form()
@@ -1461,7 +1453,7 @@ class OrderDetailView(BaseView):
             }))
         ## todo:validation?
         params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
-        order = OrderAttributeManager.update(order, params)
+        OrderAttributeIO().unmarshal(self.request, order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

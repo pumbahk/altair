@@ -60,7 +60,7 @@ from .view_support import (
     back,
     back_to_top,
     gzip_preferred,
-    is_booster_or_fc_cart,
+    is_booster_or_fc_cart_pred,
     render_view_to_response_with_derived_request,
     coerce_extra_form_data,
     )
@@ -116,7 +116,7 @@ def flow_predicate_prepared(pe, flow_context, context, request):
 
 @provider(IPageFlowPredicate)
 def flow_predicate_non_booster_cart(pe, flow_context, context, request):
-    return not is_booster_or_fc_cart(context, request)
+    return not is_booster_or_fc_cart_pred(context, request)
 
 @implementer(flow.IPageFlowAction)
 class PaymentAction(flow.PageFlowActionBase):

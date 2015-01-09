@@ -573,16 +573,6 @@ def clear_extra_form_data(request):
     if 'extra_form' in request.session:
         del request.session['extra_form']
 
-def is_booster_or_fc_cart(type_):
-    from .schemas import extra_form_type_map
-    return type_ in extra_form_type_map
-
-def is_fc_cart(type_):
-    return type_ == 'fc'
-
-def is_booster_cart(type_):
-    return is_booster_or_fc_cart(type_) and not is_fc_cart(type_)
-
 def get_cart_setting(request, cart_setting_id, session=None):
     if session is None:
         if request is not None:
@@ -615,3 +605,12 @@ def get_cart_setting_from_order_like(request, order_like):
         return session.query(CartSetting) \
             .filter_by(id=cart_setting_id) \
             .one()
+
+def is_booster_cart(cart_setting):
+    return cart_setting.booster_cart if cart_setting else False
+
+def is_booster_or_fc_cart(cart_setting):
+    return cart_setting.booster_or_fc_cart if cart_setting else False
+
+def is_fc_cart(cart_setting):
+    return cart_setting.fc_cart if cart_setting else False

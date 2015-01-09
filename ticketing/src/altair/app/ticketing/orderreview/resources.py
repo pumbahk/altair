@@ -108,23 +108,12 @@ class OrderReviewResource(OrderReviewResourceBase):
 
     @reify
     def cart_setting(self):
-        return cart_api.get_cart_setting(self.request, self.order.cart_setting_id)
+        return self.order.cart_setting
 
     def order_detail_panel(self, order):
         panel_name = 'order_detail.%s' % self.cart_setting.type
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
-    @reify
-    def booster_cart(self):
-        return self.cart_setting.booster_cart if self.cart_setting else False
-
-    @reify
-    def booster_or_fc_cart(self):
-        return self.cart_setting.booster_or_fc_cart if self.cart_setting else False
-
-    @reify
-    def fc_cart(self):
-        return self.cart_setting.fc_cart if self.cart_setting else False
 
 class QRViewResource(OrderReviewResourceBase):
     pass
