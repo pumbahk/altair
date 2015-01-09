@@ -1579,9 +1579,6 @@ cart.Venue = Backbone.Model.extend({
                 error("Failed to load adjacency data (" + text + " - " + status + ")");
               }
             });
-          },
-          stockTypes: function (next, error) {
-            continuations.stock_types_loaded.continuation(next, error);
           }
         };
         this.set('dataSource', dataSource);
