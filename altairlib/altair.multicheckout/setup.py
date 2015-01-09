@@ -53,6 +53,7 @@ setup(name='altair.multicheckout',
       },
       entry_points="""
       # -*- Entry points: -*-
+      [paste.app_factory]
       demo = altair.multicheckout.demo:paster_main
       """,
       )
