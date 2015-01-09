@@ -127,6 +127,9 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
                 membergroup=self.membergroup
                 ),
             ]
+        self.membergroup.sales_segments.append(self.sales_segment)
+        self.existing_orders[1].membership = self.membership
+        self.existing_orders[1].user = self.members[1].user
         self.session.flush()
         self.config = testing.setUp(settings={
             'altair.cart.completion_page.temporary_store.cookie_name': 'xxx',
@@ -927,13 +930,57 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
                 u'ordered_product_item.print_histories': u'発券作業者',
                 u'mail_magazine.mail_permission': u'メールマガジン受信可否',
                 u'seat.name': u'',
+                },
+            {
+                u'order.order_no': u'YY0000000001',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'payment_method.name': self.payment_delivery_method_pairs[0].payment_method.name,
+                u'delivery_method.name': self.payment_delivery_method_pairs[0].delivery_method.name,
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'公演日',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'1',
+                u'ordered_product.product.name': u'A',
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': u'product_item_of_A',
+                u'ordered_product_item.price': u'10',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-2',
                 }
             ])
         self.assertEqual(errors, {})
-        self.assertEqual(len(proto_orders), 1)
+        self.assertEqual(len(proto_orders), 2)
         stock_a_quantity = self.stocks[0].stock_status.quantity
         stock_b_quantity = self.stocks[1].stock_status.quantity
-        proto_order = iter(proto_orders.values()).next()
+
+        _proto_orders = list(proto_orders.values())
+        proto_order = _proto_orders[0]
         self.assertTrue(get_next_order_no.called_with(self.request, self.organization))
         self.assertEqual(proto_order.order_no, 'YY0000000000')
         self.assertEqual(len(proto_order.items), 2)
@@ -967,6 +1014,36 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
         self.assertEqual(proto_order.shipping_address.email_2,  u'メールアドレス2')
         self.assertEqual(self.stocks[0].stock_status.quantity, stock_a_quantity)
         self.assertEqual(self.stocks[1].stock_status.quantity, stock_b_quantity)
+
+        proto_order = _proto_orders[1]
+        self.assertEqual(proto_order.order_no, 'YY0000000001')
+        self.assertEqual(len(proto_order.items), 1)
+        self.assertEqual(proto_order.items[0].product, self.products[0])
+        self.assertEqual(len(proto_order.items[0].elements), 1)
+        self.assertEqual(proto_order.items[0].elements[0].product_item, self.products[0].items[0])
+        self.assertEqual(len(proto_order.items[0].elements[0].seats), 1)
+        self.assertEqual(len(proto_order.items[0].elements[0].tokens), 1)
+        self.assertEqual(proto_order.note, u'メモ')
+        self.assertEqual(proto_order.payment_delivery_pair.payment_method, self.payment_delivery_method_pairs[0].payment_method)
+        self.assertEqual(proto_order.payment_delivery_pair.delivery_method, self.payment_delivery_method_pairs[0].delivery_method)
+        self.assertEqual(proto_order.shipping_address.last_name,  u'楽天')
+        self.assertEqual(proto_order.shipping_address.first_name,  u'太郎0')
+        self.assertEqual(proto_order.shipping_address.last_name_kana,  u'ラクテン')
+        self.assertEqual(proto_order.shipping_address.first_name_kana,  u'タロウ')
+        self.assertEqual(proto_order.shipping_address.zip,  u'251-0036')
+        self.assertEqual(proto_order.shipping_address.country,  None)
+        self.assertEqual(proto_order.shipping_address.prefecture,  u'東京都')
+        self.assertEqual(proto_order.shipping_address.city,  u'品川区')
+        self.assertEqual(proto_order.shipping_address.address_1,  u'東五反田5-21-15')
+        self.assertEqual(proto_order.shipping_address.address_2,  u'メタリオンOSビル')
+        self.assertEqual(proto_order.shipping_address.tel_1,  u'03-9999-9999')
+        self.assertEqual(proto_order.shipping_address.tel_2,  u'090-0000-0000')
+        self.assertEqual(proto_order.shipping_address.fax,  u'03-9876-5432')
+        self.assertEqual(proto_order.shipping_address.email_1,  u'dev+test000@ticketstar.jp')
+        self.assertEqual(proto_order.shipping_address.email_2,  u'dev+mobile-test000@ticketstar.jp')
+        self.assertEqual(proto_order.membership,  self.existing_orders[1].membership)
+        self.assertEqual(proto_order.membergroup, self.membergroup)
+        self.assertEqual(proto_order.user, self.existing_orders[1].user)
 
 class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def _makeOne(self, *args, **kwargs):
@@ -2137,6 +2214,4 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         task, errors = importer(reader, self.operator, self.organization, self.performance)
         self.assertEquals(len(task.proto_orders), 0)
         self.assertEquals(len(errors), 1)
-
-
 
