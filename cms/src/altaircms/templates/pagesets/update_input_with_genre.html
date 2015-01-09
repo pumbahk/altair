@@ -6,6 +6,9 @@
     <h3>${master_env.title}更新</h3>
     <p>ジャンルの設定とurlは連動しています</p>
     <form action="${h.current_route_path_override(request, action="confirm",id=request.matchdict["id"])}" method="POST">
+       % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl"):
+        <% display_fields.insert(3, "short_url_keyword") %>
+       % endif
        ${fco.form_as_table_strict(form, display_fields)}
         <button class="btn" type="submit">保存</button>
     </form>

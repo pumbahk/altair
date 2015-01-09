@@ -37,6 +37,7 @@
   </tr>
   <tr>
     <th>URL</th><td>${pageset.url}</td>
+    % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl"):
     <th>短縮URL</th>
     <td>
     % if pageset.short_url_keyword:
@@ -45,6 +46,7 @@
         未設定
     % endif
     </td>
+    % endif
   </tr>
   <tr>
     <th>ページタイプ</th><td>イベント詳細ページ</td>

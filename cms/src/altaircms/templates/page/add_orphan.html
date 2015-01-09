@@ -109,11 +109,19 @@
     <h2>form</h2>
     <form id="submit_form" action="${h.current_route_path_override(request, action="confirm")}" method="POST">
     ## work-around. so-sorry.
-    %if request.params.get("pagetype") == "event_detail":
-     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "short_url_keyword", "title_prefix", "title", "title_suffix", "event", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
-    %else:
-     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "short_url_keyword", "title_prefix", "title", "title_suffix", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
-    %endif
+    % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl"):
+        %if request.params.get("pagetype") == "event_detail":
+         ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "short_url_keyword", "title_prefix", "title", "title_suffix", "event", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
+        %else:
+         ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "short_url_keyword", "title_prefix", "title", "title_suffix", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
+        %endif
+    % else:
+        %if request.params.get("pagetype") == "event_detail":
+            ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title_prefix", "title", "title_suffix", "event", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
+        %else:
+            ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title_prefix", "title", "title_suffix", "publish_begin", "publish_end","description","keywords","tags","private_tags","mobile_tags","layout"])}
+        % endif
+    % endif
       <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>

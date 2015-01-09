@@ -48,7 +48,8 @@ ${pages.pager()}
       <tr>
         <th>ページ名</th>
         <th>URL</th>
-        % if pagetype.name == "document":
+        <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl") %>
+        % if use_shorturl and pagetype.name == "document":
         <th>短縮URL</th>
         % endif
         <th>preview</th>
@@ -61,7 +62,7 @@ ${pages.pager()}
       <tr>
         <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
         <td>${page.url}</td>
-        % if pagetype.name == "document":
+        % if use_shorturl and pagetype.name == "document":
             <td>
             % if page.short_url_keyword:
                 <a href="${h.page.get_short_url_link(page.short_url_keyword)}">${h.page.get_short_url(page.short_url_keyword)}</a>

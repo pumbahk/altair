@@ -15,6 +15,7 @@ cms/src/dist/*
 cms/src/data/*
 cms/src/altair-cms.db
 cms/src/altair_cms.egg-info/*
+alshain.egg-info/*
 mockui/shelve.dat
 *~$
 cms/doc/source

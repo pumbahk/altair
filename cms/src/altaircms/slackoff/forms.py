@@ -497,4 +497,4 @@ class PageSetForm(Form):
     
     def configure(self, request):
         self.request = request
-    __display_fields__ = ["name", "genre_id", "url", "short_url_keyword", "tags_string", "private_tags_string", "mobile_tags_string"]
+    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]

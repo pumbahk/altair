@@ -31,14 +31,16 @@
   </tr>
   <tr>
     <th>URL</th><td>${pageset.url}</td>
-    <th>短縮URL</th>
-    <td>
-    % if pageset.short_url_keyword:
-        <a href="${h.page.get_short_url_link(pageset.short_url_keyword)}">${h.page.get_short_url(pageset.short_url_keyword)}</a>
-    % else:
-        未設定
+    % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl"):
+        <th>短縮URL</th>
+        <td>
+        % if pageset.short_url_keyword:
+            <a href="${h.page.get_short_url_link(pageset.short_url_keyword)}">${h.page.get_short_url(pageset.short_url_keyword)}</a>
+        % else:
+            未設定
+        % endif
+        </td>
     % endif
-    </td>
   </tr>
   <tr>
     <th>ページタイプ</th><td>イベント詳細ページ</td>
