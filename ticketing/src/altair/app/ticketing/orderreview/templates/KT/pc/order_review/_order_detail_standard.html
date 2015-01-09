@@ -49,10 +49,6 @@
         <td>${shipping_address.tel_1}</td>
       </tr>
       <tr>
-        <th scope="row">電話番号(携帯)</th>
-        <td>${shipping_address.tel_2}</td>
-      </tr>
-      <tr>
         <th scope="row">メールアドレス</th>
         <td>${shipping_address.email_1}</td>
       </tr>
@@ -174,7 +170,7 @@
         <td>&nbsp;</td>
         <td class="align1">￥${h.format_number(order.total_amount)}</td>
       </tr>
-    </table>
+    </table>      
   </div>
 </div>
 
@@ -190,7 +186,7 @@
         <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
       </tr>
       %endfor
-    </table>
+    </table>      
   </div>
 </div>
 % endif
@@ -239,3 +235,5 @@
     </div>
   </div>
 </div>
+
+
