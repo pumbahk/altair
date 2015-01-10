@@ -1283,7 +1283,7 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
-                u'performance.start_on': u'公演日',
+                u'performance.start_on': u'',
                 u'venue.name': u'会場',
                 u'ordered_product.price': u'10',
                 u'ordered_product.quantity': u'1',
