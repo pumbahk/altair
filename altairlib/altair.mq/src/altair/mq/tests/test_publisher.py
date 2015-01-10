@@ -37,7 +37,7 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         root_factory = mock.Mock(return_value='context')
         add_task(self.config, task=task_fn, name='', queue="test", root_factory=root_factory)
         self.target.add_route("route_key", "test")
-        self.target.publish(routing_key="route_key", body="test body")
+        self.target.publish(routing_key="route_key", body="test body", properties={'content_type': 'text/plain'})
         root_factory.assert_called_once()
         self.assertEqual(task_called[0], 1)
 
@@ -55,7 +55,7 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         add_task(self.config, task=task_fn, name='', queue="test", root_factory=root_factory)
         add_task(self.config, task=task_fn, name='', queue="test", root_factory=root_factory)
         self.target.add_route("route_key", "test")
-        self.target.publish(routing_key="route_key", body="test body")
+        self.target.publish(routing_key="route_key", body="test body", properties={'content_type': 'text/plain'})
         root_factory.assert_called_once()
         self.assertEqual(task_called[0], 2)
 
@@ -86,34 +86,34 @@ class LocallyDispatchingPublisherConsumerTest(unittest.TestCase):
         self.target.add_route("b.*", "test2")
         self.target.add_route("c.#", "test1")
 
-        self.target.publish(routing_key="", body="")
+        self.target.publish(routing_key="", body="", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 0)
         self.assertEqual(task_called['task_fn_2'], 0)
 
-        self.target.publish(routing_key="route1", body="route1")
+        self.target.publish(routing_key="route1", body="route1", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 1)
         self.assertEqual(task_called['task_fn_2'], 0)
 
-        self.target.publish(routing_key="route2", body="route2")
+        self.target.publish(routing_key="route2", body="route2", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 1)
         self.assertEqual(task_called['task_fn_2'], 1)
 
-        self.target.publish(routing_key="a.test", body="a.test")
+        self.target.publish(routing_key="a.test", body="a.test", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 2)
         self.assertEqual(task_called['task_fn_2'], 1)
 
-        self.target.publish(routing_key="b.test", body="b.test")
+        self.target.publish(routing_key="b.test", body="b.test", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 2)
         self.assertEqual(task_called['task_fn_2'], 2)
 
-        self.target.publish(routing_key="a.test.test", body="a.test.test")
+        self.target.publish(routing_key="a.test.test", body="a.test.test", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 2)
         self.assertEqual(task_called['task_fn_2'], 2)
 
-        self.target.publish(routing_key="b.test.test", body="b.test.test")
+        self.target.publish(routing_key="b.test.test", body="b.test.test", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 2)
         self.assertEqual(task_called['task_fn_2'], 2)
 
-        self.target.publish(routing_key="c.test.test", body="c.test.test")
+        self.target.publish(routing_key="c.test.test", body="c.test.test", properties={'content_type': 'text/plain'})
         self.assertEqual(task_called['task_fn_1'], 3)
         self.assertEqual(task_called['task_fn_2'], 2)
