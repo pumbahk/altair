@@ -150,9 +150,11 @@ class CSVRendererTest(unittest.TestCase):
         renderer = CSVRenderer([
             PlainTextRenderer(u'a'),
             PlainTextRenderer(u'b'),
-            ])
-        renderer.append({u'a':123, u'b':456})
-        self.assertEqual([[u'a', u'b'], [u'123', u'456']], list(renderer.render()))
+            ],
+            None
+            )
+        result = renderer([{u'a':123, u'b':456}])
+        self.assertEqual([[u'a', u'b'], [u'123', u'456']], list(result))
 
     def testCollectionRenderer(self):
         from altair.app.ticketing.csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
@@ -167,28 +169,32 @@ class CSVRendererTest(unittest.TestCase):
                     PlainTextRenderer(u'c[b]')
                     ]
                 )
+            ],
+            None
+            )
+        result = renderer([
+            {
+                u'a': 123,
+                u'b': 456,
+                u'c': [
+                    {u'a': 789, u'b': 123},
+                    {u'a': 456, u'b': 789}
+                    ]
+                },
+            {
+                u'a': 'aaa',
+                u'b': 'bbb',
+                u'c': [
+                    {u'a': 123, u'b': 456},
+                    ]
+                }
             ])
-        renderer.append({
-            u'a': 123,
-            u'b': 456,
-            u'c': [
-                {u'a': 789, u'b': 123},
-                {u'a': 456, u'b': 789}
-                ]
-            })
-        renderer.append({
-            u'a': 'aaa',
-            u'b': 'bbb',
-            u'c': [
-                {u'a': 123, u'b': 456},
-                ]
-            })
         self.assertEqual([
             [u'a', u'b', u'c[a][0]', u'c[b][0]', u'c[a][1]', u'c[b][1]'],
             [u'123', u'456', u'789', u'123', u'456', u'789'],
             [u'aaa', u'bbb', u'123', u'456', u'', u''],
             ],
-            list(renderer.render())
+            list(result)
             )
 
     def testLocalizedRendering(self):
@@ -204,26 +210,31 @@ class CSVRendererTest(unittest.TestCase):
                     PlainTextRenderer(u'c[b]')
                     ]
                 )
-            ])
-        renderer.append({
-            u'a': 123,
-            u'b': 456,
-            u'c': [
-                {u'a': 789, u'b': 123},
-                {u'a': 456, u'b': 789}
-                ]
-            })
-        localized_columns = {
-            u'a': u'AAA',
-            u'b': u'BBB',
-            u'c[a]': u'CCC-a',
-            u'c[b]': u'CCC-b',
-            }
+            ],
+            None
+            )
+        result = renderer([
+            {
+                u'a': 123,
+                u'b': 456,
+                u'c': [
+                    {u'a': 789, u'b': 123},
+                    {u'a': 456, u'b': 789}
+                    ]
+                },
+            ],
+            localized_columns={
+                u'a': u'AAA',
+                u'b': u'BBB',
+                u'c[a]': u'CCC-a',
+                u'c[b]': u'CCC-b',
+                }
+            )
         self.assertEqual([
             [u'AAA', u'BBB', u'CCC-a[0]', u'CCC-b[0]', u'CCC-a[1]', u'CCC-b[1]'],
             [u'123', u'456', u'789', u'123', u'456', u'789'],
             ],
-            list(renderer.render(localized_columns))
+            list(result)
             )
 
     def testComplicated(self):
@@ -247,27 +258,30 @@ class CSVRendererTest(unittest.TestCase):
                         ]),
                     ]
                 )
-            ])
-        renderer.append({
-            u'a': 123,
-            u'b': 456,
-            u'c': [
-                {u'a': 789, u'b': 123},
-                {u'a': 456, u'b': 789}
-                ],
-            u'd': [
-                [
-                    { 'a': 123 }, 
-                    { 'a': 456 }, 
-                    { 'a': 789 }, 
+            ],
+            None)
+        result = renderer([
+            {
+                u'a': 123,
+                u'b': 456,
+                u'c': [
+                    {u'a': 789, u'b': 123},
+                    {u'a': 456, u'b': 789}
+                    ],
+                u'd': [
+                    [
+                        { 'a': 123 }, 
+                        { 'a': 456 }, 
+                        { 'a': 789 }, 
+                        ]
                     ]
-                ]
-            })
+                },
+            ])
         self.assertEqual([
             [u'a', u'b', u'c[a][0]', u'c[b][0]', u'c[a][1]', u'c[b][1]', u'd[a][0][0]', u'd[a][0][1]', u'd[a][0][2]'],
             [u'123', u'456', u'789', u'123', u'456', u'789', u'123', u'456', u'789'],
             ],
-            list(renderer.render())
+            list(result)
             )
 
 
