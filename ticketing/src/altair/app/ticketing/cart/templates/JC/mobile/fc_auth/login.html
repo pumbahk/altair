@@ -7,21 +7,21 @@
   <img src="${request.static_url('altair.app.ticketing.fc_auth:static/JC/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="日本自転車競技連盟" />
 </div>
 <div>
-<div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">チケット購入</font></div>
+<div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">お申込み</font></div>
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#E60048">■</font>各種会員の方はこちらから</font>
+<div><font color="#E60048">■</font>競技者登録済みの方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="JC" />
 <div>
-  会員ID<br/>
+  登録番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">登録番号またはパスワードが一致しません</span>
   %endif
   <br/>
   パスワード<br/>
@@ -39,7 +39,10 @@
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
-<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/><br />
+<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
+<div>
+大会によっては一般の方は<br/>お申込みできない場合があります。
+</div>
 </div>
 </div>
 </form>
