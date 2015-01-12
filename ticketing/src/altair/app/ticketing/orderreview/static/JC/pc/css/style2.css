@@ -748,49 +748,53 @@ background: #f3a9c9;
 }
 
 
-
-.loginbox{
+.guestbox {
 border: 1px #555 solid;
 width: 420px;
-height: 240px;
+height: 215px;
+padding: 5px;
 }
-.loginbox thead th{
+
+.guestbox thead th {
 background: #09355F;
 font-size: 20px;
 height: 30px;
 }
 
-.loginbox td{
-background: #FFFCE1;
+.guestbox td {
+background: #fffecb;
 }
 
-.loginbox th{
-background: #205A86;
+.guestbox th {
+background: #fffecb;
 }
 
-table.member{
-border-collapse: collapse;
-border-top: 1px solid #09355F !important;
-border-left: 1px solid #09355F !important;
+.loginbox {
+border: 1px #555 solid;
+width: 420px;
+height: 450px;
 }
-table.member th{
-color: #FFF;
+
+.loginbox thead th {
+background-color: #09355F;
+color: #fff;
+font-size: 20px;
+height: 30px;
+}
+
+.loginbox td {
+background: #fffecb;
+}
+
+.loginbox th {
+background: #fffecb;
+}
+
+.member th {
+color: #09355F;
 text-align: right;
-border-bottom: 1px solid #09355F !important;
-border-right: 1px solid #09355F !important;
 }
-table.member td{
-background: #FFF;
-border-bottom: 1px solid #09355F !important;
-border-right: 1px solid #09355F !important;
-}
-table.member td input{
-border: 1px solid #000;
-height: 20px;
-}
-table.member #btn_login{
-background: none;
-}
+
 
 .clubnames {
 border: none;
@@ -896,7 +900,6 @@ table.form input.submit,
 .btnLogin {
 text-align: center;
 color: #FFF;
-padding: 5px;
 border:1px solid #000000;
 margin: 10px auto;
 font-size: 20px;
@@ -908,4 +911,154 @@ background-color:#32A0DC;
 table.form input.submit:hover,
 .btnLogin:hover {
 background-color:#32A0DC;
+}
+
+
+/* マイページ
+----------------------------------------------------------- */
+#mypageHistory {
+margin-bottom: 30px;
+}
+
+#mypageHistory form {
+height: 70px;
+padding: 5px 15px 0;
+background: url(images/mypage/bg_search.gif) no-repeat 0 0;
+}
+
+#mypageHistory form input {
+vertical-align: middle;
+}
+
+#mypageHistory div .box {
+clear: both;
+overflow: hidden;
+padding: 10px 0 5px;
+border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageHistory div {
+height: 1%;
+}
+
+#mypageHistory p {
+float: left;
+margin: 0;
+padding-left: 5px;
+}
+
+#mypageHistory dl {
+float: left;
+width: 650px;
+padding-left: 20px;
+}
+
+#mypageHistory dt {
+font-size: 14px;
+font-weight: bold;
+}
+
+#mypageHistory dd {
+padding-bottom: 5px;
+font-size: 14px;
+}
+
+.mypagePaging {
+clear: both;
+font-weight: bold;
+text-align: right;
+}
+
+.mypageBox1 {
+height: 1%;
+margin-bottom: 30px;
+padding: 8px;
+border: 2px solid #cccccc;
+}
+
+.mypageBox1 div {
+position: relative;
+float: right;
+width: 640px;
+margin-bottom: 15px;
+}
+
+.mypageBox1 h3 {
+font-size: 116.7%;
+}
+
+.mypageBox1 div dt {
+margin-bottom: 5px;
+}
+
+.mypageBox1 div dd {
+font-size: 91.7%;
+}
+
+.mypageBox1 div dd a {
+padding: 2px 0 2px 15px;
+background: url(images/mypage/icon_map.gif) no-repeat 0 0;
+}
+
+.mypageBox1 div ul {
+position: absolute;
+right: 0;
+bottom: 0;
+}
+
+.mypageBox1 div li {
+float: right;
+margin-left: 5px;
+}
+
+.mypageBox1 div li .twitter-share-button {
+display: block;
+width: 70px !important;
+}
+
+.mypageBox1 table {
+width: 100%;
+margin-bottom: 10px;
+background-color: #fcfcf7;
+}
+
+.mypageBox1 th {
+width: 20%;
+padding: 10px;
+border: 1px solid #e6e6da;
+font-size: 91.7%;
+font-weight: normal;
+}
+
+.mypageBox1 td {
+padding: 10px;
+border: 1px solid #e6e6da;
+font-weight: bold;
+}
+
+.mypageBox1 td.align1 {
+border-left: none;
+font-weight: normal;
+}
+
+.mypageBox1 td span {
+font-size: 91.7%;
+font-weight: normal;
+}
+
+.mypageBox1 th.waitingPayment,
+.mypageBox1 td.waitingPayment {
+background-color: #fccac6;
+}
+
+.mypageBox1 p {
+margin: 0;
+}
+
+.mypageBuy {
+border-right: none !important;
+}
+
+table td.display_value ul li {
+  margin-left: 1em;
 }
