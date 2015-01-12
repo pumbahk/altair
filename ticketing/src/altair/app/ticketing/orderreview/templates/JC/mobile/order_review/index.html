@@ -1,9 +1,16 @@
 <%inherit file="../layout.html" />
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>競技者登録済みの方はこちら</%mobile:header>
-<%mobile:form_get action="${request.route_path('mypage.show')}">
+<form method="post" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
+登録番号<br/>
+<input type="text" class="text" name="username"><br/>
+パスワード<br/>
+<input type="password" name="password"><br/>
 <input type="submit" value="次に進む" />
-</%mobile:form_get>
+%if message:
+<br/><span style="color: red">登録番号またはパスワードが一致しません</span>
+%endif
+</form>
 
 <%mobile:header>一般の方のチケット確認</%mobile:header>
 <%mobile:form_get action="${request.route_path('order_review.form')}">
@@ -11,6 +18,6 @@
 </%mobile:form_get>
 
 <%mobile:header>一般の方の抽選結果確認</%mobile:header>
-<%mobile:form_get action="https://rt.tstar.jp/lots/review">
+<%mobile:form_get action="https://jcf.tstar.jp/lots/review">
 <input type="submit" value="次に進む" />
 </%mobile:form_get>
