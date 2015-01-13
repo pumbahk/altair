@@ -101,11 +101,6 @@ class Reports(BaseView):
                 'performances': event.sorted_performances(),
             }
 
-        report_name = dict(
-            stock=u"仕入明細",
-            unsold=u"残席明細",
-            sold=u"販売済座席明細"
-        )
 
         # CSVファイル生成
         try:
@@ -115,6 +110,11 @@ class Reports(BaseView):
         exporter = reporting.exporter_factory(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
+        report_name = dict(
+            stock=u"仕入明細",
+            unsold=u"残席明細",
+            sold=u"販売済座席明細"
+        )
         filename = self.create_filename(report_kind=report_name[f.report_type.data], event=event)
 
         headers = [
@@ -156,7 +156,13 @@ class Reports(BaseView):
         exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
-        filename = self.create_filename(report_kind=u"配券明細", event=event)
+        report_name = {
+            "assign":u"配券明細",
+            "add":u"追券明細",
+            "return":u"返券明細",
+            "final_return":u"最終返券明細"
+        }
+        filename = self.create_filename(report_kind=report_name[f.report_type.data], event=event)
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
