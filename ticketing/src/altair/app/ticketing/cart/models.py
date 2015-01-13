@@ -136,7 +136,7 @@ class Cart(Base, c_models.CartMixin):
     def name(self):
         return str(self.performance.id)
 
-    @classmethod 
+    @classmethod
     @deprecate("this function does not take it account that a cart is not associated to a single performance")
     def create(cls, request, **kwargs):
         performance_id = kwargs.pop('performance_id', None)
@@ -165,7 +165,7 @@ class Cart(Base, c_models.CartMixin):
     @classmethod
     def create_from(cls, request, that):
         # すでに detach しているかもしれないので、merge を試みる
-        that = DBSession.merge(that) 
+        that = DBSession.merge(that)
         if that.order_id is not None:
             raise CartCreationException(
                 request,
@@ -190,7 +190,7 @@ class Cart(Base, c_models.CartMixin):
             )
         # translate all the products in the specified cart to the new cart
         for carted_product in that.items:
-            new_cart.items.append(carted_product) 
+            new_cart.items.append(carted_product)
         that.disposed = True
         that.products = []
         return new_cart
@@ -245,7 +245,7 @@ class Cart(Base, c_models.CartMixin):
     def special_fee_name(self):
         """特別手数料名称"""
         return self.payment_delivery_pair.special_fee_name
-    
+
     @classmethod
     def get_or_create(cls, performance, cart_session_id):
         try:
@@ -277,7 +277,7 @@ class Cart(Base, c_models.CartMixin):
             seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
-    #@deprecate("deprecated method") 
+    #@deprecate("deprecated method")
     # 抽選から使う
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
@@ -357,7 +357,7 @@ class CartedProduct(Base):
 
     @property
     def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.elements), 
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.elements),
             key=operator.itemgetter('l0_id'))
 
     @property
