@@ -11,7 +11,7 @@
 <p style="text-align:center;">
 
 <div id="login_form">
-<font color="#9b0020">■</font>各種会員の方はこちらから<br/><br/>
+<font color="#9b0020">■</font>対象の年賀状をお持ちの方はこちら<br/><br/>
 </div>
 <form action="${request.current_route_path()}" method="post">
 <input type="hidden" name="membership" value="eagles" />
@@ -32,10 +32,11 @@
 <div>
 <font color="#9b0020">■</font>一般の方はこちらから
 </div>
+今年の超先行では一般販売は行いません。
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
-<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;" /><br />
+<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;" disabled /><br />
 </div>
 </div>
 %if guest_message:
