@@ -17,7 +17,7 @@ from datetime import datetime
 def upgrade():
     op.create_table('featuresetting',
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('organization_id', sa.Integer, sa.ForeignKey('Organization.id')),
+        sa.Column('organization_id', sa.Integer, sa.ForeignKey('organization.id')),
         sa.Column('name', sa.String(length=255)),
         sa.Column('value', sa.String(length=255)),
         sa.Column('created_at', sa.DateTime(),  server_default=sa.text('now()')),

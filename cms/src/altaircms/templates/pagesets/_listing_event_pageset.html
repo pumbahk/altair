@@ -6,18 +6,18 @@ now = get_now(request)
   <table class="table table-describe">
     <thead>
       <tr>
-		<th width="20px"></th>
-		<th>ページセット</th>
-		<th>URL</th>
+        <th width="20px"></th>
+        <th>ページセット</th>
+        <th>URL</th>
         <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl")%>
         % if use_shorturl:
         <th>短縮URL</th>
         % endif
-		<th>ページ</th>
-		<th>表示状況</th>
-		<th>公開開始</th>
-		<th>公開終了</th>
-		<th>作成日時</th>
+        <th>ページ</th>
+        <th>表示状況</th>
+        <th>公開開始</th>
+        <th>公開終了</th>
+        <th>作成日時</th>
       </tr>
     </thead>
     <tbody>
