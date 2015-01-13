@@ -107,11 +107,6 @@ now = get_now(request)
 		  <a class="action" href-fmt="${request.route_path("pageset", pageset_id="__id__")}"><i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
     <li>
-	    <a id="pageset_addpage" class="action" href-fmt="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}"
-         message="選択したページセットに新しいページを追加します。よろしいですか？"
-         ><i class="icon-plus"> </i> 選択したページセットにページ追加</a>
-     </li>
-    <li>
 		  <a href="${request.route_path("event_takein_pageset",event_id=current_event.id)}">
 		    <i class="icon-plus">_</i> このイベントに配下のページとして別のページセットを取り込む</a>
     </li>
