@@ -166,6 +166,8 @@ class: %s""" % model)
         return qs
     return query
 
+
+
 def get_or_404(qs, *criteria):
     r = qs.filter(*criteria).first()
     if r is None:

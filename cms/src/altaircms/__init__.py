@@ -100,7 +100,6 @@ def install_separation(config):
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
-    
 
 def exclude_js(path):
     return path.endswith(".js")
@@ -152,6 +151,9 @@ def main(global_config, **local_config):
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
+
+    ## Add access to FeatureSetting in request
+    config.set_request_property("altaircms.api.get_featuresettingmanager", "featuresettingmanager", reify=True)
 
     config.include(".")
     config.add_route("smartphone.main", "/smartphone/main")

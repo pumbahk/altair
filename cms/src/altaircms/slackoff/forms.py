@@ -484,6 +484,7 @@ class PageSetForm(Form):
         choices=lambda field: [(unicode(obj.id) if obj is not None else u'', value) for obj, value in build_genre_choices(get_current_request())]
         )
     url = fields.TextField(label=u"URL", validators=[])
+    short_url_keyword = fields.TextField(label=u"短縮URL", validators=[])
 
     def object_validate(self, obj=None):
         data = self.data

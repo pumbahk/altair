@@ -50,6 +50,10 @@ ${pages.pager()}
         <th>イベント</th>
         <th>ページ名</th>
         <th>URL</th>
+        <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl") %>
+        % if use_shorturl:
+        <th>短縮URL</th>
+        % endif
         <th>preview</th>
         <th>生成日時</th>
         <th>更新日時</th>
@@ -61,6 +65,15 @@ ${pages.pager()}
         <td><a href="${request.route_path("event", id=page.event.id)}">${page.event.title}</a></td>
         <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="event")}">${page.name}</a></td>
         <td>${page.url}</td>
+        % if use_shorturl:
+            <td>
+            % if page.short_url_keyword:
+                <a href="${h.page.get_short_url_link(page.short_url_keyword)}">${h.page.get_short_url(page.short_url_keyword)}</a>
+            % else:
+                未設定
+            % endif
+            </td>
+        % endif
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
         </td>
