@@ -19,9 +19,9 @@ def upgrade():
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('organization_id', sa.Integer, sa.ForeignKey('Organization.id')),
         sa.Column('name', sa.String(length=255)),
-        sa.Column('value', sa.String(length=255)), # TODO Make sure the length
+        sa.Column('value', sa.String(length=255)),
         sa.Column('created_at', sa.DateTime(),  server_default=sa.text('now()')),
-        sa.Column('updated_at', sa.DateTime(),  server_default=sa.text('now()'), onupdate=datetime.now),
+        sa.Column('updated_at', sa.DateTime(),  server_default=sa.text('now()'), server_onupdate=sa.text('now()')),
         sa.UniqueConstraint('organization_id', 'name'))
 
 def downgrade():

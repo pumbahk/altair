@@ -9,10 +9,10 @@ now = get_now(request)
 		<th width="20px"></th>
 		<th>ページセット</th>
 		<th>URL</th>
-         <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl")%>
-         % if use_shorturl:
+        <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl")%>
+        % if use_shorturl:
         <th>短縮URL</th>
-         % endif
+        % endif
 		<th>ページ</th>
 		<th>表示状況</th>
 		<th>公開開始</th>
