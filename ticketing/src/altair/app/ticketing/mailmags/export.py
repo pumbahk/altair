@@ -33,7 +33,6 @@ class MailMagCSV(object):
         ]
 
     def __init__(self, organization_id=None, localized_columns={}, excel_csv=False):
-        self.export_type = export_type
         column_renderers = None
         self.organization_id = organization_id
         self.localized_columns = localized_columns

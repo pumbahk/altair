@@ -113,37 +113,34 @@ class CSVRenderer(object):
         self.column_sets = {}
         self.context = context
 
-    def render_row(self, record):
-        rendered_dict = {}
-        for column_renderer in self.column_renderers:
+    def to_intermediate_repr(self, record):
+        irow = [None] * len(self.column_renderers)
+        for i, column_renderer in enumerate(self.column_renderers):
             rendered = column_renderer(record, self.context)
-            rendered_dict[column_renderer] = dict(rendered)
+            irow[i] = dict(rendered)
             column_set = self.column_sets.get(column_renderer)
             if column_set is None:
                 column_set = self.column_sets[column_renderer] = OrderedDict()
-            for column, _ in rendered:
+            for column, v in rendered:
                 column_set[column] = True
-
-        return rendered_dict
+        return irow
 
     def render_header(self, localized_columns={}):
         return [
             column[0] + localized_columns.get(column[1], column[1]) + column[2] \
-            for renderer in self.column_renderers \
+            for renderer in self.column_renderers
             for column in self.column_sets.get(renderer, {}).keys()
             ]
 
-    def render(self, records):
-        for record in records:
-            row = self.render_row(record)
-            yield [
-                row[renderer].get(column, u'')
-                for renderer in self.column_renderers \
-                for column in self.column_sets[renderer].keys()
-                ]
+    def render_intermediate_repr(self, irow):
+        return [
+            irow[i].get(column, u'')
+            for i, column_renderer in enumerate(self.column_renderers)
+            for column in self.column_sets[column_renderer].keys()
+            ]
 
     def __call__(self, records, localized_columns={}):
-        rows = list(self.render(records))
+        irows = [self.to_intermediate_repr(record) for record in records]
         yield self.render_header(localized_columns)
-        for row in rows:
-            yield row
+        for irow in irows:
+            yield self.render_intermediate_repr(irow)
