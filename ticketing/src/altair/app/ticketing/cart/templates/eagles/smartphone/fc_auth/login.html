@@ -43,7 +43,7 @@
     </tr>
     <tr>
       <td>
-        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/eagles/pc/images/new_years_card.png')}" alt="楽天イーグルス年賀状" />
+        <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/new_years_card.png')}" alt="楽天イーグルス年賀状" width="150px" />
       </td>
     </tr>
     <tr>
@@ -87,7 +87,9 @@
         今年の超先行では一般販売は行いません。
         <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
           <div class="buttonbox" style="white-space:normal">
-            <input type="submit" class="btn btn-primary btn-large" style="line-height: 100%" value="チケット購入" disabled />
+            <!--
+            <input type="submit" class="btn btn-primary btn-large" style="line-height: 100%" value="チケット購入" />
+            -->
           </div>
         </form>
       </td>
