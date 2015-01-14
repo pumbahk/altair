@@ -3,6 +3,7 @@
 import os
 import logging
 import tempfile
+import pickle
 from io import BytesIO
 from collections import OrderedDict
 
@@ -236,21 +237,22 @@ class OrderAttributeRenderer(object):
 
 
 class CSVRendererWrapper(object):
-    def __init__(self, renderer, temporary_file_factory, writer_factory, records, localized_columns={}, block_size=131072):
+    def __init__(self, renderer, temporary_file_factory, writer_factory, marshaller_factory, records, localized_columns={}, block_size=131072):
         self.renderer = renderer
         self.temporary_file_factory = temporary_file_factory
         self.writer_factory = writer_factory
+        self.marshaller_factory = marshaller_factory
         self.records = records
         self.localized_columns = localized_columns
-        self.block_size = block_size
         self.tf = None
+        self.block_size = block_size
 
     def _write_rows_to_temp_file(self):
         if self.tf is None: 
             tf = self.temporary_file_factory()
-            tfw = self.writer_factory(tf)
-            for row in self.renderer.render(self.records):
-                tfw(row)
+            tfw = self.marshaller_factory.make_marshal(tf)
+            for record in self.records:
+                tfw(self.renderer.to_intermediate_repr(record))
             tf.seek(0, os.SEEK_SET)
             self.tf = tf
 
@@ -261,11 +263,20 @@ class CSVRendererWrapper(object):
         fw(self.renderer.render_header(self.localized_columns))
         yield bio.getvalue()
         try:
-            while True:
-                buf = self.tf.read(self.block_size)
-                if buf == '':
-                    break
-                yield buf
+            tfr = self.marshaller_factory.make_unmarshal(self.tf)
+            bio.seek(0)
+            bio.truncate(0)
+            for irow in tfr():
+                fw(self.renderer.render_intermediate_repr(irow))
+                if bio.tell() >= self.block_size:
+                    retval = bio.getvalue()
+                    bio.seek(0)
+                    bio.truncate(0)
+                    yield retval
+            if bio.tell() > 0:
+                yield bio.getvalue()
+        except:
+            logger.exception(u'error occured during sending CSV data')
         finally:
             self.close()
 
@@ -274,7 +285,24 @@ class CSVRendererWrapper(object):
             self.tf.close()
             self.tf = None
 
-        
+
+class PickleMarshallerFactory(object):
+    def __init__(self):
+        pass
+
+    def make_marshal(self, f):
+        return lambda d: pickle.dump(d, f)
+
+    def make_unmarshal(self, f):
+        def _():
+            try:
+                while True:
+                    yield pickle.load(f)
+            except pickle.EOFError:
+                pass
+        return _
+
+
 class OrderCSV(object):
     EXPORT_TYPE_ORDER = 1
     EXPORT_TYPE_SEAT = 2
@@ -459,6 +487,7 @@ class OrderCSV(object):
         self.localized_columns = localized_columns
         self.session = session
         self.organization = session.query(Organization).filter_by(id=self.organization_id).one()
+        self.marshaller_factory = PickleMarshallerFactory()
 
     @property
     def mailsubscription_cache(self):
@@ -513,6 +542,7 @@ class OrderCSV(object):
             renderer=CSVRenderer(self.column_renderers, self),
             temporary_file_factory=lambda: tempfile.SpooledTemporaryFile(max_size=16777216),
             writer_factory=writer_factory,
+            marshaller_factory=self.marshaller_factory,
             records=(
                 record
                 for order in orders
