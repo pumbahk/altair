@@ -579,6 +579,10 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[desc['key']])
 
         record['zip'] = record['zip'].replace('-', '')
+        try:
+            record['sex'] = int(record['sex'])
+        except (TypeError, ValueError):
+            record['sex'] = None
 
         shipping_address    = ShippingAddress(
             user_id         = user.id if user else None,
