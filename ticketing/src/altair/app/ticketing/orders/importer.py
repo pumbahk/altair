@@ -20,6 +20,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.timeparse import parse_date_or_time
 from altair.viewhelpers.datetime_ import create_date_time_formatter
+from altair.app.ticketing.utils import todatetime, todate
 from altair.app.ticketing.payments.api import lookup_plugin
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart import api as cart_api
@@ -193,6 +194,14 @@ class DummyCart(CartMixin):
     def performance(self):
         return self.proto_order.performance
 
+
+def date_time_compare(a, b):
+    if isinstance(a, datetime):
+        return a == todatetime(b)
+    elif isinstance(a, date):
+        return a == todate(b)
+    else:
+        return a == b
 
 class ImportCSVParserContext(object):
     shipping_address_record_key_map = {
@@ -633,7 +642,7 @@ class ImportCSVParserContext(object):
             raise self.exc_factory(u'複数の候補があります  公演名: %s, 公演コード: %s, 公演日: %s' % (performance_name, performance_code, performance_date))
         if performance_name is not None and retval.name != performance_name:
             raise self.exc_factory(u'公演名が違います  公演名: %s != %s, 公演コード: %s, 公演日: %s' % (performance_name, retval.name, performance_code, performance_date))
-        if _performance_date and retval.start_on != _performance_date:
+        if _performance_date and not date_time_compare(_performance_date, retval.start_on):
             raise self.exc_factory(u'公演日が違います  公演名: %s, 公演コード: %s, 公演日: %s != %s' % (performance_name, performance_code, performance_date, self.date_time_formatter.format_datetime(retval.start_on) if retval.start_on else u'-'))
         self.performances[key] = retval
         return retval
