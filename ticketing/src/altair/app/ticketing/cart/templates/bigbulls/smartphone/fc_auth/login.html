@@ -42,13 +42,11 @@
     <tr>
       <td>
         <form action="${request.url}" method="post">
+          <input type="hidden" name="password" value="bigbulls" />
           <input type="hidden" name="membership" value="bigbulls" />
           <div>
-            会員番号<br/>
+            会員番号(半角英数)<br/>
             <input type="text" name="username" size="22" value="${username}">
-            <br/>
-            パスワード<br/>
-            <input type="password" size="22" name="password">
             %if message:
               <br/><font color="red">会員番号が一致しません</font>
             %endif
