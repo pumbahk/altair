@@ -67,6 +67,8 @@ ${shipping.address_2}
 </div>
 <%mobile:form_header>電話番号</%mobile:form_header>
 ${shipping.tel_1}<br />
+<%mobile:form_header>電話番号2</%mobile:form_header>
+${shipping.tel_2}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
 % if user_point_accounts:
@@ -109,4 +111,3 @@ ${h.render_delivery_finished_viewlet(request, order)}
 登録情報変更をご希望の場合は、<a href="mailto:ktohoku@tstar.jp">ktohoku@tstar.jp</a>へご連絡下さい。
 </font>
 </div>
-

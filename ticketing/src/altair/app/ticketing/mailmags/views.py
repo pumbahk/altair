@@ -131,11 +131,8 @@ class MailMagazinesView(BaseView):
         ]
         response = Response(headers=headers)
 
-        export_type = MailMagCSV.EXPORT_TYPE_MAILMAG
         excel_csv = True
         kwargs = {}
-        if export_type:
-            kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
         mailmags_csv = MailMagCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), **kwargs)

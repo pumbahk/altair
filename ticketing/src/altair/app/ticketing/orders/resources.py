@@ -48,12 +48,13 @@ from .enqueue import (
     get_enqueue_each_print_action, 
     JoinedObjectsForProductItemDependentsProvider
 )
-from altair.metadata.api import with_provided_values_iterator
 from .helpers import decode_candidate_id
+from .api import OrderAttributeIO
 
 class OrderDependentsProvider(object):
-    def __init__(self, context):
-        self.order = context.order
+    def __init__(self, request, order):
+        self.request = request
+        self.order = order
         self._dependents_provider = None
 
     @property
@@ -64,10 +65,8 @@ class OrderDependentsProvider(object):
             .filter(Order.order_no==order.order_no)\
             .order_by(Order.branch_no.desc()).all()
 
-    def get_order_attributes(self, metadata_provider_registry):
-        itr = self.order.attributes.items()
-        return with_provided_values_iterator(metadata_provider_registry, itr)
-
+    def get_order_attributes(self):
+        return [(display_name, k, v, False) for k, display_name, v in OrderAttributeIO().marshal(self.request, self.order)]
 
     @property
     def mail_magazines(self):
@@ -236,7 +235,7 @@ class OrderPrintEachResource(OrderResource):
         return OrderPrintByTokenActionProvider(order, ticket_format_id)
 
     def get_dependents_models(self):
-        return OrderDependentsProvider(self)
+        return OrderDependentsProvider(self.request, self.order)
 
     def refresh_tokens(self, order, token_id_list, now):
         assert unicode(order.organization_id) == unicode(self.organization.id)
@@ -252,7 +251,7 @@ class OrderPrintEachResource(OrderResource):
 
 class OrdersShowResource(OrderResource):
     def get_dependents_models(self):
-        return OrderDependentsProvider(self)
+        return OrderDependentsProvider(self.request, self.order)
 
     def get_dependents_forms(self):
         return OrderShowFormProvider(self)

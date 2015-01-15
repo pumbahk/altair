@@ -36,7 +36,17 @@
     % endif
   </tr>
   <tr>
-    <th>URL</th><td colspan="3">${pageset.url}</td>
+    <th>URL</th><td>${pageset.url}</td>
+    % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl"):
+    <th>短縮URL</th>
+    <td>
+    % if pageset.short_url_keyword:
+        <a href="${h.page.get_short_url_link(pageset.short_url_keyword)}">${h.page.get_short_url(pageset.short_url_keyword)}</a>
+    % else:
+        未設定
+    % endif
+    </td>
+    % endif
   </tr>
   <tr>
     <th>ページタイプ</th><td>イベント詳細ページ</td>
@@ -89,6 +99,9 @@
 	  <a class="btn btn-success action-submit" href-fmt="${request.route_path("page_duplicate", id="__id__", endpoint=request.url)}">
 		  <i class="icon-plus"> </i> 選択したページのコピーを追加
     </a>
+	  <a class="btn btn-success delete-submit" href-fmt="${request.route_path("page_delete", id="__id__", endpoint=request.url)}">
+		  <i class="icon-minus"> </i> 選択したページを削除
+    </a>
   </div>
 </div>
 <hr/>
@@ -133,6 +146,17 @@
       // initialize
       $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
       if(window.confirm("「${pageset.name}」に新しいページを追加します。よろしいですか？")){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+  });
+  $("a.delete-submit").click(function(e){
+      e.preventDefault();
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      if(window.confirm("「${pageset.name}」から選択されたページを削除します。よろしいですか？")){
         $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
       }
   });

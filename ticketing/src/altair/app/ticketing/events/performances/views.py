@@ -76,6 +76,7 @@ class PerformanceShowView(BaseView):
         if form_search.validate():
             try:
                 query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(query)
+                query._request = self.request
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
         else:

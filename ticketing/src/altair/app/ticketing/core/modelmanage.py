@@ -6,31 +6,6 @@ from altair.app.ticketing.payments.plugins import(
 )
 
 """
-Order.attributesなどの更新
-"""
-class AttributesManager(object):
-    def __init__(self, association_name, key_name, value_name):
-        self.association_name = association_name
-        self.key_name = key_name
-        self.value_name = value_name
-
-    def update(self, parent, params, blank_value="", encoding="utf-8"):
-        association = getattr(parent, self.association_name)
-        for k, v in params.items():
-            if not isinstance(k, unicode) and encoding:
-                if hasattr(k, "decode"):
-                    k = k.decode(encoding)
-            if v == blank_value:
-                if k in association:
-                    del association[k]
-            else:
-                association[k] = v
-        return parent
-
-OrderAttributeManager = AttributesManager("attributes", "name", "value")        
-OrderedProductItemAttributeManager = AttributesManager("attributes", "name", "value")        
-
-"""
 PDMPから利用する券面(Ticket)を取得
 """
 

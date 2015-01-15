@@ -8,8 +8,7 @@ import transaction
 import json
 import six
 from decimal import Decimal
-from dateutil.parser import parse as parsedate
-from datetime import datetime
+from datetime import datetime, date, time
 from standardenum import StandardEnum
 from collections import OrderedDict
 from StringIO import StringIO
@@ -19,6 +18,9 @@ from zope.interface import implementer
 from sqlalchemy.sql import expression as sql_expr
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from altair.timeparse import parse_date_or_time
+from altair.viewhelpers.datetime_ import create_date_time_formatter
+from altair.app.ticketing.utils import todatetime, todate
 from altair.app.ticketing.payments.api import lookup_plugin
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart import api as cart_api
@@ -64,7 +66,7 @@ from altair.app.ticketing.core.interfaces import (
     IOrderedProductItemLike,
     IShippingAddress,
     )
-from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member
+from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import sensible_alnum_encode
 from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum, ProtoOrder
 from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
@@ -193,6 +195,14 @@ class DummyCart(CartMixin):
         return self.proto_order.performance
 
 
+def date_time_compare(a, b):
+    if isinstance(a, datetime):
+        return a == todatetime(b)
+    elif isinstance(a, date):
+        return a == todate(b)
+    else:
+        return a == b
+
 class ImportCSVParserContext(object):
     shipping_address_record_key_map = {
         'first_name': {
@@ -288,6 +298,7 @@ class ImportCSVParserContext(object):
         self.venues = {}
         self.payment_methods = {}
         self.delivery_methods = {}
+        self.date_time_formatter = create_date_time_formatter(request)
 
     def parse_int(self, string, message):
         if string is not None:
@@ -313,12 +324,13 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'%s: %s' % (message, string))
         return None
 
-    def parse_date(self, string, message):
+    def parse_date(self, string, message, as_datetime=True):
         if string is not None:
             string = string.strip()
         if string:
             try:
-                return parsedate(string)
+                lazy_dt = parse_date_or_time(string)
+                return lazy_dt.as_date_datetime_or_time(to_datetime=as_datetime)
             except Exception as e:
                 logger.debug(u'invalid date/time string: %r' % e)
                 raise self.exc_factory(u'%s: %s' % (message, string))
@@ -439,6 +451,34 @@ class ImportCSVParserContext(object):
                 if shipping_address is None:
                     logger.info(u'[%s] shipping_address is not specified; using that of the original order' % original_order.order_no)
                     shipping_address = original_order.shipping_address
+                if membership is None:
+                    logger.info(u'[%s] user information is not specified; using that of the original order' % original_order.order_no)
+                    membership = original_order.membership
+                    user = original_order.user
+                    if user is not None and sales_segment is not None:
+                        membergroup = None
+                        try:
+                            membergroup = self.session.query(MemberGroup) \
+                                .join(Member) \
+                                .join(MemberGroup_SalesSegment) \
+                                .filter(MemberGroup.membership_id == membership.id) \
+                                .filter(Member.user_id == user.id) \
+                                .filter(MemberGroup_SalesSegment.c.sales_segment_id == sales_segment.id) \
+                                .one()
+                        except NoResultFound:
+                            logger.info(
+                                u'[%s] no corresponding Member found for Membership(id=%ld), User(id=%ld), SalesSegment(id=%ld)' % (
+                                    original_order.order_no,
+                                    membership.id, user.id, sales_segment.id
+                                    )
+                                )
+                        except MultipleResultsFound:
+                            logger.info(
+                                u'[%s] multiple Member found for Membership(id=%ld), User(id=%ld), SalesSegment(id=%ld)' % (
+                                    original_order.order_no,
+                                    membership.id, user.id, sales_segment.id
+                                    )
+                                )
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -548,6 +588,10 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[desc['key']])
 
         record['zip'] = record['zip'].replace('-', '')
+        try:
+            record['sex'] = int(record['sex'])
+        except (TypeError, ValueError):
+            record['sex'] = None
 
         shipping_address    = ShippingAddress(
             user_id         = user.id if user else None,
@@ -599,8 +643,9 @@ class ImportCSVParserContext(object):
             performance_code = performance_code.strip()
         if not performance_name and not performance_code:
             return self.performance
-
-        key = u'%s:%s' % (performance_name, performance_code)
+        performance_date = row.get(u'performance.start_on')
+        _performance_date = self.parse_date(performance_date, u'公演日が不正です', as_datetime=False)
+        key = u'%s:%s:%s' % (performance_name, performance_code, repr(_performance_date))
         retval = self.performances.get(key)
         if retval is not None:
             return retval
@@ -609,16 +654,29 @@ class ImportCSVParserContext(object):
             .filter(Event.organization == self.organization)
         if event is not None:
             q = q.filter(Performance.event == event)
-        if performance_name:
-            q = q.filter(Performance.name == performance_name)
         if performance_code:
             q = q.filter(Performance.code == performance_code)
+        else:
+            if performance_name:
+                q = q.filter(Performance.name == performance_name)
+            if _performance_date:
+                if isinstance(_performance_date, datetime):
+                    q = q.filter(Performance.start_on == _performance_date)
+                elif isinstance(_performance_date, date):
+                    q = q.filter(sql_expr.func.DATE(Performance.start_on) == _performance_date)
+                elif isinstance(_performance_date, time):
+                    q = q.filter(sql_expr.func.TIME(Performance.start_on) == _performance_date)
         try:
-            self.performances[key] = retval = q.one()
+            retval = q.one()
         except NoResultFound:
-            raise self.exc_factory(u'公演がありません  公演名: %s, 公演コード: %s' % (performance_name, performance_code))
+            raise self.exc_factory(u'公演がありません  公演名: %s, 公演コード: %s, 公演日: %s' % (performance_name, performance_code, performance_date))
         except MultipleResultsFound:
-            raise self.exc_factory(u'複数の候補があります  公演名: %s, 公演コード: %s' % (performance_name, performance_code))
+            raise self.exc_factory(u'複数の候補があります  公演名: %s, 公演コード: %s, 公演日: %s' % (performance_name, performance_code, performance_date))
+        if performance_name is not None and retval.name != performance_name:
+            raise self.exc_factory(u'公演名が違います  公演名: %s != %s, 公演コード: %s, 公演日: %s' % (performance_name, retval.name, performance_code, performance_date))
+        if _performance_date and not date_time_compare(_performance_date, retval.start_on):
+            raise self.exc_factory(u'公演日が違います  公演名: %s, 公演コード: %s, 公演日: %s != %s' % (performance_name, performance_code, performance_date, self.date_time_formatter.format_datetime(retval.start_on) if retval.start_on else u'-'))
+        self.performances[key] = retval
         return retval
 
     def get_sales_segment(self, row, performance):
@@ -711,7 +769,7 @@ class ImportCSVParserContext(object):
         auth_identifier = row.get(u'user_credential.auth_identifier')
         membership_name = row.get(u'membership.name')
         membergroup_name = row.get(u'membergroup.name', '')
-        if not auth_identifier or not membership_name:
+        if not membership_name:
             return None, None, None
 
         membership = None
@@ -739,18 +797,19 @@ class ImportCSVParserContext(object):
             except NoResultFound:
                 raise self.exc_factory(u'会員グループが見つかりません (membergroup_name=%s)' % membergroup_name)
 
-        try:
-            q = self.session.query(UserCredential) \
-                .filter(
-                    UserCredential.auth_identifier == auth_identifier,
-                    Membership.id == membership.id,
-                    )
-            if membergroup is not None: 
-                q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
-            credential = q.one()
-        except NoResultFound:
-            raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
-        return membership, membergroup, credential.user
+        if auth_identifier: # 空欄は未指定であるので、is not None ではない
+            try:
+                q = self.session.query(UserCredential) \
+                    .filter(
+                        UserCredential.auth_identifier == auth_identifier,
+                        Membership.id == membership.id,
+                        )
+                if membergroup is not None: 
+                    q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
+                credential = q.one()
+            except NoResultFound:
+                raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
+        return membership, membergroup, (credential.user if credential else None)
 
     def get_product(self, row, sales_segment, performance):
         product_name = row.get(u'ordered_product.product.name')

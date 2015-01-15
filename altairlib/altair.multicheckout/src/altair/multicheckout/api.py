@@ -18,6 +18,7 @@ from .interfaces import (
     IMulticheckout3DAPI,
     IMulticheckoutOrderNoDecorator,
 )
+from .exceptions import MultiCheckoutGenericError
 from .util import ahead_coms, maybe_unicode
 
 logger = logging.getLogger(__name__)
@@ -401,16 +402,18 @@ class Multicheckout3DAPI(object):
             .filter(m.MultiCheckoutOrderStatus.OrderNo == order_no) \
             .first()
 
-    def get_pares(self):
+    def get_callback_params(self, params=None):
         """ get ``PARES`` value from request
         """
-        return self.request.params['PaRes']
-
-
-    def get_md(self):
-        """ get ``Md`` value from request
-        """
-        return self.request.params['MD']
+        if params is None:
+            params = self.request.params
+        try:
+            return dict(
+                pares=params['PaRes'],
+                md=params['MD']
+                )
+        except KeyError as e:
+            raise MultiCheckoutGenericError(u'required parameter %s does not exist: params=%r' % (e.args[0], params))
 
     def get_transaction_info(self, order_no):
         order_no = maybe_unicode(order_no)

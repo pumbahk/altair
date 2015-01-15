@@ -2,14 +2,20 @@
 import logging
 from datetime import datetime, date
 from pyramid.view import view_config
+from pyramid.decorator import reify
 from altair.multicheckout import api
 from altair.multicheckout import helpers as h
 
 logger = logging.getLogger(__name__)
 
 class IndexView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
+
+    @reify
+    def api(self):
+        return api.get_multicheckout_3d_api(self.request)
 
     def gen_order_no(self):
         now = datetime.now()
@@ -37,8 +43,7 @@ class IndexView(object):
                 mail_address=self.request.params['mail_address'],
             )
 
-            result = api.secure3d_enrol(
-                request=self.request,
+            result = self.api.secure3d_enrol(
                 order_no=self.request.params['order_no'],
                 card_number=self.request.params['card_number'],
                 exp_year=self.request.params['exp_year'],
@@ -51,8 +56,7 @@ class IndexView(object):
                 return dict(form=h.secure3d_acs_form(self.request, self.request.route_url('secure3d_result'), result))
 
         elif request_api == 'checkout_auth_secure_code':
-            result = api.checkout_auth_secure_code(
-                request=self.request,
+            result = self.api.checkout_auth_secure_code(
                 order_no=self.request.params['order_no'],
                 item_name=u'テストアイテム',
                 amount=self.request.params['total_amount'],
@@ -69,14 +73,13 @@ class IndexView(object):
             )
 
         elif request_api == 'checkout_auth_cancel':
-            result = api.checkout_auth_cancel(
+            result = self.api.checkout_auth_cancel(
                 self.request,
                 self.request.params['order_no']
             )
 
         elif request_api == 'checkout_sales_secure3d':
-            result = api.checkout_sales_secure3d(
-                request=self.request,
+            result = self.api.checkout_sales_secure3d(
                 order_no=self.request.params['order_no'],
                 item_name='',
                 amount=0,
@@ -98,8 +101,7 @@ class IndexView(object):
             )
 
         elif request_api == 'checkout_sales_secure_code':
-            result = api.checkout_sales_secure_code(
-                request=self.request,
+            result = self.api.checkout_sales_secure_code(
                 order_no=self.request.params['order_no'],
                 item_name='',
                 amount=0,
@@ -116,13 +118,13 @@ class IndexView(object):
             )
 
         elif request_api == 'checkout_sales_cancel':
-            result = api.checkout_sales_cancel(
+            result = self.api.checkout_sales_cancel(
                 self.request,
                 self.request.params['order_no']
             )
 
         elif request_api == 'checkout_sales_part_cancel':
-            result = api.checkout_sales_part_cancel(
+            result = self.api.checkout_sales_part_cancel(
                 self.request,
                 self.request.params['order_no'],
                 int(self.request.params['total_amount']),
@@ -130,7 +132,7 @@ class IndexView(object):
             )
 
         elif request_api == 'checkout_inquiry':
-            result = api.checkout_inquiry(
+            result = self.api.checkout_inquiry(
                 self.request,
                 self.request.params['order_no']
             )
@@ -146,8 +148,9 @@ class Secure3DResultView(object):
     @view_config(route_name="secure3d_result", renderer="string", request_method="POST")
     def results(self):
         order = self.request.session['order']
-        pares = api.get_pares(self.request)
-        md = api.get_md(self.request)
+        params = self.api.get_callback_params(self.request.params)
+        pares = params['pares']
+        md = params['md']
 
         auth_result = api.secure3d_auth(self.request, order['order_no'], pares, md)
         checkout_auth_result = api.checkout_auth_secure3d(
