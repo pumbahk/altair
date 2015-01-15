@@ -19,7 +19,6 @@ def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
-
 class WithOrganizationMixin(object):
     organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
 
@@ -366,3 +365,23 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
         if not include_self:
             r.pop(0)
         return r
+
+class FeatureSetting(Base):
+    __tablename__ = "featuresetting"
+    __table_args__ = (sa.UniqueConstraint("organization_id", "name"), )
+
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey('Organization.id'))
+    name = sa.Column(sa.String(length=255))
+    value = sa.Column(sa.String(length=255))
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    @classmethod
+    def get_value_by_name(cls, name, organization_id):
+        feature_setting = FeatureSetting.query.filter(cls.name == name, cls.organization_id==organization_id).first()
+        if feature_setting is not None:
+            return feature_setting.value
+        else:
+            return None

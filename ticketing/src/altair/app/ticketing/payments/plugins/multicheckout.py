@@ -605,14 +605,22 @@ class MultiCheckoutView(object):
 
         order = self.request.session['order']
         # 変換
-        pares = multicheckout_api.get_pares()
-        md = multicheckout_api.get_md()
-        order['pares'] = pares
-        order['md'] = md
+        try:
+            callback_params = multicheckout_api.get_callback_params()
+        except Exception as e:
+            raise MultiCheckoutSettlementFailure(
+                message='failed to retrieve callback params: %s' % e.message,
+                ignorable=True,
+                order_no=cart.order_no,
+                back_url=back_url(self.request),
+                error_code=None,
+                return_code=None
+                )
+        order.update(callback_params)
         order['order_no'] = cart.order_no
 
         try:
-            auth_result = multicheckout_api.secure3d_auth(cart.order_no, pares, md)
+            auth_result = multicheckout_api.secure3d_auth(cart.order_no, callback_params['pares'], callback_params['md'])
             item_name = api.get_item_name(self.request, cart.name)
 
             # TODO: エラーメッセージ

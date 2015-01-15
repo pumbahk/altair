@@ -5,7 +5,7 @@ from xml.etree import ElementTree as etree
 from pyramid import testing
 
 from ..testing import DummyHTTPLib
-from .. import api, models
+from .. import api, models, exceptions
 
 def compare_xml(str1, str2):
     import lxml.etree as ET
@@ -127,17 +127,30 @@ class Multicheckout3DAPITests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_get_pares(self):
+    def test_get_callback_params_success(self):
         request = testing.DummyRequest()
-        request.params = dict(PaRes='test_paras')
         multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession(), order_no_decorator=self.order_no_decorator)
-        self.assertEqual(multicheckout_3d_api.get_pares(), 'test_paras')
+        params = dict(
+            PaRes='test_paras',
+            MD='test_md'
+            )
+        result = multicheckout_3d_api.get_callback_params(params)
+        self.assertEqual(result['pares'], 'test_paras')
+        self.assertEqual(result['md'], 'test_md')
 
-    def test_get_md(self):
+    def test_get_callback_params_fail(self):
         request = testing.DummyRequest()
-        request.params = dict(MD='test_md')
         multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession(), order_no_decorator=self.order_no_decorator)
-        self.assertEqual(multicheckout_3d_api.get_md(), 'test_md')
+        params = dict(
+            MD='test_md'
+            )
+        with self.assertRaises(exceptions.MultiCheckoutError) as e:
+            multicheckout_3d_api.get_callback_params(params)
+        params = dict(
+            PaRes='test_pares'
+            )
+        with self.assertRaises(exceptions.MultiCheckoutError) as e:
+            multicheckout_3d_api.get_callback_params(params)
 
     def test_is_enable_secure_3d(self):
         request = testing.DummyRequest()

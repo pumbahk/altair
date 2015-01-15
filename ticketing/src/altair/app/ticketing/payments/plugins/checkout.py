@@ -307,14 +307,16 @@ class CheckoutCompleteView(object):
     def _validate(self, cart):
         now = datetime.now() # XXX
         if cart is None:
+            logger.debug('cart is None')
             return False
         if not cart.is_valid():
-            return False
-        if not cart.sales_segment.in_term(datetime.now()):
+            logger.debug('cart is not valid')
             return False
         if cart.is_expired(max(int(self.request.registry.settings['altair_cart.expire_time']) - 1, 0), now):
+            logger.debug('cart is expired')
             return False
         if cart.finished_at is not None:
+            logger.debug('cart is already disposed')
             return False
         return True
 

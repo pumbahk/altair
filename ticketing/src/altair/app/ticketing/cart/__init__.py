@@ -103,7 +103,7 @@ def setup_mq(config):
 def setup_payment_renderers(config):
     from zope.interface import implementer
     from altair.app.ticketing.payments.interfaces import IPaymentViewRendererLookup
-    from . import rendering
+    from . import rendering, api
     from .interfaces import ICartResource
 
     @implementer(IPaymentViewRendererLookup)
@@ -116,9 +116,9 @@ def setup_payment_renderers(config):
                '.' in path_or_renderer_name and \
                ':' not in path_or_renderer_name and \
                ICartResource.providedBy(request.context):
-                if request.context.booster_cart:
+                if api.is_booster_cart(request.context.cart_setting):
                     path_or_renderer_name = 'booster/' + path_or_renderer_name
-                elif request.context.fc_cart:
+                elif api.is_fc_cart(request.context.cart_setting):
                     path_or_renderer_name = 'fc/' + path_or_renderer_name
             return self.selectable_renderer_helper_factory(
                 path_or_renderer_name,

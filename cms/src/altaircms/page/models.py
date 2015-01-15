@@ -66,6 +66,7 @@ class PageSet(Base,
     name = Column(Unicode(255))
     version_counter = Column(Integer, default=0)
     url = Column(String(255))
+    short_url_keyword = Column(String(255), default=None)
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pagesets')
 
@@ -118,7 +119,7 @@ class PageSet(Base,
     def get_or_create(cls, page):
         if page.pageset is None:
             url = page.url
-            pageset = cls(url=url, name=page.name, event=page.event, version_counter=0)
+            pageset = cls(url=url, short_url_keyword=page.short_url_keyword, name=page.name, event=page.event, version_counter=0)
             page.pageset = pageset
         else:
             pageset = page.pageset
@@ -311,6 +312,7 @@ class Page(BaseOriginalMixin,
     keywords = Column(Unicode(500), default=u"")
     description = Column(Unicode(255), default=u"")
     url = Column(String(255), index=True) ##todo: delete
+    short_url_keyword = Column(String(255), default=None)
     version = Column(Integer, default=1)
 
     layout_id = Column(Integer, ForeignKey("layout.id"))

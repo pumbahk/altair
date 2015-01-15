@@ -196,7 +196,7 @@ class CoreTestMixin(object):
             zip="251-0036",
             prefecture=u"東京都",
             city=u"品川区",
-            address_1=u"東五反田5-21-15'",
+            address_1=u"東五反田5-21-15",
             address_2=u"メタリオンOSビル",
             tel_1=u"03-9999-9999",
             tel_2=u"090-0000-0000",

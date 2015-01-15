@@ -816,18 +816,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
 
     @property
     def booster_or_fc_cart(self):
-        from .api import is_booster_or_fc_cart
-        return is_booster_or_fc_cart(self.type)
+        from .schemas import extra_form_type_map
+        return self.type in extra_form_type_map
 
     @property
     def booster_cart(self):
-        from .api import is_booster_cart
-        return is_booster_cart(self.type)
+        return self.booster_or_fc_cart and not self.fc_cart
 
     @property
     def fc_cart(self):
-        from .api import is_fc_cart
-        return is_fc_cart(self.type)
+        return self.type == 'fc'
 
     @property
     def embedded_html_complete_page(self):

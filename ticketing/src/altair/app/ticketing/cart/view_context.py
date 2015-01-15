@@ -158,9 +158,9 @@ def get_cart_view_context_factory(default_package):
 def determine_layout(event):
     request = event.request
     if ICartResource.providedBy(request.context):
-        if request.context.booster_cart:
+        if api.is_booster_cart(request.context.cart_setting):
             request.layout_manager.use_layout('booster')
-        elif request.context.fc_cart:
+        elif api.is_fc_cart(request.context.cart_setting):
             request.layout_manager.use_layout('fc')
 
 def includeme(config):

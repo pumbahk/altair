@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" /> 
+<%inherit file="${context['main_template'].uri}" />
 <p class="pageTitle">申込を完了しました</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -20,7 +20,7 @@
       <tr>
         <th scope="row">会場</th>
         <td>${order.performance.venue.name}</td>
-      </tr> 
+      </tr>
       <tr>
         <td colspan="2" scope="row">
           <table border="0">
@@ -33,7 +33,7 @@
             <tr>
               <th>決済手数料</th>
               <td>${h.format_currency(order.transaction_fee)}</td>
-            </tr> 
+            </tr>
             <tr>
               <th>発券/配達手数料</th>
               <td>${h.format_currency(order.delivery_fee)}</td>
@@ -51,13 +51,13 @@
             <tr>
               <th><strong>合計金額</strong></th>
               <td><strong>${h.format_currency(order.total_amount)}</strong></td>
-            </tr>         
+            </tr>
           </table>
         </td>
-      </tr>                  
+      </tr>
     </table>
   </div>
-</div>          
+</div>
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
@@ -82,12 +82,8 @@
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>
-            <th><label>電話番号（自宅）</label></th>
+            <th><label>電話番号</label></th>
             <td>${shipping_address.tel_1}</td>
-          </tr>
-          <tr>
-            <th><label>電話番号（携帯電話）</label></th>
-            <td>${shipping_address.tel_2}</td>
           </tr>
           <tr>
             <th><label>住所</label></th>

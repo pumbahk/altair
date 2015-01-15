@@ -6,14 +6,18 @@ now = get_now(request)
   <table class="table table-describe">
     <thead>
       <tr>
-		<th width="20px"></th>
-		<th>ページセット</th>
-		<th>URL</th>
-		<th>ページ</th>
-		<th>表示状況</th>
-		<th>公開開始</th>
-		<th>公開終了</th>
-		<th>作成日時</th>
+        <th width="20px"></th>
+        <th>ページセット</th>
+        <th>URL</th>
+        <% use_shorturl = request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl")%>
+        % if use_shorturl:
+        <th>短縮URL</th>
+        % endif
+        <th>ページ</th>
+        <th>表示状況</th>
+        <th>公開開始</th>
+        <th>公開終了</th>
+        <th>作成日時</th>
       </tr>
     </thead>
     <tbody>
@@ -34,6 +38,15 @@ now = get_now(request)
          </a>
         </td>
       <td rowspan="${pagesize}">${pageset.url}</td>
+      % if use_shorturl:
+      <td rowspan="${pagesize}">
+          % if pageset.short_url_keyword != None:
+            <a href="${h.page.get_short_url_link(pageset.short_url_keyword)}">${h.page.get_short_url(pageset.short_url_keyword)}</a>
+          % else:
+            未設定
+          % endif
+      </td>
+      % endif
 
         %if len(pages) < 1:
       </tr>
@@ -106,11 +119,6 @@ now = get_now(request)
 	  <li>
 		  <a class="action" href-fmt="${request.route_path("pageset", pageset_id="__id__")}"><i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
-    <li>
-	    <a id="pageset_addpage" class="action" href-fmt="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}"
-         message="選択したページセットに新しいページを追加します。よろしいですか？"
-         ><i class="icon-plus"> </i> 選択したページセットにページ追加</a>
-     </li>
     <li>
 		  <a href="${request.route_path("event_takein_pageset",event_id=current_event.id)}">
 		    <i class="icon-plus">_</i> このイベントに配下のページとして別のページセットを取り込む</a>
