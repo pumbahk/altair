@@ -298,7 +298,7 @@ class PickleMarshallerFactory(object):
             try:
                 while True:
                     yield pickle.load(f)
-            except pickle.EOFError:
+            except EOFError:
                 pass
         return _
 
