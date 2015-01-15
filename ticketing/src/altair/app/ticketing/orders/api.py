@@ -71,6 +71,7 @@ from .models import (
     OrderedProduct,
     OrderedProductItem,
     OrderedProductItemToken,
+    OrderAttribute,
     OrderSummary,
     ProtoOrder,
     ImportTypeEnum,
@@ -723,15 +724,15 @@ def create_inner_order(request, order_like, note, session=None):
             order_like.finish()
 
     order.note = note
-    add_booster_product_item_attributes(order)
+    add_booster_attributes(request, order)
     return order
 
-def add_booster_attributes(order):
+def add_booster_attributes(request, order):
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
     schema = get_extra_form_schema(
         DummyCartContext(request, order),
         request, 
-        order_like.sales_segment
+        order.sales_segment
         )
     for field in schema:
         attribute = OrderAttribute(
