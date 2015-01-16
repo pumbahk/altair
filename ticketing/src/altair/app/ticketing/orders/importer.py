@@ -455,7 +455,7 @@ class ImportCSVParserContext(object):
                     logger.info(u'[%s] user information is not specified; using that of the original order' % original_order.order_no)
                     membership = original_order.membership
                     user = original_order.user
-                    if user is not None and sales_segment is not None:
+                    if user is not None and sales_segment is not None and membership is not None:
                         membergroup = None
                         try:
                             membergroup = self.session.query(MemberGroup) \
