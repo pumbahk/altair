@@ -1,5 +1,12 @@
 <%page args="lot, lot_status" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<h3 style="margin-top: 30px;">${lot.event.title} ${lot.name}　${lot.lotting_announce_datetime}</h3>
+<h3 style="margin-top: 30px;">${lot.event.title} ${lot.name}</h3>
+% if lot.sales_segment:
+販売期間: ${vh.datetime(lot.sales_segment.start_at, with_weekday=True)} 〜
+    % if lot.sales_segment.end_at:
+        ${vh.datetime(lot.sales_segment.end_at, with_weekday=True)}
+    %endif
+% endif
+
 <%include file="altair.app.ticketing:templates/lots/entries_statuses.html"/>
