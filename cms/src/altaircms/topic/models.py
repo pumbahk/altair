@@ -180,6 +180,8 @@ class Topic(WithOrganizationMixin, TopicCore):
     mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topics")
     mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
+    trackingcode = sa.Column(sa.String(255), nullable = True)
+
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
@@ -219,6 +221,8 @@ class Topcontent(WithOrganizationMixin, TopicCore):
 
     link = sa.Column(sa.Unicode(255), doc="external link")
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link")
+
+    trackingcode = sa.Column(sa.String(255), nullable = True)
 
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
@@ -267,6 +271,8 @@ class Promotion(WithOrganizationMixin, TopicCore):
     mobile_link = sa.Column(sa.Unicode(255), nullable=True)
     linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
     linked_page = orm.relationship("PageSet")
+
+    trackingcode = sa.Column(sa.String(255), nullable = True)
 
     def validate(self):
         return self.pageset or self.link

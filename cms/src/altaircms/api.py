@@ -36,3 +36,7 @@ class FeatureSettingManager:
 
 def get_featuresettingmanager(request):
     return FeatureSettingManager(request)
+
+def includeme(config):
+    ## Add access to FeatureSetting in request
+    config.set_request_property("altaircms.api.get_featuresettingmanager", "featuresettingmanager", reify=True)
