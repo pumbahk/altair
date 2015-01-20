@@ -40,6 +40,7 @@ class Reports(BaseView):
     def create_filename(self, report_kind, event):
         organization = event.organization
 
+        event_title = event.title.replace(u'”', '')
         if event.first_start_on == "":
             start_on = ""
         elif event.first_start_on == event.final_start_on:
@@ -48,7 +49,7 @@ class Reports(BaseView):
             start_on = event.first_start_on.strftime('%Y%m%d') + "-" + event.final_start_on.strftime('%Y%m%d')
 
         filename = u"【%(event_name)s(%(start_on)s)】%(organization)s_%(report_kind)s_%(datetime)s.xls" % dict(
-            event_name=event.title,
+            event_name=event_title,
             start_on=start_on,
             report_kind=report_kind,
             organization=organization.name,
