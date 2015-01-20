@@ -351,7 +351,7 @@ class EntryLotView(object):
             accountno=""
             )
         form = cart_schemas.PointForm(formdata=formdata)
-        asid = self.request.context.asid_smartphone
+        lot_asid = self.request.context.lot_asid
 
         accountno = self.request.params.get('account')
         user = cart_api.get_or_create_user(self.context.authenticated_user())
@@ -364,7 +364,7 @@ class EntryLotView(object):
 
         return dict(
             form=form,
-            asid=asid
+            asid=lot_asid
         )
         return dict()
 

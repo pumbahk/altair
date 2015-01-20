@@ -127,28 +127,12 @@ class LotResource(object):
         return self.lot.auth_type
 
     @reify
-    def asid(self):
+    def lot_asid(self):
         organization = cart_api.get_organization(self.request)
-        asid =organization.setting.asid
+        lot_asid =organization.setting.lot_asid
         logger.debug('organization %s' % organization.code)
-        logger.debug('asid %s' % asid)
-        return asid
-
-    @reify
-    def asid_mobile(self):
-        organization = cart_api.get_organization(self.request)
-        asid_mobile =organization.setting.asid_mobile
-        logger.debug('organization %s' % organization.code)
-        logger.debug('asid %s' % asid_mobile)
-        return asid_mobile
-
-    @reify
-    def asid_smartphone(self):
-        organization = cart_api.get_organization(self.request)
-        asid_smartphone =organization.setting.asid_smartphone
-        logger.debug('organization %s' % organization.code)
-        logger.debug('asid %s' % asid_smartphone)
-        return asid_smartphone
+        logger.debug('lot_asid %s' % lot_asid)
+        return lot_asid
 
     def check_entry_limit(self, wishes, user=None, email=None):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)

@@ -3716,6 +3716,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     asid = AnnotatedColumn(Unicode(255), doc=u"asid", _a_label=u"asid")
     asid_mobile = AnnotatedColumn(Unicode(255), doc=u"asid_mobile", _a_label=u"asid_mobile")
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
+    lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

@@ -333,8 +333,14 @@ def is_point_input_required(context, request):
     if not is_point_input_organization(context, request):
         return False
 
-    if not context.asid:
-        return False
+    # cart
+    if hasattr(context, "asid"):
+        if not context.asid:
+            return False
+    # lot
+    else:
+        if not context.lot_asid:
+            return False
 
     info = request.altair_auth_info
     membership = get_membership(info)
