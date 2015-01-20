@@ -209,3 +209,7 @@ class EventForm(OurForm):
                 raise ValidationError(u'%s入力してください' % u'もしくは'.join(u'%d文字' % l for l in expected_len))
             if query.count() > 0:
                 raise ValidationError(u'既に使用されています')
+
+    def validate_display_order(form, field):
+        if -2147483648 > field.data or field.data > 2147483647:
+            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
