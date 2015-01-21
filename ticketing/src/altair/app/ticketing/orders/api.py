@@ -339,8 +339,8 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         return query.join(self.targets['subject'].user).join(User.user_credential).filter(UserCredential.auth_identifier==value)
 
     def _seat_number(self, query, value):
-        query = query.join(self.targets['subject'].ordered_products)
-        query = query.join(self.targets['OrderedProduct'].ordered_product_items)
+        query = query.join(self.targets['subject'].items)
+        query = query.join(self.targets['OrderedProduct'].elements)
         query = query.join(self.targets['OrderedProductItem'].seats)
         query = query.filter(Seat.name.like('%s%%' % value))
         return query
@@ -499,7 +499,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
 
     def _sales_segment_group_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].ordered_products)
+            query = query.join(self.targets['subject'].items)
             query = query.join(self.targets['OrderedProduct'].product)
             query = query.join(self.targets['Product'].sales_segment)
             query = query.filter(self.targets['SalesSegment'].sales_segment_group_id.in_(value))
@@ -507,7 +507,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
 
     def _sales_segment_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].ordered_products)
+            query = query.join(self.targets['subject'].items)
             query = query.join(self.targets['OrderedProduct'].product)
             query = query.filter(self.targets['Product'].sales_segment_id.in_(value))
         return query

@@ -27,7 +27,8 @@ apmv11.1c.vpc.altr	userapp-cart
 apmv12.1a.vpc.altr	userapp-cart
 apmv12.1c.vpc.altr	userapp-cart
 btmv1.1c.vpc.altr	batch
-btmv1.1a.vpc.altr	worker
+wkmv1.1a.vpc.altr	worker
+wkmv1.1c.vpc.altr	worker
 apnl1.1a.vpc.altr	newsletter
 apvv1.1a.vpc.altr	venueadmin
 apcv1.1c.vpc.altr	sej
