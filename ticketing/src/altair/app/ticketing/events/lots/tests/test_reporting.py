@@ -11,7 +11,7 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class ReportConditionTests(unittest.TestCase):
-    """ 
+    """
     毎日、毎週
     指定期間（前日分・前週分）
     全期間（販売開始～送信日時まで）
@@ -39,7 +39,7 @@ class ReportConditionTests(unittest.TestCase):
 
     def test_daily_normal(self):
         """ 毎日の前日分
-        指定日付の前日 00:00 - 23:59 
+        指定日付の前日 00:00 - 23:59
         """
 
         from datetime import datetime
@@ -50,7 +50,7 @@ class ReportConditionTests(unittest.TestCase):
             period=ReportPeriodEnum.Normal.v[0],
         )
         now = datetime(2013, 1, 1, 23, 59)
-        
+
         target = self._makeOne(setting, now)
 
         self.assertEqual(target.from_date, datetime(2012, 12, 31, 23, 59))
@@ -72,7 +72,7 @@ class ReportConditionTests(unittest.TestCase):
             period=ReportPeriodEnum.Entire.v[0],
         )
         now = datetime(2013, 1, 1, 12, 59)
-        
+
         target = self._makeOne(setting, now)
 
         self.assertEqual(target.from_date, now)
@@ -82,7 +82,7 @@ class ReportConditionTests(unittest.TestCase):
 
     def test_weekly_normal(self):
         """ 毎週の前週分
-        指定日付の7日前 00:00 - 前日23:59 
+        指定日付の7日前 00:00 - 前日23:59
 
         """
         from datetime import datetime
@@ -93,7 +93,7 @@ class ReportConditionTests(unittest.TestCase):
             period=ReportPeriodEnum.Normal.v[0],
         )
         now = datetime(2013, 1, 17, 23, 59)
-        
+
         target = self._makeOne(setting, now)
 
         self.assertEqual(target.from_date, datetime(2013, 1, 10, 23, 59))
@@ -114,7 +114,7 @@ class ReportConditionTests(unittest.TestCase):
             period=ReportPeriodEnum.Entire.v[0],
         )
         now = datetime(2013, 1, 17, 12, 34)
-        
+
         target = self._makeOne(setting, now)
 
         self.assertEqual(target.from_date, datetime(2013, 1, 10, 12, 34))
@@ -173,6 +173,7 @@ class LotEntryReporterTests(unittest.TestCase):
     def test_create_report_mail(self):
         from pyramid_mailer import get_mailer
         from datetime import datetime
+        now = datetime.now()
         from altair.app.ticketing.core.models import Organization, ReportRecipient
         request = testing.DummyRequest()
         sender = u"sender@example.com"
@@ -187,6 +188,10 @@ class LotEntryReporterTests(unittest.TestCase):
                 title=u"テストイベント",
             ),
             limit_wishes=5,
+            sales_segment=testing.DummyModel(
+                start_at=now,
+                end_at=now,
+                ),
         )
         recipients=[
             ReportRecipient(
