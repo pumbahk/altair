@@ -12,7 +12,7 @@ class SalesScheduleReportExporterTestCase(TestCase):
         self.template_path = os.path.join(TEMPLATE_DIR, 'sales_schedule_report_template.xls')
 
     def testOk(self):
-        exporter = xls_export.SalesScheduleReportExporter(template=self.template_path)
+        exporter = xls_export.SalesScheduleReportExporter(template=self.template_path, organization_name=u"楽天チケット")
         sheet1 = exporter.add_sheet(u"追加1")
         exporter.write_data(sheet1, {
             'event_title': u'テストイベント',

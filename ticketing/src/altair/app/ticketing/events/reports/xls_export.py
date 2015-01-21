@@ -230,7 +230,7 @@ class BaseExporter(object):
 class SalesScheduleReportExporter(BaseExporter):
     """販売日程管理票の帳票出力(Excel)
     """
-    def __init__(self, template):
+    def __init__(self, template, organization_name):
         super(SalesScheduleReportExporter, self).__init__(template)
         self._parts_sales_info_body = self.get_parts_sales_info_body()
         self._parts_sales_info_footer = self.get_parts_sales_info_footer()
@@ -240,6 +240,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self._parts_prices_header = self.get_parts_prices_header()
         self._parts_prices_body = self.get_parts_prices_body()
         self._parts_prices_footer = self.get_parts_prices_footer()
+        self._organization_name = organization_name
         self.current_pos = {}
 
     def add_sheet(self, sheetname):
@@ -305,6 +306,10 @@ class SalesScheduleReportExporter(BaseExporter):
 
     def write_output_datetime(self, sheet, value):
         self.update_cell_text(sheet, 0, 11, value)
+
+    def write_file_name(self, sheet):
+        file_name = u'販　売　日　程　管　理　票　[ {0} ]'.format(self._organization_name)
+        self.update_cell_text(sheet, 2, 0, file_name)
 
     def write_event_title(self, sheet, value):
         self.update_cell_text(sheet, 4, 0, value)
@@ -423,6 +428,7 @@ class SalesScheduleReportExporter(BaseExporter):
           'price_blocks': [{'prices': [{}]}],
         }
         """
+        self.write_file_name(sheet)
         event_title = data.get('event_title')
         if event_title:
             self.write_event_title(sheet, event_title)

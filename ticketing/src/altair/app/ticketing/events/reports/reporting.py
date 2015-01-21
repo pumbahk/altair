@@ -150,7 +150,7 @@ def export_for_sales(event):
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve("altair.app.ticketing:/templates/reports/sales_schedule_report_template.xls").abspath()
     formatter = DateTimeFormatter()
-    exporter = xls_export.SalesScheduleReportExporter(template=template_path)
+    exporter = xls_export.SalesScheduleReportExporter(template=template_path, organization_name=event.organization.name)
 
     # 会場ごとにシートを生成
     site_query = Site.query.join(Venue).filter(Venue.deleted_at==None)
