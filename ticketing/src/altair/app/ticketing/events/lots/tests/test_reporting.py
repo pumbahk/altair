@@ -272,6 +272,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
             "altair.app.ticketing.events.lots.models",
             ])
         self.config = testing.setUp()
+        self.config.add_subscriber('altair.app.ticketing.register_globals', 'pyramid.events.BeforeRender')
         self.config.include('pyramid_mako')
         self.config.add_mako_renderer('.html')
         self.config.add_mako_renderer('.txt')
