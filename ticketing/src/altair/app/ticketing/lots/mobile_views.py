@@ -25,6 +25,7 @@ from .models import (
     LotElectedEntry,
 )
 from . import urls
+from . import utils
 
 logger = logging.getLogger(__name__)
 
@@ -84,20 +85,7 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        def form_factory(formdata, name_builder, **kwargs):
-            from altair.app.ticketing.cart.schemas import extra_form_type_map
-            extra_form_type = extra_form_type_map[self.context.cart_setting.type]
-            form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
-            form.member_type.choices = ('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')
-            form.member_type.data = 'cpp'
-            return form
-        from altair.formhelpers.fields import OurFormField
-        fields = [
-            ('extra', OurFormField(form_factory=form_factory, name_handler=u'.', field_error_formatter=None)),
-            ]
-        flavors = self.context.cart_setting.flavors or {}
-        form = api.create_client_form(self.context, self.request, flavors=flavors, _fields=fields, **kwds)
-        return form
+        return utils.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(route_name='lots.entry.step1', renderer=selectable_renderer("step1.html"))
     def step1(self):
