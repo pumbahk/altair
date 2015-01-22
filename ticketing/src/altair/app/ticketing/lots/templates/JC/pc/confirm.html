@@ -1,5 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
 <p class="pageTitle">申込内容をご確認ください。</p>
 <form id="form1" name="form1" method="post" action="">
   <input type="hidden" name="token" value="${token}" />
@@ -86,14 +85,6 @@
               <th><label>メモ欄</label></th>
               <td>${memo|h.nl2br}</td>
             </tr>
-
-            % for k, v in pm:
-            <tr>
-              <th>${k}</th>
-              <td>${v}</td>
-            </tr>
-            % endfor
-
           </table>
         </div>
       </div>

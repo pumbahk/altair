@@ -266,7 +266,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     id=product.id,
                     name=product.name,
                     description=product.description,
-                    price=h.format_number(product.price, ","),
+                    price=h.format_number(product.price, ","), 
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
@@ -555,17 +555,13 @@ class DynamicFormBuilder(object):
         return unbound_fields
 
     def __call__(self, request, extra_form_fields, formdata=None, **kwargs):
-        """
-        :param request: リクエストオブジェクト
-        :param list extra_form_fields: ExtraFormのリスト
-        """
         unbound_fields = self.unbound_fields(extra_form_fields)
         form = OurDynamicForm(
             formdata=formdata,
             _fields=unbound_fields,
             _translations=Translations(),
             name_builder=lambda name: u'extra_field[%s]' % name,
-            **kwargs
+            **kwargs 
             )
         fields = []
         for field_desc in extra_form_fields:
@@ -701,7 +697,7 @@ def build_extra_form_fields_from_form(context, request, form_class, excludes=())
             'description': description,
             'note': note,
             })
-    return retval
+    return retval    
 
 def get_extra_form_class(request, event):
     if event.setting is None:
@@ -807,7 +803,7 @@ def back_to_top(request):
                 event_id = DBSession.query(c_models.Performance).filter_by(id=performance_id).one().event_id
             except:
                 pass
-
+ 
     extra = {}
     if performance_id is not None:
         extra['_query'] = { 'performance': performance_id }
@@ -906,14 +902,14 @@ class MorselWrapper(object):
     def version(self):
         return 1 # always supposed to be a cookie
 
-    def get_nonstandard_attr(self, name, default=None):
+    def get_nonstandard_attr(self, name, default=None): 
         name = name.lower()
         if name == 'httponly':
             return self.morsel.httponly
         elif name == 'max-age':
             return self.morsel.max_age
         return default
-
+    
 
 def render_view_to_response_with_derived_request(context_factory, request, name='', secured=False, route=None, retoucher=None, cookie_policy=default_cookie_policy):
     if hasattr(request, 'registry'):

@@ -219,7 +219,7 @@ class SelectMultipleDictFieldDataMixin(object):
             if hasattr(value, 'items'):
                 for k, v in value.items():
                     data[k] = bool(v)
-            else:
+            else: 
                 for k in value:
                     data[k] = True
         except (ValueError, TypeError) as e:
@@ -275,7 +275,7 @@ class LazySelectFieldBase(fields.SelectFieldBase):
                 self._model = model
         else:
             self._model = None
-
+ 
         self._coerce = coerce
         self._encoder = encoder
 
@@ -313,12 +313,12 @@ class LazySelectFieldBase(fields.SelectFieldBase):
         return self._model
 
     def iter_choices(self):
-        if self._model is not None:
+        if self._model is not None: 
             for encoded_value, model_value, label in self._model.items():
                 yield (encoded_value, label, model_value == self.data)
 
     def pre_validate(self, form):
-        if self.model and self.data not in self.model:
+        if self.data not in self.model:
             raise ValueError(self.gettext('Not a valid choice'))
 
 class LazySelectField(SelectFieldDataMixin, LazySelectFieldBase):
@@ -388,7 +388,7 @@ class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
                 self._model = model
         else:
             raise TypeError('either choices or model must be a non-None value')
-
+ 
         self._coerce = coerce
         self._encoder = encoder
 
@@ -423,7 +423,7 @@ class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
         def _(choice_iter):
             for encoded_value, model_value, label in choice_iter:
                 yield (encoded_value, label, model_value == self.data)
-
+                
         for group_name, choice_iter in self.model.group_iter():
             yield group_name, _(choice_iter)
 
@@ -442,7 +442,7 @@ class LazyGroupedSelectMultipleField(SelectMultipleFieldDataMixin, LazyGroupedSe
             for encoded_value, model_value, label in choice_iter:
                 yield (encoded_value, label, self.data is not None and \
                                              model_value in self.data)
-
+                
         for group_name, choice_iter in self.model.group_iter():
             yield group_name, _(choice_iter)
 

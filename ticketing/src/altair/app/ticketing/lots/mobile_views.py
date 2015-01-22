@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
                  context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
-    logger.warning(context)
+    logger.warning(context)    
     return HTTPNotFound()
 
 
@@ -80,24 +80,6 @@ class EntryLotView(object):
             sales_segment=sales_segment,
             option_index=len(api.get_options(self.request, lot.id)) + 1
             )
-
-    def _create_form(self, **kwds):
-        """希望入力と配送先情報と追加情報入力用のフォームを返す
-        """
-        def form_factory(formdata, name_builder, **kwargs):
-            from altair.app.ticketing.cart.schemas import extra_form_type_map
-            extra_form_type = extra_form_type_map[self.context.cart_setting.type]
-            form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
-            form.member_type.choices = ('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')
-            form.member_type.data = 'cpp'
-            return form
-        from altair.formhelpers.fields import OurFormField
-        fields = [
-            ('extra', OurFormField(form_factory=form_factory, name_handler=u'.', field_error_formatter=None)),
-            ]
-        flavors = self.context.cart_setting.flavors or {}
-        form = api.create_client_form(self.context, self.request, flavors=flavors, _fields=fields, **kwds)
-        return form
 
     @lbr_view_config(route_name='lots.entry.step1', renderer=selectable_renderer("step1.html"))
     def step1(self):
@@ -299,7 +281,7 @@ class EntryLotView(object):
 
     @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))
     def step4(self):
-        cform = self._create_form(formdata=self.request.params)
+        cform = api.create_client_form(self.context, self.request)
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
@@ -313,7 +295,8 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = self._create_form(formdata=self.request.params)
+        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
+
         payment_delivery_method_pair_id = None
         try:
             payment_delivery_method_pair_id = long(self.request.params.get('payment_delivery_method_pair_id'))
@@ -361,9 +344,7 @@ class EntryLotView(object):
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=cform['birthday'].data,
-            memo=cform['memo'].data,
-            extra=cform['extra'].data,
-            )
+            memo=cform['memo'].data)
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)
 

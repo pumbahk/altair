@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-from unittest import TestCase
+
+import unittest
 import mock
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
@@ -12,7 +13,7 @@ dependency_modules = [
     'altair.app.ticketing.core.models',
 ]
 
-# class get_productsTests(TestCase):
+# class get_productsTests(unittest.TestCase):
 #     def _callFUT(self, *args, **kwargs):
 #         from ..api import get_products
 #         return get_products(*args, **kwargs)
@@ -25,8 +26,8 @@ dependency_modules = [
 #         ]
 #         results = self._callFUT(request, sales_segment, performances)
 #         sales_segment.get_products.assert_called_with(performances)
-
-# class create_cartTests(TestCase):
+        
+# class create_cartTests(unittest.TestCase):
 #     @classmethod
 #     def setUpClass(cls):
 #         cls.session = _setup_db(modules=dependency_modules)
@@ -109,28 +110,28 @@ dependency_modules = [
 #         self.assertEqual(result.products[0].product, product)
 
 
-# class get_lotTests(TestCase):
+# class get_lotTests(unittest.TestCase):
 #     @classmethod
 #     def setUpClass(cls):
 #         cls.session = _setup_db(modules=dependency_modules)
-#
-#
+# 
+# 
 #     @classmethod
 #     def tearDownClass(self):
 #         _teardown_db()
-#
+# 
 #     def setUp(self):
 #         self.session.remove()
-#
+# 
 #     def tearDown(self):
 #         import transaction
 #         transaction.abort()
-#
+# 
 #     def _callFUT(self, *args, **kwargs):
 #         from .. import api
 #         return api.get_lot(*args, **kwargs)
-#
-#
+# 
+# 
 #     def test_it(self):
 #         from ..testing import _add_lot
 #         request = DummyRequest()
@@ -139,7 +140,7 @@ dependency_modules = [
 #         l = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
 #         lot_id = l.id
 #         result = self._callFUT(request, event, sales_segment, lot_id)
-#
+# 
 #         self.assertEqual(result[0], l)
 #         self.assertEqual(len(result[1]), 5)
 #         self.assertEqual(result[1][0].name, u"パフォーマンス 0")
@@ -147,9 +148,9 @@ dependency_modules = [
 #         self.assertEqual(len(result[2]), 3)
 #         self.assertEqual(result[2][0].name, u"席 0")
 #         self.assertEqual(result[2][2].name, u"席 2")
-#
+# 
 
-class entry_lotTests(TestCase):
+class entry_lotTests(unittest.TestCase):
     def setUp(self):
         from altair.sqlahelper import register_sessionmaker_with_engine
         self.config = testing.setUp()
@@ -188,7 +189,7 @@ class entry_lotTests(TestCase):
 
         request = DummyRequest(host='example.com:80', organization=self.organization)
         login(self.config, {"auth_type": "fc_auth", "username": "test", "membership": "test", "membergroup": "test"})
-
+        
         event = testing.DummyModel(id=1111)
         sales_segment = testing.DummyModel(id=12345)
         lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
@@ -213,7 +214,7 @@ class entry_lotTests(TestCase):
                      "wished_products": [{"wish_order": 1, "product_id": products[0].id, "quantity": 10}]},
                     # 第二希望
                     {"performance_id": performances[1].id,
-                     "wished_products": [{"wish_order": 2, "product_id": products[1].id, "quantity": 11},
+                     "wished_products": [{"wish_order": 2, "product_id": products[1].id, "quantity": 11},  
                                          {"wish_order": 2, "product_id": products[2].id, "quantity": 12}]},
                  ]
         entry_no = "testing-entry-no"
@@ -247,7 +248,7 @@ class entry_lotTests(TestCase):
         self.assertEqual(result.membership.name, "test")
 
 
-class get_entryTests(TestCase):
+class get_entryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from altair.sqlahelper import register_sessionmaker_with_engine
@@ -291,7 +292,7 @@ class get_entryTests(TestCase):
         result = self._callFUT(request, entry_no, tel_no)
         self.assertEqual(result.id, entry.id)
 
-class entry_infoTests(TestCase):
+class entry_infoTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from altair.sqlahelper import register_sessionmaker_with_engine
@@ -353,7 +354,7 @@ class entry_infoTests(TestCase):
         result = self._callFUT(wish)
 
 
-# class elect_entryTests(TestCase):
+# class elect_entryTests(unittest.TestCase):
 #     def setUp(self):
 #         from datetime import datetime
 #         self.datetime = datetime
@@ -370,14 +371,14 @@ class entry_infoTests(TestCase):
 #             lot_entry=m.LotEntry()
 #         )
 
-#         result = self._callFUT(lot, wish)
+#         result = self._callFUT(lot, wish) 
 #         self.assertTrue(wish.elected_at)
 #         self.assertTrue(wish.lot_entry.elected_at)
 
 #         self.assertEqual(result.lot_entry, wish.lot_entry)
 #         self.assertEqual(result.lot_entry_wish, wish)
 
-class notify_entry_lotTests(TestCase):
+class notify_entry_lotTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.cart.request')
@@ -404,7 +405,7 @@ class notify_entry_lotTests(TestCase):
 
         self.assertEqual(called[0].lot_entry, entry)
 
-#class elect_lot_entriesTests(TestCase):
+#class elect_lot_entriesTests(unittest.TestCase):
 #    def _callFUT(self, *args, **kwargs):
 #        from ..api import elect_lot_entries
 #        return elect_lot_entries(*args, **kwargs)
@@ -415,12 +416,3 @@ class notify_entry_lotTests(TestCase):
 #        # 落選データ
 #
 #        result = self._callFUT()
-
-
-class LotEntryBuildingTest(TestCase):
-    """altair.app.ticketing.lots.api.build_lot_entryのテスト
-    >>> import altair.app.ticketing.lots.api.build_lot_ent
-    """
-    def _callFUT(self, *args, **kwds):
-        from ..api import build_lot_entry
-        return build_lot_entry(*args, **kwds)

@@ -13,7 +13,7 @@ from sqlalchemy.sql import or_
 from sqlalchemy.orm import make_transient, joinedload
 
 from altair.now import get_now
-from altair.app.ticketing.cart.api import get_auth_info
+from altair.app.ticketing.cart.api import get_auth_info 
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
