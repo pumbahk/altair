@@ -703,31 +703,31 @@ def build_extra_form_fields_from_form(context, request, form_class, excludes=())
             })
     return retval
 
-def get_extra_form_class(request, cart_setting):
+def get_extra_form_class(request, event):
+    if event.setting is None:
+        return None
+    cart_setting = event.setting.cart_setting
+    if cart_setting is None:
+        return None
     from .schemas import extra_form_type_map
     return extra_form_type_map.get(cart_setting.type)
 
-def get_extra_form_schema(context, request, sales_segment, for_='cart'):
+def get_extra_form_schema(context, request, sales_segment):
     extra_form_fields = None
     cart_setting = context.cart_setting
-    if for_ == 'cart':
-        if api.is_fc_cart(cart_setting):
-            return cart_setting.extra_form_fields
-        elif api.is_booster_cart(cart_setting):
-            # XXX: ブースターの互換性のため
-            extra_form_class = get_extra_form_class(request, cart_setting)
-            if extra_form_class is not None:
-                extra_form_fields = build_extra_form_fields_from_form(context, request, extra_form_class, excludes=['member_type', 'product_delivery_method'])
-        else:
-            extra_form_fields = sales_segment.setting.extra_form_fields
-    elif for_ == 'lots':
-        extra_form_fields = cart_setting.extra_form_fields
+    if api.is_fc_cart(cart_setting):
+        return cart_setting.extra_form_fields
+    elif api.is_booster_cart(cart_setting):
+        # XXX: ブースターの互換性のため
+        extra_form_class = get_extra_form_class(request, sales_segment.sales_segment_group.event)
+        if extra_form_class is not None:
+            extra_form_fields = build_extra_form_fields_from_form(context, request, extra_form_class, excludes=['member_type', 'product_delivery_method'])
     else:
-        raise ValueError("for_ argument must be either 'cart' or 'lots', got %s" % for_)
+        extra_form_fields = sales_segment.setting.extra_form_fields
     return extra_form_fields or []
 
-def get_extra_form_data_pair_pairs(context, request, sales_segment, data, for_='cart'):
-    extra_form_fields = get_extra_form_schema(context, request, sales_segment, for_=for_)
+def get_extra_form_data_pair_pairs(context, request, sales_segment, data):
+    extra_form_fields = get_extra_form_schema(context, request, sales_segment)
     retval = []
     dtf = create_date_time_formatter(request)
     for field_desc in extra_form_fields:
