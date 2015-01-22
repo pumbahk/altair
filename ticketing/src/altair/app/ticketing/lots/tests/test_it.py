@@ -16,7 +16,7 @@ dependency_modules = [
 ]
 
 testing_settings = {
-    'makotxt.default_filters': 'unicode',
+    'makotxt.default_filters': 'unicode',    
     'mako.directories': ['altair.app.ticketing.lots:templates'],
     'altair.sej.template_file': '',
     'altair.nogizaka46_auth.key': '',
@@ -47,7 +47,7 @@ class keep_authTests(unittest.TestCase):
 
         request = DummyRequest()
         multicheckout_api = get_multicheckout_3d_api(request)
-        order_no = 'test_order_no'
+        order_no = 'test_order_no'        
 
         result = multicheckout_api.checkout_sales(order_no)
 
@@ -97,7 +97,7 @@ class EntryLotViewTests(unittest.TestCase):
         from altair.app.ticketing.core.models import Organization
         from altair.app.ticketing.users.models import Membership, MemberGroup
         from ..testing import _add_lots, login
-
+       
         organization = Organization(code='XX', short_name='example')
         membergroup = MemberGroup(
             membership=Membership(organization=organization, name='test-membership'),
@@ -118,8 +118,7 @@ class EntryLotViewTests(unittest.TestCase):
         context = DummyAuthenticatedResource(
             request=request,
             event=event, lot=lot,
-            user={'auth_identifier': 'test', 'is_guest': True, 'organization_id': 1, 'membership': "test-membership", 'membergroup': "test-group"},
-            )
+            user={'auth_identifier': 'test', 'is_guest': True, 'organization_id': 1, 'membership': "test-membership", 'membergroup': "test-group"})
         target = self._makeOne(context, request)
         result = target.get()
 
@@ -137,7 +136,7 @@ class EntryLotViewTests(unittest.TestCase):
             )
         self.session.add(membergroup)
         login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
-
+        
         lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
@@ -208,11 +207,7 @@ class EntryLotViewTests(unittest.TestCase):
             event=lot.event, lot=lot,
             organization=lot.event.organization,
             check_entry_limit=lambda wishes, user, email: True,
-            authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"},
-            cart_setting=testing.DummyModel(
-                flavor=None,
-                ),
-            )
+            authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"})
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
@@ -222,7 +217,7 @@ class EntryLotViewTests(unittest.TestCase):
         self.assertEqual(result.location, "http://example.com/lots/events/1111/entry/1/confirm")
         self.assertIsNotNone(request.session['lots.entry']['token'])
         self.assertEqual(len(request.session['lots.entry']['token']), 32)
-        self.assertEqual(request.session['lots.entry']['shipping_address'],
+        self.assertEqual(request.session['lots.entry']['shipping_address'],  
             {'address_1': u'代々木１丁目',
              'address_2': u'森京ビル',
              'city': u'渋谷区',
@@ -258,7 +253,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.session.add(membership)
         self.session.add(membergroup)
         login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
-
+        
         lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
@@ -303,12 +298,12 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
         performances = lot.performances
-
+        
         request = DummyRequest(
             host='example.com:80',
-            session={'lots.entry':
+            session={'lots.entry': 
                 {
-                    'shipping_address':
+                    'shipping_address': 
                         {'address_1': u'代々木１丁目',
                          'address_2': u'森京ビル',
                          'city': u'渋谷区',
@@ -324,11 +319,11 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                          'tel_2': None,
                          'zip': u'1234567'}, #shipping_address
 
-                    'wishes': [{"performance_id": str(performances[0].id),
+                    'wishes': [{"performance_id": str(performances[0].id), 
                                 "wished_products": [
-                                    {"wish_order": 1, "product_id": '1', "quantity": 10},
-                                    {"wish_order": 1, "product_id": '2', "quantity": 5}]},
-                               {"performance_id": str(performances[1].id),
+                                    {"wish_order": 1, "product_id": '1', "quantity": 10}, 
+                                    {"wish_order": 1, "product_id": '2', "quantity": 5}]}, 
+                               {"performance_id": str(performances[1].id), 
                                 "wished_products": [
                                     {"wish_order": 2, "product_id": '3', "quantity": 5}]}],
                     'payment_delivery_method_pair_id': str(payment_delivery_method_pair.id),
@@ -339,12 +334,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                 }, #lots.entry
             }, #session
         )
-        context = testing.DummyResource(event=testing.DummyModel(),
+        context = testing.DummyResource(event=testing.DummyModel(), 
                                         lot=lot,
                                         organization=organization,
-                                        cart_setting=testing.DummyModel(
-                                            flavor=None,
-                                            ),
                                     )
 
         target = self._makeOne(context, request)
@@ -366,7 +358,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                          'tel_1': u'01234567899',
                          'tel_2': None,
                          'zip': u'1234567'}, #shipping_address
-        )
+        ) 
         self.assertEqual(result['token'], 'this-is-session-token')
 
     def test_post_back(self):
@@ -374,7 +366,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request = DummyRequest(
             host='example.com:80',
             session={'lots.entry': {'token': 'test-token'}},
-            params={'back': 'Back',
+            params={'back': 'Back', 
                     'token': 'test-token'},
         )
         context = testing.DummyResource()
@@ -440,15 +432,15 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
             host='example.com:80',
             session={
                 'lots.entry.time': datetime.now(),
-                'lots.entry':
+                'lots.entry': 
                 {
                     'entry_no': 'testing-entry-no',
                     'shipping_address': shipping_address_dict,
-                    'wishes': [{"performance_id": "123",
+                    'wishes': [{"performance_id": "123", 
                                 "wished_products": [
-                                    {"wish_order": 1, "product_id": products[0].id, "quantity": 10},
-                                    {"wish_order": 1, "product_id": products[1].id, "quantity": 5}]},
-                               {"performance_id": "124",
+                                    {"wish_order": 1, "product_id": products[0].id, "quantity": 10}, 
+                                    {"wish_order": 1, "product_id": products[1].id, "quantity": 5}]}, 
+                               {"performance_id": "124", 
                                 "wished_products": [
                                     {"wish_order": 2, "product_id": products[2].id, "quantity": 5}]}],
                     'token': 'test-token', # token
@@ -490,7 +482,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         names = [n for n in helpers.SHIPPING_ATTRS if n not in ['nick_name', 'sex']]
         for name in names:
             self.assertEqual(getattr(actual, name), expected[name])
-
+        
 class LotReviewViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -627,7 +619,7 @@ class LotReviewViewTests(unittest.TestCase):
 #         cls.config.include('pyramid_layout')
 #         cls.config.include('altair.app.ticketing.lots')
 #         cls.session = _setup_db(modules=dependency_modules, echo=False)
-
+    
 #     @classmethod
 #     def tearDownClass(cls):
 #         testing.tearDown()
