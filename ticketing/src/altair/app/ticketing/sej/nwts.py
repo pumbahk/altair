@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import urllib2
 import struct
 import random
+from io import BytesIO
 
 import socket
 import httplib
@@ -14,36 +16,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.encoders import encode_noop
 from zope.interface import implementer
-import logging
-from io import BytesIO
+from altair.httphelpers.httplib import OurHTTPSConnection
 from .interfaces import ISejNWTSUploader, ISejNWTSUploaderFactory
 
 logger = logging.getLogger(__name__)
 
-class OurHTTPSConnection(httplib.HTTPSConnection):
-    def __init__(self, *args, **kwargs):
-        ca_certs = kwargs.pop('ca_certs', None)
-        cert_reqs = kwargs.pop('cert_reqs', None)
-        if cert_reqs is None:
-            cert_reqs = ssl.CERT_NONE
-        httplib.HTTPSConnection.__init__(self, *args, **kwargs)
-        self.ca_certs = ca_certs
-        self.cert_reqs = cert_reqs
-
-    def connect(self):
-        sock = socket.create_connection((self.host, self.port),
-                                        self.timeout, self.source_address)
-        if self._tunnel_host:
-            self.sock = sock
-            self._tunnel()
-        logger.debug('cert_file=%s, key_file=%s, cert_reqs=%d, ca_certs=%s' % (self.cert_file, self.key_file, self.cert_reqs, self.ca_certs))
-        self.sock = ssl.wrap_socket(
-            sock,
-            keyfile=self.key_file,
-            certfile=self.cert_file,
-            cert_reqs=self.cert_reqs,
-            ca_certs=self.ca_certs
-            )
 
 class SejHTTPHandler(AbstractHTTPHandler):
     def do_request_(self, request):

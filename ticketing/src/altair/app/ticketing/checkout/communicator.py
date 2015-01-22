@@ -4,11 +4,13 @@ import logging
 from base64 import b64encode
 import urlparse
 from lxml import etree
+from altair.httphelpers.httplib import OurHTTPSConnection
 
 logger = logging.getLogger(__name__)
 
 class AnshinCheckoutCommunicator(object):
-    _httplib = httplib
+    HTTPConnection = httplib.HTTPConnection
+    HTTPSConnection = OurHTTPSConnection
 
     def __init__(self, api_url, encoding='utf-8'):
         self.api_url = api_url
@@ -33,9 +35,9 @@ class AnshinCheckoutCommunicator(object):
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":
-            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+            http = HTTPConnection(host=url_parts.hostname, port=url_parts.port)
         elif url_parts.scheme == "https":
-            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+            http = OurHTTPSConnection(host=url_parts.hostname, port=url_parts.port)
         else:
             raise ValueError, "unknown scheme %s" % (url_parts.scheme)
 
