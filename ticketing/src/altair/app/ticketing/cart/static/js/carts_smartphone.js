@@ -40,7 +40,7 @@ cart.util = {
 
 cart.order_messages = {
     'no products': {
-        title: '購入する枚数を選択してください',
+        title: '',
         message: '購入する枚数を選択してください'
     },
     'stock': {
