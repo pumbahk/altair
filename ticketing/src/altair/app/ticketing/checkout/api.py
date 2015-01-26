@@ -49,7 +49,7 @@ def get_checkout_service(request, organization_or_organization_id=None, channel=
         fail_url=fail_url,
         nonmobile_checkin_url=nonmobile_checkin_url,
         mobile_checkin_url=mobile_checkin_url,
-        is_test=_get_setting(settings, 'altair.anshin_checkout.test_mode', 'altair_checkout.is_test'),
+        is_test=_get_setting(settings, 'altair.anshin_checkout.test_mode', 'altair_checkout.is_test') or u'0',
         service_id=None,
         auth_method=None,
         secret=None
