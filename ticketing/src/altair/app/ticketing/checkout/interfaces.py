@@ -13,3 +13,14 @@ class ISigner(Interface):
 
 class ICheckout(Interface):
     pass
+
+
+class IAnshinCheckoutCommunicator(Interface):
+    def send_order_fixation_request(xml):
+        pass
+
+    def send_order_change_request(xml):
+        pass
+
+    def send_order_cancel_request(xml):
+        pass
