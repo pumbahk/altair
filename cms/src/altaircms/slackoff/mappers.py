@@ -7,8 +7,12 @@ from markupsafe import Markup
 from altaircms.asset.viewhelpers import image_asset_layout
 from altaircms.models import Genre
 from altaircms.page.models import PageType
+from altaircms.topic.models import Promotion, Topic, Topcontent
 
 import pkg_resources
+import logging
+
+logger = logging.getLogger(__name__)
 
 def model_to_dict(obj):
     if hasattr(obj, "to_dict"):
@@ -50,6 +54,13 @@ def promotion_mapper(request, obj):
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
     objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
+    if hasattr(obj, "to_dict") and obj.to_dict().get("discriminator") == "promotion":
+         objlike.trackingcode = obj.to_dict().get("trackingcode")
+    else:
+        if None not in [obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date]:
+            objlike.trackingcode = u"_".join([obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date.strftime("%Y%m%d")])
+        else:
+            objlike.trackingcode = None
     return objlike
 
 def topic_mapper(request, obj):
@@ -60,6 +71,13 @@ def topic_mapper(request, obj):
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
     objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
+    if hasattr(obj, "to_dict") and obj.to_dict().get("discriminator") == "topic":
+         objlike.trackingcode = obj.to_dict().get("trackingcode")
+    else:
+        if None not in [obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date]:
+            objlike.trackingcode = u"_".join([obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date.strftime("%Y%m%d")])
+        else:
+            objlike.trackingcode = None
     return objlike
 
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
@@ -74,6 +92,13 @@ def topcontent_mapper(request, obj):
     objlike.mobile_link = obj.mobile_link or u"-"
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
+    if hasattr(obj, "to_dict") and obj.to_dict().get("discriminator") == "topcontent":
+         objlike.trackingcode = obj.to_dict().get("trackingcode")
+    else:
+        if None not in [obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date]:
+            objlike.trackingcode = u"_".join([obj.trackingcode_parts, obj.trackingcode_genre, obj.trackingcode_eventcode, obj.trackingcode_date.strftime("%Y%m%d")])
+        else:
+            objlike.trackingcode = None
     return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label

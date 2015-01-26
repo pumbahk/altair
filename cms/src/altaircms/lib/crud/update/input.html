@@ -1,12 +1,32 @@
 <%inherit file='../../../templates/layout_2col.html'/>
 
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
+<% from altaircms.slackoff.forms import PromotionForm, TopicForm,TopcontentForm %>
 <div class="circle ${request.context.circle_type} circle-top"></div>
 
 <div class="row">
     <h3>${master_env.title}更新</h3>
     <form action="${h.current_route_path_override(request, action="confirm",id=request.matchdict["id"])}" method="POST">
-       ${fco.form_as_table_strict(form, display_fields)}
+        <% fsm = request.featuresettingmanager %>
+        <%
+        if isinstance(form, PromotionForm) and fsm.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode") or \
+           isinstance(form, TopicForm) and fsm.get_boolean_value("altair.cms.usersite.topic.usetrackingcode") or \
+           isinstance(form, TopcontentForm) and fsm.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode"):
+            index = display_fields.index(u"mobile_link") + 1
+            temp_display_fields = display_fields[0:index]
+            if u"trackingcode_parts" not in temp_display_fields:
+                temp_display_fields.append(u"trackingcode_parts")
+            if u"trackingcode_genre" not in temp_display_fields:
+                temp_display_fields.append(u"trackingcode_genre")
+            if u"trackingcode_eventcode" not in temp_display_fields:
+                temp_display_fields.append(u"trackingcode_eventcode")
+            if u"trackingcode_date" not in temp_display_fields:
+                temp_display_fields.append(u"trackingcode_date")
+            temp_display_fields.extend(display_fields[index:])
+        else:
+            temp_display_fields = display_fields
+        fco.form_as_table_strict(form, temp_display_fields)
+        %>
         <button class="btn" type="submit">保存</button>
     </form>
 </div>

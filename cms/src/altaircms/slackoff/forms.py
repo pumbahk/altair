@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import logging 
+import logging
 logger = logging.getLogger(__name__)
 import json
 from altaircms.formhelpers import Form, MaybeSelectField
@@ -212,6 +212,16 @@ class TicketForm(Form):
     __display_fields__ = [u"sale", u"seattype", u"name", u"price", u"backend_id"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
+class EventcodeValidator(object):
+    def __init__(self, eventcode, message):
+        self.eventcode = eventcode
+        self.message = message
+
+    def __call__(self, data, errors, use_trackingcode):
+        if use_trackingcode and (not data[self.eventcode] or '_' in data[self.eventcode]):
+            append_errors(errors, "trackingcode_eventcode", self.message)
+
+validate_trackingcode_eventcode = EventcodeValidator("trackingcode_eventcode", u"不正な公演コードです")
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
@@ -227,6 +237,10 @@ class TopicForm(Form):
                                                      get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+    trackingcode_parts = fields.SelectField(label=u"トラッキングコード（パーツ名）", choices=[(None, ""), ("promotion", "promotion"), ("topics", "topics"), ("top-recBrn", "top-recBrn"), ("topcontent", "topcontent"), ("top-squBrn", "top-squBrn"), ("top-pickup", "top-pickup"), ("leftside", "leftside")], default=None)
+    trackingcode_genre = fields.SelectField(label=u"トラッキングコード（ジャンル）", choices=[(None, ""), ("music", "music"), ("stage", "stage"), ("sports", "sports"), ("event", "event")])
+    trackingcode_eventcode = fields.TextField(label=u"トラッキングコード(公演コード)", default=None)
+    trackingcode_date = fields.DateTimeField(label=u"トラッキングコード（日付）", validators=[validators.Optional()], default=None)
     mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
@@ -238,13 +252,17 @@ class TopicForm(Form):
                          u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
-        if super(TopicForm, self).validate():
-            validate_publish_term(self.data, self.errors)
+        ## if super(TopicForm, self).validate():
+        validate_trackingcode_eventcode(self.data, self.errors, self.use_trackingcode)
+        validate_publish_term(self.data, self.errors)
         return not bool(self.errors)
 
     def configure(self, request):
         self.tag_content.choices = [(t.label, t.label) for t in request.allowable(TopicTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
+        fsm = request.featuresettingmanager
+        self.use_trackingcode = fsm.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode") or fsm.get_boolean_value("altair.cms.usersite.topic.usetrackingcode") or \
+                                fsm.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode")
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
@@ -266,6 +284,10 @@ class TopcontentForm(Form):
                                                      get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+    trackingcode_parts = fields.SelectField(label=u"トラッキングコード（パーツ名）", choices=[(None, ""), ("promotion", "promotion"), ("topics", "topics"), ("top-recBrn", "top-recBrn"), ("topcontent", "topcontent"), ("top-squBrn", "top-squBrn"), ("top-pickup", "top-pickup"), ("leftside", "leftside")], default=None)
+    trackingcode_genre = fields.SelectField(label=u"トラッキングコード（ジャンル）", choices=[(None, ""), ("music", "music"), ("stage", "stage"), ("sports", "sports"), ("event", "event")], default=None)
+    trackingcode_eventcode = fields.TextField(label=u"トラッキングコード(公演コード)", default=None)
+    trackingcode_date = fields.DateTimeField(label=u"トラッキングコード（日付）", validators=[validators.Optional()], default=None)
     mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
@@ -278,13 +300,17 @@ class TopcontentForm(Form):
                          u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
-        if super(TopcontentForm, self).validate():
-            validate_publish_term(self.data, self.errors)
+        ## if super(TopcontentForm, self).validate():
+        validate_trackingcode_eventcode(self.data, self.errors, self.use_trackingcode)
+        validate_publish_term(self.data, self.errors)
         return not bool(self.errors)
    
     def configure(self, request):
         self.tag_content.choices = [(t.label, t.label) for t in request.allowable(TopcontentTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
+        fsm = request.featuresettingmanager
+        self.use_trackingcode = fsm.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode") or fsm.get_boolean_value("altair.cms.usersite.topic.usetrackingcode") or \
+                                fsm.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode")
 
 class PromotionForm(Form):
     tag_content = fields.SelectMultipleField(label=u"表示場所", choices=[], validators=[validators.Required()]) #@todo rename
@@ -299,6 +325,10 @@ class PromotionForm(Form):
         get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"モバイル用外部リンク(ページより優先)", filters=[quote])
+    trackingcode_parts = fields.SelectField(label=u"トラッキングコード（パーツ名）", choices=[(None, ""), ("promotion", "promotion"), ("topics", "topics"), ("top-recBrn", "top-recBrn"), ("topcontent", "topcontent"), ("top-squBrn", "top-squBrn"), ("top-pickup", "top-pickup"), ("leftside", "leftside")], validators=[validators.Optional()], default=None)
+    trackingcode_genre = fields.SelectField(label=u"トラッキングコード（ジャンル）", choices=[(None, ""), ("music", "music"), ("stage", "stage"), ("sports", "sports"), ("event", "event")], default=None)
+    trackingcode_eventcode = fields.TextField(label=u"トラッキングコード(公演コード)", validators=[validators.Optional()], default=None)
+    trackingcode_date = fields.DateTimeField(label=u"トラッキングコード（日付）", default=None)
     mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
@@ -307,8 +337,9 @@ class PromotionForm(Form):
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     def validate(self, **kwargs):
-        if super(PromotionForm, self).validate():
-            validate_publish_term(self.data, self.errors)
+        ## if super(PromotionForm, self).validate():
+        validate_trackingcode_eventcode(self.data, self.errors, self.use_trackingcode)
+        validate_publish_term(self.data, self.errors)
         return not bool(self.errors)
 
     __display_fields__ = [
@@ -320,6 +351,9 @@ class PromotionForm(Form):
     def configure(self, request):
         self.tag_content.choices = [(t.label, t.label) for t in request.allowable(PromotionTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
+        fsm = request.featuresettingmanager
+        self.use_trackingcode = fsm.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode") or fsm.get_boolean_value("altair.cms.usersite.topic.usetrackingcode") or \
+                                fsm.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode")
 
 class PromotionFilterForm(Form):
     tag = dynamic_query_select_field_factory(

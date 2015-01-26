@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import re
+import logging
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.ext.declarative import declared_attr
@@ -11,6 +12,7 @@ from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.models import WithOrganizationMixin, Genre
 
+logger = logging.getLogger(__name__)
 
 """
 topicはtopicウィジェットで使われる。
@@ -94,6 +96,12 @@ class TopicCore(Base):
         D = model_to_dict(self)
         D["tag_content"] = self.tag_content
         D["genre"] = self.genre_id_list_from_topic()
+        if self.trackingcode is not None:
+            trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date = self.trackingcode.split("_", 4)
+            D["trackingcode_parts"] = trackingcode_parts
+            D["trackingcode_genre"] = trackingcode_genre
+            D["trackingcode_eventcode"] = trackingcode_eventcode
+            D["trackingcode_date"]  = datetime.strptime(trackingcode_date, "%Y%m%d")
         return D
 
     @property
