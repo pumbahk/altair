@@ -3,6 +3,7 @@
 import urllib2
 import time
 import logging
+import six
 
 from zope.interface import implementer
 from .exceptions import SejServerError
@@ -22,7 +23,7 @@ class SejPaymentAPICommunicator(object):
     retry_count = 3
     retry_interval = 5
 
-    def __init__(self, secret_key, url, shop_id, time_out = 120, retry_count = 3, retry_interval = 5):
+    def __init__(self, secret_key, url, shop_id, time_out=120, retry_count=3, retry_interval=5, opener=None):
         assert isinstance(secret_key, basestring)
         assert isinstance(url, basestring)
         assert isinstance(shop_id, basestring)
@@ -32,6 +33,7 @@ class SejPaymentAPICommunicator(object):
         self.time_out = time_out
         self.retry_count = retry_count
         self.retry_interval = retry_interval
+        self.opener = opener or urllib2.build_opener()
 
     def request_file(self, params, retry_mode=False):
         params['X_shop_id'] = self.shop_id
@@ -77,7 +79,7 @@ class SejPaymentAPICommunicator(object):
         req = create_sej_request(self.url, request_params)
 
         try:
-            res = urllib2.urlopen(req)
+            res = self.opener.open(req)
         except urllib2.HTTPError as e:
             res = e
 
@@ -91,9 +93,12 @@ class SejPaymentAPICommunicator(object):
 
 @implementer(ISejPaymentAPICommunicatorFactory)
 class SejPaymentAPICommunicatorFactory(object):
+    OPENER_FACTORY_KEY = 'altair.sej.urllib2_opener_factory'
+    DEFAULT_OPENER_FACTORY = 'altair.app.ticketing.urllib2ext.build_opener'
     target = SejPaymentAPICommunicator
 
-    def __init__(self, registry):
+    def __init__(self, config):
+        registry = config.registry
         settings = registry.settings
         self.default_inticket_api_url = \
             settings.get('altair.sej.inticket_api_url') or \
@@ -110,6 +115,22 @@ class SejPaymentAPICommunicatorFactory(object):
         self.retry_count = retry_count and int(retry_count) or None
         retry_interval = settings.get('altair.sej.retry_interval', '3')
         self.retry_interval = retry_interval and int(retry_interval) or None
+        opener_factory_ref = settings.get(self.OPENER_FACTORY_KEY, '').strip()
+        opener_factory_args = {}
+        if not opener_factory_ref:
+            opener_factory_ref = self.DEFAULT_OPENER_FACTORY
+            logger.info('altair.sej.urllib2_opener_factory is not specified; defaulting to %s and opener_factory arguments will be ignored too!' % opener_factory_ref)
+        else:
+            # opener_factory が明示的に指定されたときのみ opener_factory_args を populate する
+            # そうでないと、予期せぬ引数がデフォルトの opener_factory に渡されることになるため
+            for k, v in six.iteritems(settings):
+                if k.startswith(self.OPENER_FACTORY_KEY):
+                    k = k[len(self.OPENER_FACTORY_KEY) + 1:]
+                    if k:
+                        opener_factory_args[k] = v
+        self.opener_factory = config.maybe_dotted(opener_factory_ref)
+        logger.debug('opener_factory_args=%r' % opener_factory_args)
+        self.opener_factory_args = opener_factory_args
 
     def __call__(self, tenant, path):
         inticket_api_url = (tenant and tenant.inticket_api_url) or self.default_inticket_api_url
@@ -122,9 +143,10 @@ class SejPaymentAPICommunicatorFactory(object):
             shop_id=shop_id,
             time_out=self.timeout,
             retry_count=self.retry_count,
-            retry_interval=self.retry_interval
+            retry_interval=self.retry_interval,
+            opener=self.opener_factory(**self.opener_factory_args)
             )
 
 def includeme(config):
-    factory = SejPaymentAPICommunicatorFactory(config.registry)
+    factory = SejPaymentAPICommunicatorFactory(config)
     config.registry.registerUtility(factory, ISejPaymentAPICommunicatorFactory)

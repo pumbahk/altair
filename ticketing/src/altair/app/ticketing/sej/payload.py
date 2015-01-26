@@ -42,6 +42,7 @@ def create_sej_request(url, request_params):
 
     logger.info("[request]\n%s\t%s" % (url, data))
     req.add_data(data)
+    req.add_header('Content-Type', 'application/x-www-form-urlencoded')
     req.add_header('User-Agent', 'SejPaymentForJava/2.00')
     req.add_header('Connection', 'close')
 

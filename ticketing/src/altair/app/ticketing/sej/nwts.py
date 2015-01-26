@@ -4,106 +4,23 @@ import logging
 import urllib2
 import struct
 import random
-from io import BytesIO
-
 import socket
 import httplib
 import urlparse
 import ssl
+from io import BytesIO
 from urllib2 import AbstractHTTPHandler, URLError, splittype, splithost, addinfourl
 from email.generator import Generator
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.encoders import encode_noop
 from zope.interface import implementer
+from altair.app.ticketing.urllib2ext import build_opener
 from altair.httphelpers.httplib import OurHTTPSConnection
 from .interfaces import ISejNWTSUploader, ISejNWTSUploaderFactory
 
 logger = logging.getLogger(__name__)
 
-
-class SejHTTPHandler(AbstractHTTPHandler):
-    def do_request_(self, request):
-        host = request.get_host()
-        if not host:
-            raise URLError('no host given')
-
-        if request.has_data():  # POST
-            data = request.get_data()
-            if not request.has_header('Content-length'):
-                request.add_unredirected_header(
-                    'Content-length', '%d' % len(data))
-
-        sel_host = host
-        if request.has_proxy():
-            scheme, sel = splittype(request.get_selector())
-            sel_host, sel_path = splithost(sel)
-
-        if not request.has_header('Host'):
-            request.add_unredirected_header('Host', sel_host)
-
-        return request
-
-    http_request = do_request_
-    https_request = do_request_
-
-    def http_open(self, req):
-        return self.do_open(httplib.HTTPConnection, req)
-
-    def https_open(self, req):
-        def https_connection_factory(host, **kwargs):
-            return OurHTTPSConnection(
-                host,
-                cert_reqs=req._cert_reqs if hasattr(req, '_cert_reqs') else None,
-                cert_file=req._cert_file if hasattr(req, '_cert_file') else None,
-                key_file=req._key_file if hasattr(req, '_key_file') else None,
-                ca_certs=req._ca_certs if hasattr(req, '_ca_certs') else None,
-                **kwargs
-                )
-        return self.do_open(https_connection_factory, req)
-
-    def do_open(self, http_class, req):
-        host = req.get_host()
-        if not host:
-            raise URLError('no host given')
-
-        h = http_class(host, timeout=req.timeout) # will parse host:port
-        h.set_debuglevel(self._debuglevel)
-
-        headers = dict(req.unredirected_hdrs)
-        headers.update(dict((k, v) for k, v in req.headers.items()
-                            if k not in headers))
-
-        headers["Connection"] = "close"
-        headers = dict(
-            (name.title(), val) for name, val in headers.items())
-
-        if req._tunnel_host:
-            tunnel_headers = {}
-            proxy_auth_hdr = "Proxy-Authorization"
-            if proxy_auth_hdr in headers:
-                tunnel_headers[proxy_auth_hdr] = headers[proxy_auth_hdr]
-                # Proxy-Authorization should not be sent to origin
-                # server.
-                del headers[proxy_auth_hdr]
-            h.set_tunnel(req._tunnel_host, headers=tunnel_headers)
-
-        try:
-            h.request(req.get_method(), req.get_selector(), req.data, headers)
-            try:
-                r = h.getresponse(buffering=True)
-            except TypeError: #buffering kw not supported
-                r = h.getresponse()
-        except socket.error, err: # XXX what error?
-            raise URLError(err)
-
-        r.recv = r.read
-        fp = socket._fileobject(r, close=True)
-
-        resp = addinfourl(fp, r.msg, req.get_full_url())
-        resp.code = r.status
-        resp.msg = r.reason
-        return resp
 
 modes = dict(
     SEIT020U = 1,
@@ -111,15 +28,6 @@ modes = dict(
     TEST010U = 1,
 )
 
-def build_opener():
-    opener = urllib2.OpenerDirector()
-    opener.add_handler(urllib2.ProxyHandler())
-    opener.add_handler(urllib2.UnknownHandler())
-    opener.add_handler(SejHTTPHandler())
-    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-    opener.add_handler(urllib2.HTTPRedirectHandler())
-    opener.add_handler(urllib2.HTTPErrorProcessor())
-    return opener
 
 @implementer(ISejNWTSUploader)
 class PythonNWTSUploader(object):
