@@ -166,7 +166,7 @@ class CheckoutPlugin(object):
                 message=u'楽天ID決済の予約内容変更ができませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
-                error_code=order_like.error_code
+                error_code=e.error_code
                 )
 
     def cancel(self, request, order_like):
@@ -179,7 +179,7 @@ class CheckoutPlugin(object):
                 message=u'楽天ID決済をキャンセルできませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
-                error_code=order_like.error_code
+                error_code=e.error_code
                 )
 
     def refund(self, request, order_like, refund_record):
@@ -203,7 +203,7 @@ class CheckoutPlugin(object):
                 message=u'generic failure',
                 order_no=order_like.order_no,
                 back_url=None,
-                error_code=order_like.error_code
+                error_code=e.error_code
                 )
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
