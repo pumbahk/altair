@@ -63,12 +63,24 @@ def model_to_dict(obj):
 def model_from_dict(modelclass, D):
     instance = modelclass()
     items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
+    trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date = None, None, None, None
     for k, v in items_fn():
         if v:
-            try:
-                setattr(instance, k, v)
-            except Exception as e:
-                logger.warn("class=%s, k=%s, v=%s, message=%s", modelclass, k, v, e)
+            if k == "trackingcode_parts":
+                trackingcode_parts = v
+            elif k == "trackingcode_genre":
+                trackingcode_genre = v
+            elif k == "trackingcode_eventcode":
+                trackingcode_eventcode = v
+            elif k == "trackingcode_date":
+                trackingcode_date = v
+            else:
+                try:
+                    setattr(instance, k, v)
+                except Exception as e:
+                    logger.warn("class=%s, k=%s, v=%s, message=%s", modelclass, k, v, e)
+    if None not in [trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date]:
+        instance.trackingcode = "_".join([trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date.strftime("%Y%m%d")])
     return instance
 
 def model_column_items(obj):

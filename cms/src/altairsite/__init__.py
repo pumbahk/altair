@@ -65,6 +65,7 @@ def main(global_config, **local_config):
     config.include("altair.now")
     # config.include("altaircms.templatelib")
 
+    config.include("altaircms.api")
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
@@ -100,7 +101,6 @@ def main(global_config, **local_config):
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
-
 
     ## organizationごとのseparate
     config.include(".separation")

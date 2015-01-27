@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import re
+import logging
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.ext.declarative import declared_attr
@@ -11,6 +12,7 @@ from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.models import WithOrganizationMixin, Genre
 
+logger = logging.getLogger(__name__)
 
 """
 topicはtopicウィジェットで使われる。
@@ -94,6 +96,12 @@ class TopicCore(Base):
         D = model_to_dict(self)
         D["tag_content"] = self.tag_content
         D["genre"] = self.genre_id_list_from_topic()
+        if self.trackingcode is not None:
+            trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date = self.trackingcode.split("_", 4)
+            D["trackingcode_parts"] = trackingcode_parts
+            D["trackingcode_genre"] = trackingcode_genre
+            D["trackingcode_eventcode"] = trackingcode_eventcode
+            D["trackingcode_date"]  = datetime.strptime(trackingcode_date, "%Y%m%d")
         return D
 
     @property
@@ -180,6 +188,8 @@ class Topic(WithOrganizationMixin, TopicCore):
     mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topics")
     mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
+    trackingcode = sa.Column(sa.String(255), nullable = True)
+
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
@@ -219,6 +229,8 @@ class Topcontent(WithOrganizationMixin, TopicCore):
 
     link = sa.Column(sa.Unicode(255), doc="external link")
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link")
+
+    trackingcode = sa.Column(sa.String(255), nullable = True)
 
     ## extend
     image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
@@ -267,6 +279,8 @@ class Promotion(WithOrganizationMixin, TopicCore):
     mobile_link = sa.Column(sa.Unicode(255), nullable=True)
     linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
     linked_page = orm.relationship("PageSet")
+
+    trackingcode = sa.Column(sa.String(255), nullable = True)
 
     def validate(self):
         return self.pageset or self.link

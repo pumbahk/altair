@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from urlparse import urlparse
 import sqlalchemy.orm as orm
 from altaircms.datelib import get_now
 from collections import namedtuple
@@ -13,6 +14,8 @@ from altaircms.topic.models import Promotion
 from altaircms.asset.models import ImageAsset
 from .api import get_promotion_manager, get_interval_time
 from altaircms.topic.api import get_topic_searcher
+from altaircms.linklib import add_params_to_url
+
 
 ## fixme: rename **info
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main width height main_link links messages interval_time unit_candidates")
@@ -29,6 +32,13 @@ class PromotionSheet(object):
 
         selected = punits[idx]
         thumbnail_assets_dict = {a.id: a for a in ImageAsset.query.filter(ImageAsset.id.in_([pu.main_image_id for pu in punits])).all()}
+        main_link_url = h.link.get_link_from_promotion(request, selected)
+        ## Embed a tracking code to promotion link if exists
+        if request.featuresettingmanager.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode"):
+            trackingcode = h.link.get_trackingcode_from_topic(request, selected)
+            if trackingcode is not None:
+                params = {"l-id": trackingcode}
+                main_link_url = add_params_to_url(main_link_url, params)
         return PromotionInfo(
             thumbnails=[h.asset.rendering_object(request, thumbnail_assets_dict.get(pu.main_image_id)).thumbnail_path for pu in punits], 
             idx=idx, 
@@ -36,7 +46,7 @@ class PromotionSheet(object):
             main=h.asset.rendering_object(request, selected.main_image).filepath, 
             width= selected.main_image.width, 
             height= selected.main_image.height, 
-            main_link=h.link.get_link_from_promotion(request, selected), 
+            main_link=main_link_url,
             links=[h.link.get_link_from_promotion(request, pu) for pu in punits], 
             messages=[pu.text for pu in punits],
             interval_time = get_interval_time(), 

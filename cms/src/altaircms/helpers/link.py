@@ -68,6 +68,12 @@ def get_link_from_topic(request, topic):
 get_link_from_topcontent = get_link_from_topic
 get_link_from_promotion = get_link_from_topic
 
+def get_trackingcode_from_topic(request, topic):
+    if topic.trackingcode:
+        return topic.trackingcode
+    else:
+        return None
+
 
 def get_link_tag_from_category(request, category):
     return _as_banner_link(request, category) if category.imgsrc else _as_link(request, category)

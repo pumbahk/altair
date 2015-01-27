@@ -152,8 +152,7 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
 
-    ## Add access to FeatureSetting in request
-    config.set_request_property("altaircms.api.get_featuresettingmanager", "featuresettingmanager", reify=True)
+    config.include("altaircms.api")
 
     config.include(".")
     config.add_route("smartphone.main", "/smartphone/main")
