@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from altair.sqlahelper import get_db_session
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
@@ -375,6 +376,11 @@ class ListView(object):
         pagetype = self.context.pagetype
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id,
                                                     PageSet.event_id!=None)
+
+        session = get_db_session(self.request, 'slave')
+        page_num = session.query(sa.func.count(sa.distinct(PageSet.id)))\
+            .filter(PageSet.pagetype_id==pagetype.id, PageSet.event_id!=None).first()[0]
+
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
@@ -387,7 +393,7 @@ class ListView(object):
 
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form, "page_num": page_num}
 
     @view_config(match_param="pagetype=event_not_bound", renderer="altaircms:templates/pagesets/event_not_bound_pageset_list.html",
                  custom_predicates=[page_viewable])
@@ -396,6 +402,11 @@ class ListView(object):
         pagetype = self.request.allowable(PageType).filter(PageType.name=="event_detail").first()
         real_pagetype = self.request.allowable(PageType).filter(PageType.name==self.context.pagetype.name).first()
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, PageSet.event_id==None)
+
+        session = get_db_session(self.request, 'slave')
+        page_num = session.query(sa.func.count(sa.distinct(PageSet.id)))\
+            .filter(PageSet.pagetype_id==pagetype.id, PageSet.event_id==None).first()[0]
+
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
@@ -408,7 +419,7 @@ class ListView(object):
 
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": real_pagetype, "search_form": search_form}
+        return {"pages": pages, "pagetype": real_pagetype, "search_form": search_form, "page_num": page_num}
 
     @view_config(match_param="pagetype=page_separation", renderer="altaircms:templates/pagesets/page_separation_list.html",
                  custom_predicates=[page_viewable])
@@ -420,6 +431,13 @@ class ListView(object):
             .filter(PageSet.pagetype_id != Page.pagetype_id) \
             .filter(PageType.name=='event_detail')
 
+        session = get_db_session(self.request, 'slave')
+        page_num = session.query(sa.func.count(sa.distinct(PageSet.id)))\
+            .join(Page, Page.pageset_id==PageSet.id) \
+            .join(PageType, Page.pagetype_id==PageType.id) \
+            .filter(PageSet.pagetype_id != Page.pagetype_id) \
+            .filter(PageType.name=='event_detail').first()[0]
+
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
@@ -432,7 +450,7 @@ class ListView(object):
 
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form, "page_num": page_num}
 
     @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html",
                  custom_predicates=[page_viewable])
@@ -442,6 +460,11 @@ class ListView(object):
         qs = self.request.allowable(PageSet).join(Page, Page.pageset_id==PageSet.id) \
             .filter(Page.pagetype_id==pagetype.id)
 
+        session = get_db_session(self.request, 'slave')
+        page_num = session.query(sa.func.count(sa.distinct(PageSet.id)))\
+            .join(Page, Page.pageset_id==PageSet.id) \
+            .filter(Page.pagetype_id==pagetype.id).first()[0]
+
         params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
@@ -454,7 +477,7 @@ class ListView(object):
 
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form, "page_num": page_num}
 
 
 from altaircms import security
