@@ -20,31 +20,36 @@ from .payload import (
     RESULT_FLG_FAILED,
     )
 from .payload import AnshinCheckoutPayloadBuilder, AnshinCheckoutHTMLFormBuilder
-from .communicator import AnshinCheckoutCommunicator
+from .interfaces import IAnshinCheckoutCommunicator
 from .exceptions import AnshinCheckoutAPIError
 
 logger = logging.getLogger(__name__)
 
+def _get_setting(settings, current_name, deprecated_name):
+    v = settings.get(current_name)
+    if v is None:
+        logger.warning("%s is not given. using deprecated %s instead" % (current_name, deprecated_name))
+        v = settings.get(deprecated_name)
+    return v
 
 def get_checkout_service(request, organization_or_organization_id=None, channel=None):
     settings = request.registry.settings
 
-    success_url = settings.get('altair_checkout.success_url')
-    fail_url = settings.get('altair_checkout.fail_url')
+    success_url = _get_setting(settings, 'altair.anshin_checkout.success_url', 'altair_checkout.success_url')
+    fail_url = _get_setting(settings, 'altair.anshin_checkout.fail_url', 'altair_checkout.fail_url')
 
     success_url = urlparse.urljoin(request.application_url, success_url)
     fail_url = urlparse.urljoin(request.application_url, fail_url)
 
-    nonmobile_checkin_url = settings.get('altair_checkout.checkin_url')
-    mobile_checkin_url = settings.get('altair_checkout.mobile_checkin_url')
+    nonmobile_checkin_url = _get_setting(settings, 'altair.anshin_checkout.checkin_url', 'altair_checkout.checkin_url')
+    mobile_checkin_url = _get_setting(settings, 'altair.anshin_checkout.mobile_checkin_url', 'altair_checkout.mobile_checkin_url')
 
     params = dict(
         success_url=success_url,
         fail_url=fail_url,
         nonmobile_checkin_url=nonmobile_checkin_url,
         mobile_checkin_url=mobile_checkin_url,
-        api_url=settings.get('altair_checkout.api_url'),
-        is_test=settings.get('altair_checkout.is_test', False),
+        is_test=_get_setting(settings, 'altair.anshin_checkout.test_mode', 'altair_checkout.is_test') or u'0',
         service_id=None,
         auth_method=None,
         secret=None
@@ -85,7 +90,7 @@ def get_checkout_service(request, organization_or_organization_id=None, channel=
         mobile_checkin_url=params['mobile_checkin_url'],
         )
 
-    comm = AnshinCheckoutCommunicator(params['api_url'])
+    comm = get_communicator(request)
     now = datetime.now()
     return AnshinCheckoutAPI(
         request=request,
@@ -95,6 +100,13 @@ def get_checkout_service(request, organization_or_organization_id=None, channel=
         html_form_builder=hfb,
         communicator=comm
         )
+
+def get_communicator(request_or_registry):
+    if hasattr(request_or_registry, 'registry'):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IAnshinCheckoutCommunicator)
 
 def anshin_checkout_session(func):
     from .models import _session
