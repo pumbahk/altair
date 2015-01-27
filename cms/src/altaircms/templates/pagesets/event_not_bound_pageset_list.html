@@ -36,7 +36,7 @@
 ${panel("nav_pageset", pagetype)}
 
 
-<p>${pages.collection.count()}件</p>
+<p>${page_num}件</p>
 ${pages.pager()}
 
 %if (pages.opts.get("item_count") or pages.collection.count()) <= 0:
