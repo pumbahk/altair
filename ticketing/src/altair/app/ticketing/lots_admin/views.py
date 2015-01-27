@@ -18,6 +18,7 @@ from altair.app.ticketing.core.models import (
     Event,
     Organization,
 )
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 from altair.app.ticketing.lots.models import (
     Lot,
@@ -151,7 +152,6 @@ class SearchLotsEntryView(object):
         """ 検索 
         グローバルサーチなので、organizationの指定を慎重に。
         """
-
         organization_id = self.context.organization.id
         form = self.create_form()
         if self.request.params and form.validate():
@@ -195,7 +195,7 @@ class SearchLotsEntryView(object):
                 )
             entries = q.all()
             count = q.count()
-            page_url = paginate.PageURL_WebOb(self.request)
+            page_url = PageURL_WebOb_Ex(self.request)
 
             page = paginate.Page(entries,
                                  page=self.request.GET.get('page', '1'),
