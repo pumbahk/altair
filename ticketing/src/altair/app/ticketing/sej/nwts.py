@@ -55,6 +55,7 @@ class PythonNWTSUploader(object):
         req._ca_certs = self.ca_certs
         req.add_header('Connection', 'close')
         req.add_header('Cache-Control', 'no-cache')
+        req.add_unredirected_header('Content-type', None)
 
         try:
             opener = build_opener()

@@ -40,9 +40,9 @@ class AnshinCheckoutCommunicator(object):
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":
-            http = HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+            http = self.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
         elif url_parts.scheme == "https":
-            http = OurHTTPSConnection(host=url_parts.hostname, port=url_parts.port, ssl_version=self.ssl_version)
+            http = self.HTTPSConnection(host=url_parts.hostname, port=url_parts.port, ssl_version=self.ssl_version)
         else:
             raise ValueError, "unknown scheme %s" % (url_parts.scheme)
 
