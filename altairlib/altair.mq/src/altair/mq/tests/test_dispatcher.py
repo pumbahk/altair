@@ -39,13 +39,16 @@ class TaskDispatcherTest(unittest.TestCase):
         method = mock.Mock(method_tag=u'XXX')
         properties = pika.spec.BasicProperties(content_type='application/json')
         body = b'"body"'
+        continuation = mock.Mock()
         target(
             task_mapper=task_mapper,
             channel=channel,
             method=method,
             properties=properties,
-            body=body
+            body=body,
+            continuation=continuation
             )
+        self.assertTrue(continuation.called)
         self.assertTrue(task_mapper.task.called)
         context, request = task_mapper.task.call_args[0]
         from ..interfaces import IMessage
@@ -62,13 +65,16 @@ class TaskDispatcherTest(unittest.TestCase):
         method = mock.Mock(method_tag=u'XXX')
         properties = pika.spec.BasicProperties(content_type='application/json')
         body = b'"body"'
+        continuation = mock.Mock()
         target(
             task_mapper=task_mapper,
             channel=channel,
             method=method,
             properties=properties,
-            body=body
+            body=body,
+            continuation=continuation
             )
+        self.assertTrue(continuation.called)
         self.assertTrue(task_mapper.task.called)
         context, request = task_mapper.task.call_args[0]
         self.assertEqual(default_root_factory.call_args[0], (request, ))
@@ -83,13 +89,16 @@ class TaskDispatcherTest(unittest.TestCase):
         method = mock.Mock(method_tag=u'XXX')
         properties = pika.spec.BasicProperties(content_type='application/json')
         body = b'"body"'
+        continuation = mock.Mock()
         target(
             task_mapper=task_mapper,
             channel=channel,
             method=method,
             properties=properties,
-            body=body
+            body=body,
+            continuation=continuation
             )
+        self.assertTrue(continuation.called)
         self.assertTrue(task_mapper.task.called)
         context, request = task_mapper.task.call_args[0]
         self.assertEqual(len(request.tweens_called), 2)
@@ -105,13 +114,16 @@ class TaskDispatcherTest(unittest.TestCase):
         method = mock.Mock(method_tag=u'XXX')
         properties = pika.spec.BasicProperties(content_type='application/json')
         body = b'"body"'
+        continuation = mock.Mock()
         target(
             task_mapper=task_mapper,
             channel=channel,
             method=method,
             properties=properties,
-            body=body
+            body=body,
+            continuation=continuation
             )
+        self.assertTrue(continuation.called)
         self.assertTrue(task_mapper.task.called)
         context, request = task_mapper.task.call_args[0]
         self.assertTrue(hasattr(request, 'req_method'))
