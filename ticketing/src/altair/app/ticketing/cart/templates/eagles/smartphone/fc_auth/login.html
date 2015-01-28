@@ -36,17 +36,16 @@
       <td>
         <div class="header">
           <div class="band">
-            <h1 class="login_header">対象の年賀状をお持ちの方はこちら</h1>
+            <h1 class="login_header">各種会員の方はこちら</h1>
           </div>
         </div>
       </td>
     </tr>
     <tr>
       <td>
-        <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/new_years_card.png')}" alt="楽天イーグルス年賀状" width="150px" />
+        ブースタークラブ、ゴールドクラブ、レギュラークラブ、レディースクラブ、キッズクラブ、E25クラブ、ベーシッククラブ、スポンサークラブ
       </td>
-    </tr>
-    <tr>
+    </tr>    <tr>
       <td>
         <form action="${request.url}" method="post">
           <input type="hidden" name="membership" value="eagles" />
@@ -84,12 +83,9 @@
     </tr>
     <tr>
       <td>
-        今年の超先行では一般販売は行いません。
         <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
           <div class="buttonbox" style="white-space:normal">
-            <!--
             <input type="submit" class="btn btn-primary btn-large" style="line-height: 100%" value="チケット購入" />
-            -->
           </div>
         </form>
       </td>
