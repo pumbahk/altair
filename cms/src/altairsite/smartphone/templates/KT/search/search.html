@@ -3,14 +3,21 @@
 
 <div class="sectionbox inverted" id="search">
     <form class="sectionbox-inner" action="${request.route_path('smartphone.search')}" method="GET">
-        ${form.word(placeholder=u"アーティスト名、公演名、会場名など", style="width: 80%; display: inline;")}
-        <input type="submit" class="btn-secondary btn-large" value="検索"/>
+        ${form.word(placeholder=u"アーティスト名、公演名など", style="display: inline;")}
+        <input id="submit" type="submit" class="btn-secondary btn-large" value="検索"/>
         <br/>
         % if helper.disp_error(form):
             <font color="yellow">${helper.disp_error(form)}</font><br/>
         % endif
     </form>
 </div>
+
+<script>
+$(window).on('load resize', function(){
+    var w = $(window).width() - $('#submit').width()*3;
+    $('#word').css('width', String(w) + "px");
+});
+</script>
 
 <style>
 #search input[type="text"] {
