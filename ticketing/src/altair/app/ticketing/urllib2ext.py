@@ -56,10 +56,22 @@ class ClientSSLHTTPHandler(urllib2.AbstractHTTPHandler):
 
         if request.has_data():  # POST
             data = request.get_data()
-            if not request.has_header('Content-type') and self.default_content_type:
-                request.add_unredirected_header(
-                    'Content-type',
-                    self.default_content_type)
+            capitalized_content_type = 'Content-type'.capitalize()
+            if request.has_header(capitalized_content_type):
+                if request.get_header(capitalized_content_type) is None:
+                    try:
+                        del request.headers[capitalized_content_type]
+                    except KeyError:
+                        pass
+                    try:
+                        del request.unredirected_hdrs[capitalized_content_type]
+                    except KeyError:
+                        pass
+            else:
+                if self.default_content_type:
+                    request.add_unredirected_header(
+                        capitalized_content_type,
+                        self.default_content_type)
             if not request.has_header('Content-length'):
                 request.add_unredirected_header(
                     'Content-length', '%d' % len(data))

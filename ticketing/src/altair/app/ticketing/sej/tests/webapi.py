@@ -1,7 +1,15 @@
 __author__ = 'aodag'
 import webob
-from wsgiref.simple_server import make_server
+from wsgiref.simple_server import make_server, WSGIRequestHandler
 import threading
+
+
+class OurWSGIRequestHandler(WSGIRequestHandler):
+    def get_environ(self):
+        env =WSGIRequestHandler.get_environ(self)
+        if self.headers.typeheader is None:
+            del env['CONTENT_TYPE']
+        return env
 
 class DummyServer(object):
     def __init__(self, callback, host="", port=8000, status=200):
@@ -18,7 +26,7 @@ class DummyServer(object):
         return response(environ, start_response)
 
     def start(self):
-        self.httpd = make_server(self.host, self.port, self.handler)
+        self.httpd = make_server(self.host, self.port, self.handler, handler_class=OurWSGIRequestHandler)
         self.th = threading.Thread(target=self.httpd.handle_request)
         self.th.start()
 
