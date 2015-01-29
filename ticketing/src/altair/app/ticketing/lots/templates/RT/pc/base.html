@@ -61,6 +61,8 @@
   %endif
 %endif
 </%def>
-<%include file="altair.app.ticketing.lots:templates/RT/common/sitecatalyst.html"/>
+% if request.organization.id == 15:
+  <%include file="altair.app.ticketing.lots:templates/RT/common/sitecatalyst.html"/>
+% endif
 </body>
 </html>

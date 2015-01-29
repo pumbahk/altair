@@ -137,6 +137,8 @@
 </div>
 
 ${(view_context.embedded_html_complete_page or u'')|n}
-<%include file="../common/sc_completion.html" />
+% if request.organization.id == 15:
+  <%include file="../common/sc_completion.html" />
+% endif
 <%include file="./_dsp.html" />
 
