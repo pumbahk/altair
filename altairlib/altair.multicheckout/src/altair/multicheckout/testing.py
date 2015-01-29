@@ -139,7 +139,7 @@ class DummyHTTPLib(object):
         self.timeout = timeout
         return self
 
-    def HTTPSConnection(self, host, port, timeout=None):
+    def HTTPSConnection(self, host, port, timeout=None, **kwargs):
         self.host = host
         self.port = port
         self.called.append(('HTTPSConnection', [host, port]))

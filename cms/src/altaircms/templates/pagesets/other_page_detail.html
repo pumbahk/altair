@@ -88,6 +88,9 @@
 	  <a class="btn btn-success action-submit" href-fmt="${request.route_path("page_duplicate", id="__id__", endpoint=request.url)}">
 		  <i class="icon-plus"> </i> 選択したページのコピーを追加
     </a>
+	  <a class="btn btn-success delete-submit" href-fmt="${request.route_path("page_delete", id="__id__", endpoint=request.url)}">
+		  <i class="icon-trash"> </i> 選択したページを削除
+    </a>
   </div>
 </div>
 <hr/>
@@ -132,6 +135,17 @@
       // initialize
       $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
       if(window.confirm("「${pageset.name}」に新しいページを追加します。よろしいですか？")){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+  });
+  $("a.delete-submit").click(function(e){
+      e.preventDefault();
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      if(window.confirm("「${pageset.name}」から選択されたページを削除します。よろしいですか？")){
         $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
       }
   });

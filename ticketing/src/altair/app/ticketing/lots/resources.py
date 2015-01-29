@@ -221,3 +221,62 @@ class LotReviewResource(object):
         if self.lot.id in self.nogizaka_lot_ids:
             return 'nogizaka46'
         return self.lot.auth_type
+
+
+@implementer(ILotResource)
+class LotLogoutResource(object):
+    def __init__(self, request):
+        self.request = request
+        self.organization = self.request.organization
+        self._lot_id = request.GET.get("lot_id", None)
+        self._event_id = request.GET.get("event_id", None)
+
+    @reify
+    def lot(self):
+        lot = Lot.query \
+            .options(joinedload(Lot.event)) \
+            .join(Lot.event) \
+            .filter(Event.organization_id == self.organization.id) \
+            .filter(Lot.id == self._lot_id) \
+            .first()
+        if not lot:
+            return None
+        if self._event_id is not None and str(lot.event_id) != self._event_id:
+            return None
+        return lot
+
+    def authenticated_user(self):
+        return get_auth_info(self.request)
+
+    @reify
+    def __acl__(self):
+        logger.debug('acl: lot %s' % self.lot)
+        if not self.lot:
+            logger.debug('acl: lot is not found')
+            return []
+
+        if not self.auth_type:
+            logger.debug('acl: lot has no auth_type')
+            return [
+                (Allow, Everyone, 'lots'),
+            ]
+
+        logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
+        return [
+            (Allow, "auth_type:%s" % self.auth_type, 'lots'),
+        ]
+
+    @reify
+    def auth_type(self):
+        # for B/W compatibility
+        if self.lot.id in self.nogizaka_lot_ids:
+            return 'nogizaka46'
+        return self.lot.auth_type
+
+    @reify
+    def nogizaka_lot_ids(self):
+        return set(long(c) for c in (c.strip() for c in self.request.registry.settings.get('altair.lots.nogizaka_lot_id', '').split(',')) if c)
+
+    @reify
+    def host_base_url(self):
+        return core_api.get_host_base_url(self.request)

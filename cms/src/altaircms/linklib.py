@@ -2,7 +2,7 @@
 import logging
 logger = logging.getLogger(__name__)
 import urllib
-from urlparse import ParseResult, urlparse
+from urlparse import ParseResult, urlparse, parse_qs
 
 from zope.interface import implementer
 from .interfaces import IGlobalLinkSettings
@@ -12,6 +12,13 @@ from altair.viewhelpers.structure import updated
 ## todo:move
 def quote(x):
     return urllib.quote(x.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if x else None
+
+def add_params_to_url(url, params_dict):
+    if not isinstance(url, ParseResult):
+        url = urlparse(url)
+    qs_dict = parse_qs(url.query)
+    qs_dict.update(params_dict)
+    return _url_builder(url.scheme, url.hostname, url.path, qs_dict)
 
 def _url_builder(scheme, host_name, path, query_dict=None):
     if query_dict:

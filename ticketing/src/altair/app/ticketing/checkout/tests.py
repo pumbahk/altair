@@ -65,10 +65,10 @@ class GetCheckoutServiceTest(unittest.TestCase):
         channel = ChannelEnum.PC
 
         settings = {
-            u'altair_checkout.success_url': 'http://example.com/success/',
-            u'altair_checkout.fail_url': 'http://example.com/fail/',
-            u'altair_checkout.api_url': 'http://example.com/api/',
-            u'altair_checkout.is_test': '1',
+            u'altair.anshin_checkout.success_url': 'http://example.com/success/',
+            u'altair.anshin_checkout.fail_url': 'http://example.com/fail/',
+            u'altair.anshin_checkout.api_url': 'http://example.com/api/',
+            u'altair.anshin_checkout.test_mode': '1',
         }
         self.config.registry.settings.update(settings)
         request.config = self.config
@@ -77,7 +77,6 @@ class GetCheckoutServiceTest(unittest.TestCase):
         self.assertTrue(isinstance(result, api.AnshinCheckoutAPI))
         self.assertEqual(result.pb.success_url, 'http://example.com/success/')
         self.assertEqual(result.pb.fail_url, 'http://example.com/fail/')
-        self.assertEqual(result.comm.api_url, 'http://example.com/api/')
         self.assertEqual(result.pb.is_test, '1')
         self.assertEqual(result.pb.service_id, 'this-is-serviceId')
         self.assertEqual(result.pb.auth_method, 'HMAC-SHA1')
@@ -960,7 +959,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -979,7 +980,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
         result = target.request_cancel_order([cart])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/cancelorder/1.0/')
         self.assertTrue(result)
 
     def test_request_cancel_order_with_error(self):
@@ -1005,7 +1006,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -1025,7 +1028,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         with self.assertRaises(AnshinCheckoutAPIError) as e:
             target.request_cancel_order([cart])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/cancelorder/1.0/')
         self.assertEqual(e.exception.error_code, '100')
 
     def test_request_fixation_order_normal(self):
@@ -1048,7 +1051,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -1067,7 +1072,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
         result = target.request_fixation_order([cart])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/fixationorder/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/fixationorder/1.0/')
         self.assertTrue(result)
 
     def test_request_fixation_order_with_error(self):
@@ -1093,7 +1098,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -1114,7 +1121,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         with self.assertRaises(AnshinCheckoutAPIError) as e:
             target.request_fixation_order([cart])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/fixationorder/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/fixationorder/1.0/')
         self.assertEqual(e.exception.error_code, '100')
 
     def test_request_change_order_normal(self):
@@ -1140,7 +1147,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -1215,7 +1224,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
         result = target.request_change_order([(order, None)])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/changepayment/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/changepayment/1.0/')
         self.assertEqual(result['statusCode'], '0')
         self.assertEqual(result['acceptNumber'], '1')
         self.assertEqual(result['successNumber'], '1')
@@ -1250,7 +1259,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         order = Order(
             order_no='XX0000000000',
@@ -1300,14 +1311,14 @@ class AnshinCheckoutAPITest(unittest.TestCase):
 
         result = target.request_change_order([(order, order)])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/changepayment/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/changepayment/1.0/')
         self.assertEqual(result['statusCode'], '0')
         self.assertEqual(result['acceptNumber'], '1')
         self.assertEqual(result['successNumber'], '1')
         self.assertEqual(result['failedNumber'], '0')
         self.assertEqual(len(result['orders']), 1)
         self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
-        qs = parse_qs(target.comm._httplib.body)
+        qs = parse_qs(_httplib.body)
         self.assertTrue('rparam' in qs)
         xml = etree.fromstring(b64decode(qs['rparam'][0]))
         order_n_list = xml.findall(u'orders/order')
@@ -1354,7 +1365,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             '</root>'
         )
         target = self._buildTarget()
-        target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
+        _httplib = DummyHTTPLib(etree.tostring(res_data))
+        target.comm.HTTPConnection = _httplib.HTTPConnection
+        target.comm.HTTPSConnection = _httplib.HTTPSConnection
 
         self.session.add(
             Checkout(
@@ -1395,7 +1408,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         with self.assertRaises(AnshinCheckoutAPIError) as e:
             result = target.request_change_order([(order, None)])
 
-        self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/changepayment/1.0/')
+        self.assertEqual(_httplib.path, '/api_url/odrctla/changepayment/1.0/')
         self.assertEqual(e.exception.error_code, '100')
 
 

@@ -2,7 +2,7 @@
 
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
 <%namespace name="nco" file="../../../templates/navcomponents.html"/>
-
+<% from altaircms.slackoff.forms import PromotionForm, TopicForm,TopcontentForm %>
 <div class="circle ${request.context.circle_type} circle-top"></div>
 <h2>${master_env.title} 削除確認画面</h2>
 
@@ -15,12 +15,29 @@
   </div>
 </div>
 
+<% fsm = request.featuresettingmanager %>
+<%
+if isinstance(form, PromotionForm) and fsm.get_boolean_value("altair.cms.usersite.promotion.usetrackingcode") or \
+   isinstance(form, TopicForm) and fsm.get_boolean_value("altair.cms.usersite.topic.usetrackingcode") or \
+   isinstance(form, TopcontentForm) and fsm.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode"):
+    index = display_fields.index(u"mobile_link") + 1
+    temp_display_fields = display_fields[0:index]
+    if u"trackingcode" not in temp_display_fields:
+        temp_display_fields.append(u"trackingcode")
+    temp_display_fields.extend(display_fields[index:])
+else:
+    temp_display_fields = display_fields
+%>
 <%def name="form_to_table(form, x)">
 <table class="table table-striped table-describe">
   <tbody>
-  % for k in display_fields:
+  % for k in temp_display_fields:
     <tr>
+	% if k == u"trackingcode":
+      <td>トラッキングコード</td>
+    % else:
 	  <td>${getattr(form,k).label}</td>
+    % endif
 	  <td>${getattr(x,k)}</td>
 	</tr>
   % endfor
