@@ -235,7 +235,7 @@ class UpdateView(object):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=obj)
         obj = ModelFaker(obj)
-
+        trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date = None, None, None, None
         for k, v in form.data.iteritems():
             if k == "trackingcode_parts":
                 trackingcode_parts = v
