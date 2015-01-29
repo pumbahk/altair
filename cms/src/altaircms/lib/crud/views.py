@@ -13,6 +13,7 @@ from altaircms.helpers.viewhelpers import get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
+logger = logging.getLogger(__file__)
 
 """
 todo: resourceを登録する形式に変更
@@ -141,8 +142,22 @@ class CRUDResource(RootFactory): ## fixme
         return form
 
     def update_model_from_form(self, obj, form):
+        # Put trackingcode together
+        trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date = None, None, None, None
         for k, v in form.data.iteritems():
-            setattr(obj, k, v)
+            if k == "trackingcode_parts":
+                trackingcode_parts = v
+            elif k == "trackingcode_genre":
+                trackingcode_genre = v
+            elif k == "trackingcode_eventcode":
+                trackingcode_eventcode = v
+            elif k == "trackingcode_date":
+                trackingcode_date = v
+            else:
+                setattr(obj, k, v)
+        if None not in [trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date]:
+            obj.trackingcode = "_".join([trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date.strftime("%Y%m%d")])
+
         DBSession.add(obj)
 
         if self.update_event:
@@ -222,7 +237,18 @@ class UpdateView(object):
         obj = ModelFaker(obj)
 
         for k, v in form.data.iteritems():
-            setattr(obj, k, v)
+            if k == "trackingcode_parts":
+                trackingcode_parts = v
+            elif k == "trackingcode_genre":
+                trackingcode_genre = v
+            elif k == "trackingcode_eventcode":
+                trackingcode_eventcode = v
+            elif k == "trackingcode_date":
+                trackingcode_date = v
+            else:
+                setattr(obj, k, v)
+        if None not in [trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date]:
+            obj.trackingcode = "_".join([trackingcode_parts, trackingcode_genre, trackingcode_eventcode, trackingcode_date.strftime("%Y%m%d")])
 
         return {"master_env": self.context,
                 "obj": obj, 

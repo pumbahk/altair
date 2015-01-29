@@ -503,6 +503,7 @@ class CompletionLotEntryView(object):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
 
+        cart_api.logout(self.request)
 
         try:
             api.get_options(self.request, entry.lot.id).dispose()
@@ -601,3 +602,16 @@ def payment_plugin_exception(context, request):
     else:
         location = request.context.host_base_url
     return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
+
+@view_defaults(route_name='lots.entry.logout')
+class LogoutView(object):
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(request_method="POST")
+    def post(self):
+        cart_api.logout(self.request)
+        return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context._event_id, lot_id=self.context._lot_id) or self.context.host_base_url or "/", headers=self.request.response.headers)

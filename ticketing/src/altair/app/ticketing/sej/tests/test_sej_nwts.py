@@ -39,7 +39,7 @@ class PythonNWTSUploaderTest(unittest.TestCase):
 
         self.assertEqual(self.dummy_server.request.body, "6002200060022aSEIT020U\x0a\0\0\0\0\0\0\0" "1234567890")
 
-        self.assertEqual(self.dummy_server.request.content_type, 'text/plain')
+        self.assertTrue('Content-Type' not in self.dummy_server.request.headers)
         self.assertEqual(self.dummy_server.request.method, 'POST')
         self.assertRegexpMatches(self.dummy_server.request.url, r'^http://localhost:48080/test.asp\?Mode=1&ThreadID=\d+')
 
@@ -64,7 +64,7 @@ class PythonNWTSUploaderTest(unittest.TestCase):
         self.dummy_server.poll()
 
         self.assertEqual(self.dummy_server.request.body, "6002200060022aSDMT010U\x0a\0\0\0\0\0\0\0" "1234567890")
-        self.assertEqual(self.dummy_server.request.content_type, 'text/plain')
+        self.assertTrue('Content-Type' not in self.dummy_server.request.headers)
         self.assertEqual(self.dummy_server.request.method, 'POST')
         self.assertRegexpMatches(self.dummy_server.request.url, r'http://localhost:48080/test.asp\?Mode=2&ThreadID=\d+')
 

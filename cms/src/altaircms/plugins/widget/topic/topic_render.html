@@ -15,6 +15,14 @@
     <ul>
 	  %for topic in topics:
         <% link  = h.link.get_link_from_topic(request,topic) %>
+        ## Embed a tracking code to topic link if exists
+        <% if request.featuresettingmanager.get_boolean_value("altair.cms.usersite.topic.usetrackingcode"):
+             trackingcode = h.link.get_trackingcode_from_topic(request, topic)
+             if trackingcode is not None:
+               params = {"l-id": trackingcode}
+               from altaircms.linklib import add_params_to_url
+               link = add_params_to_url(link, params)
+        %>
         %if link:
           <li><a href="${link}">${topic.title}</a></li>
         %else:

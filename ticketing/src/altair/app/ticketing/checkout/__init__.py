@@ -7,4 +7,5 @@ def configure_session(config):
 
 def includeme(config):
     config.include(configure_session)
+    config.include('.communicator')
     config.add_tween('.tweens.anshin_checkout_dbsession_tween_factory')

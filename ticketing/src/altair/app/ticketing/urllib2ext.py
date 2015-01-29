@@ -1,6 +1,13 @@
 import urllib2
 import urllib
 import base64
+import httplib
+import socket
+import ssl
+import logging
+from altair.httphelpers.httplib import OurHTTPSConnection
+
+logger = logging.getLogger(__name__)
 
 class SensibleRequest(urllib2.Request):
     def get_host(self):
@@ -39,3 +46,135 @@ class BasicAuthSensibleRequest(SensibleRequest):
         userinfo = self.get_userinfo()
         if userinfo is not None:
             self.add_header('Authorization', 'basic %s' % base64.b64encode(':'.join(userinfo)))
+
+
+class ClientSSLHTTPHandler(urllib2.AbstractHTTPHandler):
+    def do_request_(self, request):
+        host = request.get_host()
+        if not host:
+            raise URLError('no host given')
+
+        if request.has_data():  # POST
+            data = request.get_data()
+            capitalized_content_type = 'Content-type'.capitalize()
+            if request.has_header(capitalized_content_type):
+                if request.get_header(capitalized_content_type) is None:
+                    try:
+                        del request.headers[capitalized_content_type]
+                    except KeyError:
+                        pass
+                    try:
+                        del request.unredirected_hdrs[capitalized_content_type]
+                    except KeyError:
+                        pass
+            else:
+                if self.default_content_type:
+                    request.add_unredirected_header(
+                        capitalized_content_type,
+                        self.default_content_type)
+            if not request.has_header('Content-length'):
+                request.add_unredirected_header(
+                    'Content-length', '%d' % len(data))
+
+        sel_host = host
+        if request.has_proxy():
+            scheme, sel = splittype(request.get_selector())
+            sel_host, sel_path = splithost(sel)
+
+        if not request.has_header('Host'):
+            request.add_unredirected_header('Host', sel_host)
+        for name, value in self.parent.addheaders:
+            name = name.capitalize()
+            if not request.has_header(name):
+                request.add_unredirected_header(name, value)
+
+        return request
+
+    http_request = do_request_
+    https_request = do_request_
+
+    def http_open(self, req):
+        return self.do_open(httplib.HTTPConnection, req)
+
+    def https_open(self, req):
+        def https_connection_factory(host, **kwargs):
+            return OurHTTPSConnection(
+                host,
+                cert_reqs=req._cert_reqs if hasattr(req, '_cert_reqs') else None,
+                cert_file=req._cert_file if hasattr(req, '_cert_file') else None,
+                key_file=req._key_file if hasattr(req, '_key_file') else None,
+                ca_certs=req._ca_certs if hasattr(req, '_ca_certs') else None,
+                ssl_version=req._ssl_version if hasattr(req, '_ssl_version') else self.ssl_version,
+                **kwargs
+                )
+        return self.do_open(https_connection_factory, req)
+
+    def do_open(self, http_class, req):
+        host = req.get_host()
+        if not host:
+            raise urllib2.URLError('no host given')
+
+        h = http_class(host, timeout=req.timeout) # will parse host:port
+        h.set_debuglevel(self._debuglevel)
+
+        headers = dict(req.unredirected_hdrs)
+        headers.update(dict((k, v) for k, v in req.headers.items()
+                            if k not in headers))
+
+        headers["Connection"] = "close"
+        headers = dict(
+            (name.title(), val) for name, val in headers.items())
+
+        if req._tunnel_host:
+            tunnel_headers = {}
+            proxy_auth_hdr = "Proxy-Authorization"
+            if proxy_auth_hdr in headers:
+                tunnel_headers[proxy_auth_hdr] = headers[proxy_auth_hdr]
+                # Proxy-Authorization should not be sent to origin
+                # server.
+                del headers[proxy_auth_hdr]
+            h.set_tunnel(req._tunnel_host, headers=tunnel_headers)
+
+        try:
+            h.request(req.get_method(), req.get_selector(), req.data, headers)
+            try:
+                r = h.getresponse(buffering=True)
+            except TypeError: #buffering kw not supported
+                r = h.getresponse()
+        except socket.error as err: # XXX what error?
+            raise urllib2.URLError(err)
+
+        r.recv = r.read
+        fp = socket._fileobject(r, close=True)
+
+        resp = urllib2.addinfourl(fp, r.msg, req.get_full_url())
+        resp.code = r.status
+        resp.msg = r.reason
+        return resp
+
+    def __init__(self, *args, **kwargs):
+        default_content_type = kwargs.pop('default_content_type', None)
+        ssl_version = kwargs.pop('ssl_version', None)
+        urllib2.AbstractHTTPHandler.__init__(self, *args, **kwargs)
+        self.default_content_type = default_content_type
+        self.ssl_version = ssl_version
+
+def resolve_ssl_version(ssl_version):
+    if isinstance(ssl_version, basestring):
+        return getattr(ssl, 'PROTOCOL_%s' % ssl_version)
+    else:
+        return ssl_version
+
+def build_opener(default_content_type='application/x-www-form-urlencoded', ssl_version=None):
+    logger.debug('building opener with args: default_content_type=%s, ssl_version=%r' % (default_content_type, ssl_version))
+    opener = urllib2.OpenerDirector()
+    opener.add_handler(urllib2.ProxyHandler())
+    opener.add_handler(urllib2.UnknownHandler())
+    opener.add_handler(ClientSSLHTTPHandler(
+        default_content_type=default_content_type,
+        ssl_version=resolve_ssl_version(ssl_version)
+        ))
+    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+    opener.add_handler(urllib2.HTTPRedirectHandler())
+    opener.add_handler(urllib2.HTTPErrorProcessor())
+    return opener
