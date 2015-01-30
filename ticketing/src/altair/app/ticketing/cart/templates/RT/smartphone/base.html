@@ -44,7 +44,7 @@
   </div>
   <!-- /container -->
   <%block name="extras" />
-  % if request.organization.id == 15:
+  % if request.organization.setting.sitecatalyst_use:
     <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
   % endif
 </body>
