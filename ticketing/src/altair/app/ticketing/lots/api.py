@@ -579,6 +579,7 @@ def create_client_form(context, request, **kwds):
         user_profile = user.user_profile
 
     kwds['formdata'] = request.POST
+
     retval = schemas.ClientForm(context=context, **kwds)
 
     # XXX:ゆるふわなデフォルト値
@@ -605,6 +606,9 @@ def create_client_form(context, request, **kwds):
             birthday = user_profile.birthday
     retval.sex.process_data(unicode(sex or u''))
     retval.birthday.process_data(birthday)
+
+    if kwds['formdata']:
+        retval.process(**kwds)  # 入力フォームの値を反映
     return retval
 
 def get_lotting_announce_timezone(timezone):
