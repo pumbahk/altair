@@ -102,8 +102,23 @@ class EntryLotView(object):
             p.sort(key=key_func)
         return performance_product_map
 
-    def _create_form(self):
-        return api.create_client_form(self.context, self.request)
+    def _create_form(self, **kwds):
+        """希望入力と配送先情報と追加情報入力用のフォームを返す
+        """
+        def form_factory(formdata, name_builder, **kwargs):
+            from altair.app.ticketing.cart.schemas import extra_form_type_map
+            extra_form_type = extra_form_type_map[self.context.cart_setting.type]
+            form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
+            form.member_type.choices = ('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')
+            form.member_type.data = 'cpp'
+            return form
+        from altair.formhelpers.fields import OurFormField
+        fields = [
+            ('extra', OurFormField(form_factory=form_factory, name_handler=u'.', field_error_formatter=None)),
+            ]
+        flavors = self.context.cart_setting.flavors or {}
+        form = api.create_client_form(self.context, self.request, flavors=flavors, _fields=fields, **kwds)
+        return form
 
     @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
@@ -252,8 +267,7 @@ class EntryLotView(object):
             logger.debug('lot performances not found')
             raise HTTPNotFound()
 
-
-        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
+        cform = self._create_form(formdata=self.request.params)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -330,7 +344,9 @@ class EntryLotView(object):
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=birthday,
-            memo=cform['memo'].data)
+            memo=cform['memo'].data,
+            extra=cform['extra'].data,
+            )
 
         entry = api.get_lot_entry_dict(self.request)
         if entry is None:
