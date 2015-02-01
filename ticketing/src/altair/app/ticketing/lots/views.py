@@ -18,7 +18,6 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.view_support import (
-    build_dynamic_form,
     get_extra_form_data_pair_pairs,
     coerce_extra_form_data,
     )
@@ -214,11 +213,7 @@ class EntryLotView(object):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
         def form_factory(formdata, name_builder, **kwargs):
-            from altair.app.ticketing.cart.schemas import extra_form_type_map
-            extra_form_type = extra_form_type_map[self.context.cart_setting.type]
-            form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
-            form.member_type.choices = ('cpp', 'C++'), ('py', 'Python'), ('text', 'Plain Text')
-            form.member_type.data = 'cpp'
+            form = schemas.DynamicExtraForm(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
             return form
         from altair.formhelpers.fields import OurFormField
         fields = [
@@ -438,6 +433,7 @@ class ConfirmLotEntryView(object):
                 self.request,
                 self.context.lot.sales_segment,
                 raw_extra_form_data,
+                for_='lots'
                 )
         return dict(event=event,
                     lot=lot,
