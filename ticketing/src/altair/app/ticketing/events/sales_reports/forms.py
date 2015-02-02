@@ -14,7 +14,7 @@ from altair.formhelpers import (
 from altair.app.ticketing.core.models import Operator, ReportSetting, ReportRecipient, SalesSegment, Performance, Event
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum
 
-DETAIL_REPORT_SALES_SEGMENTS_LIMIT = 60
+DETAIL_REPORT_SALES_SEGMENTS_LIMIT = 100
 
 
 def validate_report_type(event_id, report_type):
