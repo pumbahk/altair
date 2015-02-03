@@ -37,7 +37,6 @@
 div#grpheader {
 	font-size: 120%;
 	text-align: left; /* for Quirks Mode */
-	background: #7ABEF5 url(../images/bg_header.jpg);
 }
 
 /* タグライン */
