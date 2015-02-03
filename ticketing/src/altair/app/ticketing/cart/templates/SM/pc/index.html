@@ -26,7 +26,7 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = ${h.json_encode(cart_release_url)|n};
-var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/KH/pc/images/loading.gif'))|n};
+var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/SM/pc/images/loading.gif'))|n};
 $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, spinnerPictureUrl);});
 </script>
 </%block>
@@ -243,7 +243,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     </div>
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/KH/pc/images/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/SM/pc/images/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
         <table summary="イベント詳細情報">
           <tbody>
             <tr>
