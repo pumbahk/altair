@@ -1,0 +1,38 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+% if which == 'next':
+%   if sales_segment is not None:
+<p>
+${performance.name} (${sales_segment.name}) の販売期間は
+</p>
+%   else:
+<p>
+${event.title} の販売期間は
+</p>
+% endif
+<p>
+${h.japanese_datetime(start_at)}
+% if end_at:
+〜 ${h.japanese_datetime(end_at)} 
+% endif
+</p>
+<p>となっております。</p>
+<p>
+  販売期間内にアクセスしていただきますようお願いいたします。
+</p>
+% else:
+<p>誠に申し訳ございませんが</p>
+%   if sales_segment is not None:
+<p>
+${performance.name} (${sales_segment.name}) の販売は
+</p>
+%   else:
+<p>
+${event.title} (${performance.name}) の販売は
+</p>
+%   endif
+<p>${h.japanese_datetime(end_at)} まで</p>
+<p>とさせていただいております。</p>
+<p>他の試合のチケットは<a href="${request.context.host_base_url}">こちら</a>からお買い求めくださいますようお願いいたします。</p>
+% endif
