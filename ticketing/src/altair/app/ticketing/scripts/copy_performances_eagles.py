@@ -133,8 +133,8 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
     for l, row in enumerate(r, 2):
         try:
             cols = dict((headers[i], col.decode(encoding)) for i, col in enumerate(row))
-            src_performance_name = cols[u'コピー元パフォーマンス']
-            src_performance_id = parse_long(cols[u'パフォーマンスID'], 'invalid performance id')
+            src_performance_name = cols[u'コピー元公演名']
+            src_performance_id = parse_long(cols[u'コピー元パフォーマンスID'], 'invalid performance id')
             new_performance_name = cols[u'公演名']
             new_performance_code = cols.get(u'公演コード')
             new_performance_date = parse_date(cols[u'試合開催日'], 'invalid performance date', default_year=now.year)
