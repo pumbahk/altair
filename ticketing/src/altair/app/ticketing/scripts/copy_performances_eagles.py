@@ -149,11 +149,12 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
             new_performance_max_quantity_per_user = parse_int(cols[u'購入上限枚数 (購入者毎)'], 'invalid max quantity')
 
             src_performance = get_performance(src_performance_id, title=src_performance_name)
+            src_performance_name = src_performance.name
 
             if new_performance_code is None:
                 new_performance_code = generate_performance_code(src_performance)
 
-            message('copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            message('copying Performance(id=%d, title=%s)' % (src_performance_id, src_performance_name))
 
             if not dry_run:
                 new_performance = Performance.clone(src_performance)
@@ -177,12 +178,11 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
                     accessor.update_sales_segment(sales_segment)
                 session.flush()
                 message('new performance: Performance(id=%d, title=%s, code=%s)' % (new_performance.id, new_performance.name, new_performance.code))
-            message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            message('end copying Performance(id=%d, title=%s)' % (src_performance_id, src_performance_name))
             transaction.commit()
         except:
             transaction.abort()
             raise
-        message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
