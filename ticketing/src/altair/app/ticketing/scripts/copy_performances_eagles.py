@@ -136,6 +136,7 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
             src_performance_name = cols[u'コピー元パフォーマンス']
             src_performance_id = parse_long(cols[u'パフォーマンスID'], 'invalid performance id')
             new_performance_name = cols[u'公演名']
+            new_performance_code = cols.get(u'公演コード')
             new_performance_date = parse_date(cols[u'試合開催日'], 'invalid performance date', default_year=now.year)
             new_performance_open_time = parse_time(cols[u'開場時間'], 'invalid open time')
             new_performance_start_time = parse_time(cols[u'開演時間'], 'invalid start time')
@@ -149,7 +150,8 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
 
             src_performance = get_performance(src_performance_id, title=src_performance_name)
 
-            new_performance_code = generate_performance_code(src_performance)
+            if new_performance_code is None:
+                new_performance_code = generate_performance_code(src_performance)
 
             message('copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
 
