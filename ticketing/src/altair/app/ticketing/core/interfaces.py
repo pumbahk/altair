@@ -78,3 +78,109 @@ class IOrderQueryable(Interface):
 class ISettingRenderer(Interface):
     def __iter__():
         pass
+
+class ICoreModelTraverser(Interface):
+    def begin_event(event):
+        pass
+
+    def end_event(event):
+        pass
+
+    def visit_event_setting(event_setting):
+        pass
+
+    def begin_sales_segment_group(sales_segment_group):
+        pass
+
+    def end_sales_segment_group(sales_segment_group):
+        pass
+
+    def visit_sales_segment_group_setting(sales_segment_group_setting):
+        pass
+
+    def visit_stock_type(stock_type):
+        pass
+
+    def visit_stock_holder(stock_holder):
+        pass
+
+    def visit_payment_delivery_method_pair(payment_delivery_method_pair):
+        pass
+
+    def begin_ticket_bundle(ticket_bundle):
+        pass
+
+    def visit_ticket_bundle_attribute(ticket_bundle_attribute):
+        pass
+
+    def end_ticket_bundle(ticket_bundle):
+        pass
+
+    def visit_ticket(ticket):
+        pass
+
+    def begin_lot(lot):
+        pass
+
+    def end_lot(lot):
+        pass
+
+    def begin_performance(performance):
+        pass
+
+    def end_performance(performance):
+        pass
+
+    def visit_performance_setting(performance_setting):
+        pass
+
+    def visit_stock(stock):
+        pass
+
+    def begin_sales_segment(sales_segment):
+        pass
+
+    def end_sales_segment(sales_segment):
+        pass
+
+    def visit_sales_segment_setting(sales_segment_setting):
+        pass
+
+    def begin_product(product):
+        pass
+
+    def end_product(product):
+        pass
+
+    def visit_product_item(product_item):
+        pass
+
+    def begin_venue(venue):
+        pass
+
+    def end_venue(venue):
+        pass
+
+    def begin_venue_area(venue_area):
+        pass
+
+    def end_venue_area(venue_area):
+        pass
+
+    def begin_seat(seat):
+        pass
+
+    def end_seat(seat):
+        pass
+
+    def visit_seat_attribute(seat_attribute):
+        pass
+
+    def begin_seat_index_type(seat_index_type):
+        pass
+
+    def end_seat_index_type(seat_index_type):
+        pass
+
+    def visit_seat_index(seat_index):
+        pass
