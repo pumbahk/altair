@@ -37,3 +37,17 @@ class IPublisher(Interface):
 class ITaskDispatcher(Interface):
     def __call__(task, channel, method, properties, body):
         pass
+
+class IWorkers(Interface):
+    def dispatch(fn):
+        pass
+
+class IWorker(Interface):
+    def start():
+        pass
+
+    def stop():
+        pass
+
+    def __call__(fn):
+        pass

@@ -71,6 +71,9 @@ class LocallyDispatchingPublisherConsumer(object):
             self.nowait = nowait
             self.callback = callback
 
+        def basic_qos(self, prefetch_size=0, prefetch_count=0, all_channels=False):
+            pass
+
         def basic_consume(self, handler, queue):
             assert self.queue == queue
             self.handler = handler
@@ -154,6 +157,9 @@ class LocallyDispatchingPublisherConsumer(object):
             immediate=immediate
             )
         logger.debug("done")
+
+    def modify_task_dispatcher(self, task_dispatcher):
+        return task_dispatcher
 
 @provider(IPublisherConsumerFactory)
 def locally_dispatching_publisher_consumer_factory(config, config_prefix):

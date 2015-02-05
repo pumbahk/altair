@@ -50,15 +50,23 @@ class TaskMapperTests(unittest.TestCase):
         task = mock.Mock()
         root_factory = mock.Mock()
         dispatcher = mock.Mock()
-        from ..interfaces import ITaskDispatcher
-        self.config.registry.registerUtility(dispatcher, ITaskDispatcher)
-        target = self._makeOne(self.config.registry, "testing", task, settings, root_factory)
+        target = self._makeOne(
+            registry=self.config.registry,
+            name="testing",
+            task=task,
+            queue_settings=settings,
+            root_factory=root_factory,
+            task_dispatcher=dispatcher
+            )
         channel = mock.Mock()
         method = mock.Mock()
         header = mock.Mock()
         body = mock.Mock()
         target.handle_delivery(channel, method, header, body)
-        dispatcher.assert_called_with(target, channel, method, header, body)
+        self.assertEqual(
+            dispatcher.call_args[0][0:-1],
+            (target, channel, method, header, body)
+            )
 
     def test_handle_derivery_timeout(self):
         settings = testing.DummyResource(queue="testing")
@@ -77,8 +85,16 @@ class TaskMapperTests(unittest.TestCase):
                 
         from ..interfaces import ITaskDispatcher
         dispatcher = Dispatcher()
-        self.config.registry.registerUtility(dispatcher, ITaskDispatcher)
-        target = self._makeOne(self.config.registry, "testing", task, settings, root_factory, timeout=1)
+        from ..consumer import WatchdogDispatcher
+        target = self._makeOne(
+            registry=self.config.registry,
+            name="testing",
+            task=task,
+            queue_settings=settings,
+            root_factory=root_factory,
+            task_dispatcher=WatchdogDispatcher(self.config.registry, dispatcher),
+            timeout=1
+            )
         channel = mock.Mock()
         method = mock.Mock()
         header = mock.Mock()
@@ -111,12 +127,14 @@ class PikaClientFactoryTests(unittest.TestCase):
         _PikaClient.return_value = 'YYY'
         result = self._callFUT(config, 'altair.mq.pika')
         _URLParameters.assert_called_with('url')
-        _PikaClient.assert_called_with('XXX')
+        _PikaClient.assert_called_with(config.registry, 'XXX')
         self.assertEqual(result, 'YYY')
 
 
 class PikaClientTests(unittest.TestCase):
-    
+    def setUp(self):
+        self.registry = mock.Mock()
+
     def _getTarget(self):
         from ..consumer import PikaClient
         return PikaClient
@@ -127,7 +145,7 @@ class PikaClientTests(unittest.TestCase):
 
     def test_connect(self):
         parameters = mock.Mock()
-        target = self._makeOne(parameters)
+        target = self._makeOne(self.registry, parameters)
         target.Connection = mock.Mock()
 
         target.connect()
@@ -138,7 +156,7 @@ class PikaClientTests(unittest.TestCase):
     def test_on_connected(self):
         
         parameters = mock.Mock()
-        target = self._makeOne(parameters)
+        target = self._makeOne(self.registry, parameters)
         connection = mock.Mock()
         
         target.on_connected(connection)
@@ -147,14 +165,14 @@ class PikaClientTests(unittest.TestCase):
 
     def test_on_open_with_empty_tasks(self):
         parameters = mock.Mock()
-        target = self._makeOne(parameters)
+        target = self._makeOne(self.registry, parameters)
         channel = mock.Mock()
 
         target.on_open(channel)
 
     def test_on_open_with_tasks(self):
         parameters = mock.Mock()
-        target = self._makeOne(parameters)
+        target = self._makeOne(self.registry, parameters)
         target.tasks.append(mock.Mock())
         channel = mock.Mock()
 
