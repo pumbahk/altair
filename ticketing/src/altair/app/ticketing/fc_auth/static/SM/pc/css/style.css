@@ -1,8 +1,7 @@
 body {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #74BBF3), color-stop(1, #0088CC) );
-	background:-moz-linear-gradient( center top, #74BBF3 5%, #0088CC 100% );
+	background: #003154;
 	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#74BBF3', endColorstr='#0088CC');
-	background-color:#74BBF3;
+	background-color:#003154;
 
 	font-size:12px;
 	height:100%;
@@ -228,7 +227,7 @@ width:100%;
 position:relative;
 margin:0;
 padding: 0 0 0 0;
-	background: #7ABEF5 url(../images/bg_header.jpg);
+	background: #000;
 	border-bottom: 5px solid #EFEFEF;
 }
 
@@ -779,10 +778,10 @@ width: 420px;
 height: 240px;
 }
 .loginbox thead th{
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #00AEEA), color-stop(1, #0089C8) );
-	background:-moz-linear-gradient( center top, #00AEEA 5%, #0089C8 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#00AEEA', endColorstr='#0089C8');
-	background-color:#00AEEA;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #036EB8), color-stop(1, #036EB8) );
+	background:-moz-linear-gradient( center top, #036EB8 5%, #036EB8 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#036EB8', endColorstr='#036EB8');
+	background-color:#036EB8;
 	font-size: 20px;
 	height: 30px;
 }
@@ -790,10 +789,10 @@ height: 240px;
 .loginbox td{ background: #FFFCE1; }
 
 .loginbox th{
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #00AEEA), color-stop(1, #0089C8) );
-	background:-moz-linear-gradient( center top, #00AEEA 5%, #0089C8 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#00AEEA', endColorstr='#0089C8');
-	background-color:#00AEEA;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #036EB8), color-stop(1, #036EB8) );
+	background:-moz-linear-gradient( center top, #036EB8 5%, #036EB8 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#036EB8', endColorstr='#036EB8');
+	background-color:#036EB8;
 }
 
 table.member{
@@ -805,6 +804,7 @@ table.member th,
 table.member td {
 border-bottom: 1px solid #0b3458 !important;
 border-right: 1px solid #0b3458 !important;
+border-left: 1px solid #0b3458 !important;
 }
 table.member th{ color: #FFF; text-align: right; }
 table.member td{ background: #FFF; }
@@ -922,24 +922,24 @@ table.form input.submit,
 text-align: center;
 color: #fff;
 padding: 5px;
-border:1px solid #0C0;
+border:1px solid #F8B62C;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
--moz-box-shadow:inset 0px 1px 0px 0px #0C3;
--webkit-box-shadow:inset 0px 1px 0px 0px #0C3;
-box-shadow:inset 0px 1px 0px 0px #0C3;
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #0C6), color-stop(1, #066) );
-background:-moz-linear-gradient( center top, #0C6 5%, #066 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#0C6', endColorstr='#066');
-background-color:#066;
+-moz-box-shadow:inset 0px 1px 0px 0px #F8B62C;
+-webkit-box-shadow:inset 0px 1px 0px 0px #F8B62C;
+box-shadow:inset 0px 1px 0px 0px #F8B62C;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #F8B62C), color-stop(1, #F8B62C) );
+background:-moz-linear-gradient( center top, #F8B62C 5%, #F8B62C 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#F8B62C', endColorstr='#F8B62C');
+background-color:#F8B62C;
 }
 
 table.form input.submit:hover,
 .btnLogin:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #066), color-stop(1, #0C6) );
-	background:-moz-linear-gradient( center top, #066 5%, #0C6 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#066', endColorstr='#0C6');
-	background-color:#0C6;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #F8B62C), color-stop(1, #F8B62C) );
+	background:-moz-linear-gradient( center top, #F8B62C 5%, #F8B62C 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#F8B62C', endColorstr='#F8B62C');
+	background-color:#F8B62C;
 }

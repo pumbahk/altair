@@ -4,14 +4,14 @@
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/SM/mobile/images/logo.png')}" width="240" height="96" alt="スサマジチケット" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/SM/mobile/images/logo.gif')}" width="240" height="96" alt="スサマジチケット" />
 </div>
 <div>
-<div style="background-color:#41A5D7" bgcolor="#41A5D7"><font color="white">チケット購入</font></div>
+<div style="background-color:#41A5D7" bgcolor="#003154"><font color="white">チケット購入</font></div>
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#003366">■</font>メンバーの方はこちらから</font>
+<div><font color="#036EB8">■</font>各種会員の方はこちらから</font>
 </div>
 <br/>
 
@@ -19,7 +19,7 @@
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="SM" />
 <div>
-  メンバーID(半角数字)<br/>
+  会員ID(半角数字)<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
@@ -33,7 +33,7 @@
 </div>
 
 <div>
-<div><font color="#003366">■</font>一般の方はこちらから</font>
+<div><font color="#036EB8">■</font>一般の方はこちらから</font>
 </div>
 
 </div>
