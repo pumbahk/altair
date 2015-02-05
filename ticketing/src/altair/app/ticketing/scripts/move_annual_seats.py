@@ -5,6 +5,7 @@ import logging
 import argparse
 import re
 import csv
+from datetime import date, time
 
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import expression as sqlexpr
@@ -295,33 +296,41 @@ def gen_sql(session, file, venue_id, src_stock_holder_names=None, dest_stock_hol
 
 def escape_param(dialect, value):
     if value is None:
-        return "NULL"
+        return u"NULL"
     elif isinstance(value, basestring):
-        return "'%s'" % value.replace("'", "''")
+        return u"'%s'" % value.replace("'", "''").replace('\\', '\\\\')
+    elif isinstance(value, date):
+        return u"'%s'" % value
+    elif isinstance(value, time):
+        return u"'%s'" % value
     else:
-        return str(value) # XXX
+        return unicode(value) # XXX
 
 def convert_placeholders(compiled_expr):
     stmt_str = str(compiled_expr)
     paramstyle = compiled_expr.dialect.paramstyle
     if paramstyle == 'named':
-        named_param_re = r'\b(%s)\b' % '|'.join(compiled_expr.params)
+        if len(compiled_expr.params) > 0:
+            named_param_re = ur'\b(%s)\b' % '|'.join(compiled_expr.params)
+        else:
+            named_param_re = None
 
     retval = []
     counter = itertools.count(0)
-    for token in re.finditer(r"""([^`'"]+)|(`(?:[^`]|``)*`)|('(?:[^']|\\'|'')*')|("(?:[^"]|\\"|"")*")""", stmt_str):
+    for token in re.finditer(ur"""([^`'"]+)|(`(?:[^`]|``)*`)|('(?:[^']|\\'|'')*')|("(?:[^"]|\\"|"")*")""", stmt_str):
         unquoted = token.group(1)
         if unquoted is not None:
             if paramstyle == 'pyformat':
-                unquoted = re.sub(r'%\(([^)]+)\)s', lambda g: '{%s}' % g.group(1), unquoted)
+                unquoted = re.sub(ur'%\(([^)]+)\)s', lambda g: u'{%s}' % g.group(1), unquoted)
             elif paramstyle == 'qmark':
-                unquoted = re.sub(r'\?', lambda g: '{%d}' % counter.next(), unquoted)
+                unquoted = re.sub(ur'\?', lambda g: u'{%d}' % counter.next(), unquoted)
             elif paramstyle == 'format':
-                unquoted = re.sub(r'%s', lambda g: '{%d}' % counter.next(), unquoted)
+                unquoted = re.sub(ur'%s', lambda g: u'{%d}' % counter.next(), unquoted)
             elif paramstyle == 'numeric':
-                unquoted = re.sub(r':(\d+)', lambda g: '{%d}' % (int(g.group(1)) - 1), unquoted)
+                unquoted = re.sub(ur':(\d+)', lambda g: u'{%d}' % (int(g.group(1)) - 1), unquoted)
             elif paramstyle == 'named':
-                unquoted = re.sub(named_param_re, lambda g: '{%s}' % g.group(1), unquoted)
+                if named_param_re is not None:
+                    unquoted = re.sub(named_param_re, lambda g: u'{%s}' % g.group(1), unquoted)
             retval.append(unquoted)
         else:
             retval.append(token.group(0))
