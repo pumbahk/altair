@@ -233,6 +233,17 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete Venue
         self.delete()
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_venue(self)
+        for seat_index_type in self.seat_index_types:
+            seat_index_type.accept_core_model_traverser(traverser)
+        for area in self.areas:
+            area.accept_core_model_traverser(traverser)
+        for seat in self.seats:
+            seat.accept_core_model_traverser(traverser)
+        traverser.end_venue(self)
+
+
 class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "VenueArea"
     id              = Column(Identifier, primary_key=True)
@@ -262,11 +273,19 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete VenueArea
         self.delete()
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_venue_area(self)
+
+
 class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "SeatAttribute"
     seat_id         = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_seat_attribute(self)
+
 
 class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
@@ -348,6 +367,14 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def get_grouping_seat_sets(pid, stid):
         return [[]]
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_seat(self)
+        for attribute in self.attributes_.values():
+            attribute.accept_core_model_traverser(traverser)
+        for seat_index in self.indexes:
+            seat_index.accept_core_model_traverser(traverser)
+        traverser.end_seat(self)
 
 class SeatStatusEnum(StandardEnum):
     NotOnSale = 0
@@ -561,6 +588,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             - Product
               - ProductItem
             − MemberGroup_SalesSegment
+          - Stock
+            - StockStatus
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -787,6 +816,15 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Product.id==ProductItem.product_id)\
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_performance(self)
+        if self.setting is not None:
+            traverser.visit_performance_setting(self.setting)
+        for stock in self.stocks:
+            stock.accept_core_model_traverser(traverser)
+        self.venue.accept_core_model_traverser(traverser)
+        traverser.end_performance(self)
 
 class ReportFrequencyEnum(StandardEnum):
     Daily = (1, u'毎日')
@@ -1330,6 +1368,25 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def sorted_performances(self):
         return sorted(self.performances, key=lambda p: (p.display_order, p.id))
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_event(self)
+        if self.setting is not None:
+            traverser.visit_event_setting(self.setting)
+        for stock_type in self.stock_types:
+            stock_type.accept_core_model_traverser(traverser)
+        for stock_holder in self.stock_holders:
+            stock_holder.accept_core_model_traverser(traverser)
+        for ticket in self.tickets:
+            ticket.accept_core_model_traverser(traverser)
+        for ticket_bundle in self.ticket_bundles:
+            ticket_bundle.accept_core_model_traverser(traverser)
+        for performance in self.performances:
+            performance.accept_core_model_traverser(traverser)
+        for sales_segment_group in self.sales_segment_groups:
+            sales_segment_group.accept_core_model_traverser(traverser)
+        for lot in self.lots:
+            lot.accept_core_model_traverser(traverser)
+        traverser.end_event(self)
 
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
@@ -1517,6 +1574,17 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """ISalesSegmentQueryable.query_sales_segments)"""
         q = build_sales_segment_query(sales_segment_group_id=self.id, user=user, now=now, type=type)
         return q
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_sales_segment_group(self)
+        if self.setting is not None:
+            traverser.visit_sales_segment_group_setting(self.setting)
+        for payment_delivery_method_pair in self.payment_delivery_method_pairs:
+            payment_delivery_method_pair.accept_core_model_traverser(traverser)
+        for sales_segment in self.sales_segments:
+            sales_segment.accept_core_model_traverser(traverser)
+        traverser.end_sales_segment_group(self)
+
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -1759,6 +1827,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         if self.lot_entries:
             raise Exception(u'抽選申込がある為、削除できません')
         super(PaymentDeliveryMethodPair, self).delete()
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_payment_delivery_method_pair(self)
+
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
@@ -2063,6 +2135,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item.stock = stock
         product_item.save()
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_product_item(self)
+
+
 class StockTypeEnum(StandardEnum):
     Seat = 0
     Other = 1
@@ -2209,6 +2285,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_type.save()
         return {template.id:stock_type.id}
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_stock_type(self)
+
+
 class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "StockHolder"
     id = Column(Identifier, primary_key=True)
@@ -2286,6 +2366,10 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_stock_holder(self)
+
 
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -2424,6 +2508,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def get_for_update(pid, stid):
         return Stock.filter(Stock.performance_id==pid, Stock.stock_type_id==stid, Stock.quantity>0).with_lockmode("update").first()
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_stock(self)
 
 # stock based on quantity
 class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -2667,6 +2754,12 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_amount_mismatching(self):
         return self.price != sum(pi.price * pi.quantity for pi in self.items)
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_product(self)
+        for product_item in self.items:
+            product_item.accept_core_model_traverser(traverser)
+        traverser.end_product(self)
+
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
@@ -2682,12 +2775,19 @@ class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         seat_index_type.save()
         return {template.id:seat_index_type.id}
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_seat_index_type(self)
+
+
 class SeatIndex(Base, BaseModel):
     __tablename__      = "SeatIndex"
     seat_index_type_id = Column(Identifier, ForeignKey('SeatIndexType.id', ondelete='CASCADE'), primary_key=True)
     seat_id            = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True)
     index              = Column(Integer, nullable=False)
     seat               = relationship('Seat', backref='indexes')
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_seat_index(self)
 
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1
@@ -2946,6 +3046,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             self.flags = flags & ~self.FLAG_PRINCIPAL
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_ticket(self)
+
+
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
@@ -3151,6 +3255,12 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.product_items:
             raise Exception(u'関連づけされた商品がある為、削除できません')
         super(type(self), self).delete()
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_ticket_bundle(self)
+        for attribute in self.attributes_.values():
+            attribute.accept_core_model_traverser(traverser)
+        traverser.end_ticket_bundle(self)
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
@@ -3664,6 +3774,14 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def applicable(self, user=None, now=None, type='available'):
         return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
+
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_sales_segment(self)
+        if self.setting is not None:
+            traverser.visit_sales_segment_setting(self.setting)
+        for product in self.products:
+            product.accept_core_model_traverser(traverser)
+        traverser.end_sales_segment(self)
 
 class SalesReportTypeEnum(StandardEnum):
     Default = 1
