@@ -11,21 +11,24 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#F0F222">■</font>各種会員の方はこちらから</font>
+<div><font color="#F0F222">■</font>ファンクラブ会員の方はこちらから</font>
 </div>
+<br/>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="OG" />
 <div>
   会員ID<br/>
-  <input type="text" name="username" size="22" value="" istyle="4">
+  <input type="text" name="username" size="22" value="" istyle="4"><br/>
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">会員IDまたはパスワードが一致しません</span>
   %endif
+  ※会員証記載の5桁の数字<br/>例）99999<br/>
   <br/>
   パスワード<br/>
-  <input type="text" name="password" size="22" value="" istyle="4">
+  <input type="text" name="password" size="22" value="" istyle="4"><br/>
+  ご登録のお電話番号<br/>※ハイフン無し<br/>例）0123456789<br/>
 </div>
 <input type="submit" value="ログイン" />
 </form>
