@@ -133,9 +133,10 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
     for l, row in enumerate(r, 2):
         try:
             cols = dict((headers[i], col.decode(encoding)) for i, col in enumerate(row))
-            src_performance_name = cols[u'コピー元パフォーマンス']
-            src_performance_id = parse_long(cols[u'パフォーマンスID'], 'invalid performance id')
+            src_performance_name = cols[u'コピー元公演名']
+            src_performance_id = parse_long(cols[u'コピー元パフォーマンスID'], 'invalid performance id')
             new_performance_name = cols[u'公演名']
+            new_performance_code = cols.get(u'公演コード')
             new_performance_date = parse_date(cols[u'試合開催日'], 'invalid performance date', default_year=now.year)
             new_performance_open_time = parse_time(cols[u'開場時間'], 'invalid open time')
             new_performance_start_time = parse_time(cols[u'開演時間'], 'invalid start time')
@@ -148,10 +149,12 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
             new_performance_max_quantity_per_user = parse_int(cols[u'購入上限枚数 (購入者毎)'], 'invalid max quantity')
 
             src_performance = get_performance(src_performance_id, title=src_performance_name)
+            src_performance_name = src_performance.name
 
-            new_performance_code = generate_performance_code(src_performance)
+            if new_performance_code is None:
+                new_performance_code = generate_performance_code(src_performance)
 
-            message('copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            message('copying Performance(id=%d, title=%s)' % (src_performance_id, src_performance_name))
 
             if not dry_run:
                 new_performance = Performance.clone(src_performance)
@@ -175,12 +178,11 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
                     accessor.update_sales_segment(sales_segment)
                 session.flush()
                 message('new performance: Performance(id=%d, title=%s, code=%s)' % (new_performance.id, new_performance.name, new_performance.code))
-            message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            message('end copying Performance(id=%d, title=%s)' % (src_performance_id, src_performance_name))
             transaction.commit()
         except:
             transaction.abort()
             raise
-        message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
