@@ -586,7 +586,6 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
                 tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
                 tickets = get_tickets(request, order_like)
-            import ipdb;ipdb.set_trace()
             sej_order = sej_api.create_sej_order(
                 request,
                 tickets=tickets,
