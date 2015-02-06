@@ -7,7 +7,9 @@ from pyramid.interfaces import IRequestFactory, IRequestExtensions, ITweens, IDe
 from pyramid.request import Request
 from pyramid.events import NewRequest, ContextFound
 from pyramid.threadlocal import manager
+from pika.exceptions import AMQPConnectionError
 from pika.adapters.tornado_connection import TornadoConnection
+from tornado.ioloop import IOLoop
 from zope.interface import implementer, provider, directlyProvides
 from .interfaces import (
     IConsumer, 
@@ -199,6 +201,9 @@ class PikaClient(object):
         self.reconnection_interval = reconnection_interval
         self.close_callbacks = []
         self.closing = False
+        self.available = False
+        self.connection = None
+        self._timer = None
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -206,22 +211,49 @@ class PikaClient(object):
     def add_close_callback(self, callback):
         self.close_callbacks.append(callback)
 
+    def _register_timeout_callback(self, t, fn):
+        if self._timer is not None:
+            raise ValueError('timer is already registered')
+        ioloop = IOLoop.instance()
+        def _():
+           def _():
+                self._timer = None
+                fn()
+           self._timer = ioloop.add_timeout(ioloop.time() + t, _)
+        ioloop.add_callback(_)
+
+    def _cancel_timeout(self):
+        if self._timer is not None:
+            ioloop = IOLoop.instance()
+            ioloop.remove_timeout(self._timer)
+
     def connect(self):
         if not self.tasks:
             logger.warning("no tasks registered")
 
         logger.info("connecting")
-        self.connection = self.Connection(self.parameters,
-                                          self.on_connected)
+        try:
+            self.connection = self.Connection(self.parameters,
+                                              self.on_connected)
+        except AMQPConnectionError:
+            logger.info('connection refused; trying to reconnect in %d seconds' % self.reconnection_interval)
+            self.connection = None
+            self._register_timeout_callback(self.reconnection_interval, self.connect)
 
     def close(self):
-        if self.connection is not None:
-            if not self.closing:
-                self.closing = True
-                self.connection.close()
+        if not self.closing:
+            self._cancel_timeout()
+            self.closing = True
+            if self.available:
+                if self.connection is not None:
+                    self.connection.close()
+            else:
+                self.on_close(self.connection, None, None)
 
     def on_connected(self, connection):
         logger.debug('connected')
+        self._cancel_timeout()
+        self.available = True
         connection.channel(self.on_open)
         connection.add_on_close_callback(self.on_close)
 
@@ -232,10 +264,11 @@ class PikaClient(object):
             task.declare_queue(channel)
 
     def on_close(self, connection, reply_code, reply_text):
+        self.available = False
         if not self.closing:
             if self.reconnection_interval > 0:
                 logger.info('connection has been closed; reconnecting in %d seconds' % self.reconnection_interval)
-                self.connection.add_timeout(
+                self._register_timeout_callback(
                     self.reconnection_interval,
                     self.connect)
                 return
