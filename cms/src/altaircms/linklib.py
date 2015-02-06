@@ -16,7 +16,7 @@ def quote(x):
 def add_params_to_url(url, params_dict):
     if not isinstance(url, ParseResult):
         url = urlparse(url)
-    qs_dict = parse_qs(url.query)
+    qs_dict = parse_qs(str(url.query))
     qs_dict.update(params_dict)
     return _url_builder(url.scheme, url.hostname, url.path, qs_dict)
 

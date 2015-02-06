@@ -1,0 +1,52 @@
+<%page args="reporter" /><%
+
+import cStringIO
+from altair.app.ticketing.csvutils import UnicodeWriter
+
+queue = cStringIO.StringIO()
+writer = UnicodeWriter(queue)
+
+writer.writerow([
+    u"公演コード",
+    u"公演日時",
+    u"Stock",
+    u"席種",
+    u"配席数",
+    u"残数",
+    u"販売区分",
+    u"商品",
+    u"価格",
+    u"受付数",
+    u"購入確定数",
+    u"予約数",
+    u"受付金額",
+#   u"購入確定金額",
+])
+
+for id, sd in sorted(reporter.get().items(), key=lambda x:[x[1]['stock'].performance.start_on, x[1]['stock'].stock_type.display_order]):
+    writer.writerow([
+    sd['stock'].performance.code,
+    sd['stock'].performance.start_on.strftime("%Y/%m/%d %H:%M"),
+    "%u" % sd['stock'].id,
+    sd['stock'].stock_type.name,
+    "%u" % sd['stock'].quantity,
+    "%u" % sd['available'],
+    ])
+    for d in sd['data']:
+        writer.writerow([
+        sd['stock'].performance.code,
+    sd['stock'].performance.start_on.strftime("%Y/%m/%d %H:%M"),
+    "%u" % sd['stock'].id,
+    sd['stock'].stock_type.name,
+    '', '',
+    d.SalesSegmentGroup.name,
+    d.ProductItem.name,
+    "%u" % d.ProductItem.price,
+    "%u" % d.ordered,
+    "%u" % d.paid,
+    "%u" % (d.ordered-d.paid),
+    "%u" % d.ordered_price,
+#   "%u" % d.paid_price,
+    ])
+
+%>${queue.getvalue().decode("utf-8")}

@@ -433,6 +433,11 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 LotEntry.entry_no==entry_no
         ).first()
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.begin_lot(self)
+        traverser.end_lot(self)
+
+
 @implementer(IPurchase)
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """

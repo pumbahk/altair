@@ -14,6 +14,7 @@ from .interfaces import (
     IPublisherConsumerFactory,
     IMessage,
     ITaskDispatcher,
+    IWorkers,
 )
 from .watchdog import Watchdog
 
@@ -26,18 +27,25 @@ def pika_client_factory(config, config_prefix):
     if url is None:
         raise ConfigurationError('missing configuration: %s' % setting_name)
     parameters = pika.URLParameters(url)
-    return PikaClient(parameters)
+    return PikaClient(config.registry, parameters)
 
 class TaskMapper(object):
-    def __init__(self, registry, name, task=None, queue_settings=None, root_factory=None, timeout=None):
+    def __init__(self, registry, name, task=None, queue_settings=None, root_factory=None, task_dispatcher=None, prefetch_size=0, prefetch_count=1, **kwargs):
         self.registry = registry
         self.name = name
         self.task = task
         self.queue_settings = queue_settings
         self.channel = None
         self.root_factory = root_factory
-        self.timeout = timeout
-        logger.debug(self.root_factory)
+        self.prefetch_size = prefetch_size
+        self.prefetch_count = prefetch_count
+        self.task_dispatcher = task_dispatcher
+        self.args = kwargs
+
+    def __repr__(self):
+        return 'TaskMapper(name=%r, task=%r, queue_settings=%r, root_factory=%r, task_dispatcher=%r, prefetch_size=%r, prefetch_count=%r, **kwargs=%r)' % (
+            self.name, self.task, self.queue_settings, self.root_factory, self.task_dispatcher, self.prefetch_size, self.prefetch_count, self.args
+            )
 
     def declare_queue(self, channel):
         logger.debug("{name} declare queue {settings}".format(name=self.name,
@@ -45,6 +53,10 @@ class TaskMapper(object):
 
         def on_queue_declared(frame):
             logger.debug('declared: {0}'.format(self.name))
+            channel.basic_qos(
+                prefetch_size=self.prefetch_size,
+                prefetch_count=self.prefetch_count
+                )
             consumer_tag = channel.basic_consume(self.handle_delivery,
                                                       queue=self.queue_settings.queue)
             logger.debug('consume: {0}'.format(consumer_tag))
@@ -57,13 +69,41 @@ class TaskMapper(object):
                               callback=on_queue_declared)
 
     def handle_delivery(self, channel, method, properties, body):
+        logger.debug('handle_delivery: self=%r, channel=%s, method=%s, properties=%r, body=%s' % (self, channel, method, properties, body))
         try:
-            dispatcher = self.registry.getUtility(ITaskDispatcher)
-            with Watchdog(self.timeout):
-                dispatcher(self, channel, method, properties, body)
-                channel.basic_ack(method.delivery_tag)
+            self.task_dispatcher(
+                self,
+                channel,
+                method,
+                properties,
+                body,
+                lambda: channel.basic_ack(method.delivery_tag)
+                )
         except:
             logger.error('failed to handle message', exc_info=True)
+
+   
+class WatchdogDispatcher(object):
+    def __init__(self, registry, handler):
+        self.registry = registry
+        self.handler = handler
+
+    def __call__(self, task_mapper, channel, method, properties, body, continuation):
+        with Watchdog(task_mapper.args['timeout']):
+            self.handler(task_mapper, channel, method, properties, body, continuation)
+
+
+class WorkerDispatcher(object):
+    def __init__(self, registry, handler):
+        self.registry = registry
+        self.handler = handler
+
+    def _worker_do(self, f):
+        workers = self.registry.getUtility(IWorkers)
+        workers.dispatch(f)
+
+    def __call__(self, task_mapper, channel, method, properties, body, continuation):
+        self._worker_do(lambda: self.handler(task_mapper, channel, method, properties, body, continuation))
 
 
 class TaskDispatcher(object):
@@ -86,8 +126,7 @@ class TaskDispatcher(object):
         request.task_mapper.task(context, request)
         return request.response
 
-    def __call__(self, task_mapper, channel, method, properties, body):
-        logger.debug('handle delivery: {0}'.format(task_mapper.name))
+    def __call__(self, task_mapper, channel, method, properties, body, continuation):
         conn_params = channel.connection.params
         environ = {
             'REQUEST_METHOD': 'POST',
@@ -97,7 +136,6 @@ class TaskDispatcher(object):
             'SERVER_NAME': conn_params.host,
             'SERVER_PORT': conn_params.port,
             }
-        logger.debug('properties: {0}'.format(properties))
         if properties is not None:
             environ.update({
                 'CONTENT_TYPE': properties.content_type,
@@ -139,6 +177,8 @@ class TaskDispatcher(object):
                     request._set_extensions(extensions)
                 self.registry.has_listeners and self.registry.notify(NewRequest(request))
                 self._handle_request(request)
+                if continuation is not None:
+                    continuation()
             finally:
                  finished_callbacks = getattr(request, 'finished_callbacks', None)
                  if finished_callbacks is not None:
@@ -152,12 +192,19 @@ class TaskDispatcher(object):
 @implementer(IConsumer)
 class PikaClient(object):
     Connection = TornadoConnection
-    def __init__(self, parameters):
+    def __init__(self, registry, parameters, reconnection_interval=10):
+        self.registry = registry
         self.parameters = parameters
         self.tasks = []
+        self.reconnection_interval = reconnection_interval
+        self.close_callbacks = []
+        self.closing = False
 
     def add_task(self, task):
         self.tasks.append(task)
+
+    def add_close_callback(self, callback):
+        self.close_callbacks.append(callback)
 
     def connect(self):
         if not self.tasks:
@@ -167,12 +214,37 @@ class PikaClient(object):
         self.connection = self.Connection(self.parameters,
                                           self.on_connected)
 
+    def close(self):
+        if self.connection is not None:
+            if not self.closing:
+                self.closing = True
+                self.connection.close()
+
     def on_connected(self, connection):
         logger.debug('connected')
         connection.channel(self.on_open)
+        connection.add_on_close_callback(self.on_close)
 
     def on_open(self, channel):
         logger.debug('opened')
 
         for task in self.tasks:
             task.declare_queue(channel)
+
+    def on_close(self, connection, reply_code, reply_text):
+        if not self.closing:
+            if self.reconnection_interval > 0:
+                logger.info('connection has been closed; reconnecting in %d seconds' % self.reconnection_interval)
+                self.connection.add_timeout(
+                    self.reconnection_interval,
+                    self.connect)
+                return
+            else:
+                logger.warning('connection has been closed')
+        for callback in self.close_callbacks:
+            callback(self)
+
+    def modify_task_dispatcher(self, task_dispatcher):
+        task_dispatcher = WatchdogDispatcher(self.registry, task_dispatcher)
+        task_dispatcher = WorkerDispatcher(self.registry, task_dispatcher)
+        return task_dispatcher

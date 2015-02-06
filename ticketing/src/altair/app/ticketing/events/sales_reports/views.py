@@ -3,6 +3,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
+import urllib
 
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
@@ -25,7 +26,7 @@ from altair.app.ticketing.events.sales_reports.forms import (
     ReportSettingForm,
     )
 
-from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, sendmail
+from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, ExportableReporter, sendmail
 from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,25 @@ class SalesReports(BaseView):
         return {
             'form':form,
             }
+
+    @view_config(route_name='sales_reports.export')
+    def get_exported(self):
+        event_id = long(self.request.params.get('event_id') or 0)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        if event is None:
+            raise HTTPNotFound('event id %d is not found' % event_id)
+        
+        render_param = dict(reporter=ExportableReporter(self.request, event), encoding="cp932")
+        r = render_to_response('altair.app.ticketing:templates/sales_reports/export.txt', render_param, request=self.request)
+        if(self.request.params.get('view')):
+            r.headers['Content-Type'] = 'text/plain'
+            return r
+        filename = u"売上レポート.csv"
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        return Response(r.text.encode('cp932'), headers=headers)
 
     @view_config(route_name='sales_reports.mail_body')
     def mail_body(self):
