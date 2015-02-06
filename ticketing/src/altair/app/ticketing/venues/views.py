@@ -368,6 +368,7 @@ def update_seat_group(context, request):
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
+    slave_session = get_db_session(request, 'slave')
     venue = request.context.venue
 
     _necessary_params = request.params.get(u'n', None)
@@ -392,7 +393,7 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
+        query = slave_session.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
         query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
         # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
@@ -418,7 +419,7 @@ def get_seats(request):
 
     if u'stocks' in necessary_params:
         stocks_data = []
-        query = DBSession.query(Stock, func.count(ProductItem.id)).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        query = slave_session.query(Stock, func.count(ProductItem.id)).options(joinedload('stock_status')).filter_by(performance=venue.performance)
         query = query.outerjoin(ProductItem, and_(
             ProductItem.performance_id==venue.performance_id,
             ProductItem.stock_id==Stock.id,
@@ -451,7 +452,7 @@ def get_seats(request):
         retval[u'stocks'] = stocks_data
 
     if u'stock_types' in necessary_params:
-        query = DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
+        query = slave_session.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
         if sale_only:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_type_id==StockType.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
@@ -473,7 +474,7 @@ def get_seats(request):
             ]
 
     if u'stock_holders' in necessary_params:
-        query = DBSession.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
+        query = slave_session.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
         if sale_only:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))

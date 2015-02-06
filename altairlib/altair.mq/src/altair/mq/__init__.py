@@ -33,6 +33,10 @@ class QueueSettings(object):
                 "nowait = {0.nowait}; "
                 "arguments = {0.arguments}; ").format(self)
 
+
+prefetch_size_setting_name = '%s.qos.prefetch_size' % __name__
+prefetch_count_setting_name = '%s.qos.prefetch_count' % __name__
+
 def add_task(config, task,
              name,
              root_factory=None,
@@ -42,7 +46,9 @@ def add_task(config, task,
              durable=True, 
              exclusive=False, 
              auto_delete=False,
-             nowait=False):
+             nowait=False,
+             prefetch_size=None,
+             prefetch_count=None):
     from .consumer import TaskMapper
 
     if root_factory is not None:
@@ -63,24 +69,47 @@ def add_task(config, task,
         if pika_consumer is None:
             raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
+        if prefetch_size is None:
+            try:
+                _prefetch_size = int(config.registry.settings.get(prefetch_size_setting_name, 0))
+            except (ValueError, TypeError):
+                raise ConfigurationError(prefetch_size_setting_name)
+        else:
+            _prefetch_size = prefetch_size
+
+        if prefetch_count is None:
+            try:
+                _prefetch_count = int(config.registry.settings.get(prefetch_count_setting_name, 1))
+            except (ValueError, TypeError):
+                raise ConfigurationError(prefetch_count_setting_name)
+        else:
+            _prefetch_count = prefetch_count
+
+        task_dispatcher = config.registry.queryUtility(ITaskDispatcher)
+
+        task_dispatcher = pika_consumer.modify_task_dispatcher(task_dispatcher)
+
         pika_consumer.add_task(
             TaskMapper(
                 registry=reg,
                 task=task,
                 name=name,
                 root_factory=root_factory,
+                queue_settings=queue_settings,
+                task_dispatcher=task_dispatcher,
                 timeout=timeout,
-                queue_settings=queue_settings
+                prefetch_size=_prefetch_size,
+                prefetch_count=_prefetch_count
                 )
             )
         logger.info("register task {name} {root_factory} {queue_settings} {timeout}".format(name=name,
                                                                    root_factory=root_factory,
                                                                    queue_settings=queue_settings,
                                                                    timeout=timeout))
-        reg.registerUtility(task, ITask)
+        reg.registerUtility(task, ITask, name=name)
 
     config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),
-                  register)
+                  register, order=2)
 
 
 def get_consumer(request_or_registry, name=''):
@@ -127,13 +156,24 @@ def includeme(config):
     from . import consumer, publisher
 
     def register_task_dispatcher():
-        task_dispatcher = config.registry.settings.get('%s.task_dispatcher' % __name__)
-        if task_dispatcher is not None:
-            task_dispatcher = config.maybe_dotted(task_dispatcher)
+        task_dispatcher_factory = config.registry.settings.get('%s.task_dispatcher' % __name__)
+        if task_dispatcher_factory is not None:
+            task_dispatcher_factory = config.maybe_dotted(task_dispatcher_factory)
         else:
-            task_dispatcher = consumer.TaskDispatcher
+            task_dispatcher_factory = consumer.TaskDispatcher
 
-        config.registry.registerUtility(task_dispatcher(config.registry), ITaskDispatcher)
+        task_dispatcher_middlewares = config.registry.settings.get('%s.task_dispatcher_middlewares' % __name__)
+        if task_dispatcher_middlewares:
+            task_dispatcher_middlewares = [config.maybe_dotted(c) for c in re.split(r'(?:\s*,\s*|\s+)', task_dispatcher_middlewares) if c]
+        else:
+            task_dispatcher_middlewares = None
+
+        task_dispatcher = task_dispatcher_factory(config.registry) 
+        if task_dispatcher_middlewares is not None:
+            logger.info('task_dispatcher_middlewares=%r' % task_dispatcher_middlewares)
+            for middleware in task_dispatcher_middlewares:
+                task_dispatcher = middleware(config.registry, task_dispatcher)
+        config.registry.registerUtility(task_dispatcher, ITaskDispatcher)
     # this has to be run after all the tweens are registered
     config.action("altair.mq.register_task_dispatcher", register_task_dispatcher, order=1)
 

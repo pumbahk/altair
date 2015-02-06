@@ -239,7 +239,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-W6ZH4Q');</script>
 <!-- End Google Tag Manager -->
+% if request.featuresettingmanager.get_boolean_value("altair.cms.usersite.front.usesitecatalyst"):
 <%include file="altaircms:templates/front/sitecatalyst.html"/>
+% endif
 ## tracking 画像(<browserid>.gif)を取得するhtmlを生成
 <%! from altairsite.tracking import get_tracking_image %>
 ${get_tracking_image(request)}

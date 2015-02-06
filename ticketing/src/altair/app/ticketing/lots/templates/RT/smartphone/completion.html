@@ -121,6 +121,6 @@ ${shipping_address.address_2}
 </form>
 
 </div>
-% if request.organization.id == 15:
+% if request.organization.setting.sitecatalyst_use:
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif

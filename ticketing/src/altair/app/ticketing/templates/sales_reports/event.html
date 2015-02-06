@@ -62,6 +62,8 @@
 <h3>公演</h3>
 <%include file="./_list.html" args="form=form, reporter=performance_total_reporter" />
 
+<div><a href="${request.route_path("sales_reports.export")}?event_id=${event.id}">CSVダウンロード</a> (β)</div>
+
 % else:
 レポート対象データがありません
 % endif
