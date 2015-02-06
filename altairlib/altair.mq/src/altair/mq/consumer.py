@@ -197,9 +197,14 @@ class PikaClient(object):
         self.parameters = parameters
         self.tasks = []
         self.reconnection_interval = reconnection_interval
+        self.close_callbacks = []
+        self.closing = False
 
     def add_task(self, task):
         self.tasks.append(task)
+
+    def add_close_callback(self, callback):
+        self.close_callbacks.append(callback)
 
     def connect(self):
         if not self.tasks:
@@ -208,6 +213,12 @@ class PikaClient(object):
         logger.info("connecting")
         self.connection = self.Connection(self.parameters,
                                           self.on_connected)
+
+    def close(self):
+        if self.connection is not None:
+            if not self.closing:
+                self.closing = True
+                self.connection.close()
 
     def on_connected(self, connection):
         logger.debug('connected')
@@ -221,11 +232,17 @@ class PikaClient(object):
             task.declare_queue(channel)
 
     def on_close(self, connection, reply_code, reply_text):
-        if self.reconnection_interval > 0:
-            logger.info('connection has been closed; reconnecting in %d seconds' % self.reconnection_interval)
-            self.connection.add_timeout(
-                self.reconnection_interval,
-                self.connect)
+        if not self.closing:
+            if self.reconnection_interval > 0:
+                logger.info('connection has been closed; reconnecting in %d seconds' % self.reconnection_interval)
+                self.connection.add_timeout(
+                    self.reconnection_interval,
+                    self.connect)
+                return
+            else:
+                logger.warning('connection has been closed')
+        for callback in self.close_callbacks:
+            callback(self)
 
     def modify_task_dispatcher(self, task_dispatcher):
         task_dispatcher = WatchdogDispatcher(self.registry, task_dispatcher)
