@@ -14,10 +14,10 @@ body{
     height: 100%;
     font-family: "Helvetica Neue",Helvetica,Meiryo,"メイリオ","HiraKakuPro-W3","ヒラギノ角ゴ Pro W3","Arial","ＭＳ Ｐゴシック",sans-serif;
 
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #74BBF3), color-stop(1, #0088CC) );
-	background:-moz-linear-gradient( center top, #74BBF3 5%, #0088CC 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#74BBF3', endColorstr='#0088CC');
-	background-color:#74BBF3;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #003154), color-stop(1, #003154) );
+	background:-moz-linear-gradient( center top, #003154 5%, #003154 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#003154', endColorstr='#003154');
+	background-color:#003154;
 }
 
 a:hover img {
@@ -170,7 +170,7 @@ color:#fff;
 }
 
 .header{
-	background: #0088cc;
+	background: #000;
 	border-bottom: 5px solid #EFEFEF;
     height: 82px;
     width:100%;
@@ -184,14 +184,14 @@ color:#fff;
 }
 
 .historybtn {
--moz-box-shadow:inset 0px 1px 0px 0px #FFB0C6;
--webkit-box-shadow:inset 0px 1px 0px 0px #FFB0C6;
-box-shadow:inset 0px 1px 0px 0px #FFB0C6;
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ff9094), color-stop(1, #ff4a77) );
-background:-moz-linear-gradient( center top, #ff9094 5%, #ff4a77 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff9094', endColorstr='#ff4a77');
-background-color:#ff9094;
-border:1px solid #ff6999;
+-moz-box-shadow:inset 0px 1px 0px 0px #F8B62C;
+-webkit-box-shadow:inset 0px 1px 0px 0px #F8B62C;
+box-shadow:inset 0px 1px 0px 0px #F8B62C;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #F8B62C), color-stop(1, #F8B62C) );
+background:-moz-linear-gradient( center top, #F8B62C 5%, #F8B62C 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#F8B62C', endColorstr='#F8B62C');
+background-color:#F8B62C;
+border:1px solid #F8B62C;
 text-shadow:1px 1px 0px #C00;
 color:#fff;
 
@@ -206,10 +206,10 @@ margin-bottom:8px;
 padding:6px 70px;
 }
 .historybtn:hover {
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ff4a77), color-stop(1, #ff9094) );
-background:-moz-linear-gradient( center top, #ff4a77 5%, #ff9094 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff4a77', endColorstr='#ff9094');
-background-color:#ff4a77;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #F8B62C), color-stop(1, #F8B62C) );
+background:-moz-linear-gradient( center top, #F8B62C 5%, #F8B62C 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#F8B62C', endColorstr='#F8B62C');
+background-color:#F8B62C;
 color:#fff;
 }
 .historybtn:active {
@@ -223,7 +223,6 @@ color:#fff;
 	height: 82px;
 	margin: 0 auto;
     position: relative;
-	background: url(../images/bg_header.jpg);
 }
 
 .gnavi{
