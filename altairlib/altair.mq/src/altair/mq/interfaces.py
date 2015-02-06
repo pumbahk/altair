@@ -46,7 +46,7 @@ class IWorker(Interface):
     def start():
         pass
 
-    def stop():
+    def stop(fn):
         pass
 
     def __call__(fn):

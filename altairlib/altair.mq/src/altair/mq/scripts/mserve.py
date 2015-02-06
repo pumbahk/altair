@@ -2,6 +2,7 @@ import sys
 import logging
 import argparse
 import threading
+import signal
 from datetime import timedelta
 from Queue import Queue, Empty as EmptyException
 from collections import deque
@@ -15,6 +16,10 @@ from .. import get_consumer
 from ..interfaces import IWorker, IWorkers
 
 logger = logging.getLogger(__name__)
+
+
+class ApplicationError(Exception):
+    pass
 
 
 class Nothing(object):
@@ -65,7 +70,9 @@ class Worker(object):
     def __init__(self, workers, maxsize=0):
         self.workers = workers
         self.running = True
+        self.stopped = Future()
         self.fn = Queue(maxsize=maxsize)
+        self.callbacks = []
 
     def run(self):
         while self.running:
@@ -77,9 +84,21 @@ class Worker(object):
                     self.workers.notify_done(self)
             except EmptyException:
                 pass
+        self.stopped.setvalue(True)
+        for callback in self.callbacks:
+            callback(self)
 
-    def stop(self):
-        self.running = False
+    def stop(self, callback):
+        self.stopped.cv.acquire()
+        try:
+            if self.running:
+                self.running = False
+            if self.stopped.trygetvalue(False):
+                callback()
+            else:
+                self.callbacks.append(callback)
+        finally:
+            self.stopped.cv.release()
 
     def __call__(self, fn, timeout=None):
         self.fn.put(fn, timeout=timeout)
@@ -121,11 +140,16 @@ class Workers(object):
                         self.available_workers.append(worker)
                 command[1].setvalue(True)
             elif command[0] == 'stop':
+                count = [len(self.workers)]
+                all_workers_stopped = Future() 
+                def worker_stopped(worker):
+                    logger.debug('worker %d stopped' % self.worker_map[worker])
+                    count[0] -= 1
+                    if count[0] == 0:
+                        all_workers_stopped.setvalue(True)
                 for _, worker, _ in self.workers:
-                    worker.stop()
-                for t, _, _ in self.workers:
-                    if t is not None:
-                        t.join()
+                    worker.stop(worker_stopped)
+                all_workers_stopped.getvalue()
                 break
             elif command[0] == 'allocate':
                 if len(self.available_workers) > 0:
@@ -154,84 +178,102 @@ class Workers(object):
                 self.poller(_)
             else:
                 w(fn)
-
-        self.poller(_)
+        _()
 
     def start(self):
         self.supervisor.start()
         f = Future()
         self.command.put(('initialize', f))
         f.getvalue()
+        logger.info('Supervisor is ready')
 
     def stop(self):
         self.command.put(('stop', ))
-
-    def join(self):
         self.supervisor.join()
 
 
 class MServeCommand(object):
-    def __init__(self):
-        self.parser = self.build_option_parser()
+    def __init__(self, registry, consumer_names):
+        self.registry = registry
+        self.io_loop = ioloop.IOLoop.instance()
+        self.consumers = self.setup_consumers(consumer_names)
+        self.stop_signal = Future()
+        self.all_consumer_closed = Future()
+        for consumer in self.consumers:
+            self.io_loop.add_callback(consumer.connect)
+        self.workers = Workers(nworkers=1, spawner=lambda fn, **kwargs: None, worker_factory=lambda workers: self.sole_worker, poller=self._poller)
+        self.sole_worker = Worker(self.workers)
+        self.registry.registerUtility(self.workers, IWorkers)
+        self.io_thr = threading.Thread(target=self.io, name='IOThread')
+        self.hypervisor_thr = threading.Thread(target=self.hypervisor, name='Hypervisor')
 
-    def build_option_parser(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("config")
-        parser.add_argument("consumers", nargs='+', default=['pika'])
-        return parser
-
-    def run(self, args):
-        args = self.parser.parse_args(args)
-
-        setup_logging(args.config)
-        app = get_app(args.config)
-        registry = global_registries.last
-
-        def io(io_loop, status):
-            io_loop.make_current()
-            logger.info("IO thread started")
-            io_loop.start()
-            logger.info('IO thread ended')
-            status.setvalue(True)
-
-        def hypervisor(status):
-            status.getvalue()
-            workers.stop()
-
-        io_loop = ioloop.IOLoop.instance()
-        for consumer_name in args.consumers:
-            consumer = get_consumer(registry, consumer_name)
+    def setup_consumers(self, consumer_names):
+        consumers = set()
+        def closed(consumer):
+            consumers.remove(consumer)
+            if len(consumers) == 0:
+                self.all_consumer_closed.setvalue(True)
+        for consumer_name in consumer_names:
+            consumer = get_consumer(self.registry, consumer_name)
             if consumer is None:
-                sys.stderr.write("no such consumer: %s\n" % consumer_name)
-                sys.stderr.flush()
-                return  1
-            io_loop.add_callback(consumer.connect)
+                raise ApplicationError("no such consumer: %s\n" % consumer_name)
+            consumer.add_close_callback(closed)
+            consumers.add(consumer)
+        return consumers
 
-        sole_worker = None
-        workers = Workers(nworkers=1, spawner=lambda fn, **kwargs: None, worker_factory=lambda workers: sole_worker, poller=lambda fn: io_loop.add_callback(lambda: io_loop.add_timeout(io_loop.time() + .2, fn)))
-        registry.registerUtility(workers, IWorkers)
-        sole_worker = Worker(workers)
-        io_thr_status = Future()
-        hypervisor_thr = threading.Thread(target=hypervisor, args=(io_thr_status,), name='HypervisorThread')
-        io_thr = threading.Thread(target=io, args=(io_loop, io_thr_status,), name='IOThread')
+    def io(self):
+        self.io_loop.make_current()
+        logger.info("IO thread started")
+        self.io_loop.start()
+        logger.info('IO thread ended')
 
-        hypervisor_thr.start()
-        workers.start()
-        io_thr.start()
-        try:
-            sole_worker.run() # worker runs in the main thread
-        except KeyboardInterrupt:
-            io_loop.stop()
-            
-        workers.join()
-        io_thr.join()
-        hypervisor_thr.join()
+    def hypervisor(self):
+        self.stop_signal.getvalue()
+        self.workers.stop()
+        def _():
+            for consumer in self.consumers:
+                consumer.close()
+        self.io_loop.add_callback(_)
+        self.all_consumer_closed.getvalue()
+        self.io_loop.stop()
+        self.io_thr.join()
 
-        return 0 if io_thr_status.getvalue() else 1
+    def _poller(self, fn):
+        self.io_loop.add_callback(lambda: self.io_loop.add_timeout(self.io_loop.time() + .2, fn))
+
+    def run(self):
+        self.io_thr.start()
+        self.workers.start()
+        self.hypervisor_thr.start()
+        self.sole_worker.run() # worker runs in the main thread
+        self.hypervisor_thr.join()
+
+
+def build_option_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config")
+    parser.add_argument("consumers", nargs='+', default=['pika'])
+    return parser
 
 def main(args=sys.argv[1:]):
-    sys.exit(MServeCommand().run(args))
+    parser = build_option_parser()
+    args = parser.parse_args(args)
 
+    setup_logging(args.config)
+    app = get_app(args.config)
+    registry = global_registries.last
+
+    try:
+        mserver = MServeCommand(registry, args.consumers)
+        def _stop_handler(signum, frame):
+            mserver.stop_signal.setvalue(True)
+        signal.signal(signal.SIGTERM, _stop_handler)
+        signal.signal(signal.SIGINT, _stop_handler)
+        mserver.run()
+    except ApplicationError as e:
+        sys.stderr.write(e.message)
+        sys.stderr.flush()
+        return 1
 
 if __name__ == '__main__':
     main()
