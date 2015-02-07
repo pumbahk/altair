@@ -16,6 +16,9 @@ class DummyPublisherConsumer(object):
     def add_task(self, *args, **kwargs):
         pass
 
+    def modify_task_dispatcher(self, dispatcher):
+        return dispatcher
+
 
 class LotAdminRegressionTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
