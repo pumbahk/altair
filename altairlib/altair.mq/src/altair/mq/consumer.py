@@ -223,9 +223,12 @@ class PikaClient(object):
         ioloop.add_callback(_)
 
     def _cancel_timeout(self):
-        if self._timer is not None:
-            ioloop = IOLoop.instance()
-            ioloop.remove_timeout(self._timer)
+        ioloop = IOLoop.instance()
+        def _():
+            if self._timer is not None:
+                ioloop.remove_timeout(self._timer)
+                self._timer = None
+        ioloop.add_callback(_)
 
     def connect(self):
         if not self.tasks:
