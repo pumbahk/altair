@@ -11,6 +11,10 @@
 _description = _description or field.description
 _note = _note or field._note
 if label is None or label is True:
+  if field.name == 'extra.member_type':
+    field.label.text = u"会員種別"
+    if view_context.fc_kind_title:
+      field.label.text = view_context.fc_kind_title
   label = field.label
 %>
 <div>
@@ -46,6 +50,7 @@ ${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</
 % endif
 </div>
 </%def>
+
 ${render_field(form['extra']['member_type'])}
 ${render_field_group(label=u'氏名', fields=[form['last_name'], form['first_name']], size="10", istyle="1")}
 ${render_field_group(label=u'フリガナ', fields=[form['last_name_kana'], form['first_name_kana']], size="10", istyle="2")}

@@ -95,6 +95,10 @@ class CartSettingForm(OurForm):
         label=_(u'カートのタイトル')
         )
 
+    fc_kind_title = OurTextField(
+        label=_(u'入会フォームを使った場合の種別名称')
+        )
+
     contact_url = OurTextField(
         label=_(u'お問い合わせ先URL')
         )
