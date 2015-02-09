@@ -933,6 +933,7 @@ class OrdersRefundCreateView(BaseView):
 
             if self.request.method == 'POST' and self.request.params.get('page', None) is None:
                 # 検索結果のOrder.idはデフォルト選択状態にする
+                query._request = self.request # XXX
                 checked_orders = set()
                 for order in query:
                     checked_orders.add('o:%s' % order.id)
