@@ -973,6 +973,7 @@ class OrdersRefundCreateView(BaseView):
 
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
             query = query.filter(Order.id.in_(checked_orders))
+            query._request = self.request # XXX
 
             page = int(self.request.params.get('page', 0))
             orders = paginate.Page(
