@@ -45,7 +45,7 @@ if label is None or label is True:
     </colgroup>
     <tbody>
       <tr>
-        <th>会員種別 <span class="red">*</span></th>
+        <th>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'} <span class="red">*</span></th>
         <td>
           ${render_field(form['extra']['member_type'])}
         </td>
