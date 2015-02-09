@@ -14,7 +14,7 @@ def page_accesskey_section_panel(context, request, page):
     control = get_page_access_key_control(request, page)
     accesskeys = control.query_access_key().options(orm.joinedload(PageAccesskey.operator)).all()
     return dict(page=page, page_title=u"アクセスキー", 
-                preview_with_accesskey_url_gen=lambda hashkey: request.route_url("preview_page", page_id=page.id, _query=dict(access_key=hashkey)), 
+                preview_with_accesskey_url_gen=lambda hashkey, organization_id: request.route_url("preview_page", page_id=page.id, _query=dict(access_key=hashkey, organization_id = organization_id)),
                 create_accesskey_url=request.route_path("auth.accesskey.pagekey",action="create", page_id=page.id), 
                 update_accesskey_url=request.route_path("auth.accesskey.detail", accesskey_id="__id__"), 
                 delete_accesskey_url=request.route_path("auth.accesskey.pagekey",action="delete", page_id=page.id), 
