@@ -110,7 +110,7 @@
       % for _, (display_name, display_value) in extra_form_data:
       <tr>
         <th>${display_name}</th>
-        <td>${display_value}</td>
+        <td>${h.sensible_coerce(request, display_value)}</td>
       </tr>
       % endfor
     </tbody>
