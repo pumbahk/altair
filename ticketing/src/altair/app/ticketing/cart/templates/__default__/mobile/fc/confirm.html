@@ -27,7 +27,7 @@ ${form.csrf_token()}
 <div>${cart.shipping_address.email_1}</div>
 % for k, v in pm:
 <%mobile:form_header>${k}</%mobile:form_header>
-<div>${v}</div>
+<div>${h.sensible_coerce(request, v)}</div>
 % endfor
 </div>
 <hr />
