@@ -199,3 +199,7 @@ form {
     <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
 </div>
 </form>
+
+% if request.organization.setting.sitecatalyst_use:
+    <%include file="../common/sc_payment.html" />
+% endif
