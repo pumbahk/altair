@@ -72,7 +72,7 @@
     <td>${vh.price(pdmp.discount)}</td>
     <td>${pdmp.discount_unit or ''}</td>
     <td>${u'販売終了%s日前から' % pdmp.unavailable_period_days if pdmp.unavailable_period_days else ''}</td>
-    <td>${u'○' if pdmp.public else u'×'}</td>
+    <td ${'class = text-error' if not pdmp.public else ''}>${u'○' if pdmp.public else u'×'}</td>
   </tr>
   % endfor
 </table>
