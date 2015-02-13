@@ -5,7 +5,7 @@ trackingParam.channel="cart"
 <%
 product_list = []
 for ordered_product in order.ordered_products:
-    product_list.append(";" + str(order.performance.event.id) + "_" + str(order.performance.id) + "_" + str(ordered_product.product_id) + ";" + str(ordered_product.quantity) + ";" + str(ordered_product.product.price))
+    product_list.append(str(order.performance.event.id) + ";" + str(order.performance.event.id) + "_" + str(order.performance.id) + "_" + str(ordered_product.product_id) + ";" + str(ordered_product.quantity) + ";" + str(ordered_product.product.price))
 %>
 trackingParam.products = "${','.join(product_list)}"
 trackingParam.events="purchase"
