@@ -304,6 +304,13 @@ class CompatAgreementView(object):
         return PerPerformanceAgreementView(self.request).post()
 
 
+def jump_maintenance_page_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    """
+    if organization is None or organization.code not in ['RT']:
+        raise HTTPFound('/maintenance.html')
+
+
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -319,6 +326,8 @@ class IndexView(IndexViewMixin):
                  request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -391,6 +400,8 @@ class IndexView(IndexViewMixin):
                  request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
 

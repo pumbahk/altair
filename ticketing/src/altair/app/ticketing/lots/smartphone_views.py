@@ -32,6 +32,7 @@ from .models import (
     LotEntry,
 )
 from . import urls
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,8 @@ class EntryLotView(object):
         """
         イベント詳細
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         event = self.context.event
         lot = self.context.lot
 
