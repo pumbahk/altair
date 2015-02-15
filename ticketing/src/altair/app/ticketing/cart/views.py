@@ -307,7 +307,7 @@ class CompatAgreementView(object):
 def jump_maintenance_page_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
     """
-    if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC']:
+    if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT']:
         raise HTTPFound('/maintenance.html')
 
 
