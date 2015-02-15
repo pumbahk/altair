@@ -46,6 +46,8 @@ ${h.format_currency(wish.special_fee)}
 </font></div>
 </div>
 %endfor
+
+% if 0:
 <%mobile:header>購入者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
@@ -82,6 +84,7 @@ ${shipping_address['address_2']}
 <div>
 ${memo|h.nl2br}
 </div>
+% endif
 
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
