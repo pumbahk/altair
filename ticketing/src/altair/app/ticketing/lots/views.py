@@ -32,6 +32,7 @@ from .models import (
 from .adapters import LotSessionCart
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+from altair.app.ticketing.orderreview.views import jump_maintenance_page_om_for_trouble
 
 logger = logging.getLogger(__name__)
 
@@ -548,12 +549,14 @@ class LotReviewView(object):
     @lbr_view_config(request_method="GET", renderer=selectable_renderer("review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review_form.html"))
     def post(self):
         """ 申し込み情報表示"""
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
         try:
             if not form.validate():
@@ -571,6 +574,7 @@ class LotReviewView(object):
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), context=LotEntry)
     def post_validated(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
