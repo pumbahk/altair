@@ -30,6 +30,8 @@ from . import schemas
 from . import api
 from . import helpers as h
 
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
@@ -61,6 +63,7 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         authenticated_user = self.context.authenticated_user()
         user = cart_api.get_user(authenticated_user)
         per = 10
@@ -179,6 +182,7 @@ class OrderReviewView(object):
 
     @lbr_view_config(route_name='order_review.guest')
     def guest(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
     @lbr_view_config(
@@ -187,6 +191,7 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/form.html")
         )
     def form(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
@@ -195,6 +200,7 @@ class OrderReviewView(object):
         request_method="GET"
         )
     def get(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         return HTTPFound(self.request.route_path('order_review.form'))
 
     @lbr_view_config(
@@ -267,12 +273,12 @@ class QRView(object):
     def qr_confirm(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
-        
+
         return dict(
             sign = sign,
             order = ticket.order,
@@ -290,7 +296,7 @@ class QRView(object):
         sign = self.request.matchdict.get('sign', 0)
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
 
@@ -298,7 +304,7 @@ class QRView(object):
             gate = None
         else:
             gate = ticket.seat.attributes.get("gate", None)
-        
+
         return dict(
             token = ticket.item_token.id, # dummy
             serial = ticket_id,           # dummy
@@ -324,7 +330,7 @@ class QRView(object):
         data = OrderedProductItemToken.filter_by(id = token).first()
         if data is None:
             return HTTPNotFound()
-        
+
         ticket = type('FakeTicketPrintHistory', (), {
             'id': serial,
             'performance': data.item.ordered_product.order.performance,
@@ -333,7 +339,7 @@ class QRView(object):
             'seat': data.seat,
         })
         qr = build_qr_by_orion(self.request, ticket, serial)
-        
+
         if sign == qr.sign:
             return qrdata_as_image_response(qr)
         else:
@@ -346,7 +352,7 @@ class QRView(object):
     def qr_image(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
         if ticket is None:
             raise HTTPNotFound()
@@ -426,7 +432,7 @@ class QRView(object):
                     r.text = response['message']
                     return r
                 raise Exception()
-            
+
             return dict(
                 _overwrite_generate_qrimage_route_name = 'order_review.orion_draw',
                 token = token.id,
@@ -442,7 +448,7 @@ class QRView(object):
         elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
             # altair
             ticket = build_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
-            
+
             return dict(
                 token = token.id,    # dummy
                 serial = ticket.id,  # dummy
@@ -457,18 +463,18 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.qr_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html")
         )
     def send_mail(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         try:
@@ -487,17 +493,17 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.orion_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html"))
     def send_to_orion(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         result = []
@@ -551,13 +557,13 @@ def render_qrmail_viewlet(context, request):
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
     else:
         name = u''
-    
+
     return dict(
         name=name,
-        event=ticket.event, 
-        performance=ticket.performance, 
-        product=ticket.product, 
-        seat=ticket.seat, 
+        event=ticket.event,
+        performance=ticket.performance,
+        product=ticket.product,
+        seat=ticket.seat,
         mail = request.params['mail'],
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
