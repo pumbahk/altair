@@ -532,6 +532,10 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
                 pass
 
     @property
+    def organization(self):
+        return self.event.organization if self.event else None
+
+    @property
     def event(self):
         performance = self.performance
         if performance is not None:
@@ -620,6 +624,10 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
     def event(self):
         return self.performance.event if self.performance else None
 
+    @property
+    def organization(self):
+        return self.event.organization if self.event else None
+
     @reify
     def sales_segments(self):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
@@ -694,7 +702,7 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     @reify
     def order_like(self):
         try:
-            cart = self.read_only_cart 
+            cart = self.read_only_cart
             return cart
         except NoCartError:
             try:

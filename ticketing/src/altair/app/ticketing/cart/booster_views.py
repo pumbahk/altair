@@ -30,6 +30,8 @@ from .rendering import selectable_renderer
 from .view_support import back, is_booster_cart_pred
 from .resources import CompleteViewTicketingCartResource
 
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+
 logger = logging.getLogger(__name__)
 
 # FIXME
@@ -80,6 +82,7 @@ class BoosterEventIndexView(object):
 
     @lbr_view_config(request_method='GET')
     def get(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         performances = set(
             sales_segment.performance
             for sales_segment in self.context.available_sales_segments
@@ -160,11 +163,13 @@ class BoosterIndexView(object):
 
     @lbr_view_config(request_method='GET')
     def get(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = self.product_form_from_user_profile(load_user_profile(self.request))
         return dict(form=form)
 
     @lbr_view_config(request_method='POST')
     def post(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = self.product_form(self.request.params)
         if not form.validate():
             self.request.errors = form.errors
@@ -220,7 +225,7 @@ class BoosterPaymentView(PaymentView):
             country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
-            fax=address_data.get("fax"), 
+            fax=address_data.get("fax"),
             sex=sex_value(address_data.get("sex"))
             )
 

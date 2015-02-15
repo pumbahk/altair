@@ -31,6 +31,7 @@ from .models import (
 )
 from .adapters import LotSessionCart
 from . import urls
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,8 @@ class EntryLotView(object):
         """
 
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         if form is None:
             form = self._create_form()
 
@@ -252,7 +255,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types, 
+            stock_types=stock_types,
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map)
@@ -265,6 +268,8 @@ class EntryLotView(object):
         - 申し込み回数
         - 申し込み内の公演、席種排他チェック
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         lot = self.context.lot
         if not lot:
             logger.debug('lot not not found')
@@ -593,7 +598,7 @@ def out_term_exception(context, request):
 
 
 @lbr_view_config(
-    context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
+    context="altair.app.ticketing.payments.exceptions.PaymentPluginException",
     renderer=selectable_renderer('message.html')
     )
 def payment_plugin_exception(context, request):
