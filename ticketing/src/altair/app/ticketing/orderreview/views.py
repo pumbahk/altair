@@ -177,6 +177,7 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
