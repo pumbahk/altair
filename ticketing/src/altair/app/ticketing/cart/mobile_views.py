@@ -126,7 +126,7 @@ class MobileIndexView(IndexViewMixin):
 
     @lbr_view_config(route_name='cart.index2')
     def performance_based_landing_page(self):
-        jump_maintenance_page_for_trouble(self.request.orgranization)
+        jump_maintenance_page_for_trouble(self.request.organization)
 
         logger.debug('mobile index')
 
