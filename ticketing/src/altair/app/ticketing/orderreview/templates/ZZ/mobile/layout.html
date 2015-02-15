@@ -1,0 +1,23 @@
+<html>
+<head>
+  <title>キッス・エンタテインメント 購入確認ページ</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+  <div style="text-align: center; background-color: #7CB93B">
+    <a href="http://kissent.tstar.jp/">
+      <img src="${request.static_url('altair.app.ticketing.orderreview:static/KE/mobile/images/logo_mobile.gif')}"
+           alt="キッス・エンタテインメント" width="100%"/>
+    </a>
+  </div>
+  
+<%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+    <a href="http://www.kissent.jp/abouts/">運営会社</a> | <a href="http://kissent.tstar.jp/kiyaku.html">利用規約</a> | <a href="http://www.kissent.jp/guide/privacy.php">プライバシーポリシー</a> | <a href="http://www.kissent.jp/order/index.php">特定商取引法に基づく表示</a>
+  <div>
+    Copyright &copy; 2010-2014 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>

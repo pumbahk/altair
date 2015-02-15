@@ -1,0 +1,18 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+申込状況確認
+</div>
+<form action="${request.url}" method="post">
+<%mobile:form_header>${form['entry_no'].label}</%mobile:form_header>
+<div>
+${form['entry_no']}（例：JC00000000AB）
+${h.mobile_error_list(request, form, 'entry_no')}
+</div>
+<%mobile:form_header>${form['tel_no'].label}</%mobile:form_header>
+<div>
+${form['tel_no']}（例：080xxxxvvvv）
+${h.mobile_error_list(request, form, 'tel_no')}
+</div>
+<input type="submit" value="確認する" />
+</form>

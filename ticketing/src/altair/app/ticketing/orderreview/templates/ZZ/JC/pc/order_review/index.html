@@ -1,0 +1,96 @@
+<%inherit file="../layout.html" />
+<h2>購入履歴の確認</h2>
+<table class="nobdr">
+  <tr>
+    <td>
+      <table class="guestbox">
+        <thead>
+          <tr>
+            <th>一般の方のチケット確認<small> はこちらから</small></th>
+          </tr>
+        </thead>
+        <tr>
+          <td>
+          <form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+              <tbody>
+              <tr>
+                <td colspan="2" id="btn_login" align="center">
+                  <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
+          </td>
+        </tr>
+      </table>
+        <br/>
+      <table class="guestbox">
+        <thead>
+          <tr>
+            <th>抽選の方のチケット確認<small> はこちらから</small></th>
+          </tr>
+        </thead>
+        <tr>
+          <td>
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+              <tbody>
+              <tr>
+                <td colspan="2" id="btn_login" align="center">
+                  <a href="https://jcf.tstar.jp/lots/review">
+                    <input value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                  </a>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td>
+      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
+      <table class="loginbox">
+        <thead>
+          <tr>
+            <th>競技者登録済みの方<small> はこちらから</small></th>
+          </tr>
+        </thead>
+        <tr>
+          <td>
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+              <tbody>
+              <tr>
+                <th align="right">登録番号</th>
+                <td align="left">
+                <div class="tal">
+                  <input type="text" class="text" name="username">
+                  %if message:
+                  <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                  %endif
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <th align="right">パスワード</th>
+                <td align="left">
+                <div class="tal">
+                  <input type="password" name="password">
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" id="btn_login" align="center">
+                  <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </table>
+      </form>
+    </td>
+  </tr>
+</table>
