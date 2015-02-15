@@ -568,7 +568,7 @@ def create_client_form(context, request):
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v
     birthday = date(1990, 1, 1)
-
+    """
     if user_profile is not None:
         retval.last_name.data = user_profile.last_name
         retval.last_name_kana.data = user_profile.last_name_kana
@@ -589,6 +589,7 @@ def create_client_form(context, request):
             birthday = user_profile.birthday
     retval.sex.process_data(unicode(sex or u''))
     retval.birthday.process_data(birthday)
+    """
     return retval
 
 def get_lotting_announce_timezone(timezone):
