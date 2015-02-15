@@ -30,7 +30,12 @@ from . import schemas
 from . import api
 from . import helpers as h
 
-from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+def jump_maintenance_page_om_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    """
+    if organization is None or organization.code not in ['RT']:
+        raise HTTPFound('/maintenance.html')
+
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +68,7 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
-        jump_maintenance_page_for_trouble(self.request.organization)
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         authenticated_user = self.context.authenticated_user()
         user = cart_api.get_user(authenticated_user)
         per = 10
@@ -177,13 +182,13 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
-        jump_maintenance_page_for_trouble(self.request.organization)
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
     @lbr_view_config(route_name='order_review.guest')
     def guest(self):
-        jump_maintenance_page_for_trouble(self.request.organization)
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
     @lbr_view_config(
@@ -192,7 +197,7 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/form.html")
         )
     def form(self):
-        jump_maintenance_page_for_trouble(self.request.organization)
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
@@ -201,7 +206,7 @@ class OrderReviewView(object):
         request_method="GET"
         )
     def get(self):
-        jump_maintenance_page_for_trouble(self.request.organization)
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(self.request.route_path('order_review.form'))
 
     @lbr_view_config(
