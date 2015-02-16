@@ -72,10 +72,13 @@ ${ch.breadcrumbs(
 
           % if is_current_order:
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['edit_shipping_address']" />
+            <%include file="/orders/_action_button.html" args="order=order, sort=['edit_shipping_address', 'show_qr']" />
           </div>
           <div id="shipping_address-form">
             <%include file="/orders/_modal_shipping_address.html" args="form=form_shipping_address" />
+          </div>
+          <div id="qr-form">
+            <%include file="/orders/_modal_qr.html" />
           </div>
           % endif
         </div>

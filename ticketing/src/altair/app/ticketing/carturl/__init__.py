@@ -4,6 +4,7 @@ class BUILDERS:
     lots_cart = "cart.lots"
     agreement_cart = "cart.agreement"
     agreement_lots_cart = "cart.agreement_lots"
+    orderreview_qr = "orderreview.qr"
 
 def includeme(config):
     from .interfaces import IURLBuilder
@@ -21,3 +22,7 @@ def includeme(config):
 
     from .carturl import AgreementLotsCartURLBuilder
     config.registry.registerUtility(AgreementLotsCartURLBuilder(path_prefix="/lots/events"), IURLBuilder, name=BUILDERS.agreement_lots_cart)
+
+    from .carturl import OrderReviewQRURLBuilder
+    config.registry.registerUtility(OrderReviewQRURLBuilder(path_prefix="/orderreview"), IURLBuilder, name=BUILDERS.orderreview_qr)
+

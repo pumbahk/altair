@@ -1,0 +1,43 @@
+<ul>
+% for ticket in tickets:
+  <li>
+    <a href="${ticket['url']}" target="_blank">
+    <span class="product_name">${ticket['item'].product.name}</span>
+    %if ticket['token'].seat:
+    <span class="seat_name">${ticket['token'].seat.name}</span>
+    %endif
+    </span>
+    % if ticket['token'].issued_at:
+    <span class="label label-success">発行(印刷orメール送信)済 (${ticket['token'].issued_at})</span>
+    % else:
+    <span class="label label-info">未発行</span>
+    % endif
+    </a>
+  </li>
+% endfor
+</ul>
+<h4>コピー&ペースト用</h4>
+<textarea style="width:100%; height: 10em; box-sizing: border-box;">
+${order.organization.name}
+${order.sales_segment.sales_segment_group.event.title}
+%if order.performance:
+${order.performance.name}
+${vh.datetime(order.performance.start_on, with_weekday=True)}〜 \
+${order.performance.venue.name}
+%endif
+% for ticket in tickets:
+■${ticket['item'].product.name} \
+%if ticket['token'].seat:
+${ticket['token'].seat.name}
+%endif
+${ticket['url']}
+% endfor
+</textarea>
+<div class="well">
+<h4>注意事項</h4>
+<ul>
+  <li>上記は、QRコードを表示するページへのリンクとなっています</li>
+  <li>QRコードを表示するページは、購入者ご本人確認 (予約番号×電話番号、会員認証など) なしに閲覧することができます</li>
+  <li>従って、取り扱いには十分ご注意ください</li>
+</ul>
+</div>
