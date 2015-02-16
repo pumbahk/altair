@@ -11,7 +11,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from altair.auth import who_api as get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
-
+from altair.app.ticketing.core.api import get_default_contact_url
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
@@ -30,10 +30,11 @@ from . import schemas
 from . import api
 from . import helpers as h
 
+
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
     """
-    if organization is None or organization.code not in ['ZZ']:
+    if organization is None or organization.code not in ['ZZ', ]:
         raise HTTPFound('/maintenance.html')
 
 
@@ -41,10 +42,39 @@ logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
 
+
+suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketstar.jp/issues/10873 で問題が発生しだしたと思われる30分前
+suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
+
+
+def is_suspicious_order(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return suspicious_start_dt <= orderlike.created_at <= suspicious_end_dt
+
+
+def unsuspicious_order_filter(orderlikes):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもを取り除く
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return [orderlike for orderlike in orderlikes if not is_suspicious_order(orderlike)]
+
+
+def jump_infomation_page_om_for_10873(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもはinfomationページにリダイレクトさせる
+    """
+    if is_suspicious_order(orderlike):
+        raise HTTPFound('/orderreview/information')
+
+
 class InvalidForm(Exception):
     def __init__(self, form, errors=[]):
         self.form = form
         self.errors = errors
+
 
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
@@ -108,6 +138,7 @@ class MypageView(object):
             raise HTTPNotFound()
 
         order = self.context.order
+        jump_infomation_page_om_for_10873(order)  # refs 10883
 
         if not order or order.user_id != user.id:
             raise HTTPNotFound()
@@ -227,6 +258,8 @@ class OrderReviewView(object):
         if form.data["tel"] not in (schemas.strip_hyphen(_tel) for _tel in (address.tel_1, address.tel_2)):
             raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
 
+        jump_infomation_page_om_for_10873(order)  # refs 10873
+
         # Orion受取りなのにOrionPerformanceが無い場合は、警告
         if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and order.performance.orion is None:
             logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
@@ -267,6 +300,22 @@ def notfound_view(context, request):
     )
 def contact_view(context, request):
     return HTTPFound(cart_api.safe_get_contact_url(request, default=request.route_path("order_review.form")))
+
+
+@lbr_view_config(
+    route_name="order_review.information",
+    renderer=selectable_renderer("information.html")
+    )
+def information_view(context, request):
+    """お問い合わせページ
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    infomation_tel = '0800-808-0010'
+    return dict(
+        request=request,
+        infomation_tel=infomation_tel,
+        )
+
 
 class QRView(object):
     def __init__(self, context, request):
