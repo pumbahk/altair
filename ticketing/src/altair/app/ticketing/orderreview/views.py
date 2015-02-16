@@ -109,7 +109,7 @@ class MypageView(object):
 
         order = self.context.order
 
-        if not order:
+        if not order or order.user_id != user.id:
             raise HTTPNotFound()
 
         return dict(order=self.context.order)
