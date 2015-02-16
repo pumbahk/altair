@@ -98,6 +98,8 @@ from altair.app.ticketing.cart.reserving import InvalidSeatSelectionException, N
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 from altair.app.ticketing.sej.api import get_sej_order
+from altair.app.ticketing.qr.utils import build_qr_by_token
+from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
 
 from . import utils
 from altair.multicheckout.api import get_multicheckout_3d_api
@@ -385,7 +387,7 @@ class DownloadParamValidationError(Exception):
     pass
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
-class OrderBetaDownloadView(BaseView):
+class OrderBetaDownloadView(OrderBaseView):
     """The Order download beta.
     """
 
@@ -450,7 +452,7 @@ class OrderBetaDownloadView(BaseView):
         return res
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
-class OrderDownloadView(BaseView):
+class OrderDownloadView(OrderBaseView):
     # downloadに関しては古いコードがイキ
     @view_config(route_name='orders.download')
     def download_old(self):
@@ -772,7 +774,7 @@ class OrderDownloadView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
-class OrdersRefundIndexView(BaseView):
+class OrdersRefundIndexView(OrderBaseView):
 
     @view_config(route_name='orders.refund.index')
     def index(self):
@@ -817,7 +819,7 @@ class OrdersRefundIndexView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
-class OrdersRefundEditView(BaseView):
+class OrdersRefundEditView(OrderBaseView):
 
     @view_config(route_name='orders.refund.edit', request_method='GET')
     def edit_get(self):
@@ -851,7 +853,7 @@ class OrdersRefundEditView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
-class OrdersRefundDetailView(BaseView):
+class OrdersRefundDetailView(OrderBaseView):
 
     @view_config(route_name='orders.refund.show')
     def index(self):
@@ -869,7 +871,7 @@ class OrdersRefundDetailView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='csv')
-class OrdersRefundExportView(BaseView):
+class OrdersRefundExportView(OrderBaseView):
 
     @view_config(route_name='orders.refund.export_result')
     def export_result(self):
@@ -891,7 +893,7 @@ class OrdersRefundExportView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
-class OrdersRefundCreateView(BaseView):
+class OrdersRefundCreateView(OrderBaseView):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -996,7 +998,7 @@ class OrdersRefundCreateView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
-class OrdersRefundConfirmView(BaseView):
+class OrdersRefundConfirmView(OrderBaseView):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -1066,7 +1068,7 @@ class OrdersRefundConfirmView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
-class OrderDetailView(BaseView):
+class OrderDetailView(OrderBaseView):
 
     @view_config(route_name='orders.show_by_order_no')
     def show_by_order_no(self):
@@ -1120,7 +1122,26 @@ class OrderDetailView(BaseView):
             'form_order_edit_attribute': forms.get_order_edit_attribute(),
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
-        }
+            'endpoints': self.endpoints,
+            }
+
+    @view_config(route_name='orders.show.qr', permission='sales_editor', request_method='GET', renderer='altair.app.ticketing:templates/orders/_show_qr.html')
+    def show_qr(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        url_builder = get_orderreview_qr_url_builder(self.request)
+        tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
+        tickets = []
+        for token, element, item in tokens:
+            qr = build_qr_by_token(self.request, order.order_no, token)
+            tickets.append({
+                'token': token,
+                'element': element,
+                'item': item,
+                'qr': qr,
+                'url': url_builder.build(self.request, qr.id, qr.sign)
+                })
+        return { 'order': order, 'tickets': tickets }
 
     @view_config(route_name='orders.edit.order_info', permission='sales_editor', request_method='POST', renderer='altair.app.ticketing:templates/orders/_modal_order_info.html')
     def edit_order_info(self):
@@ -1798,7 +1819,7 @@ class OrderDetailView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
-class OrdersReserveView(BaseView):
+class OrdersReserveView(OrderBaseView):
 
     def release_seats(self, venue, l0_ids):
         # 確保座席があるならステータスを戻す
@@ -2081,7 +2102,7 @@ class OrdersReserveView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
-class OrdersEditAPIView(BaseView):
+class OrdersEditAPIView(OrderBaseView):
 
     def _get_order_by_seat(self, performance_id, l0_id):
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
@@ -2340,7 +2361,7 @@ class OrdersEditAPIView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission="sales_counter", route_name="orders.mailinfo")
-class MailInfoView(BaseView):
+class MailInfoView(OrderBaseView):
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/orders/mailinfo/show.html")
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
