@@ -255,7 +255,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         sa.UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment', 'order_notification']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment', 'order_notification', 'proto_order', 'membership', 'cart_setting']
 
     id = sa.Column(Identifier, primary_key=True)
     user_id = sa.Column(Identifier, sa.ForeignKey("User.id"))
@@ -893,7 +893,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 @implementer(IOrderedProductItemLike)
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
-    __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']
+    __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes', 'print_histories']
 
     id = sa.Column(Identifier, primary_key=True)
     ordered_product_id = sa.Column(Identifier, sa.ForeignKey("OrderedProduct.id"))
