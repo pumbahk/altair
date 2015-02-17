@@ -47,7 +47,7 @@ def includeme(config):
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
-    config.add_route('order_review.infomation', '/infomation')  # refs 10883
+    config.add_route('order_review.information', '/information')  # refs 10883
 
 def main(global_config, **local_config):
     settings = dict(global_config)
