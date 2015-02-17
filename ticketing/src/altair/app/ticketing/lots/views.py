@@ -32,7 +32,11 @@ from .models import (
 from .adapters import LotSessionCart
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
-from altair.app.ticketing.orderreview.views import jump_maintenance_page_om_for_trouble
+from altair.app.ticketing.orderreview.views import (
+    jump_maintenance_page_om_for_trouble,
+    jump_infomation_page_om_for_10873,
+    )
+
 
 logger = logging.getLogger(__name__)
 
@@ -570,6 +574,7 @@ class LotReviewView(object):
         except ValidationError:
             return dict(form=form)
         # XXX: hack
+        jump_infomation_page_om_for_10873(lot_entry)
         return my_render_view_to_response(lot_entry, self.request)
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), context=LotEntry)
