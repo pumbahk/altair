@@ -67,7 +67,7 @@ def jump_infomation_page_om_for_10873(orderlike):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもはinfomationページにリダイレクトさせる
     """
     if is_suspicious_order(orderlike):
-        raise HTTPFound('/orderreview/infomation')
+        raise HTTPFound('/orderreview/information')
 
 
 class InvalidForm(Exception):
@@ -306,10 +306,10 @@ def contact_view(context, request):
 
 
 @lbr_view_config(
-    route_name="order_review.infomation",
-    renderer=selectable_renderer("infomation.html")
+    route_name="order_review.information",
+    renderer=selectable_renderer("information.html")
     )
-def infomation_view(context, request):
+def information_view(context, request):
     """お問い合わせページ
     https://redmine.ticketstar.jp/issues/10883
     """
