@@ -60,6 +60,8 @@ class OrderReviewResourceBase(object):
 class LandingViewResource(OrderReviewResourceBase):
     pass
 
+from .views import unsuspicious_order_filter
+
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
@@ -69,19 +71,20 @@ class MyPageListViewResource(OrderReviewResourceBase):
             filter(Order.user_id==user.id). \
             filter(SalesSegmentSetting.disp_orderreview==True). \
             order_by(Order.updated_at.desc())
-
-        orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))
+        orders = unsuspicious_order_filter(orders)
+        orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
         return orders
 
     def get_lots_entries(self, user, page, per):
         entries = LotEntry.query.filter(
             LotEntry.user_id==user.id
         ).order_by(LotEntry.updated_at.desc())
-        entries = paginate.Page(entries.all(), page, per, url=paginate.PageURL_WebOb(self.request))
+        entries = unsuspicious_order_filter(entries)
+        entries = paginate.Page(entries, page, per, url=paginate.PageURL_WebOb(self.request))
         return entries
 
 
-class OrderReviewResource(OrderReviewResourceBase): 
+class OrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(OrderReviewResource, self).__init__(request)
         try:

@@ -33,7 +33,7 @@ from . import helpers as h
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
     """
-    if organization is None or organization.code not in ['KE']:
+    if organization is None or organization.code not in ['KE', 'RT']:
         raise HTTPFound('/maintenance.html')
 
 
@@ -109,10 +109,6 @@ class MypageView(object):
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
-
-        orders = unsuspicious_order_filter(orders)  # refs 10883
-        entries = unsuspicious_order_filter(entries)  # refs 10883
-
         magazines_to_subscribe = None
         if shipping_address:
             magazines_to_subscribe = get_magazines_to_subscribe(
