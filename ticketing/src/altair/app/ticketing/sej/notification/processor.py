@@ -110,7 +110,7 @@ class SejNotificationProcessor(object):
         sej_order.mark_canceled(notification.processed_at)
         sej_order.processed_at = notification.processed_at
         notification.reflected_at = self.now
-        # self.cancel_order_if_necessary(order, notification.processed_at, _session)
+        self.cancel_order_if_necessary(order, notification.processed_at, _session)
 
     def reflect_expire(self, sej_order, order, notification):
         from ..models import SejPaymentType
