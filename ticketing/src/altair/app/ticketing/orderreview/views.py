@@ -32,9 +32,12 @@ from . import helpers as h
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
+    誤表示問題の時に使用していたコード
+    有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
     """
-    if organization is None or organization.code not in ['KE', 'RT', 'CR', 'KT', 'TH', 'TC', 'PC', 'SC', 'YT', 'OG', 'JC', 'NH', '89', 'VS', 'IB', 'FC', 'TG', 'BT', 'LS', 'BA', 'VV', 'KH', 'VK', 'RE','TS', 'RK']:
-        raise HTTPFound('/maintenance.html')
+    return
+    #if organization is None or organization.code not in ['KE', 'RT', 'CR', 'KT', 'TH', 'TC', 'PC', 'SC', 'YT', 'OG', 'JC', 'NH', '89', 'VS', 'IB', 'FC', 'TG', 'BT', 'LS', 'BA', 'VV', 'KH', 'VK', 'RE','TS', 'RK']:
+    #    raise HTTPFound('/maintenance.html')
 
 
 logger = logging.getLogger(__name__)
