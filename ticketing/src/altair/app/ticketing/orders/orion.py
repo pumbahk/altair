@@ -8,12 +8,23 @@ logger = logging.getLogger(__name__)
 
 def on_order_canceled(ev):
     try:
-        order_no = ev.order.order_no
-        res_text = create(request=ev.request, data=data)
-        # TODO: resどうする?
+        tokens = [ ]
+        for op in ev.order.ordered_products:
+            for opi in op.ordered_product_items:
+                for token in opi.tokens:
+                    tokens.append(token.id)
+
+        if 0 < len(tokens):
+            data = dict(
+                token = tokens,
+                order = dict(
+                    number = ev.order.order_no,
+                    canceled_at = str(ev.order.canceled_at),
+                )
+            )
+            res = create(request=ev.request, data=data)
     except Exception, e:
         logger.error(e.message, exc_info=1)
-        raise
 
 def create(request, data):
     settings = request.registry.settings

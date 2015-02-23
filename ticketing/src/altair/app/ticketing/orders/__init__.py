@@ -2,6 +2,7 @@
 
 def setup_subscribers(config):
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
+    config.add_subscriber('.orion.on_order_canceled'    , '.events.OrderCanceled')
 
 def includeme(config):
     config.add_route('orders.index'                     , '/')
