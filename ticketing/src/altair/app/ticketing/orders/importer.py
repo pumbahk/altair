@@ -204,6 +204,8 @@ def date_time_compare(a, b):
         return a == b
 
 class ImportCSVParserContext(object):
+    attribute_re = re.compile(ur'attribute\[([^]]*)\]')
+
     shipping_address_record_key_map = {
         'first_name': {
             'key': u'shipping_address.first_name',
@@ -299,6 +301,7 @@ class ImportCSVParserContext(object):
         self.payment_methods = {}
         self.delivery_methods = {}
         self.date_time_formatter = create_date_time_formatter(request)
+        self.previous_attributes = {}
 
     def parse_int(self, string, message):
         if string is not None:
@@ -336,10 +339,11 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'%s: %s' % (message, string))
         return None
 
-    def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp, cart_setting):
+    def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp, cart_setting, attributes=None):
         # create TemporaryCart
         cart = self.carts.get(order_no_or_key)
         if cart is None:
+            self.previous_attributes = attributes
             membership, membergroup, user = self.get_user(row)
             note = re.split(ur'\r\n|\r|\n', row.get(u'order.note', u'').strip())
             # SalesSegment, PaymentDeliveryMethodPair
@@ -479,6 +483,8 @@ class ImportCSVParserContext(object):
                                     membership.id, user.id, sales_segment.id
                                     )
                                 )
+                if attributes is None:
+                    attributes = dict(original_order.attributes)
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -512,8 +518,13 @@ class ImportCSVParserContext(object):
                 issuing_end_at        = issuing_end_at,
                 payment_start_at      = payment_start_at,
                 payment_due_at        = payment_due_at,
-                cart_setting_id       = cart_setting.id
+                cart_setting_id       = cart_setting.id,
+                attributes            = attributes
                 )
+        else:
+            if attributes is not None and self.previous_attributes != attributes:
+                raise self.exc_factory(u'同じキーを持つエントリの間で属性値に相違があります')
+
         return cart
 
     def get_ordered_product(self, row, order_no_or_key, proto_order, product):
@@ -896,6 +907,13 @@ class ImportCSVParserContext(object):
             raise self.exc_factory(u'カート設定が見つかりません: %s' % name)
         return cart_setting
 
+    def get_attributes(self, row):
+        retval = {}
+        for k, v in row.items():
+            m = re.match(self.attribute_re, k)
+            if m is not None:
+                retval[m.group(1)] = v
+        return retval
 
 class ImportCSVParser(object):
     def __init__(self, request, session, order_import_task, organization, performance=None, event=None, default_payment_method=None, default_delivery_method=None):
@@ -941,7 +959,11 @@ class ImportCSVParser(object):
                 sales_segment = context.get_sales_segment(row, performance)
                 pdmp = context.get_pdmp(row, sales_segment)
                 cart_setting = context.get_cart_setting(row, event)
-                cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp, cart_setting)
+                attributes = context.get_attributes(row)
+                if not attributes:
+                    # 目下、購入情報属性の指定が1つもない場合は、属性を空にするのではなく元のOrderから属性を引き継ぐようにする
+                    attributes = None
+                cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp, cart_setting, attributes)
                 product = context.get_product(row, cart.sales_segment, performance)
                 item = context.get_ordered_product(row, order_no_or_key, cart, product)
                 product_item = context.get_product_item(row, product)

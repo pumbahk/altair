@@ -261,7 +261,7 @@ class CoreModelCloner(object):
             {
                 'id': None,
                 'name': stock_holder.name,
-                'event_id': stock_holder.event_id,
+                'event_id': self.event.dst,
                 'account_id': stock_holder.account_id,
                 'is_putback_target': stock_holder.is_putback_target,
                 'style': self._dump_json(stock_holder.style),

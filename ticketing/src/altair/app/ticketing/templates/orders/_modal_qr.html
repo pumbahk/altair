@@ -1,0 +1,30 @@
+<%page args="id='modal-show-qr'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="${id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>QRコードを表示</h3>
+  </div>
+
+  <div class="modal-body">
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-dismiss btn" data-dismiss="modal">閉じる</button>
+  </div>
+  <script type="text/javascript">
+  var show_modal_qr;
+  (function ($modal) {
+    var endpoint = ${HH.json(request.route_path('orders.show.qr', order_id=order.id))|n};
+    show_modal_qr = function show_modal_qr() {
+      load_modal_form(
+        $modal,
+        endpoint,
+        null,
+        function ($form, status) {
+        }
+      );
+    };
+  })($('#${id}'));
+  </script>
+</div>

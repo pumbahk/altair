@@ -42,6 +42,8 @@ ${h.format_currency(wish.special_fee)}
 合計 ${h.format_currency(wish.total_amount)} (税込)
 </font></div>
 %endfor
+
+% if 0:
 <%mobile:header>購入者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
@@ -74,6 +76,8 @@ ${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${
 <%mobile:form_header>メモ</%mobile:form_header>
 <div>
 ${memo|h.nl2br}
+% endif
+
 </div>
 <%mobile:header>注意事項</%mobile:header>
 <div>・お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</div>

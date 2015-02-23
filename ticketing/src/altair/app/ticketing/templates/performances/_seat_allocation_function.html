@@ -383,12 +383,11 @@ var makeEditable = (function () {
   var editing = null;
   var prevDisplayStyleValue = null;
 
-  return function makeEditable(n, stock, validation) {
+  return function makeEditable(n, stock, filter) {
     var editable = $('<span></span>').appendTo(n);
     var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
-    var save = function (value) { set(value); };
+    var save = function (value) { set(value); }; // will be overridden by bindSave()
     var value = '';
-    var validation = validation;
 
     function beginEdit() {
       if (editing)
@@ -434,10 +433,6 @@ var makeEditable = (function () {
       endEdit();
     }
 
-    function save() {
-      save();
-    }
-
     function onClick() {
       if (editing)
         cancel();
@@ -445,16 +440,13 @@ var makeEditable = (function () {
     }
 
     function set(_value) {
-      if(validation){
-          var rc = validation(_value);
-          if(rc){
-              value = _value;
-          }else{
-              return;
-          }
-      }else{
-          value = _value;
+      if (filter) {
+        var __value = filter(_value);
+        if (__value === void(0))
+          return;
+        _value = __value;
       }
+      value = _value;
 
       if (editing)
         editing.val(_value)
@@ -489,6 +481,15 @@ function remaining_seats_count(stock){
     return parseInt(stock.get('available'));
 }
 
+function positiveInteger(value) {
+  var _value = +value;
+  if (isNaN(_value) || _value < 0) {
+    alert("不正な値です: " + value );
+    return void(0);
+  }
+  return _value;
+}
+
 function buildStockRow(stock) {
   var tr = $('<tr></tr>');
   var legend = $('<td class="stock-legend"></td>');
@@ -506,16 +507,7 @@ function buildStockRow(stock) {
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity, stock, function (value){
-        var regx = /^\d+$/; // only non negative integer.
-        var match = regx.exec(value);
-        if(match){
-            return true;
-        }else{
-            alert("不正な値です: " + value );
-            return false;
-        }
-    }), stock, 'assigned');
+    bind(makeEditable(quantity, stock, positiveInteger), stock, 'assigned');
     stock_mover = $('<i class="fa fa-share-square-o"/>');
     stock_mover.on('click', function (){
         buildTransferStocksQuantityOnlyModal(stock.get('id'));
@@ -549,7 +541,7 @@ function buildStockRowForStockType(stock) {
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity, stock), stock, 'assigned');
+    bind(makeEditable(quantity, stock, positiveInteger), stock, 'assigned');
   }
   var lock = $('<td class="stock-lock"></td>');
   makeLockHandler(lock, stock);
@@ -787,6 +779,7 @@ function transferStocks() {
         })
       }
     } else {
+      // XXX: この parseInt いらんでしょ...
       var unavailable = parseInt(from_stock.get('assigned')) - parseInt(from_stock.get('available'));
       to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('available')));
       from_stock.set('assigned', unavailable);

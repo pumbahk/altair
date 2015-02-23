@@ -66,9 +66,9 @@ from .view_support import (
     )
 from .exceptions import (
     NoSalesSegment,
-    NoCartError, 
+    NoCartError,
     NoPerformanceError,
-    InvalidCSRFTokenException, 
+    InvalidCSRFTokenException,
     CartCreationException,
     InvalidCartStatusError,
     PaymentMethodEmptyError,
@@ -124,10 +124,10 @@ class PaymentAction(flow.PageFlowActionBase):
         response = Payment(context.cart, request).call_prepare()
         if response is not None:
             assert isinstance(response, HTTPFound)
-            flow_context['prepared'] = True 
+            flow_context['prepared'] = True
             return flow.Transition(context, request, url_or_path=response.location)
         else:
-            flow_context['prepared'] = True 
+            flow_context['prepared'] = True
 
 
 # 画面フローの定義
@@ -204,7 +204,7 @@ flow_graph = flow.PageFlowGraph(
 
 @view_defaults(
     route_name='cart.agreement',
-    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), 
+    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
     renderer=selectable_renderer("agreement.html"),
     xhr=False, permission="buy")
 class PerEventAgreementView(IndexViewMixin):
@@ -304,6 +304,16 @@ class CompatAgreementView(object):
         return PerPerformanceAgreementView(self.request).post()
 
 
+def jump_maintenance_page_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    誤表示問題の時に使用していたコード
+    有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
+    """
+    return
+    #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
+    #    raise HTTPFound('/maintenance.html')
+
+
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -316,9 +326,11 @@ class IndexView(IndexViewMixin):
     @lbr_view_config(route_name='cart.index',
                  renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -355,7 +367,7 @@ class IndexView(IndexViewMixin):
                 preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
                 if preferred_performance is not None:
                     if preferred_performance.event_id != self.context.event.id:
-                        preferred_performance = None 
+                        preferred_performance = None
 
         set_rendered_event(self.request, self.context.event)
 
@@ -388,9 +400,11 @@ class IndexView(IndexViewMixin):
     @lbr_view_config(route_name='cart.index2',
                  renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index2',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
 
@@ -608,7 +622,7 @@ class IndexAjaxView(object):
             elif stock_type_id is not None:
                 seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                 seat_groups_queries = [
-                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                     for seat_groups_query in seat_groups_queries
                     ]
             seats = seats_query.all()
@@ -620,7 +634,7 @@ class IndexAjaxView(object):
                         'name': seat_group_name,
                         'seats': [],
                         }
-                seat_group['seats'].append(seat_l0_id) 
+                seat_group['seats'].append(seat_l0_id)
         else:
             seats = []
             seat_groups = {}
@@ -628,7 +642,7 @@ class IndexAjaxView(object):
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
-                
+
 
         return dict(
             seats=dict(
@@ -851,9 +865,9 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        return dict(result='OK', 
+        return dict(result='OK',
                     payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
+                    cart=dict(products=[dict(name=p.product.name,
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if sales_segment.setting.display_seat_no else [],
@@ -913,21 +927,22 @@ class PaymentView(object):
             user_profile = user.user_profile
 
         if user_profile is not None:
-            formdata = MultiDict(
-                last_name=user_profile.last_name,
-                last_name_kana=user_profile.last_name_kana,
-                first_name=user_profile.first_name,
-                first_name_kana=user_profile.first_name_kana,
-                tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None), 
-                zip=user_profile.zip,
-                prefecture=user_profile.prefecture,
-                city=user_profile.city,
-                address_1=user_profile.address_1,
-                address_2=user_profile.address_2,
-                email_1=user_profile.email_1,
-                email_2=user_profile.email_2
-                )
+            formdata = None  # 自動補完のロジックを一時的にやめる  https://redmine.ticketstar.jp/issues/10876
+            # formdata = MultiDict(
+            #     last_name=user_profile.last_name,
+            #     last_name_kana=user_profile.last_name_kana,
+            #     first_name=user_profile.first_name,
+            #     first_name_kana=user_profile.first_name_kana,
+            #     tel_1=user_profile.tel_1,
+            #     fax=getattr(user_profile, "fax", None),
+            #     zip=user_profile.zip,
+            #     prefecture=user_profile.prefecture,
+            #     city=user_profile.city,
+            #     address_1=user_profile.address_1,
+            #     address_2=user_profile.address_2,
+            #     email_1=user_profile.email_1,
+            #     email_2=user_profile.email_2
+            #     )
         else:
             formdata = None
 
@@ -1014,11 +1029,11 @@ class PaymentView(object):
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
             sales_segment = self.request.context.sales_segment
-            
+
             payment_delivery_methods = [pdmp
                                         for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
                                         if pdmp.payment_method.public]
-        
+
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(

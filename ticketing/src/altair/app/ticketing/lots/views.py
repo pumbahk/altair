@@ -31,6 +31,12 @@ from .models import (
 )
 from .adapters import LotSessionCart
 from . import urls
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+from altair.app.ticketing.orderreview.views import (
+    jump_maintenance_page_om_for_trouble,
+    jump_infomation_page_om_for_10873,
+    )
+
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +204,8 @@ class EntryLotView(object):
         """
 
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         if form is None:
             form = self._create_form()
 
@@ -252,7 +260,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types, 
+            stock_types=stock_types,
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map)
@@ -265,6 +273,8 @@ class EntryLotView(object):
         - 申し込み回数
         - 申し込み内の公演、席種排他チェック
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         lot = self.context.lot
         if not lot:
             logger.debug('lot not not found')
@@ -543,12 +553,14 @@ class LotReviewView(object):
     @lbr_view_config(request_method="GET", renderer=selectable_renderer("review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review_form.html"))
     def post(self):
         """ 申し込み情報表示"""
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
         try:
             if not form.validate():
@@ -562,10 +574,12 @@ class LotReviewView(object):
         except ValidationError:
             return dict(form=form)
         # XXX: hack
+        jump_infomation_page_om_for_10873(lot_entry)
         return my_render_view_to_response(lot_entry, self.request)
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), context=LotEntry)
     def post_validated(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
@@ -593,7 +607,7 @@ def out_term_exception(context, request):
 
 
 @lbr_view_config(
-    context="altair.app.ticketing.payments.exceptions.PaymentPluginException", 
+    context="altair.app.ticketing.payments.exceptions.PaymentPluginException",
     renderer=selectable_renderer('message.html')
     )
 def payment_plugin_exception(context, request):

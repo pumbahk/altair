@@ -18,10 +18,10 @@
   <hr size="1" color="#ECAC00" />
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
   発券番号 ${ticket.id} <br />
-  注文番号 ${order.order_no} <br />
+  受付番号 ${order.order_no} <br />
   パフォーマンス ${performance.code} <br />
-  <font size="5">興行日 ${performance.start_on}</font> <br />
-  <font size="5">商品名 ${product.name} (${product.id})</font> <br />
+  <font size="5">${performance.start_on}</font> <br />
+  <font size="5">${product.name} (${product.id})</font> <br />
   %if gate:
   <font size="5">入場ゲート ${gate}</font> <br />
   %endif
@@ -31,21 +31,28 @@
   <br style="clear: both;" />
 
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【発券ステーション設置場所】</font></b>
+  <b><font size="4" color="#fff">【チケットステーション設置場所】</font></b>
 </div>
 <div align="left">
+■楽天Koboスタジアム宮城の場合
   <ul>
     <li>
-    スタジアム正面　総合案内所脇
+スタジアム正面
     </li>
     <li>
-    スタジアム外周　CFゲート脇※バックスクリーン裏
+スタジアム外周　CFゲート脇※バックスクリーン裏
+    </li>
+  </ul>
+■楽天Koboスタジアム宮城以外の開催球場の場合
+  <ul>
+    <li>
+試合当日球場外周に発券ブースを設けます
     </li>
   </ul>
 </div>
 
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【発券ステーションオープン時間】</font></b>
+  <b><font size="4" color="#fff">【チケットステーションオープン時間】</font></b>
 </div>
 <div align="left">
   <ul>
@@ -62,7 +69,7 @@
 <div align="left">
   <ul>
     <li>
-    オープン時～試合開始時間まで　当日試合のみの発券
+    オープン時間～試合開始時間まで　当日試合のみの発券
     </li>
     <li>
     試合開始時間～試合終了30分後まで　当日試合及び翌日以降の試合
@@ -76,7 +83,7 @@
 <div align="left">
   <ul>
     <li>
-    入場ゲートでQRコードをご提示いただいてもご入場できません。必ず発券ステーションで発券後、入場ゲートへお越しください。
+    入場ゲートでQRコードをご提示いただいてもご入場できません。必ずチケットステーションで発券後、入場ゲートへお越しください。
     </li>
     <li>
     1つのQRコードを読み込みいただくと、同一予約による発券対象チケットがすべて表示されます。
@@ -85,7 +92,7 @@
     複数チケットを発券される場合は、QRコードのご提示は1つで発券いただけます。
     </li>
     <li>
-    発券ステーションにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。
+    チケットステーションにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。
     </li>
     <li>
     発券したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください

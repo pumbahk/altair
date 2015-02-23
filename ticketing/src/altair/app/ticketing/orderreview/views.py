@@ -11,7 +11,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from altair.auth import who_api as get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
-
+from altair.app.ticketing.core.api import get_default_contact_url
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
@@ -30,14 +30,53 @@ from . import schemas
 from . import api
 from . import helpers as h
 
+def jump_maintenance_page_om_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    誤表示問題の時に使用していたコード
+    有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
+    """
+    return
+    #if organization is None or organization.code not in ['KE', 'RT', 'CR', 'KT', 'TH', 'TC', 'PC', 'SC', 'YT', 'OG', 'JC', 'NH', '89', 'VS', 'IB', 'FC', 'TG', 'BT', 'LS', 'BA', 'VV', 'KH', 'VK', 'RE','TS', 'RK']:
+    #    raise HTTPFound('/maintenance.html')
+
+
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
+
+
+suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketstar.jp/issues/10873 で問題が発生しだしたと思われる30分前
+suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
+
+
+def is_suspicious_order(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return suspicious_start_dt <= orderlike.created_at <= suspicious_end_dt
+
+
+def unsuspicious_order_filter(orderlikes):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもを取り除く
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return [orderlike for orderlike in orderlikes if not is_suspicious_order(orderlike)]
+
+
+def jump_infomation_page_om_for_10873(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもはinfomationページにリダイレクトさせる
+    """
+    if is_suspicious_order(orderlike):
+        raise HTTPFound('/orderreview/information')
+
 
 class InvalidForm(Exception):
     def __init__(self, form, errors=[]):
         self.form = form
         self.errors = errors
+
 
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
@@ -61,6 +100,7 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         authenticated_user = self.context.authenticated_user()
         user = cart_api.get_user(authenticated_user)
         per = 10
@@ -72,7 +112,6 @@ class MypageView(object):
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
-
         magazines_to_subscribe = None
         if shipping_address:
             magazines_to_subscribe = get_magazines_to_subscribe(
@@ -100,8 +139,9 @@ class MypageView(object):
             raise HTTPNotFound()
 
         order = self.context.order
+        jump_infomation_page_om_for_10873(order)  # refs 10883
 
-        if not order:
+        if not order or order.user_id != user.id:
             raise HTTPNotFound()
 
         return dict(order=self.context.order)
@@ -174,11 +214,13 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
     @lbr_view_config(route_name='order_review.guest')
     def guest(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
     @lbr_view_config(
@@ -187,6 +229,7 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/form.html")
         )
     def form(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
@@ -195,6 +238,7 @@ class OrderReviewView(object):
         request_method="GET"
         )
     def get(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(self.request.route_path('order_review.form'))
 
     @lbr_view_config(
@@ -214,6 +258,8 @@ class OrderReviewView(object):
         address = order.shipping_address
         if form.data["tel"] not in (schemas.strip_hyphen(_tel) for _tel in (address.tel_1, address.tel_2)):
             raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
+
+        jump_infomation_page_om_for_10873(order)  # refs 10873
 
         # Orion受取りなのにOrionPerformanceが無い場合は、警告
         if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and order.performance.orion is None:
@@ -256,6 +302,22 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return HTTPFound(cart_api.safe_get_contact_url(request, default=request.route_path("order_review.form")))
 
+
+@lbr_view_config(
+    route_name="order_review.information",
+    renderer=selectable_renderer("information.html")
+    )
+def information_view(context, request):
+    """お問い合わせページ
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    infomation_tel = '0800-808-0010'
+    return dict(
+        request=request,
+        infomation_tel=infomation_tel,
+        )
+
+
 class QRView(object):
     def __init__(self, context, request):
         self.context = context
@@ -267,12 +329,12 @@ class QRView(object):
     def qr_confirm(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
-        
+
         return dict(
             sign = sign,
             order = ticket.order,
@@ -290,7 +352,7 @@ class QRView(object):
         sign = self.request.matchdict.get('sign', 0)
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
 
@@ -298,7 +360,7 @@ class QRView(object):
             gate = None
         else:
             gate = ticket.seat.attributes.get("gate", None)
-        
+
         return dict(
             token = ticket.item_token.id, # dummy
             serial = ticket_id,           # dummy
@@ -324,7 +386,7 @@ class QRView(object):
         data = OrderedProductItemToken.filter_by(id = token).first()
         if data is None:
             return HTTPNotFound()
-        
+
         ticket = type('FakeTicketPrintHistory', (), {
             'id': serial,
             'performance': data.item.ordered_product.order.performance,
@@ -333,7 +395,7 @@ class QRView(object):
             'seat': data.seat,
         })
         qr = build_qr_by_orion(self.request, ticket, serial)
-        
+
         if sign == qr.sign:
             return qrdata_as_image_response(qr)
         else:
@@ -346,7 +408,7 @@ class QRView(object):
     def qr_image(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
         if ticket is None:
             raise HTTPNotFound()
@@ -426,7 +488,7 @@ class QRView(object):
                     r.text = response['message']
                     return r
                 raise Exception()
-            
+
             return dict(
                 _overwrite_generate_qrimage_route_name = 'order_review.orion_draw',
                 token = token.id,
@@ -442,7 +504,7 @@ class QRView(object):
         elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
             # altair
             ticket = build_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
-            
+
             return dict(
                 token = token.id,    # dummy
                 serial = ticket.id,  # dummy
@@ -457,18 +519,18 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.qr_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html")
         )
     def send_mail(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         try:
@@ -487,17 +549,17 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.orion_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html"))
     def send_to_orion(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         result = []
@@ -551,13 +613,13 @@ def render_qrmail_viewlet(context, request):
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
     else:
         name = u''
-    
+
     return dict(
         name=name,
-        event=ticket.event, 
-        performance=ticket.performance, 
-        product=ticket.product, 
-        seat=ticket.seat, 
+        event=ticket.event,
+        performance=ticket.performance,
+        product=ticket.product,
+        seat=ticket.seat,
         mail = request.params['mail'],
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
