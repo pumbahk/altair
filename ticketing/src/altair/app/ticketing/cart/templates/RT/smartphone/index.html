@@ -302,5 +302,9 @@ $(function () {
       </div>
     </div>
 
+    % if request.organization.setting.sitecatalyst_use:
+        <%include file="../common/sc_index.html" />
+    % endif
+
     <%include file="./_dsp.html" />
 

@@ -1,0 +1,12 @@
+<script type="text/javascript">
+var trackingParam = {};
+trackingParam.pageName="cart:payment"
+trackingParam.channel="cart"
+<%
+product_list = []
+for product in request.context.cart.products:
+    product_list.append(str(request.context.event.id) + ";" + str(request.context.event.id) + "_" + str(request.context.performance.id) + "_" + str(product.id))
+%>
+trackingParam.products = "${','.join(product_list)}"
+trackingParam.events="scCheckout"
+</script>
