@@ -4,11 +4,11 @@
 <form id="form1" action="${request.route_path('payment.finish')}" method="post">
 ${form.csrf_token()}
 <% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
-<%mobile:form_header>会員種別</%mobile:form_header>
+<%mobile:form_header>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'}</%mobile:form_header>
 <div>${cart.items[0].product.name}</div>
-<%mobile:form_header>氏名</%mobile:form_header>
+<%mobile:form_header>${view_context.fc_name if view_context.fc_name else u'氏名'}</%mobile:form_header>
 <div>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</div>
-<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+<%mobile:form_header>${view_context.fc_name if view_context.fc_name else u'氏名'}（フリガナ）</%mobile:form_header>
 <div>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</div>
 <%mobile:form_header>住所</%mobile:form_header>
 <div>${cart.shipping_address.prefecture} ${cart.shipping_address.city} ${cart.shipping_address.address_1} ${cart.shipping_address.address_2}</div>
