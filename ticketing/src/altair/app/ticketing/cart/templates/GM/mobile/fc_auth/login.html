@@ -11,17 +11,17 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#E60048">■</font>競技者登録済みの方はこちらから</font>
+<div><font color="#E60048">■</font>会員の方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="GM" />
 <div>
-  登録番号<br/>
+  会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">登録番号またはパスワードが一致しません</span>
+  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
   %endif
   <br/>
   パスワード<br/>
@@ -41,7 +41,7 @@
 <br/>
 <input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
 <div>
-大会によっては一般の方は<br/>お申込みできない場合があります。
+
 </div>
 </div>
 </div>
