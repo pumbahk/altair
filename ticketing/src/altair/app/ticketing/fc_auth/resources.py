@@ -16,7 +16,7 @@ class FCAuthResourceBase(object):
         session = get_db_session(self.request, 'slave')
         return session.query(Membership) \
             .filter_by(organization_id=self.organization.id) \
-            .one()
+            .first()
 
     @reify
     def available_memberships(self):
