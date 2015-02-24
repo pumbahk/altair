@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from functools import wraps
+import mock
 from pyramid.response import Response
 from mako.template import Template
 from .rendering import selectable_renderer
@@ -84,7 +85,6 @@ def _dummy_performance():
     return performance
 
 def _dummy_order():
-    import mock
     order = mock.Mock()
     order.performance = _dummy_performance()
     order.ordered_products = []
@@ -95,11 +95,10 @@ def _dummy_order():
     order.total_amount = 500
     order.payment_delivery_pair.payment_method.payment_plugin_id = 1
     order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
-    order.get_order_attribute_pair_pairs = Mock(return_value={})
+    order.get_order_attribute_pair_pairs = mock.Mock(return_value={})
     return order
 
 def _dummy_cart():
-    import mock
     cart = mock.Mock()
     cart.performance = _dummy_performance()
     cart.items = []
