@@ -14,8 +14,8 @@ from altaircms.auth.accesskey.api import get_page_access_key_control
 
 class PageRenderingResource(object):
     def __init__(self, request):
-        organization_id = request.params.get("organization_id")
-        set_request_organization(request, organization_id)
+        organization_code = request.params.get("organization_code")
+        set_request_organization(request, organization_id = None, organization_code=organization_code)
         self.request = request
 
     @property
