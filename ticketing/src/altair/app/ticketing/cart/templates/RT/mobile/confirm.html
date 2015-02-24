@@ -52,7 +52,6 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 shipping = cart.shipping_address
 %>
 
-%if 0:
 <%mobile:header>お支払い</%mobile:header>
 <div>
 ${h.render_payment_confirm_viewlet(request, cart)}
@@ -62,7 +61,6 @@ ${h.render_payment_confirm_viewlet(request, cart)}
 <div>
 ${h.render_delivery_confirm_viewlet(request, cart)}
 </div>
-
 
 <%mobile:header>購入者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
@@ -81,7 +79,6 @@ ${shipping.tel_1}
 <div>
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
-%endif
 
 % if extra_form_data:
 <%mobile:header>追加情報</%mobile:header>
