@@ -187,5 +187,8 @@ setup(name='altair.app.ticketing',
       download_orders=altair.app.ticketing.scripts.download_orders:main
       send_mail=altair.app.ticketing.scripts.send_mail:main
       """,
+      dependency_links = [
+        'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
+        ],
       paster_plugins=['pyramid'],
       )
