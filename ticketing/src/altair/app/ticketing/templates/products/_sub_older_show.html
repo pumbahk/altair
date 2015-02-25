@@ -38,7 +38,7 @@
             <td ${rowspan}>${product.name}</td>
             <td ${rowspan} class="${price_class}">${vh.price(product.price)}</td>
             <td ${rowspan}>${product.display_order}</td>
-            <td ${rowspan}>${u'○' if product.public else u'×'}</td>
+            <td ${rowspan} ${'class = text-error' if not product.public else ''}>${u'○' if product.public else u'×'}</td>
             % for j, item in enumerate(product.items):
               % if j != 0:
           <tr class=${price_class}>
