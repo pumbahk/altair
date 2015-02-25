@@ -110,6 +110,9 @@ setup(name='altair-cms',
       syncsolr = altaircms.scripts.syncsolr:main
       rendering_page = altaircms.scripts.page_rendering_check:main
       """,
+      dependency_links = [
+        'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
+        ],
       paster_plugins=['pyramid'],
       )
 
