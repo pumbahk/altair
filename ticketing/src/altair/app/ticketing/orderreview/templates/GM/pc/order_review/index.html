@@ -1,96 +1,38 @@
 <%inherit file="../layout.html" />
 <h2>購入履歴の確認</h2>
-<table class="nobdr">
-  <tr>
-    <td>
-      <table class="guestbox">
-        <thead>
-          <tr>
-            <th>一般の方のチケット確認<small> はこちらから</small></th>
-          </tr>
-        </thead>
+<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
+  <!-- wrapper -->
+  <div class="formWrapper">
+    <table cellpadding="0" cellspacing="0" class="formeagles">
+      <colgroup>
+        <col style="width:180px;">
+        <col style="width:310px;">
+      </colgroup>
+      <tbody>
         <tr>
+          <th>受付番号 <span class="red">*</span></th>
           <td>
-          <form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
-            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
-              <tbody>
-              <tr>
-                <td colspan="2" id="btn_login" align="center">
-                  <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </form>
+            ${form.order_no}
+            (例: GM00000000AB)
+            <span class="red">${h.error('order_no')}</span>
           </td>
         </tr>
-      </table>
-        <br/>
-      <table class="guestbox">
-        <thead>
-          <tr>
-            <th>抽選の方のチケット確認<small> はこちらから</small></th>
-          </tr>
-        </thead>
         <tr>
+          <th>電話番号 <span class="red">*</span></th>
           <td>
-            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
-              <tbody>
-              <tr>
-                <td colspan="2" id="btn_login" align="center">
-                  <a href="https://green-music.tstar.jp/lots/review">
-                    <input value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
-                  </a>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+            ${form.tel}
+            (例: 080xxxxyyyy)
+            <span class="red">${h.error('tel')}</span><br/>
+            ご予約時に登録した電話番号をご入力してください。
+            </ul>
           </td>
         </tr>
-      </table>
-    </td>
-    <td>
-      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
-      <table class="loginbox">
-        <thead>
-          <tr>
-            <th>会員の方<small> はこちらから</small></th>
-          </tr>
-        </thead>
         <tr>
-          <td>
-            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
-              <tbody>
-              <tr>
-                <th align="right">会員番号</th>
-                <td align="left">
-                <div class="tal">
-                  <input type="text" class="text" name="username">
-                  %if message:
-                  <br/><span class="small red">IDまたはパスワードが一致しません</span>
-                  %endif
-                </div>
-                </td>
-              </tr>
-              <tr>
-                <th align="right">パスワード</th>
-                <td align="left">
-                <div class="tal">
-                  <input type="password" name="password">
-                </div>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="2" id="btn_login" align="center">
-                  <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
-                </td>
-              </tr>
-              </tbody>
-            </table>
+          <td colspan="2" style="text-align:center">
+            <input type="submit" value="次に進む" class="submit btnLogin" style="width:400px;height:50px;" />
           </td>
         </tr>
-      </table>
-      </form>
-    </td>
-  </tr>
-</table>
+      </tbody>
+    </table>
+  </div>
+</form>

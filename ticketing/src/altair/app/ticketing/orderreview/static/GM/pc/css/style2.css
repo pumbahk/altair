@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #32A0DC; /* Old browsers */
+background: #009768; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #FFF;
@@ -134,11 +134,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #1C1F89;
-border-top:1px dotted #1C1F89;
-border-bottom:1px dotted #1C1F89;
-border-right:1px dotted #1C1F89;
-background:#32A0DC;
+border-left:5px solid #006633;
+border-top:1px dotted #006633;
+border-bottom:1px dotted #006633;
+border-right:1px dotted #006633;
+background:#009768;
 padding:4px 0 4px 10px;
 }
 
@@ -473,7 +473,6 @@ border-bottom: 1px solid #09355F;
 
 table th {
 font-weight:700;
-border-left:1px solid #0A50AA;
 line-height:120%;
 text-align:center;
 padding:8px 15px;
@@ -482,11 +481,11 @@ cursor: default;
 
 table tbody th {
   color: #FFF;
-  background-color:#0A50AA;
+  background-color:#009768;
 }
 
 table thead th {
-  background-color:#0A50AA;
+  background-color:#009768;
   color:#FFF;
 }
 
@@ -905,12 +904,12 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#32A0DC;
+background-color:#006633;
 }
 
 table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#32A0DC;
+background-color:#006633;
 }
 
 
