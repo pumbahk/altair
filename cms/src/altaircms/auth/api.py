@@ -138,14 +138,17 @@ class OAuthComponent(object):
         return url
 
 
-def set_request_organization(request, organization_id):
+def set_request_organization(request, organization_id, organization_code = None):
     """ 一時的な絞り込みのためのorganization情報をセット。(未ログインでのクライアント確認でのアクセスなどに必要)
     """
     organization = getattr(request, "organization", None)
     logger.debug("*set request organization* request.organization: %s, tmp organization: %s" % (getattr(organization, "id", None), organization_id))
-    if organization and organization.id == organization_id:
-        return 
-    tmp_organization = Organization.query.filter_by(id=organization_id).one()
+    if organization and (organization.id == organization_id or organization.code == organization_code):
+        return
+    if organization_id:
+        tmp_organization = Organization.query.filter_by(id=organization_id).one()
+    elif organization_code:
+        tmp_organization = Organization.query.filter_by(code=organization_code).one()
     request._organization = tmp_organization
 
 def fetch_correct_organization(request):
