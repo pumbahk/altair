@@ -150,6 +150,15 @@ class NewOrganizationForm(OrganizationForm):
             raise ValidationError(u'既に同じ短縮コードの取引先名が登録されています')
         return True
 
+    def validate_short_name(self, field):
+        query = c_models.Organization.filter_by(short_name=field.data)
+        if query is None:
+            return
+        org = query.first()
+        if org is not None:
+            raise ValidationError(u'既に同じ短縮名の取引先名が登録されています')
+        return True
+
 
 class SejTenantForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

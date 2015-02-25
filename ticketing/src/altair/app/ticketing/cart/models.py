@@ -595,6 +595,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         self.data['fc_kind_title'] = value
 
     @property
+    def fc_name(self):
+        return self.data.get('fc_name')
+
+    @fc_name.setter
+    def fc_name(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['fc_name'] = value
+
+    @property
     def contact_url(self):
         return self.data.get('contact_url')
 

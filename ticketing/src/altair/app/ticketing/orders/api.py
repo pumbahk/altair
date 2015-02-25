@@ -975,10 +975,15 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at),
         cart_setting_id=proto_order.cart_setting_id
         )
+    attributes = proto_order.attributes
     if prev_order is not None:
         order.branch_no = (prev_order.branch_no or 0) + 1
         for k in ['channel', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at', 'manual_point_grant', 'refund_total_amount', 'refund_system_fee', 'refund_transaction_fee', 'refund_delivery_fee', 'refund_special_fee']:
             setattr(order, k, getattr(prev_order, k))
+        if attributes is None:
+            attributes = prev_order.attributes
+    if attributes is not None:
+        order.attributes = attributes
     return order
 
 def label_for_object(v):

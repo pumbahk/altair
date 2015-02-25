@@ -22,7 +22,7 @@
 		    <td><a href="${request.route_path("auth.accesskey.detail",accesskey_id=key.id, _query=dict(endpoint=request.url))}">${key.name or u"-名前なし-"}</a></td>
         <td>${key.scope}</td>
         <td>
-          <a href="${preview_with_accesskey_url_gen(key.hashkey)}">クライアント確認用URL</a>
+          <a href="${preview_with_accesskey_url_gen(key.hashkey, request.organization.code)}">クライアント確認用URL</a>
         </td>
         <td>${ key.operator.screen_name if key.operator else u"-"}</td>
 		    <td>${ key.expiredate or u"期限指定なし" }</td>

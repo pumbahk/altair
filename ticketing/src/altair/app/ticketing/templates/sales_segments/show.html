@@ -61,7 +61,7 @@ require([], function () {});
     </tr>
     <tr>
       <th>${HH.label_text_for(SalesSegment.public)}</th>
-      <td>${u'公開' if sales_segment.public else u'非公開'}</td>
+      <td ${'class = text-error' if not sales_segment.public else ''}>${u'公開' if sales_segment.public else u'非公開'}</td>
     </tr>
     <tr>
       <th>${HH.label_text_for(SalesSegmentSetting.disp_orderreview)}</th>

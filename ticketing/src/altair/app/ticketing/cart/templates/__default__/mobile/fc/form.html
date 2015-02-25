@@ -52,7 +52,12 @@ ${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</
 </%def>
 
 ${render_field(form['extra']['member_type'])}
-${render_field_group(label=u'氏名', fields=[form['last_name'], form['first_name']], size="10", istyle="1")}
+<%
+name_label = u'氏名'
+if view_context.fc_name:
+    name_label = view_context.fc_name
+%>
+${render_field_group(label=name_label, fields=[form['last_name'], form['first_name']], size="10", istyle="1")}
 ${render_field_group(label=u'フリガナ', fields=[form['last_name_kana'], form['first_name_kana']], size="10", istyle="2")}
 ${render_field(form['zip'], size="7", maxlength="7", istyle="4")}
 ${render_field(form['prefecture'], iprof="address1")}

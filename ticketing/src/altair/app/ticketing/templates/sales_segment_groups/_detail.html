@@ -74,7 +74,7 @@
   </tr>
   <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.public)}</th>
-    <td id="public" value="${sales_segment_group.public}">
+    <td id="public" value="${sales_segment_group.public}" ${'class = text-error' if not sales_segment_group.public else ''}>
       ${u'公開' if sales_segment_group.public else u'非公開'}
     </td>
   </tr>

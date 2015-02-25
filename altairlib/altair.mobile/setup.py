@@ -41,9 +41,6 @@ setup(name='altair.mobile',
           'markupsafe',
           'altair.extracodecs',
       ],
-      dependency_links = [
-        'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
-      ],
       entry_points="""
       # -*- Entry points: -*-
       """,

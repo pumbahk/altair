@@ -52,7 +52,7 @@ if label is None or label is True:
       </tr>
       <tr>
         <th>
-          氏名 <span class="red">*</span>
+          ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>
         </th>
         <td>
           ${render_field(form.last_name, label=True)}
@@ -61,7 +61,7 @@ if label is None or label is True:
       </tr>
       <tr>
         <th>
-          氏名（フリガナ） <span class="red">*</span>
+          ${view_context.fc_name if view_context.fc_name else u'氏名'}（フリガナ） <span class="red">*</span>
         </th>
         <td>
           ${render_field(form.last_name_kana, label=True)}
