@@ -53,11 +53,6 @@ class PaymentDeliveryMethodPairs(BaseView):
             payment_delivery_method_pair.delivery_method_id = f.data['delivery_method_id']
             payment_delivery_method_pair.save()
 
-            # Add new payment_delivery_method_pair to each sales_segment in sales_segment_group
-            for sales_segment in sales_segment_group.sales_segments:
-                sales_segment.payment_delivery_method_pairs.append(payment_delivery_method_pair)
-                sales_segment.save()
-
             self.request.session.flash(u'決済・引取方法を登録しました')
             return HTTPFound(location=route_path('sales_segment_groups.show', self.request, sales_segment_group_id=f.sales_segment_group_id.data))
         else:
@@ -126,11 +121,6 @@ class PaymentDeliveryMethodPairs(BaseView):
         pdmp = PaymentDeliveryMethodPair.get(id)
         if pdmp is None:
             return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
-
-        # Delete entries from association table for this pdmp
-        for sales_segment in pdmp.sales_segment_group.sales_segments:
-            sales_segment.payment_delivery_method_pairs.remove(pdmp)
-            sales_segment.save()
 
         location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id)
         try:
