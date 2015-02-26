@@ -698,7 +698,7 @@ class ExportableReporter(object):
             .outerjoin(Order, Order.id==OrderedProduct.order_id)\
             .join(SalesSegment, SalesSegment.id==Product.sales_segment_id)\
             .join(SalesSegmentGroup, SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)\
-            .group_by(Performance.id, Stock.id, ProductItem.name, ProductItem.price)\
+            .group_by(Performance.id, Stock.id, ProductItem.id, SalesSegmentGroup.id)\
             .order_by(Performance.start_on, Performance.code, StockType.display_order, SalesSegmentGroup.name, ProductItem.name)\
             .filter(StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .filter(Order.canceled_at==None, Order.refunded_at==None)\
