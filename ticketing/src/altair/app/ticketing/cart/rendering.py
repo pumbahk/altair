@@ -77,8 +77,29 @@ selectable_renderer_helper_factory = RequestSwitchingRendererHelperFactory(
     view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context
     )
 
+
 def selectable_renderer(name):
     return RendererHelperProxy(
         selectable_renderer_helper_factory,
         name
+        )
+
+
+# cart/dummy用selectable_rendererで使用するrenderer_helperのfactoryクラス(callable)
+selectable_renderer_helper_factory_for_dummy = RequestSwitchingRendererHelperFactory(
+    fallback_renderer='notfound.html',
+    name_builder=lambda name, view_context, request: view_context.get_template_path_for_dummy(name),
+    view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context
+    )
+
+
+def selectable_renderer_for_dummy(name):
+    """cart/dummy用selectable_renderer
+
+    Organizationの取得方法が通常のselectable_rendererと異なる
+    (subdomainから取得せずurlパラメータから取得する)
+    """
+    return RendererHelperProxy(
+        selectable_renderer_helper_factory_for_dummy,
+        name,
         )
