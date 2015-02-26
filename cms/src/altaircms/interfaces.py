@@ -134,4 +134,14 @@ class IHasTimeHistory(Interface):
     """
     created_at = Attribute(""" a time at object created""")
     updated_at = Attribute(""" a time at object updated""")
-# 
+
+class IFeatureSettingManager(Interface):
+    def get_boolean_value(name, default_value=False):
+        pass
+
+    def get_string_value(name, default_value=""):
+        pass
+
+class IFeatureSettingManagerFactory(Interface):
+    def __call__(request, organization_id):
+        pass
