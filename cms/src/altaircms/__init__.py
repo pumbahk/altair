@@ -96,7 +96,7 @@ def install_separation(config):
 
     ## bind authenticated user to request.user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
-    config.set_request_property("altaircms.auth.helpers.get_organization", "organization", reify=True)
+    config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
