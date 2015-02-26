@@ -141,7 +141,7 @@ class Organizations(BaseView):
         if organization is None:
             return HTTPNotFound("organization id %d is not found" % organization_id)
 
-        f = OrganizationForm()
+        f = OrganizationForm(organization_id=organization_id)
         f.process(record_to_multidict(organization))
         return {
             'form':f,
@@ -155,7 +155,7 @@ class Organizations(BaseView):
         organization = Organization.get(organization_id)
         if organization is None:
             return HTTPNotFound("organization id %d is not found" % organization_id)
-        f = OrganizationForm(self.request.POST)
+        f = OrganizationForm(self.request.POST, organization_id=organization_id)
         if f.validate():
             organization = merge_session_with_post(organization, f.data)
             organization.save()
