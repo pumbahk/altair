@@ -40,6 +40,13 @@ def install_tracking_image_generator(config):
     config.registry.registerUtility(TrackingImage.from_settings(settings, prefix="altaircms.tracking.image."), 
                                     ITrackingImageGenerator)
 
+def add_request_properties(config):
+    from altaircms.api import get_feature_setting_manager
+    ## Add access to FeatureSetting in request
+    def fetch_feature_setting_manager(request):
+        return get_feature_setting_manager(request, request.organization.id)
+    config.set_request_property(fetch_feature_setting_manager, "featuresettingmanager", reify=True)
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -65,7 +72,6 @@ def main(global_config, **local_config):
     config.include("altair.now")
     # config.include("altaircms.templatelib")
 
-    config.include("altaircms.api")
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
@@ -82,6 +88,9 @@ def main(global_config, **local_config):
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
     config.add_fulltext_search(search_utility)
 
+    ## feature setting
+    config.include("altaircms.feature_setting")
+
     ## first:
     config.include("altairsite.front")
 
@@ -97,6 +106,7 @@ def main(global_config, **local_config):
     config.include("altairsite.inquiry")
     config.include("altairsite.order")
     config.include("altairsite.preview")
+    config.include(add_request_properties)
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
