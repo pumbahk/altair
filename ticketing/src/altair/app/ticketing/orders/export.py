@@ -5,6 +5,7 @@ import logging
 import tempfile
 import pickle
 from io import BytesIO
+from datetime import date, datetime
 from collections import OrderedDict
 
 from paste.util.multidict import MultiDict
@@ -221,6 +222,27 @@ class PrintHistoryRenderer(object):
             ]
 
 
+def attribute_coerce(value):
+    if value is None:
+        return u""
+    elif isinstance(value, basestring):
+        return value
+    elif isinstance(value, (int, long, float)):
+        return unicode(value)
+    elif isinstance(value, datetime):
+        return u"{0.year:04d}-{0.month:02d}-{0.day:02d} {0.hour:02d}:{0.minute:02d}:{0.second:02d}".format(value)
+    elif isinstance(value, date):
+        return u"{0.year:04d}-{0.month:02d}-{0.day:02d}".format(value)
+    else:
+        i = None
+        try:
+            i = iter(value)
+        except TypeError:
+            pass
+        if i is not None:
+            return u','.join(i)
+    return '?'
+
 class OrderAttributeRenderer(object):
     def __init__(self, key, variable_name, renderer_class=PlainTextRenderer):
         self.key = key
@@ -232,6 +254,7 @@ class OrderAttributeRenderer(object):
         retval = []
         for (attr_key, attr_value), _ in get_order_attribute_pair_pairs(context.request, order):
             renderer = self.renderer_class(u'_', u'%s[%s]' % (self.variable_name, attr_key))
+            attr_value = attribute_coerce(attr_value)
             retval.extend(renderer(dict(_=attr_value), context))
         return retval
 

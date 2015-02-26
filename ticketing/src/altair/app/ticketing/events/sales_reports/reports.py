@@ -683,23 +683,23 @@ class ExportableReporter(object):
     def fetch(self):
         q = self.slave_session.query(
             Performance, Stock, ProductItem, SalesSegmentGroup,
-            func.sum(OrderedProductItem.quantity).label("ordered"),
-            func.sum(OrderedProductItem.quantity*OrderedProductItem.price).label("ordered_price"),
-            func.sum(func.IF(Order.paid_at==None,0,1)*OrderedProductItem.quantity).label("paid"),
-            func.sum(func.IF(Order.paid_at==None,0,1)*OrderedProductItem.quantity*OrderedProductItem.price).label("paid_price")
+            func.sum(func.ifnull(OrderedProductItem.quantity, 0)).label("ordered"),
+            func.sum(func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("ordered_price"),
+            func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("paid"),
+            func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("paid_price")
             )\
             .join(ProductItem, ProductItem.performance_id==Performance.id)\
             .join(Product, Product.id==ProductItem.product_id)\
             .join(Stock, Stock.id==ProductItem.stock_id)\
             .join(StockType, StockType.id==Stock.stock_type_id)\
             .join(StockHolder, StockHolder.id==Stock.stock_holder_id)\
-            .join(OrderedProductItem, OrderedProductItem.product_item_id==ProductItem.id)\
-            .join(OrderedProduct, OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-            .join(Order, Order.id==OrderedProduct.order_id)\
+            .outerjoin(OrderedProductItem, OrderedProductItem.product_item_id==ProductItem.id)\
+            .outerjoin(OrderedProduct, OrderedProduct.id==OrderedProductItem.ordered_product_id)\
+            .outerjoin(Order, Order.id==OrderedProduct.order_id)\
             .join(SalesSegment, SalesSegment.id==Product.sales_segment_id)\
             .join(SalesSegmentGroup, SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)\
             .group_by(Performance.id, Stock.id, ProductItem.name, ProductItem.price)\
-            .order_by(Performance.start_on, Performance.code, StockType.display_order, ProductItem.id, SalesSegmentGroup.name)\
+            .order_by(Performance.start_on, Performance.code, StockType.display_order, SalesSegmentGroup.name, ProductItem.name)\
             .filter(StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .filter(Order.canceled_at==None, Order.refunded_at==None)\
             .filter(SalesSegment.reporting==True)\

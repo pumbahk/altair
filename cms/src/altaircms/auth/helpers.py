@@ -40,6 +40,14 @@ def get_authenticated_organization(request):
     logger.warn("user is None. so request.organization is also None")
     return None
 
+def get_organization(request):
+    organization = get_authenticated_organization(request)
+    if organization:
+        return organization
+    elif request._organization:
+        return request._organization # Get organization from request when _authenticated_organization is None
+    else:
+        return None
 
 ### use where auth event 
 def get_roles_from_role_names(role_names):
