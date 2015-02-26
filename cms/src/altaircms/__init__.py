@@ -34,6 +34,17 @@ def iterable_undefined_patch():
     runtime.__dict__["Undefined"] = IterableUndefined
     runtime.__dict__["UNDEFINED"] = IterableUndefined()
 
+def add_request_properties(config):
+    from altaircms.api import get_feature_setting_manager
+    def fetch_feature_setting_manager(request):
+        from .auth.api import fetch_correct_organization
+        organization = fetch_correct_organization(request)
+        if organization is None:
+            logger.error("failed to retrieve organization for user %r" % request.user)
+            return None
+        return get_feature_setting_manager(request, organization.id)
+    config.set_request_property(fetch_feature_setting_manager, "featuresettingmanager", reify=True)
+
 def includeme(config):
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altairsite.search.install_get_page_tag")
@@ -52,6 +63,7 @@ def includeme(config):
     config.include("altaircms.viewlet")
     config.include("altaircms.panels")
     config.include("altaircms.linklib")
+    config.include("altaircms.feature_setting")
 
     ## slack-off
     config.include("altaircms.slackoff")
@@ -61,6 +73,9 @@ def includeme(config):
     config.include("altaircms.solr")
     search_utility = config.registry.settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
     config.add_fulltext_search(search_utility)
+
+    ## request properties
+    config.include(add_request_properties)
 
     ## bind event
     config.add_subscriber(".subscribers.add_request_organization_id",
@@ -96,7 +111,7 @@ def install_separation(config):
 
     ## bind authenticated user to request.user
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
-    config.set_request_property("altaircms.auth.helpers.get_organization", "organization", reify=True)
+    config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
 
     ## allowable query(organizationごとに絞り込んだデータを提供)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
@@ -151,8 +166,6 @@ def main(global_config, **local_config):
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
-
-    config.include("altaircms.api")
 
     config.include(".")
     config.add_route("smartphone.main", "/smartphone/main")
