@@ -260,6 +260,9 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             self.product_item_name.data = self.name.data
         if self.price.data and not self.product_item_price.data:
             self.product_item_price.data = self.price.data
+        if not self.product_item_price.data:
+            # 0円商品
+            self.product_item_price.data = 0
 
     def _get_translations(self):
         return Translations()
