@@ -34,8 +34,8 @@ def event_accesskey_section_panel(context, request, event):
     accesskeys = control.query_access_key().options(orm.joinedload(PageAccesskey.operator)).all()
 
     whattime_url_gen = partial(get_cart_url_builder(request).whattime_form_url, event)
-    def generate_url(hashkey, organization_code):
-        return whattime_url_gen(_query=dict(accesskey=hashkey, event_id=event.id, organization_code = organization_code))
+    def generate_url(hashkey, organization_id):
+        return whattime_url_gen(_query=dict(accesskey=hashkey, event_id=event.id, organization_id = organization_id))
     return dict(event=event, page_title=u"アクセスキー", 
                 preview_with_accesskey_url_gen=generate_url , 
                 create_accesskey_url=request.route_path("auth.accesskey.eventkey",action="create", event_id=event.id), 
