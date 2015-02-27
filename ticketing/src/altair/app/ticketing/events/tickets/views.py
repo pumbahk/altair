@@ -59,8 +59,8 @@ def bind_ticket(request):
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
 
-@view_config(route_name='events.tickets.boundtickets.show', 
-             renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html', 
+@view_config(route_name='events.tickets.boundtickets.show',
+             renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html',
              decorator=with_bootstrap, permission="event_editor")
 def show(context, request):
     qs = context.tickets_query().filter_by(id=request.matchdict['id'])
@@ -73,10 +73,10 @@ def show(context, request):
         base_template_choices, mapping_choices)
     return dict(template=template,
                 event=context.event,
-                transcribe_form=transcribe_form, 
+                transcribe_form=transcribe_form,
                 ticket_format_id=template.ticket_format_id)
 
-    
+
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleView(BaseView):
     """ チケット券面構成(TicketBundle)
@@ -111,7 +111,7 @@ class BundleView(BaseView):
                                 name=bundle.name,
                                 tickets=[e.id for e in bundle.tickets])
         performances = DBSession.query(Performance).join(ProductItem).filter(ProductItem.ticket_bundle==bundle)
-       
+
         return dict(form=form, event=event, bundle=bundle, performances=performances)
 
     @view_config(route_name="events.tickets.bundles.edit", request_method="POST",
@@ -131,7 +131,7 @@ class BundleView(BaseView):
         self.request.session.flash(u'チケット券面構成(TicketBundle)が更新されました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event.id, bundle_id=bundle.id))
-       
+
     @view_config(route_name='events.tickets.bundles.copy', request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/_copyform.html")
     def copy(self):
@@ -147,7 +147,7 @@ class BundleView(BaseView):
         event = self.context.event
         form = forms.BundleForm(event_id=event.id,
                                 formdata=self.request.POST)
-        
+
         form.tickets.validators = []
         if not form.validate():
             self.request.session.flash(u'%s' % form.errors)
@@ -160,7 +160,7 @@ class BundleView(BaseView):
         new_bundle.replace_tickets(bundle.tickets)
         #bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
         new_bundle.save()
-        
+
         for attr in TicketBundleAttribute.query.filter_by(ticket_bundle=bundle):
             new_attr = TicketBundleAttribute(name=attr.name,
                                              value=attr.value,
@@ -201,30 +201,32 @@ class BundleView(BaseView):
         # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
         product_item_dict = {}
         bundle = self.context.bundle
-        for product_item in bundle.product_items:
-            performance = product_item_dict.get(product_item.performance_id)
-            if performance is None:
-                performance = product_item_dict[product_item.performance_id] = {
-                    'name': u"%s(%s)" % (product_item.performance.name, product_item.performance.start_on),
-                    'products': {},
-                    'product_items': {}
-                    }
-            product = performance['products'].get(product_item.product.id)
-            if product is None:
-                product = performance['products'][product_item.product.id] = {
-                    'name': product_item.product.name,
-                    'product_items': {}
-                    }
-            performance['product_items'][product_item.id] = \
-            product['product_items'][product_item.id] = {
-                'name': product_item.name,
-                'updated_at': product_item.updated_at,
-                'created_at': product_item.created_at
-            }
+
+        if self.context.organization.id != 24:  # is eagles https://redmine.ticketstar.jp/issues/10928 に対する暫定対応
+            for product_item in bundle.product_items:
+                performance = product_item_dict.get(product_item.performance_id)
+                if performance is None:
+                    performance = product_item_dict[product_item.performance_id] = {
+                        'name': u"%s(%s)" % (product_item.performance.name, product_item.performance.start_on),
+                        'products': {},
+                        'product_items': {}
+                        }
+                product = performance['products'].get(product_item.product.id)
+                if product is None:
+                    product = performance['products'][product_item.product.id] = {
+                        'name': product_item.product.name,
+                        'product_items': {}
+                        }
+                performance['product_items'][product_item.id] = \
+                product['product_items'][product_item.id] = {
+                    'name': product_item.name,
+                    'updated_at': product_item.updated_at,
+                    'created_at': product_item.created_at
+                }
 
         # for ticket-preview
         # [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
-        
+
         tickets_candidates = [{"name": t.name, "pk": t.id, "format_id": t.ticket_format_id, } for t in bundle.tickets]
         preview_item_candidates = []
         for perf_k, performance_d in product_item_dict.iteritems():
@@ -359,7 +361,7 @@ def _get_base_ticket(request):
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
-             request_param="create", 
+             request_param="create",
              renderer="json")
 def easycreate_upload_create(context, request):
     event = context.event
@@ -379,7 +381,7 @@ def easycreate_upload_create(context, request):
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
-             request_param="update", 
+             request_param="update",
              renderer="json")
 def easycreate_upload_update(context, request):
     event = context.event
@@ -437,10 +439,10 @@ def easycreate_transcribe_ticket(context, request):
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
     ticket = Ticket(
-        always_reissueable=base_ticket.always_reissueable, 
-        principal=base_ticket.principal, 
-        filename="uploaded.svg", 
-        organization=base_ticket.organization, 
+        always_reissueable=base_ticket.always_reissueable,
+        principal=base_ticket.principal,
+        filename="uploaded.svg",
+        organization=base_ticket.organization,
     )
     formdata = form.data
     ticket.name = formdata["name"]
