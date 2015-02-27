@@ -34,7 +34,7 @@ def lot_resource_factory(request):
     if not lot:
         raise HTTPNotFound
 
-    if not lot.available_on(get_now(request)):
+    if not lot.available_on(context.now):
         make_transient(lot)
         raise OutTermException(lot=lot)
     return context
@@ -44,6 +44,7 @@ def lot_resource_factory(request):
 class LotResource(object):
     def __init__(self, request):
         self.request = request
+        self.now = get_now(request)
 
         self.organization = self.request.organization
         lot_entry_dict = get_lot_entry_dict(self.request)
