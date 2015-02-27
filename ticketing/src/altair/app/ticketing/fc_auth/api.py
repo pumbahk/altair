@@ -2,11 +2,11 @@
 import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import SalesSegment
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.interfaces import ICartResource
+from altair.app.ticketing.lots.interfaces import ILotResource
 import altair.app.ticketing.users.models as u_m
 import altair.app.ticketing.core.models as c_m
 
@@ -20,7 +20,7 @@ def get_memberships(request, session=None):
         return request.context.memberships
     else:
         logger.info('memberships retrieved directly')
-        return session.query(Membership).filter_by(organization_id=request.organization.id).all()
+        return session.query(u_m.Membership).filter_by(organization_id=request.organization.id).all()
 
 def do_authenticate(request, membership, username, password):
     """認証を行う。戻り値は認証に失敗したときはNoneで、
@@ -67,10 +67,16 @@ def login_url(request):
                 source = event
         if source is not None:
             logger.info("source=%r" % source)
-            membership = source.query_sales_segments(type='all', now=request.context.now).join(SalesSegment.membergroups).join(MemberGroup.membership).with_entities(Membership).first()
+            membership = source.query_sales_segments(type='all', now=request.context.now).join(SalesSegment.membergroups).join(u_m.MemberGroup.membership).with_entities(u_m.Membership).first()
             logger.info("membership=%s" % (membership and membership.name))
             if membership is not None:
                 url = request.route_url('fc_auth.login', membership=membership.name)
+    elif ILotResource.providedBy(request.context):
+        session = get_db_session(request, 'slave')
+        membership = session.query(u_m.Membership).join(u_m.MemberGroup.membership).join(u_m.MemberGroup_SalesSegment).filter(u_m.MemberGroup_SalesSegment.c.sales_segment_id == request.context.lot.sales_segment_id).first()
+        logger.info("membership=%s" % (membership and membership.name))
+        if membership is not None:
+            url = request.route_url('fc_auth.login', membership=membership.name)
 
     logger.debug("login url %s" % url)
     return url 
