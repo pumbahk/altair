@@ -129,8 +129,9 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         # Delete entries from association table for this pdmp
         for sales_segment in pdmp.sales_segment_group.sales_segments:
-            sales_segment.payment_delivery_method_pairs.remove(pdmp)
-            sales_segment.save()
+            if pdmp in sales_segment.payment_delivery_method_pairs:
+                sales_segment.payment_delivery_method_pairs.remove(pdmp)
+                sales_segment.save()
 
         location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id)
         try:
