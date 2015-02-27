@@ -79,7 +79,7 @@ if(!empty($_POST['register'])) {
 			$frontend_dirname = $backend_dirname;
 		}
 	}
-	$org = empty($_POST['organization']) ? "''" : $_POST['organization'];
+	$org = empty($_POST['organization']) ? "''" : escapeshellarg($_POST['organization']);
 	$pref = empty($_POST['prefecture']) ? "''" : bin2hex($_POST['prefecture']);
 	$sub_name = empty($_POST['sub_name']) ? "''" : bin2hex($_POST['sub_name']);
 	
