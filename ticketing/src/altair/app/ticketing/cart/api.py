@@ -42,24 +42,6 @@ logger = logging.getLogger(__name__)
 def set_rendered_event(request, event):
     set_rendered_target(request, "event", event)
 
-def is_multicheckout_payment(cart):
-    if cart is None:
-        return False
-    if cart.payment_delivery_pair is None:
-        return False
-    if cart.payment_delivery_pair.payment_method is None:
-        return False
-    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 1
-
-def is_checkout_payment(cart):
-    if cart is None:
-        return False
-    if cart.payment_delivery_pair is None:
-        return False
-    if cart.payment_delivery_pair.payment_method is None:
-        return False
-    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 2
-
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
 
