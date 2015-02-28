@@ -2131,6 +2131,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 email_2=None
                 ),
             issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
@@ -2164,6 +2165,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 email_2=None
                 ),
             issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
@@ -2185,6 +2187,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
         order_like = mock.Mock(
             shipping_address=None,
             issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(

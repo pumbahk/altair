@@ -470,7 +470,7 @@ def validate_order_like(current_date, order_like):
         payment_type = int(SejPaymentType.Paid)
 
     if payment_type is not None:
-        if int(payment_type) == int(SejPaymentType.CashOnDelivery):
+        if int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
             if get_payment_due_at(current_date, order_like) < current_date:
                 raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
 
