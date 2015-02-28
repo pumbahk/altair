@@ -2180,6 +2180,290 @@ class ValidateOrderLikeTest(unittest.TestCase):
             self._callFUT(current_date, order_like)
         self.assertEquals(e.exception.path, 'shipping_address.tel_1')
 
+    def test_shipping_address_no_zip(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='',
+                email_1='',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        try:
+            self._callFUT(current_date, order_like)
+            self.assertTrue(True)
+        except OrderLikeValidationFailure as e:
+            self.fail(e)
+
+    def test_shipping_address_invalid_zip(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='aaaaaaa',
+                email_1='',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.zip')
+
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='000000',
+                email_1='',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.zip')
+
+    def test_shipping_address_no_email(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        try:
+            self._callFUT(current_date, order_like)
+            self.assertTrue(True)
+        except OrderLikeValidationFailure as e:
+            self.fail(e)
+
+    def test_shipping_address_invalid_email(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='*' * 65,
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.email_1')
+
+    def test_shipping_address_invalid_name(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'♨',
+                first_name=u'♨',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='test@example.com',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+
+    def test_shipping_address_name_too_long(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓' * 40,
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='test@example.com',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名' * 40,
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='test@example.com',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+
+    def test_shipping_address_invalid_name_kana(self):
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure 
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1=u'00000000000',
+                tel_2=u'',
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'ヹ',
+                first_name_kana=u'ヹ',
+                zip='0000000',
+                email_1='test@example.com',
+                email_2='',
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        with self.assertRaises(OrderLikeValidationFailure) as e:
+            self._callFUT(current_date, order_like)
+        self.assertEquals(e.exception.path, 'shipping_address.last_name_kana')
+
     def test_no_shipping_address(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         from ..exceptions import OrderLikeValidationFailure 

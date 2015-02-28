@@ -436,7 +436,11 @@ def validate_order_like(current_date, order_like):
         if not order_like.shipping_address.first_name:
             raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
         user_name = build_user_name(order_like.shipping_address)
-        if len(user_name.encode('CP932')) > 40:
+        try:
+            user_name_sjis = user_name.encode('CP932')
+        except UnicodeEncodeError:
+            raise OrderLikeValidationFailure(u'user name contains a character that is not encodable as CP932', 'shipping_address.last_name')
+        if len(user_name_sjis) > 40:
             raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
         if not order_like.shipping_address.last_name_kana:
             raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
