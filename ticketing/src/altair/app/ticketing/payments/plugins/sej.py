@@ -478,8 +478,11 @@ def validate_order_like(current_date, order_like):
             if ticketing_due_at is not None and ticketing_due_at < current_date:
                 raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
 
-    if payment_type is not None and payment_type != int(SejPaymentType.Paid) and order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
-        raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+    if payment_type is not None and payment_type != int(SejPaymentType.Paid):
+        if order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
+            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+        elif order_like.total_amount <= 0:
+            raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
