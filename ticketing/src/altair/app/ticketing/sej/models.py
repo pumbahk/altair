@@ -2,7 +2,7 @@
 
 from sqlalchemy.sql import func
 from altair.models import LogicallyDeleted, WithTimestamp, Identifier
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint, Unicode
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref, scoped_session, sessionmaker
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc, desc
@@ -192,6 +192,8 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     # バージョン番号 (0スタートで1づつ単調増加)
     # 同じ order_no で注文を何個も作れるので、その区別に使う
     version_no              = Column(Integer, nullable=False, default=0, server_default='0')
+
+    error_type              = Column(Integer, nullable=True)
 
     def mark_canceled(self, now=None):
         self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
