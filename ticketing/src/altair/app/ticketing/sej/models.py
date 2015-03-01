@@ -128,7 +128,7 @@ class SejFile(Base, WithTimestamp, LogicallyDeleted):
 class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejOrder'
     __table_args__= (
-        UniqueConstraint('order_no', 'branch_no'),
+        UniqueConstraint('order_no', 'version_no', 'branch_no'),
         )
     id                      = Column(Identifier, primary_key=True)
     shop_id                 = Column(String(5))
