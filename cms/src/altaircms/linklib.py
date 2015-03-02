@@ -5,7 +5,6 @@ from urlparse import ParseResult, urlparse, parse_qs
 
 from zope.interface import implementer
 from .interfaces import IGlobalLinkSettings
-from altaircms.auth.models import Host
 from altair.viewhelpers.structure import updated
 
 from .api import get_hostname_from_request

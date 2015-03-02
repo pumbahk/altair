@@ -1,4 +1,6 @@
 from zope.interface import provider
+from altair.sqlahelper import get_db_session
+from altaircms.auth.models import Host
 from .interfaces import (
     IFeatureSettingManagerFactory,
     ICMSPageURLAdapter,
@@ -34,3 +36,9 @@ def get_cms_url_builder(request):
 def get_cart_url_builder(request):
     return request.registry.queryUtility(ICartPageURLAdapter)
 
+def get_cart_domain(request):
+    session = get_db_session(request, 'slave')
+    host = session.query(Host).filter_by(organization_id=request.organization.id).first()
+    if host is None:
+        return None
+    return host.cart_domain

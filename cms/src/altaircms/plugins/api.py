@@ -22,17 +22,6 @@ def get_extra_resource(request):
 def _get_scheme_from_request(request):
     return "https" if request.url.startswith("https") else "http"
 
-def get_cart_domain(request):
-    extra_resource = get_extra_resource(request)
-    if "cart_domain" in extra_resource:
-        netloc = extra_resource["cart_domain"]
-        scheme = _get_scheme_from_request(request)
-        request._cart_domain = "{scheme}://{netloc}".format(scheme=scheme, netloc=netloc)
-    else:
-        request._cart_domain = ""
-    return request._cart_domain
-
-
 ## widget aggregator
 
 def page_type(request, page):
