@@ -129,7 +129,9 @@ class OurDateTimeFieldBase(OurField):
         for k in self._fields:
             try:
                 v = self._values[k] or self.missing_value_defaults[k]
-                if isinstance(v, basestring):
+                if v is None:
+                    _v = None
+                elif isinstance(v, basestring):
                     if k == 'year' and self.allow_two_digit_year:
                         if len(v) == 2:
                             v = unicode(date.today().year // 100) + v
@@ -228,7 +230,9 @@ class OurDateTimeFieldBase(OurField):
             if i > 0:
                 retval.append(u',')
             v = self.missing_value_defaults[k]
-            if isinstance(v, basestring):
+            if v is None:
+                v = u'function (d) { return null; }'
+            elif isinstance(v, basestring):
                 v = u'function (d) { return %s; }' % json.dumps(v)
             else:
                 v = self._js_min_max[k][v]

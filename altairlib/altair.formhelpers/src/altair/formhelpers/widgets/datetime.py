@@ -70,15 +70,18 @@ class DateInputFormElementBuilder(object):
                 )
 
 class DateSelectFormElementBuilder(object):
-    def __init__(self, year_lower_bound=1900, year_upper_bound=None):
+    def __init__(self, year_lower_bound=1900, year_upper_bound=None, placeholders=False):
         self.year_lower_bound = year_lower_bound
         self.year_upper_bound = year_upper_bound or (lambda: datetime.now().year)
+        self.placeholders = placeholders
 
     def _build_year_options(self, value):
         year_upper_bound = self.year_upper_bound
         if callable(year_upper_bound):
             year_upper_bound = year_upper_bound()
         buf = []
+        if self.placeholders:
+            buf.append(u'<option value="">----</option>')
         for i in range(self.year_lower_bound, year_upper_bound + 1):
             if i == value:
                 buf.append(u'<option value="%d" selected="selected">' % i)
@@ -89,6 +92,8 @@ class DateSelectFormElementBuilder(object):
 
     def _build_month_options(self, value):
         buf = []
+        if self.placeholders:
+            buf.append(u'<option value="">--</option>')
         for i in range(1, 13):
             if i == value:
                 buf.append(u'<option selected="selected">')
@@ -99,6 +104,8 @@ class DateSelectFormElementBuilder(object):
 
     def _build_day_options(self, value):
         buf = []
+        if self.placeholders:
+            buf.append(u'<option value="">--</option>')
         for i in range(1, 32):
             if i == value:
                 buf.append(u'<option selected="selected">')

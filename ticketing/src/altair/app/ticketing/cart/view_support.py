@@ -21,10 +21,13 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 from altair.formhelpers.form import OurDynamicForm
 from altair.formhelpers import widgets
-from altair.formhelpers.widgets.datetime import build_date_input_select_japanese_japan
 from altair.formhelpers import fields
 from altair.formhelpers.filters import text_type_but_none_if_not_given
 from altair.formhelpers.validators import Required, DynSwitchDisabled, HIRAGANAS_REGEXP, KATAKANAS_REGEXP, ALPHABETS_REGEXP, NUMERICS_REGEXP
+from altair.formhelpers.widgets.datetime import (
+    DateFieldBuilder,
+    DateSelectFormElementBuilder,
+    )
 from wtforms.validators import Optional, Regexp
 from altair.formhelpers.translations import Translations
 from markupsafe import Markup
@@ -44,6 +47,8 @@ from .resources import PerformanceOrientedTicketingCartResource
 from .interfaces import ICartResource
 
 logger = logging.getLogger(__name__)
+
+build_date_input_select = DateFieldBuilder(DateSelectFormElementBuilder(placeholders=True))
 
 class IndexViewMixin(object):
     def __init__(self):
@@ -523,9 +528,10 @@ class DynamicFormBuilder(object):
             description=field_desc['description'] and Markup(field_desc['description']),
             note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
-            default=date.today(),
+            default=(date.today() if field_desc['required'] else None),
+            missing_value_defaults=dict(year=None, month=None, day=None),
             widget=widgets.OurDateWidget(
-                input_builder=build_date_input_select_japanese_japan
+                input_builder=build_date_input_select
                 )
             )
 

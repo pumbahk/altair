@@ -43,13 +43,12 @@ from altair.formhelpers.widgets import (
     OurListWidget,
     GenericSerializerWidget,
     OurDateWidget,
-    build_date_input_select_japanese_japan,
     OurSelectInput,
     OurCheckboxInput,
     )
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
-from .view_support import build_dynamic_form
+from .view_support import build_dynamic_form, build_date_input_select
 
 length_limit_for_sej = Length(max=10, message=u'10文字以内で入力してください')
 length_limit_long = Length(max=255, message=u'255文字以内で入力してください')
@@ -287,7 +286,7 @@ class _89ersExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
@@ -400,7 +399,7 @@ class BambitiousExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
@@ -484,7 +483,7 @@ class BigbullsExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
