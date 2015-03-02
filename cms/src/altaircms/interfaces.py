@@ -145,3 +145,45 @@ class IFeatureSettingManager(Interface):
 class IFeatureSettingManagerFactory(Interface):
     def __call__(request, organization_id):
         pass
+
+class ICMSPageURLAdapter(Interface):
+    def event_page_url(request, event, hostname=None):
+        pass
+
+class IBackendPageURLAdapter(Interface):
+    def top_page_url(request):
+        pass
+
+    def event_page_url(request, event, hostname=None):
+        pass
+
+class ICartPageURLAdapter(Interface):
+    def whattime_login_url(request, event, hostname=None, _query=None):
+        pass
+
+    def whattime_form_url(request, event, hostname=None, _query=None):
+        pass
+
+    def cart_url(request, event, hostname=None):
+        pass
+
+class ICMSMobilePageURLAdapter(Interface):
+    def event_page_url(request, event, hostname=None):
+        pass
+
+class ICMSSmartphonePageURLAdapter(Interface):
+    def event_page_url(event, hostname=None):
+        pass
+
+class ICMSPCPageURLAdapter(Interface):
+    def top_page_url(request, hostname=None):
+        pass
+
+    def front_page_url(request, pageset, hostname=None):
+        pass
+
+    def feature_page_url(request, static_pageset, hostname=None):
+        pass
+
+    def build(request, pageset, hostname=None):
+        pass
