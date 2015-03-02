@@ -88,12 +88,7 @@ def includeme(config):
                           ".subscribers.AfterFormInitialize")
 
 def install_pyramidlayout(config):
-    from .linklib import GlobalLink
-    from .interfaces import IGlobalLinkSettings
-
     config.include("pyramid_layout")
-    global_link = GlobalLink.from_settings(config.registry.settings)
-    config.registry.registerUtility(global_link, IGlobalLinkSettings)
     config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/layout.html') #this is pyramid-layout's layout
     
 def install_upload_file(config):
@@ -152,12 +147,13 @@ def main(global_config, **local_config):
     config.add_mako_renderer('.html')
     config.include("altair.now")
 
-    config.include("altaircms.lib.crud")    
+    config.include("altaircms.lib.crud")
 
     ## include 
     config.include(install_upload_file)
     config.include(install_pyramidlayout)
     config.include(install_separation)
+    config.include("altaircms.linklib")
     config.include("altairsite.front.install_resolver")
     config.include("altairsite.install_tracking_image_generator") #hmm.
     config.include("altair.cdnpath")

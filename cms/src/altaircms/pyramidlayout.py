@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 from pyramid.decorator import reify
-from .linklib import get_global_link_settings
 from altairsite.pyramidlayout import MyLayout as LayoutBase
 from .datelib import get_now, get_today, has_session_key
 from .helpers.base import jdatetime
-        
+from .api import get_backend_url_builder
+       
 class MyLayout(LayoutBase):
     class color:
         event = "#dfd"
@@ -17,15 +17,15 @@ class MyLayout(LayoutBase):
         self.context = context
         self.request = request
 
-    @reify
-    def global_link(self):
-        return get_global_link_settings(self.request)
-
     def now(self):
         return self.request.now
 
     def today(self):
         return get_today(self.request)
+
+    @property
+    def backend_url(self):
+        return get_backend_url_builder(self.request).top_page_url(self.request)
 
     @property
     def information_get_now(self):
