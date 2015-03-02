@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import logging
-logger = logging.getLogger(__name__)
 import urllib
 from urlparse import ParseResult, urlparse, parse_qs
 
@@ -18,6 +17,8 @@ from .interfaces import (
     ICMSSmartphonePageURLAdapter,
     ICMSPCPageURLAdapter,
     )
+
+logger = logging.getLogger(__name__)
 
 ## todo:move
 def quote(x):
@@ -180,7 +181,10 @@ Stage = make_candidate_symbols("Stage",
 
 def includeme(config):
     settings = config.registry.settings
-    backend_url = settings['altaircms.backend.url']
+    backend_url = settings.get('altaircms.backend.outer.url')
+    if backend_url is None:
+        logger.warning('altaircms.backend.outer.url is not given. using deprecated altaircms.backend.url instead')
+        backend_url = settings.get('altaircms.backend.url')
 
     config.registry.registerUtility(
         CMSPageURLAdapter(),
