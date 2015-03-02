@@ -44,6 +44,7 @@ def add_request_properties(config):
             return None
         return get_feature_setting_manager(request, organization.id)
     config.set_request_property(fetch_feature_setting_manager, "featuresettingmanager", reify=True)
+    config.set_request_property(".api.get_cart_domain", "cart_domain", reify=True)
 
 def includeme(config):
     config.include("altaircms.auth", route_prefix='/auth')
