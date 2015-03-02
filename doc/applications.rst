@@ -81,7 +81,7 @@ $ALTAIR/deploy/dev/conf
 
 ::
 
-    mysql> SELECT host_name, organization_id, Organization.short_name FROM Host JOIN Organization ON Host.organization_id=Organization.id WHERE host_name LIKE '%.stg2.rt.ticketstar.jp';
+    mysql> SELECT host_name, organization_id, Organization.short_name FROM Host JOIN Organization ON Host.organization_id=Organization.id WHERE host_name LIKE '%.stg.altr.jp';
 
 それぞれのデータは *backend* からアクセスできますが、
 そのためには各サイト用のアカウントを使ってバックエンドにログインする必要があります。

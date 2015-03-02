@@ -43,43 +43,43 @@ class URLRewriterPatternBuilder(object):
 
     def backend_rewrite_patterns(self):
         return [
-            (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)',
+            (r'http://backend.stg.altr.jp(/qrreader(?:/.*)?)',
              r'http://{hostname}:8030\1'.format(hostname=self.real_apphost)),
-            (r'http://backend.stg2.rt.ticketstar.jp(/.*)?',
+            (r'http://backend.stg.altr.jp(/.*)?',
              r'http://{hostname}:8021\1'.format(hostname=self.real_apphost)),
-            (r'http://cms.stg2.rt.ticketstar.jp(/.*)?',
+            (r'http://cms.stg.altr.jp(/.*)?',
              r'http://{hostname}:8001\1'.format(hostname=self.real_apphost)),
             ]
 
     def booster_rewrite_patterns(self):
         return [
-            (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+            (r'http://89ers.stg.altr.jp(/booster(?:/.*)?)',
              r'http://{hostname}:9081\1'.format(hostname=self.real_apphost)),
-            (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+            (r'http://bambitious.stg.altr.jp(/booster(?:/.*)?)',
              r'http://{hostname}:9082\1'.format(hostname=self.real_apphost)),
-            (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+            (r'http://bigbulls.stg.altr.jp(/booster(?:/.*)?)',
              r'http://{hostname}:9083\1'.format(hostname=self.real_apphost)),
         ]
 
     def extra_rewrite_patterns(self):
         return [
-            (r'http://dummy-checkout-server.stg2.rt.ticketstar.jp(/.*)',
+            (r'http://dummy-checkout-server.stg.altr.jp(/.*)',
              r'http://{hostname}:8071\1'.format(hostname=self.real_apphost)),
             ]
 
     def _create_front_rewrite_patterns_for_subdomain(self, subdomain):
         return [
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/orderreview(?:/.*)?)'.format(subdomain=subdomain),
              r'http://{hostname}:9061\1'.format(hostname=self.real_apphost)),
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/lots(?:/.*)?)'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/lots(?:/.*)?)'.format(subdomain=subdomain),
              r'http://{hostname}:9121\1'.format(hostname=self.real_apphost)),
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/cart(?:/.*)?)'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/cart(?:/.*)?)'.format(subdomain=subdomain),
              r'http://{hostname}:9021\1'.format(hostname=self.real_apphost)),
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/whattime(?:/.*)?)'.format(subdomain=subdomain),
              r'http://{hostname}:9071\1'.format(hostname=self.real_apphost)),
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/maintenance(?:/.*)?)'.format(subdomain=subdomain),
              r'http://{hostname}:8000\1'.format(hostname=self.real_apphost)),
-            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/.*)?'.format(subdomain=subdomain),
+            (r'http://{subdomain}.stg.altr.jp(/.*)?'.format(subdomain=subdomain),
              r'http://{hostname}:9001\1'.format(hostname=self.real_apphost)),
              ]
 
@@ -103,7 +103,7 @@ class MyProxy(proxy.Proxy):
     def create_prerewrite_patterns(self, real_apphost):
         return [
         (r'http://api.ticket.rakuten.co.jp/rid/rc/http/stg/([^/]+)(/.+)?/(verify.*)',
-         r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
+         r'http://\1.stg.altr.jp\2/\3'),
         ]
 
     def __init__(self, *args, **kwargs):

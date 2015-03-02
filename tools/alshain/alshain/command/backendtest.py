@@ -843,7 +843,7 @@ class PerformancePublicChanger(Part):
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
-    parser.add_argument('url', nargs='?', default='https://backend.stg2.rt.ticketstar.jp')
+    parser.add_argument('url', nargs='?', default='https://backend.stg.altr.jp')
     parser.add_argument('--event', default='TEST')
     parser.add_argument('--performance', default='TEST')
     opts = parser.parse_args(argv)
