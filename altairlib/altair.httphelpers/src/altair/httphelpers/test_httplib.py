@@ -415,7 +415,7 @@ class TestOurHTTPConnection(unittest.TestCase):
             )
         st.start()
         ct = threading.Thread(
-            target=self._make_client(ssl_version=ssl.PROTOCOL_SSLv23),
+            target=self._make_client(ssl_version=ssl.PROTOCOL_SSLv3),
             kwargs=dict(
                 fut=fut,
                 term=term
