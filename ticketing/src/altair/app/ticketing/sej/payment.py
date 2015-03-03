@@ -241,11 +241,14 @@ def request_order(request_or_registry, tenant, sej_order):
 
     error_type = ret.get('Error_Type', 0)
     if error_type:
+        error_message = ret.get('Error_Msg', None)
+        error_field = ret.get('Error_Field', None)
+        sej_order.error_type = int(error_type)
         raise SejError(
-            message=ret.get('Error_Msg', None),
+            message=error_message,
             order_no=sej_order.order_no,
-            error_code=int(error_type),
-            error_field=ret.get('Error_Field', None)
+            error_type=int(error_type),
+            error_field=error_field
             )
 
     sej_order.billing_number        = ret.get('X_haraikomi_no')
@@ -288,11 +291,14 @@ def request_cancel_order(request_or_registry, tenant, sej_order, now=None):
 
     error_type = ret.get('Error_Type', 0)
     if error_type:
+        error_message = ret.get('Error_Msg', None)
+        error_field = ret.get('Error_Field', None)
+        sej_order.error_type = int(error_type)
         raise SejError(
-            message=ret.get('Error_Msg', None),
+            message=error_message,
             order_no=sej_order.order_no,
-            error_code=int(error_type),
-            error_field=ret.get('Error_Field', None)
+            error_type=int(error_type),
+            error_field=error_field
             )
 
     sej_order.mark_canceled(now)
@@ -363,11 +369,14 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
 
     error_type = ret.get('Error_Type', 0)
     if error_type:
+        error_message = ret.get('Error_Msg', None)
+        error_field = ret.get('Error_Field', None)
+        sej_order.error_type = int(error_type)
         raise SejError(
-            message=ret.get('Error_Msg', None),
+            message=error_message,
             order_no=sej_order.order_no,
-            error_code=int(error_type),
-            error_field=ret.get('Error_Field', None)
+            error_type=int(error_type),
+            error_field=error_field
             )
 
     assert (not sej_order.order_no) or sej_order.order_no == ret.get('X_shop_order_id')

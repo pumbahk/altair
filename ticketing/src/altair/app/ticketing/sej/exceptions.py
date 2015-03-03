@@ -6,10 +6,10 @@ class SejErrorBase(Exception):
     pass
 
 class SejError(SejErrorBase):
-    def __init__(self, message, order_no, error_code=None, error_field=None):
+    def __init__(self, message, order_no, error_type=None, error_field=None):
         super(SejError, self).__init__(message)
         self.order_no = order_no
-        self.error_type = error_code
+        self.error_type = error_type
         self.error_field = error_field
         self.error_msg = message
 
