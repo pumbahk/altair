@@ -489,7 +489,22 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     _attributes = orm.relationship("LotEntryAttribute", backref='lot_entry', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: LotEntryAttribute(name=k, value=v))
+    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
+    birthday = sa.Column(sa.Date)
+    memo = sa.Column(sa.UnicodeText)
 
+    canceled_at = sa.Column(sa.DateTime())
+    ordered_mail_sent_at = sa.Column(sa.DateTime())
+
+    browserid = sa.Column(sa.String(40))
+
+    closed_at = sa.Column(sa.DateTime())
+
+    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
+    user = orm.relationship('User', backref='lot_entries')
+
+    cart_session_id = sa.Column(sa.VARBINARY(72), unique=False)
+    user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
 
     #xxx: for order
     @property
@@ -508,20 +523,6 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def order_no(self):
         return self.order.order_no
-
-    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
-    birthday = sa.Column(sa.Date)
-    memo = sa.Column(sa.UnicodeText)
-
-    canceled_at = sa.Column(sa.DateTime())
-    ordered_mail_sent_at = sa.Column(sa.DateTime())
-
-    browserid = sa.Column(sa.String(40))
-
-    closed_at = sa.Column(sa.DateTime())
-
-    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
-    user = orm.relationship('User', backref='lot_entries')
 
     # begin [order amount fee interface]
     @property

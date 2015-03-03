@@ -230,8 +230,9 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         memo=memo,
         channel=channel.v
         )
-    if hasattr(request, "browserid"):
-        entry.browserid = getattr(request, "browserid")
+    entry.browserid = getattr(request, 'browserid', '')
+    entry.user_agent = getattr(request, 'user_agent', '')
+    entry.cart_session_id = getattr(request.session, 'id', '')
 
     if extra:
         entry.attributes = coerce_extra_form_data(request, extra)
