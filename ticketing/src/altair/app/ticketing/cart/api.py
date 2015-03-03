@@ -23,6 +23,8 @@ from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
+from altair.app.ticketing.payments import api as payments_api
+from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 
@@ -41,24 +43,6 @@ logger = logging.getLogger(__name__)
 
 def set_rendered_event(request, event):
     set_rendered_target(request, "event", event)
-
-def is_multicheckout_payment(cart):
-    if cart is None:
-        return False
-    if cart.payment_delivery_pair is None:
-        return False
-    if cart.payment_delivery_pair.payment_method is None:
-        return False
-    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 1
-
-def is_checkout_payment(cart):
-    if cart is None:
-        return False
-    if cart.payment_delivery_pair is None:
-        return False
-    if cart.payment_delivery_pair.payment_method is None:
-        return False
-    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 2
 
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
@@ -620,3 +604,67 @@ def is_booster_or_fc_cart(cart_setting):
 
 def is_fc_cart(cart_setting):
     return cart_setting.fc_cart if cart_setting else False
+
+
+class _DummyCart(c_models.CartMixin):
+    def __init__(self, created_at, items, sales_segment, payment_delivery_pair):
+        self.created_at = created_at
+        self.items = items
+        self.sales_segment = sales_segment
+        self.payment_delivery_pair = payment_delivery_pair
+
+    @property
+    def shipping_address(self):
+        return None
+
+    @property
+    def total_amount(self):
+        return c_api.calculate_total_amount(self)
+
+    @property
+    def delivery_fee(self):
+        return self.sales_segment.get_delivery_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.items])
+
+    @property
+    def transaction_fee(self):
+        return self.sales_segment.get_transaction_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.items])
+
+    @property
+    def system_fee(self):
+        return self.sales_segment.get_system_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.items])
+
+    @property
+    def special_fee(self):
+        return self.sales_segment.get_special_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.items])
+
+
+def check_if_payment_delivery_method_pair_is_applicable(request, cart, payment_delivery_pair):
+    dummy_cart = _DummyCart(
+        created_at=cart.created_at,
+        items=cart.items,
+        sales_segment=cart.sales_segment,
+        payment_delivery_pair=payment_delivery_pair
+        )
+    try:
+        payment_delivery_plugin, payment_plugin, delivery_plugin = payments_api.lookup_plugin(request, payment_delivery_pair)
+    except PaymentDeliveryMethodPairNotFound:
+        return False
+    try:
+        if payment_delivery_plugin is not None:
+            payment_delivery_plugin.validate_order(request, dummy_cart)
+        else:
+            if payment_plugin is not None:
+                payment_plugin.validate_order(request, dummy_cart)
+            if delivery_plugin is not None:
+                delivery_plugin.validate_order(request, dummy_cart)
+    except OrderLikeValidationFailure:
+        return False
+    return True

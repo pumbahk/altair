@@ -92,7 +92,7 @@ class CheckoutPlugin(object):
         if order_like.delivery_fee != 0 and order_like.delivery_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'delivery_fee too low', 'order.delivery_fee')
         if order_like.system_fee != 0 and order_like.system_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
-            raise OrderLikeValidationFailure(u'delivery_fee too low', 'order.system_fee')
+            raise OrderLikeValidationFailure(u'system_fee too low', 'order.system_fee')
         if order_like.special_fee and \
            order_like.special_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'special_fee too low', 'order.special_fee')
