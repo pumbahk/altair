@@ -53,7 +53,7 @@ if label is None or label is True:
       </tr>
       <tr>
         <th scope="row">抽選結果発表予定日</th>
-        <td>${h.japanese_datetime(lot.lotting_announce_datetime)}</td>
+        <td>${h.announce_time_label(lot)}</td>
       </tr>
       %if sales_segment.max_quantity:
       <tr>
