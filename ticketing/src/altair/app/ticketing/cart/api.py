@@ -419,6 +419,9 @@ def lookup_user_credential(d):
         return None
 
 def get_user(info):
+    if info.get('is_guest', False):
+        return None
+
     return lookup_user_credential(info)
 
 def get_or_create_user(info):

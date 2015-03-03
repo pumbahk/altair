@@ -136,8 +136,11 @@ class LotResource(object):
         return lot_asid
 
     def check_entry_limit(self, wishes, user=None, email=None):
+        logger.debug('user.id=%r, email=%r', user.id if user else None, email)
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
-        if email:
+        if user:
+            query = query.filter(LotEntry.user_id==user.id)
+        elif email:
             query = query.join(ShippingAddress)\
                          .filter(or_(ShippingAddress.email_1==email, ShippingAddress.email_2==email))
         else:
