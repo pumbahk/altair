@@ -114,6 +114,7 @@ class LotSessionCart(object):
         self.gender = entry_dict['gender']
         self.birthday = entry_dict['birthday']
         self.memo = entry_dict['memo']
+        self.extra = entry_dict.get('extra', [])
         self.request = request
         self.lot = lot
         self._product_cache = {}
@@ -450,7 +451,7 @@ class LotEntryStatus(object):
             LotEntryProduct.quantity.label('entry_quantity'),
             case([
                 (and_(LotEntry.elected_at != None,
-                      LotEntryWish.elected_at != None), 
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('elected_quantity'),
@@ -522,7 +523,7 @@ class LotEntryStatus(object):
         ).group_by(
             inner.c.performance_id, inner.c.stock_type_id, inner.c.wish_order
         ).all()
-        
+
         wishes_statuses = [LotEntryPerformanceSeatTypesWishStatus(performance,
                                                                   stock_type,
                                                                   wish_order,
@@ -545,8 +546,8 @@ class LotEntryStatus(object):
                                                                stock_type,
                                                                i, 0)
 
-        return [LotEntryPerformanceSeatTypeStatus(performance, 
-                                                  stock_type, 
+        return [LotEntryPerformanceSeatTypeStatus(performance,
+                                                  stock_type,
                                                   entry_quantity,
                                                   elected_quantity,
                                                   ordered_quantity,
@@ -563,8 +564,8 @@ class LotEntryWishStatus(object):
         self.quantity = quantity
 
 class LotEntryPerformanceSeatTypeStatus(object):
-    def __init__(self, performance, seat_type, 
-                 entry_quantity, elected_quantity, 
+    def __init__(self, performance, seat_type,
+                 entry_quantity, elected_quantity,
                  ordered_quantity,
                  reserved_quantity,
                  canceled_quantity,
