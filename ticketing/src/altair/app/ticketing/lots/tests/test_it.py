@@ -119,6 +119,10 @@ class EntryLotViewTests(unittest.TestCase):
             request=request,
             event=event, lot=lot,
             user={'auth_identifier': 'test', 'is_guest': True, 'organization_id': 1, 'membership': "test-membership", 'membergroup': "test-group"},
+            cart_setting=testing.DummyModel(
+                extra_form_fields=[],
+                flavors=None,
+                ),
             )
         target = self._makeOne(context, request)
         result = target.get()
@@ -210,11 +214,13 @@ class EntryLotViewTests(unittest.TestCase):
             check_entry_limit=lambda wishes, user, email: True,
             authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"},
             cart_setting=testing.DummyModel(
-                flavor=None,
+                extra_form_fields=[],
+                flavors=None,
                 ),
             )
         request.context = context
         target = self._makeOne(context, request)
+
         result = target.post()
         for s in request.session.pop_flash():
             print s
@@ -342,10 +348,12 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         context = testing.DummyResource(event=testing.DummyModel(),
                                         lot=lot,
                                         organization=organization,
+                                        extra_form_fields=[],
                                         cart_setting=testing.DummyModel(
-                                            flavor=None,
+                                            extra_form_fields=[],
+                                            flavors=None,
                                             ),
-                                    )
+                                        )
 
         target = self._makeOne(context, request)
 
