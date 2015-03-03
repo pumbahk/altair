@@ -1,14 +1,14 @@
 """add_cart_session_id_and_user_agent_to_lot_entry
 
 Revision ID: 56a8429afd99
-Revises: 1a448cfe9a8d
+Revises: 34ecd9a19da2
 Create Date: 2015-02-27 17:59:18.725983
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '56a8429afd99'
-down_revision = '1a448cfe9a8d'
+down_revision = '34ecd9a19da2'
 
 from alembic import op
 import sqlalchemy as sa
@@ -19,7 +19,8 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-        op.execute('ALTER TABLE LotEntry ADD COLUMN cart_session_id BINARY(72) NOT NULL, ADD COLUMN user_agent BINARY(200) NOT NULL');
+    op.execute('ALTER TABLE LotEntry ADD COLUMN cart_session_id BINARY(72) NOT NULL, ADD COLUMN user_agent BINARY(200) NOT NULL')
+
 
 def downgrade():
-    pass
+    op.execute('ALTER TABLE LotEntry DROP COLUMN cart_session_id, DROP COLUMN user_agent')

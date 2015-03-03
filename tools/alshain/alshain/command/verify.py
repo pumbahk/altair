@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 import optparse
 import subprocess
@@ -7,20 +7,23 @@ from .. import utils
 
 __all__ = ['main']
 
+
 class NotSupportVerifyerType(ValueError):
     pass
+
 
 class Deploy:
     PRODUCTION = 'production'
     STAGING = 'staging'
     DEV = 'dev'
 
+
 class BaseVerifyer(object):
     NAME = 'virtual'
     workdir = ''
     buildout_conf = ''
     testcmd = ''
-    
+
     def __init__(self, deploy=Deploy.DEV):
         self.deploy = deploy
 
@@ -30,7 +33,7 @@ class BaseVerifyer(object):
         print '$', line
         return subprocess.Popen(line, shell=True, *args, **kwds)
 
-    def verify(self, build=False):
+    def verify(self, build=False, nocapture=False):
         self.workon()
         if build:
             child = self.bootstrap()
@@ -39,13 +42,13 @@ class BaseVerifyer(object):
             child = self.buildout()
             child.wait()
 
-        child = self.runtest()
+        child = self.runtest(nocapture)
         child.wait()
 
     def bootstrap(self):
         child = self._call('python bootstrap.py')
         return child
-        
+
     def buildout(self):
         cmd = 'bin/buildout'
         conf = self.buildout_conf
@@ -54,8 +57,11 @@ class BaseVerifyer(object):
         child = self._call(cmd)
         return child
 
-    def runtest(self):
-        child = self._call(self.testcmd)
+    def runtest(self, nocapture=False):
+        cmd = self.testcmd
+        if nocapture:
+            cmd += ' -s'
+        child = self._call(cmd)
         return child
 
     @property
@@ -72,6 +78,7 @@ class BaseVerifyer(object):
         path = os.path.join(self.root, self.workdir)
         os.chdir(path)
 
+
 class TicketingVerifyer(BaseVerifyer):
     """The verifyer implementation of altair.app.ticketing module
     """
@@ -84,19 +91,22 @@ class TicketingVerifyer(BaseVerifyer):
     def workdir(self):
         return os.path.join(self._workdir, self.deploy)
 
+
 class AltairlibVerifyer(BaseVerifyer):
     """The verifyer implementation of altairlib modules
     """
     NAME = 'altairlib'
     workdir = 'altairlib'
     buildout_conf = None
-    testcmd = 'bin/test'    
-    
+    testcmd = 'bin/test'
+
+
 class CMSVerifyer(TicketingVerifyer):
     """The verifyer implementation of altair.cms module
     """
     NAME = 'cms'
     testcmd = 'bin/test-cms'
+
 
 class Verifyer(object):
     """The verifyer factory.
@@ -117,7 +127,7 @@ class Verifyer(object):
     def names(self, names=[]):
         my_names = [name for name in self.generate_name()]
         return_names = set()
-        
+
         if not names:
             names = ['all']
         for name in names:
@@ -128,18 +138,21 @@ class Verifyer(object):
             else:
                 print 'skip: {0}'.format(name)
         return return_names
-            
+
     @classmethod
     def generate_name(cls):
         for verifyer in cls.verifyers:
             yield verifyer.NAME
 
+
 def main(argv):
     parser = optparse.OptionParser()
     parser.add_option('-b', '--build', default=False, action='store_true',
                       help='build environments bootstrap, buildout.')
+    parser.add_option('-s', '--nocapture', default=False, action='store_true',
+                      help="Don't capture stdout (any stdout output will be printed immediately) [NOSE_NOCAPTURE]")
     opts, args = parser.parse_args(argv)
-    
+
     for name in Verifyer.names(args):
         verifyer = Verifyer(name)
-        verifyer.verify(build=opts.build)
+        verifyer.verify(build=opts.build, nocapture=opts.nocapture)

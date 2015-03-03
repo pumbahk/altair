@@ -296,7 +296,7 @@ class SearchFormBase(Form):
                 self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
             if sales_segment_group is None:
                 sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == event.id)
-                self.sales_segment_group_id.choices = [('', u'(すべて)')] + [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
+                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
             else:
                 self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
         else:
@@ -368,7 +368,7 @@ class SearchFormBase(Form):
         validators=[Optional()],
     )
     sales_segment_group_id = SelectMultipleField(
-        label=u'販売区分',
+        label=u'販売区分グループ',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Optional()],
