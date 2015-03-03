@@ -23,4 +23,4 @@ def upgrade():
 
 
 def downgrade():
-    op.execute('ALTER TABLE LotEntry DROP COLUMN cart_session_id')
+    op.execute('ALTER TABLE LotEntry DROP COLUMN cart_session_id, DROP COLUMN user_agent')
