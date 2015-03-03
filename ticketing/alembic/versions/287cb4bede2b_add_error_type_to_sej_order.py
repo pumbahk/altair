@@ -1,14 +1,14 @@
 """add_error_type_to_sej_order
 
 Revision ID: 287cb4bede2b
-Revises: 1a448cfe9a8d
+Revises: 1261b43ea7c7
 Create Date: 2015-03-01 20:08:16.027156
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '287cb4bede2b'
-down_revision = '1a448cfe9a8d'
+down_revision = '1261b43ea7c7'
 
 from alembic import op
 import sqlalchemy as sa
