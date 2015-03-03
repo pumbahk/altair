@@ -355,9 +355,7 @@ class QRView(object):
             # this block is not used, to be deleted.
             # orion
             try:
-                res_text = api.send_to_orion(self.request, self.context, None, ticket.item_token)
-                logger.info("response = %s" % res_text)
-                response = json.loads(res_text)
+                response = api.send_to_orion(self.request, self.context, None, ticket.item_token)
                 if response['result'] == u"OK" and response.has_key('serial'):
                     qr = build_qr_by_orion(self.request, ticket, response['serial'])
                     return qrdata_as_image_response(qr)
@@ -398,11 +396,9 @@ class QRView(object):
             try:
                 if token.item.ordered_product.order.order_no != self.request.params['order_no']:
                     raise Exception(u"Wrong order number or token: (%s, %s)" % (self.request.params['order_no'], self.request.params['token']))
-                res_text = api.send_to_orion(self.request, self.context, None, token)
-                logger.info("response = %s" % res_text)
-                response = json.loads(res_text)
+                response = api.send_to_orion(self.request, self.context, None, token)
             except Exception, e:
-                logger.exception(res_text)
+                logger.exception(e)
                 ## この例外は違う...
                 raise HTTPNotFound()
 
@@ -521,10 +517,7 @@ class QRView(object):
                 else:
                     seat = data.seat.name
                 logger.info("token = %s" % data.id)
-                res_text = api.send_to_orion(self.request, self.context, mail, data)
-                logger.info("response = %s" % res_text)
-                response = json.loads(res_text)
-                # TODO: 返り値を検証する
+                response = api.send_to_orion(self.request, self.context, mail, data)
                 if response == None:
                     result.append(dict(seat=seat, result=u"failure", reason=u"不明なエラー"))
                 elif response['result'] != u"OK":

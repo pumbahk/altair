@@ -7,12 +7,10 @@ from altair.app.ticketing.core.api import get_organization_setting
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
+import altair.app.ticketing.orders.orion as orion_api
 from pyramid.threadlocal import get_current_registry
 from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
 from altair.sqlahelper import get_db_session
-import urllib
-import urllib2
-import json
 
 from altair.app.ticketing.orders.models import (
     Order,
@@ -44,11 +42,6 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
     return get_mailer(request).send(message)
 
 def send_to_orion(request, context, recipient, data):
-    settings = request.registry.settings
-    api_url = settings.get('orion.create_url')
-    if api_url is None:
-        raise Exception("orion.api_uri is None")
-    
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product
     item = data.item
@@ -95,16 +88,7 @@ def send_to_orion(request, context, recipient, data):
                         background = orion.background_url,
                         icon = orion.icon_url)
     
-    data = json.dumps(obj)
-    logger.info("Create request to Orion API: %s" % data);
-    req = urllib2.Request(api_url, data, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
-    stream = urllib2.urlopen(req);
-    headers = stream.info()
-    if stream.code == 200:
-        res = unicode(stream.read(), 'utf-8')
-        return res
-    else:
-        raise Exception("server returned unexpected status: %d (payload) %r" % (stream.code, stream.read()))
+    return orion_api.create(request, obj)
 
 def is_mypage_organization(context, request):
     organization = get_organization(request)
