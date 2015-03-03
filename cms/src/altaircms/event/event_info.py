@@ -72,10 +72,14 @@ class SummaryWidgetGetEventInfoAdapter(object):
 def get_event_notify_info(event, session=DBSession, page=None):
     # summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
     # のイベント詳細に利用される
-    summary_widget_query = session.query(SummaryWidget).filter_by(bound_event=event)
+    summary_widget = None
+    if not page:
+        from ..page.models import Page
+        page = session.query(Page).filter(Page.event_id == event.id).filter(Page.published == True).first()
+
     if page:
-        summary_widget_query = summary_widget_query.filter(SummaryWidget.page == page)
-    summary_widget = summary_widget_query.first()
+        summary_widget_query = session.query(SummaryWidget).filter_by(bound_event=event).filter(SummaryWidget.page == page)
+        summary_widget = summary_widget_query.first()
 
     # 本当はregistryのadaptersから引っ張る
     if summary_widget:
