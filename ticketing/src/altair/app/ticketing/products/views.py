@@ -100,7 +100,6 @@ class ProductAndProductItem(BaseView):
     def edit_post_xhr(self):
         product = self.context.product
         product_item = self.context.product_item
-        import ipdb;ipdb.set_trace()
         f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
         if f.validate():
             point_grant_settings = [
