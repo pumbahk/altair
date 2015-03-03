@@ -1,0 +1,58 @@
+[DEFAULT]
+_proxy_target = localhost
+
+[devproxy]
+listen = 0.0.0.0:58080
+
+[prerewrite]
+rakuten_auth_response =
+    http://api.ticket.rakuten.co.jp/rid/rc/http/stg/([^/]+)(/.+)?/(verify.*)
+    http://\1.stg.altr.jp\2/\3
+
+rakuten_auth_compat =
+    http://rt.stg2.rt.ticketstar.jp(/cart(?:/.*)?)
+    http://rt.stg.altr.jp\1
+
+[redirect]
+old_stg =
+    http://([^./]+).stg2.rt.ticketstar.jp(/.*)?
+    http://\1.stg.altr.jp\2
+
+[rewrite:admin]
+altair.ticketing.qrreader =
+    http://backend.stg.altr.jp(/qrreader(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.qrreader.port}\1
+
+altair.ticketing.admin =
+    http://backend.stg.altr.jp(/.*)?
+    http://%(_proxy_target)s:${altair:ticketing.admin.default.port}\1
+
+altair.cms.admin = 
+    http://cms.stg.altr.jp(/.*)?
+    http://%(_proxy_target)s:${altair:cms.admin.port}\1
+
+[rewrite:dummy-checkout-server]
+dummy-checkout-server = 
+    http://dummy-checkout-server.stg.altr.jp(/.*)
+    http://%(_proxy_target)s:8071\1
+
+[rewrite:usersite]
+altair.ticketing.orderreview = 
+    http://[^/.]+.stg.altr.jp(/orderreview(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.orderreview.port}\1
+
+altair.ticketing.lots =
+    http://[^/.]+.stg.altr.jp(/lots(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.lots.port}\1
+
+altair.ticketing.cart =
+    http://[^/.]+.stg.altr.jp(/cart(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.cart.port}\1
+
+altair.ticketing.whattime =
+    http://[^/.]+.stg.altr.jp(/whattime(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.whattime.port}\1
+
+altair.cms.usersite =
+    http://[^/.]+.stg.altr.jp(/.*)?
+    http://%(_proxy_target)s:${altair:cms.usersite.port}\1
