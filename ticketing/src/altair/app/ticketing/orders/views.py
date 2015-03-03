@@ -201,7 +201,7 @@ class OrdersAPIView(BaseView):
         if formdata['public']:
             query = query.filter(SalesSegmentGroup.public == bool(formdata['public']))
 
-        sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
+        sales_segment_groups = [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
