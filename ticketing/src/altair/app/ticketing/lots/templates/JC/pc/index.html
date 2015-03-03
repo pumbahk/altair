@@ -51,6 +51,10 @@ if label is None or label is True:
         <th scope="row">申込受付期間</th>
         <td>${ch.japanese_datetime(sales_segment.start_at)} ～ ${ch.japanese_datetime(sales_segment.end_at)}</td>
       </tr>
+      <tr>
+        <th scope="row">抽選結果発表予定日</th>
+        <td>${h.japanese_datetime(lot.lotting_announce_datetime)}</td>
+      </tr>
       %if sales_segment.max_quantity:
       <tr>
         <th scope="row">制限枚数</th>
