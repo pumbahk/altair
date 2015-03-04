@@ -9,6 +9,7 @@ from mako.template import Template
 from zope.interface import implementer
 from altair.pyramid_dynamic_renderer import RendererHelperProxy, RequestSwitchingRendererHelperFactory
 from altair.app.ticketing.mailmags import models as mailmag_models
+from altair.app.ticketing.core.models import FeeTypeEnum
 from .request import ENV_ORGANIZATION_ID_KEY
 from .interfaces import ICartResource
 
@@ -120,14 +121,16 @@ class DummyEvent(object):
     title = "event"
     venue = DummyVenue()
 
+    def __init__(self, organization):
+        self.organization = organization
 
 class DummyPerformance(object):
     id = 1111
     name = "Hey"
-    event = DummyEvent()
     venue = DummyVenue()
 
-    def __init__(self):
+    def __init__(self, event):
+        self.event = event
         self.start_on = self.end_on = datetime.now()
 
 class DummyPaymentPlugin(object):
@@ -139,21 +142,42 @@ class DummyDeliveryPlugin(object):
         self.id = id
 
 class DummyPaymentMethod(object):
+    name = u'ダミー決済方法'
+    fee_type = FeeTypeEnum.Once.v
+    description = u'説明文<b>説明文</b>' * 10
+
     def __init__(self, payment_plugin_id):
         self.payment_plugin_id = payment_plugin_id
         self.payment_plugin = DummyPaymentPlugin(payment_plugin_id)
 
 
 class DummyDeliveryMethod(object):
+    name = u'ダミー引取方法'
+    fee_type = FeeTypeEnum.PerUnit.v
+    description = u'説明文<b>説明文</b>' * 10
+
     def __init__(self, delivery_plugin_id):
         self.delivery_plugin_id = delivery_plugin_id
         self.delivery_plugin = DummyDeliveryPlugin(delivery_plugin_id)
+
 
 
 class DummyPaymentDeliveryMethodPair(object):
     payment_method = DummyPaymentMethod(1)
     delivery_method = DummyDeliveryMethod(1)
 
+    system_fee = 100
+    system_fee_type = FeeTypeEnum.Once.v
+    transaction_fee = 200
+    delivery_fee = 200
+    delivery_fee_per_ticket = 300
+    delivery_fee_per_order = 0
+    special_fee = 400
+    special_fee_type = FeeTypeEnum.Once.v
+    special_fee_name = u'★特別手数料★'
+
+    def __init__(self, id = 1):
+        self.id = id
 
 class DummyShippingAddress(object):
     last_name = u'姓'
@@ -182,7 +206,7 @@ class DummyCart(object):
     delivery_fee = 300
     special_fee = 400
     special_fee_name = u'★特別手数料★'
-    total_amount = 500
+    total_amount = 1000
     payment_delivery_pair = dummy_payment_delivery_method_pair
     shipping_address = dummy_shipping_address
    
@@ -256,7 +280,7 @@ class DummyCartSetting(object):
     lots_orderreview_page_url = u'http://example.com/lots/review'
     extra_footer_links = [u'aaa', u'http://example.com/aaa']
     extra_footer_links_mobile = [u'aaa', u'http://example.com/aaa']
-    mail_filter_domain_notice_template = u'XXXX'
+    mail_filter_domain_notice_template = u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
     extra_form_fields = []
     header_image_url = u'http://example.com/'
     header_image_url_mobile = u'http://example.com/'
@@ -272,12 +296,12 @@ class DummyCartSetting(object):
 class DummyCartResource(object):
     def __init__(self, request):
         self.request = request
-        self.performance = DummyPerformance()
+        self.performance = DummyPerformance(DummyEvent(request.organization))
         self.cart_setting = DummyCartSetting()
 
     @reify
     def cart(self):
-        return _dummy_cart(self.performance)
+        return DummyCart(self.performance)
 
     @property
     def read_only_cart(self):
@@ -341,10 +365,11 @@ def payment_view(context, request):
     """
     from .schemas import ClientForm
     request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-    context.cart_setting = mock.Mock()
     params = dict(
-        form=ClientForm(context=mock.Mock()),
-        payment_delivery_methods=[],
+        form=ClientForm(context=context),
+        payment_delivery_methods=[
+            dummy_payment_delivery_method_pair
+            ],
         user=mock.Mock(),
         user_profile=mock.Mock(),
         )
