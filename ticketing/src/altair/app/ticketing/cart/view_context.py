@@ -147,39 +147,6 @@ def get_cart_view_context_factory(default_package):
                 ua_type=self.ua_type,
                 path=path)
 
-        def get_template_path_for_dummy(self, path):
-            """cart/dummy用のget_template_path
-            """
-            from altair.app.ticketing.core.models import Organization
-            organization_id = None
-            try:
-                organization_id = int(self.request.GET.get('organization_id', None))
-            except (TypeError, ValueError):
-                pass
-
-            organization_short_name = "__default__"
-            if organization_id is not None:
-                organization = Organization \
-                    .query \
-                    .filter(Organization.id == organization_id) \
-                    .first()
-                if organization:
-                    organization_short_name = organization.short_name
-            membership = self.membership or "__default__"
-            package_or_path, colon, _path = path.partition(':')
-            if not colon:
-                package = default_package
-                path = package_or_path
-            else:
-                package = package_or_path
-                path = _path
-            return '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s' % dict(
-                package=package,
-                organization_short_name=organization_short_name,
-                membership=membership,
-                ua_type=self.ua_type,
-                path=path)
-
         def static_url(self, path, *args, **kwargs):
             return self.request.static_url("altair.app.ticketing.cart:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path), *args, **kwargs)
 
@@ -187,7 +154,6 @@ def get_cart_view_context_factory(default_package):
             return getattr(self.cart_setting, k)
 
     return CartViewContext
-
 
 def determine_layout(event):
     request = event.request
