@@ -786,9 +786,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
-    def get_order_attribute_pair_pairs(self, request):
+    def get_order_attribute_pair_pairs(self, request, include_undefined_items=False):
         from .api import get_order_attribute_pair_pairs
-        return get_order_attribute_pair_pairs(request, self)
+        return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items)
+
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
