@@ -491,6 +491,10 @@ class OrderCSV(object):
                 u'ordered_product_item.attributes',
                 u'attribute'
                 ),
+            OrderAttributeRenderer(
+                u'order',
+                u'attribute'
+                ),
             ]
 
     def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession):

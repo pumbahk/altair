@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
+import re
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 import decimal
@@ -62,6 +62,7 @@ from altair.app.ticketing.orders.helpers import (
     )
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
+from .export import OrderAttributeRenderer
 from .models import OrderedProduct, OrderedProductItem
 from sqlalchemy import orm
 
@@ -1004,13 +1005,22 @@ class OrderImportForm(Form):
         field.data.file.seek(0)
 
         export_header = []
+        attribute_renderers = []
         for c in OrderCSV.per_seat_columns:
-            if not isinstance(c, AttributeRenderer):
+            if not isinstance(c, (AttributeRenderer, OrderAttributeRenderer)):
                 if hasattr(c, 'column_name'):
                     column_name = c.column_name
                 else:
                     column_name = c.key
                 export_header.append(column_name)
+            else:
+                attribute_renderers.append(c)
+
+        for h in import_header:
+            for c in attribute_renderers:
+                g = re.match(u'%s\[([^]]*)\]' % c.variable_name, h)
+                if g is not None:
+                    export_header.append(h)
 
         difference = set(import_header) - set(export_header)
         if len(difference) > 0 or len(import_header) == 0:
