@@ -283,9 +283,9 @@ class PerPerformanceAgreementView(object):
 @view_defaults(xhr=False, permission="buy")
 class CompatAgreementView(object):
     """ 規約表示画面 """
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     @lbr_view_config(request_method="GET", route_name='cart.agreement.compat')
     def get_agreement(self):
@@ -443,12 +443,12 @@ class IndexView(IndexViewMixin):
 
 @view_defaults(xhr=True, permission="buy", renderer="json")
 class IndexAjaxView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     def get_frontend_drawing_urls(self, venue):
-        sales_segment = self.request.context.sales_segment
+        sales_segment = self.context.sales_segment
         retval = {}
         drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
         if drawings:
@@ -466,7 +466,7 @@ class IndexAjaxView(object):
                 else:
                     url = self.request.route_url(
                         'cart.venue_drawing',
-                        event_id=self.request.context.event.id,
+                        event_id=self.context.event.id,
                         performance_id=sales_segment.performance.id,
                         venue_id=sales_segment.performance.venue.id,
                         part=name)
@@ -475,7 +475,7 @@ class IndexAjaxView(object):
 
     @lbr_view_config(route_name='cart.seat_types2')
     def get_seat_types(self):
-        sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
+        sales_segment = self.context.sales_segment # XXX: matchdict から取得していることを期待
 
         order_separate_seats_url = u''
         organization = api.get_organization(self.request)
@@ -490,7 +490,7 @@ class IndexAjaxView(object):
                 dict(
                     products_url=self.request.route_url(
                         'cart.products2',
-                        event_id=self.request.context.event.id,
+                        event_id=self.context.event.id,
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
                         seat_type_id=_dict['id']),
@@ -518,12 +518,12 @@ class IndexAjaxView(object):
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
             order_separate_seats_url=order_separate_seats_url,
             venue_name=sales_segment.performance.venue.name,
-            event_id=self.request.context.event.id,
+            event_id=self.context.event.id,
             venue_id=sales_segment.performance.venue.id,
             data_source=dict(
                 venue_drawing=self.request.route_url(
                     'cart.venue_drawing',
-                    event_id=self.request.context.event.id,
+                    event_id=self.context.event.id,
                     performance_id=sales_segment.performance.id,
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
@@ -713,9 +713,9 @@ class ReserveView(object):
 
     product_id_regex = re.compile(r'product-(?P<product_id>\d+)')
 
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
 
     def iter_ordered_items(self):
@@ -915,9 +915,19 @@ class PaymentView(object):
     def get(self):
         """ 支払い方法、引き取り方法選択
         """
-        start_on = self.request.context.cart.performance.start_on
-        sales_segment = self.request.context.sales_segment
+        start_on = self.context.cart.performance.start_on
+        sales_segment = self.context.sales_segment
+        cart = self.context.read_only_cart
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
+        payment_delivery_methods = [
+            payment_delivery_pair
+            for payment_delivery_pair in payment_delivery_methods
+            if api.check_if_payment_delivery_method_pair_is_applicable(
+                self.request,
+                cart,
+                payment_delivery_pair
+                )
+            ]
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
@@ -997,7 +1007,7 @@ class PaymentView(object):
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
-        cart = self.request.context.cart
+        cart = self.context.cart
         user = api.get_or_create_user(self.context.authenticated_user())
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
@@ -1028,8 +1038,7 @@ class PaymentView(object):
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
-            sales_segment = self.request.context.sales_segment
-
+            sales_segment = self.context.sales_segment
             payment_delivery_methods = [pdmp
                                         for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
                                         if pdmp.payment_method.public]
@@ -1094,9 +1103,9 @@ class PaymentView(object):
 
 @view_defaults(route_name='cart.extra_form', renderer=selectable_renderer("extra_form.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ExtraFormView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -1132,9 +1141,9 @@ class ExtraFormView(object):
 
 @view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
 class PointAccountEnteringView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     def get_point_data(self):
         form = self.form
@@ -1145,7 +1154,7 @@ class PointAccountEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def point(self):
-        cart = self.request.context.cart
+        cart = self.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1155,12 +1164,12 @@ class PointAccountEnteringView(object):
             )
         form = schemas.PointForm(formdata=formdata)
 
-        asid = self.request.context.asid
+        asid = self.context.asid
         if is_mobile_request(self.request):
-            asid = self.request.context.asid_mobile
+            asid = self.context.asid_mobile
 
         if is_smartphone(self.request):
-            asid = self.request.context.asid_smartphone
+            asid = self.context.asid_smartphone
 
         accountno = self.request.params.get('account')
         user = api.get_or_create_user(self.context.authenticated_user())
@@ -1181,7 +1190,7 @@ class PointAccountEnteringView(object):
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
-        cart = self.request.context.cart
+        cart = self.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1190,12 +1199,12 @@ class PointAccountEnteringView(object):
 
         form = self.form
         if not form.validate():
-            asid = self.request.context.asid
+            asid = self.context.asid
             if is_mobile_request(self.request):
-                asid = self.request.context.asid_mobile
+                asid = self.context.asid_mobile
 
             if is_smartphone(self.request):
-                asid = self.request.context.asid_smartphone
+                asid = self.context.asid_smartphone
             return dict(form=form, asid=asid)
 
         point_params = self.get_point_data()
@@ -1223,14 +1232,14 @@ class PointAccountEnteringView(object):
     permission="buy")
 class ConfirmView(object):
     """ 決済確認画面 """
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     @lbr_view_config(request_method="GET")
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
-        cart = self.request.context.cart
+        cart = self.context.cart
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
@@ -1286,7 +1295,7 @@ class CompleteView(object):
                 del self.request.session['csrf']
                 self.request.session.persist()
 
-            cart = self.request.context.cart
+            cart = self.context.cart
             if not cart.is_valid():
                 raise NoCartError()
         except (InvalidCSRFTokenException, NoCartError):
@@ -1372,9 +1381,9 @@ class CompleteView(object):
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
-        self.context = request.context
 
     @lbr_view_config(context='.authorization.InvalidMemberGroupException')
     def __call__(self):

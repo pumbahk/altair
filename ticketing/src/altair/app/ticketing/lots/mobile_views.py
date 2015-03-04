@@ -26,6 +26,7 @@ from .models import (
 )
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+from . import utils
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,11 @@ class EntryLotView(object):
             sales_segment=sales_segment,
             option_index=len(api.get_options(self.request, lot.id)) + 1
             )
+
+    def _create_form(self, **kwds):
+        """希望入力と配送先情報と追加情報入力用のフォームを返す
+        """
+        return utils.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(route_name='lots.entry.step1', renderer=selectable_renderer("step1.html"))
     def step1(self):
@@ -284,7 +290,7 @@ class EntryLotView(object):
 
     @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))
     def step4(self):
-        cform = api.create_client_form(self.context, self.request)
+        cform = self._create_form(formdata=self.request.params)
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
@@ -298,8 +304,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
-
+        cform = self._create_form(formdata=self.request.params)
         payment_delivery_method_pair_id = None
         try:
             payment_delivery_method_pair_id = long(self.request.params.get('payment_delivery_method_pair_id'))
@@ -347,7 +352,9 @@ class EntryLotView(object):
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=cform['birthday'].data,
-            memo=cform['memo'].data)
+            memo=cform['memo'].data,
+            extra=cform['extra'].data,
+            )
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)
 

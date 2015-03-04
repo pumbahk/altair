@@ -1,7 +1,97 @@
 import unittest
+import mock
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
+
+class LotFormTests(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.orders.models',
+        ])
+
+    def tearDown(self):
+        _teardown_db()
+
+    def _getTarget(self):
+        from ..forms import LotForm
+        return LotForm
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _organization(self):
+        from altair.app.ticketing.core.models import (
+            Organization,
+            ReportRecipient,
+        )
+        organization = Organization(
+            short_name=u'testing',
+        )
+        self.session.add(organization)
+        self.session.flush()
+
+        recipient = ReportRecipient(
+            name=u"testing-recipient",
+            email=u"testing-recipient@example.com",
+            organization_id=organization.id
+        )
+        self.session.add(recipient)
+        self.session.flush()
+        return organization
+
+    @mock.patch('altair.app.ticketing.events.lots.forms.get_who_api_factory_registry')
+    def test_create_lot_10993(self, get_who_api_factory_registry):
+        from datetime import datetime
+        from altair.app.ticketing.core.models import Organization, Event, SalesSegmentGroup, SalesSegmentGroupSetting
+        from altair.app.ticketing.users.models import Membership, MemberGroup, MemberGroup_SalesSegment, MemberGroup_SalesSegmentGroup
+
+        organization = self._organization()
+        event = Event(organization=organization)
+        membership = Membership(organization=organization, name='membership')
+        membergroup = MemberGroup(membership=membership, name='membergroup')
+        sales_segment_group = SalesSegmentGroup(
+            organization=organization,
+            event=event,
+            name='sales_segment_group',
+            membergroups=[membergroup],
+            start_at=datetime(2015, 1, 1, 0, 0, 0),
+            end_at=datetime(2015,1, 2, 0, 0, 0),
+            public=True,
+            setting=SalesSegmentGroupSetting()
+            )
+        self.session.add(sales_segment_group)
+        self.session.flush()
+
+        request = testing.DummyRequest()
+        context = testing.DummyResource(request=request)
+        target = self._makeOne(context=context)
+        target.name.data = 'test'
+        target.limit_wishes.data = 1
+        target.entry_limit.data = 1
+        target.description.data = 'test'
+        target.lotting_announce_datetime.data = datetime(2015, 1, 1, 0, 0, 0)
+        target.lotting_announce_timezone.data = datetime(2015, 1, 1, 0, 0, 0)
+        target.custom_timezone_label.data = ''
+        target.auth_type.data = ''
+        target.sales_segment_group_id.data = sales_segment_group.id
+        target.start_at.data = None
+        target.use_default_start_at.data = True
+        target.end_at.data = None
+        target.use_default_end_at.data = True
+        target.max_quantity.data = 1
+        target.seat_choice.data = True
+        target.auth3d_notice.data = ''
+
+        lot = target.create_lot(event)
+        sales_segment = lot.sales_segment
+        self.assertEqual(sales_segment.sales_segment_group_id, sales_segment_group.id)
+        self.assertEqual(sales_segment.start_at, sales_segment_group.start_at)
+        self.assertEqual(sales_segment.end_at, sales_segment_group.end_at)
+        self.assertTrue(self.session.query(MemberGroup_SalesSegmentGroup).count() > 0)
+        self.assertEqual(sales_segment.membergroups, sales_segment_group.membergroups)
 
 class LotEntryReportSettingFormTests(unittest.TestCase):
 

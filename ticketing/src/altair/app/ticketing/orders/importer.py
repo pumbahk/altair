@@ -536,6 +536,8 @@ class ImportCSVParserContext(object):
         if price is None:
             price = product.price
         quantity = self.parse_int(row.get(u'ordered_product.quantity'), u'商品個数が不正です')
+        if quantity is None:
+            raise self.exc_factory(u'商品個数が指定されていません')
         if ordered_product is None:
             ordered_product = ordered_product_for_product[product.id] = OrderedProduct(
                 proto_order           = proto_order,
@@ -557,6 +559,8 @@ class ImportCSVParserContext(object):
         ordered_product_item = ordered_product_item_for_product_item.get(product_item.id) 
         price = self.parse_decimal(row.get(u'ordered_product_item.price'), u'商品明細単価が不正です')
         element_quantity_for_row = self.parse_int(row.get(u'ordered_product_item.quantity'), u'商品明細個数が不正です')
+        if element_quantity_for_row is None:
+            raise self.exc_factory(u'商品明細個数が指定されていません')
         if ordered_product_item is None:
             if price is None:
                 price = product_item.price

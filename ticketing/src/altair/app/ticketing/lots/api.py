@@ -42,6 +42,7 @@ from altair.now import get_now
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.app.ticketing.core import api as core_api
+
 from altair.app.ticketing.core.models import (
     Event,
     SalesSegment,
@@ -61,7 +62,7 @@ from altair.app.ticketing.cart.models import (
     Cart,
 )
 from altair.app.ticketing.cart.exceptions import NoCartError
-
+from altair.app.ticketing.cart.view_support import coerce_extra_form_data
 from .models import (
     Lot,
     LotEntry,
@@ -207,7 +208,7 @@ def prepare2_for_payment(request, entry_dict):
             )
         multicheckout_api.keep_authorization(cart.order_no, u"lots")
 
-def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
+def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[]):
     """
     wishes
     {product_id, quantity} の希望順リスト
@@ -229,8 +230,12 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         memo=memo,
         channel=channel.v
         )
-    if hasattr(request, "browserid"):
-        entry.browserid = getattr(request, "browserid")
+    entry.browserid = getattr(request, 'browserid', '')
+    entry.user_agent = getattr(request, 'user_agent', '')
+    entry.cart_session_id = getattr(request.session, 'id', '')
+
+    if extra:
+        entry.attributes = coerce_extra_form_data(request, extra)
 
     entry.entry_no = entry_no
     DBSession.add(entry)
@@ -241,6 +246,16 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     request.session['altair.lots.entry_id'] = entry.id
 
     return entry
+
+
+def add_lot_entry_attributes(request, extra, lot_entry):
+    from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
+    schema = get_extra_form_schema(
+        DummyCartContext(request, order),
+        request,
+        order.sales_segment
+        )
+
 
 def get_entry(request, entry_no, tel_no):
     return LotEntry.query.filter(
@@ -466,7 +481,7 @@ def send_rejected_mails(request):
 def get_entry_user(request):
     return cart_api.get_auth_info(request)
 
-def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
+def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
         lot_id=request.context.lot.id,
         entry_no=entry_no,
@@ -476,7 +491,8 @@ def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, sh
         shipping_address=shipping_address_dict,
         gender=gender,
         birthday=birthday,
-        memo=memo
+        memo=memo,
+        extra=extra
         )
     return cart_api.new_order_session(
         request,
@@ -557,13 +573,15 @@ class Options(object):
 def get_options(request, lot_id):
     return Options(request, lot_id)
 
-def create_client_form(context, request):
+def create_client_form(context, request, **kwds):
     user = cart_api.get_or_create_user(context.authenticated_user())
     user_profile = None
     if user is not None:
         user_profile = user.user_profile
 
-    retval = schemas.ClientForm(formdata=request.POST, context=context)
+    kwds['formdata'] = request.POST
+
+    retval = schemas.ClientForm(context=context, **kwds)
 
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v
@@ -590,6 +608,8 @@ def create_client_form(context, request):
     retval.sex.process_data(unicode(sex or u''))
     retval.birthday.process_data(birthday)
     """
+    if kwds['formdata']:
+        retval.process(**kwds)  # 入力フォームの値を反映
     return retval
 
 def get_lotting_announce_timezone(timezone):

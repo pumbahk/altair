@@ -1484,7 +1484,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sales_segment_group=self,
             event=self.event,
             organization=self.organization,
-            membergroups=[m for m in self.membergroups],
+            membergroups=list(self.membergroups),
             setting=SalesSegmentSetting()
             )
 
@@ -1495,7 +1495,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sales_segment_group.setting = SalesSegmentGroupSetting.create_from_template(template.setting)
         if 'event_id' in kwargs:
             sales_segment_group.event_id = kwargs['event_id']
-        sales_segment_group.membergroups = template.membergroups
+        sales_segment_group.membergroups = list(template.membergroups)
         sales_segment_group.save()
 
         if with_payment_delivery_method_pairs:

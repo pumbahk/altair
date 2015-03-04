@@ -161,7 +161,7 @@ class ReserveViewTests(unittest.TestCase):
         context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         results = target.reserve()
 
@@ -172,11 +172,11 @@ class ReserveViewTests(unittest.TestCase):
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
         params = MultiDict([('product-%d' % product4.id, 1)])
-        
+
         context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         results = target.reserve()
 
@@ -192,13 +192,13 @@ class ReserveViewTests(unittest.TestCase):
         context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
         request = testing.DummyRequest(params=params, context=context)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         results = target.reserve()
 
         self.assertEqual(results['result'], 'OK', results)
         self.assertEqual(len(results['cart']['products']), 1, results)
-        self.assertEqual(results['cart']['products'][0]['seats'], 
+        self.assertEqual(results['cart']['products'][0]['seats'],
             [{'l0_id': 'test-1', 'name': u'テスト１'},
              {'l0_id': 'test-3', 'name': u'テスト３'}], results)
 
@@ -221,14 +221,14 @@ class ReserveViewTests(unittest.TestCase):
         context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
-        request = testing.DummyRequest(params=params, 
+        request = testing.DummyRequest(params=params,
             context=context)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         results = target.reserve()
 
         self.assertEqual(results['result'], 'OK')
-        self.assertEqual(results['cart']['products'][0]['seats'], 
+        self.assertEqual(results['cart']['products'][0]['seats'],
             [{'l0_id': 'test-1', 'name': u'テスト１'},
              {'l0_id': 'test-3', 'name': u'テスト３'}])
 
@@ -250,10 +250,10 @@ class ReserveViewTests(unittest.TestCase):
 
         context = mock.Mock(cart_setting=self.cart_setting)
         context.sales_segment = sales_segment
-        request = testing.DummyRequest(params=params, 
+        request = testing.DummyRequest(params=params,
             context=context)
 
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
         results = target.reserve()
 
         self.assertEqual(results['result'], 'NG')

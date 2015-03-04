@@ -43,17 +43,16 @@ from altair.formhelpers.widgets import (
     OurListWidget,
     GenericSerializerWidget,
     OurDateWidget,
-    build_date_input_select_japanese_japan,
     OurSelectInput,
     OurCheckboxInput,
     )
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
-from .view_support import build_dynamic_form
+from .view_support import build_dynamic_form, build_date_input_select
 
 length_limit_for_sej = Length(max=10, message=u'10文字以内で入力してください')
 length_limit_long = Length(max=255, message=u'255文字以内で入力してください')
-            
+
 japanese_prefecture_select_input = OurSelectInput(choices=[(p.name, p.name) for p in Prefecture.all()])
 
 class CSRFSecureForm(SessionSecureForm):
@@ -112,7 +111,7 @@ class ClientForm(OurDynamicForm):
     first_name_kana = OurTextField(
         label=u"名(カナ)",
         note=u"(全角カナ)",
-        filters=[strip_spaces, NFKC], 
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             Katakana,
@@ -122,28 +121,28 @@ class ClientForm(OurDynamicForm):
     tel_1 = OurTextField(
         label=u"電話番号",
         note=u"(例:09012341234)",
-        filters=[ignore_space_hyphen, NFKC], 
+        filters=[ignore_space_hyphen, NFKC],
         validators=[
             SwitchOptional('tel_2'),
             Required(),
             Length(min=1, max=11),
-            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'), 
+            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
             ]
         )
     tel_2 = OurTextField(
         label=u"電話番号 (携帯)",
         note=u"(例:09012341234)",
-        filters=[ignore_space_hyphen, NFKC], 
+        filters=[ignore_space_hyphen, NFKC],
         validators=[
             Optional(),
             Length(min=1, max=11),
-            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'), 
+            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
             ]
         )
     fax = OurTextField(
         label=u"FAX番号",
         note=u"(ハイフンを除いてご入力ください)",
-        filters=[ignore_space_hyphen, NFKC], 
+        filters=[ignore_space_hyphen, NFKC],
         validators=[
             Optional(),
             Length(min=1, max=11),
@@ -152,10 +151,10 @@ class ClientForm(OurDynamicForm):
         )
     zip = OurTextField(
         label=u"郵便番号",
-        filters=[ignore_space_hyphen, NFKC], 
+        filters=[ignore_space_hyphen, NFKC],
         validators=[
             Required(),
-            Regexp(r'^\d{7}$', message=u'-(ハイフン)を抜いた半角数字(7桁)のみを入力してください'), 
+            Regexp(r'^\d{7}$', message=u'-(ハイフン)を抜いた半角数字(7桁)のみを入力してください'),
             Length(min=7, max=7, message=u'確認してください'),
             ],
         note=u'(半角英数7ケタ)'
@@ -287,7 +286,7 @@ class _89ersExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
@@ -400,7 +399,7 @@ class BambitiousExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
@@ -460,7 +459,7 @@ class BambitiousExtraForm(ExtraForm):
         coerce=long,
         validators=[Required()],
         choices=product_delivery_method_choices,
-        note=u"(配送料は無料です。)" 
+        note=u"(配送料は無料です。)"
         )
 
 at_least_eighteen = DynSwitchDisabled(u'''
@@ -484,7 +483,7 @@ class BigbullsExtraForm(ExtraForm):
         value_defaults={ 'year': u'1980', },
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
-            input_builder=build_date_input_select_japanese_japan
+            input_builder=build_date_input_select
             ),
         validators=[Required()]
         )
@@ -584,6 +583,7 @@ class DynamicExtraForm(ExtraForm):
         context = kwargs.get('context')
         fields = build_dynamic_form.unbound_fields(context.cart_setting.extra_form_fields or [])
         super(DynamicExtraForm, self).__init__(*args, _fields=fields, **kwargs)
+
 
 extra_form_type_map = {
     'booster.89ers': _89ersExtraForm,

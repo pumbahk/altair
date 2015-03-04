@@ -21,7 +21,8 @@ from altair.saannotation import get_annotations_for
 from altair.app.ticketing.core.models import OrganizationSetting
 from altair.app.ticketing.operators.models import OperatorAuth, ensure_ascii
 
-class OrganizationForm(OurForm):
+
+class OrganizationFormMixin(object):
 
     def _get_translations(self):
         return Translations()
@@ -120,7 +121,59 @@ class NewOrganizationOperatorForm(OperatorForm):
             raise ValidationError(u'ログインIDが重複しています。')
         return True
 
-class NewOrganizationForm(OrganizationForm):
+
+class OrganizationForm(OurForm, OrganizationFormMixin):
+    """Organization更新時
+    """
+    def __init__(self, *args, **kwds):
+        self._organization_id = kwds.get('organization_id', None)
+        super(OrganizationForm, self).__init__(*args, **kwds)
+
+    def _get_organization_id(self):
+        try:
+            return int(self._organization_id)
+        except (TypeError, ValueError):
+            return None
+
+    def validate_code(self, field):
+        """自分自身以外に同じcodeが登録されていないか確認する
+        """
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise ValidationError(u'オーガにゼーションIDが不正です')
+
+        duplicate_organizations = c_models.Organization \
+            .query \
+            .filter(c_models.Organization.id != organization_id) \
+            .filter(c_models.Organization.code == field.data) \
+            .all()
+
+        if duplicate_organizations:
+            raise ValidationError(u'既に同じ短縮コードの取引先名が登録されています')
+        return True
+
+    def validate_short_name(self, field):
+        """自分自身以外に同じshort_nameが登録されていないか確認する
+        """
+        organization_id = self._get_organization_id()
+        if organization_id is None:
+            raise ValidationError(u'オーガにゼーションIDが不正です')
+
+        duplicate_organizations = c_models.Organization \
+            .query \
+            .filter(c_models.Organization.id != organization_id) \
+            .filter(c_models.Organization.short_name == field.data) \
+            .all()
+
+        if duplicate_organizations:
+            raise ValidationError(u'既に同じ短縮名の取引先名が登録されています')
+        return True
+
+
+class NewOrganizationForm(OurForm, OrganizationFormMixin):
+    """Organization新規作成時
+    """
+
     login = FormField(form_class=NewOrganizationOperatorForm)
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

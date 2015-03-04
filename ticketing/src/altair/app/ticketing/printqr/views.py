@@ -6,8 +6,6 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from datetime import datetime
 import logging
-import urllib
-import urllib2
 import traceback
 
 from altair.app.ticketing.qr import get_qrdata_builder
@@ -25,6 +23,7 @@ from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.qr.utils import make_data_for_qr
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+import altair.app.ticketing.orders.orion as orion_api
 from altair.app.ticketing.orderreview.api import send_to_orion
 from altair.app.ticketing.qr.utils import build_qr_by_orion
 
@@ -86,9 +85,7 @@ def orderno_show_qrsigned_after_validated(context, request, form):
         and order.payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID):
         histories = []
         for token in tokens:
-            json_string = send_to_orion(request, context, None, token)
-            logger.info("response = %s" % json_string)
-            response = json.loads(json_string)
+            response = send_to_orion(request, context, None, token)
             if response['result'] == u"OK" and response.has_key('serial'):
                 fake_history = type('FakeTicketPrintHistory', (), {
                     'id': response['serial'],
@@ -182,25 +179,9 @@ def ticketdata_from_qrsigned_string(context, request):
         order = data = None
         if performance.orion is not None and performance.orion.qr_enabled == 1:
             # coupon_2_qr_enabledは判定には使わない
-            # eventgate
-            settings = request.registry.settings
-            api_url = settings.get('orion.search_url')
-            if api_url is None:
-                raise Exception("orion.search_uri is None")
-            logger.debug("target url is %s" % api_url)
-            
-            req_json = json.dumps(dict(serial = qrdata["serial"]))
-            logger.info("Create request to Orion API: %s" % req_json)
-            
-            req = urllib2.Request(api_url, req_json, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
-            stream = urllib2.urlopen(req);
-            if stream.code != 200:
-                raise Exception("Orion API returned code %u" % stream.code)
-            
-            res_text = unicode(stream.read(), 'utf-8')
-            logger.info("response = %s" % res_text)
-            res = json.loads(res_text)
-            
+
+            res = orion_api.search(request, dict(serial = qrdata["serial"]))
+
             if res is None:
                 raise Exception("Cannot open http connection to Orion API")
             if not res.has_key("result"):

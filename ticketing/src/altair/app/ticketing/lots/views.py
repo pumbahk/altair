@@ -17,10 +17,13 @@ from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
+from altair.app.ticketing.cart.view_support import (
+    get_extra_form_data_pair_pairs,
+    coerce_extra_form_data,
+    )
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.orderreview.api import get_user_point_accounts
-
 from altair.now import get_now
 from . import api
 from . import helpers as h
@@ -36,9 +39,12 @@ from altair.app.ticketing.orderreview.views import (
     jump_maintenance_page_om_for_trouble,
     jump_infomation_page_om_for_10873,
     )
-
+from . import utils
 
 logger = logging.getLogger(__name__)
+
+LOT_ENTRY_ATTRIBUTE_SESSION_KEY = 'lot.entry.attribute'
+
 
 def make_performance_map(request, performances):
     tz = get_timezone(request)
@@ -196,13 +202,27 @@ class EntryLotView(object):
             p.sort(key=key_func)
         return performance_product_map
 
-    def _create_form(self):
-        return api.create_client_form(self.context, self.request)
+    def build_products_dict(self):
+        from altair.app.ticketing.models import DBSession as session
+        from markupsafe import escape, Markup
+        import altair.app.ticketing.core.models as c_models
+        from altair.viewhelpers.numbers import create_number_formatter
+        sales_segment = self.context.lot.sales_segment
+        product_query = session.query(c_models.Product) \
+            .filter(c_models.Product.sales_segment_id == sales_segment.id, c_models.Product.public != False) \
+            .order_by(c_models.Product.display_order)
+        formatter = create_number_formatter(self.request)
+        return [(p.name, Markup(u'{name} ({price})'.format(name=escape(p.name), price=formatter.format_currency_html(p.price, prefer_post_symbol=True)))) for p in product_query]
 
-    @lbr_view_config()#request_method="GET")
+
+    def _create_form(self, **kwds):
+        """希望入力と配送先情報と追加情報入力用のフォームを返す
+        """
+        return utils.create_form(self.request, self.context, **kwds)
+
+    @lbr_view_config(request_method="GET")
     def get(self, form=None):
         """
-
         """
         jump_maintenance_page_for_trouble(self.request.organization)
 
@@ -284,9 +304,8 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
-
-
-        cform = schemas.ClientForm(formdata=self.request.params, context=self.context)
+        cform = self._create_form(formdata=self.request.params)
+        # form = schemas.ClientForm()
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -348,7 +367,9 @@ class EntryLotView(object):
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=birthday,
-            memo=cform['memo'].data)
+            memo=cform['memo'].data,
+            extra=(cform['extra'].data if 'extra' in cform else None)
+            )
 
         entry = api.get_lot_entry_dict(self.request)
         if entry is None:
@@ -405,7 +426,16 @@ class ConfirmLotEntryView(object):
         #     lot=lot,
         #     wishes=entry['wishes'],
 
-
+        raw_extra_form_data = entry.get('extra', [])
+        extra_form_data = []
+        if raw_extra_form_data is not None:
+            extra_form_data = get_extra_form_data_pair_pairs(
+                self.context,
+                self.request,
+                self.context.lot.sales_segment,
+                raw_extra_form_data,
+                for_='lots'
+                )
         return dict(event=event,
                     lot=lot,
                     shipping_address=entry['shipping_address'],
@@ -416,6 +446,7 @@ class ConfirmLotEntryView(object):
                     gender=entry['gender'],
                     birthday=entry['birthday'],
                     memo=entry['memo'],
+                    extra_form_data=extra_form_data,
                     mailmagazines_to_subscribe=magazines_to_subscribe,
                     accountno=acc.account_number if acc else "")
 
@@ -458,6 +489,7 @@ class ConfirmLotEntryView(object):
 
         lot = self.context.lot
 
+
         try:
             self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
         except (TypeError, ValueError):
@@ -469,7 +501,6 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
-
         entry = api.entry_lot(
             self.request,
             entry_no=entry_no,
@@ -480,11 +511,16 @@ class ConfirmLotEntryView(object):
             user=user,
             gender=entry['gender'],
             birthday=entry['birthday'],
-            memo=entry['memo']
+            memo=entry['memo'],
+            extra=entry.get('extra', []),
             )
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
         api.clear_point_user(self.request)
+
+        # extra_form_data = cart_api.load_extra_form_data(self.request)
+        # if extra_form_data is not None:
+        #    entry.attributes = coerce_extra_form_data(self.request, extra_form_data)
 
         try:
             api.notify_entry_lot(self.request, entry)
@@ -528,6 +564,16 @@ class CompletionLotEntryView(object):
                 del self.request.session['lots.magazine_ids']
             except:
                 pass
+
+        # raw_extra_form_data = cart_api.load_extra_form_data(self.request)
+        # extra_form_data = None
+        # if raw_extra_form_data is not None:
+        #     extra_form_data = get_extra_form_data_pair_pairs(
+        #         self.context,
+        #         self.request,
+        #         self.context.sales_segment,
+        #         raw_extra_form_data
+        #         )
 
         return dict(
             event=self.context.event,
@@ -596,14 +642,13 @@ class LotReviewView(object):
             user_point_accounts=user_point_accounts,
             memo=lot_entry.memo)
 
+
 @lbr_view_config(
     context=".exceptions.OutTermException",
     renderer=selectable_renderer("out_term_exception.html")
     )
 def out_term_exception(context, request):
     return dict(lot=context.lot)
-
-
 
 
 @lbr_view_config(
