@@ -280,12 +280,12 @@ class CSVRendererWrapper(object):
             self.tf = tf
 
     def __iter__(self):
-        self._write_rows_to_temp_file()
-        bio = BytesIO()
-        fw = self.writer_factory(bio)
-        fw(self.renderer.render_header(self.localized_columns))
-        yield bio.getvalue()
         try:
+            self._write_rows_to_temp_file()
+            bio = BytesIO()
+            fw = self.writer_factory(bio)
+            fw(self.renderer.render_header(self.localized_columns))
+            yield bio.getvalue()
             tfr = self.marshaller_factory.make_unmarshal(self.tf)
             bio.seek(0)
             bio.truncate(0)
