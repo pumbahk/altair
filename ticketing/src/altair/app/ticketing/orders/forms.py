@@ -13,7 +13,6 @@ from wtforms.fields import (
     SelectField,
     SelectMultipleField,
     TextAreaField,
-    BooleanField,
     RadioField,
     FieldList,
     FormField,
@@ -32,6 +31,9 @@ from altair.formhelpers import (
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
+from altair.formhelpers.fields import (
+    OurBooleanField,
+    )
 from altair.app.ticketing.core.models import (
     Organization,
     PaymentMethod,
@@ -961,7 +963,7 @@ class OrderRefundForm(Form):
         return status
 
 
-class OrderImportForm(Form):
+class OrderImportForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -980,7 +982,7 @@ class OrderImportForm(Form):
         default=ImportTypeEnum.Create.v,
         coerce=int,
     )
-    always_issue_order_no = BooleanField(
+    always_issue_order_no = OurBooleanField(
         label=u'常に新しい予約番号を発番'
     )
     allocation_mode = BugFreeSelectField(
@@ -989,6 +991,11 @@ class OrderImportForm(Form):
         choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
         default=ImportTypeEnum.Create.v,
         coerce=int,
+    )
+    merge_order_attributes = OurBooleanField(
+        label=u'既存の予約の購入情報属性を更新する',
+        help=u'チェックを入れずに実行すると、属性はCSVに書かれているものに置換となりますので注意してください',
+        default=True
     )
 
     def validate_order_csv(form, field):
@@ -1169,9 +1176,9 @@ class SejOrderForm(Form):
 
 
 
-class SejRefundEventForm(Form):
+class SejRefundEventForm(OurForm):
 
-    available = BooleanField(
+    available = OurBooleanField(
         label=u'有効フラグ',
         validators=[Required()],
     )
@@ -1216,7 +1223,7 @@ class SejRefundEventForm(Form):
         label=u'チケット持ち込み期限	',
         validators=[Required(), after1900],
     )
-    refund_enabled = BooleanField(
+    refund_enabled = OurBooleanField(
         label=u'レジ払戻可能フラグ',
         validators=[Required()],
     )

@@ -1041,6 +1041,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     import_type = sa.Column(sa.Integer, nullable=False)
     allocation_mode = sa.Column(sa.Integer, default=1, nullable=False) # XXX: 1 = AllocationModeEnum.AlwaysAllocateNew
     entrust_separate_seats = sa.Column(sa.Boolean, default=False, nullable=False)
+    merge_order_attributes = sa.Column(sa.Boolean, default=False, nullable=False)
     status = sa.Column(sa.Integer, nullable=False)
     count = sa.Column(sa.Integer, nullable=False)
     data = sa.Column(sa.UnicodeText(8388608))
