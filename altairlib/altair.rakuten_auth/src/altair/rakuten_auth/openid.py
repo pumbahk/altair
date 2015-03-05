@@ -213,6 +213,8 @@ class RakutenOpenID(object):
             session_restorer = HybridHTTPBackend.get_session_restorer(request)
             if key and session_restorer:
                 return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
+            else:
+                logger.debug('key=%r, session_restorer=%r' % (key, session_restorer))
         self.set_return_url(session, return_url)
         session.save()
         redirect_to = self.get_redirect_url(request, session)
