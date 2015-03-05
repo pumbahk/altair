@@ -14,10 +14,10 @@ body{
     height: 100%;
     font-family: "Helvetica Neue",Helvetica,Meiryo,"メイリオ","HiraKakuPro-W3","ヒラギノ角ゴ Pro W3","Arial","ＭＳ Ｐゴシック",sans-serif;
 
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #003154), color-stop(1, #003154) );
-	background:-moz-linear-gradient( center top, #003154 5%, #003154 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#003154', endColorstr='#003154');
-	background-color:#003154;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #2583D2), color-stop(1, #2583D2) );
+	background:-moz-linear-gradient( center top, #2583D2 5%, #2583D2 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2583D2', endColorstr='#2583D2');
+	background-color:#2583D2;
 }
 
 a:hover img {
@@ -170,7 +170,7 @@ color:#fff;
 }
 
 .header{
-	background: #000;
+	background: #124169;
 	border-bottom: 5px solid #EFEFEF;
     height: 82px;
     width:100%;
