@@ -288,6 +288,8 @@ class ImportCSVParserContext(object):
         self.orders_will_be_created = bool(order_import_task.import_type & ImportTypeEnum.Create.v)
         self.orders_will_be_updated = bool(order_import_task.import_type & ImportTypeEnum.Update.v)
         self.always_issue_order_no = bool(order_import_task.import_type & ImportTypeEnum.AlwaysIssueOrderNo.v)
+        self.merge_order_attributes = order_import_task.merge_order_attributes
+        self.operator = order_import_task.operator
 
         # csvファイルから読み込んだ予約 {order_no:cart}
         self.carts = OrderedDict()
@@ -485,6 +487,11 @@ class ImportCSVParserContext(object):
                                 )
                 if attributes is None:
                     attributes = dict(original_order.attributes)
+                else:
+                    if self.merge_order_attributes:
+                        _attributes = dict(original_order.attributes)
+                        _attributes.update(attributes)
+                        attributes = _attributes
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -504,7 +511,7 @@ class ImportCSVParserContext(object):
                 note                  = u'\n'.join(note),
                 performance           = performance,
                 organization          = self.organization,
-                operator              = self.order_import_task.operator,
+                operator              = self.operator,
                 sales_segment         = sales_segment,
                 payment_delivery_pair = pdmp,
                 membership            = membership,
@@ -1009,11 +1016,12 @@ class ImportCSVParser(object):
 
 
 class OrderImporter(object):
-    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, session=None, now=None):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, session=None, now=None):
         self.request = request
         self.import_type = int(import_type)
         self.allocation_mode = int(allocation_mode)
         self.entrust_separate_seats = entrust_separate_seats
+        self.merge_order_attributes = merge_order_attributes
         self.session = session
         if now is None:
             now = datetime.now()
@@ -1199,6 +1207,7 @@ class OrderImporter(object):
             import_type=self.import_type,
             allocation_mode=self.allocation_mode,
             entrust_separate_seats=self.entrust_separate_seats,
+            merge_order_attributes=self.merge_order_attributes,
             data=u'{}',
             errors=u'{}',
             count=0

@@ -1151,7 +1151,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         logger.info('reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
         try:
             DBSession.merge(order)
-            refresh_order(request, DBSession, order)
+            # refresh_order(request, DBSession, order)
         except Exception as e:
             import sys
             exc_info = sys.exc_info()
@@ -1873,12 +1873,14 @@ def get_extra_form_fields_for_order(request, order_like):
         return []
     return extra_form_fields
 
-def get_order_attribute_pair_pairs(request, order_like):
+def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False):
     retval = []
+    remaining_attributes = set(order_like.attributes.keys())
     for field_desc in get_extra_form_fields_for_order(request, order_like):
         if field_desc['kind'] == 'description_only':
             continue
-        field_value = order_like.attributes.get(field_desc['name'])
+        field_name = field_desc['name']
+        field_value = order_like.attributes.get(field_name)
         display_value = None
         if field_desc['kind'] in ('text', 'textarea'):
             display_value = field_value
@@ -1917,34 +1919,52 @@ def get_order_attribute_pair_pairs(request, order_like):
         else:
             logger.warning('unsupported kind: %s' % field_desc['kind'])
             display_value = field_value
-
+        remaining_attributes.remove(field_name)
         retval.append(
             (
                 (
-                    field_desc['name'],
+                    field_name,
                     field_value
-                ),
+                    ),
                 (
                     field_desc['display_name'],
                     display_value
-                )
+                    )
                 )
             )
+    if include_undefined_items:
+        for field_name in remaining_attributes:
+            field_value = order_like.attributes[field_name]
+            retval.append(
+                (
+                    (
+                        field_name,
+                        field_value
+                        ),
+                    (
+                        field_name,
+                        field_value
+                        )
+                    )
+                )
     return retval
 
 class OrderAttributeIO(object):
-    def __init__(self, blank_value=u""):
+    def __init__(self, blank_value=u"", include_undefined_items=False):
         self.blank_value = blank_value
+        self.include_undefined_items = include_undefined_items
 
     def blank_if_none(self, v):
         return self.blank_value if v is None else v
 
     def marshal(self, request, order_like):
         retval = []
+        remaining_attributes = set(order_like.attributes.keys())
         for field_desc in get_extra_form_fields_for_order(request, order_like):
             if field_desc['kind'] == 'description_only':
                 continue
-            field_value = order_like.attributes.get(field_desc['name'])
+            field_name = field_desc['name']
+            field_value = order_like.attributes.get(field_name)
             stringized_value = None
             if field_desc['kind'] in ('text', 'textarea'):
                 stringized_value = self.blank_if_none(field_value)
@@ -1954,7 +1974,7 @@ class OrderAttributeIO(object):
                     stringized_value = v[0]['label']
                 else:
                     # 選択肢に該当する値がない => DBに入っている値をそのまま出す
-                    logger.info(u"no corresponding value for %s exists in the schema of field %s" % (field_value, field_desc['name']))
+                    logger.info(u"no corresponding value for %s exists in the schema of field %s" % (field_value, field_name))
                     stringized_value = self.blank_if_none(field_value)
             elif field_desc['kind'] in ('multiple_select', 'checkbox'):
                 field_value = field_value.strip() if field_value is not None else u''
@@ -1969,7 +1989,7 @@ class OrderAttributeIO(object):
                         v = v[0]['label']
                     else:
                         # 選択肢に該当する値がない => DBに入っている値をそのまま出す
-                        logger.info(u"no corresponding value for %s exists in the schema of field %s" % (c, field_desc['name']))
+                        logger.info(u"no corresponding value for %s exists in the schema of field %s" % (c, field_name))
                         v = c
                     stringized_value.append(v)
                 stringized_value = u','.join(stringized_value)
@@ -1989,28 +2009,42 @@ class OrderAttributeIO(object):
                         field_value = parsedate(field_value)
                         stringized_value = u'{0.year:04d}-{0.month:02d}-{0.day:02d}'.format(field_value)
                     except:
-                        logger.info(u"%s cannot be parsed as date, field %s" % (field_value, field_desc['name']))
+                        logger.info(u"%s cannot be parsed as date, field %s" % (field_value, field_name))
                         stringized_value = self.blank_value
                 else:
                     stringized_value = self.blank_value
             else:
                 logger.warning('unsupported kind: %s' % field_desc['kind'])
                 stringized_value = self.blank_if_none(field_value)
-
+            remaining_attributes.remove(field_name)
             retval.append(
                 (
-                    field_desc['name'],
+                    field_name,
                     field_desc['display_name'],
-                    stringized_value
+                    stringized_value,
+                    False,
                     )
                 )
+        if self.include_undefined_items:
+            for field_name in remaining_attributes:
+                field_value = order_like.attributes[field_name]
+                retval.append(
+                    (
+                        field_name,
+                        field_name,
+                        field_value,
+                        True,
+                        )
+                    )
         return retval
 
     def unmarshal(self, request, order_like, params):
+        remaining_attributes = set(params.keys())
         for field_desc in get_extra_form_fields_for_order(request, order_like):
             if field_desc['kind'] == 'description_only':
                 continue
-            v = params.get(field_desc['name'])
+            field_name = field_desc['name']
+            v = params.get(field_name)
             stored_value = None
             if field_desc['kind'] in ('text', 'textarea'):
                 stored_value = v
@@ -2021,7 +2055,7 @@ class OrderAttributeIO(object):
                         break
                 else:
                     # 選択肢に該当する値がない => 値をそのままDBに入れる
-                    logger.info(u"no corresponding label for %s exists in the schema of field %s" % (v, field_desc['name']))
+                    logger.info(u"no corresponding label for %s exists in the schema of field %s" % (v, field_name))
                     stored_value = v
             elif field_desc['kind'] in ('multiple_select', 'checkbox'):
                 if v is not None:
@@ -2032,7 +2066,7 @@ class OrderAttributeIO(object):
                         if i in d:
                             _stored_value.append(d[i])
                         else:
-                            logger.info(u"no corresponding label for %s exists in the schema of field %s" % (i, field_desc['name']))
+                            logger.info(u"no corresponding label for %s exists in the schema of field %s" % (i, field_name))
                             _stored_value.append(i)
                     stored_value = u','.join(_stored_value)
                 else:
@@ -2054,9 +2088,14 @@ class OrderAttributeIO(object):
                             field_value = parsedate(v)
                             stored_value = u'{0.year:04d}-{0.month:02d}-{0.day:02d}'.format(field_value)
                         except:
-                            logger.info(u"%s cannot be parsed as date, field %s" % (v, field_desc['name']), exc_info=True)
+                            logger.info(u"%s cannot be parsed as date, field %s" % (v, field_name), exc_info=True)
                             stored_value = v
             else:
                 logger.warning('unsupported kind: %s' % field_desc['kind'])
                 stored_value = v
-            order_like.attributes[field_desc['name']] = stored_value
+            remaining_attributes.remove(field_name)
+            order_like.attributes[field_name] = stored_value
+        if self.include_undefined_items:
+            for field_name in remaining_attributes:
+                stored_value = params.get(field_name)
+                order_like.attributes[field_name] = stored_value

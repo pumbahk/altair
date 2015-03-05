@@ -61,6 +61,9 @@ def get_allocation_mode_label(allocation_mode):
 def get_order_import_task_status_label(status):
     return import_status_labels.get(int(status), u'?')
 
+def get_merge_order_attributes_label(yesno):
+    return u'更新' if yesno else u'置換'
+
 def order_import_task_stats(task):
     from altair.app.ticketing.models import DBSession as session
     stats = dict()
@@ -69,7 +72,8 @@ def order_import_task_stats(task):
     stats['import_type'] = get_import_type_label(task.import_type)
     # 配席モード
     stats['allocation_mode'] = get_allocation_mode_label(task.allocation_mode)
-    # インポートする予約数
+    # 購入情報属性のマージ
+    stats['merge_order_attributes'] = get_merge_order_attributes_label(task.merge_order_attributes)
 
     def none_to_zero(x):
         return [i or 0 for i in x]
