@@ -2016,7 +2016,8 @@ class OrderAttributeIO(object):
             else:
                 logger.warning('unsupported kind: %s' % field_desc['kind'])
                 stringized_value = self.blank_if_none(field_value)
-            remaining_attributes.remove(field_name)
+            if field_name in remaining_attributes:
+                remaining_attributes.remove(field_name)
             retval.append(
                 (
                     field_name,
@@ -2093,7 +2094,8 @@ class OrderAttributeIO(object):
             else:
                 logger.warning('unsupported kind: %s' % field_desc['kind'])
                 stored_value = v
-            remaining_attributes.remove(field_name)
+            if field_name in remaining_attributes:
+                remaining_attributes.remove(field_name)
             order_like.attributes[field_name] = stored_value
         if self.include_undefined_items:
             for field_name in remaining_attributes:
