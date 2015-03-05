@@ -203,15 +203,23 @@ ${ch.breadcrumbs(
         </div>
       </div>
 
+      <style type="text/css">
+#order_attributes .undefined th {
+  background-color: #888855;
+}
+#order_attributes .undefined td input {
+  background-color: #ffffdd;
+}
+      </style>
       <div class="row-fluid" id="order_attributes">
         <div class="span6">
           <h3>購入情報属性</h3>
           <p>購入情報属性を追加して券面の文面を上書きする事ができます</p>
           <form method="POST" action="${request.route_path("orders.attributes_edit", order_id=order.id)}">
           <table class="table table-striped table-bordered">
-            %for label, key, value, show_only in order_attributes:
+            %for label, key, value, show_only, undefined in order_attributes:
               %if not key.startswith("memo_on_order"):
-              <tr>
+              <tr${u' class="undefined"' if undefined else u''|n}>
                 <th class="span3">${label}</th>
                 %if show_only:
                   <td class="span2">${value}</td>
@@ -266,10 +274,10 @@ ${ch.breadcrumbs(
               $('#order_attributes .add-btn').on('click',function(e){
                 var $form = $(e.currentTarget).parents('form');
                 var attr_name = $form.find('input[name="_candidates"]').val();
-                var row = $('<tr>')
+                var row = $('<tr class="undefined"></tr>')
                 var label = attr_name; // todo:convert
-                row.append($('<th class="span3">').text(label));
-                row.append($('<input>').attr("name", attr_name).attr("data-order_id", "${order.id}").attr("placeholder",attr_name).attr("value", ""));
+                row.append($('<th class="span3"></th>').text(label));
+                row.append($('<td></td>').append($('<input>').attr("name", attr_name).attr("data-order_id", "${order.id}").attr("placeholder",attr_name).attr("value", "")));
                 $form.find('table').append(row);
                 return false;
               });
