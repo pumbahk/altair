@@ -156,7 +156,7 @@ class PerformanceShowView(BaseView):
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': OrderImportForm(always_issue_order_no=True),
+            'form': OrderImportForm(always_issue_order_no=True, merge_order_attributes=True),
             'oh': order_helpers,
             'order_import_tasks':order_import_tasks
         }
@@ -175,6 +175,7 @@ class PerformanceShowView(BaseView):
             self.request,
             import_type=f.import_type.data | (ImportTypeEnum.AlwaysIssueOrderNo.v if f.always_issue_order_no.data else 0),
             allocation_mode=f.allocation_mode.data,
+            merge_order_attributes=f.merge_order_attributes.data,
             session=DBSession
             )
         order_import_task, errors = importer(
