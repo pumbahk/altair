@@ -19,7 +19,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.execute('ALTER TABLE LotEntry ADD COLUMN cart_session_id BINARY(72) NOT NULL, ADD COLUMN user_agent BINARY(200) NOT NULL')
+    op.execute("""ALTER TABLE LotEntry ADD COLUMN cart_session_id VARBINARY(72) NOT NULL DEFAULT '', ADD COLUMN user_agent VARBINARY(200) NOT NULL DEFAULT '';""")
 
 
 def downgrade():
