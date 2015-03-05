@@ -193,13 +193,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     # 同じ order_no で注文を何個も作れるので、その区別に使う
     version_no              = Column(Integer, nullable=False, default=0, server_default='0')
 
-    @property
-    def error_type(self):
-        return 0
-
-    @error_type.setter
-    def error_type(self, value):
-        return
+    error_type              = Column(Integer, nullable=True)
 
     def mark_canceled(self, now=None):
         self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE

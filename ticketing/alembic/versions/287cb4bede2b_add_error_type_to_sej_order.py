@@ -19,9 +19,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    # op.execute('''ALTER TABLE SejOrder ADD COLUMN error_type INTEGER;''')
-    pass
+    op.execute('''ALTER TABLE SejOrder ADD COLUMN error_type INTEGER;''')
 
 def downgrade():
-    # op.execute('''ALTER TABLE SejOrder DROP COLUMN error_type;''')
-    pass
+    op.execute('''ALTER TABLE SejOrder DROP COLUMN error_type;''')
