@@ -617,6 +617,10 @@ class _DummyCart(c_models.CartMixin):
         self.payment_delivery_pair = payment_delivery_pair
 
     @property
+    def performance(self):
+        return self.sales_segment.performance
+
+    @property
     def shipping_address(self):
         return None
 
