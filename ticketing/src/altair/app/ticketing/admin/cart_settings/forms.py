@@ -222,7 +222,7 @@ class CartSettingForm(OurForm):
         label=u'追加フィールド',
         filters=[blank_as_none],
         validators=[
-            DynSwitchDisabled('{type} <> "fc"')
+            DynSwitchDisabled('AND({type} <> "fc", {type} <> "lot")')
             ],
         widget=ExtraFormEditorWidget()
         )
