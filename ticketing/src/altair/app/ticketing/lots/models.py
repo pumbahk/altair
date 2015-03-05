@@ -503,8 +503,21 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
     user = orm.relationship('User', backref='lot_entries')
 
-    cart_session_id = sa.Column(sa.VARBINARY(72), unique=False)
-    user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
+    @property
+    def cart_session_id(self):
+        return ''
+
+    @cart_session_id.setter
+    def cart_session_id(self, value):
+        pass
+
+    @property
+    def user_agent(self):
+        return ''
+
+    @user_agent.setter
+    def user_agent(self, value):
+        pass
 
     #xxx: for order
     @property
