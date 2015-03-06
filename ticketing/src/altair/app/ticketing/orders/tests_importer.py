@@ -1996,7 +1996,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     
     def test_create(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2067,7 +2067,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2266,7 +2266,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_update(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Update.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Update.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2337,7 +2337,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_or_update_fail_creation(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2471,7 +2471,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_or_update_fail_updating_canceled(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         self.existing_orders[0].release()
         self.existing_orders[0].mark_canceled()
         reader = [
@@ -2606,7 +2606,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_ok(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2739,7 +2739,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_defaults_to_organization_setting_1(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2812,7 +2812,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.core.models import EventSetting
         self.event.setting = EventSetting()
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2885,7 +2885,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.core.models import EventSetting
         self.event.setting = EventSetting(cart_setting=self.cart_settings[1])
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2956,7 +2956,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_nonexistent_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -3027,7 +3027,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_duplicate_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
