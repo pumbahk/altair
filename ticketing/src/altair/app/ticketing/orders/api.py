@@ -1919,7 +1919,8 @@ def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=
         else:
             logger.warning('unsupported kind: %s' % field_desc['kind'])
             display_value = field_value
-        remaining_attributes.remove(field_name)
+        if field_name in remaining_attributes:
+            remaining_attributes.remove(field_name)
         retval.append(
             (
                 (
