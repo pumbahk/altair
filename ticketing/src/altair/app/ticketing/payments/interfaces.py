@@ -66,7 +66,7 @@ class IPaymentPreparerFactory(Interface):
 
 class IDeliveryPlugin(Interface):
     """ 配送処理プラグイン """
-    def validate_order(request, order_like):
+    def validate_order(request, order_like, update=False):
         """ バリデーション """
 
     def prepare(request, cart):
@@ -92,7 +92,7 @@ class IDeliveryPlugin(Interface):
 
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
-    def validate_order(request, order_like):
+    def validate_order(request, order_like, update=False):
         """ バリデーション """
 
     def prepare(request, cart):
@@ -121,7 +121,7 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
 
 class IPaymentDeliveryPlugin(Interface):
     """ 決済配送を一度に行うプラグイン"""
-    def validate_order(request, order_like):
+    def validate_order(request, order_like, update=False):
         """ バリデーション """
 
     def prepare(request, cart):
