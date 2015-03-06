@@ -842,7 +842,7 @@ class ImportCSVParserContext(object):
                     Product.name == product_name
                     )
             if performance is not None:
-                q = q.filter(Product.performance_id == performance.id)
+                q = q.join(Product.sales_segment).filter(SalesSegment.performance_id == performance.id)
             product = q.one()
         except NoResultFound:
             raise self.exc_factory(u'商品がありません  商品: %s 販売区分: %s' % (product_name, sales_segment.sales_segment_group.name))
@@ -985,8 +985,6 @@ class ImportCSVParser(object):
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
                     if self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
-                        if product_item.quantity != 1:
-                            raise exc(u'席種「%s」は数受けではなく、自動配席が有効になっていませんが、商品明細の数量が1ではありません' % product_item.stock_type.name)
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
                         seat = context.get_seat(seat_name, product_item)
@@ -998,7 +996,7 @@ class ImportCSVParser(object):
                         raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
-                    if serial > product_item.quantity * item.quantity:
+                    if len(element.tokens) >= product_item.quantity * item.quantity:
                         raise exc(u'商品「%s」の商品明細「%s」の数量 %d × 商品個数 %d を超える数のデータが存在します' % (product.name, product_item.name, product_item.quantity, item.quantity))
                     element.tokens.append(
                         OrderedProductItemToken(
