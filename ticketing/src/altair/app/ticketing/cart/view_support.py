@@ -266,6 +266,23 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             for stock in stocks:
                 actual_stocks_for_stock_type.add(stock)
 
+
+            per_stock_element_descs = {}
+
+            for product_item in product_items_for_product[product.id]:
+                per_stock_element_desc = per_stock_element_descs.get(product_item.stock_id)
+                if per_stock_element_desc is None:
+                    stock = stock_for_product_item[product_item.id]
+                    stock_type_id = stock.stock_type_id
+                    per_stock_element_desc = per_stock_element_descs[product_item.stock_id] = \
+                        dict(
+                            quantity=product_item.quantity,
+                            is_primary_seat_stock_type=(stock_type_id == product.seat_stock_type_id),
+                            is_seat_stock_type=(not stock_types[stock_type_id].quantity_only)
+                            )
+                else:
+                    per_stock_element_desc['quantity'] += product_item.quantity
+
             product_dicts.append(
                 dict(
                     id=product.id,
@@ -281,17 +298,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product,
-                    elements=dict(
-                        (
-                            product_item.stock_id,
-                            dict(
-                                quantity=product_item.quantity,
-                                is_primary_seat_stock_type=(stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id),
-                                is_seat_stock_type=(not stock_types[stock_for_product_item[product_item.id].stock_type_id].quantity_only)
-                                )
-                            )
-                        for product_item in product_items_for_product[product.id]
-                        )
+                    elements=per_stock_element_descs
                     )
                 )
 
