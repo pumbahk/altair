@@ -29,10 +29,18 @@
               </td>
             </tr>
             <tr>
-              <th>Tel</th>
+              <th>Tel1</th>
               <td>
                 % if shipping_address:
                   ${shipping_address.tel_1}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>Tel2</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.tel_2}
                 % endif
               </td>
             </tr>
