@@ -1151,7 +1151,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         logger.info('reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
         try:
             DBSession.merge(order)
-            # refresh_order(request, DBSession, order)
+            refresh_order(request, DBSession, order)
         except Exception as e:
             import sys
             exc_info = sys.exc_info()
