@@ -424,7 +424,7 @@ katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
-def validate_order_like(current_date, order_like):
+def validate_order_like(current_date, order_like, update=False):
     if order_like.shipping_address is not None:
         tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
         if not tel:
@@ -474,14 +474,16 @@ def validate_order_like(current_date, order_like):
         payment_type = int(SejPaymentType.Paid)
 
     if payment_type is not None:
-        if int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
-            if get_payment_due_at(current_date, order_like) < current_date:
-                raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
+        _payment_type = int(payment_type)
+        if _payment_type == int(SejPaymentType.CashOnDelivery) or (not update and _payment_type == int(SejPaymentType.Prepayment)):
+            payment_due_at = get_payment_due_at(current_date, order_like)
+            if payment_due_at < current_date:
+                raise OrderLikeValidationFailure(u'payment_due_at (%s) < now (%s)' % (payment_due_at, current_date) , 'order.payment_due_at')
 
         if int(payment_type) != int(SejPaymentType.PrepaymentOnly):
             ticketing_due_at = get_ticketing_due_at(current_date, order_like)
             if ticketing_due_at is not None and ticketing_due_at < current_date:
-                raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
+                raise OrderLikeValidationFailure(u'issuing_end_at (%s) < now (%s)' % (ticketing_due_at, current_date), 'order.issuing_end_at')
 
     if payment_type is not None and payment_type != int(SejPaymentType.Paid):
         if order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
@@ -491,8 +493,8 @@ def validate_order_like(current_date, order_like):
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """
@@ -571,8 +573,8 @@ class SejDeliveryPluginBase(object):
 
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(SejDeliveryPluginBase):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """
@@ -650,8 +652,8 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """

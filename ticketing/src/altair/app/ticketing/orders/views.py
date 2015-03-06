@@ -1158,10 +1158,10 @@ class OrderDetailView(OrderBaseView):
             payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, order.payment_delivery_method_pair)
             try:
                 if payment_delivery_plugin is not None:
-                    payment_delivery_plugin.validate_order(self.request, order)
+                    payment_delivery_plugin.validate_order(self.request, order, update=True)
                 else:
-                    payment_plugin.validate_order(self.request, order)
-                    delivery_plugin.validate_order(self.request, order)
+                    payment_plugin.validate_order(self.request, order, update=True)
+                    delivery_plugin.validate_order(self.request, order, update=True)
                 order.save()
                 refresh_order(self.request, DBSession, order)
                 self.request.session.flash(u'予約情報を保存しました')

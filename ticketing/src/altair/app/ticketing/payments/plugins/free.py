@@ -63,7 +63,7 @@ def lot_payment_notice_viewlet(context, request):
 class FreePaymentPlugin(object):
     """ 窓口支払い番号プラグイン"""
 
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         if order_like.total_amount != 0:
             raise OrderLikeValidationFailure(u'total_amount is not zero', 'order.total_amount')
 

@@ -431,7 +431,7 @@ class ImportCSVParserContext(object):
             payment_start_at = self.parse_date(payment_start_at_str, u'支払開始日時が不正です')
 
             payment_due_at_str = row.get(u'order.payment_due_at')
-            payment_due_at_str = self.parse_date(payment_due_at_str, u'支払期限が不正です')
+            payment_due_at = self.parse_date(payment_due_at_str, u'支払期限が不正です')
 
             shipping_address = self.create_shipping_address(row, user)
 
@@ -1186,7 +1186,7 @@ class OrderImporter(object):
                 if plugin is None:
                     continue
                 try:
-                    plugin.validate_order(self.request, cart)
+                    plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
                 except OrderLikeValidationFailure as e:
                     add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
 
