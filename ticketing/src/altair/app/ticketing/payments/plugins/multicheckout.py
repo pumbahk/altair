@@ -139,7 +139,7 @@ class MultiCheckoutPlugin(object):
             sales_cancel_moratorium = timedelta()
         self.sales_cancel_moratorium = sales_cancel_moratorium
 
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         if order_like.total_amount <= 0:
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 

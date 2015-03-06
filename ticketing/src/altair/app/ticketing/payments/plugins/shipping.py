@@ -42,7 +42,7 @@ def deliver_completion_viewlet(context, request):
     return dict(shipping_address=order.shipping_address, order=order)
 
 class ShippingDeliveryPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?""" 
 
     def prepare(self, request, cart):

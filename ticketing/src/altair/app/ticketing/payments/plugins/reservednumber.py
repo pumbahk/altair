@@ -76,7 +76,7 @@ def reserved_number_payment_confirm_viewlet(context, request):
 class ReservedNumberDeliveryPlugin(object):
     """ 窓口引き換え予約番号プラグイン"""
 
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?""" 
 
     def prepare(self, request, cart):
@@ -170,7 +170,7 @@ def rand_string(seed, length):
 class ReservedNumberPaymentPlugin(object):
     """ 窓口支払い番号プラグイン"""
 
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?""" 
 
     def prepare(self, request, cart):

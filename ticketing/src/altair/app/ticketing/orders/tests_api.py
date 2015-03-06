@@ -9,16 +9,16 @@ from altair.app.ticketing.core.testing import CoreTestMixin
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class DummyPaymentDeliveryPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         return
 
 class DummyPaymentPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         return
 
 
 class DummyDeliveryPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         return
 
 

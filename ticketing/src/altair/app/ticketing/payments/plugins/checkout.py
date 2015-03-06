@@ -85,7 +85,7 @@ ANSHIN_CHECKOUT_MINIMUM_AMOUNT = Decimal('100')
 
 @implementer(IPaymentPlugin)
 class CheckoutPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         for item in order_like.items:
             if item.price < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
                 raise OrderLikeValidationFailure(u'product price too low', 'ordered_product.price')

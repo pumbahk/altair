@@ -768,7 +768,7 @@ def recalculate_total_amount_for_order(request, order_like):
             [ (item.product, item.price, item.quantity) for item in order_like.items ]
             )
 
-def validate_order(request, order_like, ref):
+def validate_order(request, order_like, ref, update=False):
     retval = []
     sum_quantity = dict()
 
@@ -837,7 +837,7 @@ def validate_order(request, order_like, ref):
         plugins = [payment_plugin, delivery_plugin]
     for plugin in plugins:
         try:
-            plugin.validate_order(request, order_like)
+            plugin.validate_order(request, order_like, update=update)
         except OrderLikeValidationFailure as e:
             from .export import japanese_columns
             retval.append(OrderCreationError(
@@ -1071,7 +1071,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 entrust_separate_seats=entrust_separate_seats,
                 default_channel=channel_for_new_orders
                 )
-            errors_for_proto_order.extend(validate_order(request, new_order, proto_order.ref))
+            errors_for_proto_order.extend(validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
         except NotEnoughStockException as e:
             import sys
             logger.info('cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy), exc_info=sys.exc_info())
@@ -1214,7 +1214,7 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
             # 次に ProtoOrder から Order を生成して
             new_order = create_order_from_proto_order(request, reserving, stocker, proto_order, prev_order)
             # 在庫の状態など正しいか判定する
-            errors.extend(validate_order(request, new_order, proto_order.ref))
+            errors.extend(validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
         except NotEnoughStockException as e:
             import sys
             logger.info('cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy), exc_info=sys.exc_info())
