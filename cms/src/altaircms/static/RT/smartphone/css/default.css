@@ -874,3 +874,10 @@ h2.glitter.red:after {
 .header-navigation {
   margin-bottom: 15px;
 }
+
+.img_center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
