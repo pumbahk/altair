@@ -1125,6 +1125,549 @@ class ImportCSVParserTest(unittest.TestCase, CoreTestMixin):
         self.assertEqual(len(proto_orders), 0)
 
     @mock.patch('altair.app.ticketing.core.api.get_next_order_no')
+    def test_create_with_product_item_having_multiple_unit(self, get_next_order_no):
+        from .models import OrderImportTask, ImportTypeEnum, ImportStatusEnum, AllocationModeEnum
+        from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_PAYMENT_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+        from altair.app.ticketing.core.models import Product, ProductItem
+        set_product = Product(
+            name=u'セット商品',
+            price=10,
+            sales_segment=self.products[0].sales_segment,
+            items=[
+                ProductItem(
+                    name=u'セット商品',
+                    price=5,
+                    quantity=2,
+                    stock=self.products[0].items[0].stock,
+                    ticket_bundle=self.products[0].items[0].ticket_bundle
+                    )
+                ]
+            )
+        self.session.add(set_product)
+        task = OrderImportTask(
+            organization=self.organization,
+            operator=self.operator,
+            import_type=ImportTypeEnum.Create.v,
+            allocation_mode=AllocationModeEnum.NoAutoAllocation.v,
+            status=ImportStatusEnum.Waiting.v,
+            count=0
+            )
+        get_next_order_no.return_value = 'XX0000000000'
+        target = self._makeOne(self.request, self.session, task, self.organization, performance=self.performance)
+        proto_orders, errors = target([
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'2',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-0',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'2',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-1',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'2',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-2',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'2',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-3',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                }
+            ])
+        self.assertEqual(errors, {})
+        self.assertEqual(len(proto_orders), 1)
+        stock_a_quantity = self.stocks[0].stock_status.quantity
+        proto_order = iter(proto_orders.values()).next()
+        self.assertTrue(get_next_order_no.called_with(self.request, self.organization))
+        self.assertEqual(proto_order.order_no, 'XX0000000000')
+        self.assertEqual(len(proto_order.items), 1)
+        self.assertEqual(proto_order.items[0].product, set_product)
+        self.assertEqual(len(proto_order.items[0].elements), 1)
+        self.assertEqual(proto_order.items[0].elements[0].product_item, set_product.items[0])
+        self.assertEqual(len(proto_order.items[0].elements[0].seats), 4)
+        self.assertEqual(len(proto_order.items[0].elements[0].tokens), 4)
+        self.assertEqual(proto_order.note, u'メモ')
+        self.assertEqual(proto_order.payment_delivery_pair.payment_method, self.payment_methods[RESERVE_NUMBER_PAYMENT_PLUGIN_ID])
+        self.assertEqual(proto_order.payment_delivery_pair.delivery_method, self.delivery_methods[RESERVE_NUMBER_DELIVERY_PLUGIN_ID])
+        self.assertEqual(proto_order.shipping_address.last_name,  u'配送先姓')
+        self.assertEqual(proto_order.shipping_address.first_name,  u'配送先名')
+        self.assertEqual(proto_order.shipping_address.last_name_kana,  u'配送先姓(カナ)')
+        self.assertEqual(proto_order.shipping_address.first_name_kana,  u'配送先名(カナ)')
+        self.assertEqual(proto_order.shipping_address.zip,  u'郵便番号')
+        self.assertEqual(proto_order.shipping_address.country,  u'国')
+        self.assertEqual(proto_order.shipping_address.prefecture,  u'都道府県')
+        self.assertEqual(proto_order.shipping_address.city,  u'市区町村')
+        self.assertEqual(proto_order.shipping_address.address_1,  u'住所1')
+        self.assertEqual(proto_order.shipping_address.address_2,  u'住所2')
+        self.assertEqual(proto_order.shipping_address.tel_1,  u'電話番号1')
+        self.assertEqual(proto_order.shipping_address.tel_2,  u'電話番号2')
+        self.assertEqual(proto_order.shipping_address.fax,  u'FAX')
+        self.assertEqual(proto_order.shipping_address.email_1,  u'メールアドレス1')
+        self.assertEqual(proto_order.shipping_address.email_2,  u'メールアドレス2')
+        self.assertEqual(proto_order.attributes[u'aaa'], u'bbb')
+        self.assertEqual(proto_order.attributes[u'bbb'], u'ccc')
+        self.assertEqual(self.stocks[0].stock_status.quantity, stock_a_quantity)
+    
+    @mock.patch('altair.app.ticketing.core.api.get_next_order_no')
+    def test_create_fail_with_product_item_having_multiple_unit_too_many_entries(self, get_next_order_no):
+        from .models import OrderImportTask, ImportTypeEnum, ImportStatusEnum, AllocationModeEnum
+        from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_PAYMENT_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+        from altair.app.ticketing.core.models import Product, ProductItem
+        set_product = Product(
+            name=u'セット商品',
+            price=10,
+            sales_segment=self.products[0].sales_segment,
+            items=[
+                ProductItem(
+                    name=u'セット商品',
+                    price=5,
+                    quantity=2,
+                    stock=self.products[0].items[0].stock,
+                    ticket_bundle=self.products[0].items[0].ticket_bundle
+                    )
+                ]
+            )
+        self.session.add(set_product)
+        task = OrderImportTask(
+            organization=self.organization,
+            operator=self.operator,
+            import_type=ImportTypeEnum.Create.v,
+            allocation_mode=AllocationModeEnum.NoAutoAllocation.v,
+            status=ImportStatusEnum.Waiting.v,
+            count=0
+            )
+        get_next_order_no.return_value = 'XX0000000000'
+        target = self._makeOne(self.request, self.session, task, self.organization, performance=self.performance)
+        proto_orders, errors = target([
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'1',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-0',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'1',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-1',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            {
+                u'order.order_no': u'予約番号',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'1',
+                u'ordered_product.product.name': set_product.name,
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': set_product.items[0].name,
+                u'ordered_product_item.price': u'5',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-2',
+                u'attribute[aaa]': u'bbb',
+                u'attribute[bbb]': u'ccc',
+                },
+            ])
+        self.assertEqual(errors[u'予約番号'].message, u'商品「セット商品」の商品明細「セット商品」の数量 2 × 商品個数 1 を超える数のデータが存在します')
+        self.assertEqual(len(proto_orders), 0)
+
+
+    @mock.patch('altair.app.ticketing.core.api.get_next_order_no')
     def test_create_or_update_no_errors(self, get_next_order_no):
         from .models import OrderImportTask, ImportTypeEnum, ImportStatusEnum, AllocationModeEnum
         from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_PAYMENT_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
@@ -1996,7 +2539,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     
     def test_create(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2067,7 +2610,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2266,7 +2809,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_update(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Update.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Update.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2337,7 +2880,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_or_update_fail_creation(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'YY0000000000',
@@ -2471,7 +3014,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_create_or_update_fail_updating_canceled(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.orders.exceptions import MassOrderCreationError
-        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.CreateOrUpdate.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         self.existing_orders[0].release()
         self.existing_orders[0].mark_canceled()
         reader = [
@@ -2606,7 +3149,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_ok(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2739,7 +3282,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_defaults_to_organization_setting_1(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2812,7 +3355,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.core.models import EventSetting
         self.event.setting = EventSetting()
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2885,7 +3428,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.core.models import EventSetting
         self.event.setting = EventSetting(cart_setting=self.cart_settings[1])
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -2956,7 +3499,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_nonexistent_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
@@ -3027,7 +3570,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
 
     def test_cart_setting_duplicate_fail(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
-        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, self.session)
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
                 u'order.order_no': u'XX0000000000',
