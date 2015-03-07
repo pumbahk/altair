@@ -201,7 +201,7 @@ class OrdersAPIView(BaseView):
         if formdata['public']:
             query = query.filter(SalesSegmentGroup.public == bool(formdata['public']))
 
-        sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
+        sales_segment_groups = [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
@@ -1158,10 +1158,10 @@ class OrderDetailView(OrderBaseView):
             payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, order.payment_delivery_method_pair)
             try:
                 if payment_delivery_plugin is not None:
-                    payment_delivery_plugin.validate_order(self.request, order)
+                    payment_delivery_plugin.validate_order(self.request, order, update=True)
                 else:
-                    payment_plugin.validate_order(self.request, order)
-                    delivery_plugin.validate_order(self.request, order)
+                    payment_plugin.validate_order(self.request, order, update=True)
+                    delivery_plugin.validate_order(self.request, order, update=True)
                 order.save()
                 refresh_order(self.request, DBSession, order)
                 self.request.session.flash(u'予約情報を保存しました')
@@ -1476,7 +1476,7 @@ class OrderDetailView(OrderBaseView):
             }))
         ## todo:validation?
         params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
-        OrderAttributeIO().unmarshal(self.request, order, params)
+        OrderAttributeIO(include_undefined_items=True).unmarshal(self.request, order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

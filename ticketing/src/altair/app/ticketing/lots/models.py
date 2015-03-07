@@ -19,6 +19,7 @@ import logging
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.associationproxy import association_proxy
 from altair.app.ticketing.core.interfaces import IPurchase
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -486,6 +487,25 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_entries')
 
+    _attributes = orm.relationship("LotEntryAttribute", backref='lot_entry', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: LotEntryAttribute(name=k, value=v))
+    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
+    birthday = sa.Column(sa.Date)
+    memo = sa.Column(sa.UnicodeText)
+
+    canceled_at = sa.Column(sa.DateTime())
+    ordered_mail_sent_at = sa.Column(sa.DateTime())
+
+    browserid = sa.Column(sa.String(40))
+
+    closed_at = sa.Column(sa.DateTime())
+
+    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
+    user = orm.relationship('User', backref='lot_entries')
+
+    cart_session_id = sa.Column(sa.VARBINARY(72), unique=False)
+    user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
+
     #xxx: for order
     @property
     def order_no(self):
@@ -503,20 +523,6 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def order_no(self):
         return self.order.order_no
-
-    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
-    birthday = sa.Column(sa.Date)
-    memo = sa.Column(sa.UnicodeText)
-
-    canceled_at = sa.Column(sa.DateTime())
-    ordered_mail_sent_at = sa.Column(sa.DateTime())
-
-    browserid = sa.Column(sa.String(40))
-
-    closed_at = sa.Column(sa.DateTime())
-
-    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
-    user = orm.relationship('User', backref='lot_entries')
 
     # begin [order amount fee interface]
     @property
@@ -649,6 +655,14 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotRejectWork.lot_entry_no==self.entry_no
         ).count()
 
+    def get_lot_entry_attribute_pair_pairs(self, request):
+        from altair.app.ticketing.orders.api import get_order_attribute_pair_pairs
+        return get_order_attribute_pair_pairs(request, self)
+
+    @property
+    def cart_setting(self):
+        return self.lot.event.setting.cart_setting or self.organization.setting.cart_setting
+
 
 class LotEntryProductSupport(object):
     """ 表示と実モデルで利用する金額計算プロパティ """
@@ -710,6 +724,7 @@ class LotEntryWishSupport(object):
     def special_fee(self):
         return self.lot_entry.sales_segment.get_special_fee(self.lot_entry.payment_delivery_method_pair,
                                                             self.product_quantities)
+
 
 class TemporaryLotEntry(object):
     def __init__(self, payment_delivery_method_pair, sales_segment):
@@ -935,3 +950,15 @@ class LotWorkHistory(Base, WithTimestamp):
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_work_histories')
+
+
+class LotEntryAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """抽選で保持するための予約の属性
+
+    ExtraFormで入れた値を保持するためのテーブルです。
+    nameには属性名が入ります。valueには購入者が入力したExtraFormの値が入ります。
+    """
+    __tablename__ = "LotEntryAttribute"
+    lot_entry_id = sa.Column(Identifier, sa.ForeignKey('LotEntry.id'), primary_key=True, nullable=False)
+    name = sa.Column(sa.Unicode(255), primary_key=True, nullable=False)
+    value = sa.Column(sa.Unicode(1023))

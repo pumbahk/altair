@@ -80,7 +80,7 @@ def delivery_notice_viewlet(context, request):
     return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("D", "notice")))
 
 class QRTicketDeliveryPlugin(object):
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?""" 
 
     def prepare(self, request, cart):

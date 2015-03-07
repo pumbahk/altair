@@ -21,6 +21,8 @@
 <dd>${event.title}</dd>
 <dt>申込受付期間</dt>
 <dd>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</dd>
+<dt>抽選結果発表予定日</dt>
+<dd>${h.announce_time_label(lot)}</dd>
 % if sales_segment.max_quantity:
 <dt>制限枚数</dt>
 <dd>1希望の申込で${sales_segment.max_quantity}枚まで</dd>

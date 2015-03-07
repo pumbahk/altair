@@ -288,6 +288,8 @@ class ImportCSVParserContext(object):
         self.orders_will_be_created = bool(order_import_task.import_type & ImportTypeEnum.Create.v)
         self.orders_will_be_updated = bool(order_import_task.import_type & ImportTypeEnum.Update.v)
         self.always_issue_order_no = bool(order_import_task.import_type & ImportTypeEnum.AlwaysIssueOrderNo.v)
+        self.merge_order_attributes = order_import_task.merge_order_attributes
+        self.operator = order_import_task.operator
 
         # csvファイルから読み込んだ予約 {order_no:cart}
         self.carts = OrderedDict()
@@ -429,7 +431,7 @@ class ImportCSVParserContext(object):
             payment_start_at = self.parse_date(payment_start_at_str, u'支払開始日時が不正です')
 
             payment_due_at_str = row.get(u'order.payment_due_at')
-            payment_due_at_str = self.parse_date(payment_due_at_str, u'支払期限が不正です')
+            payment_due_at = self.parse_date(payment_due_at_str, u'支払期限が不正です')
 
             shipping_address = self.create_shipping_address(row, user)
 
@@ -485,6 +487,11 @@ class ImportCSVParserContext(object):
                                 )
                 if attributes is None:
                     attributes = dict(original_order.attributes)
+                else:
+                    if self.merge_order_attributes:
+                        _attributes = dict(original_order.attributes)
+                        _attributes.update(attributes)
+                        attributes = _attributes
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -504,7 +511,7 @@ class ImportCSVParserContext(object):
                 note                  = u'\n'.join(note),
                 performance           = performance,
                 organization          = self.organization,
-                operator              = self.order_import_task.operator,
+                operator              = self.operator,
                 sales_segment         = sales_segment,
                 payment_delivery_pair = pdmp,
                 membership            = membership,
@@ -536,6 +543,8 @@ class ImportCSVParserContext(object):
         if price is None:
             price = product.price
         quantity = self.parse_int(row.get(u'ordered_product.quantity'), u'商品個数が不正です')
+        if quantity is None:
+            raise self.exc_factory(u'商品個数が指定されていません')
         if ordered_product is None:
             ordered_product = ordered_product_for_product[product.id] = OrderedProduct(
                 proto_order           = proto_order,
@@ -557,6 +566,8 @@ class ImportCSVParserContext(object):
         ordered_product_item = ordered_product_item_for_product_item.get(product_item.id) 
         price = self.parse_decimal(row.get(u'ordered_product_item.price'), u'商品明細単価が不正です')
         element_quantity_for_row = self.parse_int(row.get(u'ordered_product_item.quantity'), u'商品明細個数が不正です')
+        if element_quantity_for_row is None:
+            raise self.exc_factory(u'商品明細個数が指定されていません')
         if ordered_product_item is None:
             if price is None:
                 price = product_item.price
@@ -831,7 +842,7 @@ class ImportCSVParserContext(object):
                     Product.name == product_name
                     )
             if performance is not None:
-                q = q.filter(Product.performance_id == performance.id)
+                q = q.join(Product.sales_segment).filter(SalesSegment.performance_id == performance.id)
             product = q.one()
         except NoResultFound:
             raise self.exc_factory(u'商品がありません  商品: %s 販売区分: %s' % (product_name, sales_segment.sales_segment_group.name))
@@ -974,8 +985,6 @@ class ImportCSVParser(object):
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
                     if self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
-                        if product_item.quantity != 1:
-                            raise exc(u'席種「%s」は数受けではなく、自動配席が有効になっていませんが、商品明細の数量が1ではありません' % product_item.stock_type.name)
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
                         seat = context.get_seat(seat_name, product_item)
@@ -987,7 +996,7 @@ class ImportCSVParser(object):
                         raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
-                    if serial > product_item.quantity * item.quantity:
+                    if len(element.tokens) >= product_item.quantity * item.quantity:
                         raise exc(u'商品「%s」の商品明細「%s」の数量 %d × 商品個数 %d を超える数のデータが存在します' % (product.name, product_item.name, product_item.quantity, item.quantity))
                     element.tokens.append(
                         OrderedProductItemToken(
@@ -1005,11 +1014,12 @@ class ImportCSVParser(object):
 
 
 class OrderImporter(object):
-    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, session=None, now=None):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, session=None, now=None):
         self.request = request
         self.import_type = int(import_type)
         self.allocation_mode = int(allocation_mode)
         self.entrust_separate_seats = entrust_separate_seats
+        self.merge_order_attributes = merge_order_attributes
         self.session = session
         if now is None:
             now = datetime.now()
@@ -1176,7 +1186,7 @@ class OrderImporter(object):
                 if plugin is None:
                     continue
                 try:
-                    plugin.validate_order(self.request, cart)
+                    plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
                 except OrderLikeValidationFailure as e:
                     add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
 
@@ -1195,6 +1205,7 @@ class OrderImporter(object):
             import_type=self.import_type,
             allocation_mode=self.allocation_mode,
             entrust_separate_seats=self.entrust_separate_seats,
+            merge_order_attributes=self.merge_order_attributes,
             data=u'{}',
             errors=u'{}',
             count=0

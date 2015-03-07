@@ -122,8 +122,8 @@ class FCIndexView(object):
 
     def product_form(self, params=None, data=None):
         def form_factory(formdata, name_builder, **kwargs):
-            from .schemas import extra_form_type_map
-            extra_form_type = extra_form_type_map[self.context.cart_setting.type]
+            from altair.app.ticketing.cart.view_support import get_extra_form_class
+            extra_form_type = get_extra_form_class(self.request, self.context.cart_setting)
             form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
             form.member_type.choices = self.build_products_dict()
             return form

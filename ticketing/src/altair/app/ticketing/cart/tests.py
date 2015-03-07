@@ -23,7 +23,7 @@ class TestIt(unittest.TestCase):
                  'altair.cart.completion_page.temporary_store.cookie_name': '',
                  'altair.cart.completion_page.temporary_store.secret': '',
                  }
-    
+
     def setUp(self):
         self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
@@ -48,6 +48,7 @@ class TestIt(unittest.TestCase):
 
         self.assertEqual(result, "http://example.com/payment/3d")
 
+
 class CartTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -57,7 +58,6 @@ class CartTests(unittest.TestCase):
         _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
-
 
     def _getTarget(self):
         from . import models
@@ -332,7 +332,7 @@ class CartedProductItemTests(unittest.TestCase):
 class TicketingCartResourceTestBase(object):
     _settings = {'altair.cart.completion_page.temporary_store.cookie_name': '',
                  'altair.cart.completion_page.temporary_store.secret': '',
-                 }        
+                 }
     def setUp(self):
         self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
@@ -690,7 +690,7 @@ class TicketingCartResourceTestBase(object):
             target.check_order_limit()
             self.assert_(True)
         except:
-            self.fail() 
+            self.fail()
 
     def _add_orders_email(self, order_limit=None, max_quantity_per_user=None):
         from .models import Cart
@@ -1039,8 +1039,9 @@ class ReserveViewTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_order_items_empty(self):
+        context = mock.Mock()
         request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
         result = target.ordered_items
 
         self.assertEqual(list(result), [])
@@ -1057,8 +1058,9 @@ class ReserveViewTests(unittest.TestCase):
             "product-a": 'x',
             "product-2": '20',
             }
+        context = mock.Mock()
         request = DummyRequest(params=params)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
         result = target.iter_ordered_items()
 
         self.assertEqual(list(result), [("1", 10), ("2", 20)])
@@ -1075,8 +1077,9 @@ class ReserveViewTests(unittest.TestCase):
             "product-a": 'x',
             "product-2": '20',
             }
+        context = mock.Mock()
         request = DummyRequest(params=params)
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
         result = target.ordered_items
 
         self.assertEqual(list(result), [(p1, 10), (p2, 20)])
@@ -1210,8 +1213,8 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], IStocker, "", Stocker)
         request.registry.adapters.register([IRequest], IReserving, "", Reserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
-        request.context = EventOrientedTicketingCartResource(request)
-        target = self._makeOne(request)
+        context = request.context = EventOrientedTicketingCartResource(request)
+        target = self._makeOne(context, request)
         result = target.reserve()
 
         import transaction
@@ -1221,8 +1224,8 @@ class ReserveViewTests(unittest.TestCase):
             'cart': {
                 'products': [
                     {
-                        'name': u'S席', 
-                        'price': 100, 
+                        'name': u'S席',
+                        'price': 100,
                         'quantity': 2,
                         'seats': [{'l0_id': 's0', 'name': u''},
                                   {'l0_id': 's1', 'name': u''}],
@@ -1356,8 +1359,8 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], IStocker, "", Stocker)
         request.registry.adapters.register([IRequest], IReserving, "", Reserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
-        request.context = EventOrientedTicketingCartResource(request)
-        target = self._makeOne(request)
+        context = request.context = EventOrientedTicketingCartResource(request)
+        target = self._makeOne(context, request)
         result = target.reserve()
 
         self.assertEqual(result, dict(reason='stock', result='NG'))
@@ -1379,8 +1382,9 @@ class ReserveViewTests(unittest.TestCase):
                 for k, v in self.params:
                     yield k, v
 
+        context = mock.Mock()
         request = DummyRequest(params=DummyParams(params))
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
         result = list(target.iter_ordered_items())
 
         self.assertEqual(len(result), 2)
@@ -1389,6 +1393,16 @@ class ReserveViewTests(unittest.TestCase):
 
 
 class PaymentViewTests(unittest.TestCase):
+
+    def _add_cart(self, cart_session_id, performance, created_at=None):
+        from datetime import datetime
+        from . import models
+        if created_at is None:
+            created_at = datetime.now()
+        cart = models.Cart(cart_session_id=cart_session_id, created_at=created_at, performance=performance, cart_setting=models.CartSetting(type='standard'))
+        self.session.add(cart)
+        return cart
+
 
     def _getTarget(self):
         from . import views
@@ -1432,21 +1446,30 @@ class PaymentViewTests(unittest.TestCase):
         with self.assertRaises(NoCartError):
             target.get()
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.cart.api.check_if_payment_delivery_method_pair_is_applicable')
+    def test_it(self, check_if_payment_delivery_method_pair_is_applicable):
+        check_if_payment_delivery_method_pair_is_applicable.return_value = True
         from datetime import datetime, timedelta
+        from altair.app.ticketing.core.models import Performance, Event, Organization, PaymentDeliveryMethodPair
         self._register_starndard_payment_methods()
         request = DummyRequest()
-        request.registry.settings = { 'altair_cart.expire_time': "15" }
+        request.registry.settings = {'altair_cart.expire_time': "15"}
 
-        payment_method = testing.DummyModel()
+        payment_method = testing.DummyModel(payment_plugin_id=1)
+        delivery_method = testing.DummyModel(delivery_plugin_id=1)
         payment_method.public = True
-        
-        payment_delivery_method = testing.DummyModel()
-        payment_delivery_method.payment_method = payment_method
+
+        payment_delivery_method_pair = testing.DummyModel()
+        payment_delivery_method_pair.payment_method = payment_method
+        payment_delivery_method_pair.delivery_method = delivery_method
+
+        performance = Performance(event=Event(organization=Organization(id=1, code='XX', short_name='XX')))
+        cart = self._add_cart(u'x', performance=performance)
 
         cart_setting = testing.DummyModel(type='standard', flavors={}, default_prefecture=u'沖縄県')
         context = request.context = testing.DummyResource(
             request=request,
+            read_only_cart=cart,
             cart_setting=cart_setting,
             cart=testing.DummyModel(
                 cart_setting=cart_setting,
@@ -1459,7 +1482,7 @@ class PaymentViewTests(unittest.TestCase):
                 is_expired=lambda minutes, now: False,
                 finished_at=None,
                 ),
-            available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method],
+            available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method_pair],
             authenticated_user = lambda: {
                 'auth_type': 'rakuten',
                 'claimed_id': 'http://ticketstar.example.com/user/1',
@@ -1467,15 +1490,17 @@ class PaymentViewTests(unittest.TestCase):
                 'membership': 'membership',
                 'organization_id': 1
                 },
-            get_payment_delivery_method_pair = lambda: None,
+            get_payment_delivery_method_pair = lambda: payment_delivery_method_pair,
             sales_segment = testing.DummyModel()
             )
         target = self._makeOne(context, request)
         result = target.get()
-        self.assertEqual(result['payment_delivery_methods'], [payment_delivery_method])
+        self.assertEqual(result['payment_delivery_methods'], [payment_delivery_method_pair])
+
 
 class PaymentContext(testing.DummyResource):
     pass
+
 
 class DummyViewFactory(object):
     def __init__(self, response_text):
@@ -1511,5 +1536,3 @@ class FormRendererTests(unittest.TestCase):
         result = target.errors("req_text")
 
         self.assertEqual(result, "<ul>\n<li>This field is required.</li>\n</ul>")
-
-

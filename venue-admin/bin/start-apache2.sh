@@ -21,4 +21,7 @@ APACHE_PID_FILE=${SERVER_ROOT}/var/apache2.pid \
 APACHE_LOG_DIR=${SERVER_ROOT}/var/log \
 APACHE_RUN_USER=${USER} \
 APACHE_RUN_GROUP=${GROUP} \
+LANG=ja_JP.UTF-8 \
+LC_ALL=ja_JP.UTF-8 \
+LC_CTYPE=ja_JP.UTF-8 \
 /usr/sbin/apache2 -f ${SERVER_ROOT}/etc/apache2.conf -d ${SERVER_ROOT} -DFOREGROUND

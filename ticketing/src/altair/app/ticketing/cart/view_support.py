@@ -21,10 +21,13 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 from altair.formhelpers.form import OurDynamicForm
 from altair.formhelpers import widgets
-from altair.formhelpers.widgets.datetime import build_date_input_select_japanese_japan
 from altair.formhelpers import fields
 from altair.formhelpers.filters import text_type_but_none_if_not_given
 from altair.formhelpers.validators import Required, DynSwitchDisabled, HIRAGANAS_REGEXP, KATAKANAS_REGEXP, ALPHABETS_REGEXP, NUMERICS_REGEXP
+from altair.formhelpers.widgets.datetime import (
+    DateFieldBuilder,
+    DateSelectFormElementBuilder,
+    )
 from wtforms.validators import Optional, Regexp
 from altair.formhelpers.translations import Translations
 from markupsafe import Markup
@@ -44,6 +47,8 @@ from .resources import PerformanceOrientedTicketingCartResource
 from .interfaces import ICartResource
 
 logger = logging.getLogger(__name__)
+
+build_date_input_select = DateFieldBuilder(DateSelectFormElementBuilder(placeholders=True))
 
 class IndexViewMixin(object):
     def __init__(self):
@@ -261,12 +266,29 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             for stock in stocks:
                 actual_stocks_for_stock_type.add(stock)
 
+
+            per_stock_element_descs = {}
+
+            for product_item in product_items_for_product[product.id]:
+                per_stock_element_desc = per_stock_element_descs.get(product_item.stock_id)
+                if per_stock_element_desc is None:
+                    stock = stock_for_product_item[product_item.id]
+                    stock_type_id = stock.stock_type_id
+                    per_stock_element_desc = per_stock_element_descs[product_item.stock_id] = \
+                        dict(
+                            quantity=product_item.quantity,
+                            is_primary_seat_stock_type=(stock_type_id == product.seat_stock_type_id),
+                            is_seat_stock_type=(not stock_types[stock_type_id].quantity_only)
+                            )
+                else:
+                    per_stock_element_desc['quantity'] += product_item.quantity
+
             product_dicts.append(
                 dict(
                     id=product.id,
                     name=product.name,
                     description=product.description,
-                    price=h.format_number(product.price, ","), 
+                    price=h.format_number(product.price, ","),
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
@@ -276,17 +298,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product,
-                    elements=dict(
-                        (
-                            product_item.stock_id,
-                            dict(
-                                quantity=product_item.quantity,
-                                is_primary_seat_stock_type=(stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id),
-                                is_seat_stock_type=(not stock_types[stock_for_product_item[product_item.id].stock_type_id].quantity_only)
-                                )
-                            )
-                        for product_item in product_items_for_product[product.id]
-                        )
+                    elements=per_stock_element_descs
                     )
                 )
 
@@ -523,9 +535,10 @@ class DynamicFormBuilder(object):
             description=field_desc['description'] and Markup(field_desc['description']),
             note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
-            default=date.today(),
+            default=(date.today() if field_desc['required'] else None),
+            missing_value_defaults=dict(year=None, month=None, day=None),
             widget=widgets.OurDateWidget(
-                input_builder=build_date_input_select_japanese_japan
+                input_builder=build_date_input_select
                 )
             )
 
@@ -555,13 +568,17 @@ class DynamicFormBuilder(object):
         return unbound_fields
 
     def __call__(self, request, extra_form_fields, formdata=None, **kwargs):
+        """
+        :param request: リクエストオブジェクト
+        :param list extra_form_fields: ExtraFormのリスト
+        """
         unbound_fields = self.unbound_fields(extra_form_fields)
         form = OurDynamicForm(
             formdata=formdata,
             _fields=unbound_fields,
             _translations=Translations(),
             name_builder=lambda name: u'extra_field[%s]' % name,
-            **kwargs 
+            **kwargs
             )
         fields = []
         for field_desc in extra_form_fields:
@@ -697,33 +714,33 @@ def build_extra_form_fields_from_form(context, request, form_class, excludes=())
             'description': description,
             'note': note,
             })
-    return retval    
+    return retval
 
-def get_extra_form_class(request, event):
-    if event.setting is None:
-        return None
-    cart_setting = event.setting.cart_setting
-    if cart_setting is None:
-        return None
+def get_extra_form_class(request, cart_setting):
     from .schemas import extra_form_type_map
     return extra_form_type_map.get(cart_setting.type)
 
-def get_extra_form_schema(context, request, sales_segment):
+def get_extra_form_schema(context, request, sales_segment, for_='cart'):
     extra_form_fields = None
     cart_setting = context.cart_setting
-    if api.is_fc_cart(cart_setting):
-        return cart_setting.extra_form_fields
-    elif api.is_booster_cart(cart_setting):
-        # XXX: ブースターの互換性のため
-        extra_form_class = get_extra_form_class(request, sales_segment.sales_segment_group.event)
-        if extra_form_class is not None:
-            extra_form_fields = build_extra_form_fields_from_form(context, request, extra_form_class, excludes=['member_type', 'product_delivery_method'])
+    if for_ == 'cart':
+        if api.is_fc_cart(cart_setting):
+            return cart_setting.extra_form_fields
+        elif api.is_booster_cart(cart_setting):
+            # XXX: ブースターの互換性のため
+            extra_form_class = get_extra_form_class(request, cart_setting)
+            if extra_form_class is not None:
+                extra_form_fields = build_extra_form_fields_from_form(context, request, extra_form_class, excludes=['member_type', 'product_delivery_method'])
+        else:
+            extra_form_fields = sales_segment.setting.extra_form_fields
+    elif for_ == 'lots':
+        extra_form_fields = cart_setting.extra_form_fields
     else:
-        extra_form_fields = sales_segment.setting.extra_form_fields
+        raise ValueError("for_ argument must be either 'cart' or 'lots', got %s" % for_)
     return extra_form_fields or []
 
-def get_extra_form_data_pair_pairs(context, request, sales_segment, data):
-    extra_form_fields = get_extra_form_schema(context, request, sales_segment)
+def get_extra_form_data_pair_pairs(context, request, sales_segment, data, for_='cart'):
+    extra_form_fields = get_extra_form_schema(context, request, sales_segment, for_=for_)
     retval = []
     dtf = create_date_time_formatter(request)
     for field_desc in extra_form_fields:
@@ -803,7 +820,7 @@ def back_to_top(request):
                 event_id = DBSession.query(c_models.Performance).filter_by(id=performance_id).one().event_id
             except:
                 pass
- 
+
     extra = {}
     if performance_id is not None:
         extra['_query'] = { 'performance': performance_id }
@@ -902,14 +919,14 @@ class MorselWrapper(object):
     def version(self):
         return 1 # always supposed to be a cookie
 
-    def get_nonstandard_attr(self, name, default=None): 
+    def get_nonstandard_attr(self, name, default=None):
         name = name.lower()
         if name == 'httponly':
             return self.morsel.httponly
         elif name == 'max-age':
             return self.morsel.max_age
         return default
-    
+
 
 def render_view_to_response_with_derived_request(context_factory, request, name='', secured=False, route=None, retoucher=None, cookie_policy=default_cookie_policy):
     if hasattr(request, 'registry'):

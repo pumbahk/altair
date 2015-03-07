@@ -3,6 +3,7 @@
 cart_setting_types = [
     (u'standard', u'標準'),
     (u'fc', u'入会フォーム'),
+    (u'lot', u'抽選フォーム'),
     ]
 
 def setup__views(config):
@@ -14,4 +15,3 @@ def setup__views(config):
 def includeme(config):
     config.include(setup__views, route_prefix='/cart_settings')
     config.scan('.views')
-

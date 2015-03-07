@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
+import re
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 import decimal
@@ -13,7 +13,6 @@ from wtforms.fields import (
     SelectField,
     SelectMultipleField,
     TextAreaField,
-    BooleanField,
     RadioField,
     FieldList,
     FormField,
@@ -32,6 +31,9 @@ from altair.formhelpers import (
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
+from altair.formhelpers.fields import (
+    OurBooleanField,
+    )
 from altair.app.ticketing.core.models import (
     Organization,
     PaymentMethod,
@@ -62,6 +64,7 @@ from altair.app.ticketing.orders.helpers import (
     )
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
+from .export import OrderAttributeRenderer
 from .models import OrderedProduct, OrderedProductItem
 from sqlalchemy import orm
 
@@ -296,7 +299,7 @@ class SearchFormBase(Form):
                 self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
             if sales_segment_group is None:
                 sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == event.id)
-                self.sales_segment_group_id.choices = [('', u'(すべて)')] + [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
+                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
             else:
                 self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
         else:
@@ -368,7 +371,7 @@ class SearchFormBase(Form):
         validators=[Optional()],
     )
     sales_segment_group_id = SelectMultipleField(
-        label=u'販売区分',
+        label=u'販売区分グループ',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Optional()],
@@ -960,7 +963,7 @@ class OrderRefundForm(Form):
         return status
 
 
-class OrderImportForm(Form):
+class OrderImportForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -979,7 +982,7 @@ class OrderImportForm(Form):
         default=ImportTypeEnum.Create.v,
         coerce=int,
     )
-    always_issue_order_no = BooleanField(
+    always_issue_order_no = OurBooleanField(
         label=u'常に新しい予約番号を発番'
     )
     allocation_mode = BugFreeSelectField(
@@ -988,6 +991,11 @@ class OrderImportForm(Form):
         choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
         default=ImportTypeEnum.Create.v,
         coerce=int,
+    )
+    merge_order_attributes = OurBooleanField(
+        label=u'既存の予約の購入情報属性を更新する',
+        help=u'チェックを入れずに実行すると、属性はCSVに書かれているものに置換となりますので注意してください',
+        default=True
     )
 
     def validate_order_csv(form, field):
@@ -1004,13 +1012,22 @@ class OrderImportForm(Form):
         field.data.file.seek(0)
 
         export_header = []
+        attribute_renderers = []
         for c in OrderCSV.per_seat_columns:
-            if not isinstance(c, AttributeRenderer):
+            if not isinstance(c, (AttributeRenderer, OrderAttributeRenderer)):
                 if hasattr(c, 'column_name'):
                     column_name = c.column_name
                 else:
                     column_name = c.key
                 export_header.append(column_name)
+            else:
+                attribute_renderers.append(c)
+
+        for h in import_header:
+            for c in attribute_renderers:
+                g = re.match(u'%s\[([^]]*)\]' % c.variable_name, h)
+                if g is not None:
+                    export_header.append(h)
 
         difference = set(import_header) - set(export_header)
         if len(difference) > 0 or len(import_header) == 0:
@@ -1159,9 +1176,9 @@ class SejOrderForm(Form):
 
 
 
-class SejRefundEventForm(Form):
+class SejRefundEventForm(OurForm):
 
-    available = BooleanField(
+    available = OurBooleanField(
         label=u'有効フラグ',
         validators=[Required()],
     )
@@ -1206,7 +1223,7 @@ class SejRefundEventForm(Form):
         label=u'チケット持ち込み期限	',
         validators=[Required(), after1900],
     )
-    refund_enabled = BooleanField(
+    refund_enabled = OurBooleanField(
         label=u'レジ払戻可能フラグ',
         validators=[Required()],
     )

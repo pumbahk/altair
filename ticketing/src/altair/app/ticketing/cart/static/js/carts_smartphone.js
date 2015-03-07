@@ -57,7 +57,7 @@ cart.order_messages = {
     },
     'adjacency': {
         title: '連席で座席を確保できません',
-        message: '座席を選んで購入してください'
+        message: '枚数を減らして購入してください'
     }, 
     'ticket_count_over_upper_bound': {
         title: '上限枚数を超えて購入しようとしています', 

@@ -13,7 +13,7 @@ from sqlalchemy.sql import or_
 from sqlalchemy.orm import make_transient, joinedload
 
 from altair.now import get_now
-from altair.app.ticketing.cart.api import get_auth_info 
+from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -136,8 +136,11 @@ class LotResource(object):
         return lot_asid
 
     def check_entry_limit(self, wishes, user=None, email=None):
+        logger.debug('user.id=%r, email=%r', user.id if user else None, email)
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
-        if email:
+        if user:
+            query = query.filter(LotEntry.user_id==user.id)
+        elif email:
             query = query.join(ShippingAddress)\
                          .filter(or_(ShippingAddress.email_1==email, ShippingAddress.email_2==email))
         else:

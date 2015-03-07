@@ -18,6 +18,7 @@ MULTICHECKOUT_PAYMENT_PLUGIN_ID = 1
 CHECKOUT_PAYMENT_PLUGIN_ID = 2
 SEJ_PAYMENT_PLUGIN_ID = 3
 RESERVE_NUMBER_PAYMENT_PLUGIN_ID = 4
+FREE_PAYMENT_PLUGIN_ID = 5
 
 SHIPPING_DELIVERY_PLUGIN_ID = 1
 SEJ_DELIVERY_PLUGIN_ID = 2
@@ -110,3 +111,4 @@ def includeme(config):
     config.include(".checkout")
     config.include(".qr")
     config.include(".orion")
+    config.include(".free")

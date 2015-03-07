@@ -424,37 +424,42 @@ katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
-def validate_order_like(current_date, order_like):
-    if order_like.shipping_address is None:
-        raise OrderLikeValidationFailure(u'shipping address does not exist', 'shipping_address')
-    tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
-    if not tel:
-        raise OrderLikeValidationFailure(u'no phone number specified', 'shipping_address.tel_1')
-    elif len(tel) > 12 or re.match(ur'[^0-9]', tel):
-        raise OrderLikeValidationFailure(u'invalid phone number', 'shipping_address.tel_2')
-    if not order_like.shipping_address.last_name:
-        raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
-    if not order_like.shipping_address.first_name:
-        raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
-    user_name = build_user_name(order_like.shipping_address)
-    if len(user_name.encode('CP932')) > 40:
-        raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
-    if not order_like.shipping_address.last_name_kana:
-        raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
-    if not re.match(katakana_regex, order_like.shipping_address.last_name_kana):
-        raise OrderLikeValidationFailure(u'last name (kana) contains non-katakana characters', 'shipping_address.last_name_kana')
-    if not order_like.shipping_address.first_name_kana:
-        raise OrderLikeValidationFailure(u'no first name (kana) specified', 'shipping_address.first_name_kana')
-    if not re.match(katakana_regex, order_like.shipping_address.first_name_kana):
-        raise OrderLikeValidationFailure(u'first name (kana) contains non-katakana characters', 'shipping_address.first_name_kana')
-    user_name_kana = build_user_name_kana(order_like.shipping_address)
-    if len(user_name_kana.encode('CP932')) > 40:
-        raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
-    if order_like.shipping_address.zip and not re.match(ur'^[0-9]{7}$', order_like.shipping_address.zip.replace(u'-', u'')):
-        raise OrderLikeValidationFailure(u'invalid zipcode specified', 'shipping_address.zip')
-    email = order_like.shipping_address.email_1 or order_like.shipping_address.email_2
-    if email and len(email) > 64:
-        raise OrderLikeValidationFailure(u'invalid email address', 'shipping_address.email_1')
+def validate_order_like(current_date, order_like, update=False):
+    if order_like.shipping_address is not None:
+        tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
+        if not tel:
+            raise OrderLikeValidationFailure(u'no phone number specified', 'shipping_address.tel_1')
+        elif len(tel) > 12 or re.match(ur'[^0-9]', tel):
+            raise OrderLikeValidationFailure(u'invalid phone number', 'shipping_address.tel_2')
+        if not order_like.shipping_address.last_name:
+            raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
+        if not order_like.shipping_address.first_name:
+            raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
+        user_name = build_user_name(order_like.shipping_address)
+        try:
+            user_name_sjis = user_name.encode('CP932')
+        except UnicodeEncodeError:
+            raise OrderLikeValidationFailure(u'user name contains a character that is not encodable as CP932', 'shipping_address.last_name')
+        if len(user_name_sjis) > 40:
+            raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
+        if not order_like.shipping_address.last_name_kana:
+            raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
+        if not re.match(katakana_regex, order_like.shipping_address.last_name_kana):
+            raise OrderLikeValidationFailure(u'last name (kana) contains non-katakana characters', 'shipping_address.last_name_kana')
+        if not order_like.shipping_address.first_name_kana:
+            raise OrderLikeValidationFailure(u'no first name (kana) specified', 'shipping_address.first_name_kana')
+        if not re.match(katakana_regex, order_like.shipping_address.first_name_kana):
+            raise OrderLikeValidationFailure(u'first name (kana) contains non-katakana characters', 'shipping_address.first_name_kana')
+        user_name_kana = build_user_name_kana(order_like.shipping_address)
+        if len(user_name_kana.encode('CP932')) > 40:
+            raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
+        if order_like.shipping_address.zip and not re.match(ur'^[0-9]{7}$', order_like.shipping_address.zip.replace(u'-', u'')):
+            raise OrderLikeValidationFailure(u'invalid zipcode specified', 'shipping_address.zip')
+        email = order_like.shipping_address.email_1 or order_like.shipping_address.email_2
+        if email and len(email) > 64:
+            raise OrderLikeValidationFailure(u'invalid email address', 'shipping_address.email_1')
+    else:
+        logger.debug('order_like.shipping_address is None')
 
     payment_type = None
     if order_like.payment_delivery_pair.payment_method.payment_plugin_id == PAYMENT_PLUGIN_ID:
@@ -469,22 +474,27 @@ def validate_order_like(current_date, order_like):
         payment_type = int(SejPaymentType.Paid)
 
     if payment_type is not None:
-        if int(payment_type) == int(SejPaymentType.CashOnDelivery):
-            if get_payment_due_at(current_date, order_like) < current_date:
-                raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
+        _payment_type = int(payment_type)
+        if _payment_type == int(SejPaymentType.CashOnDelivery) or (not update and _payment_type == int(SejPaymentType.Prepayment)):
+            payment_due_at = get_payment_due_at(current_date, order_like)
+            if payment_due_at < current_date:
+                raise OrderLikeValidationFailure(u'payment_due_at (%s) < now (%s)' % (payment_due_at, current_date) , 'order.payment_due_at')
 
         if int(payment_type) != int(SejPaymentType.PrepaymentOnly):
             ticketing_due_at = get_ticketing_due_at(current_date, order_like)
             if ticketing_due_at is not None and ticketing_due_at < current_date:
-                raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
+                raise OrderLikeValidationFailure(u'issuing_end_at (%s) < now (%s)' % (ticketing_due_at, current_date), 'order.issuing_end_at')
 
-    if payment_type is not None and payment_type != int(SejPaymentType.Paid) and order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
-        raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+    if payment_type is not None and payment_type != int(SejPaymentType.Paid):
+        if order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
+            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+        elif order_like.total_amount <= 0:
+            raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """
@@ -563,8 +573,8 @@ class SejDeliveryPluginBase(object):
 
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(SejDeliveryPluginBase):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """
@@ -642,8 +652,8 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
-    def validate_order(self, request, order_like):
-        validate_order_like(datetime.now(), order_like)
+    def validate_order(self, request, order_like, update=False):
+        validate_order_like(datetime.now(), order_like, update)
 
     def prepare(self, request, cart):
         """  """

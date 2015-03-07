@@ -295,6 +295,7 @@ class SalesSegmentAccessor(object):
             event=performance.event,
             performance=performance,
             sales_segment_group=sales_segment_group,
+            membergroups=list(sales_segment_group.membergroups),
             setting=SalesSegmentSetting(
                 **dict(
                     (
@@ -322,6 +323,7 @@ class SalesSegmentAccessor(object):
             organization=lot.event.organization,
             event=lot.event,
             sales_segment_group=sales_segment_group,
+            membergroups=list(sales_segment_group.membergroups),
             setting=SalesSegmentSetting(
                 **dict(
                     (

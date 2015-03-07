@@ -1,1 +1,5 @@
 IndexIgnore icons
+php_value iconv.internal_encoding utf-8
+php_value iconv.input_encoding utf-8
+php_value iconv.output_encoding utf-8
+php_value mbstring.internal_encoding utf-8
