@@ -790,6 +790,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from .api import get_order_attribute_pair_pairs
         return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items)
 
+    def count_ordered_product_item(self):
+        from sqlalchemy.sql import func
+        from altair.app.ticketing.models import DBSession
+        qs = DBSession.query(func.count(OrderedProduct.id))\
+            .filter_by(deleted_at=None)\
+            .filter(OrderedProduct.order_id==self.id).scalar()
+        return qs
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'

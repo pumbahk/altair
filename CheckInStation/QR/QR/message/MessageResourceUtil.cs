@@ -70,7 +70,9 @@ namespace QR.message
             case TokenStatus.before_start:
                 return resource.SettingValue ("message.token.status.before_start.format.0");
             case TokenStatus.after_end:
-                return resource.SettingValue ("message.token.status.after_end.format.0");
+                return resource.SettingValue("message.token.status.after_end.format.0");
+            case TokenStatus.over_print_limit:
+                return resource.SettingValue("message.token.status.over_print_limit.format.0");
             case TokenStatus.not_supported:
                 return resource.SettingValue ("message.token.status.not_supported.format.0");
             default:

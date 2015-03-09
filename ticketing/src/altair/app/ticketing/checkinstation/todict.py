@@ -21,6 +21,7 @@ class TokenStatus:
     canceled = "canceled"
     before_start = "before_start"
     after_end = "after_end"
+    over_print_limit = "over_print_limit"
     not_supported = "not_supported"
     unknown = "unknown"
 
@@ -41,6 +42,7 @@ class TokenStatusDictBuilder(object):
         D.update(self.printed_status_dict())
         D.update(self.canceled_status_dict())
         D.update(self.printable_date_status_dict())
+        D.update(self.over_print_limit_dict())
         D.update(self.supported_status_dict())
         return D
 
@@ -84,6 +86,12 @@ class TokenStatusDictBuilder(object):
             return {"status": TokenStatus.after_end}
         else:
             return {}
+
+    def over_print_limit_dict(self):
+        print_num = self.order.count_ordered_product_item()
+        if print_num > 10:
+            return {"status": TokenStatus.over_print_limit}
+        return {}
 
     def _is_canceled(self, order):
         return order is None or order.is_canceled()
