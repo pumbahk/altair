@@ -88,8 +88,13 @@ class TokenStatusDictBuilder(object):
             return {}
 
     def over_print_limit_dict(self):
-        print_num = self.order.count_ordered_product_item()
+        print_num = 0
+        for item in self.order.items:
+            print_num += item.seat_quantity
+
         if print_num > 10:
+            order = self.order
+            logger.info("*status print limit overed  (order.id=%s, order.order_no=%s)", order.id, order.order_no)
             return {"status": TokenStatus.over_print_limit}
         return {}
 
