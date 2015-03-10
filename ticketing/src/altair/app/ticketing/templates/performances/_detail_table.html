@@ -23,6 +23,10 @@
       <td>${performance.note or u""}</td>
       <th>開演</th>
       <td>${vh.datetime(performance.start_on, with_weekday=True)}</td>
+      %if performance.end_on:
+        <th>終演</th>
+        <td>${vh.datetime(performance.end_on, with_weekday=True)}</td>
+      %endif
     </tr>
 % if expanded:
     <tr>
