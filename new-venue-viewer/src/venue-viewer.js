@@ -158,18 +158,21 @@
       loadDrawing: function (page, next) {
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
-        this.initDrawable(page, function () {
-          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
-            for (var id in self.seats) {
-              var shape = self.shapes[id];
-              if (shape)
-                self.seats[id].attach(shape);
+        var _this = this;
+        setTimeout(function() {
+          _this.initDrawable(page, function () {
+            if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+              for (var id in self.seats) {
+                var shape = self.shapes[id];
+                if (shape)
+                  self.seats[id].attach(shape);
+              }
             }
-          }
-          self.callbacks.pageChanging.call(self, page);
-          self.callbacks.loadPartEnd.call(self, self, 'drawing');
-          next.call(self);
-        });
+            self.callbacks.pageChanging.call(self, page);
+            self.callbacks.loadPartEnd.call(self, self, 'drawing');
+            next.call(self);
+          });
+        }, 50);
       },
 
       cancelLoading: function VenueViewer_cancelLoading(next) {
