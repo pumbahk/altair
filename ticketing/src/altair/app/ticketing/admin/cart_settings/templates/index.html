@@ -1,6 +1,13 @@
 <%inherit file="altair.app.ticketing:templates/layout_2cols.html" />
 <%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
 <% from altair.app.ticketing.cart.models import CartSetting %>
+<h3>カート設定</h3>
+<div class="alert alert-warning">
+  <b>
+    <p class="text-error">カート設定を変更すると、変更したカート設定を利用しているイベントすべてに影響します。ご注意ください。</p>
+  </b>
+</div>
+
 <button id="newItem" class="btn"><i class="icon icon-plus"></i>新規カート設定</button>
 <form id="newItemModal" class="modal hide" method="GET" action="${request.route_path('cart_setting.new')}">
   <div class="modal-header">
