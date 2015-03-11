@@ -62,10 +62,6 @@ class ExtraResource(dict):
             else:
                 self[k] = self.parse(v)
 
-    def cart_domain(self, v):
-        candidates = json.loads(v)
-        return candidates[self.stage].rstrip("/")
-
     def parse(self, v):
         return [x.decode("utf-8") for x in list_from_setting_value(v)] ## ok?
 
