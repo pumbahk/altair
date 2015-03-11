@@ -105,26 +105,3 @@ def dt2str(dt, request=None, **flavor):
     formatter = create_date_time_formatter(request)
     helper = DateTimeHelper(formatter)
     return helper.datetime(dt, **flavor)
-
-class DateTimeRange:
-    def __init__(self, start, end):
-        if start is not None:
-            self.start = start
-        else:
-            self.start = datetime.min # Set min datetime in case of None
-
-        if end is not None:
-            self.end = end
-        else:
-            self.end = datetime.max # Set max datetime in case of None
-
-    def __str__(self):
-        return str(self.start) + " - " + str(self.end)
-
-    def overlap(self, date_range):
-        # not (self.start > date_range.end or self.end < date_range.start) <=> not (self.start > date_range.end) and not (self.end < date_range.start)
-        if self.start <= date_range.end and self.end >= date_range.start:
-            return True
-        else:
-            return False
-

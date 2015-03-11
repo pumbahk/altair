@@ -7,7 +7,7 @@ import logging
 from zope.interface import Interface, Attribute, implementer
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, SalesSegmentSetting, SalesSegmentGroupSetting, Performance, Event, Organization, PaymentDeliveryMethodPair
-from altair.viewhelpers.datetime_ import DateTimeRange
+from altair.app.ticketing.utils import DateTimeRange
 
 logger = logging.getLogger(__name__)
 

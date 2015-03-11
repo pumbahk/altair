@@ -11,7 +11,7 @@ from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput, Input, HTMLString
 from altair.formhelpers.widgets.context import Rendrant
-from altair.viewhelpers.datetime_ import DateTimeRange
+from altair.app.ticketing.utils import DateTimeRange
 from markupsafe import escape
 from sqlalchemy.sql import or_, and_, select
 
