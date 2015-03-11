@@ -53,24 +53,40 @@ class MyProxyRequest(proxy.ProxyRequest):
             self.target_port = int(port)
             self.target_parsed = None
         else:
-            new_request_uri_str = self.uri
+            request_uri_str = self.uri
+            rewritten = False
+            for name, regexp, replace in self.channel.prerewrite_patterns:
+                new_request_uri_str = re.sub(regexp, replace, request_uri_str)
+                if request_uri_str != new_request_uri_str:
+                    self.channel.factory.logFile.write("[prerewrite] %s: %s => %s\n" % (name, request_uri_str, new_request_uri_str))
+                    request_uri_str = new_request_uri_str
+                    rewritten = True
 
-            for regexp, replace in self.channel.prerewrite_patterns:
-                new_request_uri_str = re.sub(regexp, replace, new_request_uri_str)
-
-            if new_request_uri_str != self.uri:
-                self.channel.factory.logFile.write("[prerewrite] %s => %s\n" % (self.uri, new_request_uri_str))
-                self.uri = new_request_uri_str
+            if rewritten:
+                self.uri = request_uri_str
                 self.override_host = urlparse(self.uri).netloc
 
-            new_request_uri_str = self.uri
-            for regexp, replace in self.channel.rewrite_patterns:
-                new_request_uri_str = re.sub(regexp, replace, new_request_uri_str)
-            if new_request_uri_str != self.uri:
-                self.channel.factory.logFile.write("[rewrite] %s => %s\n" % (self.uri, new_request_uri_str))
+            request_uri_str = self.uri
+            for name, regexp, replace in self.channel.redirect_patterns:
+                new_request_uri_str = re.sub(regexp, replace, request_uri_str)
+                if request_uri_str != new_request_uri_str:
+                    self.channel.factory.logFile.write("[redirect] %s: %s => %s\n" % (name, request_uri_str, new_request_uri_str))
+                    self.setHeader(b'server', 'devproxy')
+                    self.setHeader(b'date', http.datetimeToString())
+                    self.redirect(new_request_uri_str)
+                    self.finish()
+                    return True
 
-            self.target_uri = new_request_uri_str
-            self.target_parsed = urlparse(new_request_uri_str)
+            request_uri_str = self.uri
+            for name, regexp, replace in self.channel.rewrite_patterns:
+                new_request_uri_str = re.sub(regexp, replace, request_uri_str)
+                if new_request_uri_str != request_uri_str:
+                    self.channel.factory.logFile.write("[rewrite] %s: %s => %s\n" % (name, request_uri_str, new_request_uri_str))
+                    request_uri_str = new_request_uri_str
+                    break
+
+            self.target_uri = request_uri_str
+            self.target_parsed = urlparse(request_uri_str)
             if ':' in self.target_parsed.netloc:
                 # TODO: IPv6?
                 self.target_host, port = self.target_parsed.netloc.split(':')
@@ -78,6 +94,8 @@ class MyProxyRequest(proxy.ProxyRequest):
             else:
                 self.target_host = self.target_parsed.netloc
                 self.target_port = self.ports.get(self.target_parsed.scheme)
+
+        return False
 
     def get_connector_class(self):
         if self.method == 'CONNECT':
@@ -88,7 +106,9 @@ class MyProxyRequest(proxy.ProxyRequest):
     def process(self):
         self.parsed = urlparse(self.uri)
         self.target_headers = self.getAllHeaders().copy()
-        self.rewrite()
+
+        if self.rewrite():
+            return
 
         rest = None
         if self.target_parsed is not None:

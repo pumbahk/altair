@@ -46,10 +46,10 @@ class Browser(object):
             ('Cache-Control', 'max-age=0'),
             ('Coonection', 'keep-alive'),
             ('Content-type', 'application/x-www-form-urlencoded'),
-            ('Origin', 'https://backend.stg2.rt.ticketstar.jp'),
+            ('Origin', 'https://backend.stg.altr.jp'),
             ('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) '\
              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36'),
-            ('Referer', 'https://backend.stg2.rt.ticketstar.jp/login/'),
+            ('Referer', 'https://backend.stg.altr.jp/login/'),
         ))
     
     def basic_auth(self, username, password):
@@ -78,7 +78,7 @@ class AltairBackendBrowser(Browser):
         if not host.endswith('/'):
             host += '/'
         self.host = host
-        if self.host in 'https://backend.stg2.rt.ticketstar.jp/':
+        if self.host in 'https://backend.stg.altr.jp/':
             settings = Pit.get('stg2', {'require': {'basic_username': '',
                                                     'basic_password': '',
                                                     }})
@@ -111,7 +111,7 @@ class AltairBackendBrowser(Browser):
         
 def main():
     browser = AltairBackendBrowser()
-    browser.set_host('https://backend.stg2.rt.ticketstar.jp')
+    browser.set_host('https://backend.stg.altr.jp')
     res, content = browser.login('RT')
     fp = browser.download_augus_venue(868)
     print fp.read()

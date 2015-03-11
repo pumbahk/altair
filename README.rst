@@ -84,10 +84,10 @@ ubuntu
 
   * Firefox に `Proxy Selector <https://addons.mozilla.org/ja/firefox/addon/proxy-selector/>`_ をインストール
   * localhost:58080 経由で接続するように設定
-  * stg2 のアドレスで確認
+  * stg のアドレスで確認
 
-    * http://rt.stg2.rt.ticketstar.jp/
-    * http://vissel.stg2.rt.ticketstar.jp/
+    * http://rt.stg.altr.jp/
+    * http://vissel.stg.altr.jp/
 
 Useful Resources
 ================

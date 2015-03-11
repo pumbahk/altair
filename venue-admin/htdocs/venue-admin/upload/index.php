@@ -246,5 +246,5 @@ printf('post_max_size=%s <br />', ini_get('post_max_size'));
 printf('upload_max_filesize=%s <br />', ini_get('upload_max_filesize'));
 ?>
 <!--
-事前に<a href="http://c.stg2.rt.ticketstar.jp/">http://c.stg2.rt.ticketstar.jp/</a>の認証を通過しておいてください.
+事前に<a href="http://c.stg.altr.jp/">http://c.stg.altr.jp/</a>の認証を通過しておいてください.
 -->
