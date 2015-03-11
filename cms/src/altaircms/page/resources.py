@@ -134,6 +134,12 @@ class PageResource(security.RootFactory):
 
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
-        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": "",  "mobile_tags": ""}) #xxx:
+        subscribers.notify_page_create(self.request, cloned, {"tags": divide_tag(page.pageset.tags, True), "private_tags": divide_tag(page.pageset.private_tags, False), "mobile_tags": divide_tag(page.pageset.mobile_tags, True)}) #xxx:
         return cloned
 
+def divide_tag(tags, publicp):
+    labels = []
+    for tag in tags:
+        if tag.publicp == publicp and tag.organization_id:
+            labels.append(tag.label)
+    return ",".join(labels)
