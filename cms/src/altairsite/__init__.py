@@ -71,6 +71,7 @@ def main(global_config, **local_config):
     config.add_mako_renderer('.html')
 
     config.include("altair.now")
+    config.include("altair.sqlahelper")
     # config.include("altaircms.templatelib")
 
     config.include("altaircms.tag:install_tagmanager")
