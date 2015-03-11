@@ -21,7 +21,7 @@ from ..page.subscribers import notify_page_update
 from .receivedata import InvalidParamaterException
 from altaircms.viewlib import apikey_required
 from altaircms.viewlib import success_result, failure_result
-from altaircms.linklib import (
+from altaircms.api import (
     get_hostname_from_request, 
     get_usersite_url_builder, 
     get_mobile_url_builder, 
@@ -200,15 +200,20 @@ def api_event_url_candidates(context, request):
     backend_url_builder = get_backend_url_builder(request)
     cms_url_builder = get_cms_url_builder(request)
 
-    qs = Host.query.filter_by(organization_id=organization.id)
-    hostname = get_hostname_from_request(request, qs=qs, stage=pc_url_builder.global_link.stage, default="http://example.com", preview=True)
+    if request.allowable(Host):
+        qs = Host.query.filter_by(organization_id=organization.id)
+        host = qs.first()
+        if host is not None:
+            hostname = host.host_name
+    else:
+        hostname = None
     return success_result({"event_id": event.id, 
             "backend_event_id": event.backend_id, 
             "urls": {"usersite":
-                         {"pc": [pc_url_builder.front_page_url(p, hostname=hostname) for p in event.pagesets], 
-                          "mb": [mb_url_builder.event_page_url(event, hostname=hostname)], 
-                          "sp": [sp_url_builder.event_page_url(event, hostname=hostname)]
+                         {"pc": [pc_url_builder.front_page_url(request, p, hostname=hostname) for p in event.pagesets],
+                          "mb": [mb_url_builder.event_page_url(request, event, hostname=hostname)],
+                          "sp": [sp_url_builder.event_page_url(request, event, hostname=hostname)]
                           }, 
-                     "cms": [cms_url_builder.event_page_url(event)], 
-                     "backend": [backend_url_builder.event_page_url(event)]}
+                     "cms": [cms_url_builder.event_page_url(request, event)],
+                     "backend": [backend_url_builder.event_page_url(request, event)]}
                            })
