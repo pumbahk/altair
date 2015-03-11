@@ -1,14 +1,14 @@
 """add_cart_domain_to_host
 
 Revision ID: 1dac597a3e70
-Revises: c09a614defd
+Revises: 4a5e16404a86
 Create Date: 2015-03-02 23:36:17.900629
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '1dac597a3e70'
-down_revision = 'c09a614defd'
+down_revision = '4a5e16404a86'
 
 from alembic import op
 import sqlalchemy as sa

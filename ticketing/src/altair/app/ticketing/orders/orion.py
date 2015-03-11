@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 def on_order_canceled(ev):
     try:
+        if ev.order.performance.orion is None:
+            return
         tokens = [ ]
         for op in ev.order.ordered_products:
             for opi in op.ordered_product_items:
