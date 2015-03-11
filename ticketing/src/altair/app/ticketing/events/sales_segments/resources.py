@@ -7,6 +7,7 @@ import logging
 from zope.interface import Interface, Attribute, implementer
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, SalesSegmentSetting, SalesSegmentGroupSetting, Performance, Event, Organization, PaymentDeliveryMethodPair
+from altair.app.ticketing.utils import DateTimeRange
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,7 @@ class SalesSegmentAdminResource(TicketingAdminResource):
                (self.performance is not None and \
                 self.sales_segment.performance_id != self.performance.id):
                 raise HTTPNotFound()
+            self.sales_segment_range = DateTimeRange(self.sales_segment.start_at, self.sales_segment.end_at)
             if self.sales_segment_group is None:
                 self.sales_segment_group = self.sales_segment.sales_segment_group
             if self.event is None:
