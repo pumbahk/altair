@@ -135,9 +135,9 @@ def main():
         ('Cache-Control', 'max-age=0'),
         ('Coonection', 'keep-alive'),
         ('Content-type', 'application/x-www-form-urlencoded'),
-        ('Origin', 'https://backend.stg2.rt.ticketstar.jp'),
+        ('Origin', 'https://backend.stg.altr.jp'),
         ('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36'),
-        ('Referer', 'https://backend.stg2.rt.ticketstar.jp/login/'),
+        ('Referer', 'https://backend.stg.altr.jp/login/'),
         ))
 
 
@@ -164,7 +164,7 @@ def main():
     for venue_id in venue_ids:
         print venue_id,
         res, content = http.request(
-            'https://backend.stg2.rt.ticketstar.jp/cooperation/augus/venues/{}/download'.format(venue_id),
+            'https://backend.stg.altr.jp/cooperation/augus/venues/{}/download'.format(venue_id),
             'GET', headers=headers)
         if res.status != 200:
             print res.status, '--------------->', 'NG'
@@ -191,7 +191,7 @@ def main():
         new.seek(0)
 
         res, content = http.request(
-            'https://backend.stg2.rt.ticketstar.jp/cooperation/augus/venues/{}/download'.format(venue_id),
+            'https://backend.stg.altr.jp/cooperation/augus/venues/{}/download'.format(venue_id),
             'POST', headers=headers, body=new.read())
 
 
