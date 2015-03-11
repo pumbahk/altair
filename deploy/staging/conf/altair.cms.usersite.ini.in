@@ -2,6 +2,7 @@
 www_check_docroot = %(here)s/../var/www-check/altair.cms.usersite
 sqlalchemy.url = ${altair:cms.db_url.master}
 altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.master}
+altair.sqlahelper.sessions.slave.pool_class = null
 
 [app:altairsite]
 use = config:%(here)s/../../baseconf/cms-common.ini#altairsite
