@@ -790,7 +790,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from .api import get_order_attribute_pair_pairs
         return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items)
 
-
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
     __clone_excluded__ = ['id', 'order_id', 'order']
