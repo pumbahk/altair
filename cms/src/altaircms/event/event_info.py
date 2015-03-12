@@ -74,11 +74,19 @@ def get_event_notify_info(event, session=DBSession, page=None):
     # のイベント詳細に利用される
     summary_widget_query = session.query(SummaryWidget).filter_by(bound_event=event)
     if page:
-        summary_widget_query = summary_widget_query.filter(SummaryWidget.page == page)
-    summary_widget = summary_widget_query.first()
+        structure = json.loads(page.structure)
+        summary_id = None
+        for block in structure:
+            for widget in structure[block]:
+                if widget['name'] == 'summary':
+                    summary_id = widget['pk']
+                    break
+
+        if summary_id:
+            summary_widget = session.query(SummaryWidget).filter_by(id=summary_id).first()
 
     # 本当はregistryのadaptersから引っ張る
     if summary_widget:
         return SummaryWidgetGetEventInfoAdapter(summary_widget).get_event_info()
-    else:
-        return EventGetEventInfoAdapter(event).get_event_info()
+
+    return EventGetEventInfoAdapter(event).get_event_info()
