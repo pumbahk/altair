@@ -280,8 +280,7 @@ class PageFormats(BaseView):
 
         form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
                                       name=format.name,
-                                      data_value=json.dumps(format.data),
-                                      delivery_methods=[m.id for m in format.delivery_methods])
+                                      data_value=json.dumps(format.data))
         return dict(h=helpers, form=form)
 
     @view_config(route_name='tickets.pageformats.new', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html', request_method="POST")
