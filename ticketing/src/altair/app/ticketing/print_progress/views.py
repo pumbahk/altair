@@ -17,7 +17,7 @@ def show_event_print_progress(context, request):
     progress = getter.get_event_progress(event)
     return dict(
         event=event,
-        form=EventForm(),
+        form=EventForm(context=context),
         progress=progress
     )
 
