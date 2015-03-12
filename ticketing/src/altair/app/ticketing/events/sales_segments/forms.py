@@ -11,6 +11,7 @@ from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput, Input, HTMLString
 from altair.formhelpers.widgets.context import Rendrant
+from altair.app.ticketing.utils import DateTimeRange
 from markupsafe import escape
 from sqlalchemy.sql import or_, and_, select
 
@@ -636,6 +637,7 @@ class PointGrantSettingAssociationForm(OurForm):
             (point_grant_setting.id, point_grant_setting.name)
             for point_grant_setting \
             in PointGrantSetting.filter_by(organization_id=self.form.context.organization.id).filter(~PointGrantSetting.id.in_(select([SalesSegment_PointGrantSetting.c.point_grant_setting_id]).where(SalesSegment_PointGrantSetting.c.sales_segment_id == self.form.context.sales_segment.id)))
+            if self.form.context.sales_segment_range.overlap(DateTimeRange(point_grant_setting.start_at, point_grant_setting.end_at))
             ],
         coerce=lambda x: long(x) if x else None
         )

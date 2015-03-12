@@ -57,4 +57,3 @@ def install_extra_config_features(config):
     setup = WidgetSettingsSetup(config, settings["altaircms.stage"])
     setup.each_settings(configparsers)
     setup.default_setting(configparser_for_default)
-    config.set_request_property(".api.get_cart_domain", "cart_domain", reify=True)

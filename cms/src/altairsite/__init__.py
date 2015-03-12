@@ -46,6 +46,7 @@ def add_request_properties(config):
     def fetch_feature_setting_manager(request):
         return get_feature_setting_manager(request, request.organization.id)
     config.set_request_property(fetch_feature_setting_manager, "featuresettingmanager", reify=True)
+    config.set_request_property("altaircms.api.get_cart_domain", "cart_domain", reify=True)
 
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
@@ -70,6 +71,7 @@ def main(global_config, **local_config):
     config.add_mako_renderer('.html')
 
     config.include("altair.now")
+    config.include("altair.sqlahelper")
     # config.include("altaircms.templatelib")
 
     config.include("altaircms.tag:install_tagmanager")

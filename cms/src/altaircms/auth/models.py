@@ -301,7 +301,7 @@ class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
-
+    cart_domain = sa.Column(sa.Unicode(255), unique=False, index=False)
 
 class PageAccesskey(Base, WithOrganizationMixin):
     query = DBSession.query_property()

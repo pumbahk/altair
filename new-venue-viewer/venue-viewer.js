@@ -1,6 +1,61 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['JAA_1_5GUGL8114V'] = (function (exports) { (function () { 
+__LIBS__['dU0E0PJYYGA57DD5'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    },
+    highlighted_block: {
+      fill: null,
+      stroke: { color: "#F44", width: 5, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['_LZK8PIXV3KQJQRJ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,66 +182,11 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['lVR7VACN_0M5JFQC'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  STYLES: {
-    label: {
-      fill: new Fashion.Color('#000'),
-      stroke: null
-    },
-    seat: {
-      fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
-    },
-    glayout: {
-      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
-      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
-    }
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" }
-  },
-
-  OVERLAYS: {
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
-    },
-    highlighted_block: {
-      fill: null,
-      stroke: { color: "#F44", width: 5, pattern: 'solid' }
-    }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" },
-      stroke: { color: "#FFF", width: 3 }
-    },
-    unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc" }
-    }
-  }
-};
- })(); return exports; })({});
-__LIBS__['z_551A4LU7XHFSVE'] = (function (exports) { (function () { 
+__LIBS__['zH2IHNHCL6Y04MID'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['JAA_1_5GUGL8114V'];
-var CONF = __LIBS__['lVR7VACN_0M5JFQC'];
+var util = __LIBS__['_LZK8PIXV3KQJQRJ'];
+var CONF = __LIBS__['dU0E0PJYYGA57DD5'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1050,9 +1050,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['lVR7VACN_0M5JFQC'];
-  var seat = __LIBS__['z_551A4LU7XHFSVE'];
-  var util = __LIBS__['JAA_1_5GUGL8114V'];
+  var CONF = __LIBS__['dU0E0PJYYGA57DD5'];
+  var seat = __LIBS__['zH2IHNHCL6Y04MID'];
+  var util = __LIBS__['_LZK8PIXV3KQJQRJ'];
 
   var VenueViewer = _class("VenueViewer", {
 
@@ -1205,18 +1205,21 @@ function parseTransform(transform_str) {
       loadDrawing: function (page, next) {
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
-        this.initDrawable(page, function () {
-          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
-            for (var id in self.seats) {
-              var shape = self.shapes[id];
-              if (shape)
-                self.seats[id].attach(shape);
+        var _this = this;
+        setTimeout(function() {
+          _this.initDrawable(page, function () {
+            if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+              for (var id in self.seats) {
+                var shape = self.shapes[id];
+                if (shape)
+                  self.seats[id].attach(shape);
+              }
             }
-          }
-          self.callbacks.pageChanging.call(self, page);
-          self.callbacks.loadPartEnd.call(self, self, 'drawing');
-          next.call(self);
-        });
+            self.callbacks.pageChanging.call(self, page);
+            self.callbacks.loadPartEnd.call(self, self, 'drawing');
+            next.call(self);
+          });
+        }, 50);
       },
 
       cancelLoading: function VenueViewer_cancelLoading(next) {

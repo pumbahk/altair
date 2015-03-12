@@ -29,7 +29,7 @@ namespace checkin.config
 
     public class HttpCommunicationConfiguration
     {
-        public static Uri DefaultBasicAuthURI = new Uri("https://backend.stg2.rt.ticketstar.jp/checkinstation/login");
+        public static Uri DefaultBasicAuthURI = new Uri("https://backend.stg.altr.jp/checkinstation/login");
         public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
         public X509Certificate2 Certificate { get; set; }

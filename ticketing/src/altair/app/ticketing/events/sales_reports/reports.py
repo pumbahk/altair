@@ -683,8 +683,8 @@ class ExportableReporter(object):
     def fetch(self):
         q = self.slave_session.query(
             Performance, Stock, ProductItem, SalesSegmentGroup,
-            func.sum(func.ifnull(OrderedProductItem.quantity, 0)).label("ordered"),
-            func.sum(func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("ordered_price"),
+            func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("ordered"),
+            func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("ordered_price"),
             func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("paid"),
             func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("paid_price")
             )\
@@ -695,14 +695,12 @@ class ExportableReporter(object):
             .join(StockHolder, StockHolder.id==Stock.stock_holder_id)\
             .outerjoin(OrderedProductItem, OrderedProductItem.product_item_id==ProductItem.id)\
             .outerjoin(OrderedProduct, OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-            .outerjoin(Order, Order.id==OrderedProduct.order_id)\
+            .outerjoin(Order, and_(Order.id==OrderedProduct.order_id, Order.canceled_at==None, Order.refunded_at==None))\
             .join(SalesSegment, SalesSegment.id==Product.sales_segment_id)\
             .join(SalesSegmentGroup, SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)\
             .group_by(Performance.id, Stock.id, ProductItem.id, SalesSegmentGroup.id)\
             .order_by(Performance.start_on, Performance.code, StockType.display_order, SalesSegmentGroup.name, ProductItem.name)\
             .filter(StockHolder.account_id.in_([a.id for a in self.accounts]))\
-            .filter(Order.canceled_at==None, Order.refunded_at==None)\
-            .filter(SalesSegment.reporting==True)\
             .filter(Performance.event_id==self.event.id)
 
             # Productはsales_segment_idとsales_segment_group_idの両方を持つ
@@ -712,9 +710,10 @@ class ExportableReporter(object):
         for r in q.all():
             if not r.Stock.id in by_stock:
                 by_stock[r.Stock.id] = dict(stock=r.Stock, available=r.Stock.quantity, data=[ ])
-            by_stock[r.Stock.id]['data'].append(r)
+            if r.SalesSegmentGroup.reporting:
+                by_stock[r.Stock.id]['data'].append(r)
             by_stock[r.Stock.id]['available'] = by_stock[r.Stock.id]['available'] - r.ordered
-        self.by_stock = by_stock
+        self.by_stock = dict((k, v) for (k, v) in by_stock.items() if 0 < len(v['data']))
 
     def get(self):
         if self.by_stock is None:

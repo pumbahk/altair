@@ -31,8 +31,8 @@
   </tr>
   <tr>
     <%
-       from altaircms.linklib import get_cart_url_builder
-       whattime_url = get_cart_url_builder(request).whattime_login_url(event)
+       from altaircms.api import get_cart_url_builder
+       whattime_url = get_cart_url_builder(request).whattime_login_url(request, event)
        %>
     <th>時間指定preview</th><td colspan="3"><a blank="_target" href="${whattime_url}">時間指定preview用URL</a></td>
   </tr>
