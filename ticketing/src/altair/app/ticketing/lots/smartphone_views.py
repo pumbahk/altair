@@ -195,7 +195,7 @@ class EntryLotView(object):
         """
         購入情報入力
         """
-        form = self._create_form()
+        form = self._create_form(formdata=self.request.params)
         event = self.context.event
         lot = self.context.lot
 
