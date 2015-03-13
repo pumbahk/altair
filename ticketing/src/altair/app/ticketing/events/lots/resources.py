@@ -30,7 +30,7 @@ class LotCollectionResource(LotResourceBase):
 
     @reify
     def event(self):
-        return Event.query.filter(Event.id == self.event_id, Event.organization_id==self.organization.id).one()
+        return Event.query.filter(Event.id == self.event_id, Event.organization_id==self.organization.id).first()
 
 class AbstractLotResource(LotResourceBase):
     @property
