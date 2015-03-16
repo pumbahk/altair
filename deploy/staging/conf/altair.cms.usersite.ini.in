@@ -1,12 +1,14 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.cms.usersite
-sqlalchemy.url = ${altair:cms.db_url.master}
-altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.master}
-altair.sqlahelper.sessions.slave.pool_class = null
 
 [app:altairsite]
 use = config:%(here)s/../../baseconf/cms-common.ini#altairsite
 pyramid.includes = pyramid_tm pyramid_fanstatic altair_gaq altair.findable_label pyramid_mailer
+
+sqlalchemy.url = ${altair:cms.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.slave}
+altair.sqlahelper.sessions.slave.pool_class = null
+
 altaircms.stage = ${altair:altaircms.stage}
 altaircms.page.tmp.directory = %(here)s/../tmp
 altaircms.asset.storepath = %(here)s/../var/altair/cms/asset

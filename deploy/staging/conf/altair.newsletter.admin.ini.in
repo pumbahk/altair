@@ -4,7 +4,7 @@ www_check_docroot = %(here)s/../var/www-check/altair.newsletter.admin
 [app:newsletter]
 use = config:%(here)s/../../baseconf/common.ini#newsletter
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
-sqlalchemy.url = ${altair.newsletter.db_url.master}
+sqlalchemy.url = ${altair:newsletter.db_url.master}
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
