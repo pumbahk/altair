@@ -4,13 +4,13 @@
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
 </%block>
 
+${self.widget.flow_widget(2)}
+
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
     %endfor
 %endif
-
-${self.widget.flow_widget(2)}
 
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="settlementBox">
