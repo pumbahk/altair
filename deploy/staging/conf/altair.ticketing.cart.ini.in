@@ -11,7 +11,7 @@ altair.ticketing.cart.sitecatalyst.dynamicAccountSelection = false
 ; altair.mq
 altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
+altair.ticketing.cart.mq.url = amqp://guest:guest@ticketing.mq.cart.altr:5672/%2F
 
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
