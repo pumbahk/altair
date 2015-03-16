@@ -1,13 +1,17 @@
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
 
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
 ; altair.mq
 altair.ticketing.lots.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.lots.mq.url = amqp://guest:guest@ticketing.mq.lots.altr:5672/%2F
+altair.ticketing.lots.mq.url = ${altair:ticketing.mq_url}
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

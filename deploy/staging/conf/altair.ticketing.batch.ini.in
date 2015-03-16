@@ -1,6 +1,10 @@
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
 
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 session.data_dir = %(here)s/tmp/beaker/data

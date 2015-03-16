@@ -1,6 +1,13 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.whattime
+
 [app:whattime]
 use = config:%(here)s/../../baseconf/common.ini#whattime
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.queryprofile
+
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

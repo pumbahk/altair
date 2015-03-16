@@ -1,6 +1,13 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.qrreader
+
 [app:qrreader]
 use = config:%(here)s/../../baseconf/common.ini#qrreader
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label
+
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
