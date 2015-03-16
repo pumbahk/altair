@@ -107,7 +107,6 @@ class Lots(BaseView):
         if event is None:
             return HTTPNotFound()
 
-        self.check_organization(event)
         if "action-delete" in self.request.params:
             for lot_id in self.request.params.getall('lot_id'):
                 lot = Lot.query.filter(Lot.id==lot_id).first()
@@ -143,7 +142,6 @@ class Lots(BaseView):
         event = self.context.event
         if event is None:
             return HTTPNotFound()
-        self.check_organization(event)
 
         sales_segment_groups = event.sales_segment_groups
         sales_segment_group_choices = [
