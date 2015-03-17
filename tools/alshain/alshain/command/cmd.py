@@ -1,11 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 import sys
-import optparse
-
 import jumon
 
 from .. import utils
+
 
 def main(argv=sys.argv[1:]):
     parser = jumon.TransparentOptionParser()

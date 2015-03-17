@@ -1,8 +1,7 @@
 #! /usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import sys
 import os
-import argparse
 import jumon
 import alshain.utils
 
@@ -12,7 +11,6 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('conf', default='altair.ticketing.batch.ini', nargs='?')
     opts = parser.parse_args(argv)
     args = parser.get_unrecognizes()
-
 
     alshain_path = alshain.utils.AlshainPath()
 

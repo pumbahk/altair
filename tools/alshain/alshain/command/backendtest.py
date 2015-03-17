@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """altair backend巡回テストscript
 """
 import sys
@@ -8,8 +8,10 @@ import random
 import string
 import datetime
 import argparse
+import selenium.webdriver.common.proxy
 from selenium.webdriver.common.keys import Keys
 from pywad.part import Part
+from pywad.utils import get_driver
 from pywad.runner import Runner
 from pywad.decorator import url_match
 from pit import Pit
@@ -846,6 +848,9 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('url', nargs='?', default='https://backend.stg.altr.jp')
     parser.add_argument('--event', default='TEST')
     parser.add_argument('--performance', default='TEST')
+    parser.add_argument('--driver', default='firefox')
+    parser.add_argument('--proxy', default=None)
+    parser.add_argument('--local', default=False, action='store_true')
     opts = parser.parse_args(argv)
 
     url = opts.url
@@ -862,7 +867,21 @@ def main(argv=sys.argv[1:]):
             basic_auth_pair = '{}:{}@'.format(basic_username, basic_password)
     url = url.replace('://', '://{}'.format(basic_auth_pair))
 
-    browser = None
+    kwds = {}
+    if opts.local:
+        opts.proxy = 'localhost:58080'
+
+    if opts.proxy:
+        if opts.driver == 'phantomjs':
+            addr = opts.proxy if opts.proxy.startswith('http') else 'http://{}'.format(opts.proxy)
+            kwds['service_args'] = ['--proxy', addr]
+        else:
+            proxy = selenium.webdriver.common.proxy.Proxy()
+            proxy.http_proxy = proxy.ftp_proxy = proxy.ssl_proxy = proxy.socks_proxy = opts.proxy
+            kwds['proxy'] = proxy
+
+    driver_klass = get_driver(opts.driver)
+    browser = driver_klass(**kwds)
     status = None
 
     event_runner = Runner(browser, status)

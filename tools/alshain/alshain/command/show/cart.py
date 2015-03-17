@@ -1,11 +1,12 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import optparse
 import pymysql
 from pit import Pit
 
+
 def generate_avairable_cart_url(production=False):
-    settings =  Pit.get('altair-dbslave',
-                        {'require':{'host': '',
+    settings = Pit.get('altair-dbslave',
+                       {'require': {'host': '',
                                     'db': '',
                                     'user': '',
                                     'passwd': '',
@@ -15,7 +16,6 @@ def generate_avairable_cart_url(production=False):
     db = settings['db']
     user = settings['user']
     passwd = settings['passwd']
-
 
     client = pymysql.connect(host=host, db=db,
                              user=user, passwd=passwd)
@@ -36,19 +36,20 @@ def generate_avairable_cart_url(production=False):
                 )
 
     event_host = cur.fetchall()
-    event_host = filter(lambda event_host: not 'elbtest' in event_host[1], event_host)
+    event_host = filter(lambda event_host: not 'elbtest' in event_host[1], event_host)  # noqa
     event_host = set(event_host)
 
-    _is_staging = lambda _hostname: 'stg2' in  _hostname
+    _is_staging = lambda _hostname: 'stg2' in _hostname
 
     if production:
         event_host = filter(lambda event_host: not _is_staging(event_host[1]), event_host)
-    else: # staging
+    else:  # staging
         event_host = filter(lambda event_host: _is_staging(event_host[1]), event_host)
 
     for event, host in sorted(event_host):
         url = 'http://{host}/cart/events/{event}'.format(host=host, event=event)
         yield url
+
 
 def main(argv):
     parser = optparse.OptionParser()
