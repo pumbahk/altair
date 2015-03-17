@@ -3725,6 +3725,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def can_delete(self):
         """販売区分は商品か抽選が紐付いている場合は削除できない
+
+        削除ができる状態の場合はFalseが返ります。
         """
         return bool(self.products) or bool(self.lots)
 
