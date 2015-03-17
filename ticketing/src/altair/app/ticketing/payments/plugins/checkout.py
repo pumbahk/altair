@@ -246,7 +246,7 @@ class CheckoutView(object):
     @lbr_view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/pc/checkout_login.html', request_method='POST')
     @lbr_view_config(route_name='payment.checkout.login', request_type=IMobileRequest, renderer=selectable_renderer("checkout_login.html"), request_method='POST')
     def login(self):
-        cart = cart_api.get_cart_safe(self.request, for_update=False)
+        cart = cart_api.get_cart_safe(self.request, for_update=True) # build_checkout_request_form のために for_update=True
         try:
             self.request.session['altair.app.ticketing.cart.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
         except TypeError, ValueError:
