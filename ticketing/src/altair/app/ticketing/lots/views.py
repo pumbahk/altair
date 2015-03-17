@@ -220,7 +220,7 @@ class EntryLotView(object):
         """
         """
         if form is None:
-            form = self._create_form()
+            form = self._create_form(formdata=self.request.params)
 
         event = self.context.event
         lot = self.context.lot
