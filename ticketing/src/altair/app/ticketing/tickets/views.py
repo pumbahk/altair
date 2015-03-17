@@ -82,7 +82,7 @@ class TicketMasters(BaseView):
         ticket_cover_sort_by, ticket_cover_direction = helpers.sortparams('ticket_cover', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
-        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
+        ticket_format_qs = ticket_format_qs.order_by(TicketFormat.display_order)
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
@@ -110,7 +110,8 @@ class TicketFormats(BaseView):
         form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       name=format.name,
                                       data_value=json.dumps(format.data),
-                                      delivery_methods=[m.id for m in format.delivery_methods])
+                                      delivery_methods=[m.id for m in format.delivery_methods],
+                                      display_order=format.display_order)
         return dict(h=helpers, form=form, format=format)
 
     @view_config(route_name='tickets.ticketformats.edit', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
@@ -128,6 +129,7 @@ class TicketFormats(BaseView):
         params = form.data
         format.name=params["name"]
         format.data=params["data_value"]
+        format.display_order=params["display_order"]
 
         for dmethod in format.delivery_methods:
             format.delivery_methods.remove(dmethod)
@@ -175,7 +177,8 @@ class TicketFormats(BaseView):
         params = form.data
         ticket_format = TicketFormat(name=params["name"],
                                 data=params["data_value"],
-                                organization_id=self.context.user.organization_id
+                                organization_id=self.context.user.organization_id,
+                                display_order=params["display_order"]
                                 )
 
         for dmethod in DeliveryMethod.filter(DeliveryMethod.id.in_(form.data["delivery_methods"])):
@@ -716,7 +719,7 @@ class TicketPrinter(BaseView):
     @view_config(route_name='tickets.printer.api.formats', renderer='json')
     def formats(self):
         ticket_formats = []
-        for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
+        for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization).order_by(TicketFormat.display_order):
             ticket_formats.append(ticket_format_to_dict(ticket_format))
         return {
             u'status': u'success',
