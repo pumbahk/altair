@@ -92,6 +92,9 @@ class BaseView(_BaseView):
         return self.request.context.user
 
     def check_organization(self, event):
+        if not event:
+            raise HTTPNotFound()
+
         if event.organization != self.user.organization:
             raise HTTPNotFound()
 
