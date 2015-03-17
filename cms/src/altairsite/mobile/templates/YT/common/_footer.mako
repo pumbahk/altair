@@ -6,7 +6,7 @@
         <a href="http://www.ytj.gr.jp/contact/">お問い合わせ</a> |
         <a href="http://www.ytj.gr.jp/privacy/">個人情報保護方針</a>
     </div>
-    <div><font color="#888888">Copyright &copy; 2014 TicketStar Inc. All Rights Reserved.</font></div>
+    <div><font color="#888888">Copyright &copy; 2015 TicketStar Inc. All Rights Reserved.</font></div>
 </font>
 </div>
 
