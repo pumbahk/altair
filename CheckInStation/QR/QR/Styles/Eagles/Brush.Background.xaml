@@ -26,11 +26,18 @@
             </Canvas>
         </VisualBrush.Visual>
     </VisualBrush>
-    
+
     <VisualBrush x:Key="OnePointBackgroundBrush"
                  Stretch="None">
+        <VisualBrush.Transform>
+            <TranslateTransform Y="-310" X="-400"/>
+        </VisualBrush.Transform>
+
+        <VisualBrush.Visual>
+            <Image Source="eticket.png"></Image>
+        </VisualBrush.Visual>
         <!--
-        ロゴの削除
+        旧ロゴの削除
         <VisualBrush.RelativeTransform>
             <TranslateTransform X="-0.39" Y="-0.425"/>
         </VisualBrush.RelativeTransform>
@@ -56,8 +63,15 @@
 
     <VisualBrush x:Key="LogoBackgroundBrush"
                      Stretch="None">
+        <VisualBrush.Transform>
+            <TranslateTransform Y="-310" X="-400"/>
+        </VisualBrush.Transform>
+
+        <VisualBrush.Visual>
+            <Image Source="eticket.png"></Image>
+        </VisualBrush.Visual>
         <!--
-        ロゴの削除
+        旧ロゴの削除
         <VisualBrush.Transform>
             <TranslateTransform Y="-65"/>
         </VisualBrush.Transform>
@@ -101,8 +115,15 @@
 
     <VisualBrush x:Key="LogoBackgroundBrush2"
                      Stretch="None">
+        <VisualBrush.Transform>
+            <TranslateTransform Y="-310" X="-540"/>
+        </VisualBrush.Transform>
+
+        <VisualBrush.Visual>
+            <Image Source="eticket.png"></Image>
+        </VisualBrush.Visual>
         <!--
-        ロゴの削除
+        旧ロゴの削除
         <VisualBrush.Transform>
             <TranslateTransform Y="-65"/>
         </VisualBrush.Transform>
