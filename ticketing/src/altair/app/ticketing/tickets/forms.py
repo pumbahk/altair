@@ -346,7 +346,7 @@ class TicketFormatForm(OurForm):
     display_order = IntegerField(
         label=u'表示順',
         validators=[Optional()],
-        default=0
+        default=1
     )
 
     def validate_display_order(form, field):
@@ -415,7 +415,7 @@ class PageFormatForm(Form):
     display_order = IntegerField(
         label=u'表示順',
         validators=[Optional()],
-        default=0
+        default=1
     )
 
     def validate_display_order(form, field):

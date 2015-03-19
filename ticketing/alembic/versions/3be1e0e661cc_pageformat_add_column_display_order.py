@@ -18,7 +18,8 @@ from sqlalchemy.sql import functions as sqlf
 Identifier = sa.BigInteger
 
 def upgrade():
-    op.add_column('PageFormat', sa.Column('display_order', sa.Integer(), nullable=False, default=1))
+    op.add_column('PageFormat', sa.Column('display_order', sa.Integer(), nullable=False, default=1, server_default=text('1')))
+
 
 def downgrade():
     op.drop_column('PageFormat', 'display_order')
