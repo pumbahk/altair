@@ -3289,6 +3289,7 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='page_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    display_order = Column(Identifier)
 
     @property
     def drawing(self):
