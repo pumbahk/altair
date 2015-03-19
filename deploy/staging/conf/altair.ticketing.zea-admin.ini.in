@@ -1,13 +1,17 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.ticketing.zea-admin
 
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+
 [app:main]
 use = config:%(here)s/../../baseconf/common.ini#zea-admin
 pyramid.includes = altair.findable_label altair.queryprofile
 
-sqlalchemy.url = ${altair:ticketing.db_url.master}
-altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.master}
-altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.slave.pool_class = altair.sqlahelper.sessions.slave.pool_class
 
 ;mail
 altair.mails.bcc.show_flash_message = false

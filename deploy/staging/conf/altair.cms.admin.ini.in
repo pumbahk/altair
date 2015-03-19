@@ -1,13 +1,17 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.cms.admin
 
+sqlalchemy.url = ${altair:cms.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.slave}
+altair.sqlahelper.sessions.slave.pool_class = null
+
 [app:altaircms]
 use = config:%(here)s/../../baseconf/cms-common.ini#altaircms
 pyramid.includes = pyramid_tm pyramid_fanstatic altair.findable_label
 
-sqlalchemy.url = ${altair:cms.db_url.master}
-altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.slave}
-altair.sqlahelper.sessions.slave.pool_class = null
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.slave.pool_class = altair.sqlahelper.sessions.slave.pool_class
 
 altaircms.stage = ${altair:altaircms.stage}
 altaircms.page.tmp.directory = %(here)s/../tmp
@@ -67,8 +71,8 @@ setup = altaircms.scripts.pshell.setup
 
 [alembic]
 script_location = %(here)s/../../../cms/alembic
-# file_template = %%(rev)s_%%(slug)s
-sqlalchemy.echo = false
+sqlalchemy.echo = true
+get sqlalchemy.url = sqlalchemy.url
 
 # Begin logging configuration
 
