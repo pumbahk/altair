@@ -1,6 +1,7 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 from .. import utils
+
 
 def main(argv):
     cfg_name = ''

@@ -138,7 +138,7 @@ class EntryLotView(object):
         """
         抽選第N希望まで選択
         """
-        form = self._create_form()
+        form = self._create_form(formdata=self.request.params)
         event = self.context.event
         lot = self.context.lot
 
@@ -198,7 +198,7 @@ class EntryLotView(object):
         """
         購入情報入力
         """
-        form = self._create_form()
+        form = self._create_form(formdata=self.request.params)
         event = self.context.event
         lot = self.context.lot
 
