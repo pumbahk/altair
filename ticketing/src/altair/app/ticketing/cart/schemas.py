@@ -422,7 +422,7 @@ class BambitiousExtraForm(ExtraForm):
             DynSwitchDisabled(u'{cont} <> "yes"'),
             Regexp(r'\d{7}$', message=u'半角数字7ケタで入力してください。'),
             ],
-        description=Markup(u'[継続]を選択した方は2013-14年の会員番号をご入力ください'),
+        description=Markup(u'[継続]を選択した方は2014-2015シーズンの会員番号をご入力ください'),
         note=Markup(u'(半角数字7ケタ)')
         )
     member_type = OurSelectField(u"会員種別選択", validators=[Required()])
