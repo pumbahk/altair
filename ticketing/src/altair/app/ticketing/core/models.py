@@ -3723,12 +3723,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment.save()
         return {template.id:sales_segment.id}
 
-    def can_delete(self):
+    def is_deletable(self):
         """販売区分は商品か抽選が紐付いている場合は削除できない
 
-        削除ができる状態の場合はFalseが返ります。
+        削除ができる状態の場合はTrueが返ります。
         """
-        return bool(self.products) or bool(self.lots)
+        return not (bool(self.products) or bool(self.lots))
 
     def delete(self, force=False):
         # delete Product

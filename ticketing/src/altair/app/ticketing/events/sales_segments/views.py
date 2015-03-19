@@ -175,7 +175,7 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         if performance_id:
             location = route_path('performances.show', self.request, performance_id=long(performance_id))
 
-        if self.context.sales_segment.can_delete():
+        if not self.context.sales_segment.is_deletable():
             self.request.session.flash(u'商品または抽選のある販売区分は削除できません')
             raise HTTPFound(location=location)
 

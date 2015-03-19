@@ -6,7 +6,7 @@ from pyramid import testing
 from .testing import CoreTestMixin
 
 
-class SalesSegmentCanDeleteTest(unittest.TestCase):
+class SalesSegmentIsDeletableTest(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(
             [
@@ -41,17 +41,17 @@ class SalesSegmentCanDeleteTest(unittest.TestCase):
 
         return ss
 
-    def test_can_delete(self):
+    def test_deletable(self):
         ss = self._make_one()
-        self.assertFalse(ss.can_delete(), '削除可能な時はFalseが返る')
+        self.assertTrue(ss.is_deletable(), '削除可能な時はTrueが返る')
 
-    def test_can_not_delete_exist_lots(self):
+    def test_undeletable_exist_lots(self):
         ss = self._make_one(exists_lots=True)
-        self.assertTrue(ss.can_delete(), '抽選がある場合は販売区分は削除できてはいけない: {}'.format(ss.lots))
+        self.assertFalse(ss.is_deletable(), '抽選がある場合は販売区分は削除できてはいけない: {}'.format(ss.lots))
 
-    def test_can_not_delete_exist_products(self):
+    def test_undeletable_exist_products(self):
         ss = self._make_one(exists_products=True)
-        self.assertTrue(ss.can_delete(), '商品がある場合は販売区分は削除できてはいけない: {}'.format(ss.products))
+        self.assertFalse(ss.is_deletable(), '商品がある場合は販売区分は削除できてはいけない: {}'.format(ss.products))
 
 
 class SalesSegmentTests(unittest.TestCase):
