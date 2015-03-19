@@ -51,7 +51,7 @@ def parse_add_port_pair(pair):
 def setup_logging(config):
     logging_file_name = config.settings.get("access_log")
     if logging_file_name:
-        return open(logging_file_name, 'a')
+        out = open(logging_file_name, 'a')
     else:
         out = sys.stderr
     log.startLogging(out)

@@ -227,7 +227,7 @@ class EntryLotView(object):
         jump_maintenance_page_for_trouble(self.request.organization)
 
         if form is None:
-            form = self._create_form()
+            form = self._create_form(formdata=self.request.params)
 
         event = self.context.event
         lot = self.context.lot

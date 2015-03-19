@@ -92,6 +92,9 @@ class BaseView(_BaseView):
         return self.request.context.user
 
     def check_organization(self, event):
+        if not event:
+            raise HTTPNotFound()
+
         if event.organization != self.user.organization:
             raise HTTPNotFound()
 
@@ -103,8 +106,10 @@ class Lots(BaseView):
     @view_config(route_name='lots.index', renderer='altair.app.ticketing:templates/lots/index.html', permission='event_viewer')
     def index(self):
 
-        slave_session = get_db_session(self.request, name="slave")
-        self.check_organization(self.context.event)
+        event = self.context.event
+        if event is None:
+            return HTTPNotFound()
+
         if "action-delete" in self.request.params:
             for lot_id in self.request.params.getall('lot_id'):
                 lot = Lot.query.filter(Lot.id==lot_id).first()
@@ -116,9 +121,6 @@ class Lots(BaseView):
                         lot.delete()
                         self.request.session.flash(u"{0}を削除しました。".format(lot.name))
 
-        event = self.context.event
-        if event is None:
-            return HTTPNotFound()
 
         import copy
         from .resources import LotResource
@@ -140,7 +142,6 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.new', renderer='altair.app.ticketing:templates/lots/new.html', permission='event_viewer')
     def new(self):
-        self.check_organization(self.context.event)
         event = self.context.event
         if event is None:
             return HTTPNotFound()
