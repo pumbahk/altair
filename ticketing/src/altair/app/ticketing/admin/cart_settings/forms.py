@@ -3,6 +3,7 @@
 from pyramid.i18n import TranslationString as _
 from wtforms.validators import Length, Optional
 from altair.app.ticketing.helpers import label_text_for
+from altair.saannotation import get_annotations_for
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import (
     replace_ambiguous,
@@ -90,7 +91,26 @@ class CartSettingForm(OurForm):
         validators=[Optional()],
         choices=_cart_setting_types
         )
-
+    auth_type = OurSelectField(
+        label=get_annotations_for(CartSetting.auth_type)['label'],
+        coerce=lambda x: x or None,
+        encoder=lambda x: x or u'',
+        choices=[
+            (u'', u'未設定'),
+            (u'fc_auth', u'FC会員ログイン'),
+            (u'rakuten', u'楽天会員認証'),
+            (u'nogizaka46', u'キーワード認証'),
+            ]
+        )
+    secondary_auth_type = OurSelectField(
+        label=get_annotations_for(CartSetting.secondary_auth_type)['label'],
+        coerce=lambda x: x or None,
+        encoder=lambda x: x or u'',
+        choices=[
+            (u'', u'未設定'),
+            (u'nogizaka46', u'キーワード認証'),
+            ]
+        )
     title = OurTextField(
         label=_(u'カートのタイトル')
         )

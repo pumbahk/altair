@@ -21,9 +21,19 @@ class CartFactory(object):
         channel = get_channel(request=request)
         if cart_setting is None:
             cart_setting = getattr(getattr(self.request, 'context'), 'cart_setting', None)
+
+        user = getattr(request, 'altair_auth_info', None)
+
+        if user is not None and not sales_segment.applicable(user=user, type='all'):
+            raise CartCreationException.from_resource(
+                request.context,
+                request,
+                'user {0} is not associated to sales_segment_id({1})'.format(user, sales_segment.id)
+                )
+
         if membership is None:
-            if hasattr(request, 'altair_auth_info'):
-                membership = get_membership(request.altair_auth_info)
+            if user is not None:
+                membership = get_membership(user)
         if cart_setting is None:
             if membership is not None:
                 cart_setting = membership.organization.setting.cart_setting

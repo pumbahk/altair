@@ -20,6 +20,8 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.name = form.data['name']
     if form.data['type'] is not None:
         cart_setting.type = form.data['type']
+    cart_setting.auth_type = form.data['auth_type']
+    cart_setting.secondary_auth_type = form.data['secondary_auth_type']
     cart_setting.performance_selector = form.data['performance_selector']
     cart_setting.performance_selector_label1_override = form.data['performance_selector_label1_override']
     cart_setting.performance_selector_label2_override = form.data['performance_selector_label2_override']

@@ -1,19 +1,23 @@
+from __future__ import absolute_import
+
 import os
 import logging
 from pyramid.path import AssetResolver
 from pyramid.interfaces import IRequest
-from repoze.who.interfaces import IAPIFactory, IAPI
-from .interfaces import IWhoAPIDecider
-from .api import get_who_api_factory_registry
+from .interfaces import IWhoAPIDecider, IRequestClassifier, IPlugin
+from .api import get_plugin_registry
 
 logger = logging.getLogger(__name__)
 
-def set_who_api_decider(config, callable):
+def set_who_api_decider(config, callable, classification=None):
     callable = config.maybe_dotted(callable)
     reg = config.registry
-
     def register():
-        reg.adapters.register([IRequest], IWhoAPIDecider, "", callable)
+        logger.info("who_api_decider %s [%s] registered" % (callable, classification))
+        if classification is None:
+            reg.registerUtility(callable, IWhoAPIDecider)
+        else:
+            reg.registerUtility(callable, IWhoAPIDecider, name=classification)
 
     intr = config.introspectable(category_name='altair.auth',
                                  discriminator='who api decider',
@@ -24,22 +28,38 @@ def set_who_api_decider(config, callable):
     config.action('altair.auth.set_who_api_decider', register,
                   introspectables=(intr,))
 
-    
-
-def add_who_api_factory(config, name, who_api_factory):
+def set_request_classifier(config, callable):
+    callable = config.maybe_dotted(callable)
     reg = config.registry
 
     def register():
-        _who_api_factory = config.maybe_dotted(who_api_factory)
-        get_who_api_factory_registry(reg).register(name, _who_api_factory)
+        reg.registerUtility(callable, IRequestClassifier)
 
     intr = config.introspectable(category_name='altair.auth',
-                                 discriminator='who api factory',
-                                 title='{name} {who_api_factory}'.format(name=name, who_api_factory=who_api_factory), 
-                                 type_name=str(IAPIFactory))
-    config.action('altair.auth.add_who_api_factory.{0}'.format(name), register,
+                                 discriminator='request classifier',
+                                 title='altair.auth Request Classifier',
+                                 type_name=str(callable))
+    intr['callable'] = callable
+
+    config.action('altair.auth.set_request_classifier', register,
+                  introspectables=(intr,))
+    
+    
+def add_auth_plugin(config, auth_plugin):
+    reg = config.registry
+
+    def register():
+        _auth_plugin = config.maybe_dotted(auth_plugin)
+        get_plugin_registry(reg).register(_auth_plugin)
+
+    intr = config.introspectable(category_name='altair.auth',
+                                 discriminator='auth plugin',
+                                 title='{name} {auth_plugin}'.format(name=auth_plugin.name, auth_plugin=auth_plugin), 
+                                 type_name=str(IPlugin))
+    config.action('altair.auth.add_auth_plugin.{0}'.format(auth_plugin.name), register,
                   introspectables=(intr,))
 
 def includeme(config):
-    config.add_directive('add_who_api_factory', add_who_api_factory)
+    config.add_directive('add_auth_plugin', add_auth_plugin)
     config.add_directive('set_who_api_decider', set_who_api_decider)
+    config.add_directive('set_request_classifier', set_request_classifier)

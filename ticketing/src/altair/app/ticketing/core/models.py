@@ -55,7 +55,7 @@ from altair.app.ticketing.models import (
 )
 
 from standardenum import StandardEnum
-from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
+from altair.app.ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime, memoize
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
@@ -917,20 +917,17 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
 
     if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
         q = q \
-            .outerjoin(MemberGroup,
-                       SalesSegmentGroup.membergroups) \
+            .outerjoin(SalesSegmentGroup.membergroups) \
             .filter(or_(MemberGroup.is_guest != False,
                         MemberGroup.id == None))
     elif user and 'membership' in user:
         q = q \
-            .outerjoin(MemberGroup,
-                       SalesSegmentGroup.membergroups) \
+            .join(SalesSegmentGroup.membergroups) \
+            .join(MemberGroup.membership) \
             .filter(
-                or_(
-                    or_(MemberGroup.is_guest != False,
-                        MemberGroup.id == None),
-                    MemberGroup.name == user['membergroup']
-                    )
+                MemberGroup.is_guest == False,
+                MemberGroup.name == user['membergroup'],
+                Membership.name == user['membership']
                 )
     return q
 
@@ -3810,7 +3807,6 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='settings')
 
-    auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
     performance_selector = association_proxy('cart_setting', 'performance_selector')
     margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"販売手数料率")
     refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"払戻手数料率")

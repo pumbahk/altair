@@ -6,6 +6,7 @@ import urllib
 
 from pyramid.config import Configurator
 from pyramid.compat import string_types
+from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.renderers import RendererHelper
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
@@ -14,14 +15,14 @@ from pyramid.exceptions import ConfigurationError
 from sqlalchemy import engine_from_config
 
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
+from altair.mobile import PC_ACCESS_COOKIE_NAME
+
+from .interfaces import ICartResource
+from ..api.impl import bind_communication_api ## cmsとの通信
 
 logger = logging.getLogger(__name__)
 
 
-from ..api.impl import bind_communication_api ## cmsとの通信
-
-### pc smartphone switch
-from altair.mobile import PC_ACCESS_COOKIE_NAME
 PC_SWITCH_COOKIE_NAME = PC_ACCESS_COOKIE_NAME
 
 CART_STATIC_URL_PREFIX = '/static/'
@@ -163,16 +164,33 @@ def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
+
+def decide_auth_types(request, classification):
+    if hasattr(request, 'context'):
+        context = request.context
+        if ICartResource.providedBy(context):
+            return context.cart_setting.auth_types
+    return []
+
+def setup_nogizaka_auth(config):
+    config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
+    config.add_nogizaka_entrypoint('cart.index')
+    config.add_nogizaka_entrypoint('cart.index2')
+    config.add_nogizaka_entrypoint('cart.index.sales')
+    config.add_nogizaka_entrypoint('cart.agreement')
+    config.add_nogizaka_entrypoint('cart.agreement2')
+    config.add_nogizaka_entrypoint('cart.agreement.compat')
+    config.add_nogizaka_entrypoint('cart.agreement2.compat')
+
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
 
-    config.set_who_api_decider('altair.app.ticketing.security:OrganizationSettingBasedWhoDecider')
+    config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
     set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
-    from authorization import MembershipAuthorizationPolicy
-    config.set_authorization_policy(MembershipAuthorizationPolicy())
+    config.set_authorization_policy(ACLAuthorizationPolicy())
 
     # 楽天認証URL
     config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
@@ -180,6 +198,8 @@ def setup_auth(config):
     config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
     config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
     config.add_route('cart.logout', '/logout')
+
+    config.include(setup_nogizaka_auth)
 
 class CartInterface(object):
     def get_cart(self, request, retrieve_invalidated=False):

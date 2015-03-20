@@ -8,7 +8,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.widgets import CheckboxInput
 from wtforms.validators import Length, Optional, ValidationError, NumberRange
 
-from altair.auth import get_who_api_factory_registry
+from altair.auth.api import get_plugin_registry
 from altair.formhelpers import (
     DateTimeField, Translations, Required, Max, OurDateWidget, Email,
     after1900, LazySelectMultipleField, OurBooleanField, OurDecimalField,
@@ -87,7 +87,7 @@ class LotForm(Form):
 
     def _auth_types(field):
         retval = [('', u'なし')]
-        for name, _ in get_who_api_factory_registry(field._form.context.request):
+        for name, _ in get_plugin_registry(field._form.context.request):
             retval.append((name, name))
         return retval
 

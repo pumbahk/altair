@@ -9,6 +9,11 @@ import re
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
+from sqlalchemy.orm.exc import NO_STATE
+try:
+    from sqlalchemy.orm.utils import object_state
+except ImportError:
+    from sqlalchemy.orm.attributes import instance_state as object_state
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget, authenticated_userid
@@ -84,11 +89,37 @@ def get_cart(request, for_update=True):
     if cart_id is None:
         return None
 
-    q = Cart.query.filter(Cart.id==cart_id)
     if for_update:
-        q = q.with_lockmode('update')
-
-    return q.first()
+        cart = request.environ.get('altair.app.ticketing.cart')
+        if cart is not None:
+            try:
+                state = object_state(cart)
+            except NO_STATE:
+                state = None
+            if state and state.session_id is not None:
+                return cart
+        cart = Cart.query.filter(Cart.id==cart_id).with_lockmode('update').first()
+        request.environ['altair.app.ticketing.cart'] = cart
+    else:
+        cart = request.environ.get('altair.app.ticketing.read_only_cart')
+        if cart is not None:
+            try:
+                state = object_state(cart)
+            except NO_STATE:
+                state = None
+            if state and state.session_id is not None:
+                return cart
+        cart = request.environ.get('altair.app.ticketing.cart')
+        if cart is not None:
+            try:
+                state = object_state(cart)
+            except NO_STATE:
+                state = None
+            if state and state.session_id is not None:
+                return cart
+        cart = Cart.query.filter(Cart.id==cart_id).first()
+        request.environ['altair.app.ticketing.read_only_cart'] = cart
+    return cart
 
 def get_cart_by_order_no(request, order_no, for_update=True):
     q = Cart.query.filter(Cart.order_no == order_no)
@@ -372,8 +403,7 @@ def is_point_input_required(context, request):
     return _enable_point_input
 
 def is_fc_auth_organization(context, request):
-    organization = request.organization
-    return bool(organization.settings[0].auth_type == "fc_auth")
+    return context.cart_setting.auth_type == "fc_auth"
 
 def enable_auto_input_form(user):
     from altair.app.ticketing.users.models import User
@@ -478,9 +508,9 @@ def get_or_create_user(info):
         u_models.Membership.name == info['membership']) \
         .order_by(u_models.Membership.id.desc()) \
         .first()
-    # [暫定] 楽天OpenID認証の場合は、oragnization_id の条件を外したものでも調べる
+    # [暫定] 楽天OpenID認証の場合は、organization_id の条件を外したものでも調べる
     # TODO: あとでちゃんとデータ移行する
-    if membership is None and info['auth_type'] == 'rakuten':
+    if membership is None and info['membership_source'] == 'rakuten':
         membership = u_models.Membership.query.filter(
             u_models.Membership.name == info['membership']) \
             .order_by(u_models.Membership.id.desc()) \

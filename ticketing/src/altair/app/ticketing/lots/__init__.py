@@ -15,17 +15,13 @@ import sqlahelper
 from .interfaces import ILotResource
 
 
-class WhoDecider(object):
-    def __init__(self, request):
-        self.request = request
-
-    def decide(self):
-        """ WHO API 選択
-        """
-        if hasattr(self.request, "context") and ILotResource.providedBy(self.request.context):
-            return self.request.context.auth_type
-        else:
-            return ''
+def decide_auth_types(request, classification):
+    """ WHO API 選択
+    """
+    if hasattr(request, "context") and ILotResource.providedBy(request.context):
+        return [request.context.lot.auth_type]
+    else:
+        return []
 
 def register_globals(event):
     from . import helpers
@@ -70,7 +66,7 @@ def setup_auth(config):
     config.include('altair.app.ticketing.fc_auth')
     config.include(setup_nogizaka_auth)
 
-    config.set_who_api_decider('altair.app.ticketing.lots:WhoDecider')
+    config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
     set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
     config.set_authorization_policy(ACLAuthorizationPolicy())
