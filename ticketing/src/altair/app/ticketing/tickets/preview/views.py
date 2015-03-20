@@ -181,7 +181,7 @@ def load_ticket_image(request, ticket_format):
     desc = resolver.resolve('altair.app.ticketing:static/images/tickets/%s' % im_loc)
     return image.open(desc.stream())
 
-def compose_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(300, 300)}, ticket_im_info_defaults={'dpi':(90, 90)}):
+def composite_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(300, 300)}, ticket_im_info_defaults={'dpi':(90, 90)}):
     try:
         ticket_im = load_ticket_image(request, ticket_format)
     except Exception as e:
@@ -407,6 +407,7 @@ class PreviewApiView(object):
 
     @view_config(match_param="action=preview.base64", request_param="type=sej") #svg
     def preview_ticket_post64_sej(self):
+        without_ticket_image = self.request.params.get('without_ticket_image', False)
         try:
             ticket_format = c_models.TicketFormat.query \
                 .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
@@ -424,12 +425,13 @@ class PreviewApiView(object):
                 )
             ptct = transformer.transform()
             imgdata = preview.communicate(self.request, (ptct, template_record), ticket_format)
-            f = BytesIO(imgdata)
-            f.name = 'svg.png'
-            im = compose_ticket_image(self.request, ticket_format, image.open(f), im_info_defaults={'dpi':(300, 300)})
-            f = BytesIO()
-            im.save(f, 'png')
-            imgdata = f.getvalue()
+            if not without_ticket_image:
+                f = BytesIO(imgdata)
+                f.name = 'svg.png'
+                im = composite_ticket_image(self.request, ticket_format, image.open(f), im_info_defaults={'dpi':(300, 300)})
+                f = BytesIO()
+                im.save(f, 'png')
+                imgdata = f.getvalue()
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewFillValuesException, e:
