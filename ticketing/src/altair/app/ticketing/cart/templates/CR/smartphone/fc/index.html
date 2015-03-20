@@ -1,9 +1,0 @@
-<%inherit file="${context['main_template'].uri}" />
-<%block name="title">入会対象をお選びください</%block>
-<div class="frame frame-inner">
-  <ul>
-  % for title, url in links:
-  <li><a href="${url}">${title}</a></li>
-  % endfor
-  </ul>
-</div>
