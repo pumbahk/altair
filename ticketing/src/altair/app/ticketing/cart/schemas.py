@@ -429,9 +429,9 @@ class BambitiousExtraForm(ExtraForm):
 
     t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
     t_shirts_size = OurSelectField(
-        u"ブースターシャツサイズ",
+        u"クラブバンビシャスシャツサイズ",
         choices=t_shirts_size_choices,
-        description=u"ゴールド会員を選択の方はブースターシャツサイズをお選びください。",
+        description=u"ゴールド会員を選択の方はクラブバンビシャスシャツサイズをお選びください。",
         validators=[
             DynSwitchDisabled(u'NOT({member_type}="ゴールド会員")'),
             ],
