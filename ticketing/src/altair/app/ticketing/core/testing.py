@@ -7,6 +7,7 @@ class CoreTestMixin(object):
     def setUp(self):
         from altair.app.ticketing.core.models import (
             Organization,
+            Host,
             Event,
             Performance,
             Site,
@@ -18,9 +19,12 @@ class CoreTestMixin(object):
             )
         from altair.app.ticketing.payments import plugins as _payment_plugins
         import re
+        from datetime import datetime
         self.organization = Organization(id=1, short_name=u'', code=u'XX')
+        self.host = Host(organization=self.organization, host_name='example.com:80')
         self.event = Event(organization=self.organization, title=u'イベント')
         self.performance = Performance(
+            start_on=datetime(1970, 1, 1),
             event=self.event,
             venue=Venue(organization=self.organization, site=Site()),
             name=u'パフォーマンス',

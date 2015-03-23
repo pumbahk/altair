@@ -57,8 +57,10 @@ def release_carts():
     env = bootstrap(args.config)
     request = env['request']
     registry = env['registry']
-    settings = registry.settings
-    expire_time = int(settings['altair_cart.expire_time'])
+    expire_time = api.get_cart_expire_time(registry)
+    if expire_time is None:
+        logging.error('expiration is not specified. exiting...')
+        return
     target_to = datetime.now() - timedelta(minutes=expire_time)
     target_from = None if args.all else (datetime.now() - timedelta(minutes=expire_time*2))
 

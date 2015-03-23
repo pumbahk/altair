@@ -964,20 +964,6 @@ def render_view_to_response_with_derived_request(context_factory, request, name=
     subrequest.context = context
     return render_view_to_response(context, subrequest, name, secured)
 
-def coerce_extra_form_data(request, extra_form_data):
-    attributes = {}
-    for k, v in extra_form_data.items():
-        if isinstance(v, list):
-            v = ','.join(v)
-        elif isinstance(v, datetime):
-            v = v.strftime("%Y-%m-%d %H:%M:%S")
-        elif isinstance(v, date):
-            v = v.strftime("%Y-%m-%d")
-        elif isinstance(v, time):
-            v = v.strftime("%H:%M:%S")
-        attributes[k] = v
-    return attributes
-
 def is_booster_cart_pred(context, request):
     return api.is_booster_cart(context.cart_setting)
 
@@ -986,3 +972,5 @@ def is_fc_cart_pred(context, request):
 
 def is_booster_or_fc_cart_pred(context, request):
     return api.is_booster_or_fc_cart(context.cart_setting)
+
+coerce_extra_form_data = api.coerce_extra_form_data
