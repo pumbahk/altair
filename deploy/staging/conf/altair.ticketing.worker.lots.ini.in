@@ -1,14 +1,14 @@
 [DEFAULT]
 sqlalchemy.url = ${altair:ticketing.db_url.master}
 altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
-altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+altair.sqlahelper.sessions.lot_work_history.url = ${altair:ticketing.db_url.master}
 
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
-get altair.sqlahelper.sessions.slave.pool_class = altair.sqlahelper.sessions.slave.pool_class
+get altair.sqlahelper.sessions.lot_work_history.url = altair.sqlahelper.sessions.lot_work_history.url
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
