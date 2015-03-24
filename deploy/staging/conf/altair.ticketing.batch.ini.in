@@ -28,18 +28,18 @@ altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
 keys = root, ticketing
 
 [handlers]
-keys = rotate, stderr, spool
+keys = rotate, stderr, spool, fluent
 
 [formatters]
 keys = generic
 
 [logger_root]
 level = INFO
-handlers = rotate, spool
+handlers = rotate, spool, fluent
 
 [logger_ticketing]
 level = DEBUG
-handlers = rotate, spool
+handlers = rotate, spool, fluent
 qualname = altair.app.ticketing
 propagate = 0
 
