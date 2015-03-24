@@ -24,6 +24,8 @@ ${self.widget.flow_widget(4)}
   </div>
 </div>
 
+${(view_context.embedded_html_complete_page or u'')|n}
+
 <% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
 % if extra_form_data:
 <div class="confirmBox">
