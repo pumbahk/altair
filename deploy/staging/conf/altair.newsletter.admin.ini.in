@@ -1,10 +1,13 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.newsletter.admin
 
+sqlalchemy.url = ${altair:newsletter.db_url.master}
+
 [app:newsletter]
 use = config:%(here)s/../../baseconf/common.ini#newsletter
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
-sqlalchemy.url = mysql://newsletter:newsletter@localhost/newsletter?use_unicode=true&charset=utf8
+
+get sqlalchemy.url = sqlalchemy.url
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

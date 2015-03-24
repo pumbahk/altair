@@ -1,5 +1,13 @@
+[DEFAULT]
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.queryprofile
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

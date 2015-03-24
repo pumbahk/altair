@@ -1,12 +1,15 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.ticketing.zea-admin
+
 sqlalchemy.url = ${altair:ticketing.db_url.master}
-altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.master}
-altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
 [app:main]
 use = config:%(here)s/../../baseconf/common.ini#zea-admin
 pyramid.includes = altair.findable_label altair.queryprofile
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ;mail
 altair.mails.bcc.show_flash_message = false
@@ -36,11 +39,11 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 ; altair.mq
 altair.ticketing.lots.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.lots.mq.url = amqp://guest:guest@localhost:5672/%2F
+altair.ticketing.lots.mq.url = ${altair:ticketing.mq_url}
 
 altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
+altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
