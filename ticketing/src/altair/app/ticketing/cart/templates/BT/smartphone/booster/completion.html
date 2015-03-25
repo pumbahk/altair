@@ -1,0 +1,68 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="title">予約・購入を完了いたしました</%block>
+<div class="kadomaru">
+  <h3>受付番号</h3>
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <td>${order.order_no}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="kadomaru">
+  <h3>お申込内容</h3>
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th colspan="3"><span>${_context.event.title}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${order.ordered_products[0].product.name}</td>
+        <td>　</td>
+        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)}</td>
+      </tr>
+      <tr>
+        <td>決済手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>合計金額</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="kadomaru">
+  <h3>お支払い</h3>
+  ${h.render_payment_finished_viewlet(request, order)}
+</div>
+
+<div class="kadomaru">
+  <h3>注意事項</h3>
+  <ul>
+    <li>受付完了後の会員種別の変更及び会費の返金はいかなる場合も応じかねます。</li>
+    <li>ご登録いただいた個人情報は、会員証やグッズ、各種イベント等の案内を送付する目的以外で使用することはございません。
+      　弊社では収集した個人情報の漏えいまたは減失または破棄の防止及び目的以外使用防止のために必要かつ適切な安全措置を講じております。</li>
+    <li>お申込状況は、クラブバンビシャス入会申込ページの「<a href="${view_context.orderreview_page_url}">申込受付履歴</a>」からご確認いただけます。</li>
+    <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。
+    （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+  </ul>
+</div>
+
+<div class="kadomaru">
+  <h3>お問い合わせ先</h3>
+  <ul class="markNone font14">
+    <li>${view_context.contact_name}</li>
+    <li>TEL: ${view_context.contact_tel} (${view_context.contact_office_hours})</li>
+    <li>メール: <a href="${view_context.contact_url}">${view_context.contact_name}</a></li>
+  </ul>
+</div>
