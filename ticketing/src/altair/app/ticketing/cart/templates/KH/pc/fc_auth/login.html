@@ -40,6 +40,7 @@
                 </td>
                 <td>
                   <form action="${request.path}" method="post">
+                    <input type="hidden" name="password" value="zyrannah">
                     <table class="loginbox">
                         <thead>
                             <tr>
@@ -56,17 +57,9 @@
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                                            <br/><span class="small red">IDが一致しません</span>
                                             %endif
 
-                                        </div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <th style="text-align:right">パスワード</th>
-                                      <td style="text-align:left">
-                                        <div class="tal">
-                                            <input type="password" name="password">
                                         </div>
                                       </td>
                                     </tr>
@@ -93,13 +86,15 @@
 <h3>その他</h3>
 <ul class="notes">
     <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
-    <li>パスワードをお忘れの場合<a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">こちら</a>からお問合せください。</li>
+    <li>パスワードをお忘れの場合<a href="mailto:hannaryz@tstar.jp" target="_blank">こちら</a>からお問合せください。</li>
 </ul>
 
 <h3>お問い合わせ</h3>
 
 <ul class="notes">
-        <li>◆サービス名◆の問い合わせ先 (平日10時～18時)</li>
+  <li>
+    購入方法やシステムに関するお問い合わせは<a href="mailto:hannaryz@tstar.jp"><font color="#ff0000">hannaryz@tstar.jp</font></a>へ
+  </li>
 </ul>
   </div>
 </div>
