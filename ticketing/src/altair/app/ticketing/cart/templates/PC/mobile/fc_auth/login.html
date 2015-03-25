@@ -11,17 +11,18 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#FEBF00">■</font>各種会員の方はこちらから</font>
+<div><font color="#FEBF00">■</font>ログインパスワードをお持ちの方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="PC" />
 <div>
-  会員ID<br/>
+<br/>
+  ログインパスワード<br/>(半角英数字)<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">ログインパスワードが一致しません</span>
   %endif
 
   <input type="hidden" name="password" value="popcircus">
