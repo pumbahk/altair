@@ -30,7 +30,7 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.core.models import Product, PaymentDeliveryMethodPair
 from altair.app.ticketing.core.models import MailTypeEnum, ChannelEnum
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.cart.events import notify_order_completed
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
@@ -325,13 +325,23 @@ class CheckoutCallbackView(object):
         service = api.get_checkout_service(self.request, cart.performance.event.organization, get_channel(cart.channel))
         service.mark_authorized(cart.order_no)
 
+        # XXX:本来はコールバックの中で呼び出している make_order_from_cart() の中で設定されてほしいが
+        # 追加情報がセッションに入ってしまっているので対応が難しい.
+        # ワークアラウンドとして完了Viewの中でアサインする
+        extra_form_data = cart_api.load_extra_form_data(self.request)
+        if extra_form_data is not None:
+            cart.order.attributes = cart_api.coerce_extra_form_data(self.request, extra_form_data)
+
         # メール購読
         retval = cont_complete_view(
             self.context, self.request,
             order_no=cart.order_no,
-            magazine_ids=self.request.session['altair.app.ticketing.cart.magazine_ids']
+            magazine_ids=self.request.session.get('altair.app.ticketing.cart.magazine_ids', [])
             )
-        del self.request.session['altair.app.ticketing.cart.magazine_ids']
+        try:
+            del self.request.session['altair.app.ticketing.cart.magazine_ids']
+        except KeyError:
+            pass
         return retval
 
     @clear_exc
