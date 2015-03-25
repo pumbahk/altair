@@ -29,7 +29,7 @@ URL：http://www.ticketstar.jp/corporate<br/><br/>
 <hr/>
 
 <a name="2" id="2">２．運営責任者</a><br/><br/>
-松居 健太<br/><br/>
+佐野 憲一<br/><br/>
 
 <a href="#top">▲上へ</a><br/>
 <hr/>
