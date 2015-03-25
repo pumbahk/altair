@@ -46,7 +46,6 @@ from . import helpers as h
 from . import schemas
 from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
-from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .rendering import selectable_renderer
@@ -62,7 +61,6 @@ from .view_support import (
     gzip_preferred,
     is_booster_or_fc_cart_pred,
     render_view_to_response_with_derived_request,
-    coerce_extra_form_data,
     )
 from .exceptions import (
     NoSalesSegment,
@@ -1255,6 +1253,31 @@ class ConfirmView(object):
             accountno=acc.account_number if acc else ""
         )
 
+# 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
+def cont_complete_view(context, request, order_no, magazine_ids):
+    cart = api.get_cart_by_order_no(request, order_no)
+
+    # メール購読
+    user = api.get_user(context.authenticated_user()) # これも読み直し
+    emails = cart.shipping_address.emails
+    multi_subscribe(user, emails, magazine_ids)
+
+    api.logout(request)
+
+    request.response.expires = datetime.now() + timedelta(seconds=3600)
+    api.get_temporary_store(request).set(request, order_no)
+    if IMobileRequest.providedBy(request):
+        api.disassociate_cart_from_session(request)
+        # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
+        # 思われるので、直接ページをレンダリングする
+        return render_view_to_response_with_derived_request(
+            context_factory=CompleteViewTicketingCartResource,
+            request=request,
+            route=('payment.finish', {})
+            )
+    else:
+        # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
+        return HTTPFound(request.route_path('payment.finish'), headers=request.response.headers)
 
 @view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
@@ -1279,7 +1302,8 @@ class CompleteView(object):
             # セッションからCSRFトークンを削除して再利用不可にしておく
             if 'csrf' in self.request.session:
                 del self.request.session['csrf']
-                self.request.session.persist()
+                if hasattr(self.request.session, 'persist'):
+                    self.request.session.persist()
 
             cart = self.context.cart
             if not cart.is_valid():
@@ -1306,46 +1330,15 @@ class CompleteView(object):
             else:
                 raise
 
-        self.context.check_order_limit()
-
-        payment = Payment(cart, self.request)
-        order = payment.call_payment()
-        order_id = order.id
+        self.context.check_order_limit() # 最終チェック
+        order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-
-        extra_form_data = api.load_extra_form_data(self.request)
-        if extra_form_data is not None:
-            order.attributes = coerce_extra_form_data(self.request, extra_form_data)
-
-        notify_order_completed(self.request, order)
-
-        # メール購読でエラーが出てロールバックされても困る
-        transaction.commit()
-
-        cart = api.get_cart(self.request) # これは get_cart でよい
-
-        # メール購読
-        user = api.get_user(self.context.authenticated_user()) # これも読み直し
-        emails = cart.shipping_address.emails
-        magazine_ids = self.request.params.getall('mailmagazine')
-        multi_subscribe(user, emails, magazine_ids)
-
-        api.logout(self.request)
-
-        self.request.response.expires = datetime.now() + timedelta(seconds=3600)
-        api.get_temporary_store(self.request).set(self.request, order_no)
-        if IMobileRequest.providedBy(self.request):
-            api.disassociate_cart_from_session(self.request)
-            # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
-            # 思われるので、直接ページをレンダリングする
-            return render_view_to_response_with_derived_request(
-                context_factory=CompleteViewTicketingCartResource,
-                request=self.request,
-                route=('payment.finish', {})
-                )
-        else:
-            # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
-            return HTTPFound(self.request.route_path('payment.finish'), headers=self.request.response.headers)
+        transaction.commit() # cont_complete_viewでエラーが出てロールバックされても困るので
+        return cont_complete_view(
+            self.context, self.request,
+            order_no,
+            magazine_ids=self.request.params.getall('mailmagazine')
+            )
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
     def get(self):

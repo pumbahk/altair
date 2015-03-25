@@ -7,6 +7,7 @@ from base64 import b64encode
 from datetime import datetime
 import warnings
 from collections import OrderedDict
+from zope.interface import implementer
 from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
@@ -20,7 +21,7 @@ from .payload import (
     RESULT_FLG_FAILED,
     )
 from .payload import AnshinCheckoutPayloadBuilder, AnshinCheckoutHTMLFormBuilder
-from .interfaces import IAnshinCheckoutCommunicator
+from .interfaces import IAnshinCheckoutCommunicator, IAnshinCheckoutPayloadResponseFactory
 from .exceptions import AnshinCheckoutAPIError
 
 logger = logging.getLogger(__name__)
@@ -269,6 +270,7 @@ def update_checkout_object_by_order_like(request, session, checkout_object, orde
 
     return checkout_object
 
+@implementer(IAnshinCheckoutPayloadResponseFactory)
 class AnshinCheckoutAPI(object):
     def __init__(self, request, session, now, payload_builder, html_form_builder, communicator):
         self.request = request
@@ -279,13 +281,23 @@ class AnshinCheckoutAPI(object):
         self.comm = communicator
 
     def create_checkout_object(self, orderCartId):
+        """IAnshinCheckoutPayloadResponseFactory"""
         if orderCartId is None:
             return m.Checkout(orderCartId=orderCartId)
         else:
             return get_checkout_object_by_order_cart_id(self.request, self.session, orderCartId)
 
     def create_checkout_item_object(self):
+        """IAnshinCheckoutPayloadResponseFactory"""
         return m.CheckoutItem()
+
+    def get_or_create_checkout_object(self, order_like):
+        """外部でロックをかけていることが前提 (Cart の for update などで) なので注意!"""
+        try:
+            retval = get_checkout_object(self.request, self.session, order_like.order_no)
+        except NoResultFound:
+            retval = build_checkout_object_from_order_like(self.request, order_like)
+        return retval
 
     def get_order_settled_at(self, order_like):
         return self.get_checkout_object_by_order_no(order_like.order_no).sales_at
@@ -387,8 +399,9 @@ class AnshinCheckoutAPI(object):
         return etree.tostring(self.pb.create_order_complete_response_xml(result, complete_time), xml_declaration=True, encoding='utf-8')
 
     def build_checkout_request_form(self, order_like, success_url=None, fail_url=None):
+        """この関数の呼び出しは同期していないといけない (同時に違うリクエストが呼び出す状況を作ってはいけない)"""
         # checkoutをXMLに変換
-        checkout_object = build_checkout_object_from_order_like(self.request, order_like)
+        checkout_object = self.get_or_create_checkout_object(order_like)
         self.session.add(checkout_object)
         self.session.commit()
 

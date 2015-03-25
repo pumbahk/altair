@@ -90,6 +90,13 @@ def get_cart(request, for_update=True):
 
     return q.first()
 
+def get_cart_by_order_no(request, order_no, for_update=True):
+    q = Cart.query.filter(Cart.order_no == order_no)
+    if for_update:
+        q = q.with_lockmode('update')
+
+    return q.first()
+
 def disassociate_cart_from_session(request):
     try:
         del request.session['altair.app.ticketing.cart_id']
@@ -127,14 +134,44 @@ def get_now_from_request(request):
     else:
         return datetime.now() # XXX
 
+def get_cart_expire_time(request_or_registry):
+    if hasattr(request_or_registry, 'registry'):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    expire_time_str = registry.settings.get('altair.cart.expire_time')
+    if expire_time_str is None:
+        logger.warning("altair.cart.expire_time does not exist. using deprecated altair_cart.expire_time instead")
+        expire_time_str = registry.settings.get('altair_cart.expire_time')
+        if expire_time_str is None:
+            logger.warning("neither altair.cart.expire_time nor altair_cart.expire_time exists")
+    expire_time = None
+    if expire_time_str is not None:
+        expire_time = int(expire_time_str)
+    return expire_time
+
+def validate_cart(request, cart):
+    """カートが利用可能かどうか調べる。利用可能であれば True を返す"""
+    # カートが finished の状態になっているときは、カートはもう使うことができない
+    if cart.finished_at:
+        return False
+
+    expire_time = get_cart_expire_time(request)
+
+    # expire_time が指定されていないときは、カートの期限切れは発生しない
+    if expire_time is not None:
+        now = datetime.now() ##cartのexpireの計算はcart.created_atで行われるので。ここはdatetime.nowが正しい
+        minutes = max(expire_time - 1, 0) # XXX:この -1 は一体?
+        if cart.is_expired(minutes, now):
+            return False
+
+    return True
+
 def get_cart_safe(request, for_update=True):
-    now = datetime.now() ##cartのexpireの計算はcart.created_atで行われるので。ここはdatetime.nowが正しい
-    minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request, for_update)
     if cart is None:
         raise NoCartError('Cart is not associated to the request')
-    expired = cart.is_expired(minutes, now) or cart.finished_at
-    if expired:
+    if not validate_cart(request, cart):
         raise NoCartError('Cart is expired')
     return cart
 
@@ -675,3 +712,30 @@ def check_if_payment_delivery_method_pair_is_applicable(request, cart, payment_d
     except OrderLikeValidationFailure:
         return False
     return True
+
+def coerce_extra_form_data(request, extra_form_data):
+    attributes = {}
+    for k, v in extra_form_data.items():
+        if isinstance(v, list):
+            v = ','.join(v)
+        elif isinstance(v, datetime):
+            v = v.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(v, date):
+            v = v.strftime("%Y-%m-%d")
+        elif isinstance(v, time):
+            v = v.strftime("%H:%M:%S")
+        attributes[k] = v
+    return attributes
+
+def make_order_from_cart(request, cart):
+    from .events import notify_order_completed
+    from altair.app.ticketing.payments.payment import Payment
+    payment = Payment(cart, request)
+    order = payment.call_payment()
+
+    extra_form_data = load_extra_form_data(request)
+    if extra_form_data is not None:
+        order.attributes = coerce_extra_form_data(request, extra_form_data)
+
+    notify_order_completed(request, order)
+    return order

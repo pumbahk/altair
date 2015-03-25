@@ -12,16 +12,27 @@ from altair.app.ticketing.core.interfaces import (
     )
 
 class ICartInterface(Interface):
-    def get_cart(request):
+    def get_cart(request, retrieve_invalidated=False):
+        """ get IPaymentCart impl from request """
+
+    def get_cart_by_order_no(request, order_no, retrieve_invalidated=False):
         """ get IPaymentCart impl from request """
 
     def get_success_url(request):
         """ get success url """
 
+    def make_order_from_cart(request, cart):
+        pass
+
+    def cont_complete_view(context, request, order_no, magazine_ids):
+        pass
+
+
 class IPaymentCart(IOrderLike):
     performance           = Attribute(u"")
     name                  = Attribute(u"")
     order                 = Attribute(u"")
+    order_no              = Attribute(u"")
 
     def finish():
         """ finish cart lifecycle"""
