@@ -38,7 +38,7 @@ from altair.app.ticketing.checkout import api
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
 from altair.app.ticketing.mailmags.api import multi_subscribe
 
-from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
+from ..exceptions import PaymentPluginException, OrderLikeValidationFailure, PaymentCartNotAvailable
 from ..interfaces import IPaymentPlugin, IOrderPayment
 from ..payment import Payment
 from ..api import get_cart, get_cart_by_order_no, make_order_from_cart, cont_complete_view
@@ -321,7 +321,10 @@ class CheckoutCallbackView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("completion.html"), request_method='GET')
     def success(self):
-        cart = get_cart(self.request, retrieve_invalidated=True)
+        try:
+            cart = get_cart(self.request, retrieve_invalidated=True)
+        except PaymentCartNotAvailable:
+            raise HTTPFound(self.request.route_path('payment.finish'))
         service = api.get_checkout_service(self.request, cart.performance.event.organization, get_channel(cart.channel))
         service.mark_authorized(cart.order_no)
 
