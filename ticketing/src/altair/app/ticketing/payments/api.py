@@ -38,9 +38,9 @@ def get_cart(request, retrieve_invalidated=False):
         raise PaymentDeliveryMethodPairNotFound(u'payment/delivery method not specified')
     return cart
 
-def get_cart_by_order_no(request, order_no):
+def get_cart_by_order_no(request, order_no, retrieve_invalidated=False):
     cart_if = request.registry.getUtility(ICartInterface)
-    return cart_if.get_cart_by_order_no(request, order_no)
+    return cart_if.get_cart_by_order_no(request, order_no, retrieve_invalidated=retrieve_invalidated)
 
 def make_order_from_cart(request, cart):
     cart_if = request.registry.getUtility(ICartInterface)

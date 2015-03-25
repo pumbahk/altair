@@ -15,7 +15,7 @@ class ICartInterface(Interface):
     def get_cart(request, retrieve_invalidated=False):
         """ get IPaymentCart impl from request """
 
-    def get_cart_by_order_no(request):
+    def get_cart_by_order_no(request, order_no, retrieve_invalidated=False):
         """ get IPaymentCart impl from request """
 
     def get_success_url(request):

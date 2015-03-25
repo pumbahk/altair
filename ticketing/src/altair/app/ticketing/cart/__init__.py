@@ -193,11 +193,11 @@ class CartInterface(object):
             except NoCartError:
                 return None
 
-    def get_cart_by_order_no(self, request, order_no):
+    def get_cart_by_order_no(self, request, order_no, retrieve_invalidated=False):
         from .api import get_cart_by_order_no, validate_cart
         cart = get_cart_by_order_no(request, order_no) # for_update=True
         if cart is not None:
-            if not validate_cart(request, cart):
+            if not retrieve_invalidated and not validate_cart(request, cart):
                 return None
         return cart
 
