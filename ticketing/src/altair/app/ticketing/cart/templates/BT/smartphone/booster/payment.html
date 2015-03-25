@@ -1,0 +1,62 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="title">支払方法選択</%block>
+% if request.session.peek_flash():
+<ul class="error" style="margin: 0 30px; padding: 8px 30px; background-color: rgba(255, 255, 255, .5); border-radius: 8px 8px;">
+  % for message in request.session.pop_flash():
+  <li>${message}</li>
+  % endfor
+</ul>
+% endif
+<form method="post" action="${request.current_route_path()}">
+  <div class="marginal">
+    <p>
+      代金の支払方法を指定して、「次に進む」ボタンをクリックして下さい。<br />
+      購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
+    </p>
+  </div>
+  <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+  <table class="frame form">
+    <tbody>
+      % for m in payment_delivery_methods:
+      <% checked = 'checked' if str(m.id) == checked_id else '' %>
+      <tr>
+        <th style="text-align:left;">
+          <label><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}> ${m.payment_method.name}</label>
+        </th>
+      </tr>
+      <tr>
+        <td>
+          <div>
+            決済手数料
+            ${h.format_currency(m.transaction_fee)}
+            (${h.fee_type(m.payment_method.fee_type)})
+          </div>
+        % if m.payment_method.payment_plugin_id == 1:
+          <p style="font-size: 90%;">
+            予約受付完了と同時に決済され、即時予約確定となります。
+            支払回数は≪1回払い≫のみのお取扱いとなります。
+            以下のクレジットカードがご利用できます。
+          </p>
+          <p>
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/kc_logo_rakuten.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/visa.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/master.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/jcb.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/amex_logo.gif')}" height="30px" />
+          </p>
+        % elif m.payment_method.payment_plugin_id == 3:
+          <p>
+            予約有効期日までにお支払頂きます。
+            お支払が確認できた時点で予約確定となります。
+          </p>
+        % endif
+        </td>
+      </tr>
+      % endfor
+    </tbody>
+  </table>
+  <div class="frame frame-inner textC">
+    <input type="submit" name="back" value="戻る" class="submit" style="width:200px;height:50px;">
+    <input type="submit" value="次に進む" class="submit" style="width:200px;height:50px;">
+  </div>
+</form>

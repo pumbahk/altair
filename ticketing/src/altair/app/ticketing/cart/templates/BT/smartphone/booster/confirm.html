@@ -1,0 +1,85 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="title">申込内容確認</%block>
+<form id="form1" action="${request.route_path('payment.finish')}" method="post">
+  ${form.csrf_token()}
+  <table class="frame form">
+    <colgroup>
+      <col style="width:180px;" />
+      <col style="width:310px;" />
+    </colgroup>
+    <tbody>
+      <% pm = dict((p[0], dp[1]) for p, dp in extra_form_data) %>
+      <tr>
+        <th>新規／継続</th>
+        <td>${pm.get('cont')}</td>
+      </tr>
+      % if pm.get('old_id_number'):
+    　<tr>
+        <th>2013-14会員番号</th>
+        <td>${pm.get('old_id_number')}</td>
+      </tr>
+      % endif
+      <tr>
+        <th>会員種別</th>
+        <td>${cart.items[0].product.name}</td>
+      </tr>
+      <tr>
+        <th>ブースターシャツサイズ</th>
+        <td>${pm.get('t_shirts_size') or '-'}</td>
+      </tr>
+      <tr>
+        <th>氏名</th>
+        <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th>氏名（フリガナ）</th>
+        <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th>誕生日</th>
+        <td>${pm['birthday']}</td>
+      </tr>
+      <tr>
+        <th>性別</th>
+        <td>${pm['sex']}</td>
+      </tr>
+      <tr>
+        <th>郵便番号</th>
+        <td>${cart.shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <th>住所</th>
+        <td>${cart.shipping_address.prefecture} ${cart.shipping_address.city} ${cart.shipping_address.address_1} ${cart.shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <th>電話番号（携帯）</th>
+        <td>${cart.shipping_address.tel_1}</td>
+      </tr>
+      <tr>
+        <th>電話番号（自宅）</th>
+        <td>${cart.shipping_address.tel_2}</td>
+      </tr>
+      <tr>
+        <th>FAX番号</th>
+        <td>${cart.shipping_address.fax}</td>
+      </tr>
+      <tr>
+        <th>メールアドレス</th>
+        <td>${cart.shipping_address.email_1}</td>
+      </tr>
+      <tr>
+        <th>${view_context.team_name}からのメールマガジンの配信	</th>
+        <td>${pm['mail_permission']}</td>
+      </tr>
+      <tr>
+        <th>会員特典受取方法</th>
+        <td>${cart.payment_delivery_pair.delivery_method.name}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="frame frame-inner textC">
+    <input type="submit" name="back" value="戻る" class="submit" style="width:200px;height:50px;" />
+    <input type="submit" value="申し込む" class="submit" style="width:200px;height:50px;" />
+  </div>
+</form>
