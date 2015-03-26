@@ -29,8 +29,13 @@ from altair.formhelpers.widgets import (
 from altair.formhelpers.fields import (
     OurDateField
     )
-from altair.formhelpers.form import OurForm 
+from altair.formhelpers.form import OurForm
 from altair.formhelpers.widgets import Switcher
+from altair.formhelpers.fields import OurRadioField
+from altair.formhelpers.validators import (
+    DateTimeFormat,
+    after1900,
+    )
 from altair.formhelpers.fields import OurRadioField
 from .fields import StringFieldWithChoice
 from altair.now import get_now
@@ -50,7 +55,10 @@ class ClientForm(_ClientForm):
         widget=OurDateWidget(
             input_builder=build_date_input_select_japanese_japan
             ),
-        validators=[Required()]
+        validators=[
+            Required(),
+            after1900,
+            ]
         )
     memo = fields.TextAreaField(u"メモ")
 

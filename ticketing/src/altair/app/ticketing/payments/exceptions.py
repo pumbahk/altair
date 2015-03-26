@@ -48,3 +48,8 @@ class PaymentDeliveryMethodPairNotFound(Exception):
     """
     不思議な経路をたどるなどしてPDMPが取得できない.
     """
+
+class PaymentCartNotAvailable(Exception):
+    """
+    Cartがexpireしたなどで取得できんかった.
+    """

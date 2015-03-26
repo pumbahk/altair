@@ -422,16 +422,16 @@ class BambitiousExtraForm(ExtraForm):
             DynSwitchDisabled(u'{cont} <> "yes"'),
             Regexp(r'\d{7}$', message=u'半角数字7ケタで入力してください。'),
             ],
-        description=Markup(u'[継続]を選択した方は2013-14年の会員番号をご入力ください'),
+        description=Markup(u'[継続]を選択した方は2014-2015シーズンの会員番号をご入力ください。<br />継続入会の方で会員種別の変更がない方は、現在お持ちの会員証を引き続きご使用いただきます。'),
         note=Markup(u'(半角数字7ケタ)')
         )
     member_type = OurSelectField(u"会員種別選択", validators=[Required()])
 
     t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
     t_shirts_size = OurSelectField(
-        u"ブースターシャツサイズ",
+        u"クラブバンビシャスシャツサイズ",
         choices=t_shirts_size_choices,
-        description=u"ゴールド会員を選択の方はブースターシャツサイズをお選びください。",
+        description=u"ゴールド会員を選択の方はクラブバンビシャスシャツサイズをお選びください。",
         validators=[
             DynSwitchDisabled(u'NOT({member_type}="ゴールド会員")'),
             ],

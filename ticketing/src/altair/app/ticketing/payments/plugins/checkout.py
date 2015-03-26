@@ -25,14 +25,12 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
-from altair.app.ticketing.cart import api as cart_api
-from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.core.models import Product, PaymentDeliveryMethodPair
 from altair.app.ticketing.core.models import MailTypeEnum, ChannelEnum
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.cart.events import notify_order_completed
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
@@ -40,9 +38,10 @@ from altair.app.ticketing.checkout import api
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
 from altair.app.ticketing.mailmags.api import multi_subscribe
 
-from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
+from ..exceptions import PaymentPluginException, OrderLikeValidationFailure, PaymentCartNotAvailable
 from ..interfaces import IPaymentPlugin, IOrderPayment
 from ..payment import Payment
+from ..api import get_cart, get_cart_by_order_no, make_order_from_cart, cont_complete_view
 
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
@@ -246,7 +245,7 @@ class CheckoutView(object):
     @lbr_view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/pc/checkout_login.html', request_method='POST')
     @lbr_view_config(route_name='payment.checkout.login', request_type=IMobileRequest, renderer=selectable_renderer("checkout_login.html"), request_method='POST')
     def login(self):
-        cart = cart_api.get_cart_safe(self.request, for_update=False)
+        cart = get_cart(self.request) # build_checkout_request_form のために for_update=True (これは呼び出し先がそうしている)
         try:
             self.request.session['altair.app.ticketing.cart.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
         except TypeError, ValueError:
@@ -290,44 +289,25 @@ class CheckoutCompleteView(object):
         service = api.get_checkout_service(self.request)
         checkout = service.save_order_complete(self.request.params)
 
-        cart = Cart.query.filter(Cart.order_no == checkout.orderCartId).first()
-        if self._validate(cart):
-            logger.debug(u'checkout order_complete success (cart_id=%s)' % cart.id)
-            result = api.RESULT_FLG_SUCCESS
-            self._success(cart)
+        result = api.RESULT_FLG_FAILED
+        cart = get_cart_by_order_no(self.request, checkout.orderCartId)
+        if cart is not None:
+            try:
+                order = make_order_from_cart(self.request, cart)
+                result = api.RESULT_FLG_SUCCESS
+                logger.info(u'checkout order_complete success (order_no=%s)' % checkout.orderCartId)
+            except:
+                logger.exception("OOPS")
         else:
-            logger.debug(u'checkout order_complete failed (cart_id=%s)' % cart.id)
-            result = api.RESULT_FLG_FAILED
-            self._failed(cart)
+            logger.error(u"failed to retrieve cart (order_no=%s)" % checkout.orderCartId)
+
+        # 過去のログ内容との互換性のため (そのうち消せれば良いと思う)
+        if result != api.RESULT_FLG_SUCCESS:
+            logger.debug(u'checkout order_complete failed (order_no=%s)' % checkout.orderCartId)
 
         return HTTPOk(  
             content_type='text/html', charset='utf-8',
             body=service.create_order_complete_response_xml(result, datetime.now()))
-
-    def _validate(self, cart):
-        now = datetime.now() # XXX
-        if cart is None:
-            logger.debug('cart is None')
-            return False
-        if not cart.is_valid():
-            logger.debug('cart is not valid')
-            return False
-        if cart.is_expired(max(int(self.request.registry.settings['altair_cart.expire_time']) - 1, 0), now):
-            logger.debug('cart is expired')
-            return False
-        if cart.finished_at is not None:
-            logger.debug('cart is already disposed')
-            return False
-        return True
-
-    def _success(self, cart):
-        payment = Payment(cart, self.request)
-        order = payment.call_payment()
-        notify_order_completed(self.request, order)
-
-    def _failed(self, cart):
-        cart.release()
-        cart.finished_at = datetime.now()
 
 
 class CheckoutCallbackView(object):
@@ -341,34 +321,36 @@ class CheckoutCallbackView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("completion.html"), request_method='GET')
     def success(self):
-        cart = cart_api.get_cart(self.request)
-        if not cart:
-            raise NoCartError()
-
+        try:
+            cart = get_cart(self.request, retrieve_invalidated=True)
+        except PaymentCartNotAvailable:
+            raise HTTPFound(self.request.route_path('payment.finish'))
         service = api.get_checkout_service(self.request, cart.performance.event.organization, get_channel(cart.channel))
         service.mark_authorized(cart.order_no)
 
-        # メール購読
-        try:
-            user = cart_api.get_or_create_user(self.context.authenticated_user())
-            emails = cart.shipping_address.emails
-            magazine_ids = self.request.session.get('altair.app.ticketing.cart.magazine_ids')
-            multi_subscribe(user, emails, magazine_ids)
-            logger.debug(u'subscribe mags (magazine_ids=%s)' % magazine_ids)
-        except Exception as e: # all exception ignored
-            logger.error('Exception ignored', exc_info=sys.exc_info()) 
-        finally:
-            del self.request.session['altair.app.ticketing.cart.magazine_ids']
-            self.request.session.persist()
-        cart_api.disassociate_cart_from_session(self.request)
-        cart_api.logout(self.request)
+        # XXX:本来はコールバックの中で呼び出している make_order_from_cart() の中で設定されてほしいが
+        # 追加情報がセッションに入ってしまっているので対応が難しい.
+        # ワークアラウンドとして完了Viewの中でアサインする
+        extra_form_data = cart_api.load_extra_form_data(self.request)
+        if extra_form_data is not None:
+            cart.order.attributes = cart_api.coerce_extra_form_data(self.request, extra_form_data)
 
-        return dict(order=cart.order)
+        # メール購読
+        retval = cont_complete_view(
+            self.context, self.request,
+            order_no=cart.order_no,
+            magazine_ids=self.request.session.get('altair.app.ticketing.cart.magazine_ids', [])
+            )
+        try:
+            del self.request.session['altair.app.ticketing.cart.magazine_ids']
+        except KeyError:
+            pass
+        return retval
 
     @clear_exc
     @lbr_view_config(route_name='payment.checkout.callback.error', request_method='GET')
     def error(self):
-        cart = cart_api.get_cart(self.request)
+        cart = get_cart(self.request, retrieve_invalidated=True)
         logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s' % (cart.order_no))
         self.request.session.flash(u'決済に失敗しました。しばらくしてから再度お試しください。')
         raise CheckoutSettlementFailure(

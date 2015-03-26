@@ -69,7 +69,7 @@ def page_format_to_dict(page_format):
 def page_formats_for_organization(organization):
     return [
         page_format_to_dict(page_format) \
-        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
+        for page_format in DBSession.query(PageFormat).filter_by(organization=organization).order_by(PageFormat.display_order)
         ]
 
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
@@ -84,6 +84,7 @@ class TicketMasters(BaseView):
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
         ticket_format_qs = ticket_format_qs.order_by(TicketFormat.display_order)
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
+        page_format_qs = page_format_qs.order_by(PageFormat.display_order)
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
 
@@ -231,7 +232,8 @@ class PageFormats(BaseView):
         form = forms.PageFormatForm(organization_id=self.context.user.organization_id,
                                       name=format.name,
                                       printer_name=format.printer_name,
-                                      data_value=json.dumps(format.data))
+                                      data_value=json.dumps(format.data),
+                                      display_order=format.display_order)
         return dict(h=helpers, form=form, format=format)
 
     @view_config(route_name='tickets.pageformats.edit', renderer='altair.app.ticketing:templates/tickets/pageformats/new.html', request_method="POST")
@@ -250,6 +252,7 @@ class PageFormats(BaseView):
         format.name = params["name"]
         format.printer_name = params["printer_name"]
         format.data = params["data_value"]
+        format.display_order = params["display_order"]
         format.save()
         self.request.session.flash(u'チケット様式を更新しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
@@ -297,6 +300,7 @@ class PageFormats(BaseView):
         ticket_format = PageFormat(name=params["name"],
                                 printer_name=params["printer_name"],
                                 data=params["data_value"],
+                                display_order=params['display_order'],
                                 organization_id=self.context.user.organization_id
                                 )
 

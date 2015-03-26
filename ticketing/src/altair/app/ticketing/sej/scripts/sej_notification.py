@@ -16,8 +16,8 @@ def main(argv=sys.argv):
         sys.exit()
 
     ini_file = sys.argv[1]
-    env = bootstrap(ini_file)
     setup_logging(ini_file)
+    env = bootstrap(ini_file)
 
     try:
         with MultiStartLock(__name__, 1):

@@ -1,6 +1,15 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.orderreview
+
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+
 [app:orderreview]
 use = config:%(here)s/../../baseconf/common.ini#orderreview
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.app.ticketing.orderreview.dummy altair.auth
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ; altair.rakuten_auth
 altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}

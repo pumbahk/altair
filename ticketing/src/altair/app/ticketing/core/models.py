@@ -3289,6 +3289,7 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='page_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    display_order = Column(Identifier)
 
     @property
     def drawing(self):
@@ -3723,8 +3724,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment.save()
         return {template.id:sales_segment.id}
 
-    def can_delete(self):
-        return bool(self.products)
+    def is_deletable(self):
+        """販売区分は商品か抽選が紐付いている場合は削除できない
+
+        削除ができる状態の場合はTrueが返ります。
+        """
+        return not (bool(self.products) or bool(self.lots))
 
     def delete(self, force=False):
         # delete Product
