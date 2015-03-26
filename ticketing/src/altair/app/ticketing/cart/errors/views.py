@@ -53,10 +53,11 @@ def handle_payment_delivery_method_pair_not_found(request):
     cart = api.get_cart(request)
     return HTTPFound(request.route_path('cart.payment', sales_segment_id=cart.sales_segment_id))
 
+
 @lbr_view_config(context=PaymentCartNotAvailable, renderer=selectable_renderer("errors/timeout.html"))
 def handle_payment_cart_not_found(request):
-    cart = api.get_cart(request)
-    return HTTPFound(request.route_path('cart.payment', sales_segment_id=(cart and cart.sales_segment_id)))
+    return {}
+
 
 @lbr_view_config(context=NoCartError, renderer=selectable_renderer("errors/timeout.html"))
 def handle_nocarterror(request):
