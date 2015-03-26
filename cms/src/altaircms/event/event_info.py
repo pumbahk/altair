@@ -72,7 +72,7 @@ class SummaryWidgetGetEventInfoAdapter(object):
 def get_event_notify_info(event, session=DBSession, page=None):
     # summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
     # のイベント詳細に利用される
-    summary_widget_query = session.query(SummaryWidget).filter_by(bound_event=event)
+    summary_widget = None
     if page:
         structure = json.loads(page.structure)
         summary_id = None
