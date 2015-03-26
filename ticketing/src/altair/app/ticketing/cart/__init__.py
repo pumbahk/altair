@@ -182,12 +182,35 @@ def setup_auth(config):
     config.add_route('cart.logout', '/logout')
 
 class CartInterface(object):
-    def get_cart(self, request):
-        from .api import get_cart_safe
-        return get_cart_safe(request)
+    def get_cart(self, request, retrieve_invalidated=False):
+        from .api import get_cart, get_cart_safe
+        from .exceptions import NoCartError
+        if retrieve_invalidated:
+            return get_cart(request) # for_update=True
+        else:
+            try:
+                return get_cart_safe(request) # for_update=True
+            except NoCartError:
+                return None
+
+    def get_cart_by_order_no(self, request, order_no, retrieve_invalidated=False):
+        from .api import get_cart_by_order_no, validate_cart
+        cart = get_cart_by_order_no(request, order_no) # for_update=True
+        if cart is not None:
+            if not retrieve_invalidated and not validate_cart(request, cart):
+                return None
+        return cart
 
     def get_success_url(self, request):
         return request.route_url('payment.confirm')
+
+    def make_order_from_cart(self, request, cart):
+        from .api import make_order_from_cart
+        return make_order_from_cart(request, cart)
+
+    def cont_complete_view(self, context, request, order_no, magazine_ids):
+        from .views import cont_complete_view
+        return cont_complete_view(context, request, order_no, magazine_ids)
 
 def setup_cart_interface(config):
     config.set_cart_interface(CartInterface())

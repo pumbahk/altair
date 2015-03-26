@@ -1,5 +1,12 @@
+[DEFAULT]
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+
 [app:main]
 use = config:altair.ticketing.cart.ini#payment
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
@@ -7,7 +14,7 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 ; altair.mq
 altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
+altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

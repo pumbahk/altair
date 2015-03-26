@@ -3,8 +3,9 @@ from pyramid.testing import DummyRequest as _DummyRequest
 from pyramid.interfaces import IRequest, IRequestExtensions
 from pyramid.util import InstancePropertyMixin
 from zope.interface import alsoProvides
+from warnings import warn
 
-def _setup_db(modules=[], echo=False, hook=None):
+def _setup_db(modules=[], echo=False, hook=None, engine=None):
     from sqlalchemy import create_engine
     import sqlahelper
     # remove existing session if exists
@@ -25,8 +26,11 @@ def _setup_db(modules=[], echo=False, hook=None):
     sqlahelper._session = prev_session
     sqlahelper.set_base(prev_base)
 
-    engine = create_engine("sqlite://")
-    engine.echo = echo
+    if engine is None:
+        engine = create_engine("sqlite://")
+        if echo:
+            warn(DeprecationWarning("_setup_db(echo=...) IS DEPRECATED!! use engine=... instead"))
+        engine.echo = echo
     sqlahelper.add_engine(engine)
     resolver = DottedNameResolver()
     base = sqlahelper.get_base()

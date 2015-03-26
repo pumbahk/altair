@@ -8,7 +8,7 @@
         <a href="/privacy.html">個人情報保護方針</a> |
         <a href="/legal.html">特定商取引法に基づく表示</a>
     </div>
-    <div><font color="#888888">Copyright &copy; 2010-2014 TicketStar Inc. All Rights Reserved.</font></div>
+    <div><font color="#888888">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved.</font></div>
 </font>
 </div>
 

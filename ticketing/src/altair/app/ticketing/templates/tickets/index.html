@@ -77,6 +77,7 @@ ${ch.breadcrumbs(
     <tr>
       <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
+      <th><a href="${sortable(request, "display_order")}" class="sortable">表示順</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -86,6 +87,7 @@ ${ch.breadcrumbs(
     <tr>
       <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.pageformats.show', id=format.id)}">${format.name}</a></td>
+      <td>${format.display_order}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
     </tr>

@@ -346,7 +346,7 @@ class TicketFormatForm(OurForm):
     display_order = IntegerField(
         label=u'表示順',
         validators=[Optional()],
-        default=0
+        default=1
     )
 
     def validate_display_order(form, field):
@@ -412,6 +412,15 @@ class PageFormatForm(Form):
             ], 
         widget=TextArea()
         )
+    display_order = IntegerField(
+        label=u'表示順',
+        validators=[Optional()],
+        default=1
+    )
+
+    def validate_display_order(form, field):
+        if -2147483648 > field.data or field.data > 2147483647:
+            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
 
     @staticmethod
     def _validate_page_section(data):

@@ -18,15 +18,14 @@
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="KH" />
+<input type="hidden" name="password" value="hannaryz">
 <div>
   メンバーID(半角数字)<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">IDが一致しません</span>
   %endif
   <br/>
-  パスワード(半角英数字)
-  <input type="password" name="password" value=""><br/>
 </div>
 <input type="submit" value="ログイン" />
 </form>
@@ -50,7 +49,7 @@
   <div>
     <a href="http://www.ticketstar.jp">運営会社</a> | <a href="${h.safe_get_contact_url(request)}">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a>
   </div>
-<div><font color="#888888">2010-2014 &copy; TicketStar, Inc. All rights reserved.</font></div>
+<div><font color="#888888">2010-2015 &copy; TicketStar, Inc. All rights reserved.</font></div>
 </div>
 </body>
 </html>

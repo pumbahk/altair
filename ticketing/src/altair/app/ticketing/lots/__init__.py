@@ -83,7 +83,7 @@ def setup_auth(config):
 
 
 class CartInterface(object):
-    def get_cart(self, request):
+    def get_cart(self, request, retrieve_invalidated=False):
         from .api import get_entry_cart
         return get_entry_cart(request)
 
@@ -93,6 +93,15 @@ class CartInterface(object):
         request.matchdict['lot_id'] = cart.lot.id
         request.matchdict['event_id'] = cart.sales_segment.event.id
         return entry_confirm(request)
+
+    def get_cart_by_order_no(self, request, order_no, retrieve_invalidated=False):
+        raise NotImplementedError()
+
+    def make_order_from_cart(self, request, cart):
+        raise NotImplementedError()
+
+    def cont_complete_view(self, context, request, order_no, magazine_ids):
+        raise NotImplementedError()
 
 
 def setup_cart(config):

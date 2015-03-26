@@ -108,11 +108,15 @@ ${ch.breadcrumbs(
           <table class="table table-striped table-bordered">
             <tr>
               <th class="span2">イベント</th>
-              <td class="span6">${order.performance.event.title}</td>
+              <td class="span6"><a href="${request.route_path('events.show', event_id=order.performance.event.id)}">
+              ${order.performance.event.title}
+              </a></td>
             </tr>
             <tr>
               <th>公演名</th>
-              <td>${order.performance.name}</td>
+              <td><a href="${request.route_path('performances.show', performance_id=order.performance.id)}">
+              ${order.performance.name}
+              </a></td>
             </tr>
             <tr>
               <th>公演コード</th>

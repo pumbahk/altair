@@ -1,6 +1,15 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.cart
+
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+
 [app:payment]
 use = config:%(here)s/../../baseconf/common.ini#payment
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.auth altair.queryprofile altair.app.ticketing.cart.dummy
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
@@ -11,7 +20,7 @@ altair.ticketing.cart.sitecatalyst.dynamicAccountSelection = false
 ; altair.mq
 altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
-altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
+altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory

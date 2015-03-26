@@ -1,0 +1,304 @@
+<%inherit file="./base.html" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<%block name="css">
+<style type="text/css">
+.eventTitle {
+  padding: 10px 0;
+  margin: 0 0;
+  font-size: 17px;
+}
+
+.modal {
+  font-size: 150%;
+}
+
+.dispBox {
+}
+
+.dispBoxInner {
+}
+
+#seatTypeList .panelgroup-label input {
+  display: none; 
+}
+
+#seatTypeList .panelgroup.unavailable .panelgroup-label {
+  color: #888;
+}
+
+#seatTypeList .panelgroup .panelgroup-label .seatState {
+}
+
+#seatTypeList .panelgroup .panelgroup-label .seatState:before {
+  content: "(";
+}
+
+#seatTypeList .panelgroup .panelgroup-label .seatState:after {
+  content: ")";
+}
+
+#seatTypeList .panelgroup.unavailable .panelgroup-label .seatState {
+}
+
+#seatTypeList .panelgroup.unavailable > .panelgroup-label .panelgroup-label-inner:before {
+  display: none;
+}
+
+#seatTypeList .panelgroup-label .seatColor {
+  display: inline-block;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border: 1px solid #fff;
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3);
+  width: 16px;
+  height: 16px;
+  vertical-align: baseline;
+  margin: 2px 4px 0 0;
+}
+
+.productListContainer ul.productList {
+  list-style: none;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.productListContainer ul.productList li {
+  padding: 4px 4px;
+  margin: 0 0;
+  border-top: 1px solid #ccc;
+}
+
+.productListContainer ul.productList li:first-child {
+  border-top: none;
+}
+
+.productListContainer .productName {
+  float: left;
+  display: block;
+}
+
+.productListContainer .productPrice {
+  float: right;
+  display: block;
+}
+
+.productListContainer .productDescription {
+  clear: both;
+  display: block;
+}
+
+.productListContainer .productQuantity {
+  clear: both;
+  display: block;
+  text-align: right;
+}
+
+</style>
+</%block>
+
+<%block name="javascript">
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/carts_smartphone.js')}"></script>
+  <script type="text/javascript">
+var selected = ${selected};
+var salesSegmentsSelection = ${sales_segments_selection};
+var cartReleaseUrl = ${h.json_encode(cart_release_url)|n};
+var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/lakestars/smartphone/images/loading.gif'))|n};
+$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false, spinnerPictureUrl);});
+$(function () {
+  $('*[data-toggle]').live(
+    'click',
+    function () {
+      var target = $(document.getElementById(this.getAttribute('data-toggle')));
+      if (target.hasClass('activated')) {
+        target.removeClass('activated');
+        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
+          duration: 100
+        });
+      } else {
+        var h = 0;
+        var targetOffset = target.offset().top;
+        target.children().each(function (_, n) {
+          h += $(n).height();
+        });
+        target.attr('data-prev-height', target.height());
+        target.animate({ height: h + 'px' }, {
+          duration: 100,
+          step: function (h) {
+            var dest = targetOffset + h - $(window).height();
+            if ($(window).scrollTop() < dest) {
+              $(window).scrollTop(dest);
+            }
+          }
+        });
+        target.addClass('activated');
+      }
+      return false;
+    }
+  );
+});
+</script>
+</%block>
+    <div class="dispbox">
+      <h2 class="eventTitle">${event['title']}</h2>
+    </div>
+    <div class="dispBox">
+      <%m:header>日時・会場</%m:header>
+    % if preferred_performance:
+    <div class="settlementNotice">
+      <p>誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。</p>
+      <p>他の日時／会場を下記よりお選びいただけます。</p>
+    </div>
+    % endif
+      <div class="dispBoxInner">
+        <form id="form1" name="form1" method="post" action="">
+          <div id="settlementSelectBox">
+            <div id="settlementSelectBoxInner">
+              ${selection_label}<br/>
+              <select name="select" id="date-select">
+              </select>
+              <br/>
+              ${second_selection_label}<br/>
+              <select name="select2" id="venue-select" style="width: 100%">
+              </select>
+              <br/>
+            </div>
+          </div>
+        </form>
+
+        <br/>
+        <div id="settlementOperation" class="settlementBox2">
+          <div class="settlementBoxInner2">
+            選択中の公演: <span id="performanceDate">-</span><br/>
+            会場: <span id="performanceVenue">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dispBox">
+      <%m:header>席種選択</%m:header>
+      <div class="dispBoxInner">
+        席種、枚数を選択して下さい。
+        <div id="selectSeatType" class="focused">
+          <form name="form2" method="post" action="" class="main" onsubmit="return false;">
+            <input type="hidden" name="performance_id" id="current-performance-id"/>
+            <div class="seatListContainer main">
+              <ul id="seatTypeList" class="panellist fullwidth expandable">
+              </ul>
+              <script type="text/javascript">
+                (function () {
+                  var selectSeatType = $('#selectSeatType');
+                  var ul = selectSeatType.find('.seatListContainer ul');
+                  var selected = ul.find("li.selected");
+                  var ulTopOffset = ul.parent()[0].offsetTop;
+                  function select(it) {
+                    if (!selectSeatType.hasClass('focused'))
+                      return;
+                    if (!it) {
+                      if (selected)
+                        selected.removeClass('activated');
+                      selected = null;
+                      return;
+                    }
+                    if (!it.hasClass('activated')) {
+                      selected.removeClass('activated');
+                      it.addClass('activated');
+                      selected = it;
+                    }
+                    var radio = it.find(':radio');
+                    if (radio.length) {
+                      radio[0].checked = true;
+                      radio.change();
+                    }
+                  }
+                  ul.delegate('.seatListItemInner', 'click', function () {
+                    select($(this).closest('li'));
+                  });
+                })();
+              </script>
+              <div style="display:none; overflow: hidden" class="selectProduct" id="selectProductTemplate">
+                <div class="selectProduct-description"></div>
+                <div class="productListContainer">
+                  <ul class="productList payment-seat-products">
+                  </ul>
+                  <fieldset style="display:none;" class="selected-seats">
+                  </fieldset>
+                  <ul class="buttonbox">
+                    <li><button class="btn btn-primary btn-select-buy">座席を選んで購入</button></li>
+                    <li><button class="btn btn-primary btn-entrust-buy">おまかせで購入</button></li>
+                    <li><button class="btn btn-primary btn-buy">購入</button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div id="selectSeat">
+          <div class="selectSeatLeftPane">
+            <div class="venueViewerWrapper">
+              <div class="slider"></div>
+              <div class="venueViewer"></div>
+              <style type="text/css">
+                .venueViewer .dummy-venue-viewer {
+                  display: none;
+                }
+              </style>
+              <div class="guidanceBackground"></div>
+              <div class="guidance">
+                <div class="guidanceInner">
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="glitter red">イベント詳細</h2>
+    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
+      <div class="settlementBoxInner2">
+
+        <div class="dispBox">
+          <%m:header>イベント名称</%m:header>
+          <div class="dispBoxInner">
+            ${event["title"]}
+          </div>
+        </div>
+
+        <div class="dispBox">
+          <%m:header>開催日時</%m:header>
+          <div class="dispBoxInner">
+            <span id="descPerformanceDate"></span>
+          </div>
+        </div>
+
+        <div class="dispBox">
+          <%m:header>会場</%m:header>
+          <div class="dispBoxInner">
+            ${", ".join(set(event['venues']))}
+          </div>
+        </div>
+
+<%doc>
+        <div class="dispBox">
+          <%m:header>販売期間</%m:header>
+          <div class="dispBoxInner">
+            ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+          </div>
+        </div>
+</%doc>
+        <div class="dispBox">
+          <%m:header>その他</%m:header>
+          <div class="dispBoxInner">
+            %for v in event_extra_info:
+              ${v['label']}
+              ${v['content']|n}<br/>
+            %endfor
+          </div>
+        </div>
+      </div>
+    </div>
