@@ -289,6 +289,13 @@
 </span>
 
 <div class="events" style="clear: both">
+<% from altair.app.ticketing.events import VISIBLE_EVENT_COOKIE_NAME %>
+% if request.cookies.get(VISIBLE_EVENT_COOKIE_NAME):
+  <a href="${request.route_path('events.visible')}">非表示のイベントを表示する</a>
+% else:
+  <a href="${request.route_path('events.invisible')}">非表示のイベントを表示しない</a>
+% endif
+
   % if search_query:
     ${search_disp()}
   % else:

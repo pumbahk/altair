@@ -37,7 +37,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-from .api import get_cms_data
+from .api import get_cms_data, set_visible_event, set_invisible_event
 from .forms import EventForm, EventSearchForm
 from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
@@ -45,6 +45,18 @@ logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
+
+    @view_config(route_name='events.visible', permission='event_viewer')
+    def visible(self):
+        response = HTTPFound(self.request.route_path("events.index"))
+        set_visible_event(response)
+        return response
+
+    @view_config(route_name='events.invisible', permission='event_viewer')
+    def invisible(self):
+        response = HTTPFound(self.request.route_path("events.index"))
+        set_invisible_event(response)
+        return response
 
     @view_config(route_name='events.index', renderer='altair.app.ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
@@ -63,8 +75,15 @@ class Events(BaseView):
             )
 
         query = slave_session.query(Event) \
+            .join(EventSetting, Event.id==EventSetting.event_id) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
+
+        # イベントの表示、非表示（クッキーで制御）
+        from . import VISIBLE_EVENT_COOKIE_NAME
+        if self.request.cookies.get(VISIBLE_EVENT_COOKIE_NAME):
+            query = query.filter(EventSetting.visible==True)
+
         if sort is not None:
             query = query.order_by(direction(sort))
         query = query.order_by(sql.desc(Event.id))
