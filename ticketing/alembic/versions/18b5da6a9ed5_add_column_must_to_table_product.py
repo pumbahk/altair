@@ -19,6 +19,6 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('Product', sa.Column('must', sa.Boolean(), nullable=False, default=False))
+    op.add_column('Product', sa.Column('must_be_chosen', sa.Boolean(), nullable=False, default=False))
 def downgrade():
-    op.drop_column('Product', 'must')
+    op.drop_column('Product', 'must_be_chosen')
