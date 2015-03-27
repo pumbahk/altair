@@ -21,7 +21,14 @@ class FileLikeResponse(Response):
             self.headers=[
                 ('Content-Disposition', 'attachment; filename=%s' % filename),
                 ]
-        content_length = io.len
+        content_length = None
+        if hasattr(io, 'len'):
+            content_length = io.len
+        elif hasattr(io, 'seekable') and hasattr(io, 'seek') and hasattr(io, 'tell') and io.seekable():
+            pos = io.tell()
+            io.seek(0, 2)
+            content_length = io.tell()
+            io.seek(pos, 0)
         app_iter = None
         if request is not None:
             environ = request.environ
@@ -31,7 +38,8 @@ class FileLikeResponse(Response):
             app_iter = FileIter(io, _BLOCK_SIZE)
         self.app_iter = app_iter
         # assignment of content_length must come after assignment of app_iter
-        self.content_length = content_length
+        if content_length is not None:
+            self.content_length = content_length
         if cache_max_age is not None:
             self.cache_expires = cache_max_age
 
