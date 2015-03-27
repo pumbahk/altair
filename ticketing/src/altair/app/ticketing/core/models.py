@@ -2561,6 +2561,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 一般公開するか
     public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'公開'))
+    must = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=_(u'必須'))
 
     description = Column(Unicode(2000), nullable=True, default=None)
 

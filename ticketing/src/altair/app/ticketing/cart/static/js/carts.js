@@ -1177,6 +1177,7 @@ cart.OrderFormView = Backbone.View.extend({
         var min_product_quantity_per_product = product.get('min_product_quantity_per_product');
         var max_product_quantity_per_product = product.get('max_product_quantity_per_product');
         var min_product_quantity_from_product = product.get('min_product_quantity_from_product');
+        var must = product.get('must');
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
@@ -1189,7 +1190,7 @@ cart.OrderFormView = Backbone.View.extend({
             min = min_product_quantity_per_product;
         if (min_product_quantity_from_product !== null)
             min = Math.max(min, min_product_quantity_from_product);
-        if (min > 0)
+        if (min > 0 && must == 0)
             possible_quantities.push(0);
         for (var i = min; i <= max; i++)
             possible_quantities.push(i);

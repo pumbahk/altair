@@ -271,8 +271,8 @@ class MobileSelectProductView(object):
                 continue
             quantity = int(value)
             logger.debug("key = %s, value = %s" % (key, value))
-            if quantity == 0:
-                continue
+            #if quantity == 0:
+            #    continue
             yield m.groupdict()['product_id'], quantity
 
     @property
@@ -344,7 +344,7 @@ class MobileSelectProductView(object):
                 min_ = product_dict['min_product_quantity_per_product']
             if product_dict['min_product_quantity_from_product'] is not None:
                 min_ = max(min_, product_dict['min_product_quantity_from_product'])
-            if min_ > 0 and not singleton:
+            if min_ > 0 and not singleton and product_dict['must'] == 0:
                 possible_quantities.append(0);
             possible_quantities.extend(range(min_, max_ + 1))
             product_dict['possible_quantities'] = possible_quantities
@@ -408,6 +408,7 @@ class MobileSelectProductView(object):
         ordered_items = self.ordered_items
 
         assert_quantity_within_bounds(sales_segment, ordered_items)
+        ordered_items = filter(lambda c:c[1] > 0, ordered_items)
 
         separate_seats = (self.request.params.get('separate_seats') == 'true')
         try:

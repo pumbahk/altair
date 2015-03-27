@@ -288,6 +288,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     id=product.id,
                     name=product.name,
                     description=product.description,
+                    must=product.must,
                     price=h.format_number(product.price, ","),
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
@@ -353,8 +354,8 @@ def assert_quantity_within_bounds(sales_segment, order_items):
             stock_types[stock_type.id] = stock_type
             quantity_per_stock_type['quantity'] += quantity * quantity_power
             quantity_per_stock_type['product_quantity'] += quantity
-        if product.min_product_quantity is not None and \
-           quantity < product.min_product_quantity:
+        if (product.min_product_quantity is not None and product.must == 1 and quantity < product.min_product_quantity) or \
+            (product.must == 0 and quantity != 0 and quantity < product.min_product_quantity):
             raise PerProductProductQuantityOutOfBoundsError(
                 quantity,
                 product.min_product_quantity,

@@ -9,7 +9,7 @@
       <table class="table table-bordered table-condensed" style="margin-bottom: 10px;">
         <thead>
           <tr>
-            <th colspan="5">商品</th>
+            <th colspan="6">商品</th>
             <th colspan="6">商品明細</th>
             <th rowspan="2" style="width: 110px;"></th>
           </tr>
@@ -18,7 +18,8 @@
             <th style="width: 150px;">${HH.label_text_for(Product.name)}</th>
             <th style="width: 100px;">${HH.label_text_for(Product.price)}</th>
             <th style="width: 60px;">${HH.label_text_for(Product.display_order)}</th>
-            <th style="width: 60px;">${HH.label_text_for(Product.public)}</th>
+            <th style="width: 30px;">${HH.label_text_for(Product.public)}</th>
+            <th style="width: 30px;">${HH.label_text_for(Product.must)}</th>
             <th style="width: 100px;">配券先</th>
             <th style="width: 100px;">商品明細名</th>
             <th style="width: 80px;">単価</th>
@@ -39,6 +40,7 @@
             <td ${rowspan} class="${price_class}">${vh.price(product.price)}</td>
             <td ${rowspan}>${product.display_order}</td>
             <td ${rowspan} ${'class = text-error' if not product.public else ''}>${u'○' if product.public else u'×'}</td>
+            <td ${rowspan} ${'class = text-error' if not product.must else ''}>${u'○' if product.must else u'×'}</td>
             % for j, item in enumerate(product.items):
               % if j != 0:
           <tr class=${price_class}>

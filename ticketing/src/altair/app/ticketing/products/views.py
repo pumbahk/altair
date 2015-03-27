@@ -192,6 +192,7 @@ class ProductAndProductItem(BaseView):
                     price=int(product.price),
                     display_order=product.display_order,
                     public=product.public,
+                    must=product.must,
                     performance_id=product.performance_id,
                     amount_mismatching=product.is_amount_mismatching(),
                 ),
@@ -311,6 +312,7 @@ class ProductAndProductItem(BaseView):
                     product.price = f.price.data
                     product.display_order = f.display_order.data
                     product.public = f.public.data
+                    product.must = f.must.data
                     product.seat_stock_type_id = f.seat_stock_type_id.data
                     product.sales_segment = sales_segment
                     product.performance_id = f.performance_id.data
