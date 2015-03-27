@@ -67,6 +67,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
     COMPLETE_URL = '/checkout/order_complete'
     SUCCESS_PAGE_URL = '/checkout/callback/success'
     FAILURE_PAGE_URL = '/checkout/callback/fail'
+    CART_COMPLETE_URL = '/completed'
 
     def _dummy_root_factory(self, request):
         return testing.DummyResource(
@@ -158,6 +159,8 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             'altair.sej.template_file': '',
             'altair.cart.expire_time': '15',
             'altair_checkout.checkin_url': repr(self),
+            'altair.cart.completion_page.temporary_store.cookie_name': 'ao',
+            'altair.cart.completion_page.temporary_store.secret': 'xxx',
             },
             root_factory=self._dummy_root_factory,
             session_factory=self._dummy_session_factory)
@@ -169,6 +172,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         config.include('altair.app.ticketing.payments')
         config.include('altair.app.ticketing.payments.plugins')
         config.include('altair.app.ticketing.cart.setup_cart_interface')
+        config.include('altair.app.ticketing.cart.setup_temporary_store')
         config.include('altair.app.ticketing.cart.setup_payment_renderers')
         from altair.app.ticketing.cart import CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC
         config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
@@ -183,6 +187,9 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         config.add_route('payment.checkout.order_complete', self.COMPLETE_URL)
         config.add_route('payment.checkout.callback.success', self.SUCCESS_PAGE_URL)
         config.add_route('payment.checkout.callback.error', self.FAILURE_PAGE_URL)
+        config.add_route('payment.finish', self.CART_COMPLETE_URL)
+        from pyramid.httpexceptions import HTTPOk
+        config.add_view(route_name='payment.finish', view=lambda context, request: HTTPOk(u"OK"))
         self.cart = Cart(
             id=10,
             cart_setting=self.cart_setting,
@@ -312,7 +319,26 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             with mock.patch('altair.app.ticketing.cart.api.datetime', new_callable=lambda:dummy_datetime):
                 with mock.patch('altair.app.ticketing.payments.plugins.checkout.datetime', new_callable=lambda:dummy_datetime):
                     resp = self.test_app.get(self.SUCCESS_PAGE_URL, {})
+                    self.assertEqual(resp.status_code, 302)
+                    self.assertEquals(resp.location, "http://example.com/completed")
+
+    @mock.patch('altair.app.ticketing.cart.request.get_db_session')
+    @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
+    def test_success_page_success_mobile(self, checkout_class, get_db_session):
+        get_db_session.return_value = self.session
+        from datetime import datetime
+        class dummy_datetime(datetime):
+            @classmethod
+            def now(cls):
+                return cls(2014, 1, 1, 0, 0, 0)
+        from altair.app.ticketing.orders.models import Order
+        self.cart.order = Order.create_from_cart(self.cart)
+        with mock.patch('altair.app.ticketing.checkout.api.datetime', new_callable=lambda:dummy_datetime):
+            with mock.patch('altair.app.ticketing.cart.api.datetime', new_callable=lambda:dummy_datetime):
+                with mock.patch('altair.app.ticketing.payments.plugins.checkout.datetime', new_callable=lambda:dummy_datetime):
+                    resp = self.test_app.get(self.SUCCESS_PAGE_URL, {}, extra_environ={ 'HTTP_USER_AGENT': 'DoCoMo/2.0 P07B(c500;TB;W24H16)' })
                     self.assertEqual(resp.status_code, 200)
+                    self.assertTrue(u'OK' in resp.text)
 
     @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
     def test_success_page_fail(self, checkout_class):
@@ -325,8 +351,10 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         with mock.patch('altair.app.ticketing.checkout.api.datetime', new_callable=lambda:dummy_datetime):
             with mock.patch('altair.app.ticketing.cart.api.datetime', new_callable=lambda:dummy_datetime):
                 with mock.patch('altair.app.ticketing.payments.plugins.checkout.datetime', new_callable=lambda:dummy_datetime):
-                    with self.assertRaises(PaymentCartNotAvailable):
-                        self.test_app.get(self.SUCCESS_PAGE_URL, {})
+                    from pyramid.httpexceptions import HTTPFound
+                    resp = self.test_app.get(self.SUCCESS_PAGE_URL, {})
+                    self.assertEquals(resp.status_code, 302)
+                    self.assertEquals(resp.location, "http://example.com/completed")
 
     @mock.patch('altair.app.ticketing.cart.request.get_db_session')
     @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')

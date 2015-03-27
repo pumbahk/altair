@@ -70,7 +70,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             def __init__(self, outer):
                 self.outer = outer
 
-            def get_cart(self, request):
+            def get_cart(self, request, retrieve_invalidated=False):
                 return request._cart
 
             def get_success_url(self, request):
