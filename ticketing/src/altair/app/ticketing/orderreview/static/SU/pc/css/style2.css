@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #3E4E63; /* Old browsers */
+background: #610F01; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #FFF;
@@ -134,11 +134,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #006633;
-border-top:1px dotted #006633;
-border-bottom:1px dotted #006633;
-border-right:1px dotted #006633;
-background:#009768;
+border-left:5px solid #E00001;
+border-top:1px dotted #E00001;
+border-bottom:1px dotted #E00001;
+border-right:1px dotted #E00001;
+background:#610F01;
 padding:4px 0 4px 10px;
 }
 
@@ -481,11 +481,11 @@ cursor: default;
 
 table tbody th {
   color: #FFF;
-  background-color:#3E4E63;
+  background-color:#610F01;
 }
 
 table thead th {
-  background-color:#009768;
+  background-color:#610F01;
   color:#FFF;
 }
 
@@ -904,7 +904,7 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#657082;
+background-color:#E00001;
 }
 
 table.form input.submit:hover,
