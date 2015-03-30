@@ -11,7 +11,7 @@
       <% pm = dict((p[0], dp[1]) for p, dp in extra_form_data) %>
       <tr>
         <th>新規／継続</th>
-        <td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+        <td>${pm.get('cont')}</td>
       </tr>
       % if pm.get('old_id_number'):
     　<tr>
