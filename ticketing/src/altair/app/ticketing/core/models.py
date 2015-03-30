@@ -1118,8 +1118,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # create EventSettings
             if template_event.setting:
-                setting = template_event.setting
-                EventSetting.create_from_template(template=setting, event_id=self.id)
+                if self.setting is not None:
+                    logger.info("Event has already gotten an EventSetting associated.  Not creating another one from the template")
+                else:
+                    setting = template_event.setting
+                    EventSetting.create_from_template(template=setting, event_id=self.id)
 
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
