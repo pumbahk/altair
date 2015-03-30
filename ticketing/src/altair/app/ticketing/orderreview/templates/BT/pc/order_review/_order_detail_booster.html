@@ -41,7 +41,7 @@ shipping_address = order.shipping_address
       </tr>
       <tr>
         <td>新規／継続</td>
-        <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+        <td class="textR">${pm['cont']}</td>
       </tr>
       % if pm.get('old_id_number') and pm.get('cont') == 'yes':
       <tr>
