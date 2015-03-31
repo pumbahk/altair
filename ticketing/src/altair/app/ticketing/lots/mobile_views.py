@@ -9,6 +9,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from wtforms.validators import ValidationError
 from altair.now import get_now
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
@@ -304,7 +305,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = self._create_form(formdata=self.request.params)
+        cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         payment_delivery_method_pair_id = None
         try:
             payment_delivery_method_pair_id = long(self.request.params.get('payment_delivery_method_pair_id'))

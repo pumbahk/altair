@@ -720,7 +720,9 @@ def get_extra_form_class(request, cart_setting):
     from .schemas import extra_form_type_map
     return extra_form_type_map.get(cart_setting.type)
 
-def get_extra_form_schema(context, request, sales_segment, for_='cart'):
+def get_extra_form_schema(context, request, sales_segment, for_=None):
+    if for_ is None:
+        for_ = 'cart'
     extra_form_fields = None
     cart_setting = context.cart_setting
     if for_ == 'cart':

@@ -1,4 +1,34 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
+
 %if request.session.peek_flash():
 <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
   <ul>
@@ -320,6 +350,18 @@
                 </div>
               </td>
             </tr>
+            % for field in form['extra']._contained_form:
+            % if not field.short_name in {'member_type'}:
+            <tr>
+              <th scope="row">
+                <label for="${field.id}">${field.label}</label>
+              </th>
+              <td>
+                ${render_field(field)}
+              </td>
+            </tr>
+            % endif
+            % endfor
           </table>
         </div>
       </div>
