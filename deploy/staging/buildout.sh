@@ -1,20 +1,40 @@
 #!/bin/bash
 
+role=
 suffix=
+rolemap="$(dirname $0)/rolemap"
 
-if [ $# -ge 1 ]; then
-    suffix=".$1"
+while [ $# -ge 1 ]; do
+    case $1 in
+        -s|--suffix)
+            shift
+            suffix=".$1"
+            ;;
+        -*)
+            echo "Invalid option: $1" >&2
+            exit 255
+            ;;
+        *)
+            role=$1
+            ;;
+    esac
+    shift
+done
+
+if [ -z "$role" ]; then
+    hostname=$(hostname)
+    role=$(grep "^${hostname}\s" "${rolemap}" | cut -f 2)
 fi
 
-host_cfg="$(hostname)${suffix}.cfg"
+role_cfg="${role}${suffix}.cfg"
 default_cfg="buildout${suffix}.cfg"
 
-if [ -f $host_cfg ] ; then
-    cfg="$host_cfg"
+if [ -f $role_cfg ] ; then
+    cfg="$role_cfg"
 else
-    cfg="$default_cfg"
+    echo "Configuration missing: ${role_cfg}" >&2
+    exit 1
 fi
-
 echo "Using [33m${cfg}[0m"
 if tty >/dev/null; then
     echo "Press enter to continue, ^C to abort"
