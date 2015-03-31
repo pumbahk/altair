@@ -29,4 +29,4 @@ def includeme(config):
     config.include('altair.app.ticketing.events.cooperation', route_prefix='cooperation')
     config.scan(".")
 
-VISIBLE_EVENT_COOKIE_NAME = "_visible_event"
+VISIBLE_EVENT_SESSION_KEY = "_visible_event"

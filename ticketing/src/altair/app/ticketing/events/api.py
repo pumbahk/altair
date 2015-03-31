@@ -2,7 +2,7 @@ import isodate
 from datetime import datetime
 import json
 import hashlib
-from . import VISIBLE_EVENT_COOKIE_NAME
+from . import VISIBLE_EVENT_SESSION_KEY
 
 def get_cms_data(request, organization, event, now=None):
     assert event.organization_id == organization.id
@@ -23,8 +23,8 @@ def get_cms_data(request, organization, event, now=None):
         'updated_at':isodate.datetime_isoformat(now),
         }
 
-def set_visible_event(response):
-    response.delete_cookie(VISIBLE_EVENT_COOKIE_NAME)
+def set_visible_event(request):
+    request.session[VISIBLE_EVENT_SESSION_KEY] = str(datetime.now())
 
-def set_invisible_event(response):
-    response.set_cookie(VISIBLE_EVENT_COOKIE_NAME, str(datetime.now()))
+def set_invisible_event(request):
+    del request.session[VISIBLE_EVENT_SESSION_KEY]
