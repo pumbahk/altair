@@ -66,7 +66,7 @@ class Reports(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
         if not event.performances:
-            return HTTPNotFound('event id %d is not found' % event_id)
+            return HTTPNotFound('performances is not found')
 
         # CSVファイル生成
         exporter = reporting.export_for_sales(event)
