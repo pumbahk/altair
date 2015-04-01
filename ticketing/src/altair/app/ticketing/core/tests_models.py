@@ -548,6 +548,18 @@ class EventTests(unittest.TestCase):
         result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True).all()
         self.assertEqual(result, others)
 
+    def test_event_copy_duplicate_settings_11288(self):
+        orig = self._makeOne()
+        from .models import EventSetting
+        orig.setting = EventSetting()
+        self.session.add(orig)
+        self.session.flush()
+        copied_target = self._makeOne()
+        copied_target.original_id = orig.id
+        copied_target.setting = EventSetting()
+        copied_target.add()
+        self.session.flush()
+        self.assertEqual(self.session.query(EventSetting).filter_by(event_id=copied_target.id).count(), 1)
 
 class SalesSegmentGroupTests(unittest.TestCase):
     def _getTarget(self):
