@@ -749,7 +749,7 @@ def add_booster_attributes(request, order):
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
     schema = get_extra_form_schema(
         DummyCartContext(request, order),
-        request, 
+        request,
         order.sales_segment
         )
     for field in schema:
@@ -1886,23 +1886,24 @@ def get_multicheckout_info(request, order):
     return multicheckout_info
 
 
-def get_extra_form_fields_for_order(request, order_like):
+def get_extra_form_fields_for_order(request, order_like, for_=None):
     if order_like.sales_segment is None:
         return []
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
     extra_form_fields = get_extra_form_schema(
         DummyCartContext(request, order_like),
         request,
-        order_like.sales_segment
+        order_like.sales_segment,
+        for_,
         )
     if not extra_form_fields:
         return []
     return extra_form_fields
 
-def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False):
+def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False, for_=None):
     retval = []
     remaining_attributes = set(order_like.attributes.keys())
-    for field_desc in get_extra_form_fields_for_order(request, order_like):
+    for field_desc in get_extra_form_fields_for_order(request, order_like, for_):
         if field_desc['kind'] == 'description_only':
             continue
         field_name = field_desc['name']

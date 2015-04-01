@@ -13,7 +13,7 @@ from wtforms.validators import ValidationError
 from altair.now import get_now
 from altair.pyramid_tz.api import get_timezone
 from altair.pyramid_dynamic_renderer import lbr_view_config
-
+from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.utils import toutc
@@ -195,7 +195,7 @@ class EntryLotView(object):
         """
         購入情報入力
         """
-        form = self._create_form(formdata=self.request.params)
+        form = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         event = self.context.event
         lot = self.context.lot
 
@@ -254,8 +254,7 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
-
-        cform = self._create_form(formdata=self.request.params)
+        cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
