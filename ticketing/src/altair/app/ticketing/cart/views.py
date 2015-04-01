@@ -709,8 +709,8 @@ class ReserveView(object):
                 continue
             quantity = int(value)
             logger.debug("key = %s, value = %s" % (key, value))
-            if quantity == 0:
-                continue
+            #if quantity == 0:
+            #    continue
             yield m.groupdict()['product_id'], quantity
 
     @property
@@ -755,6 +755,7 @@ class ReserveView(object):
 
         try:
             assert_quantity_within_bounds(sales_segment, ordered_items)
+            ordered_items = filter(lambda c:c[1] > 0, ordered_items)
             cart = api.order_products(
                 self.request,
                 sales_segment,
