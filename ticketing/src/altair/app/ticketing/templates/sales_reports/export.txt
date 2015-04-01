@@ -49,4 +49,4 @@ for id, sd in sorted(reporter.get().items(), key=lambda x:[x[1]['stock'].perform
 #   "%u" % d.paid_price,
     ])
 
-%>${queue.getvalue().decode("utf-8")}
+%>${queue.getvalue().decode("utf-8") | n}
