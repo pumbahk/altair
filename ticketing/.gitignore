@@ -30,3 +30,4 @@ docs/images/schema.png
 src/schema.dot
 src/schema.plantuml
 89ers_develop.ini
+.eggs
