@@ -656,8 +656,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).count()
 
     def get_lot_entry_attribute_pair_pairs(self, request):
+        from .adapters import LotEntryCart
         from altair.app.ticketing.orders.api import get_order_attribute_pair_pairs
-        return get_order_attribute_pair_pairs(request, self)
+        order_like = LotEntryCart(self)
+        return get_order_attribute_pair_pairs(request, order_like, for_='lots')
 
     @property
     def cart_setting(self):

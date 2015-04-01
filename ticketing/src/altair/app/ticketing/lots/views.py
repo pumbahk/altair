@@ -12,6 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from wtforms.validators import ValidationError
 from altair.pyramid_tz.api import get_timezone
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.cart import api as cart_api
@@ -214,7 +215,6 @@ class EntryLotView(object):
         formatter = create_number_formatter(self.request)
         return [(p.name, Markup(u'{name} ({price})'.format(name=escape(p.name), price=formatter.format_currency_html(p.price, prefer_post_symbol=True)))) for p in product_query]
 
-
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
@@ -304,8 +304,7 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
-        cform = self._create_form(formdata=self.request.params)
-        # form = schemas.ClientForm()
+        cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
