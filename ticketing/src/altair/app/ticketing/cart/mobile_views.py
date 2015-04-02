@@ -346,6 +346,8 @@ class MobileSelectProductView(object):
                 min_ = max(min_, product_dict['min_product_quantity_from_product'])
             if min_ > 0 and not singleton and not product_dict['must_be_chosen']:
                 possible_quantities.append(0);
+            if min_ == 0 and product_dict['must_be_chosen']:
+                min_ = 1
             possible_quantities.extend(range(min_, max_ + 1))
             product_dict['possible_quantities'] = possible_quantities
 
