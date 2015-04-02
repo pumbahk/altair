@@ -1191,3 +1191,112 @@ class GetOrderByIdTest(unittest.TestCase):
         for order in branches:
             result = self._callFUT(self.request, order.id, include_deleted=True)
             self.assertEqual(branches[2], result)
+
+class CallPaymentDeliveryPluginTest(unittest.TestCase):
+    def setUp(self):
+        self.lookup_plugin_patch = mock.patch('altair.app.ticketing.orders.api.lookup_plugin')
+        self.lookup_plugin = self.lookup_plugin_patch.start()
+
+    def tearDown(self):
+        self.lookup_plugin_patch.stop()
+
+    def _getTarget(self):
+        from .api import call_payment_delivery_plugin
+        return call_payment_delivery_plugin
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_pd_available(self):
+        request = mock.Mock()
+        order_like = mock.Mock(
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=1
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=1
+                    )
+                )
+            )
+        self.lookup_plugin.return_value = [mock.Mock(), mock.Mock(), mock.Mock()]
+        self._callFUT(request, order_like)
+
+        self.lookup_plugin.called_once_with(request, order_like.payment_delivery_pair)
+        self.lookup_plugin.return_value[0].finish2.called_one_with(request, order_like)
+        self.assertFalse(self.lookup_plugin.return_value[1].finish2.called)
+        self.assertFalse(self.lookup_plugin.return_value[2].finish2.called)
+
+    def test_ordinary_p_d(self):
+        request = mock.Mock()
+        order_like = mock.Mock(
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=1
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=1
+                    )
+                )
+            )
+        self.lookup_plugin.return_value = [None, mock.Mock(), mock.Mock()]
+        self._callFUT(request, order_like)
+
+        self.lookup_plugin.assert_called_once_with(request, order_like.payment_delivery_pair)
+        self.lookup_plugin.return_value[1].finish2.assert_called_one_with(request, order_like)
+        self.lookup_plugin.return_value[2].finish2.assert_called_one_with(request, order_like)
+
+    def test_exclusion(self):
+        request = mock.Mock()
+        order_like = mock.Mock(
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=1
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=1
+                    )
+                )
+            )
+        self.lookup_plugin.return_value = [None, mock.Mock(), mock.Mock()]
+        self._callFUT(request, order_like, excluded_payment_plugin_ids=[1])
+        self.lookup_plugin.assert_called_once_with(request, order_like.payment_delivery_pair)
+        self.assertFalse(self.lookup_plugin.return_value[1].finish2.called)
+        self.lookup_plugin.return_value[2].finish2.assert_called_one_with(request, order_like)
+
+    def test_inclusion1(self):
+        request = mock.Mock()
+        order_like = mock.Mock(
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=1
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=1
+                    )
+                )
+            )
+        self.lookup_plugin.return_value = [None, mock.Mock(), mock.Mock()]
+        self._callFUT(request, order_like, included_payment_plugin_ids=[2])
+        self.lookup_plugin.assert_called_once_with(request, order_like.payment_delivery_pair)
+        self.assertFalse(self.lookup_plugin.return_value[1].finish2.called)
+        self.lookup_plugin.return_value[2].finish2.assert_called_one_with(request, order_like)
+
+    def test_inclusion2(self):
+        request = mock.Mock()
+        order_like = mock.Mock(
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=1
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=1
+                    )
+                )
+            )
+        self.lookup_plugin.return_value = [None, mock.Mock(), mock.Mock()]
+        self._callFUT(request, order_like, included_payment_plugin_ids=[1])
+        self.lookup_plugin.assert_called_once_with(request, order_like.payment_delivery_pair)
+        self.lookup_plugin.return_value[1].finish2.assert_called_one_with(request, order_like)
+        self.lookup_plugin.return_value[2].finish2.assert_called_one_with(request, order_like)
+

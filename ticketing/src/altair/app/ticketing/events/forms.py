@@ -196,6 +196,10 @@ class EventForm(OurForm):
         choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
         )
+    visible = OurBooleanField(
+        label=u'イベントの表示／非表示',
+        default=True,
+        )
 
     def validate_code(form, field):
         if field.data:

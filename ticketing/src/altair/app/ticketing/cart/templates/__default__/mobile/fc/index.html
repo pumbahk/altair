@@ -1,7 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
 <%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <hr/>
-<%mobile:form_header>入会対象をお選びください</%mobile:form_header>
+<%mobile:form_header>対象をお選びください</%mobile:form_header>
 % for title, url in links:
 <a href="${url}">${title}</a><br/>
 % endfor

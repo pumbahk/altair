@@ -696,6 +696,24 @@ def refund_order(request, order, payment_method=None, now=None):
     logger.info('success order refund (order_no=%s)' % order.order_no)
     return warnings
 
+def call_payment_delivery_plugin(request, order_like, included_payment_plugin_ids=None, excluded_payment_plugin_ids=[]):
+    payment_plugin_id = order_like.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_plugin_id = order_like.payment_delivery_pair.delivery_method.delivery_plugin_id
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order_like.payment_delivery_pair)
+
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+    if (included_payment_plugin_ids is not None and payment_plugin_id not in included_payment_plugin_ids) or \
+       (payment_plugin_id in excluded_payment_plugin_ids):
+        payment_plugin = None
+
+    if payment_plugin is not None:
+        payment_plugin.finish2(request, order_like)
+    if delivery_plugin is not None:
+        delivery_plugin.finish2(request, order_like)
+
+
 def create_inner_order(request, order_like, note, session=None):
     if session is None:
         from altair.app.ticketing.models import DBSession
@@ -1173,7 +1191,15 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         logger.info('reflecting the status of new order to the payment / delivery plugins (%s)' % order.order_no)
         try:
             DBSession.merge(order)
-            create_inner_order(request, order, order.note)
+            call_payment_delivery_plugin(
+                request,
+                order,
+                included_payment_plugin_ids=[
+                    payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                    payments_plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FREE_PAYMENT_PLUGIN_ID
+                    ]
+                )
         except Exception as e:
             import sys
             exc_info = sys.exc_info()
