@@ -145,7 +145,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code), context=self.context)
+        f = EventForm(MultiDict(code=self.context.user.organization.code, visible=True), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -166,7 +166,7 @@ class Events(BaseView):
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                         cart_setting_id=f.cart_setting_id.data,
-                        visible=f.visible
+                        visible=f.visible.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -190,12 +190,8 @@ class Events(BaseView):
             }
 
     @view_config(route_name='events.edit', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
-    @view_config(route_name='events.copy', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
+    @view_config(route_name='events.copy', request_method='GET', renderer='altair.app.ticketing:templates/events/copy.html')
     def edit_get(self):
-        if self.request.matched_route.name == 'events.edit':
-            route_name = u'編集'
-        else:
-            route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.organization.id)
         if event is None:
@@ -208,6 +204,13 @@ class Events(BaseView):
         f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
         f.cart_setting_id.data = event.setting and event.setting.cart_setting_id
         f.visible.data = event.setting and event.setting.visible
+        if self.request.matched_route.name == 'events.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
+            # コピー時は、必ず表示
+            f.visible.data = True
+
         # f.performance_selector.data = (event.setting.performance_selector or '') if event.setting else ''
         # f.performance_selector_label1_override.data = event.setting.performance_selector_label1_override if event.setting else ''
         # f.performance_selector_label2_override.data = event.setting.performance_selector_label2_override if event.setting else ''
@@ -224,7 +227,7 @@ class Events(BaseView):
         }
 
     @view_config(route_name='events.edit', request_method='POST', renderer='altair.app.ticketing:templates/events/edit.html')
-    @view_config(route_name='events.copy', request_method='POST', renderer='altair.app.ticketing:templates/events/edit.html')
+    @view_config(route_name='events.copy', request_method='POST', renderer='altair.app.ticketing:templates/events/copy.html')
     def edit_post(self):
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
@@ -247,7 +250,7 @@ class Events(BaseView):
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                             cart_setting_id=f.cart_setting_id.data,
-                            visible=f.visible.data
+                            visible=True
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
                             # performance_selector_label2_override=f.performance_selector_label2_override.data,

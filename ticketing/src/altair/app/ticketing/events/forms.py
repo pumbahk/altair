@@ -197,7 +197,8 @@ class EventForm(OurForm):
         coerce=int
         )
     visible = OurBooleanField(
-        label=u'イベントの表示／非表示'
+        label=u'イベントの表示／非表示',
+        default=True,
         )
 
     def validate_code(form, field):
