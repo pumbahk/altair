@@ -361,6 +361,12 @@ def assert_quantity_within_bounds(sales_segment, order_items):
                 product.min_product_quantity,
                 product.max_product_quantity
                 )
+        if (product.min_product_quantity is None and product.must_be_chosen and quantity == 0):
+            raise PerProductProductQuantityOutOfBoundsError(
+                quantity,
+                1,
+                product.max_product_quantity
+            )
         if product.max_product_quantity is not None and \
            quantity > product.max_product_quantity:
             raise PerProductProductQuantityOutOfBoundsError(
