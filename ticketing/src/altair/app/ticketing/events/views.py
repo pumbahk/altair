@@ -145,7 +145,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code), context=self.context)
+        f = EventForm(MultiDict(code=self.context.user.organization.code, visible=True), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -166,7 +166,7 @@ class Events(BaseView):
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                         cart_setting_id=f.cart_setting_id.data,
-                        visible=f.visible
+                        visible=f.visible.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
