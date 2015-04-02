@@ -238,10 +238,10 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
             if min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, min_product_quantity)
-            if product.min_product_quantity is None and product.must_be_chosen:
-                product.min_product_quantity = 1
             if product.min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, product.min_product_quantity)
+            if product.must_be_chosen:
+                min_product_quantity_per_product = max(1, min_product_quantity_per_product)
 
             # 商品毎の商品購入上限数を計算する
             max_product_quantity_per_product = max_quantity_per_product / quantity_power
@@ -297,7 +297,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     quantity_power=quantity_power,
                     max_quantity=max_product_quantity_per_product,
                     max_product_quatity=max_product_quatity,
-                    min_product_quantity_from_product=product.min_product_quantity,
+                    min_product_quantity_from_product= product.min_product_quantity if not product.must_be_chosen else max(1, product.min_product_quantity),
                     max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product,

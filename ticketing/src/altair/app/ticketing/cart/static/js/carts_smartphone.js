@@ -1079,9 +1079,9 @@ cart.OrderFormView = Backbone.View.extend({
             min = Math.max(min, min_product_quantity_from_product);
         if (min > 0 && !must_be_chosen)
             possible_quantities.push(0);
+        if (min == 0 && must_be_chosen)
+            min = 1;
         for (var i = min; i <= max; i++) {
-            if(i == 0 && must_be_chosen)
-                continue;
             possible_quantities.push(i);
         }
         for (var i = 0; i < possible_quantities.length; i++) {
