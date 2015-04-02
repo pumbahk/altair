@@ -76,6 +76,10 @@ class FreePaymentPlugin(object):
         cart.finish()
         return order
 
+    def finish2(self, request, order_like):
+        # 何もしなくてよい
+        return
+
     def finished(self, request, order):
         return True
 

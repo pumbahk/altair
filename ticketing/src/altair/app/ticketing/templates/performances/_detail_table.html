@@ -15,14 +15,19 @@
       <td width="12%">${vh.datetime(performance.open_on, with_weekday=True)}</td>
     </tr>
     <tr>
-      <th>公演名副題</th>
-      <td width="28%">${performance.subtitle or u""}</td>
-      <th width="8%">公演名略称</th>
-      <td width="16%">${performance.abbreviated_title or u""}</td>
-      <th>公演名備考</th>
-      <td>${performance.note or u""}</td>
+      <th rowspan="2">公演名副題</th>
+      <td rowspan="2" width="28%">${performance.subtitle or u""}</td>
+      <th rowspan="2" width="8%">公演名略称</th>
+      <td rowspan="2" width="16%">${performance.abbreviated_title or u""}</td>
+      <th rowspan="2">公演名備考</th>
+      <td rowspan="2">${performance.note or u""}</td>
       <th>開演</th>
       <td>${vh.datetime(performance.start_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>終演</th>
+      ## styleを指定しないと下部の枠線だけ消えた状態になってしまう
+      <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
     </tr>
 % if expanded:
     <tr>

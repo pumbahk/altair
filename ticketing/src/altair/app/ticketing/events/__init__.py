@@ -5,6 +5,8 @@ from .resources import EventAdminResource
 def includeme(config):
     factory = newRootFactory(EventAdminResource)
     config.add_route('events.index', '/', factory=factory)
+    config.add_route('events.visible', '/visible', factory=factory)
+    config.add_route('events.invisible', '/invisible', factory=factory)
     config.add_route('events.new', '/new', factory=factory)
     config.add_route('events.show', '/show/{event_id}', factory=factory)
     config.add_route('events.edit', '/edit/{event_id}', factory=factory)
@@ -26,3 +28,5 @@ def includeme(config):
     config.include('altair.app.ticketing.events.lots', route_prefix='lots')
     config.include('altair.app.ticketing.events.cooperation', route_prefix='cooperation')
     config.scan(".")
+
+VISIBLE_EVENT_SESSION_KEY = "_visible_event"

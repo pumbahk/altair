@@ -73,11 +73,11 @@ from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 @view_defaults(
     route_name='cart.index',
     decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
-    renderer=selectable_renderer('booster/index.html'),
+    renderer=selectable_renderer('fc/index.html'),
     custom_predicates=(is_fc_cart_pred,),
     permission="buy"
     )
-class BoosterEventIndexView(object):
+class FCEventIndexView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request

@@ -77,6 +77,11 @@ class ProductFormMixin(object):
         widget=CheckboxInput(),
         default=True
         )
+    must_be_chosen = OurBooleanField(
+        label=u'必須',
+        widget=CheckboxInput(),
+        default=False
+        )
     description = NullableTextField(
         label=u'説明',
         hide_on_new=True,
@@ -293,6 +298,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             seat_stock_type_id=product.seat_stock_type_id,
             display_order=product.display_order,
             public=product.public,
+            must_be_chosen=product.must_be_chosen,
             description=product.description,
             sales_segment_id=product.sales_segment_id,
             performance_id=product.performance_id,
@@ -431,6 +437,10 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
             except Exception as e:
                 self.public.data = True
             try:
+                self.must_be_chosen.data = bool(distutils.util.strtobool(formdata['must_be_chosen']))
+            except Exception as e:
+                self.must_be_chosen.data = False
+            try:
                 self.is_leaf.data = bool(distutils.util.strtobool(formdata['is_leaf']))
             except Exception as e:
                 self.is_leaf.data = False
@@ -441,6 +451,9 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
     public = OurBooleanField(
         default=True
         )
+    must_be_chosen = OurBooleanField(
+        default=False
+    )
     name = OurTextField(
         validators=[
             Optional(),
