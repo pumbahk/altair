@@ -238,6 +238,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
             if min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, min_product_quantity)
+            if product.min_product_quantity is None and product.must_be_chosen:
+                product.min_product_quantity = 1
             if product.min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, product.min_product_quantity)
 
