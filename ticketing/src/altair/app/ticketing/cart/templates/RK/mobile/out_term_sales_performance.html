@@ -1,6 +1,14 @@
 <%inherit file="./base.html"/>
 <%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
+
+<%def name="special_disp(which, event, performance, start_at, end_at, h)">
+<p>2015キングスPLAYOFFS (4試合セット) の販売は</p>
+<p>クラブキングス会員限定で、2015年4月5日(日)正午12時00分 〜 2015年4月7日(火)23時59分の期間での販売となります。</p>
+<p>販売期間内にクラブキングス会員IDにてログインの上、ご購入いただきますようお願いいたします。</p>
+</%def>
+
+<%def name="disp(which, event, performance, start_at, end_at, h)">
 <p>誠に申し訳ございませんが</p>
 % if which == 'next':
 %   if sales_segment is not None:
@@ -34,4 +42,11 @@ ${h.japanese_datetime(start_at)}
 </ul>
 % else:
 <p>他のイベントのチケットは<a href="${request.context.host_base_url}">こちら</a>からお買い求めくださいますようお願いいたします。</p>
+% endif
+</%def>
+
+% if performance_id == 17880:
+${special_disp(which, event, performance, start_at, end_at, h)}
+% else:
+${disp(which, event, performance, start_at, end_at, h)}
 % endif
