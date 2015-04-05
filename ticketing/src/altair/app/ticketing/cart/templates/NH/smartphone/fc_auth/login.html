@@ -44,20 +44,20 @@
         <form action="${request.url}" method="post">
           <input type="hidden" name="membership" value="NH" />
           <div>
-            会員ID<br/>
+            ポイントカードID<br/>
             <input type="text" name="username" size="22" value="${username}">
             <br/>
-            パスワード<br/>
+            会員ID<br/>
             <input type="password" size="22" name="password">
             %if message:
-              <br/><font color="red">会員IDまたはパスワードが一致しません</font>
+              <br/><font color="red">ポイントカードIDまたは会員IDが一致しません</font>
             %endif
             </div>
             <div class="buttonbox">
               <input class="btn btn-primary btn-large" style="line-height: 100%" type="submit" value="ログイン" />
           </div>
           <p>
-            パスワードをお忘れの場合<a href="mailto:happinets@tstar.jp" target="_blank">こちら</a>からお問合せください。
+            ポイントカードIDまたは会員IDをお忘れの場合<a href="mailto:happinets@tstar.jp" target="_blank">こちら</a>からお問合せください。
           </p>
         </form>
       </td>
