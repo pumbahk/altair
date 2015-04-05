@@ -51,6 +51,7 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.cart.models import (
     Cart,
 )
+from .exceptions import LotEntryCannotDeleteError
 
 
 class LotSelectionEnum(StandardEnum):
@@ -644,6 +645,13 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.canceled_at = now
         for wish in self.wishes:
             wish.cancel(now)
+
+    def delete(self):
+        if not self.canceled_at:
+            raise LotEntryCannotDeleteError(
+                u'キャンセルされていません')
+        self.deleted_at = datetime.now()
+        self.save()
 
     def is_electing(self):
         return LotElectWork.query.filter(

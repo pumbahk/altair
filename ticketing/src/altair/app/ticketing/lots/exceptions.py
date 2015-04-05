@@ -1,5 +1,10 @@
 # -*- coding:utf-8 -*-
 
+
+class LotEntryCannotDeleteError(Exception):
+    """抽選申込の削除ができない"""
+
+
 class NotElectedException(Exception):
     """ 当選していない抽選 """
 
