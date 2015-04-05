@@ -105,17 +105,22 @@ class CooperationView(BaseView):
                     'message':u'ファイルが選択されていません',
                 }))
 
-
             records = [record for record in external_seat_csv]
 
             # 公演日時でバリデーション
-            for record in records:
-                if record.venue_code:
-                    start_on = datetime.datetime.strptime(record.start_day + ' ' + record.start_time, '%Y/%m/%d %H:%M')
-                    if start_on != performance.start_on:
-                        raise HTTPBadRequest(body=json.dumps({
-                            'message':u'公演日時が一致しないものがありました',
-                        }))
+            try:
+                record = ''
+                for record in records:
+                    if record.venue_code:
+                        start_on = datetime.datetime.strptime(record.start_day + ' ' + record.start_time, '%Y/%m/%d %H:%M')
+                        if start_on != performance.start_on:
+                            raise HTTPBadRequest(body=json.dumps({
+                                'message': u'公演日時が一致しないものがありました',
+                            }))
+            except ValueError:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message': u'不正なデータがありました: {}'.format(record),
+                    }))
 
             external_venue_codes = list(set([row.venue_code for row in records]))
             if len(external_venue_codes) != 1:
