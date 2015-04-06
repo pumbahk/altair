@@ -56,9 +56,9 @@ ${ch.breadcrumbs(
         </li>
         <li>
           <a class="id-delegate-action" href="#"
-             data-delegated="#deleteModalFormat"
+             data-delegated="#deletePageFormat"
              data-base-url="${request.route_path("tickets.pageformats.delete",id="__id__")}"
-             href="#deleteModalFormat" data-toggle="modal">
+             href="#deletePageFormat" data-toggle="modal">
             <i class="icon-minus"></i> 削除
           </a>
         </li>
@@ -77,6 +77,7 @@ ${ch.breadcrumbs(
     <tr>
       <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
+      <th><a href="${sortable(request, "display_order")}" class="sortable">表示順</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -86,6 +87,7 @@ ${ch.breadcrumbs(
     <tr>
       <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.pageformats.show', id=format.id)}">${format.name}</a></td>
+      <td>${format.display_order}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
     </tr>
@@ -159,6 +161,7 @@ ${ch.breadcrumbs(
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">用紙サイズ</a></th>
       <th><a href="#" class="sortable">引取方法</a></th>
+      <th><a href="#" class="sortable">表示順</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -170,6 +173,7 @@ ${ch.breadcrumbs(
       <td><a href="${request.route_url('tickets.ticketformats.show', id=format.id)}">${format.name}</a></td>
       <td>${h.format_size(h.extract_paper_size(format))}
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
+      <td>${format.display_order}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
     </tr>
@@ -327,6 +331,24 @@ ${ch.breadcrumbs(
   % endfor
   </tbody>
 </table>
+
+## delete page format
+
+<div class="modal hide" id="deletePageFormat">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+    このチケット様式を削除します。よろしいですか？
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.pageformats.delete",id="__id__")}" method="POST">
+      <button type="submit" class="btn">削除する</button>
+    </form>
+  </div>
+</div>
 
 ## delete ticket format
 

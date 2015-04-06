@@ -24,3 +24,11 @@ class IAnshinCheckoutCommunicator(Interface):
 
     def send_order_cancel_request(xml):
         pass
+
+
+class IAnshinCheckoutPayloadResponseFactory(Interface):
+    def create_checkout_object(order_cart_id):
+        pass
+
+    def create_checkout_item_object():
+        pass

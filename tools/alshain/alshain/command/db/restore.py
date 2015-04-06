@@ -1,15 +1,13 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 import tempfile
 import urlparse
-import argparse
-import subprocess
-
-
 from ... import utils
+
 
 class StatusError(Exception):
     pass
+
 
 def generate_snapshot_url():
     cmd = "s3cmd ls `s3cmd ls s3://ticketstar-db-dev-snapshots | grep -v 'tainted' | tail -n 1 | awk '{print $2}'` | awk '{print $4}'"
@@ -24,12 +22,14 @@ def generate_snapshot_url():
     else:
         raise StatusError('illigal status: {0}'.format(child.return_code))
 
+
 def download_snapshot(url):
     cmd = 's3cmd get -f "{0}"'.format(url)
     print cmd
     utils.call(cmd).wait()
     res = urlparse.urlparse(url)
     return os.path.basename(res.path)
+
 
 def restore_sql(path):
     xz = path
@@ -38,14 +38,13 @@ def restore_sql(path):
     print cmd
     utils.Shell.system(cmd)
 
+
 def main(argv):
     for url in generate_snapshot_url():
         print 'download {0}'.format(url)
-        #if not opts.restore_only:
         path = download_snapshot(url)
 
         print 'resotre {0}'.format(path)
-        #if not opts.download_only:
         restore_sql(path)
 
 if __name__ == '__main__':

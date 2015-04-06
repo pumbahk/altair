@@ -30,10 +30,9 @@ def do_sej_order(request, tenant, sej_order, now=None, session=None):
         try:
             sej_order = request_order(request, tenant, sej_order)
         finally:
-            versions = session.query(SejOrder.version_no).filter(SejOrder.order_no == sej_order.order_no).with_lockmode('update').order_by(desc(SejOrder.version_no)).all()
-            if sej_order.branch_no is None:
-                # バージョン番号は 0 スタート
-                sej_order.version_no = versions[-1][0] + 1 if len(versions) > 0 else 0
+            versions = session.query(SejOrder.version_no).filter(SejOrder.order_no == sej_order.order_no).with_lockmode('update').order_by(desc(SejOrder.version_no)).distinct().all()
+            # バージョン番号は 0 スタート
+            sej_order.version_no = versions[0][0] + 1 if len(versions) > 0 else 0
             sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:

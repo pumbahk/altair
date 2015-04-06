@@ -1,13 +1,12 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
-import optparse
 import jumon
 from .. import utils
+
 
 def main(argv):
     parser = jumon.TransparentOptionParser()
     opts, args = parser.parse_args(argv[1:])
-    subcmd_file = ''
     subcmd_args = ''
     try:
         cmdfile = argv[0]

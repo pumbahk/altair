@@ -382,10 +382,6 @@ class QRView(object):
     def order_review_qr_print(self):
         token = get_matched_token_from_token_id(self.request.params['order_no'], self.request.params['token'])
 
-        issued_setter = IssuedAtBubblingSetter(datetime.now())
-        issued_setter.issued_token(token)
-        issued_setter.start_bubbling()
-
         if token.seat is None:
             gate = None
         else:

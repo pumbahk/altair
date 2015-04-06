@@ -30,7 +30,7 @@ class LotCollectionResource(LotResourceBase):
 
     @reify
     def event(self):
-        return Event.query.filter(Event.id == self.event_id, Event.organization_id==self.organization.id).one()
+        return Event.query.filter(Event.id == self.event_id, Event.organization_id==self.organization.id).first()
 
 class AbstractLotResource(LotResourceBase):
     @property
@@ -39,7 +39,8 @@ class AbstractLotResource(LotResourceBase):
 
     @reify
     def event(self):
-        return self.lot.event
+        if self.lot:
+            return self.lot.event
 
 class LotResource(AbstractLotResource):
     def __init__(self, request):
@@ -51,7 +52,7 @@ class LotResource(AbstractLotResource):
 
     @reify
     def lot(self):
-        return Lot.query.join(Event).filter(Lot.id==self.lot_id, Event.organization_id==self.organization.id).one()
+        return Lot.query.join(Event).filter(Lot.id==self.lot_id, Event.organization_id==self.organization.id).first()
 
     @reify
     def lots_cart_url(self):

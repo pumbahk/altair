@@ -415,3 +415,25 @@ def moderate_name_candidates(name, max=100):
     yield name
     for i in range(0, max):
         yield u'%s (%d)' % (name, i + 1)
+
+class DateTimeRange(object):
+    def __init__(self, start, end):
+        if start is not None:
+            self.start = start
+        else:
+            self.start = datetime.min # Set min datetime in case of None
+
+        if end is not None:
+            self.end = end
+        else:
+            self.end = datetime.max # Set max datetime in case of None
+
+    def __str__(self):
+        return str(self.start) + " - " + str(self.end)
+
+    def overlap(self, date_range):
+        # not (self.start > date_range.end or self.end < date_range.start) <=> not (self.start > date_range.end) and not (self.end < date_range.start)
+        if self.start <= date_range.end and self.end >= date_range.start:
+            return True
+        else:
+            return False

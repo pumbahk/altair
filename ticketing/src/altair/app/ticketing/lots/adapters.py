@@ -13,7 +13,10 @@ from altair.app.ticketing.core.models import (
     Product,
     PaymentDeliveryMethodPair,
     )
-from altair.app.ticketing.core.interfaces import IShippingAddress
+from altair.app.ticketing.core.interfaces import (
+    IOrderLike,
+    IShippingAddress,
+    )
 from altair.app.ticketing.orders.models import (
     Order,
     )
@@ -29,31 +32,41 @@ from altair.app.ticketing.payments.interfaces import IPaymentCart
 
 logger = logging.getLogger(__name__)
 
-# @implementer(IPaymentCart)
-# class LotEntryCart(object):
-#     def __init__(self, entry):
-#         self.entry = entry
 
-#     @property
-#     def sales_segment(self):
-#         return self.entry.lot.sales_segment
+@implementer(IOrderLike)
+class LotEntryCart(object):
+    def __init__(self, entry):
+        self.entry = entry
 
-#     @property
-#     def payment_delivery_pair(self):
-#         return self.entry.payment_delivery_method_pair
+    @property
+    def cart_setting(self):
+        return self.entry.cart_setting
 
-#     @property
-#     def order_no(self):
-#         return self.entry.entry_no
+    @property
+    def attributes(self):
+        return self.entry.attributes
 
-#     @property
-#     def total_amount(self):
-#         # オーソリ時は申し込みの最大金額を使う
-#         return self.entry.max_amount
+    @property
+    def sales_segment(self):
+        return self.entry.lot.sales_segment
 
-#     @property
-#     def name(self):
-#         return "LOT" + str(self.entry.lot.id)
+    @property
+    def payment_delivery_pair(self):
+        return self.entry.payment_delivery_method_pair
+
+    @property
+    def order_no(self):
+        return self.entry.entry_no
+
+    @property
+    def total_amount(self):
+        # オーソリ時は申し込みの最大金額を使う
+        return self.entry.max_amount
+
+    @property
+    def name(self):
+        return "LOT" + str(self.entry.lot.id)
+
 
 @implementer(IShippingAddress)
 class LotSessionShippingAddress(object):

@@ -1,11 +1,9 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 from alshain import utils
 
+
 def main(argv):
-    cfg_name = ''
-    if len(argv):
-        cfg_name = argv[0]
     altair_path = utils.AltairPath()
 
     home_dir = os.environ['HOME']

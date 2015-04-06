@@ -5,7 +5,7 @@ import transaction
 
 from zope.interface import directlyProvides
 from .interfaces import ICartInterface
-from .exceptions import PaymentDeliveryMethodPairNotFound
+from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
 from zope.deprecation import deprecation
 
@@ -29,12 +29,26 @@ def is_finished_delivery(request, pdmp, order):
     plugin = get_delivery_plugin(request, pdmp.delivery_method.delivery_plugin_id)
     return plugin.finished(request, order)
 
-def get_cart(request):
+def get_cart(request, retrieve_invalidated=False):
     cart_if = request.registry.getUtility(ICartInterface)
-    cart = cart_if.get_cart(request)
+    cart = cart_if.get_cart(request, retrieve_invalidated=retrieve_invalidated)
+    if cart is None:
+        raise PaymentCartNotAvailable(u'cart is not available')
     if cart.payment_delivery_pair is None:
         raise PaymentDeliveryMethodPairNotFound(u'payment/delivery method not specified')
     return cart
+
+def get_cart_by_order_no(request, order_no, retrieve_invalidated=False):
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.get_cart_by_order_no(request, order_no, retrieve_invalidated=retrieve_invalidated)
+
+def make_order_from_cart(request, cart):
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.make_order_from_cart(request, cart)
+
+def cont_complete_view(context, request, order_no, magazine_ids):
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.cont_complete_view(context, request, order_no, magazine_ids)
 
 def get_confirm_url(request):
     cart_if = request.registry.getUtility(ICartInterface)

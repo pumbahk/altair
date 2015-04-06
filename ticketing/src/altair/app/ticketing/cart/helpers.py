@@ -43,8 +43,7 @@ def form_log(request, message):
 
     logger.info("%s: \n%s" % (message, values))
 
-def cart_timeout(request):
-    return request.registry.settings['altair_cart.expire_time']
+cart_timeout = api.get_cart_expire_time
 
 def create_date_label(start, end):
     only_start_format = u"{start.year}年{start.month}月{start.day}日"

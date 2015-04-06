@@ -27,12 +27,12 @@ def guess_host_name_from_request(request, organization=None):
         host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
     elif ".tstar.jp" in url:
         host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
-    elif "stg2" in url:
-        host = qs.filter(Host.host_name.like("%stg2%")).first()
+    elif "stg" in url:
+        host = qs.filter(Host.host_name.like("%stg%")).first()
     elif "dev" in url:
         host = qs.filter(Host.host_name.like("%dev%")).first()
     else:
-        host = qs.filter(Host.host_name.like("%stg2%")).first()
+        host = qs.filter(Host.host_name.like("%stg%")).first()
     if host is None:
         logger.warn("host is not found. organization={0}".format(organization))
         return ""

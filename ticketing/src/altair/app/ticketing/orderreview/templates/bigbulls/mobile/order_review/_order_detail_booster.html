@@ -21,7 +21,7 @@ pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(reques
 <%mobile:form_header>購入情報</%mobile:form_header>
 ${view_context.title}
 <%mobile:form_header>新規／継続:</%mobile:form_header>
-${u'継続' if pm.get('cont') == 'yes' else u'新規'}
+${pm['cont']}
 % if pm.get('cont') == 'yes' and pm.get('old_id_number'):
 <%mobile:form_header>2013-14会員番号</%mobile:form_header>
 ${pm.get('old_id_number')}

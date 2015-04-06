@@ -579,8 +579,6 @@ def create_client_form(context, request, **kwds):
     if user is not None:
         user_profile = user.user_profile
 
-    kwds['formdata'] = request.POST
-
     retval = schemas.ClientForm(context=context, **kwds)
 
     # XXX:ゆるふわなデフォルト値

@@ -1,7 +1,6 @@
-#-*- coding: utf-8 -*-
-import os
-
+# -*- coding: utf-8 -*-
 from .. import utils
+
 
 def main(argv):
     altair_path = utils.AltairPath()

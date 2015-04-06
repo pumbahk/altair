@@ -1118,8 +1118,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # create EventSettings
             if template_event.setting:
-                setting = template_event.setting
-                EventSetting.create_from_template(template=setting, event_id=self.id)
+                if self.setting is not None:
+                    logger.info("Event has already gotten an EventSetting associated.  Not creating another one from the template")
+                else:
+                    setting = template_event.setting
+                    EventSetting.create_from_template(template=setting, event_id=self.id)
 
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
@@ -2561,6 +2564,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 一般公開するか
     public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'公開'))
+    must_be_chosen = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=_(u'必須'))
 
     description = Column(Unicode(2000), nullable=True, default=None)
 
@@ -2940,6 +2944,7 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    display_order = Column(Identifier)
 
     def detect_preview_type(self):
         for dm in self.delivery_methods:
@@ -3288,6 +3293,7 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='page_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    display_order = Column(Identifier)
 
     @property
     def drawing(self):
@@ -3722,8 +3728,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment.save()
         return {template.id:sales_segment.id}
 
-    def can_delete(self):
-        return bool(self.products)
+    def is_deletable(self):
+        """販売区分は商品か抽選が紐付いている場合は削除できない
+
+        削除ができる状態の場合はTrueが返ります。
+        """
+        return not (bool(self.products) or bool(self.lots))
 
     def delete(self, force=False):
         # delete Product
@@ -3859,6 +3869,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
     cart_setting = relationship('CartSetting')
+    visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
 
     @property
     def super(self):

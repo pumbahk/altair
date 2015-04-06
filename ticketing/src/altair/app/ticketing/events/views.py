@@ -37,7 +37,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-from .api import get_cms_data
+from .api import get_cms_data, set_visible_event, set_invisible_event
 from .forms import EventForm, EventSearchForm
 from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
@@ -45,6 +45,16 @@ logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
+
+    @view_config(route_name='events.visible', permission='event_viewer')
+    def visible(self):
+        set_visible_event(self.request)
+        return HTTPFound(self.request.route_path("events.index"))
+
+    @view_config(route_name='events.invisible', permission='event_viewer')
+    def invisible(self):
+        set_invisible_event(self.request)
+        return HTTPFound(self.request.route_path("events.index"))
 
     @view_config(route_name='events.index', renderer='altair.app.ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
@@ -63,8 +73,14 @@ class Events(BaseView):
             )
 
         query = slave_session.query(Event) \
-            .group_by(Event.id) \
+            .join(EventSetting, Event.id==EventSetting.event_id) \
             .filter(Event.organization_id==int(self.context.organization.id))
+
+        # イベントの表示、非表示（クッキーで制御）
+        from . import VISIBLE_EVENT_SESSION_KEY
+        if not self.request.session.get(VISIBLE_EVENT_SESSION_KEY, None):
+            query = query.filter(EventSetting.visible==True)
+
         if sort is not None:
             query = query.order_by(direction(sort))
         query = query.order_by(sql.desc(Event.id))
@@ -129,7 +145,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code), context=self.context)
+        f = EventForm(MultiDict(code=self.context.user.organization.code, visible=True), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -149,7 +165,8 @@ class Events(BaseView):
                         max_quantity_per_user=f.max_quantity_per_user.data,
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                        cart_setting_id=f.cart_setting_id.data
+                        cart_setting_id=f.cart_setting_id.data,
+                        visible=f.visible.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -173,12 +190,8 @@ class Events(BaseView):
             }
 
     @view_config(route_name='events.edit', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
-    @view_config(route_name='events.copy', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
+    @view_config(route_name='events.copy', request_method='GET', renderer='altair.app.ticketing:templates/events/copy.html')
     def edit_get(self):
-        if self.request.matched_route.name == 'events.edit':
-            route_name = u'編集'
-        else:
-            route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.organization.id)
         if event is None:
@@ -190,6 +203,14 @@ class Events(BaseView):
         f.middle_stock_threshold.data = event.setting and event.setting.middle_stock_threshold
         f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
         f.cart_setting_id.data = event.setting and event.setting.cart_setting_id
+        f.visible.data = event.setting and event.setting.visible
+        if self.request.matched_route.name == 'events.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
+            # コピー時は、必ず表示
+            f.visible.data = True
+
         # f.performance_selector.data = (event.setting.performance_selector or '') if event.setting else ''
         # f.performance_selector_label1_override.data = event.setting.performance_selector_label1_override if event.setting else ''
         # f.performance_selector_label2_override.data = event.setting.performance_selector_label2_override if event.setting else ''
@@ -206,7 +227,7 @@ class Events(BaseView):
         }
 
     @view_config(route_name='events.edit', request_method='POST', renderer='altair.app.ticketing:templates/events/edit.html')
-    @view_config(route_name='events.copy', request_method='POST', renderer='altair.app.ticketing:templates/events/edit.html')
+    @view_config(route_name='events.copy', request_method='POST', renderer='altair.app.ticketing:templates/events/copy.html')
     def edit_post(self):
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
@@ -228,7 +249,8 @@ class Events(BaseView):
                             max_quantity_per_user=f.max_quantity_per_user.data,
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                            cart_setting_id=f.cart_setting_id.data
+                            cart_setting_id=f.cart_setting_id.data,
+                            visible=True
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
                             # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -253,6 +275,7 @@ class Events(BaseView):
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
                 event.setting.middle_stock_threshold = f.middle_stock_threshold.data
                 event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
+                event.setting.visible = f.visible.data
                 if f.cart_setting_id.data is not None:
                     event.setting.cart_setting_id = f.cart_setting_id.data
             event.save()

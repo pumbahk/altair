@@ -1,7 +1,8 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import os
 import jumon
 from .. import utils
+
 
 def main(argv):
     cur = utils.DeploySwitcher.get_dir()

@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 u"""fluentdが出力するログの解析器
 
 fluentdが出力するログファイルのjsonのkeyを引数として渡す事でその値だけ
@@ -9,6 +9,7 @@ fluentdが出力するログファイルのjsonのkeyを引数として渡す事
 import sys
 import json
 import argparse
+
 
 def main(argv):
     parser = argparse.ArgumentParser(usage=__doc__)

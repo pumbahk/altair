@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 u"""altair操作のためのユーティリティコマンド
 
 altairの操作は結構typeしないといけないのでユーティリティコマンドを作成してみました。
@@ -29,6 +29,8 @@ ALTAIR_SUDO
     $ alshain --command-list
 
 """
+
+
 def main(argv):
     print __doc__
 

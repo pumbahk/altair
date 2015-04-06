@@ -5,6 +5,55 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 from pyramid import testing
 from .testing import CoreTestMixin
 
+
+class SalesSegmentIsDeletableTest(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db(
+            [
+                "altair.app.ticketing.orders.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.users.models",
+                "altair.app.ticketing.lots.models",
+                "altair.app.ticketing.cart.models",
+            ])
+
+    def tearDown(self):
+        _teardown_db()
+
+    def _make_one(self, exists_lots=False, exists_products=False):
+        """販売区分グループを取得
+
+        exists_lots: 紐づく抽選の有無
+        exists_products: 紐づく商品の有無
+        """
+        from altair.app.ticketing.core.models import (
+            SalesSegment,
+            Product,
+            )
+        from altair.app.ticketing.lots.models import Lot
+
+        ss = SalesSegment()
+        if exists_lots:
+            ss.lots.append(Lot())
+
+        if exists_products:
+            ss.products.append(Product())
+
+        return ss
+
+    def test_deletable(self):
+        ss = self._make_one()
+        self.assertTrue(ss.is_deletable(), '削除可能な時はTrueが返る')
+
+    def test_undeletable_exist_lots(self):
+        ss = self._make_one(exists_lots=True)
+        self.assertFalse(ss.is_deletable(), '抽選がある場合は販売区分は削除できてはいけない: {}'.format(ss.lots))
+
+    def test_undeletable_exist_products(self):
+        ss = self._make_one(exists_products=True)
+        self.assertFalse(ss.is_deletable(), '商品がある場合は販売区分は削除できてはいけない: {}'.format(ss.products))
+
+
 class SalesSegmentTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(
@@ -499,6 +548,18 @@ class EventTests(unittest.TestCase):
         result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True).all()
         self.assertEqual(result, others)
 
+    def test_event_copy_duplicate_settings_11288(self):
+        orig = self._makeOne()
+        from .models import EventSetting
+        orig.setting = EventSetting()
+        self.session.add(orig)
+        self.session.flush()
+        copied_target = self._makeOne()
+        copied_target.original_id = orig.id
+        copied_target.setting = EventSetting()
+        copied_target.add()
+        self.session.flush()
+        self.assertEqual(self.session.query(EventSetting).filter_by(event_id=copied_target.id).count(), 1)
 
 class SalesSegmentGroupTests(unittest.TestCase):
     def _getTarget(self):
@@ -961,4 +1022,3 @@ class TicketPrintQueueEntryTest(unittest.TestCase, CoreTestMixin):
                     entries.append(entry)
         result = target.dequeue([entry.id for entry in entries])
         self.assertEqual(set(result), set(entries))
-

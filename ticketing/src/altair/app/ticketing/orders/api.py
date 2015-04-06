@@ -696,6 +696,24 @@ def refund_order(request, order, payment_method=None, now=None):
     logger.info('success order refund (order_no=%s)' % order.order_no)
     return warnings
 
+def call_payment_delivery_plugin(request, order_like, included_payment_plugin_ids=None, excluded_payment_plugin_ids=[]):
+    payment_plugin_id = order_like.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_plugin_id = order_like.payment_delivery_pair.delivery_method.delivery_plugin_id
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order_like.payment_delivery_pair)
+
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+    if (included_payment_plugin_ids is not None and payment_plugin_id not in included_payment_plugin_ids) or \
+       (payment_plugin_id in excluded_payment_plugin_ids):
+        payment_plugin = None
+
+    if payment_plugin is not None:
+        payment_plugin.finish2(request, order_like)
+    if delivery_plugin is not None:
+        delivery_plugin.finish2(request, order_like)
+
+
 def create_inner_order(request, order_like, note, session=None):
     if session is None:
         from altair.app.ticketing.models import DBSession
@@ -731,7 +749,7 @@ def add_booster_attributes(request, order):
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
     schema = get_extra_form_schema(
         DummyCartContext(request, order),
-        request, 
+        request,
         order.sales_segment
         )
     for field in schema:
@@ -1173,7 +1191,15 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         logger.info('reflecting the status of new order to the payment / delivery plugins (%s)' % order.order_no)
         try:
             DBSession.merge(order)
-            create_inner_order(request, order, order.note)
+            call_payment_delivery_plugin(
+                request,
+                order,
+                included_payment_plugin_ids=[
+                    payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                    payments_plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FREE_PAYMENT_PLUGIN_ID
+                    ]
+                )
         except Exception as e:
             import sys
             exc_info = sys.exc_info()
@@ -1860,23 +1886,24 @@ def get_multicheckout_info(request, order):
     return multicheckout_info
 
 
-def get_extra_form_fields_for_order(request, order_like):
+def get_extra_form_fields_for_order(request, order_like, for_=None):
     if order_like.sales_segment is None:
         return []
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
     extra_form_fields = get_extra_form_schema(
         DummyCartContext(request, order_like),
         request,
-        order_like.sales_segment
+        order_like.sales_segment,
+        for_,
         )
     if not extra_form_fields:
         return []
     return extra_form_fields
 
-def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False):
+def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False, for_=None):
     retval = []
     remaining_attributes = set(order_like.attributes.keys())
-    for field_desc in get_extra_form_fields_for_order(request, order_like):
+    for field_desc in get_extra_form_fields_for_order(request, order_like, for_):
         if field_desc['kind'] == 'description_only':
             continue
         field_name = field_desc['name']

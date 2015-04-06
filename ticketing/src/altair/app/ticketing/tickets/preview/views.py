@@ -1,17 +1,21 @@
 # -*- coding:utf-8 -*-
 
 from decimal import Decimal
-import sqlalchemy.orm as orm
 import json
+import re
 import base64
 import os.path
-import sqlalchemy as sa
-from StringIO import StringIO
+from io import BytesIO
 from collections import OrderedDict
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
+import numpy
+from PIL import Image as image
+from altair.pyramid_assets.api import get_asset_resolver
 from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import ISejDeliveryPlugin
 from altair.app.ticketing.payments.plugins import(
@@ -76,6 +80,25 @@ from . import TicketPreviewFillValuesException
 from ..cleaner.api import TicketCleanerValidationError
 import tempfile
 
+sej_ticket_printer_transforms = {
+    'old': numpy.matrix(
+        [
+            [1., 0., -63.0708], # 17.8mm in 90dpi
+            [0., 1., -10.6299], # 3mm in 90dpi
+            [0., 0., 1.     ]
+            ],
+        dtype=numpy.float64
+        ),
+    'new': numpy.matrix(
+        [
+            [1., 0., -71.2204], # 20.1mm in 90dpi
+            [0., 1., -23.0314], # 6.5mm in 90dpi
+            [0., 0., 1.     ]
+            ],
+        dtype=numpy.float64
+        )
+    }
+
 ## todo move it
 def decimal_converter(target, converter=float):
     """ for product.price ... etc"""
@@ -135,6 +158,75 @@ def _build_selectitem_candidates_from_ticket_format_unit(ticket_format, is_sej):
     else:
         return [e for e in [normal_value, sej_value] if e is not None]
 
+
+def validate_and_filter_image_location(im_loc):
+    if im_loc is None:
+        return None
+    s = []
+    for c in re.split(ur'/+', im_loc):
+        if c == u'..':
+            if len(s) == 0:
+                raise ValueError('invalid virtual path; could not go back beyond the root')
+            s.pop()
+        elif c != u'' and c != u'.':
+            s.append(c)
+    return u'/'.join(s)
+
+def load_ticket_image(request, ticket_format):
+    im_loc = ticket_format.data.get('ticket_image')
+    im_loc = validate_and_filter_image_location(im_loc)
+    if im_loc is None:
+        return None
+    resolver = get_asset_resolver(request)
+    desc = resolver.resolve('altair.app.ticketing:static/images/tickets/%s' % im_loc)
+    return image.open(desc.stream())
+
+def composite_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(300, 300)}, ticket_im_info_defaults={'dpi':(90, 90)}):
+    try:
+        ticket_im = load_ticket_image(request, ticket_format)
+    except Exception as e:
+        logger.warn(e)
+        return im
+    if ticket_im is None:
+        logger.info('no image specified')
+        return im
+    im_info = dict(im_info_defaults)
+    im_info.update(im.info)
+    ticket_im_info = dict(ticket_im_info_defaults)
+    ticket_im_info.update(ticket_im.info)
+    im_dpi = im_info['dpi']
+    ticket_im_dpi = ticket_im_info['dpi']
+    if ticket_im_dpi[0] != im_dpi[0] or ticket_im_dpi[1] != im_dpi[1]:
+        ticket_im = ticket_im.resize(
+            (
+                int(ticket_im.size[0] * float(im_dpi[0]) / float(ticket_im_dpi[0])),
+                int(ticket_im.size[1] * float(im_dpi[1]) / float(ticket_im_dpi[1]))
+                ),
+            image.ANTIALIAS
+            )
+    sej_ticket_printer_type = None
+    aux = ticket_format.data.get('aux')
+    if aux is not None:
+        sej_ticket_printer_type = aux.get('sej_ticket_printer_type')
+    trans = None
+    if sej_ticket_printer_type is not None:
+        trans = sej_ticket_printer_transforms.get(sej_ticket_printer_type)
+        if trans is None:
+            logger.warning('unknown SEJ ticket printer type: %s' % sej_ticket_printer_type)
+        trans = trans.copy() # matrix will be modified later in place.
+    else:
+        logger.info('aux.sej_ticket_printer_type is not specified')
+    if trans is None:
+        trans = transform_matrix_from_ticket_format(ticket_format)
+    trans[0, 2] *= float(im_dpi[0]) / 90.
+    trans[1, 2] *= float(im_dpi[1]) / 90.
+    im = im.transform(
+        ticket_im.size,
+        image.AFFINE,
+        tuple(trans[0:2].getA().flatten()),
+        image.NEAREST
+        )
+    return image.composite(im, ticket_im, im)
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="altair.app.ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -207,7 +299,7 @@ def preview_ticket_post_sej(context, request):
 
 @view_config(route_name="tickets.preview.download", request_method="POST", permission='sales_counter', request_param="svg")
 def preview_ticket_download(context, request):
-    io = StringIO(request.POST["svg"].encode("utf-8"))
+    io = BytesIO(request.POST["svg"].encode("utf-8"))
     return FileLikeResponse(io, request=request, filename="preview.svg")
 
 
@@ -276,7 +368,7 @@ class PreviewApiView(object):
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
-            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8"))  # unicode only
+            svgio = BytesIO(unicode(self.request.POST["svg"]).encode("utf-8"))  # unicode only
             cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
@@ -302,7 +394,7 @@ class PreviewApiView(object):
             transformer = SVGTransformer(svg, self.request.POST)
             svg = transformer.transform()
             imgdata_base64 = preview.communicate(self.request, svg, ticket_format)
-            return {"status": True, "data":imgdata_base64, 
+            return {"status": True, "data":imgdata_base64,
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewTransformException, e:
             return {"status": False, "message": "%s" % e.message}            
@@ -315,6 +407,7 @@ class PreviewApiView(object):
 
     @view_config(match_param="action=preview.base64", request_param="type=sej") #svg
     def preview_ticket_post64_sej(self):
+        without_ticket_image = self.request.params.get('without_ticket_image', False)
         try:
             ticket_format = c_models.TicketFormat.query \
                 .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
@@ -326,12 +419,19 @@ class PreviewApiView(object):
             assert ISejDeliveryPlugin.providedBy(delivery_plugin)
             template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
             transformer = SEJTemplateTransformer(
-                svgio=StringIO(self.request.POST["svg"]),
+                svgio=BytesIO(self.request.POST["svg"].encode('utf-8')),
                 global_transform=global_transform,
                 notation_version=template_record.notation_version
                 )
             ptct = transformer.transform()
             imgdata = preview.communicate(self.request, (ptct, template_record), ticket_format)
+            if not without_ticket_image:
+                f = BytesIO(imgdata)
+                f.name = 'svg.png'
+                im = composite_ticket_image(self.request, ticket_format, image.open(f), im_info_defaults={'dpi':(300, 300)})
+                f = BytesIO()
+                im.save(f, 'png')
+                imgdata = f.getvalue()
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewFillValuesException, e:
@@ -383,7 +483,7 @@ class PreviewApiView(object):
             assert ISejDeliveryPlugin.providedBy(delivery_plugin)
             template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
             transformer = SEJTemplateTransformer(
-                svgio=StringIO(svg),
+                svgio=BytesIO(svg),
                 global_transform=global_transform,
                 notation_version=template_record.notation_version
                 )
@@ -728,7 +828,7 @@ class DownloadListOfPreviewImage(object):
                     assert ISejDeliveryPlugin.providedBy(delivery_plugin)
                     template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
                     transformer = SEJTemplateTransformer(
-                        svgio=StringIO(svg),
+                        svgio=BytesIO(svg),
                         global_transform=global_transform,
                         notation_version=template_record.notation_version
                         )

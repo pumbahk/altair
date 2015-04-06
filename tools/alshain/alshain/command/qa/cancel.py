@@ -1,10 +1,10 @@
 #! /usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import sys
 import os
-import argparse
 import jumon
 import alshain.utils
+
 
 def main(argv=sys.argv[1:]):
     parser = jumon.TransparentArgumentParser()

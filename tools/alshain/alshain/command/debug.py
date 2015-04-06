@@ -1,12 +1,11 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import re
 import os
-import shutil
 import optparse
 try:
     import stringio
 except ImportError:
-    import StringIO as stringio
+    import StringIO as stringio  # noqa
 
 try:
     import configparser
@@ -20,13 +19,14 @@ from .. import utils
 class CommandError(Exception):
     pass
 
+
 def main(argv):
     parser = optparse.OptionParser()
     parser.parse_args(argv)
 
     try:
         ctl_name = argv[0]
-    except IndexError as err:
+    except IndexError:
         parser.error('Invalid parameter: {0}'.format(ctl_name))
     else:
         ctl.main(['stop', ctl_name])

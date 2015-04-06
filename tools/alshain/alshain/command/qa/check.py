@@ -1,19 +1,18 @@
 #! /usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import re
 import os
 import sys
-import argparse
 import jumon
 import alshain.utils
 PATTERN = '^altair.ticketing.*.ini$'
+
 
 def main(argv=sys.argv[1:]):
     parser = jumon.TransparentArgumentParser()
     parser.add_argument('--verbose', default=False, action='store_true')
     opts = parser.parse_args(argv)
     args = parser.get_unrecognizes()
-
 
     alshain_path = alshain.utils.AlshainPath()
     altair_path = alshain.utils.AltairPath()

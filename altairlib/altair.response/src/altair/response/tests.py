@@ -6,6 +6,25 @@ import os.path
 import zipfile
 import shutil
 
+class FileLikeResponseTest(unittest.TestCase):
+    def _makeOne(self, *args, **kwargs):
+        from altair.response import FileLikeResponse
+        return FileLikeResponse(*args, **kwargs)
+
+    def test_with_seekable(self):
+        from io import BytesIO
+        io = BytesIO()
+        io.write('test')
+        resp = self._makeOne(io)
+        self.assertEqual(int(resp.headers['Content-Length']), 4)
+
+    def test_with_unseekable(self):
+        from socket import socketpair
+        s1, s2 = socketpair()
+        resp = self._makeOne(s2)
+        self.assertNotIn('Content-Length', resp.headers)
+
+
 class ZipCreateTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from altair.response import ZipFileCreateRecursiveWalk

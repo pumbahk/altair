@@ -1,7 +1,7 @@
-#-*- coding: utf-8 -*-
-import os
+# -*- coding: utf-8 -*-
 import jumon
 from .. import utils
+
 
 def main(argv):
     parser = jumon.TransparentArgumentParser()

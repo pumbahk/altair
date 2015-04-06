@@ -1,5 +1,6 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from ... import utils
+
 
 def main(argv):
     utils.Shell.system('alshain ctl stop all')

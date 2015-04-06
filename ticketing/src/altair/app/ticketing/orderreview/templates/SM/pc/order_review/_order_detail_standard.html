@@ -9,7 +9,7 @@
     <tbody>
       %for product in order.items:
       <tr>
-        <th scope="row"><img src="${request.static_url('altair.app.ticketing.orderreview:static/WB/pc/images/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
+        <th scope="row"><img src="${request.static_url('altair.app.ticketing.orderreview:static/SM/pc/images/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
         % if product.seats:
         % if product.product.sales_segment.setting.display_seat_no:
         <td><strong>${product.seat_quantity}</strong>枚</td>
