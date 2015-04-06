@@ -4,7 +4,7 @@
   <input type="hidden" name="token" value="${token}" />
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
@@ -45,7 +45,7 @@
   </div>
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
@@ -93,12 +93,12 @@
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
       <div id="mailMagazineBox">
         <div id="mailMagazineBoxInner">
           <dl>
             <dt>
-              お申し込みいただいた方に、GreeN Musicからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+              お申し込みいただいた方に、チケットスターオンライン販売からのメールマガジンをお送りします。不要な方はチェックをはずしてください。
             </dt>
             <dd>
               <ul>
@@ -121,5 +121,5 @@
     </div>
   </div>
   % endif
-  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
+  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
 </form>
