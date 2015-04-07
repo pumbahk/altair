@@ -109,7 +109,7 @@ class CooperationView(BaseView):
 
             # 公演日時でバリデーション
             try:
-                record = ''
+                record = None  # AltairGettiiVenueCSVRecordのインスタンスが入ります (recordsがなければNone)
                 for record in records:
                     if record.venue_code:
                         start_on = datetime.datetime.strptime(record.start_day + ' ' + record.start_time, '%Y/%m/%d %H:%M')
