@@ -1088,7 +1088,6 @@ class LotEntries(BaseView):
                 'lots.entries.show', lot_id=lot.id, entry_no=lot_entry.entry_no))
 
         lot_entry.delete()
-        lot_entry.save()
 
         self.request.session.flash(u'非表示にしました')
         return HTTPFound(self.request.route_path('lots.entries.search', lot_id=lot.id))
