@@ -38,7 +38,6 @@ from altair.app.ticketing.lots.models import (
     LotRejectWork,
     LotEntryWish,
     )
-from altair.app.ticketing.lots.exceptions import LotEntryDeletionError
 from altair.app.ticketing.sej.models import (
     SejOrder,
 )
@@ -1083,17 +1082,16 @@ class LotEntries(BaseView):
             return HTTPFound(self.request.route_path(
                 'lots.entries.search', lot_id=lot.id))
 
-        try:
-            lot_entry.delete()
-        except LotEntryDeletionError:
+        if not lot_entry.is_deletable():
             self.request.session.flash(u'キャンセルされていなければ非表示にはできません')
             return HTTPFound(self.request.route_path(
                 'lots.entries.show', lot_id=lot.id, entry_no=lot_entry.entry_no))
-        else:
-            self.request.session.flash(u'非表示にしました')
-            return HTTPFound(self.request.route_path(
-                'lots.entries.search', lot_id=lot.id))
 
+        lot_entry.delete()
+        lot_entry.save()
+
+        self.request.session.flash(u'非表示にしました')
+        return HTTPFound(self.request.route_path('lots.entries.search', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
     def entry_show(self):
