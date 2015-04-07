@@ -28,7 +28,7 @@ from altair.sqla import new_comparator
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, EventSetting, Performance, StockType, StockTypeEnum, SalesSegment
+from altair.app.ticketing.core.models import Event, EventSetting, Performance, PerformanceSetting, StockType, StockTypeEnum, SalesSegment
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -37,7 +37,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-from .api import get_cms_data, set_visible_event, set_invisible_event
+from .api import get_cms_data, set_visible_event, set_invisible_event, set_visible_event_performance, set_invisible_event_performance
 from .forms import EventForm, EventSearchForm
 from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
@@ -55,6 +55,24 @@ class Events(BaseView):
     def invisible(self):
         set_invisible_event(self.request)
         return HTTPFound(self.request.route_path("events.index"))
+
+    @view_config(route_name='events.show.performances.visible', permission='event_viewer')
+    def visible_performance(self):
+        set_visible_event_performance(self.request)
+        try:
+            event_id = int(self.request.matchdict.get('event_id',0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+        return HTTPFound(self.request.route_path("events.show", event_id=event_id))
+
+    @view_config(route_name='events.show.performances.invisible', permission='event_viewer')
+    def invisible_performance(self):
+        set_invisible_event_performance(self.request)
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+        return HTTPFound(self.request.route_path("events.show", event_id=event_id))
 
     @view_config(route_name='events.index', renderer='altair.app.ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
@@ -130,8 +148,19 @@ class Events(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
         cart_url = get_cart_url_builder(self.request).build(self.request, event)
         agreement_url = get_agreement_cart_url_builder(self.request).build(self.request, event)
+        performances = slave_session.query(Performance) \
+            .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
+            .filter(Performance.event_id == event_id) \
+            .order_by(Performance.display_order)
+
+        from . import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY
+        if not self.request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY, None):
+            performances = performances.filter(PerformanceSetting.visible == True)
+        performances = performances.all()
+
         return {
             'event':event,
+            'performances':performances,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url,

@@ -9,6 +9,8 @@ def includeme(config):
     config.add_route('events.invisible', '/invisible', factory=factory)
     config.add_route('events.new', '/new', factory=factory)
     config.add_route('events.show', '/show/{event_id}', factory=factory)
+    config.add_route('events.show.performances.visible', '/show/performances/visible/{event_id}', factory=factory)
+    config.add_route('events.show.performances.invisible', '/show/performances/invisible/{event_id}', factory=factory)
     config.add_route('events.edit', '/edit/{event_id}', factory=factory)
     config.add_route('events.copy', '/copy/{event_id}', factory=factory)
     config.add_route('events.delete', '/delete/{event_id}', factory=factory)
@@ -30,3 +32,4 @@ def includeme(config):
     config.scan(".")
 
 VISIBLE_EVENT_SESSION_KEY = "_visible_event"
+VISIBLE_EVENT_PERFORMANCE_SESSION_KEY = "_visible_event_performance"

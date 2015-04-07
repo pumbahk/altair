@@ -3964,6 +3964,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     entry_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'申込回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'パフォーマンスの表示/非表示'))
 
     @property
     def super(self):

@@ -35,6 +35,7 @@ from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
+from altair.app.ticketing.events.api import set_visible_event_performance, set_invisible_event_performance
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,16 @@ class PerformanceShowView(BaseView):
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(self.request, cart_url, self.performance.event_id)
         ))
         return data
+
+    @view_config(route_name='performances.visible', permission='event_editor')
+    def visible(self):
+        set_visible_event_performance(self.request)
+        return HTTPFound(self.request.route_path("performances.index", event_id=self.context.event.id))
+
+    @view_config(route_name='performances.invisible', permission='event_editor')
+    def invisible(self):
+        set_invisible_event_performance(self.request)
+        return HTTPFound(self.request.route_path("performances.index", event_id=self.context.event.id))
 
     @view_config(route_name='performances.show', permission='event_viewer')
     @view_config(route_name='performances.show_tab', permission='event_viewer')
@@ -344,8 +355,13 @@ class Performances(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = slave_session.query(Performance).filter(
-            Performance.event_id==self.context.event.id)
+        query = slave_session.query(Performance) \
+            .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
+            .filter(Performance.event_id==self.context.event.id)
+
+        from altair.app.ticketing.events import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY
+        if not self.request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY):
+            query = query.filter(PerformanceSetting.visible==True)
         query = query.order_by(Performance.display_order)
         query = query.order_by(sort + ' ' + direction)
 
@@ -364,7 +380,7 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.new', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_get(self):
-        f = PerformanceForm(MultiDict(code=self.context.event.code), organization_id=self.context.user.organization_id)
+        f = PerformanceForm(MultiDict(code=self.context.event.code, visible=True), organization_id=self.context.user.organization_id)
         return {
             'form':f,
             'event':self.context.event,
@@ -374,14 +390,15 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.new', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_post(self):
-        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id, event=self.context.event)
+        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id, event=self.context.event, visible=True)
         if f.validate():
             performance = merge_session_with_post(
                 Performance(
                     setting=PerformanceSetting(
                         order_limit=f.order_limit.data,
                         entry_limit=f.entry_limit.data,
-                        max_quantity_per_user=f.max_quantity_per_user.data
+                        max_quantity_per_user=f.max_quantity_per_user.data,
+                        visible=f.visible.data,
                         ),
                     event_id=self.context.event.id
                     ),
@@ -420,6 +437,7 @@ class Performances(BaseView):
         f.order_limit.data = performance.setting and performance.setting.order_limit
         f.entry_limit.data = performance.setting and performance.setting.entry_limit
         f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
+        f.visible.data = performance.setting and performance.setting.visible
         if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None
@@ -459,6 +477,7 @@ class Performances(BaseView):
                 performance.setting.order_limit = f.order_limit.data
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                performance.setting.visible = f.visible.data
 
                 original = Performance.query.filter_by(id=self.request.POST['original_id']).first()
                 if original is not None:
@@ -488,6 +507,7 @@ class Performances(BaseView):
                 performance.setting.order_limit = f.order_limit.data
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                performance.setting.visible = f.visible.data
 
             performance.save()
             self.request.session.flash(u'パフォーマンスを保存しました')

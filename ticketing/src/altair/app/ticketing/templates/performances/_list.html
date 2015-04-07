@@ -16,9 +16,25 @@
   });
 </script>
 
-% if performances:
 <div class="row-fluid">
   <div class="span12">
+
+    <% from altair.app.ticketing.events import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY %>
+    % if request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY, None):
+        % if request.matched_route.name == 'events.show.performances.visible' or request.matched_route.name == 'events.show':
+            <a href="${request.route_path('events.show.performances.invisible', event_id=event.id)}">非表示のパフォーマンスを隠す</a>
+        % else:
+            <a href="${request.route_path('performances.invisible', event_id=event.id)}">非表示のパフォーマンスを隠す</a>
+        % endif
+    % else:
+        % if request.matched_route.name == 'events.show.performances.invisible' or request.matched_route.name == 'events.show':
+            <a href="${request.route_path('events.show.performances.visible', event_id=event.id)}">パフォーマンスを全部表示する</a>
+        % else:
+            <a href="${request.route_path('performances.visible', event_id=event.id)}"> パフォーマンスを全部表示する</a>
+        % endif
+    % endif
+
+    % if performances:
     <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
       <thead>
         <tr>
@@ -100,9 +116,9 @@
       <a href="${request.route_path('performances.index', event_id=performances[0].event.id)}">もっと見る</a>
     </div>
     % endif
+    % endif
   </div>
 </div>
-% endif
 
 % if paging:
   ${ch.pager(performances)}
