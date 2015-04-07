@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
-class LotEntryCannotDeleteError(Exception):
+class LotEntryDeletionError(Exception):
     """抽選申込の削除ができない"""
 
 
@@ -13,6 +13,7 @@ class OutTermException(Exception):
     def __init__(self, lot):
         super(OutTermException, self).__init__()
         self.lot = lot
+
 
 class OverEntryLimitException(Exception):
     def __init__(self, entry_limit, *args, **kwargs):
