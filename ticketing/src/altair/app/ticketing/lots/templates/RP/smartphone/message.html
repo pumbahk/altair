@@ -1,0 +1,16 @@
+<%inherit file="base.html" />
+<div id="main">
+  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+<p>
+${message|n}
+</p>
+
