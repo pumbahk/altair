@@ -19,6 +19,7 @@ CHECKOUT_PAYMENT_PLUGIN_ID = 2
 SEJ_PAYMENT_PLUGIN_ID = 3
 RESERVE_NUMBER_PAYMENT_PLUGIN_ID = 4
 FREE_PAYMENT_PLUGIN_ID = 5
+FAMIPORT_PAYMENT_PLUGIN_ID = 6
 
 SHIPPING_DELIVERY_PLUGIN_ID = 1
 SEJ_DELIVERY_PLUGIN_ID = 2
@@ -56,7 +57,7 @@ class PaymentPluginRendererHelperFactory(object):
         self.default_renderer_factories = default_renderer_factories
 
     def __call__(self, env, package, registry, request=None, system_values=None, **kwargs):
-        # try to retrieve request from the system vars when not directly provided 
+        # try to retrieve request from the system vars when not directly provided
         if request is None:
             if system_values is not None:
                 request = system_values.get('request')
