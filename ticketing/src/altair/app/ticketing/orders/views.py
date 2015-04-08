@@ -1865,7 +1865,7 @@ class OrdersReserveView(OrderBaseView):
             }))
 
         # 古いカートのセッションが残っていたら削除
-        api.remove_cart(self.request)
+        api.remove_cart(self.request, release=True, async=False)
 
         # 古い確保座席がセッションに残っていたら削除
         self.clear_inner_cart_session()
@@ -1935,7 +1935,7 @@ class OrdersReserveView(OrderBaseView):
             }))
 
         # 古いカートのセッションが残っていたら削除
-        api.remove_cart(self.request)
+        api.remove_cart(self.request, release=True, async=False)
 
         try:
             post_data.update(self.get_inner_cart_session())
@@ -2088,7 +2088,7 @@ class OrdersReserveView(OrderBaseView):
     def reserve_reselect(self):
         try:
             # release cart
-            api.remove_cart(self.request)
+            api.remove_cart(self.request, release=True, async=False)
 
             # clear session
             self.clear_inner_cart_session()
