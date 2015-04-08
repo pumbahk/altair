@@ -272,7 +272,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
                 # それをskipする形で出力させたいため
                 # 抽選申込は1番目の項目をcsv上では3番目から出力する
                 attribute_values = itertools.chain(
-                    ['', ''],
+                    [entry.birthday, entry.gender],
                     (value for name, value in sorted(entry.attributes.items())),
                     )
 
