@@ -113,3 +113,4 @@ def includeme(config):
     config.include(".qr")
     config.include(".orion")
     config.include(".free")
+    config.include(".famiport")

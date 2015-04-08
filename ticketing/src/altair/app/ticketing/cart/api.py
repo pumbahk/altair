@@ -623,7 +623,7 @@ def get_cart_setting_by_name(request, name, organization_id=None, session=None):
 
 def get_cart_setting_from_order_like(request, order_like):
     session = get_db_session(request, 'slave')
-    cart_setting_id = order_like.cart_setting_id 
+    cart_setting_id = order_like.cart_setting_id
     if cart_setting_id is None:
         cart_setting = session.query(CartSetting) \
             .join(c_models.OrganizationSetting.cart_setting) \

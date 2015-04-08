@@ -16,7 +16,7 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
-
+import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
 
@@ -39,8 +39,7 @@ def _overridable_payment(path, fallback_ua_type=None):
                  renderer=_overridable_payment('famiport_payment_completion.html'))
 def reserved_number_payment_viewlet(context, request):
     """決済方法の完了画面用のhtmlを生成"""
-    cart = context.cart
-    payment_method = cart.payment_delivery_pair.payment_method
+    payment_method = context.order.payment_delivery_pair.payment_method
     return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
 
 
@@ -86,12 +85,16 @@ class FamiportPaymentPlugin(object):
 
     def finish(self, request, cart):
         """確定処理"""
+        order = order_models.Order.create_from_cart(cart)
+        cart.finish()
+        return order
 
     def finish2(self, request, cart):
         """確定処理2"""
 
     def finished(self, requrst, order):
         """支払状態遷移済みかどうかを判定"""
+        return True
 
     def refresh(self, request, order):
         """決済側の状態をDBに反映"""

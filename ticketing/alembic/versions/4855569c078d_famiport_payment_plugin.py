@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """famiport_payment_plugin
 
 Revision ID: 4855569c078d
