@@ -98,9 +98,10 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_reservation(self):
+        # todo: performance_id まで指定してもいいが、OrderSearchForm をキレイにするほうが方針として良さそう
         return dict(
             data_source=self.build_data_source({u'f':u'sale_only'}),
-            form_search=OrderSearchForm(self.request.params)
+            form_search=OrderSearchForm(self.request.params, event_id=self.performance.event_id)
             )
 
     def _extra_data(self):
