@@ -29,6 +29,7 @@ from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 def includeme(config):
     config.add_payment_plugin(FamiportPaymentPlugin(), PAYMENT_PLUGIN_ID)
+    config.add_delivery_plugin(FamiportDeliveryPlugin(), PAYMENT_PLUGIN_ID)
     config.scan(__name__)
 
 
@@ -147,7 +148,7 @@ def delivery_notice_viewlet(context, request):
     return Response(text=u'ファミポート受け取り')
 
 
-class FamiportTicketDeliveryPlugin(object):
+class FamiportDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
