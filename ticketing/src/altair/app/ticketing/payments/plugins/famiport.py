@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+"""ファミポート決済/引取プラグイン
+"""
 from markupsafe import Markup
 from zope.interface import implementer
 from pyramid.response import Response
 
 from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.cart.interfaces import ICartPayment
+from altair.app.ticketing.cart.interfaces import (
+    ICartPayment,
+    ICartDelivery,
+    )
 from altair.app.ticketing.payments.interfaces import (
     IPaymentPlugin,
     IOrderPayment,
@@ -16,8 +21,10 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
+from ..interfaces import IOrderDelivery
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
+from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 
 def includeme(config):
@@ -32,6 +39,14 @@ def _overridable_payment(path, fallback_ua_type=None):
     return _template(
         path, type='overridable', for_='payments', plugin_type='payment',
         plugin_id=PAYMENT_PLUGIN_ID, fallback_ua_type=fallback_ua_type,
+        )
+
+
+def _overridable_delivery(path, fallback_ua_type=None):
+    from . import _template
+    return _template(
+        path, type='overridable', for_='payments', plugin_type='delivery',
+        plugin_id=DELIVERY_PLUGIN_ID, fallback_ua_type=fallback_ua_type,
         )
 
 
@@ -104,3 +119,56 @@ class FamiportPaymentPlugin(object):
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
+
+
+@lbr_view_config(context=ICartDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
+                 renderer=_overridable_delivery('famiport_confirm.html'))
+def deliver_confirm_viewlet(context, request):
+    return Response(text=u'ファミポート受け取り')
+
+
+@lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
+                 renderer=_overridable_delivery('famiport_complete.html'))
+def deliver_completion_viewlet(context, request):
+    return Response(text=u'ファミポート受け取り')
+
+
+@lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
+                 renderer=_overridable_delivery('famiport_mail_complete.html', fallback_ua_type='mail'))
+def deliver_completion_mail_viewlet(context, request):
+    return Response(text=u'ファミポート受け取り')
+
+
+@lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsRejectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsAcceptedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
+@lbr_view_config(context=ILotsElectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
+def delivery_notice_viewlet(context, request):
+    return Response(text=u'ファミポート受け取り')
+
+
+class FamiportTicketDeliveryPlugin(object):
+    def validate_order(self, request, order_like, update=False):
+        """予約の検証"""
+
+    def prepare(self, request, cart):
+        """ 前処理 """
+
+    def finish(self, request, cart):
+        """ 確定時処理 """
+
+    def finish2(self, request, order_like):
+        """ 確定時処理 """
+
+    def finished(self, request, order):
+        """ tokenが存在すること """
+        return True
+
+    def refresh(self, request, order):
+        """リフレッシュ"""
+
+    def cancel(self, request, order):
+        """キャンセル処理"""
+
+    def refund(self, request, order, refund_record):
+        """払い戻し"""
