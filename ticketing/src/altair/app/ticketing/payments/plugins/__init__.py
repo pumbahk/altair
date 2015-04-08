@@ -26,6 +26,8 @@ SEJ_DELIVERY_PLUGIN_ID = 2
 RESERVE_NUMBER_DELIVERY_PLUGIN_ID = 3
 QR_DELIVERY_PLUGIN_ID = 4
 ORION_DELIVERY_PLUGIN_ID = 5
+FAMIPORT_DELIVERY_PLUGIN_ID = 6
+
 
 class Env(text_type):
     def __init__(self, path_or_renderer_name, type, for_, plugin_type, plugin_id, **kwargs):
