@@ -220,7 +220,6 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .filter(sa_exp.or_(
             LotEntry.elected_at != None,
             LotEntry.rejected_at != None,
-            LotEntry.canceled_at != None,
             )) \
         .options(sa_orm.joinedload('shipping_address')) \
         .options(sa_orm.joinedload('wishes')) \
