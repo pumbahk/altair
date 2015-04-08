@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+
 class NotElectedException(Exception):
     """ 当選していない抽選 """
 
@@ -8,6 +9,7 @@ class OutTermException(Exception):
     def __init__(self, lot):
         super(OutTermException, self).__init__()
         self.lot = lot
+
 
 class OverEntryLimitException(Exception):
     def __init__(self, entry_limit, *args, **kwargs):
