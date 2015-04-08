@@ -645,6 +645,13 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for wish in self.wishes:
             wish.cancel(now)
 
+    def delete(self):
+        self.deleted_at = datetime.now()
+
+    def is_deletable(self):
+        """キャンセル状態の抽選申込のみ論理削除可能"""
+        return self.canceled_at
+
     def is_electing(self):
         return LotElectWork.query.filter(
             LotElectWork.lot_entry_no==self.entry_no

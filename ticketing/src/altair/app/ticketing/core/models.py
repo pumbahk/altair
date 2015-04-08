@@ -970,16 +970,18 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_start_on(self):
+        product_exists = Product.query.with_entities(Product.sales_segment_id).subquery()
         return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
                 .join(SalesSegment)\
-                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .filter(SalesSegment.id.in_(product_exists))\
                 .with_entities(func.min(SalesSegment.start_at)).scalar()
 
     @property
     def sales_end_on(self):
+        product_exists = Product.query.with_entities(Product.sales_segment_id).subquery()
         return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
                 .join(SalesSegment)\
-                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .filter(SalesSegment.id.in_(product_exists))\
                 .with_entities(func.max(SalesSegment.end_at)).scalar()
 
     @property

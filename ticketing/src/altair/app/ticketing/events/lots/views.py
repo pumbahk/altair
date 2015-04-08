@@ -1023,8 +1023,6 @@ class LotEntries(BaseView):
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
                           for w in lot_entry.wishes])
 
-
-
     @view_config(route_name='lots.entries.cancel_electing',
                  request_method="POST",
                  permission='event_viewer',
@@ -1053,7 +1051,6 @@ class LotEntries(BaseView):
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
                           for w in lot_entry.wishes])
 
-
     @view_config(route_name='lots.entries.cancel_rejecting',
                  request_method="POST",
                  permission='event_viewer',
@@ -1068,13 +1065,32 @@ class LotEntries(BaseView):
 
         lot_entry = lot.get_lot_entry(entry_no)
 
-
         lot.cancel_rejecting(lot_entry)
 
         return dict(result="OK",
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
                           for w in lot_entry.wishes])
 
+    @view_config(route_name='lots.entries.delete', request_method="POST", permission='event_viewer')
+    def delete_entry(self):
+        """抽選申込の非表示"""
+        self.check_organization(self.context.event)
+        lot = self.context.lot
+        lot_entry = self.context.entry
+        if lot_entry is None:
+            self.request.session.flash(u'抽選申込が存在しません')
+            return HTTPFound(self.request.route_path(
+                'lots.entries.search', lot_id=lot.id))
+
+        if not lot_entry.is_deletable():
+            self.request.session.flash(u'キャンセルされていなければ非表示にはできません')
+            return HTTPFound(self.request.route_path(
+                'lots.entries.show', lot_id=lot.id, entry_no=lot_entry.entry_no))
+
+        lot_entry.delete()
+
+        self.request.session.flash(u'非表示にしました')
+        return HTTPFound(self.request.route_path('lots.entries.search', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
     def entry_show(self):
