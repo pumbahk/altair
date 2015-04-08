@@ -91,9 +91,8 @@ def tags_from_value(v):
 def _tag_labels_from_genres(genres):
     S = set()
     for g in genres:
-        S.add(g.label)
-        #for c in g.ancestors:
-        #    S.add(c.label)
+        for c in g.ancestors:
+            S.add(c.label)
     return list(S)
     
 
