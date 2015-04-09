@@ -2,7 +2,7 @@ import isodate
 from datetime import datetime
 import json
 import hashlib
-from . import VISIBLE_EVENT_SESSION_KEY, VISIBLE_EVENT_PERFORMANCE_SESSION_KEY
+from . import VISIBLE_EVENT_SESSION_KEY
 
 def get_cms_data(request, organization, event, now=None):
     assert event.organization_id == organization.id
@@ -28,9 +28,3 @@ def set_visible_event(request):
 
 def set_invisible_event(request):
     del request.session[VISIBLE_EVENT_SESSION_KEY]
-
-def set_visible_event_performance(request):
-    request.session[VISIBLE_EVENT_PERFORMANCE_SESSION_KEY] = str(datetime.now())
-
-def set_invisible_event_performance(request):
-    del request.session[VISIBLE_EVENT_PERFORMANCE_SESSION_KEY]

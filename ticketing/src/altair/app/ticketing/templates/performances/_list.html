@@ -19,8 +19,8 @@
 <div class="row-fluid">
   <div class="span12">
 
-    <% from altair.app.ticketing.events import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY %>
-    % if request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY, None):
+    <% from altair.app.ticketing.events.performances import VISIBLE_PERFORMANCE_SESSION_KEY %>
+    % if request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY, None):
         % if request.matched_route.name == 'events.show.performances.visible' or request.matched_route.name == 'events.show':
             <a href="${request.route_path('events.show.performances.invisible', event_id=event.id)}">非表示のパフォーマンスを隠す</a>
         % else:

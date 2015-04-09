@@ -35,7 +35,7 @@ from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
-from altair.app.ticketing.events.api import set_visible_event_performance, set_invisible_event_performance
+from .api import set_visible_performance, set_invisible_performance
 
 logger = logging.getLogger(__name__)
 
@@ -123,13 +123,13 @@ class PerformanceShowView(BaseView):
         return data
 
     @view_config(route_name='performances.visible', permission='event_editor')
-    def visible(self):
-        set_visible_event_performance(self.request)
+    def visible_performance(self):
+        set_visible_performance(self.request)
         return HTTPFound(self.request.route_path("performances.index", event_id=self.context.event.id))
 
     @view_config(route_name='performances.invisible', permission='event_editor')
-    def invisible(self):
-        set_invisible_event_performance(self.request)
+    def invisible_performance(self):
+        set_invisible_performance(self.request)
         return HTTPFound(self.request.route_path("performances.index", event_id=self.context.event.id))
 
     @view_config(route_name='performances.show', permission='event_viewer')
@@ -359,8 +359,8 @@ class Performances(BaseView):
             .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id==self.context.event.id)
 
-        from altair.app.ticketing.events import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY
-        if not self.request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY):
+        from . import VISIBLE_PERFORMANCE_SESSION_KEY
+        if not self.request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY):
             query = query.filter(PerformanceSetting.visible==True)
         query = query.order_by(Performance.display_order)
         query = query.order_by(sort + ' ' + direction)

@@ -37,7 +37,8 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-from .api import get_cms_data, set_visible_event, set_invisible_event, set_visible_event_performance, set_invisible_event_performance
+from .api import get_cms_data, set_visible_event, set_invisible_event
+from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
 from .forms import EventForm, EventSearchForm
 from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
@@ -58,7 +59,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.show.performances.visible', permission='event_viewer')
     def visible_performance(self):
-        set_visible_event_performance(self.request)
+        set_visible_performance(self.request)
         try:
             event_id = int(self.request.matchdict.get('event_id',0))
         except ValueError as e:
@@ -67,7 +68,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.show.performances.invisible', permission='event_viewer')
     def invisible_performance(self):
-        set_invisible_event_performance(self.request)
+        set_invisible_performance(self.request)
         try:
             event_id = int(self.request.matchdict.get('event_id', 0))
         except ValueError as e:
@@ -153,8 +154,8 @@ class Events(BaseView):
             .filter(Performance.event_id == event_id) \
             .order_by(Performance.display_order)
 
-        from . import VISIBLE_EVENT_PERFORMANCE_SESSION_KEY
-        if not self.request.session.get(VISIBLE_EVENT_PERFORMANCE_SESSION_KEY, None):
+        from altair.app.ticketing.events.performances import VISIBLE_PERFORMANCE_SESSION_KEY
+        if not self.request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY, None):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 

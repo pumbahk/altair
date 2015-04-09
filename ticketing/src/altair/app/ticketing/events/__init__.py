@@ -32,4 +32,3 @@ def includeme(config):
     config.scan(".")
 
 VISIBLE_EVENT_SESSION_KEY = "_visible_event"
-VISIBLE_EVENT_PERFORMANCE_SESSION_KEY = "_visible_event_performance"
