@@ -49,7 +49,7 @@ use = egg:Paste#urlmap
 
 [server:main]
 use  = egg:gunicorn#main
-#host = 0.0.0.0
+host = 0.0.0.0
 port = %(http_port)s
 workers = 1
 timeout = 3600

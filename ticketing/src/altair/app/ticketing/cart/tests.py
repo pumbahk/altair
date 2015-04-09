@@ -1387,9 +1387,10 @@ class ReserveViewTests(unittest.TestCase):
         target = self._makeOne(context, request)
         result = list(target.iter_ordered_items())
 
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 3)
         self.assertEqual(result[0], ('10', 2))
-        self.assertEqual(result[1], ('12', 10))
+        self.assertEqual(result[1], ('11', 0))
+        self.assertEqual(result[2], ('12', 10))
 
 
 class PaymentViewTests(unittest.TestCase):
