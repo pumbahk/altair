@@ -916,7 +916,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def seat_statuses_for_update(self):
         from altair.app.ticketing.models import DBSession
         if len(self.seats) > 0:
-            return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+            return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_hint(SeatStatus, 'USE INDEX (primary)').with_lockmode('update').all()
         return []
 
     @property

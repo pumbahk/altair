@@ -488,7 +488,7 @@ class CartedProductItem(Base):
         """ 確保済の座席ステータス
         """
         if len(self.seats) > 0:
-            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_hint(c_models.SeatStatus, 'USE INDEX (primary)').with_lockmode('update').all()
         else:
             return []
 
