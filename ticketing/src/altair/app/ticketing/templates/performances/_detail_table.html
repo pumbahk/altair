@@ -16,15 +16,15 @@
     </tr>
     <tr>
       <th>公演名副題</th>
-      <td>${performance.subtitle or u""}</td>
+      <td>${performance.subtitle or u"-"}</td>
       <th rowspan="2">公演名備考</th>
-      <td rowspan="2">${performance.note or u""}</td>
+      <td rowspan="2">${performance.note or u"-"}</td>
       <th>開演</th>
       <td>${vh.datetime(performance.start_on, with_weekday=True)}</td>
     </tr>
     <tr>
       <th>公演名略称</th>
-      <td>${performance.abbreviated_title or u""}</td>
+      <td>${performance.abbreviated_title or u"-"}</td>
       <th>終演</th>
       ## styleを指定しないと下部の枠線だけ消えた状態になってしまう
       <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
