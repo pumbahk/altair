@@ -398,7 +398,7 @@ class Performances(BaseView):
                         order_limit=f.order_limit.data,
                         entry_limit=f.entry_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data,
-                        visible=f.visible.data,
+                        visible=True,
                         ),
                     event_id=self.context.event.id
                     ),

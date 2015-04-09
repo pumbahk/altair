@@ -608,6 +608,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if template_performance.setting:
                 setting = template_performance.setting
                 new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
+                new_setting.visible = True
                 new_setting.performance = self
 
             # create SalesSegment - Product
