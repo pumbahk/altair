@@ -101,6 +101,9 @@ class Reserving(object):
         if len(selected_seats) != len(selected_seat_l0_ids):
             logger.debug("seats %s" % selected_seats)
             raise InvalidSeatSelectionException('number of resolved seats (%d) is not equal to number of given l0_ids (%d)' % (len(selected_seats), len(selected_seat_l0_ids)))
+
+        # although seat_id is the primary key, optimizer may wrongly choose other index
+        # if IN predicate has many values, because of implicit "deleted_at IS NULL" (#11358)
         seat_statuses = self.session.query(SeatStatus).filter(
             SeatStatus.seat_id.in_([s.id for s in selected_seats])
         ).filter(
@@ -154,6 +157,8 @@ class Reserving(object):
         return retval
 
     def _reserve(self, seats, reserve_status):
+        # although seat_id is the primary key, optimizer may wrongly choose other index
+        # if IN predicate has many values, because of implicit "deleted_at IS NULL" (#11358)
         statuses = self.session.query(SeatStatus).filter(
             SeatStatus.seat_id.in_([s.id for s in seats])
         ).with_hint(SeatStatus, 'USE INDEX (primary)').with_lockmode('update').all()
