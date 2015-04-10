@@ -241,38 +241,3 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         </div>
       </div>
     </div>
-    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-      <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/LG/pc/images/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-        <table summary="イベント詳細情報">
-          <tbody>
-            <tr>
-              <th scope="row">イベント名</th>
-              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            <tr>
-              <th scope="row">開催日時</th>
-              <td id="descPerformanceDate"></td>
-            </tr>
-            <tr>
-              <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(set(event['venues']))}</td>
-            </tr>
-<%doc>
-            <tr>
-              <th scope="row">販売期間</th>
-              <td id="descSalesTerm">
-                ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-              </td>
-            </tr>
-</%doc>
-          %for v in event_extra_info:
-            <tr>
-              <th scope="row">${v['label']}</th>
-              <td>${v['content']|n}</td>
-            </tr>
-          %endfor
-          </tbody>
-        </table>
-      </div>
-    </div>
