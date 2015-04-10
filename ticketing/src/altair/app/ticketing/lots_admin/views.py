@@ -228,7 +228,7 @@ class SearchLotsEntryView(object):
 class LotsAPIView(BaseView):
     @view_config(renderer="json",route_name='api.lots_admin.event.lot')
     def get_lots(self):
-        if self.request.params['event'] is not None:
+        if self.request.params.has_key('event') and self.request.params['event'] is not None:
             event_id = self.request.params['event']
         else:
             return {"result":[], "status": False}

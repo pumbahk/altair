@@ -106,7 +106,8 @@ ${ch.alert_message(form)}
         var update_on_hasvalue = function(v){
             var self = this;
             var params = {event: v};
-            $.getJSON("${request.route_url('api.lots_admin.event.lot')}", params).done(function(data){
+            var url = ${HH.json(request.route_url('api.lots_admin.event.lot'))|n};
+            $.getJSON(url, params).done(function(data){
             if(data.status){
                 var $target = $(self).parents("form").find("select[name='lot']").eq(0);
                 $target.empty();
