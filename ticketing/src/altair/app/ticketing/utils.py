@@ -439,6 +439,7 @@ class DateTimeRange(object):
             return False
 
 def get_safe_filename(s):
-    # euc-jpにして、全角はスペース以外全部OK、半角の大半の記号を置換する
+    # euc-jpにしてから処理
+    # 全角はスペース/クォート記号以外全部OK、半角は大半の記号がNG
     s = re.sub(u'[　”“’]', u'_', s)
     return re.sub(r'[^-_0-9a-zA-Z\x80-\xFF]', '_', s.encode('euc-jp', 'replace').replace('?', '_')).decode('euc-jp')
