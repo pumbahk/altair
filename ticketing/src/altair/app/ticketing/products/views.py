@@ -77,7 +77,7 @@ class ProductAndProductItem(BaseView):
                     performance_id=sales_segment_for_product.performance.id,
                     product=product,
                     name=f.name.data,
-                    price=f.price.data,
+                    price=f.price.data / f.product_item_quantity.data,
                     quantity=f.product_item_quantity.data,
                     stock_id=stock.id,
                     ticket_bundle_id=f.ticket_bundle_id.data
@@ -123,6 +123,10 @@ class ProductAndProductItem(BaseView):
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+            else:
+                for item in product.items:
+                    item.price = product.price / item.quantity
+                    item.save()
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -409,6 +413,8 @@ class ProductItems(BaseView):
         product_item = self.context.product_item
         f = ProductItemForm(self.request.POST, product=product_item.product)
         if f.validate():
+            f.product.price = f.product_item_price.data * f.product_item_quantity.data
+            f.product.save()
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
