@@ -1,45 +1,28 @@
 # -*- coding: utf-8 -*-
-from unittest import (
-    TestCase,
-    skip,
-    )
-import lxml.etree
-from altair.app.ticketing.testing import (
-    _setup_db,
-    _teardown_db,
-    )
+import lxml
 
 
-class FamiPortAPIViewTest(TestCase):
-    def setUp(self):
+class FamiPortFakeFactory(object):
+    xml = ''
 
-        from webtest import TestApp
-        from pyramid.config import Configurator
-        self.session = _setup_db()
-        config = Configurator()
-        config.include('altair.app.ticketing.famiport', '/famiport/')
+    @classmethod
+    def parse(cls, text, *args, **kwds):
+        txt = text.encode('cp932')
+        return lxml.etree.XML(txt)
 
-        extra_environ = {'HTTP_HOST': 'localhost:8063'}
-        self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)
+    @classmethod
+    def create(cls, *args, **kwds):
+        return cls.parse(cls.xml.decode('utf8'))
 
-    def _callFUT(self, *args, **kwds):
-        return self.app.post(self.url, *args, **kwds)
-
-    def _check_payload(self, res, exp):
-        res_payload = lxml.etree.tostring(res, pretty_print=True)
-        exp_payload = lxml.etree.tostring(exp, pretty_print=True)
-        res_payload_list = map(lambda x: x.strip(), res_payload.split('\n'))
-        exp_payload_list = map(lambda x: x.strip(), exp_payload.split('\n'))
-        self.assertEqual(res_payload_list, exp_payload_list)
+    @classmethod
+    def match(cls, text, *args, **kwds):
+        original = cls.create(*args, **kwds)
+        other = lxml.etree.XML(text)
+        return original == other
 
 
-class InquiryTest(FamiPortAPIViewTest):
-    """
-    request
-    authNumber=&reserveNumber=5300000000001&ticketingDate=20150325151159&storeCode=000009&
-
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortReservationInquiryResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <replyClass>1</replyClass>
@@ -56,32 +39,11 @@ class InquiryTest(FamiPortAPIViewTest):
 <nameInput>0</nameInput>
 <phoneInput>0</phoneInput>
 </FMIF>
-    """
-    url = '/famiport/reservation/inquiry'
-
-    def test_it(self):
-        from .fakers import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'authNumber': '',
-            'reserveNumber': '5300000000001',
-            'ticketingDate': '20150325151159',
-            'storeCode': '000009',
-            })
-        self.assertEqual(200, res.status_code)
-
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""
 
 
-class PaymentTest(FamiPortAPIViewTest):
-    """
-    request
-    ticketingDate=20150331172554&playGuideId=&phoneNumber=rfanmRgUZFRRephCwOsgbg%3d%3d&customerName=pT6fj7ULQklIfOWBKGyQ6g%3d%3d&mmkNo=01&barCodeNo=1000000000000&sequenceNo=15033100002&storeCode=000009&
-
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortPaymentTicketingResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
@@ -132,36 +94,11 @@ class PaymentTest(FamiPortAPIViewTest):
 <ticketData>&lt;?xml version=&apos;1.0&apos; encoding=&apos;Shift_JIS&apos; ?&gt;&lt;ticket&gt;&lt;TitleOver&gt;まるばつさんかくこうえん　いん　せいぶどーむ　２０１２&lt;/TitleOver&gt;&lt;TitleMain&gt;○×△公演　〜in 西武ドーム〜　２０１２&lt;/TitleMain&gt;&lt;TitleSub&gt;※※※※※　サブタイトル　※※※※※&lt;/TitleSub&gt;&lt;FreeSpace1&gt;あいうえおかきくけこ１２３４５６７８９０一二三四五六七八九十あいうえおかきくけこ１２３４５６７８９０&lt;/FreeSpace1&gt;&lt;FreeSpace2&gt;あいうえおかきくけこ１２３４５６７８９０一二三四五六七八九十あいうえおかきくけこ１２３４５６７８９０&lt;/FreeSpace2&gt;&lt;Date&gt;2012年8月10日&lt;/Date&gt;&lt;OpenTime&gt;14:30開場&lt;/OpenTime&gt;&lt;StartTime&gt;15:00開演&lt;/StartTime&gt;&lt;Price&gt;\30,000&lt;/Price&gt;&lt;Hall&gt;西武ドーム（埼玉県所沢市）&lt;/Hall&gt;&lt;Note1&gt;※主催：　ファミマ・ドット・コム&lt;/Note1&gt;&lt;Note2&gt;※協賛：　ファミマ・ドット・コム&lt;/Note2&gt;&lt;Note3&gt;※協力：　ファミマ・ドット・コム&lt;/Note3&gt;&lt;Note4&gt;※お問合せ：　ファミマ・ドット・コム窓口&lt;/Note4&gt;&lt;Note5&gt;　平日：　9:00〜20:00&lt;/Note5&gt;&lt;Note6&gt;　祝日：　10:00〜17:00&lt;/Note6&gt;&lt;Note7&gt;&lt;/Note7&gt;&lt;Seat1&gt;１塁側&lt;/Seat1&gt;&lt;Seat2&gt;内野席A&lt;/Seat2&gt;&lt;Seat3&gt;２２段&lt;/Seat3&gt;&lt;Seat4&gt;２２８&lt;/Seat4&gt;&lt;Seat5&gt;※招待席&lt;/Seat5&gt;&lt;Sub-Title1&gt;○×△公演&lt;/Sub-Title1&gt;&lt;Sub-Title2&gt;〜in 西武ドーム〜&lt;/Sub-Title2&gt;&lt;Sub-Title3&gt;２０１２&lt;/Sub-Title3&gt;&lt;Sub-Title4&gt;&lt;/Sub-Title4&gt;&lt;Sub-Title5&gt;&lt;/Sub-Title5&gt;&lt;Sub-Date&gt;2012年8月10日&lt;/Sub-Date&gt;&lt;Sub-OpenTime&gt;14:30開場&lt;/Sub-OpenTime&gt;&lt;Sub-StartTime&gt;15:00開演&lt;/Sub-StartTime&gt;&lt;Sub-Price&gt;\30,000&lt;/Sub-Price&gt;&lt;Sub-Seat1&gt;１塁側&lt;/Sub-Seat1&gt;&lt;Sub-Seat2&gt;内野席A&lt;/Sub-Seat2&gt;&lt;Sub-Seat3&gt;２２段&lt;/Sub-Seat3&gt;&lt;Sub-Seat4&gt;２２８&lt;/Sub-Seat4&gt;&lt;Sub-Seat5&gt;※招待席&lt;/Sub-Seat5&gt;&lt;/ticket&gt;</ticketData>
 </ticket>
 </FMIF>
-    """
-    url = '/famiport/reservation/payment'
-
-    @skip(u'未実装')
-    def test_it(self):
-        from .fakers import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'ticketingDate': '20150331172554',
-            'playGuideId': '',
-            'phoneNumber': 'rfanmRgUZFRRephCwOsgbg%3d%3d',
-            'customerName': 'pT6fj7ULQklIfOWBKGyQ6g%3d%3d',
-            'mmkNo': '01',
-            'barCodeNo': '1000000000000',
-            'sequenceNo': '15033100002',
-            'storeCode': '000009',
-            })
-        self.assertEqual(200, res.status_code)
-
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""
 
 
-class CompletionTest(FamiPortAPIViewTest):
-    """
-    request
-ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&mmkNo=01&barCodeNo=1000000000000&sequenceNo=15033100010&storeCode=000009&
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortPaymentTicketingCompletionResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
@@ -170,36 +107,11 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
 <orderId>123456789012</orderId>
 <replyCode>00</replyCode>
 </FMIF>
-    """
-
-    url = '/famiport/reservation/completion'
-
-    def test_it(self):
-        from .fakers import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'ticketingDate': '20150331184114',
-            'orderId': '123456789012',
-            'totalAmount': '1000',
-            'playGuideId': '',
-            'mmkNo': '01',
-            'barCodeNo': '1000000000000',
-            'sequenceNo': '15033100010',
-            'storeCode': '000009',
-            })
-        self.assertEqual(200, res.status_code)
-
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""
 
 
-class CancelTest(FamiPortAPIViewTest):
-    """
-    request
-playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=1000000000000&sequenceNo=15040100009&mmkNo=1&orderId=123456789012&cancelCode=10&
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortPaymentTicketingCancelResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
@@ -208,37 +120,11 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
 <orderId>123456789012</orderId>
 <replyCode>00</replyCode>
 </FMIF>
-    """
-
-    url = '/famiport/reservation/cancel'
-
-    def test_it(self):
-        from .fakers import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'playGuideId': '',
-            'storeCode': '000009',
-            'ticketingDate': '20150401101950',
-            'barCodeNo': '1000000000000',
-            'sequenceNo': '15040100009',
-            'mmkNo': '1',
-            'orderId': '123456789012',
-            'cancelCode': '10',
-            })
-        self.assertEqual(200, res.status_code)
-
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""
 
 
-class InformationViewTest(FamiPortAPIViewTest):
-    """
-    request
-    uketsukeCode=&kogyoSubCode=&reserveNumber=4000000000001&infoKubun=Reserve&kogyoCode=&koenCode=&authCode=&storeCode=000009&
-
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortInformationResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
     <resultCode>00</resultCode>
     <infoKubun>0</infoKubun>
@@ -266,35 +152,11 @@ class InformationViewTest(FamiPortAPIViewTest):
 テスト22
 テスト23</infoMessage>
 </FMIF>
-    """
-    url = '/famiport/reservation/information'
-
-    def test_it(self):
-        from .fakers import FamiPortInformationResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'uketsukeCode': '',
-            'kogyoSubCode': '',
-            'reserveNumber': '4000000000001',
-            'infoKubun': 'Reserve',
-            'kogyoCode': '',
-            'koenCode': '',
-            'authCode': '',
-            'storeCode': '000009',
-            })
-        self.assertEqual(200, res.status_code)
-
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""
 
 
-class CustomerTest(FamiPortAPIViewTest):
-    """
-    request
-ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&mmkNo=01&barCodeNo=4119000000005&sequenceNo=15033100004&storeCode=000009&
-    response
-<?xml version="1.0" encoding="Shift_JIS"?>
+class FamiPortCustomerResponseFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <replyCode>00</replyCode>
@@ -304,24 +166,4 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
 <address2>k9DUstJ8MjSxS5vCrHoXsEJE3WJ6M2Js7/U/bn0xdnnjQPJsT/lpdofLF2fyld8IKNskWqmQBaT538Z54GDc+A/gXkwY91eDwJ43i8VZ4jQKX2+cx9bRTu0IKgF3eCcGgAWUZ6LBOAQu17LMb/Y5auHbDcznH1yfNTfuRTWAFDcv+JFtJKAjbKXS3/vu9ISUCt7u4JzpBln9oYXHRYoAGIVZTDVmgdco9v51kDHugnM=</address2>
 <identifyNo>1234567890123456</identifyNo>
 </FMIF>
-    """
-
-    url = '/famiport/reservation/customer'
-
-    def test_it(self):
-        from .fakers import FamiPortCustomerResponseFakeFactory as FakeFactory
-        res = self._callFUT({
-            'ticketingDate': '20150331182222',
-            'orderId': '410900000005',
-            'totalAmount': '2200',
-            'playGuideId': '',
-            'mmkNo': '01',
-            'barCodeNo': '4119000000005',
-            'sequenceNo': '15033100004',
-            'storeCode': '000009',
-            })
-        self.assertEqual(200, res.status_code)
-        self._check_payload(
-            FakeFactory.parse(res.unicode_body),
-            FakeFactory.create(),
-            )
+"""

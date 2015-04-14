@@ -103,3 +103,17 @@ class FamiPortInformationResponse(FamiPortResponse):
         self.resultCode = None  # 処理結果
         self.infoKubun = None  # 案内区分
         self.infoMessage = None  # 案内文言
+
+
+class FamiPortCustomerResponse(FamiPortResponse):
+    """顧客情報取得
+    """
+
+    def __init__(self, *args, **kwds):
+        self.resultCode = None  # 処理結果
+        self.replyCode = None  # 応答結果
+        self.name = None  # 氏名
+        self.memberId = None  # 会員ID
+        self.address1 = None  # 住所1
+        self.address2 = None  # 住所2
+        self.identifyNo = None  # 半券個人識別番号

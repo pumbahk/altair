@@ -83,3 +83,18 @@ class FamiPortInformationRequest(FamiPortRequest):
         self.authCode = None  # 認証コード
         self.reserveNumber = None  # 予約照会番号
         self._requestType = FamiPortRequestType.Information
+
+
+class FamiPortCustomerRequest(FamiPortRequest):
+    """顧客情報取得
+    """
+    def __init__(self, *args, **kwds):
+        self.storeCode = None  # 店舗コード
+        self.mmkNo = None  # 発券Famiポート番号
+        self.ticketingDate = None  # 利用日時
+        self.sequenceNo = None  # 処理通番
+        self.requestClass = None  # 要求区分
+        self.barCodeNo = None  # バーコード情報
+        self.playGuideId = None  # クライアントID
+        self.orderId = None  # 注文ID
+        self.totalAmount = None  # 入金金額

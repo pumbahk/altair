@@ -3,15 +3,112 @@ from pyramid.view import (
     view_config,
     view_defaults,
     )
-from altair.pyramid_dynamic_renderer import lbr_view_config
+from .requests import (
+    FamiPortReservationInquiryRequest,
+    FamiPortPaymentTicketingRequest,
+    FamiPortPaymentTicketingCompletionRequest,
+    FamiPortPaymentTicketingCancelRequest,
+    FamiPortInformationRequest,
+    FamiPortCustomerRequest,
+    )
+from .fakers import (
+    get_response_builder,
+    get_payload_builder,
+    )
 
 
-@view_defaults(route_name='famiport.api.search', renderer='json')
-class SearchView(object):
+@view_defaults(renderer='famiport-xml')
+class ResevationView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(request_method='POST')
-    def post(self):
-        return {}
+    def _build_payload(self, famiport_request):
+        response_builder = get_response_builder(self.request)
+        payload_builder = get_payload_builder(self.request)
+        famiport_response = response_builder.build_response(famiport_request)
+        return payload_builder.build_payload(famiport_response)
+
+    @view_config(route_name='famiport.api.reservation.inquiry', request_method='POST')
+    def inquiry(self):
+        klass = FamiPortReservationInquiryRequest
+        famiport_request = klass()
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
+        famiport_request.reserveNumber = self.request.POST.get('reserveNumber', '')
+        famiport_request.authNumber = self.request.POST.get('authNumber', '')
+        return self._build_payload(famiport_request)
+
+    @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
+    def payment(self):
+        klass = FamiPortPaymentTicketingRequest
+        famiport_request = klass()
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
+        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
+        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
+        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
+        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
+        famiport_request.customerName = self.request.POST.get('customerName', '')
+        famiport_request.phoneNumber = self.request.POST.get('phoneNumber', '')
+        return self._build_payload(famiport_request)
+
+    @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
+    def completion(self):
+        klass = FamiPortPaymentTicketingCompletionRequest
+        famiport_request = klass()
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
+        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
+        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
+        famiport_request.requestClass = self.request.POST.get('requestClass', '')
+        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
+        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
+        famiport_request.orderId = self.request.POST.get('orderId', '')
+        famiport_request.totalAmount = self.request.POST.get('totalAmount', '')
+        return self._build_payload(famiport_request)
+
+    @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
+    def cancel(self):
+        klass = FamiPortPaymentTicketingCancelRequest
+        famiport_request = klass()
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
+        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
+        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
+        famiport_request.requestClass = self.request.POST.get('requestClass', '')
+        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
+        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
+        famiport_request.orderId = self.request.POST.get('orderId', '')
+        famiport_request.cancelCode = self.request.POST.get('cancelCode', '')
+        return self._build_payload(famiport_request)
+
+    @view_config(route_name='famiport.api.reservation.information', request_method='POST')
+    def information(self):
+        klass = FamiPortInformationRequest
+        famiport_request = klass()
+        famiport_request.infoKubun = self.request.POST.get('infoKubun', '')
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.kogyoCode = self.request.POST.get('kogyoCode', '')
+        famiport_request.kogyoSubCode = self.request.POST.get('kogyoSubCode', '')
+        famiport_request.koenCode = self.request.POST.get('koenCode', '')
+        famiport_request.uketsukeCode = self.request.POST.get('uketsukeCode', '')
+        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
+        famiport_request.authCode = self.request.POST.get('authCode', '')
+        famiport_request.reserveNumber = self.request.POST.get('reserveNumber', '')
+        return self._build_payload(famiport_request)
+
+    @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
+    def customer(self):
+        klass = FamiPortCustomerRequest
+        famiport_request = klass()
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
+        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
+        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
+        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
+        famiport_request.requestClass = self.request.POST.get('requestClass', '')
+        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
+        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
+        famiport_request.orderId = self.request.POST.get('orderId', '')
+        famiport_request.totalAmount = self.request.POST.get('totalAmount', '')
+        return self._build_payload(famiport_request)
