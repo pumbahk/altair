@@ -60,6 +60,10 @@ ${ch.alert_message(form)}
       <table>
         <tbody>
           <tr>
+            <th><label for="event">${form.event.label.text}</label></th>
+            <td colspan="5">${form.event(style="width:750px")}</td>
+          </tr>
+          <tr>
             <th><label for="lot">${form.lot.label.text}</label></th>
             <td colspan="5">${form.lot(style="width:750px")}</td>
           </tr>
@@ -92,9 +96,42 @@ ${ch.alert_message(form)}
 </div>
 
 <script type="text/javascript">
-  $(function(){
-    $("#search select[name='lot']").chosen();
-  });
+    $(function(){
+        var update_on_empty = function(){
+            var $target = $(this).parents("form").find("select[name='lot']").eq(0);
+            $target.empty();
+            $target.chosen().trigger("liszt:updated");
+            return;
+        };
+        var update_on_hasvalue = function(v){
+            var self = this;
+            var params = {event: v};
+            var url = ${HH.json(request.route_url('api.lots_admin.event.lot'))|n};
+            $.getJSON(url, params).done(function(data){
+            if(data.status){
+                var $target = $(self).parents("form").find("select[name='lot']").eq(0);
+                $target.empty();
+                // optimize if slow.
+                for(var i=0, j=data.result.length; i<j; i++){
+                    var lot = data.result[i];
+                    $target.append($("<option>").attr("value", lot.lotk).text(lot.name))
+                }
+                $target.chosen().trigger("liszt:updated");
+            }
+            });
+        };
+        var update_lot = function(){
+            var self = this;
+            var v = $(this).val();
+            if(!v){
+                return update_on_empty.call(self);
+            } else {
+                return update_on_hasvalue.call(self, v);
+            }
+        };
+        $("#search select[name='event']").change(update_lot).chosen();
+        $("#search select[name='lot']").chosen();
+    });
 </script>
 
 <div style="margin-top: 20px;">

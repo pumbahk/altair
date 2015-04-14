@@ -150,7 +150,7 @@ class SalesSegmentGroupForm(OurForm):
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         widget=CheckboxInput(),
-        hide_on_new=True
+        hide_on_new=False
     )
     display_seat_no = OurBooleanField(
         label=label_text_for(SalesSegmentGroupSetting.display_seat_no),
@@ -187,7 +187,7 @@ class SalesSegmentGroupForm(OurForm):
     )
     public = OurBooleanField(
         label=u'一般公開',
-        hide_on_new=True
+        hide_on_new=False
     )
     disp_orderreview = OurBooleanField(
         label=u'マイページへの購入履歴表示/非表示',

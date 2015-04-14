@@ -11,6 +11,7 @@ from sqlalchemy.orm import (
     joinedload,
 )
 from pyramid.view import view_config, view_defaults
+from altair.app.ticketing.views import BaseView
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -60,7 +61,7 @@ class IndexView(object):
 
     @view_config(renderer='lots_admin/index.html')
     def __call__(self):
-        """ 公開中、今後公開、終了した抽選 
+        """ 公開中、今後公開、終了した抽選
         公演、販売区分
         """
 
@@ -137,19 +138,22 @@ class SearchLotsEntryView(object):
 
         form = SearchLotEntryForm(formdata=self.request.params)
         organization_id = self.context.organization.id
-        lots = Lot.query.join(
-            Event.__table__,
-            sql.and_(Event.id==Lot.event_id,
-                     Event.deleted_at==None)).filter(
-            Event.organization_id==organization_id
-            )
-        form.lot.choices = [('', '')] + [(str(l.id), l.event.title + "/" + l.name)
-                     for l in lots]
+        lots = []
+        if self.request.params.has_key('event') and self.request.params['event'] is not None :
+            lots = Lot.query.join(
+                Event.__table__,
+                sql.and_(Event.id==Lot.event_id,
+                         Event.deleted_at==None)).filter(
+                             Event.organization_id==organization_id
+                         ).filter(Event.id==self.request.params['event'])
+        form.lot.choices = [('', '')] + [(str(l.id), l.name) for l in lots]
+        events = Event.query.filter(Event.organization_id==organization_id).order_by(Event.display_order)
+        form.event.choices = [('', '')] + [(str(e.id), e.title) for e in events]
         return form
 
     @view_config(renderer="lots_admin/search.html")
     def __call__(self):
-        """ 検索 
+        """ 検索
         グローバルサーチなので、organizationの指定を慎重に。
         """
         organization_id = self.context.organization.id
@@ -159,11 +163,11 @@ class SearchLotsEntryView(object):
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntrySearch.entry_no==form.entry_no.data)
             if form.tel.data:
-                condition = sql.and_(condition, 
+                condition = sql.and_(condition,
                                      sql.or_(LotEntrySearch.shipping_address_tel_1==form.tel.data,
                                              LotEntrySearch.shipping_address_tel_2==form.tel.data))
             if form.name.data:
-                condition = sql.and_(condition, 
+                condition = sql.and_(condition,
                                      sql.or_(LotEntrySearch.shipping_address_full_name==form.name.data,
                                              LotEntrySearch.shipping_address_last_name+LotEntrySearch.shipping_address_first_name==form.name.data,
                                              LotEntrySearch.shipping_address_last_name+" "+LotEntrySearch.shipping_address_first_name==form.name.data,
@@ -173,19 +177,22 @@ class SearchLotsEntryView(object):
                                              LotEntrySearch.shipping_address_last_name_kana==form.name.data,
                                              LotEntrySearch.shipping_address_first_name_kana==form.name.data,))
             if form.email.data:
-                condition = sql.and_(condition, 
+                condition = sql.and_(condition,
                                      sql.or_(LotEntrySearch.shipping_address_email_1==form.email.data,
                                              LotEntrySearch.shipping_address_email_2==form.email.data))
 
             if form.entried_from.data:
-                condition = sql.and_(condition, 
+                condition = sql.and_(condition,
                                      LotEntrySearch.created_at>=form.entried_from.data)
             if form.entried_to.data:
-                condition = sql.and_(condition, 
+                condition = sql.and_(condition,
                                      LotEntrySearch.created_at<=form.entried_to.data)
             if form.lot.data:
                 condition = sql.and_(condition,
                                      LotEntrySearch.lot_id==form.lot.data)
+            if form.event.data:
+                condition = sql.and_(condition,
+                                     LotEntrySearch.event_id==form.event.data)
 
             slave_session = get_db_session(self.request, name="slave")
             q = slave_session.query(LotEntrySearch).filter(
@@ -209,3 +216,18 @@ class SearchLotsEntryView(object):
                     entries=page,
                     form=form,
                     count=count)
+
+@view_defaults(xhr=True, permission='event_editor')
+class LotsAPIView(BaseView):
+    @view_config(renderer="json",route_name='api.lots_admin.event.lot')
+    def get_lots(self):
+        if self.request.params.has_key('event') and self.request.params['event'] is not None:
+            event_id = self.request.params['event']
+        else:
+            return {"result":[], "status": False}
+        query = Lot.query
+        query = query.filter(Lot.event_id == event_id)
+        lots = [
+            dict(lotk='', name=u'(すべて)')]+[dict(lotk=lot.id, name='%s' % (lot.name))
+            for lot in query]
+        return {"result": lots, "status": True}
