@@ -101,7 +101,7 @@ class ProductAndProductItem(BaseView):
         product = self.context.product
         product_item = self.context.product_item
         f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
-        if len(product.items) != 1:
+        if product_item is not None and len(product.items) != 1:
             f.product_item_price.data = product_item.price
         if f.validate():
             point_grant_settings = [
