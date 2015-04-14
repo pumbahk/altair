@@ -37,11 +37,10 @@ def main(global_config, **local_config):
         CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
         FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
         })
-    direct_static_server(global_config, app)
+    return direct_static_server(global_config, app)
 
 
 def setup_routes(config):
-    config.add_route('famiport.ping.', 'api/ping/')  # 疎通確認用
     # 予済
     config.add_route('famiport.api.search', 'api/search/')  # 予約照会
     config.add_route('famiport.api.lock', 'api/lock/')  # 入金発券通信
@@ -49,3 +48,5 @@ def setup_routes(config):
     config.add_route('famiport.api.unlock', 'api/unlock/')  # 入金発券取消通信
     config.add_route('famiport.api.information', 'api/information/')  # 案内通信
     config.add_route('famiport.api.customer', 'api/customer/')  # 顧客情報取得通信
+
+    config.scan('.views')
