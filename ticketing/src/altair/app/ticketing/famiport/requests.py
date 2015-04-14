@@ -23,6 +23,7 @@ class FamiPortPaymentTicketingRequest(object):
         self.mmkNo = None  # 発券ファミポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
+        self.playGuideId = None  # クライアントID
         self.barCodeNo = None  # バーコード情報
         self.customerName = None  # カナ氏名
         self.phoneNumber = None  # 電話番号
@@ -68,5 +69,6 @@ class FamiPortInformationRequest(object):
         self.kogyoSubCode = None  # 興行サブコード
         self.koenCode = None  # 公演コード
         self.uketsukeCode = None  # 受付コード
+        self.playGuideId = None  # クライアントID
         self.authCode = None  # 認証コード
         self.reserveNumber = None  # 予約照会番号

@@ -30,7 +30,7 @@ def main(global_config, **local_config):
     config = pyramid.config.Configurator(
         settings=settings, root_factory='.resources.famiport_resource_factory')
 
-    config.include(setup_routes)
+    config.include(includeme)
     app = config.make_wsgi_app()
     direct_static_server = direct_static_serving_filter_factory({
         STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
@@ -40,7 +40,7 @@ def main(global_config, **local_config):
     return direct_static_server(global_config, app)
 
 
-def setup_routes(config):
+def includeme(config):
     # 予済
     config.add_route('famiport.api.search', 'api/search/')  # 予約照会
     config.add_route('famiport.api.lock', 'api/lock/')  # 入金発券通信

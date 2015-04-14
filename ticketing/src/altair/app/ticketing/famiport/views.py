@@ -12,6 +12,6 @@ class SearchView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method='GET')
+    @view_config(request_method='POST')
     def post(self):
         return {}
