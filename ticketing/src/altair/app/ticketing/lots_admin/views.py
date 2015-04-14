@@ -138,23 +138,16 @@ class SearchLotsEntryView(object):
 
         form = SearchLotEntryForm(formdata=self.request.params)
         organization_id = self.context.organization.id
-        if not self.request.params.has_key('event'):
-            lots = Lot.query.join(
-                Event.__table__,
-                sql.and_(Event.id==Lot.event_id,
-                     Event.deleted_at==None)).filter(
-                Event.organization_id==organization_id
-            )
-        elif self.request.params.has_key('event') and self.request.params['event'] is not None :
+        lots = []
+        if self.request.params.has_key('event') and self.request.params['event'] is not None :
             lots = Lot.query.join(
                 Event.__table__,
                 sql.and_(Event.id==Lot.event_id,
                          Event.deleted_at==None)).filter(
                              Event.organization_id==organization_id
                          ).filter(Event.id==self.request.params['event'])
-        form.lot.choices = [('', '')] + [(str(l.id), l.name)
-                     for l in lots]
-        events = Event.query.all()
+        form.lot.choices = [('', '')] + [(str(l.id), l.name) for l in lots]
+        events = Event.query.filter(Event.organization_id==organization_id).order_by(Event.display_order)
         form.event.choices = [('', '')] + [(str(e.id), e.title) for e in events]
         return form
 
