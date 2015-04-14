@@ -6,6 +6,9 @@ from .resources import PerformanceAdminResource
 def includeme(config):
     factory = newRootFactory(PerformanceAdminResource)
     config.add_route('performances.index', '/{event_id}', factory=factory)
+    config.add_route('performances.visible','/visible/{event_id}', factory=factory)
+    config.add_route('performances.invisible','/invisible/{event_id}', factory=factory)
+
     config.add_route('performances.new', '/new/{event_id}', factory=factory)
     config.add_route('performances.show', '/show/{performance_id}', factory=factory)
     config.add_route('performances.show_tab', '/show/{performance_id}/{tab}', factory=factory)
@@ -23,3 +26,5 @@ def includeme(config):
 
     config.add_route('performances.orion.index', '/orion/{performance_id}', factory=factory)
     ##altair.app.ticketing.print_progress.__init__.pyでperformances.print_progress.showが定義されている
+
+VISIBLE_PERFORMANCE_SESSION_KEY = '_visible_performance'
