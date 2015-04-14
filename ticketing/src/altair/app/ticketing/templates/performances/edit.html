@@ -76,6 +76,9 @@
       ${ch.form_item(form.entry_limit, help=ch.help(form.entry_limit))}
       ${ch.form_item(form.max_quantity_per_user)}
       ${ch.form_item(form.note)}
+      % if request.matched_route.name == 'performances.edit':
+          ${ch.form_item(form.visible)}
+      % endif
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

@@ -84,7 +84,6 @@ class StockTypeForm(OurForm):
     description = NullableTextField(
         widget=TextArea(),
         label=u'説明',
-        hide_on_new=True
         )
 
     def validate_name(form, field):

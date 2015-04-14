@@ -49,7 +49,7 @@
 <dl class="infoList">
 % for performance in performances:
 <dt><span>${performance.name}</span></dt>
-<dt>公演日</dt>
+<dt>${view_context.lots_date_title if view_context.lots_date_title else u'公演日'}</dt>
 <dd>${h.japanese_datetime(performance.start_on)}開演</dd>
 <dt>会場</dt>
 <dd>${performance.venue.name}</dd>
