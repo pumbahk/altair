@@ -4,12 +4,14 @@
 変数名はタグ名に合わせる
 """
 
+class FamiPortResponse(object):
+    pass
 
-class FamiPortReservationInquiryResponse(object):
+class FamiPortReservationInquiryResponse(FamiPortResponse):
     """予約済み予約照会
     """
     def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果コード
+        self.resultCode = None  # 処理結果
         self.replyClass = None  # 応答結果区分
         self.replyCode = None  # 応答結果
         self.barCodeNo = None  # 支払番号
@@ -25,14 +27,14 @@ class FamiPortReservationInquiryResponse(object):
         self.phoneInput = None  # 電話番号要求フラグ
 
 
-class FamiPortPaymentTicketingResponse(object):
+class FamiPortPaymentTicketingResponse(FamiPortResponse):
     """予約済み入金発券
     """
     def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果コード
+        self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
         self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.orderId = None  # 注文ID
         self.replyClass = None  # 応答結果区分
         self.replyCode = None  # 応答結果
@@ -49,7 +51,7 @@ class FamiPortPaymentTicketingResponse(object):
         self.systemFee = None  # システム利用料
         self.ticketingFee = None  # 店頭発券手数料
         self.ticketCountTotal = None  # チケット枚数
-        self.ticketCount = None  # チケット枚数
+        self.ticketCount = None  # 本券購入枚数
         self.kogyoName = None  # 興行名
         self.koenDate = None  # 公演日時
 
@@ -70,34 +72,34 @@ class FamiPortTicket(object):
         self.ticketData = None  # 券面データ
 
 
-class FamiPortPaymentTicketingCompletionResponse(object):
+class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
     """予約済み入金発券完了
     """
     def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果コード
+        self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
         self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.orderId = None  # 注文ID
         self.replyCode = None  # 応答結果
 
 
-class FamiPortPaymentTicketingCancelResponse(object):
+class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
     """予約済み入金発券取消
     """
     def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果コード
+        self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
         self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.orderId = None  # 注文ID
         self.replyCode = None  # 応答結果
 
 
-class FamiPortInformationResponse(object):
+class FamiPortInformationResponse(FamiPortResponse):
     """予約済み案内
     """
     def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果コード
+        self.resultCode = None  # 処理結果
         self.infoKubun = None  # 案内区分
         self.infoMessage = None  # 案内文言

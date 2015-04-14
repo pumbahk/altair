@@ -4,8 +4,10 @@
 変数名はタグ名に合わせる
 """
 
+class FamiPortRequest(object):
+    pass
 
-class FamiPortReservationInquiryRequest(object):
+class FamiPortReservationInquiryRequest(FamiPortRequest):
     """予約済み予約照会
     """
     def __init__(self, *args, **kwds):
@@ -15,7 +17,7 @@ class FamiPortReservationInquiryRequest(object):
         self.authNumber = None  # 認証番号
 
 
-class FamiPortPaymentTicketingRequest(object):
+class FamiPortPaymentTicketingRequest(FamiPortRequest):
     """予約済み入金発券
     """
     def __init__(self, *args, **kwds):
@@ -24,12 +26,12 @@ class FamiPortPaymentTicketingRequest(object):
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
         self.playGuideId = None  # クライアントID
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.customerName = None  # カナ氏名
         self.phoneNumber = None  # 電話番号
 
 
-class FamiPortPaymentTicketingCompletionRequest(object):
+class FamiPortPaymentTicketingCompletionRequest(FamiPortRequest):
     """予約済み入金発券完了
     """
     def __init__(self, *args, **kwds):
@@ -38,13 +40,13 @@ class FamiPortPaymentTicketingCompletionRequest(object):
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
         self.requestClass = None  # 要求区分
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
         self.totalAmount = None  # 入金金額
 
 
-class FamiPortPaymentTicketingCancelRequest(object):
+class FamiPortPaymentTicketingCancelRequest(FamiPortRequest):
     """予約済み入金発券取消
     """
     def __init__(self, *args, **kwds):
@@ -53,13 +55,13 @@ class FamiPortPaymentTicketingCancelRequest(object):
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
         self.requestClass = None  # 要求区分
-        self.barCodeNo = None  # バーコード情報
+        self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
         self.cancelCode = None  # 取消理由
 
 
-class FamiPortInformationRequest(object):
+class FamiPortInformationRequest(FamiPortRequest):
     """予約済み案内
     """
     def __init__(self, *args, **kwds):
