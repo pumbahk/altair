@@ -79,26 +79,6 @@ if label is None or label is True:
     </table>
   </div>
 </div>
-<div class="settlementBox2">
-  <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/LG/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
-    %for performance in performances:
-    <table class="border" summary="イベント詳細情報">
-      <tr>
-        <th colspan="2" class="title" scope="row">${performance.name}</th>
-      </tr>
-      <tr class="none">
-        <th scope="row">公演日</th>
-        <td>${h.japanese_datetime(performance.start_on)}開演</td>
-      </tr>
-      <tr>
-        <th scope="row">会場</th>
-        <td>${performance.venue.name}</td>
-      </tr>
-    </table>
-    %endfor
-  </div>
-</div>
 
 <form method="post" id="wishForm" action="${request.url}">
   <div class="settlementBox">
@@ -130,7 +110,7 @@ if label is None or label is True:
           <table class="chooser" summary="希望する公演と券種の選択" id="wish-cell-table-${i}">
             <tr>
               <th>
-                <label>公演日・会場</label>
+                <label>${view_context.lots_date_title if view_context.lots_date_title else u'公演日・会場'}</label>
               </th>
               <td colspan="2">
                 <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
@@ -339,15 +319,6 @@ if label is None or label is True:
               <td>
                 ${form['sex']}
                 ${self.error(form, 'sex')}
-              </td>
-            </tr>
-            <tr class="settlementSelectEnd">
-              <th>メモ欄</th>
-              <td>
-                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
-                <div style="font-size: 90%;">
-                ※ご質問を入力されても返信はいたしかねます。
-                </div>
               </td>
             </tr>
             % for field in form['extra']._contained_form:

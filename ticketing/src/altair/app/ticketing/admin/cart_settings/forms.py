@@ -103,6 +103,10 @@ class CartSettingForm(OurForm):
         label=_(u'入会フォームの氏名のラベル名（デフォルト：氏名）')
         )
 
+    lots_date_title = OurTextField(
+        label=_(u'抽選での日付と会場のラベル名（デフォルト：公演日・会場）')
+        )
+
     contact_url = OurTextField(
         label=_(u'お問い合わせ先URL')
         )
