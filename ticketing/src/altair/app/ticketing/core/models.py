@@ -804,6 +804,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
+        performance.public = False
         performance.save()
         logger.info('[copy] Performance end')
         return {template.id: performance.id}
