@@ -146,7 +146,6 @@ $(function () {
       <h2 class="eventTitle">${event['title']}</h2>
     </div>
     <div class="dispBox">
-      <%m:header>日時・会場</%m:header>
     % if preferred_performance:
     <div class="settlementNotice">
       <p>誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。</p>
@@ -157,11 +156,10 @@ $(function () {
         <form id="form1" name="form1" method="post" action="">
           <div id="settlementSelectBox">
             <div id="settlementSelectBoxInner">
-              ${selection_label}<br/>
+              <%m:header>${selection_label}</%m:header>
               <select name="select" id="date-select">
               </select>
-              <br/>
-              ${second_selection_label}<br/>
+              <%m:header>${second_selection_label}</%m:header>
               <select name="select2" id="venue-select" style="width: 100%">
               </select>
               <br/>
@@ -253,51 +251,6 @@ $(function () {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <h2 class="glitter red">イベント詳細</h2>
-    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-      <div class="settlementBoxInner2">
-
-        <div class="dispBox">
-          <%m:header>イベント名称</%m:header>
-          <div class="dispBoxInner">
-            ${event["title"]}
-          </div>
-        </div>
-
-        <div class="dispBox">
-          <%m:header>開催日時</%m:header>
-          <div class="dispBoxInner">
-            <span id="descPerformanceDate"></span>
-          </div>
-        </div>
-
-        <div class="dispBox">
-          <%m:header>会場</%m:header>
-          <div class="dispBoxInner">
-            ${", ".join(set(event['venues']))}
-          </div>
-        </div>
-
-<%doc>
-        <div class="dispBox">
-          <%m:header>販売期間</%m:header>
-          <div class="dispBoxInner">
-            ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-          </div>
-        </div>
-</%doc>
-        <div class="dispBox">
-          <%m:header>その他</%m:header>
-          <div class="dispBoxInner">
-            %for v in event_extra_info:
-              ${v['label']}
-              ${v['content']|n}<br/>
-            %endfor
           </div>
         </div>
       </div>

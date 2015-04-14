@@ -66,7 +66,7 @@ ${self.widget.flow_widget(2)}
                   <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
                   ${h.error_list(request, form, 'card_holder_name')}
                 </dd>
-                <dt>セキュリティコード(半角)</dt>
+                <dt>セキュリティコード(半角数字)</dt>
                 <dd>
                   <input name="secure_code" type="text" id="textfield6" size="5"/>
                   ${h.error_list(request, form, 'secure_code')}

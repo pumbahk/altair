@@ -255,7 +255,7 @@ $(function(){
 <div id="performances">
   <h3>パフォーマンス</h3>
   <div style="margin-top: 20px;">
-    <%include file="/performances/_list.html" args="form=form_performance, performances=event.sorted_performances(), limit=10" />
+    <%include file="/performances/_list.html" args="form=form_performance, performances=performances, limit=10, event=event" />
     <%include file="/performances/_action_button.html" args="event=event" />
     <script type="text/javascript">
       var is_sending = {};
