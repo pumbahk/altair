@@ -55,11 +55,6 @@ workers = 1
 timeout = 3600
 graceful_timeout = 3600
 
-[alembic]
-script_location = %(here)s/../../../ticketing/alembic
-get sqlalchemy.url = sqlalchemy.url
-sqlalchemy.echo = true
-
 # Begin logging configuration
 
 [loggers]
@@ -97,12 +92,6 @@ propagate = 0
 level = INFO
 handlers = sqlalchemy
 qualname = sqlalchemy.engine
-propagate = 0
-
-[logger_alembic]
-level = INFO
-handlers = console, sqlalchemy
-qualname = alembic
 propagate = 0
 
 [handler_console]
