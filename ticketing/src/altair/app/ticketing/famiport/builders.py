@@ -19,7 +19,7 @@ class FamiPortResponseBuilderFactory(object):
         pass
 
     def __call__(self, famiport_request):
-        request_type = famiport_request.get_type()
+        request_type = famiport_request.request_type()
         if request_type == FamiPortRequestType.ReservationInquiry:
             return  FamiPortReservationInquiryResponseBuilder()
         elif request_type == FamiPortRequestType.PaymentTicketing:
