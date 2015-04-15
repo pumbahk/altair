@@ -258,7 +258,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
                     checkout_class.return_value.build_checkout_request_form.return_value = (testing.DummyModel(), form_html)
                     with self.assertRaises(PaymentCartNotAvailable):
                         self.test_app.post(self.LOGIN_URL, {})
-                        
+
 
     @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
     def test_complete_success(self, checkout_class):
@@ -422,7 +422,7 @@ class TestCheckoutLoginConcurrency(unittest.TestCase, CoreTestMixin):
         import tempfile
         from sqlalchemy import create_engine
         from altair.httpsession.pyramid import PyramidSessionFactory
-        from altair.mobile.session import http_backend_factory 
+        from altair.mobile.session import http_backend_factory
         from altair.httpsession.pyramid.interfaces import ISessionHTTPBackendFactory, ISessionPersistenceBackendFactory
         from altair.httpsession.inmemory import factory as inmemory_session_backend_factory, stores as backing_session_stores
 
@@ -456,7 +456,7 @@ class TestCheckoutLoginConcurrency(unittest.TestCase, CoreTestMixin):
                 return WrappedTransaction(prev_begin())
             conn.begin = patched_begin
             return conn
-             
+
         engine._connection_cls = conn_factory
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
@@ -577,6 +577,7 @@ class TestCheckoutLoginConcurrency(unittest.TestCase, CoreTestMixin):
         self.callback_error_url = request.route_url('payment.checkout.callback.error')
         return HTTPOk()
 
+    @unittest.skip(u'sv４上で実行するとテストが止まってしまうため暫定対処')
     def test_login(self):
         resps = set()
         def entrypoint():
