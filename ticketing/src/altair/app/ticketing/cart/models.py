@@ -488,7 +488,10 @@ class CartedProductItem(Base):
         """ 確保済の座席ステータス
         """
         if len(self.seats) > 0:
-            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+            # although seat_id is the primary key, optimizer may wrongly choose other index
+            # if IN predicate has many values, because of implicit "deleted_at IS NULL" (#11358)
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats]))\
+                .with_hint(c_models.SeatStatus, 'USE INDEX (primary)').with_lockmode('update').all()
         else:
             return []
 

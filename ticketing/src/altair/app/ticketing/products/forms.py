@@ -260,11 +260,10 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
         ticket_bundles = TicketBundle.query.filter_by(event_id=event.id).all()
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
-
         if self.name.data and not self.product_item_name.data:
             self.product_item_name.data = self.name.data
         if self.price.data and not self.product_item_price.data:
-            self.product_item_price.data = self.price.data
+            self.product_item_price.data = self.price.data / Decimal(self.product_item_quantity.data)
         if not self.product_item_price.data:
             # 0円商品
             self.product_item_price.data = 0

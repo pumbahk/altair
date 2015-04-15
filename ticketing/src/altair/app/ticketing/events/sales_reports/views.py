@@ -28,6 +28,7 @@ from altair.app.ticketing.events.sales_reports.forms import (
 
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, ExportableReporter, sendmail
 from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
+from altair.app.ticketing.utils import get_safe_filename
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +133,7 @@ class SalesReports(BaseView):
         if(self.request.params.get('view')):
             r.headers['Content-Type'] = 'text/plain'
             return r
-        filename = u"売上レポート.csv"
+        filename = u"%s.csv" % get_safe_filename(event.title)
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
             ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
