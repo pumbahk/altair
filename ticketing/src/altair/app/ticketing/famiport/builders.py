@@ -3,7 +3,7 @@
 """
 
 from zope.interface import implementer
-from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder
+from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
 from .utils import FamiPortRequestType
 
 import logging
@@ -62,4 +62,25 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
     def build_response(famiport_request=None):
+        pass
+
+""" Commenting out since seems not necessary at this point.
+@implementer(IXmlFamiPortResponseGeneratorFactory)
+class XmlFamiPortResponseGeneratorFactory(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, famiport_response):
+        return XmlFamiPortResponseGenerator()
+"""
+
+@implementer(IXmlFamiPortResponseGenerator)
+class XmlFamiPortResponseGenerator(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    # Generate XML text of famiport_response with encrypt_fields encrypted
+    # Assume filed name in famiport_response is same as tag name in XML
+    # List fields in famiport_response are repeated with same tag name in XML
+    def generate_xmlResponse(famiport_response, encrypt_fields = []):
         pass
