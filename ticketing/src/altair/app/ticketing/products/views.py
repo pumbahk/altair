@@ -365,6 +365,12 @@ class ProductItems(BaseView):
         product = self.context.product
         f = ProductItemForm(self.request.POST, product=product)
         if f.validate():
+            # 商品価格の再計算前の初期化
+            f.product.price = 0
+            if f.product.items:
+                for item in f.product.items:
+                    f.product.price += item.price * item.quantity
+
             f.product.price += f.product_item_price.data * f.product_item_quantity.data
             f.product.save()
 
