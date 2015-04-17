@@ -77,7 +77,7 @@ class ProductAndProductItem(BaseView):
                     performance_id=sales_segment_for_product.performance.id,
                     product=product,
                     name=f.name.data,
-                    price=f.price.data,
+                    price=f.price.data / f.product_item_quantity.data,
                     quantity=f.product_item_quantity.data,
                     stock_id=stock.id,
                     ticket_bundle_id=f.ticket_bundle_id.data
@@ -101,6 +101,8 @@ class ProductAndProductItem(BaseView):
         product = self.context.product
         product_item = self.context.product_item
         f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
+        if product_item is not None and len(product.items) != 1:
+            f.product_item_price.data = product_item.price
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
@@ -118,11 +120,16 @@ class ProductAndProductItem(BaseView):
                     performance_id=f.performance_id.data
                 ).one()
                 product_item.name = f.product_item_name.data
-                product_item.price = f.product_item_price.data
+                if len(product.items) == 1:
+                    product_item.price = f.product_item_price.data
                 product_item.quantity = f.product_item_quantity.data
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+            else:
+                if len(product.items) == 1:
+                    product.items[0].price = product.price / product.items[0].quantity
+                    product.items[0].save()
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -358,6 +365,9 @@ class ProductItems(BaseView):
         product = self.context.product
         f = ProductItemForm(self.request.POST, product=product)
         if f.validate():
+            f.product.price += f.product_item_price.data * f.product_item_quantity.data
+            f.product.save()
+
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
@@ -409,6 +419,15 @@ class ProductItems(BaseView):
         product_item = self.context.product_item
         f = ProductItemForm(self.request.POST, product=product_item.product)
         if f.validate():
+            # 商品価格の再計算前の初期化
+            f.product.price = 0
+            for item in f.product.items:
+                if unicode(item.id) == f.product_item_id.data:
+                    f.product.price += f.product_item_price.data * f.product_item_quantity.data
+                else:
+                    f.product.price += item.price * item.quantity
+            f.product.save()
+
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
