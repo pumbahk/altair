@@ -67,7 +67,7 @@
 	display: block;
 	width: 100px;
 	height: 50px;
-	background: url(../images/logo.gif) no-repeat 0 0;
+	background: url(../img/common/logo.gif) no-repeat 0 0;
 }
 .grpH-title {
 	float:left;
