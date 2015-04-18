@@ -1,12 +1,13 @@
 # encoding: utf-8
+import logging
+import functools
 from zope.interface import implementer, Interface
 from pyramid.interfaces import IRoutesMapper, PHASE1_CONFIG
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altair.auth.interfaces import IAuthenticator, IChallenger, ILoginHandler
 from altair.auth.api import get_who_api
-import functools
-
-import logging
+from altair.app.ticketing.cart import ICartResource
+from altair.app.ticketing.lots import ILotResource
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,15 @@ class CompatibilityBackendFactory(object):
 
     def __call__(self, request, opaque):
         logger.debug('opaque=%s, preset_auth_key=%s' % (opaque, self.preset_auth_key))
-        if opaque == self.preset_auth_key:
+        auth_key = self.preset_auth_key
+        context = getattr(request, 'context', None)
+        if context is not None:
+            if ICartResource.providedBy(context) or ILotResource.providedBy(context):
+                cart_setting = context.cart_setting
+                auth_key_from_cart_setting = cart_setting.nogizaka46_auth_key
+                if auth_key_from_cart_setting is not None:
+                    auth_key = auth_key_from_cart_setting
+        if opaque == auth_key:
             return {
                 'username': self.username,
                 'membership': self.membership_name,

@@ -918,3 +918,13 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['embedded_html_complete_page_smartphone'] = value
+
+    @property
+    def nogizaka46_auth_key(self):
+        return self.data.get('nogizaka46_auth_key')
+
+    @nogizaka46_auth_key.setter
+    def nogizaka46_auth_key(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['nogizaka46_auth_key'] = value

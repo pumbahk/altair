@@ -111,6 +111,16 @@ class CartSettingForm(OurForm):
             (u'nogizaka46', u'キーワード認証'),
             ]
         )
+    nogizaka46_auth_key = OurTextField(
+        label=_(u'キーワード認証のキー'),
+        filters=[
+            blank_as_none,
+            ],
+        # 抽選の認証方式はは現在の所 Lot.auth_type で決定されるので、これは常にいじれるようにしておく必要がある
+        # validators=[
+        #     DynSwitchDisabled('OR({auth_type}="nogizaka46", {secondary_auth_type}="nogizaka46")'),
+        #     ]
+        )
     title = OurTextField(
         label=_(u'カートのタイトル')
         )
