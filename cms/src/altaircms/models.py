@@ -83,12 +83,12 @@ class Performance(BaseOriginalMixin, Base):
 class SalesSegmentKind(WithOrganizationMixin, Base):
     """ 販売条件のためのマスターテーブル"""
     __tablename__ = "salessegment_kind"
-    query = DBSession.query_property()    
+    query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(length=255))
     label = sa.Column(sa.Unicode(length=255), default=u"<不明>")
     publicp = sa.Column(sa.Boolean, default=True)
-    
+
     @declared_attr
     def __table_args__(cls):
         return (sa.UniqueConstraint("name", "organization_id"), )
@@ -96,7 +96,7 @@ class SalesSegmentKind(WithOrganizationMixin, Base):
 class SalesSegmentGroup(BaseOriginalMixin, Base):
     """ イベント単位の販売条件"""
     __tablename__ = "salessegment_group"
-    query = DBSession.query_property()    
+    query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, primary_key=True)
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
@@ -117,15 +117,15 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
 
     @classmethod
     def create_defaults_from_event(cls, event):
-        normal = cls(event=event, 
-                    name=u"一般販売", 
+        normal = cls(event=event,
+                    name=u"一般販売",
                     kind="normal")
-        first = cls(event=event, 
-                    name=u"一般先行", 
+        first = cls(event=event,
+                    name=u"一般先行",
                     kind="eary_firstcome")
-        normal_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=normal.kind).first() or 
+        normal_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=normal.kind).first() or
                        SalesSegmentKind(organization_id=event.organization_id, name=normal.kind, label=u"一般販売"))
-        first_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=first.kind).first() or 
+        first_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=first.kind).first() or
                        SalesSegmentKind(organization_id=event.organization_id, name=first.kind, label=u"一般先行"))
         normal.master = normal_kind
         first.master = first_kind
@@ -167,7 +167,7 @@ class AliasDescripter(object):
         if obj:
             return getattr(obj, self.alias)
         else:
-            return getattr(wrapper, self.alias)            
+            return getattr(wrapper, self.alias)
 
 class Ticket(BaseOriginalMixin, Base):
     """
@@ -211,13 +211,13 @@ class Genre(Base,  WithOrganizationMixin):
     @reify
     def origin_genre(self):
         return self.query_ancestors().filter(Genre.name==self.origin).one()
-    
+
     def kick_category_toppage(self):
         self.category_top_pageset_id = None
 
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id
-    
+
     def has_category_toppage(self):
         return bool(self.category_top_pageset_id)
 
@@ -238,7 +238,7 @@ class Genre(Base,  WithOrganizationMixin):
         if hop:
             qs = qs.filter(_GenrePath.hop<=hop)
         return qs.filter(_GenrePath.next_id==self.id)
-        
+
     def query_ancestors(self, hop=None):
         qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.next_id)
         if hop:
@@ -265,7 +265,7 @@ class Genre(Base,  WithOrganizationMixin):
 
     def _add_parent(self, genre, hop):
         self.is_root = False
-        self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))        
+        self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))
 
     def add_parent(self, genre, hop=1):
         path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
@@ -323,7 +323,7 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
     """
     __tablename__ = "category"
     __table_args__ = (
-        sa.UniqueConstraint("organization_id", "name"), 
+        sa.UniqueConstraint("organization_id", "name"),
         )
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
@@ -336,12 +336,12 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
     name = sa.Column(sa.String(length=255))
     imgsrc = sa.Column(sa.String(length=255))
     hierarchy = sa.Column(sa.Unicode(length=255), nullable=False)
-    
+
     url = sa.Column(sa.Unicode(length=255))
     pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
     pageset = orm.relationship("PageSet", backref=orm.backref("category", uselist=False), uselist=False)
     display_order = sa.Column(sa.Integer)
-    origin = sa.Column(sa.Unicode(length=255), 
+    origin = sa.Column(sa.Unicode(length=255),
                        doc=u"祖先を選定するためのフィールド今のところ{music, sports, stage, other}以外入らない。")
     ## originはenumにしても良いかもしれない
     attributes = sa.Column(sa.Unicode(length=255), default=u"")
@@ -360,7 +360,7 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
             r.append(me)
             me = me.parent
         r.append(me)
-        
+
         ## not include self iff include_self is false
         if not include_self:
             r.pop(0)
@@ -372,7 +372,7 @@ class FeatureSetting(Base):
 
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
-    organization_id = sa.Column(sa.Integer, sa.ForeignKey('Organization.id'))
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
     name = sa.Column(sa.String(length=255))
     value = sa.Column(sa.String(length=255))
     created_at = sa.Column(sa.DateTime, default=datetime.now)
