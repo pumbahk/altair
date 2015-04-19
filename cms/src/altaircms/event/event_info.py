@@ -19,7 +19,7 @@ class IGetEventInfo(Interface):
     target = Attribute("resource of event info")
     def get_event_info():
         """ event info:
-        # [{"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"}, 
+        # [{"label": u"お問い合わせ先", "name": "contact", "content": u"お問い合わせ先は以下のとおりxxx-xxx-xx"},
            ...]
         """
         pass
@@ -51,7 +51,7 @@ class EventGetEventInfoAdapter(object):
         appender.append("notice", u"注意事項", event.notice, nl_to_br)
         appender.append("ticket_payment", u"お支払い方法", event.ticket_payment, nl_to_br)
         appender.append("ticket_pickup", u"チケット引き取り方法", event.ticket_pickup, nl_to_br)
-        return {"event": appender.content}    
+        return {"event": appender.content}
 
 
 class SummaryWidgetGetEventInfoAdapter(object):
@@ -73,7 +73,8 @@ def get_event_notify_info(event, session=DBSession, page=None):
     # summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
     # のイベント詳細に利用される
     summary_widget = None
-    if page:
+    pages = [page] if page else event.pages
+    for page in pages:
         structure = json.loads(page.structure)
         summary_id = None
         for block in structure:
