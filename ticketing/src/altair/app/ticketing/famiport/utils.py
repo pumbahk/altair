@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import IntEnum
+from cryptography.fernet import Fernet
 
 class FamiPortRequestType(IntEnum):
     ReservationInquiry         = 1 # 予約済み予約照会
@@ -20,7 +21,7 @@ class FamiPortResponseType(IntEnum):
 
 class FamiPortCrypt:
     def __init__(self, key):
-        pass
+        self.fernet = Fernet(key)
 
     def encrypt(self, plain_data):
         """
@@ -28,7 +29,7 @@ class FamiPortCrypt:
         :param plain_data:
         :return: encrypted data
         """
-        pass
+        return self.fernet.encrypt(plain_data)
 
     def decrypt(self, encrypted_data):
         """
@@ -36,4 +37,4 @@ class FamiPortCrypt:
         :param encrypted data:
         :return: decrypted data
         """
-        pass
+        return self.fernet.decrypt(encrypted_data)
