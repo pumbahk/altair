@@ -74,7 +74,6 @@ def get_event_notify_info(event, session=DBSession, page=None):
     # のイベント詳細に利用される
     summary_widget = None
     if not page:
-        from ..page.models import Page
         page = session.query(Page).filter(Page.event_id == event.id).filter(Page.published == True).first()
 
     if page:
