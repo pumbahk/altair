@@ -66,12 +66,6 @@ class GetEventInfoTests(unittest.TestCase):
         self.session.add(widget)
         self.session.flush()
 
-        page.structure = json.dumps({
-            'block-1': [{'name': 'summary', 'pk': widget.id}],
-            })
-        self.session.add(page)
-        self.session.flush()
-
         result = self._callFUT(event)["event"]
 
         self.assertEquals(result[0], {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"})

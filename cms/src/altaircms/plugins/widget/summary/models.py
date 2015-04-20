@@ -24,7 +24,7 @@ from .helpers import _items_from_page
 
 """
 公演期間
-    2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)
+    2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る) 
 説明／注意事項
     ※未就学児童のご入場はお断りいたします。
 料金
@@ -34,9 +34,9 @@ from .helpers import _items_from_page
     【お問合せ】
     サウンドクリエーター　06-6357-4400 / www.sound-c.co.jp
     ≪浪切公演≫浪切ホールチケットカウンター　072-439-4915 / www.namikiri.jp
-    ≪神戸公演≫神戸国際会館　078-231-8162 / www.kih.co.jp
+    ≪神戸公演≫神戸国際会館　078-231-8162 / www.kih.co.jp 
 販売期間
-    2012年03月03日(土) 〜 07月12日(木)
+    2012年03月03日(土) 〜 07月12日(木) 
 """
 
 ##
@@ -63,12 +63,12 @@ class SummaryWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     bound_event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id", ondelete="SET NULL"))
     bound_event = orm.relationship("Event")
-    items = sa.Column(sa.UnicodeText)  # json string
+    items = sa.Column(sa.UnicodeText) #json string
     show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
     """
     items attribute structure::
 
-       [{label: "公演期間", content: u"2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)", name="performance_period", notify=False},
+       [{label: "公演期間", content: u"2012年06月03日(日) 〜 07月16日(月) (公演カレンダーを見る)", name="performance_period", notify=False}, 
         {label: "説明／注意事項", content: u"※未就学児童のご入場はお断りいたします。", name="notice", notify=True}]
     """
 
@@ -97,10 +97,11 @@ class SummaryWidgetResource(HandleSessionMixin,
 
     def _items_from_page(self, page):
         return json.dumps(_items_from_page(page), ensure_ascii=False)
-
+    
     def _get_page(self, page_id):
         return self.request.allowable(Page).filter(Page.id==page_id).one()
 
     def get_items(self, page_id):
         page = self._get_page(page_id)
         return self._items_from_page(page) if page.event else "[]"
+
