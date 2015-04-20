@@ -56,7 +56,7 @@ class GetEventInfoTests(unittest.TestCase):
         from altaircms.plugins.widget.summary.models import SummaryWidget
 
         event = Event()
-        page = Page(event=event)
+        page = Page(event=event, published=True)
         widget = SummaryWidget(page=page, bound_event=event)
         widget.items =unicode( json.dumps([
                 {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し", "notify": True},
@@ -66,6 +66,11 @@ class GetEventInfoTests(unittest.TestCase):
         self.session.add(widget)
         self.session.flush()
 
+        page.structure = json.dumps({
+            'block-1': [{'name': 'summary', 'pk': widget.id}],
+            })
+        self.session.add(page)
+        self.session.flush()
         result = self._callFUT(event)["event"]
 
         self.assertEquals(result[0], {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"})
