@@ -11,6 +11,10 @@ class FamiPortRequest(object):
     def request_type(self):
         return self._requestType
 
+    @property
+    def encrypted_fields(self):
+        return self._encryptedFields
+
 class FamiPortReservationInquiryRequest(FamiPortRequest):
     """予約済み予約照会
     """
@@ -20,6 +24,7 @@ class FamiPortReservationInquiryRequest(FamiPortRequest):
         self.reserveNumber = None  # 予約番号
         self.authNumber = None  # 認証番号
         self._requestType = FamiPortRequestType.ReservationInquiry
+        self._encryptedFields = []
 
 
 class FamiPortPaymentTicketingRequest(FamiPortRequest):
@@ -35,6 +40,7 @@ class FamiPortPaymentTicketingRequest(FamiPortRequest):
         self.customerName = None  # カナ氏名
         self.phoneNumber = None  # 電話番号
         self._requestType = FamiPortRequestType.PaymentTicketing
+        self._encryptedFields = ['customerName', 'phoneNumber']
 
 
 class FamiPortPaymentTicketingCompletionRequest(FamiPortRequest):
@@ -45,12 +51,13 @@ class FamiPortPaymentTicketingCompletionRequest(FamiPortRequest):
         self.mmkNo = None  # 発券ファミポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分
+        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
         self.totalAmount = None  # 入金金額
         self._requestType = FamiPortRequestType.PaymentTicketingCompletion
+        self._encryptedFields = []
 
 
 class FamiPortPaymentTicketingCancelRequest(FamiPortRequest):
@@ -61,12 +68,13 @@ class FamiPortPaymentTicketingCancelRequest(FamiPortRequest):
         self.mmkNo = None  # 発券ファミポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分
+        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
         self.cancelCode = None  # 取消理由
         self._requestType = FamiPortRequestType.PaymentTicketingCancel
+        self._encryptedFields = []
 
 
 class FamiPortInformationRequest(FamiPortRequest):
@@ -83,9 +91,10 @@ class FamiPortInformationRequest(FamiPortRequest):
         self.authCode = None  # 認証コード
         self.reserveNumber = None  # 予約照会番号
         self._requestType = FamiPortRequestType.Information
+        self._encryptedFields = []
 
 
-class FamiPortCustomerRequest(FamiPortRequest):
+class FamiPortCustomerInformationRequest(FamiPortRequest):
     """顧客情報取得
     """
     def __init__(self, *args, **kwds):
@@ -93,8 +102,9 @@ class FamiPortCustomerRequest(FamiPortRequest):
         self.mmkNo = None  # 発券Famiポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分
+        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # バーコード情報
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
         self.totalAmount = None  # 入金金額
+        self.requestType = FamiPortRequestType.CustomerInformation

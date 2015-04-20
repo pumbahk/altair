@@ -5,7 +5,7 @@ from .requests import (
     FamiPortPaymentTicketingCompletionRequest,
     FamiPortPaymentTicketingCancelRequest,
     FamiPortInformationRequest,
-    FamiPortCustomerRequest,
+    FamiPortCustomerInformationRequest,
     )
 from .responses import (
     FamiPortReservationInquiryResponse,
@@ -13,7 +13,7 @@ from .responses import (
     FamiPortPaymentTicketingCompletionResponse,
     FamiPortPaymentTicketingCancelResponse,
     FamiPortInformationResponse,
-    FamiPortCustomerResponse,
+    FamiPortCustomerInformationResponse,
     )
 from .tests.fakers import (
     FamiPortReservationInquiryResponseFakeFactory,
@@ -31,7 +31,7 @@ request_response = {
     FamiPortPaymentTicketingCompletionRequest: FamiPortPaymentTicketingCompletionResponse,
     FamiPortPaymentTicketingCancelRequest: FamiPortPaymentTicketingCancelResponse,
     FamiPortInformationRequest: FamiPortInformationResponse,
-    FamiPortCustomerRequest: FamiPortCustomerResponse,
+    FamiPortCustomerInformationRequest: FamiPortCustomerInformationResponse,
     }
 
 response_faker = {
@@ -40,7 +40,7 @@ response_faker = {
     FamiPortPaymentTicketingCompletionResponse: FamiPortPaymentTicketingCompletionResponseFakeFactory,
     FamiPortPaymentTicketingCancelResponse: FamiPortPaymentTicketingCancelResponseFakeFactory,
     FamiPortInformationResponse: FamiPortInformationResponseFakeFactory,
-    FamiPortCustomerResponse: FamiPortCustomerResponseFakeFactory,
+    FamiPortCustomerInformationResponse: FamiPortCustomerResponseFakeFactory,
     }
 
 
