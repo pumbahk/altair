@@ -2,7 +2,10 @@
 
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .utils import FamiPortRequestType
+from .utils import FamiPortRequestType, FamiPortCrypt
+
+from xml.etree import ElementTree as ElementTree
+from io import BytesIO
 
 import logging
 
@@ -71,7 +74,7 @@ class XmlFamiPortResponseGenerator(object):
     def __init__(self, *args, **kwargs):
         pass
 
-    def generate_xmlResponse(famiport_response, encrypt_fields = []):
+    def generate_xmlResponse(cls_obj, famiport_response, encrypt_fields = [], root_name = "FMIF"):
         """Generate XML text of famiport_response with encrypt_fields encrypted.
         Assume filed name in famiport_response is same as tag name in XML.
         List fields in famiport_response are repeated with same tag name in XML.
@@ -81,4 +84,29 @@ class XmlFamiPortResponseGenerator(object):
         :return: Shift-JIS encoded string of generated XML
         """
 
-        pass
+        root = ElementTree.Element(root_name)
+
+        encrypt_fields = []
+        if famiport_response.response_type() == FamiPortRequestType.ReservationInquiry:
+            encrypt_fields.append('name')
+        else:
+            pass
+
+        doc_root = cls_obj._build_xmlTree(root, famiport_response, encrypt_fields)
+        elementTree = ElementTree(doc_root)
+
+        bytesIO = BytesIO()
+        # TODO Take care of problematic chars in UTF-8 to SJIS conversion
+        return elementTree.write(bytesIO, encoding='Shift_JIS')
+
+    @classmethod
+    def _build_xmlTree(cls_obj, root, object, encrypt_fields = []):
+        attribute_names = object.__slots__
+        for attribute_name in attribute_names:
+            attribute_value = getattr(object, attribute_name)
+            element = ElementTree.SubElement(root, attribute_name)
+            if not isinstance(attribute_value, (list, tuple)):
+                element.text = attribute_value if attribute_name not in encrypt_fields else FamiPortCrypt.encrypt(attribute_value)
+                return root
+            else:
+                cls_obj._build_xmlTree(element, attribute_value)

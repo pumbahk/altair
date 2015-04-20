@@ -4,12 +4,29 @@
 変数名はタグ名に合わせる
 """
 
-class FamiPortResponse(object):
-    pass
+from .utils import FamiPortResponseType
 
+class FamiPortResponse(object):
+    __slots__ = ()
+
+    def __init__(self, *args, **kwds):
+        self._ordered_attribute_list = []
+
+    @property
+    def response_type(self):
+        return self._responseType
+
+    """
+    def get_ordered_attribute_list(self):
+        return self._ordered_attribute_list
+    """
 class FamiPortReservationInquiryResponse(FamiPortResponse):
     """予約済み予約照会
     """
+
+    __slots__ = ('resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount', 'ticketPayment', 'systemFee',
+                 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'nameInput', 'phoneInput')
+
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
         self.replyClass = None  # 応答結果区分
@@ -25,11 +42,20 @@ class FamiPortReservationInquiryResponse(FamiPortResponse):
         self.koenDate = None  # 公園日時
         self.nameInput = None  # 氏名要求フラグ
         self.phoneInput = None  # 電話番号要求フラグ
+        self._responseType = FamiPortResponseType.ReservationInquiry
+        # self._ordered_attribute_list = ['resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount',
+        #                                'ticketPayment', 'systemFee', 'ticketingFee', 'ticketCountTotal',
+        #                                'ticketCount', 'kogyoName', 'koenDate', 'nameInput', 'phoneInput']
 
 
 class FamiPortPaymentTicketingResponse(FamiPortResponse):
     """予約済み入金発券
     """
+
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyClass', 'replyCode', 'playGuideId', 'playGuideName',
+                 'orderTicketNo', 'exchangeTicketNo', 'ticketingStart', 'ticketingEnd', 'totalAmount', 'ticketPayment',
+                 'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'ticket')
+
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
@@ -56,7 +82,9 @@ class FamiPortPaymentTicketingResponse(FamiPortResponse):
         self.koenDate = None  # 公演日時
 
         ##
-        self.tickets = []  # チケット情報 (FamiPortTicketのリスト)
+        self.ticket = []  # チケット情報 (FamiPortTicketのリスト)
+
+        self._responseType = FamiPortResponseType.PaymentTicketing
 
 
 class FamiPortTicket(object):
@@ -65,6 +93,9 @@ class FamiPortTicket(object):
     FamiPortPaymentTicketingResponseに含まれる情報です。
     このクラスに対応する単体のレスポンスはありません。
     """
+
+    __slots__ = ('barCodeNo', 'ticketClass', 'templateCode', 'ticketData')
+
     def __init__(self, *args, **kwds):
         self.barCodeNo = None  # チケットバーコード番号
         self.ticketClass = None  # チケット区分
@@ -75,6 +106,9 @@ class FamiPortTicket(object):
 class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
     """予約済み入金発券完了
     """
+
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
+
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
@@ -82,11 +116,15 @@ class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
         self.barCodeNo = None  # 支払番号
         self.orderId = None  # 注文ID
         self.replyCode = None  # 応答結果
+        self._responseType = FamiPortResponseType.PaymentTicketingCompletion
 
 
 class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
     """予約済み入金発券取消
     """
+
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
+
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
         self.storeCode = None  # 店舗コード
@@ -94,20 +132,27 @@ class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
         self.barCodeNo = None  # 支払番号
         self.orderId = None  # 注文ID
         self.replyCode = None  # 応答結果
+        self._responseType = FamiPortResponseType.PaymentTicketingCancel
 
 
 class FamiPortInformationResponse(FamiPortResponse):
     """予約済み案内
     """
+
+    __slots__ = ('resultCode', 'infoKubun', 'infoMessage')
+
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
         self.infoKubun = None  # 案内区分
         self.infoMessage = None  # 案内文言
+        self._responseType = FamiPortResponseType.Information
 
 
 class FamiPortCustomerResponse(FamiPortResponse):
     """顧客情報取得
     """
+
+    __slots__ = ('resultCode', 'replyCode', 'name', 'memberId', 'address1', 'address2', 'identifyNo')
 
     def __init__(self, *args, **kwds):
         self.resultCode = None  # 処理結果
@@ -117,3 +162,4 @@ class FamiPortCustomerResponse(FamiPortResponse):
         self.address1 = None  # 住所1
         self.address2 = None  # 住所2
         self.identifyNo = None  # 半券個人識別番号
+        self._requestType = FamiPortResponseType.CustomerInformation
