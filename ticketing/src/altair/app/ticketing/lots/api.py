@@ -584,7 +584,6 @@ def create_client_form(context, request, **kwds):
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v
     birthday = date(1990, 1, 1)
-
     if user_profile is not None:
         retval.last_name.data = user_profile.last_name
         retval.last_name_kana.data = user_profile.last_name_kana
@@ -606,7 +605,7 @@ def create_client_form(context, request, **kwds):
     retval.sex.process_data(unicode(sex or u''))
     retval.birthday.process_data(birthday)
 
-    if kwds['formdata']:
+    if 'formdata' in kwds:
         retval.process(**kwds)  # 入力フォームの値を反映
     return retval
 

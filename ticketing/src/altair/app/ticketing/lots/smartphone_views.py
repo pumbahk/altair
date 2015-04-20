@@ -195,7 +195,11 @@ class EntryLotView(object):
         """
         購入情報入力
         """
-        form = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        form = self._create_form()
+        if "last_name" in self.request.params:
+            # バリデーションに引っかかった場合に反映
+            form = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+
         event = self.context.event
         lot = self.context.lot
 
