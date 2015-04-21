@@ -6,9 +6,8 @@ def setUpModule():
     global config
     from altaircms import testing as mytesting
     config = mytesting.config()
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.include("altaircms.tag")
-    
+
 def tearDownModule():
     from altaircms.testing import teardown_db
     teardown_db()
@@ -55,17 +54,17 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         session.add(movie)
 
         target = self._makeOne("image_asset")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           0)
         target = self._makeOne("movie_asset")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           1)
         target = self._makeOne("flash_asset")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           1)
 
         target = self._makeOne("page")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           0)
 
     def test_any_kind__unmatch_organization(self):
@@ -82,10 +81,10 @@ class AnyKindAssetSearchTests(unittest.TestCase):
         session.add(movie)
 
         target = self._makeOne("movie_asset")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           0)
         target = self._makeOne("flash_asset")
-        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+        self.assertEquals(target.search_by_tag_label(u"foo").count(),
                           0)
 
 if __name__ == "__main__":

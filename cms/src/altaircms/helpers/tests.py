@@ -48,7 +48,7 @@ class URLQueryReplacerTest(unittest.TestCase):
     def test_it(self):
         from pyramid.testing import DummyRequest
         request = DummyRequest()
-        self.assertEqual(self._callFUT(request, "hello"), "/hello?")
+        self.assertEqual(self._callFUT(request, "hello"), "/hello")
 
     def test_request_has_get_params(self):
         from pyramid.testing import DummyRequest
@@ -68,4 +68,3 @@ class URLQueryReplacerTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
