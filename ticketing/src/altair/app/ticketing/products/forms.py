@@ -219,7 +219,7 @@ class ProductItemFormMixin(object):
         status = True
         if self.product_item_id.data:
             # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
-            # 価格、席種、券面構成の変更は不可
+            # 価格(単価)、販売単位の変更は不可。商品価格、席種も不可であるが商品明細編集では項目なし。
             pi = ProductItem.query.filter_by(id=self.product_item_id.data).one()
             product = pi.product
             now = datetime.now()
@@ -231,9 +231,6 @@ class ProductItemFormMixin(object):
                     status = False
                 if self.product_item_quantity.data != pi.quantity:
                     self.product_item_quantity.errors.append(error_message)
-                    status = False
-                if self.ticket_bundle_id.data != pi.ticket_bundle_id:
-                    self.ticket_bundle_id.errors.append(error_message)
                     status = False
         return status
 
