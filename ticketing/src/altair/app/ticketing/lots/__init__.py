@@ -68,7 +68,8 @@ def setup_auth(config):
 
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
-    set_auth_policy(config, 'altair.app.ticketing.security:auth_model_callback')
+    from altair.app.ticketing.security import AuthModelCallback
+    set_auth_policy(config, AuthModelCallback(config))
     config.set_authorization_policy(ACLAuthorizationPolicy())
 
     # 楽天認証コールバック
