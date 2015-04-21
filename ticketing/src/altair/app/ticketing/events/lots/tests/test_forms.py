@@ -42,15 +42,15 @@ class LotFormTests(unittest.TestCase):
         self.session.flush()
         return organization
 
-    @mock.patch('altair.app.ticketing.events.lots.forms.get_plugin_registry')
-    def test_create_lot_10993(self, get_plugin_registry):
+    @mock.patch('altair.app.ticketing.events.lots.forms.get_plugin_names')
+    def test_create_lot_10993(self, get_plugin_names):
         from datetime import datetime
         from altair.app.ticketing.core.models import Organization, Event, SalesSegmentGroup, SalesSegmentGroupSetting
         from altair.app.ticketing.users.models import Membership, MemberGroup, MemberGroup_SalesSegment, MemberGroup_SalesSegmentGroup
 
-        get_plugin_registry.return_value = [
-            ('a', mock.Mock(name='a')),
-            ('b', mock.Mock(name='b')),
+        get_plugin_names.return_value = [
+            ('a', 'a'),
+            ('b', 'b'),
             ]
 
         organization = self._organization()

@@ -4,7 +4,7 @@ import functools
 from zope.interface import implementer, Interface
 from pyramid.interfaces import IRoutesMapper, PHASE1_CONFIG
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from altair.auth.interfaces import IAuthenticator, IChallenger, ILoginHandler
+from altair.auth.interfaces import IAuthenticator, ILoginHandler
 from altair.auth.api import get_who_api
 from altair.app.ticketing.cart import ICartResource
 from altair.app.ticketing.lots import ILotResource
@@ -48,7 +48,7 @@ class CompatibilityBackendFactory(object):
         else:
             return None
 
-@implementer(IAuthenticator, ILoginHandler, IChallenger)
+@implementer(IAuthenticator, ILoginHandler)
 class NogizakaAuthPlugin(object):
     name = IDENTIFIER_NAME
 
@@ -72,9 +72,6 @@ class NogizakaAuthPlugin(object):
             return None, None
         remembered_auth_factors = { self.credential_key: opaque } 
         return identity, { session_keeper.name: remembered_auth_factors for session_keeper in auth_context.session_keepers }
-
-    def challenge(self, request, auth_context, response):
-        return False
 
     def interceptor(self, context, request):
         api = get_who_api(request)

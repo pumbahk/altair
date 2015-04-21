@@ -3,6 +3,7 @@ import logging
 import re
 
 from pyramid.security import authenticated_userid, effective_principals
+from pyramid.i18n import TranslationString as _
 from altair.auth.api import get_plugin_registry
 from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
@@ -15,6 +16,12 @@ HARDCODED_PRIORITIES = {
     RakutenOpenID: -3,
     FCAuthPlugin: -2,
     NogizakaAuthPlugin: 1,
+    }
+
+DISPLAY_NAMES = {
+    RakutenOpenID: _(u'楽天会員認証'),
+    FCAuthPlugin: _(u'FC会員認証'),
+    NogizakaAuthPlugin: _(u'キーワード認証'),
     }
 
 class AuthModelCallback(object):
@@ -134,3 +141,15 @@ def get_extra_auth_info_from_principals(principals):
         'membergroup': membergroup,
         'is_guest': is_guest,
         }
+
+def get_plugin_names(request, predicate=None):
+    plugin_registry = get_plugin_registry(request)
+    if predicate is None:
+        return ((name, DISPLAY_NAMES.get(plugin.__class__, name)) for name, plugin in plugin_registry)
+    else:
+        return ((name, DISPLAY_NAMES.get(plugin.__class__, name)) for name, plugin in plugin_registry if predicate(plugin))
+
+def get_display_name(request, plugin_name):
+    plugin_registry = get_plugin_registry(request)
+    plugin = plugin_registry.lookup(plugin_name) if plugin_name is not None else None
+    return DISPLAY_NAMES.get(plugin.__class__, plugin.name) if plugin is not None else _(u'(なし)')

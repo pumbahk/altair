@@ -1,7 +1,8 @@
 # encoding: utf-8
 
 from pyramid.i18n import TranslationString as _
-from wtforms.validators import Length, Optional
+from wtforms.validators import Length, Optional, ValidationError
+from altair.auth.interfaces import IChallenger
 from altair.app.ticketing.helpers import label_text_for
 from altair.saannotation import get_annotations_for
 from altair.formhelpers.form import OurForm
@@ -32,6 +33,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.events.sales_segments.forms import ExtraFormEditorWidget
+from altair.app.ticketing.security import get_plugin_names
 
 from . import cart_setting_types
 
@@ -91,25 +93,29 @@ class CartSettingForm(OurForm):
         validators=[Optional()],
         choices=_cart_setting_types
         )
+
+    def _auth_types(field):
+        retval = [('', u'なし')]
+        retval.extend(get_plugin_names(field._form.context.request))
+        return retval
+
     auth_type = OurSelectField(
         label=get_annotations_for(CartSetting.auth_type)['label'],
         coerce=lambda x: x or None,
         encoder=lambda x: x or u'',
-        choices=[
-            (u'', u'未設定'),
-            (u'fc_auth', u'FC会員ログイン'),
-            (u'rakuten', u'楽天会員認証'),
-            (u'nogizaka46', u'キーワード認証'),
-            ]
+        choices=_auth_types
         )
+
+    def _secondary_auth_types(field):
+        retval = [('', u'なし')]
+        retval.extend(get_plugin_names(field._form.context.request, predicate=lambda plugin:not IChallenger.providedBy(plugin)))
+        return retval
+
     secondary_auth_type = OurSelectField(
         label=get_annotations_for(CartSetting.secondary_auth_type)['label'],
         coerce=lambda x: x or None,
         encoder=lambda x: x or u'',
-        choices=[
-            (u'', u'未設定'),
-            (u'nogizaka46', u'キーワード認証'),
-            ]
+        choices=_secondary_auth_types
         )
     nogizaka46_auth_key = OurTextField(
         label=_(u'キーワード認証のキー'),
@@ -283,6 +289,10 @@ class CartSettingForm(OurForm):
         label=_(u'埋め込みHTML文言(スマートフォン)'),
         widget=OurTextArea()
         )
+
+    def validate_secondary_auth_type(self, field):
+        if self.auth_type.data != None and self.auth_type.data == field.data:
+            raise ValidationError(u'主認証方式と同じ認証方式は設定できません')
 
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context', None)
