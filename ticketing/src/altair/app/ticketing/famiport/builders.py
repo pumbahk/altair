@@ -2,14 +2,15 @@
 
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .utils import FamiPortRequestType, FamiPortCrypt
+from .utils import FamiPortRequestType, FamiPortCrypt, prettify
+from .responses import FamiPortResponse
 
-from xml.etree import ElementTree as ElementTree
+from xml.etree.ElementTree import ElementTree, Element, SubElement
 from io import BytesIO
 from inspect import ismethod
-from cryptography.fernet import Fernet
 
 import logging
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +75,10 @@ class XmlFamiPortResponseGeneratorFactory(object):
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
     def __init__(self, famiport_response):
-        # self.famiport_crypt = FamiPortCrypt(famiport_response.encrypt_key)
-        self.famiport_crypt = FamiPortCrypt(Fernet.generate_key())
+        # TODO Make sure this process is good
+        encrypt_key_item = famiport_response.encrypt_key
+        digest = hashlib.md5(encrypt_key_item).digest()
+        self.famiport_crypt = FamiPortCrypt(digest)
 
     def generate_xmlResponse(cls_obj, famiport_response, root_name = "FMIF"):
         """Generate XML text of famiport_response with encrypt_fields encrypted.
@@ -87,23 +90,40 @@ class XmlFamiPortResponseGenerator(object):
         :return: Shift-JIS encoded string of generated XML
         """
 
-        root = ElementTree.Element(root_name)
+        root = Element(root_name)
         doc_root = cls_obj._build_xmlTree(root, famiport_response)
         elementTree = ElementTree(doc_root)
-
         bytesIO = BytesIO()
         # TODO Take care of problematic chars in UTF-8 to SJIS conversion
-        # elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True)
-        elementTree.write(bytesIO, encoding='UTF-8', xml_declaration=True)
-        return bytesIO.getvalue()
+        elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True)
+        xml_response = bytesIO.getvalue()
+        bytesIO.close()
+        return xml_response
 
-    def _build_xmlTree(self, root, famiport_response):
-        attribute_names = [attribute for attribute in dir(famiport_response) if not ismethod(attribute)]
+    def _build_xmlTree(self, root, object):
+        """
+        Build XML tree from object.
+        :param root: root of XML tree
+        :param object: object to build XML tree from
+        :return: root of the XML tree built
+        """
+
+        if object is None:
+            return root
+
+        # List of attribute names of the object
+        attribute_names = [attribute for attribute in dir(object) if not ismethod(attribute) and not attribute.startswith("_") and attribute not in ['response_type', 'encrypt_fields', 'encrypt_key']]
+        # Create an element for each attribute_name with element.text=attribute_value and put under root.
         for attribute_name in attribute_names:
-            attribute_value = getattr(famiport_response, attribute_name)
-            element = ElementTree.SubElement(root, attribute_name)
-            if not isinstance(attribute_value, (list, tuple)):
-                element.text = attribute_value if attribute_name not in famiport_response.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
-                return root
-            else:
-                self._build_xmlTree(element, attribute_value)
+            attribute_value = getattr(object, attribute_name)
+            if attribute_value is not None:
+                element = SubElement(root, attribute_name)
+                if isinstance(object, FamiPortResponse):
+                    element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
+                elif isinstance(attribute_value, (list, tuple)):
+                    for attr_value in attribute_value:
+                        self._build_xmlTree(element, attr_value)
+                else:
+                    element.text = attribute_value
+
+        return root

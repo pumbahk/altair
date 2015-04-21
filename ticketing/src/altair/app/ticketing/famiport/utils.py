@@ -2,6 +2,8 @@
 
 from enum import IntEnum
 from cryptography.fernet import Fernet
+from xml.etree import ElementTree
+from xml.dom import minidom
 
 class FamiPortRequestType(IntEnum):
     ReservationInquiry         = 1 # 予約済み予約照会
@@ -37,4 +39,12 @@ class FamiPortCrypt:
         :param encrypted data:
         :return: decrypted data
         """
+        # TODO 復号化する項目をBase64で文字列からバイト配列に変換
         return self.fernet.decrypt(encrypted_data)
+
+def prettify(elem):
+    """Return a pretty-printed XML string for the Element.
+    """
+    rough_string = ElementTree.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")

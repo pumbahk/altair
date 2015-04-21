@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from ..api import get_xmlResponse_generator
 from ..responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, FamiPortPaymentTicketingCancelResponse, FamiPortInformationResponse, FamiPortCustomerInformationResponse, FamiPortTicket
+from ..utils import prettify
 
 
 class XmlFamiPortResponseGeneratorTest(TestCase):
@@ -46,9 +47,9 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
     def test_generate_xmlFamiPortCustomerInformationResponse(self):
         self.check_generate_xmlFamiPortResponse(self.famiport_customer_information_response)
 
-    @staticmethod
-    def check_generate_xmlFamiPortResponse(famiport_response):
+    def check_generate_xmlFamiPortResponse(self, famiport_response):
          xml_response_generator = get_xmlResponse_generator(famiport_response)
          result = xml_response_generator.generate_xmlResponse(famiport_response)
          print result
-         # TODO Check result
+         # print prettify(result)
+         self.assertTrue(result is None) # resultのprintを表示するためにAssertionErrorが起こるようにしておく

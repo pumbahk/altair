@@ -31,22 +31,23 @@ class FamiPortReservationInquiryResponse(FamiPortResponse):
     # __slots__ = ('resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount', 'ticketPayment', 'systemFee',
     #             'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'name', 'nameInput', 'phoneInput')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.replyClass = None  # 応答結果区分
-        self.replyCode = None  # 応答結果
-        self.barCodeNo = None  # 支払番号
-        self.totalAmount = None  # 合計金額
-        self.ticketPayment = None  # チケット料金
-        self.systemFee = None  # システム利用料
-        self.ticketingFee = None  # 店頭発券手数料
-        self.ticketCountTotal = None  # チケット枚数
-        self.ticketCount = None  # 本券購入枚数
-        self.kogyoName = None  # 興行名
-        self.koenDate = None  # 公園日時
-        self.name = None # お客様氏名
-        self.nameInput = None  # 氏名要求フラグ
-        self.phoneInput = None  # 電話番号要求フラグ
+    def __init__(self, resultCode=None, replyClass=None, replyCode=None, barCodeNo=None, totalAmount=None, ticketPayment=None, \
+                 systemFee=None, ticketingFee=None, ticketCountTotal=None, ticketCount=None, kogyoName=None, koenDate=None, name=None, nameInput=None, phoneInput=None):
+        self.resultCode = resultCode  # 処理結果
+        self.replyClass = replyClass  # 応答結果区分
+        self.replyCode = replyCode  # 応答結果
+        self.barCodeNo = barCodeNo  # 支払番号
+        self.totalAmount = totalAmount  # 合計金額
+        self.ticketPayment = ticketPayment  # チケット料金
+        self.systemFee = systemFee  # システム利用料
+        self.ticketingFee = ticketingFee  # 店頭発券手数料
+        self.ticketCountTotal = ticketCountTotal  # チケット枚数
+        self.ticketCount = ticketCount  # 本券購入枚数
+        self.kogyoName = kogyoName  # 興行名
+        self.koenDate = koenDate  # 公園日時
+        self.name = name # お客様氏名
+        self.nameInput = nameInput  # 氏名要求フラグ
+        self.phoneInput = phoneInput  # 電話番号要求フラグ
         self._responseType = FamiPortResponseType.ReservationInquiry
         self._encryptFields = ['name']
         self._encrypt_key = self.barCodeNo
@@ -61,33 +62,35 @@ class FamiPortPaymentTicketingResponse(FamiPortResponse):
     #             'orderTicketNo', 'exchangeTicketNo', 'ticketingStart', 'ticketingEnd', 'totalAmount', 'ticketPayment',
     #             'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'ticket')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.storeCode = None  # 店舗コード
-        self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # 支払番号
-        self.orderId = None  # 注文ID
-        self.replyClass = None  # 応答結果区分
-        self.replyCode = None  # 応答結果
-        self.playGuideId = None  # クライアントID
-        self.playGuideName = None  # クライアント漢字名称
+    def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyClass=None, replyCode=None, playGuideId=None, playGuideName=None, \
+                 orderTicketNo=None, exchangeTicketNo=None, ticketingStart=None, ticketingEnd=None, totalAmount=None, ticketPayment=None, systemFee=None, ticketingFee=None, \
+                 ticketCountTotal=None, ticketCount=None, kogyoName=None, koenDate=None, ticket=None):
+        self.resultCode = resultCode  # 処理結果
+        self.storeCode = storeCode  # 店舗コード
+        self.sequenceNo = sequenceNo  # 処理通番
+        self.barCodeNo = barCodeNo  # 支払番号
+        self.orderId = orderId  # 注文ID
+        self.replyClass = replyClass  # 応答結果区分
+        self.replyCode = replyCode  # 応答結果
+        self.playGuideId = playGuideId  # クライアントID
+        self.playGuideName = playGuideName  # クライアント漢字名称
 
         ##
-        self.orderTicketNo = None  # 払込票番号
-        self.exchangeTicketNo = None  # 引換票番号
-        self.ticketingStart = None  # 発券開始日時
-        self.ticketingEnd = None  # 発券期限日時
-        self.totalAmount = None  # 合計金額
-        self.ticketPayment = None  # チケット料金
-        self.systemFee = None  # システム利用料
-        self.ticketingFee = None  # 店頭発券手数料
-        self.ticketCountTotal = None  # チケット枚数
-        self.ticketCount = None  # 本券購入枚数
-        self.kogyoName = None  # 興行名
-        self.koenDate = None  # 公演日時
+        self.orderTicketNo = orderTicketNo  # 払込票番号
+        self.exchangeTicketNo = exchangeTicketNo  # 引換票番号
+        self.ticketingStart = ticketingStart  # 発券開始日時
+        self.ticketingEnd = ticketingEnd  # 発券期限日時
+        self.totalAmount = totalAmount  # 合計金額
+        self.ticketPayment = ticketPayment  # チケット料金
+        self.systemFee = systemFee  # システム利用料
+        self.ticketingFee = ticketingFee  # 店頭発券手数料
+        self.ticketCountTotal = ticketCountTotal  # チケット枚数
+        self.ticketCount = ticketCount  # 本券購入枚数
+        self.kogyoName = kogyoName  # 興行名
+        self.koenDate = koenDate  # 公演日時
 
         ##
-        self.ticket = []  # チケット情報 (FamiPortTicketのリスト)
+        self.ticket = ticket  # チケット情報 (FamiPortTicketのリスト)
 
         self._responseType = FamiPortResponseType.PaymentTicketing
         self._encryptFields = []
@@ -116,13 +119,13 @@ class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
 
     # __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.storeCode = None  # 店舗コード
-        self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # 支払番号
-        self.orderId = None  # 注文ID
-        self.replyCode = None  # 応答結果
+    def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyCode=None):
+        self.resultCode = resultCode  # 処理結果
+        self.storeCode = storeCode  # 店舗コード
+        self.sequenceNo = sequenceNo  # 処理通番
+        self.barCodeNo = barCodeNo  # 支払番号
+        self.orderId = orderId  # 注文ID
+        self.replyCode = replyCode  # 応答結果
         self._responseType = FamiPortResponseType.PaymentTicketingCompletion
         self._encryptFields = []
         self._encrypt_key = None
@@ -134,13 +137,13 @@ class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
 
     # __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.storeCode = None  # 店舗コード
-        self.sequenceNo = None  # 処理通番
-        self.barCodeNo = None  # 支払番号
-        self.orderId = None  # 注文ID
-        self.replyCode = None  # 応答結果
+    def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyCode=None):
+        self.resultCode = resultCode  # 処理結果
+        self.storeCode = storeCode  # 店舗コード
+        self.sequenceNo = sequenceNo  # 処理通番
+        self.barCodeNo = barCodeNo  # 支払番号
+        self.orderId = orderId  # 注文ID
+        self.replyCode = replyCode  # 応答結果
         self._responseType = FamiPortResponseType.PaymentTicketingCancel
         self._encryptFields = []
         self._encrypt_key = None
@@ -152,10 +155,10 @@ class FamiPortInformationResponse(FamiPortResponse):
 
     # __slots__ = ('resultCode', 'infoKubun', 'infoMessage')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.infoKubun = None  # 案内区分
-        self.infoMessage = None  # 案内文言
+    def __init__(self, resultCode=None, infoKubun=None, infoMessage=None):
+        self.resultCode = resultCode  # 処理結果
+        self.infoKubun = infoKubun  # 案内区分
+        self.infoMessage = infoMessage  # 案内文言
         self._responseType = FamiPortResponseType.Information
         self._encryptFields = []
         self._encrypt_key = None
@@ -167,14 +170,14 @@ class FamiPortCustomerInformationResponse(FamiPortResponse):
 
     # __slots__ = ('resultCode', 'replyCode', 'name', 'memberId', 'address1', 'address2', 'identifyNo')
 
-    def __init__(self, *args, **kwds):
-        self.resultCode = None  # 処理結果
-        self.replyCode = None  # 応答結果
-        self.name = None  # 氏名
-        self.memberId = None  # 会員ID
-        self.address1 = None  # 住所1
-        self.address2 = None  # 住所2
-        self.identifyNo = None  # 半券個人識別番号
+    def __init__(self, resultCode=None, replyCode=None, name=None, memberId=None, address1=None, address2=None, identifyNo=None):
+        self.resultCode = resultCode  # 処理結果
+        self.replyCode = replyCode  # 応答結果
+        self.name = name  # 氏名
+        self.memberId = memberId  # 会員ID
+        self.address1 = address1  # 住所1
+        self.address2 = address2  # 住所2
+        self.identifyNo = identifyNo  # 半券個人識別番号
         self._requestType = FamiPortResponseType.CustomerInformation
         self._encryptFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
         self._encrypt_key = 'test_key' # TODO get FamiPortPaymentTicketingResponse.orderId in some way
