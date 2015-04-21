@@ -129,7 +129,7 @@ class OrderInfoDefaultMixin(object):
     def get_extra_form_data(request, order):
         return u"\n".join(
             u"【{0}】{1}".format(pair[1][0], sensible_text_coerce(pair[1][1]))
-            for pair in order.get_order_attribute_pair_pairs(request)
+            for pair in order.get_order_attribute_pair_pairs(request, mode='entry')
             )
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)

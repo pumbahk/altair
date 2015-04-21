@@ -670,6 +670,41 @@ a.btn_sold:active {
 	top:1px;
 }
 
+.section table.form {
+	margin: 0px 0px 20px 0px;
+	border-spacing: 5px;
+	width: auto; 
+}
+
+.section table.form tbody th {
+	padding: 5px;
+	border-right: 2px solid #ddd;
+	width: 200px;
+}
+
+.section table.form thead th {
+	padding: 5px;
+	text-align: left;
+}
+
+.section table.form td {
+	padding: 5px;
+}
+
+.section table.form tfoot td {
+	padding: 5px;
+}
+
+.section table.form tr td ul {
+	list-style-type: none;
+	padding: 0 0;
+	margin: 0 0;
+}
+
+.section .form-footer {
+    text-align: center;
+}
+
 .section {
     margin-bottom: 1em;
 }

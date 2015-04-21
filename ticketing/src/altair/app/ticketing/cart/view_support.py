@@ -423,6 +423,7 @@ def assert_quantity_within_bounds(sales_segment, order_items):
 
 
 class DynamicFormBuilder(object):
+    _base_form_factory = OurDynamicForm
     validator_specs = [
         ('numerics', NUMERICS_REGEXP, u'数字'),
         ('alphabets', ALPHABETS_REGEXP, u'英文字'),
@@ -430,6 +431,18 @@ class DynamicFormBuilder(object):
         ('katakana', KATAKANAS_REGEXP, u'カタカナ'),
         ('other_characters', None, None),
         ]
+
+    @staticmethod
+    def _name_builder(name):
+        return u'extra_field[%s]' % name
+
+    def _form_factory(self, **kwargs):
+        return self._base_form_factory(name_builder=self._name_builder, **kwargs)
+
+    def __init__(self, form_factory=None):
+        if form_factory is None:
+            form_factory = self._form_factory
+        self.form_factory = form_factory
 
     def _convert_choices(self, choice_descs):
         return [(choice_desc['value'], choice_desc['label']) for choice_desc in choice_descs]
@@ -486,6 +499,15 @@ class DynamicFormBuilder(object):
             description=field_desc['description'] and Markup(field_desc['description']),
             note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc)
+            )
+
+    def _build_password(self, field_desc):
+        return fields.OurTextField(
+            label=field_desc['display_name'],
+            description=field_desc['description'] and Markup(field_desc['description']),
+            note=field_desc['note'] and Markup(field_desc['note']),
+            validators=self._build_validators(field_desc),
+            widget=widgets.OurPasswordInput()
             )
 
     def _build_textarea(self, field_desc):
@@ -553,6 +575,7 @@ class DynamicFormBuilder(object):
 
     field_factories = {
         u'text': _build_text,
+        u'password': _build_password,
         u'textarea': _build_textarea,
         u'select': _build_select,
         u'multiple_select': _build_multiple_select,
@@ -582,11 +605,10 @@ class DynamicFormBuilder(object):
         :param list extra_form_fields: ExtraFormのリスト
         """
         unbound_fields = self.unbound_fields(extra_form_fields)
-        form = OurDynamicForm(
+        form = self.form_factory(
             formdata=formdata,
             _fields=unbound_fields,
             _translations=Translations(),
-            name_builder=lambda name: u'extra_field[%s]' % name,
             **kwargs
             )
         fields = []
@@ -600,6 +622,7 @@ class DynamicFormBuilder(object):
                 'required': field_desc['required'],
                 'description': Markup(field_desc['description']) if field is None else None,
                 'field': field,
+                'descriptor': field_desc,
                 })
         return form, fields
 
@@ -666,6 +689,8 @@ def build_extra_form_fields_from_form(context, request, form_class, excludes=())
                 kind = 'textarea'
             elif isinstance(widget, (widgets.OurTextInput, wt_widgets.TextInput)):
                 kind = 'text'
+            elif isinstance(widget, (widgets.OurPasswordInput, wt_widgets.PasswordInput)):
+                kind = 'password'
         elif issubclass(field.field_class, (fields.OurIntegerField, wt_fields.IntegerField)):
             if isinstance(widget, (wt_widgets.TextInput, widgets.OurTextInput)):
                 kind = 'text'
@@ -729,6 +754,36 @@ def get_extra_form_class(request, cart_setting):
     from .schemas import extra_form_type_map
     return extra_form_type_map.get(cart_setting.type)
 
+def filter_extra_form_schema(extra_form_fields, mode=None):
+    if mode is None:
+        mode = 'any'
+
+    if isinstance(mode, basestring):
+        modes = mode.split(',')
+    else:
+        modes = mode
+
+    bitmask = 0
+    for mode in modes:
+        if mode == 'entry':
+            bitmask |= 1 
+        elif mode == 'orderreview':
+            bitmask |= 2
+        elif mode == 'editable':
+            bitmask |= 4
+        elif mode == 'any':
+            bitmask |= 7
+        else:
+            raise ValueError('invalid mode: %s' % mode)
+
+    return [
+        field_desc
+        for field_desc in extra_form_fields
+        if ((1 if field_desc.get('show_on_entry', True) else 0) \
+             | (2 if field_desc.get('show_in_orderreview', True) else 0) \
+             | (4 if field_desc.get('edit_in_orderreview', False) else 0)) & bitmask != 0
+        ]
+
 def get_extra_form_schema(context, request, sales_segment, for_=None):
     if for_ is None:
         for_ = 'cart'
@@ -750,45 +805,61 @@ def get_extra_form_schema(context, request, sales_segment, for_=None):
         raise ValueError("for_ argument must be either 'cart' or 'lots', got %s" % for_)
     return extra_form_fields or []
 
-def get_extra_form_data_pair_pairs(context, request, sales_segment, data, for_='cart'):
-    extra_form_fields = get_extra_form_schema(context, request, sales_segment, for_=for_)
-    retval = []
-    dtf = create_date_time_formatter(request)
-    for field_desc in extra_form_fields:
-        if field_desc['kind'] == 'description_only':
-            continue
-        field_value = data.get(field_desc['name'])
-        display_value = None
-        if field_desc['kind'] in ('text', 'textarea'):
+def render_display_value(request, field_desc, field_value):
+    display_value = None
+    dtf = request.environ.get('render_display_value.dtf')
+    if dtf is None:
+        request.environ['render_display_value.dtf'] = dtf = create_date_time_formatter(request)
+    if field_desc['kind'] in ('text', 'textarea'):
+        display_value = field_value
+    elif field_desc['kind'] == 'password':
+        display_value = u'*' * len(field_value) if field_value else u''
+    elif field_desc['kind'] in ('select', 'radio'):
+        v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+        if len(v) > 0:
+            display_value = v[0]['label']
+        else:
             display_value = field_value
-        elif field_desc['kind'] in ('select', 'radio'):
-            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
-            if len(v) > 0:
-                display_value = v[0]['label']
-            else:
-                display_value = field_value
-        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
-            display_value = []
-            for c in field_value:
+    elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+        display_value = []
+        i = None
+        try:
+            # 後からフィールドが追加されたりする場合もあるのでチェックする
+            i = iter(field_value)
+        except TypeError:
+            pass
+
+        if i is not None:
+            for c in i:
                 v = [pair for pair in field_desc['choices'] if pair['value'] == c]
                 if len(v) > 0:
                     v = v[0]['label']
                 else:
                     v = c
                 display_value.append(v)
-        elif field_desc['kind'] == 'date':
-            display_value = dtf.format_date(field_value) if field_value is not None else _(u'未入力')
-        elif field_desc['kind'] == 'datetime':
-            display_value = dtf.format_datetime(field_value) if field_value is not None else _(u'未入力')
-        elif field_desc['kind'] == 'time':
-            display_value = dtf.format_time(field_value) if field_value is not None else _(u'未入力')
-        elif field_desc['kind'] == 'bool':
-            # only for booster compatibility
-            display_value = u'はい' if field_value else u'いいえ'
-        else:
-            logger.warning('unsupported kind: %s' % field_desc['kind'])
-            display_value = field_value
+    elif field_desc['kind'] == 'date':
+        display_value = dtf.format_date(field_value) if field_value is not None else _(u'未入力')
+    elif field_desc['kind'] == 'datetime':
+        display_value = dtf.format_datetime(field_value) if field_value is not None else _(u'未入力')
+    elif field_desc['kind'] == 'time':
+        display_value = dtf.format_time(field_value) if field_value is not None else _(u'未入力')
+    elif field_desc['kind'] == 'bool':
+        # only for booster compatibility
+        display_value = u'はい' if field_value else u'いいえ'
+    else:
+        logger.warning('unsupported kind: %s' % field_desc['kind'])
+        display_value = field_value
+    return display_value 
 
+def get_extra_form_data_pair_pairs(context, request, sales_segment, data, for_='cart', mode=None):
+    extra_form_fields = get_extra_form_schema(context, request, sales_segment, for_=for_)
+    extra_form_fields = filter_extra_form_schema(extra_form_fields, mode)
+    retval = []
+    for field_desc in extra_form_fields:
+        if field_desc['kind'] == 'description_only':
+            continue
+        field_value = data.get(field_desc['name'])
+        display_value = render_display_value(request, field_desc, field_value)
         retval.append(
             (
                 (

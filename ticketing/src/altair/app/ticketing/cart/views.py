@@ -55,6 +55,7 @@ from .view_support import (
     get_seat_type_dicts,
     assert_quantity_within_bounds,
     build_dynamic_form,
+    filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
     back,
     back_to_top,
@@ -102,7 +103,13 @@ def back_to_product_list_for_mobile(request):
 
 @provider(IPageFlowPredicate)
 def flow_predicate_extra_form(pe, flow_context, context, request):
-    return bool(context.sales_segment.setting.extra_form_fields)
+    return bool(
+        context.sales_segment.setting.extra_form_fields and \
+        filter_extra_form_schema(
+            context.sales_segment.setting.extra_form_fields,
+            mode='entry'
+            )
+        )
 
 @provider(IPageFlowPredicate)
 def flow_predicate_point_input_required(pe, flow_context, context, request):
@@ -1101,7 +1108,10 @@ class ExtraFormView(object):
 
         form, form_fields = build_dynamic_form(
             self.request,
-            extra_form_field_descs
+            filter_extra_form_schema(
+                extra_form_field_descs,
+                mode='entry'
+                )
             )
         return dict(form=form, form_fields=form_fields)
 
@@ -1115,7 +1125,10 @@ class ExtraFormView(object):
 
         form, form_fields = build_dynamic_form(
             self.request,
-            extra_form_field_descs,
+            filter_extra_form_schema(
+                extra_form_field_descs,
+                mode='entry'
+                ),
             UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace')
             )
         if not form.validate():
@@ -1243,7 +1256,8 @@ class ConfirmView(object):
                 self.context,
                 self.request,
                 self.context.sales_segment,
-                raw_extra_form_data
+                raw_extra_form_data,
+                mode='entry'
                 )
         return dict(
             cart=cart,

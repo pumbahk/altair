@@ -12,14 +12,14 @@
           <th>受付番号 <span class="red">*</span></th>
           <td>
             ${form.order_no}
-            ${h.error('order_no')}
+            ${h.render_errors(request, form.order_no.errors)}
           </td>
         </tr>
         <tr>
           <th>電話番号 <span class="red">*</span></th>
           <td>
             ${form.tel}<br><small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
-            ${h.error('tel')}
+            ${h.render_errors(request, form.tel.errors)}
           </td>
         </tr>
         <tr>

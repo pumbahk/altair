@@ -1,0 +1,65 @@
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%inherit file="../layout.html" />
+<div class="purchased">
+  <h2>入力情報編集</h2>
+  <div class="kadomaru">
+    <h3>追加情報</h3>
+    <form method="POST" action="${request.route_path('order_review.edit_order_attributes.update')}">
+    ${form.csrf()}
+    <input type="hidden" name="action" value="edit_order_attributes.update" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    %if request.session.peek_flash():
+    <ul class="error">
+    %for message in request.session.pop_flash():
+      <li>${message}</li>
+    %endfor
+    </ul>
+    %endif
+    <%fh:render_block>
+    <% beginning_of_group = True %>
+    % for field in form_fields:
+      % if field['field']:
+    % if beginning_of_group:
+    <table summary="追加情報" class="form">
+    <% beginning_of_group = False %>
+    % endif
+      <tr>
+        <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
+        <td>
+          % if field['descriptor'].get('edit_in_orderreview', False):
+            % if field['field'].description:
+            <div class="extra-form-description">${field['field'].description}</div>
+            % endif
+            ${fh.render(field['field'])}
+            ${h.error_list(request, field['field'])}
+            % if field['field']._note:
+            <div class="extra-form-note">${field['field']._note}</div>
+            % endif
+          % else:
+            <div>${h.sensible_coerce(request, field['old_display_value'])}</div>
+          % endif
+        </td>
+      </tr>
+      % else:
+    % if not beginning_of_group:
+    </table>
+    % endif
+    <div class="confirmBoxContent">${field['description']}</div>
+    <% beginning_of_group = True %>
+    % endif
+    % endfor
+    % if not beginning_of_group:
+    </table>
+    % endif
+    <%def name="__post__(registry_var)">
+    ${fh.inject_js(registry_var, predefined_symbols=view._predefined_symbols)}
+    </%def>
+    </%fh:render_block>
+    <div class="form-footer">
+      <input type="submit" name="do_update" class="historySearchBtn" value="保存する" />
+      <input type="submit" name="do_cancel" class="historySearchBtn" value="キャンセル" />
+    </div>
+    </form>
+  </div>
+</div>

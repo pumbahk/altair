@@ -48,7 +48,7 @@ from altair.formhelpers.widgets import (
     )
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
-from .view_support import build_dynamic_form, build_date_input_select
+from .view_support import build_dynamic_form, build_date_input_select, filter_extra_form_schema
 
 length_limit_for_sej = Length(max=10, message=u'10文字以内で入力してください')
 length_limit_long = Length(max=255, message=u'255文字以内で入力してください')
@@ -581,7 +581,12 @@ class DynamicExtraForm(ExtraForm):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        fields = build_dynamic_form.unbound_fields(context.cart_setting.extra_form_fields or [])
+        fields = build_dynamic_form.unbound_fields(
+            filter_extra_form_schema(
+                context.cart_setting.extra_form_fields or [],
+                mode='entry'
+                )
+            )
         super(DynamicExtraForm, self).__init__(*args, _fields=fields, **kwargs)
 
 

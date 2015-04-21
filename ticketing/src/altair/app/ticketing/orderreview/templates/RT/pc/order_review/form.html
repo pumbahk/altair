@@ -15,7 +15,7 @@
 <div class="tal">
 ${form.order_no}<br/>
 (例: RT00000000AB)
-<span class="red">${h.error('order_no')}</span>
+<span class="red">${h.render_errors(request, form.order_no.errors)}</span>
 </div>
 </td>
 </tr>
@@ -25,7 +25,7 @@ ${form.order_no}<br/>
 <div class="tal">
 ${form.tel}<br/>
 (例: 080xxxxyyyy)
-<span class="red">${h.error('tel')}</span><br/>
+<span class="red">${h.render_errors(request, form.tel.errors)}</span><br/>
 電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません)
 </div>
 </td>

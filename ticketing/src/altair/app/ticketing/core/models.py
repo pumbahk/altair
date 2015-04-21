@@ -2923,6 +2923,18 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
             ],
             else_=null())
 
+    @property
+    def tels(self):
+        retval = []
+        tel_1 = self.tel_1 and self.tel_1.strip()
+        tel_2 = self.tel_2 and self.tel_2.strip()
+        if tel_1:
+            retval.append(tel_1)
+        if tel_2:
+            retval.append(tel_2)
+        return retval
+
+
 def no_filter(value):
     return value
 
