@@ -64,16 +64,21 @@ class StaticPageSetView(BaseView):
     def detail(self):
         pk = self.request.matchdict["static_page_id"]
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
+        static_pageset.pages.sort(key=lambda page: page.created_at, reverse=True)
         static_directory = get_static_page_utility(self.request)
-        static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
-        static_page = static_page or first_or_nullmodel(static_pageset, "pages") #hmm..
+        current_page = static_pageset.current(dt=get_now(self.request))
+        if self.request.GET.get("child_id"):
+            active_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
+        else:
+            active_page = current_page
+
         return {"static_pageset": static_pageset,
-                "static_page": static_page,
                 "pagetype": static_pageset.pagetype,
                 "static_directory": static_directory,
-                "current_page": static_pageset.current(dt=get_now(self.request)),
-                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")),
-                "now": get_now(self.request)}
+                "current_page": current_page,
+                "tree_renderer": static_page_directory_renderer(self.request, active_page, static_directory, self.request.GET.get("management")),
+                "now": get_now(self.request),
+                "active_page": active_page}
 
     @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
     def preview(self):
