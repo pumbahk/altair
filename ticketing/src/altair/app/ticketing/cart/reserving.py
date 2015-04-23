@@ -61,20 +61,21 @@ class Reserving(object):
         seat_group_ids = [
             t[0] for t in self.session.query(SeatGroup.id) \
                 .join(Seat, SeatGroup.l0_id == Seat.row_l0_id) \
+                .with_hint(Seat, 'USE INDEX (primary)') \
                 .join(Venue, Seat.venue_id == Venue.id) \
                 .filter(SeatGroup.site_id == Venue.site_id) \
                 .filter(Seat.id.in_(seat.id for seat in selected_seats)) \
                 .filter(Venue.performance_id == performance_id) \
-                .distinct() \
-                .union(
+                .union_all(
                     self.session.query(SeatGroup.id) \
                     .join(Seat, SeatGroup.l0_id == Seat.group_l0_id) \
+                    .with_hint(Seat, 'USE INDEX (primary)') \
                     .join(Venue, Seat.venue_id == Venue.id) \
                     .filter(SeatGroup.site_id == Venue.site_id) \
                     .filter(Seat.id.in_(seat.id for seat in selected_seats)) \
                     .filter(Venue.performance_id == performance_id) \
-                    .distinct() \
                     ) \
+                .distinct() \
             ]
 
         if len(seat_group_ids) > 0:

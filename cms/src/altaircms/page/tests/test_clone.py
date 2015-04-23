@@ -12,7 +12,6 @@ class PageCloneTests(unittest.TestCase):
         setup_db(["altaircms.page.models", "altaircms.event.models", "altaircms.plugins.widget.summary.models"])
         settings = {"altaircms.plugin_static_directory": "/tmp"}
         self.config = setUp(settings=settings)
-        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     def tearDown(self):
         import transaction
@@ -49,7 +48,7 @@ class PageCloneTests(unittest.TestCase):
 
         self.config.add_directive("add_widgetname", self.config.maybe_dotted("altaircms.plugins.helpers.add_widgetname"))
         self.config.include("altaircms.plugins.widget.summary")
- 
+
         request = self._makeRequest()
 
         page = self._makePage(title=u'元ページ', url='http://example.com/original')

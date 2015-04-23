@@ -107,7 +107,11 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        return utils.create_form(self.request, self.context, **kwds)
+        if "last_name" in self.request.params:
+            # 購入者情報が入っている場合のフォーム作成
+            return utils.create_form(self.request, self.context, **kwds)
+
+        return utils.create_form(self.request, self.context, None)
 
     @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
@@ -138,7 +142,6 @@ class EntryLotView(object):
         """
         抽選第N希望まで選択
         """
-        form = self._create_form(formdata=self.request.params)
         event = self.context.event
         lot = self.context.lot
 
@@ -185,7 +188,7 @@ class EntryLotView(object):
                 )
             ]
 
-        return dict(form=form, event=event, sales_segment=sales_segment,
+        return dict(event=event, sales_segment=sales_segment,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
             stock_types=stock_types,
@@ -199,6 +202,7 @@ class EntryLotView(object):
         購入情報入力
         """
         form = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+
         event = self.context.event
         lot = self.context.lot
 

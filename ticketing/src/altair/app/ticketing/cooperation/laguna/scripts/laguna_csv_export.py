@@ -62,7 +62,6 @@ from altair.app.ticketing.lots.models import (
     LotEntry,
     )
 from altair.app.ticketing.orders.dump import OrderExporter
-from altair.app.ticketing.sej.models import SejOrder
 
 logger = logging.getLogger(__name__)
 LAGUNA_ORG_ID = 43
@@ -184,9 +183,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
 
     session = get_db_session(request, name='slave')
     now = datetime.datetime.now()
-    td = datetime.timedelta(days=1)
     start = datetime.datetime(now.year, 1, 1, 0, 0)
-    # end = datetime.datetime(now.year, now.month, now.day, 23, 59) - td
     end = datetime.datetime(now.year, 12, 31, 23, 59)
 
     orders = Order \
@@ -194,8 +191,8 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .join(ShippingAddress) \
         .join(PaymentDeliveryMethodPair) \
         .join(Performance) \
-        .join(Venue, Venue.performance_id==Performance.id) \
-        .join(Event, Event.id==Performance.event_id) \
+        .join(Venue, Venue.performance_id == Performance.id) \
+        .join(Event, Event.id == Performance.event_id) \
         .join(SalesSegment, SalesSegment.performance_id == Performance.id) \
         .join(SalesSegmentGroup) \
         .outerjoin(User, Order.user) \
@@ -265,7 +262,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
             products = list(set(lot_entry_product.product for lot_entry_product in wish.products))
             if not products:  # LotEntryProduct.deleted_atを立てた場合はそのデータは送らない
                 continue
-            stock_type_name = product.seat_stock_type.name if products else ''
+            stock_type_name = products[0].seat_stock_type.name if products else ''
 
             if entry.attributes:
                 # 1番目2番目は先着側では性別/誕生日として使っている
@@ -315,7 +312,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         else:
             rec += ['' for ii in range(len(synagy_header_lots))]
 
-        if order:
+        if order and not order.is_inner_channel:
             if order.channel:
                 channel = order.channel
             sex = order.user.user_profile.sex if order.user and order.user.user_profile else ''
