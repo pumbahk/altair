@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import transaction
-from zope.interface import implementer 
+from zope.interface import implementer
 from datetime import datetime
 from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
@@ -72,7 +72,7 @@ class Payment(object):
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-        
+
         if payment_delivery_plugin is not None:
             if IPaymentCart.providedBy(self.cart):
                 order = payment_delivery_plugin.finish(self.request, self.cart)
@@ -81,7 +81,7 @@ class Payment(object):
                 payment_delivery_plugin.finish2(self.request, self.cart)
                 order = self.cart
         else:
-            # 決済と配送を別々に処理する            
+            # 決済と配送を別々に処理する
             if IPaymentCart.providedBy(self.cart):
                 order = payment_plugin.finish(self.request, self.cart)
                 self._bind_order(order)

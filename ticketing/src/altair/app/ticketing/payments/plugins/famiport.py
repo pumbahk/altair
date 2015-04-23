@@ -11,32 +11,43 @@ from altair.app.ticketing.cart.interfaces import (
     ICartDelivery,
     )
 from altair.app.ticketing.payments.interfaces import (
-    IPaymentPlugin,
     IOrderPayment,
+    IPaymentPlugin,
+    IDeliveryPlugin,
     )
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailResource,
+    ILotsElectedMailResource,
     IOrderCancelMailResource,
     ILotsAcceptedMailResource,
-    ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
+
+import altair.app.ticketing.famiport.api as famiport_api
+from altair.app.ticketing.famiport.exc import FamiPortError
+
 from ..interfaces import IOrderDelivery
+from ..exceptions import PaymentPluginException
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 
 def includeme(config):
-    config.add_payment_plugin(FamiportPaymentPlugin(), PAYMENT_PLUGIN_ID)
-    config.add_delivery_plugin(FamiportDeliveryPlugin(), PAYMENT_PLUGIN_ID)
+    config.add_payment_plugin(FamiPortPaymentPlugin(), PAYMENT_PLUGIN_ID)
+    config.add_delivery_plugin(FamiPortDeliveryPlugin(), DELIVERY_PLUGIN_ID)
+    config.add_payment_delivery_plugin(FamiPortPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
+
+
+class FamiPortPluginFailure(PaymentPluginException):
+    pass
 
 
 def _overridable_payment(path, fallback_ua_type=None):
     """ここがどこに作用してくるのかわからない
     """
-    from . import _template  # ??? ここは一体何がimportできるんだろう
+    from . import _template
     return _template(
         path, type='overridable', for_='payments', plugin_type='payment',
         plugin_id=PAYMENT_PLUGIN_ID, fallback_ua_type=fallback_ua_type,
@@ -90,7 +101,7 @@ def lot_payment_notice_viewlet(context, request):
 
 
 @implementer(IPaymentPlugin)
-class FamiportPaymentPlugin(object):
+class FamiPortPaymentPlugin(object):
     """ファミポート用決済プラグイン"""
 
     def validate_order(self, request, order_like):
@@ -103,10 +114,15 @@ class FamiportPaymentPlugin(object):
         """確定処理"""
         order = order_models.Order.create_from_cart(cart)
         cart.finish()
+        self.finish2(request, cart)
         return order
 
     def finish2(self, request, cart):
         """確定処理2"""
+        try:
+            return famiport_api.create_famiport_order(request, cart)  # noqa
+        except FamiPortError:
+            raise FamiPortPluginFailure()
 
     def finished(self, requrst, order):
         """支払状態遷移済みかどうかを判定"""
@@ -148,7 +164,41 @@ def delivery_notice_viewlet(context, request):
     return Response(text=u'ファミポート受け取り')
 
 
-class FamiportDeliveryPlugin(object):
+@implementer(IDeliveryPlugin)
+class FamiPortDeliveryPlugin(object):
+    def validate_order(self, request, order_like, update=False):
+        """予約の検証"""
+
+    def prepare(self, request, cart):
+        """ 前処理 """
+
+    def finish(self, request, cart):
+        """確定時処理"""
+        self.finish2(request, cart)
+
+    def finish2(self, request, order_like):
+        """確定時処理"""
+        try:
+            return famiport_api.create_famiport_order(request, order_like)  # noqa
+        except FamiPortError:
+            raise FamiPortPluginFailure()
+
+    def finished(self, request, order):
+        """ tokenが存在すること """
+        return True
+
+    def refresh(self, request, order):
+        """リフレッシュ"""
+
+    def cancel(self, request, order):
+        """キャンセル処理"""
+
+    def refund(self, request, order, refund_record):
+        """払い戻し"""
+
+
+@implementer(IDeliveryPlugin)
+class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -157,9 +207,17 @@ class FamiportDeliveryPlugin(object):
 
     def finish(self, request, cart):
         """ 確定時処理 """
+        order = order_models.Order.create_from_cart(cart)
+        cart.finish()
+        self.finish2(request, cart)
+        return order
 
     def finish2(self, request, order_like):
         """ 確定時処理 """
+        try:
+            return famiport_api.create_famiport_order(request, order_like)  # noqa
+        except FamiPortError:
+            raise FamiPortPluginFailure()
 
     def finished(self, request, order):
         """ tokenが存在すること """
