@@ -315,7 +315,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         else:
             rec += ['' for ii in range(len(synagy_header_lots))]
 
-        if order:
+        if order and not order.is_inner_channel:
             if order.channel:
                 channel = order.channel
             sex = order.user.user_profile.sex if order.user and order.user.user_profile else ''
