@@ -34,14 +34,14 @@ class GetEventInfoTests(unittest.TestCase):
     def setUp(self):
         import sqlahelper
         self.session = sqlahelper.get_session()
-        
+
     def _callFUT(self, *args, **kwargs):
         from altaircms.event.event_info import get_event_notify_info
         return get_event_notify_info(*args, **kwargs)
 
     def test_info_from_event(self):
         from altaircms.event.models import Event
-        event = Event(ticket_payment=u"this-is-the-way-of-ticket-payment", 
+        event = Event(ticket_payment=u"this-is-the-way-of-ticket-payment",
                       notice=u"notice\nnotice\nnotice!")
 
         result = self._callFUT(event)["event"]
@@ -56,16 +56,21 @@ class GetEventInfoTests(unittest.TestCase):
         from altaircms.plugins.widget.summary.models import SummaryWidget
 
         event = Event()
-        page = Page(event=event)
+        page = Page(event=event, published=True)
         widget = SummaryWidget(page=page, bound_event=event)
         widget.items =unicode( json.dumps([
-                {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し", "notify": True}, 
+                {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し", "notify": True},
                 {"content": u"no-name", "label": u"見出し", "notify": True}
                 ]))
 
         self.session.add(widget)
         self.session.flush()
 
+        page.structure = json.dumps({
+            'block-1': [{'name': 'summary', 'pk': widget.id}],
+            })
+        self.session.add(page)
+        self.session.flush()
         result = self._callFUT(event)["event"]
 
         self.assertEquals(result[0], {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"})
@@ -94,6 +99,12 @@ class GetEventInfoTests(unittest.TestCase):
 
         self.session.add(another_widget)
         self.session.add(widget)
+        self.session.flush()
+
+        page.structure = json.dumps({
+            'block-1': [{'name': 'summary', 'pk': widget.id}],
+            })
+        self.session.add(page)
         self.session.flush()
 
         result = self._callFUT(event, page=page)["event"]
