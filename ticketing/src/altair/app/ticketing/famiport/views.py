@@ -9,7 +9,7 @@ from .requests import (
     FamiPortPaymentTicketingCompletionRequest,
     FamiPortPaymentTicketingCancelRequest,
     FamiPortInformationRequest,
-    FamiPortCustomerRequest,
+    FamiPortCustomerInformationRequest,
     )
 from .fakers import (
     get_response_builder,
@@ -100,7 +100,7 @@ class ResevationView(object):
 
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):
-        klass = FamiPortCustomerRequest
+        klass = FamiPortCustomerInformationRequest
         famiport_request = klass()
         famiport_request.storeCode = self.request.POST.get('storeCode', '')
         famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
