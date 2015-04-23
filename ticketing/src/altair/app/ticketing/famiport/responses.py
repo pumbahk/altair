@@ -28,8 +28,8 @@ class FamiPortReservationInquiryResponse(FamiPortResponse):
     """予約済み予約照会
     """
 
-    # __slots__ = ('resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount', 'ticketPayment', 'systemFee',
-    #             'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'name', 'nameInput', 'phoneInput')
+    __slots__ = ('resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount', 'ticketPayment', 'systemFee',
+                 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'name', 'nameInput', 'phoneInput')
 
     def __init__(self, resultCode=None, replyClass=None, replyCode=None, barCodeNo=None, totalAmount=None, ticketPayment=None, \
                  systemFee=None, ticketingFee=None, ticketCountTotal=None, ticketCount=None, kogyoName=None, koenDate=None, name=None, nameInput=None, phoneInput=None):
@@ -58,9 +58,9 @@ class FamiPortPaymentTicketingResponse(FamiPortResponse):
     """予約済み入金発券
     """
 
-    # __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyClass', 'replyCode', 'playGuideId', 'playGuideName',
-    #             'orderTicketNo', 'exchangeTicketNo', 'ticketingStart', 'ticketingEnd', 'totalAmount', 'ticketPayment',
-    #             'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'ticket')
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyClass', 'replyCode', 'playGuideId', 'playGuideName',
+                 'orderTicketNo', 'exchangeTicketNo', 'ticketingStart', 'ticketingEnd', 'totalAmount', 'ticketPayment',
+                 'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'ticket')
 
     def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyClass=None, replyCode=None, playGuideId=None, playGuideName=None, \
                  orderTicketNo=None, exchangeTicketNo=None, ticketingStart=None, ticketingEnd=None, totalAmount=None, ticketPayment=None, systemFee=None, ticketingFee=None, \
@@ -70,6 +70,7 @@ class FamiPortPaymentTicketingResponse(FamiPortResponse):
         self.sequenceNo = sequenceNo  # 処理通番
         self.barCodeNo = barCodeNo  # 支払番号
         self.orderId = orderId  # 注文ID
+        FamiPortCustomerInformationResponse._set_encryptKey(orderId)
         self.replyClass = replyClass  # 応答結果区分
         self.replyCode = replyCode  # 応答結果
         self.playGuideId = playGuideId  # クライアントID
@@ -104,20 +105,20 @@ class FamiPortTicket(object):
     このクラスに対応する単体のレスポンスはありません。
     """
 
-    # __slots__ = ('barCodeNo', 'ticketClass', 'templateCode', 'ticketData')
+    __slots__ = ('barCodeNo', 'ticketClass', 'templateCode', 'ticketData')
 
-    def __init__(self, *args, **kwds):
-        self.barCodeNo = None  # チケットバーコード番号
-        self.ticketClass = None  # チケット区分
-        self.templateCode = None  # テンプレートコード
-        self.ticketData = None  # 券面データ
+    def __init__(self, barCodeNo=None, ticketClass=None, templateCode=None, ticketData=None):
+        self.barCodeNo = barCodeNo  # チケットバーコード番号
+        self.ticketClass = ticketClass  # チケット区分
+        self.templateCode = templateCode  # テンプレートコード
+        self.ticketData = ticketData  # 券面データ
 
 
 class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
     """予約済み入金発券完了
     """
 
-    # __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
 
     def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyCode=None):
         self.resultCode = resultCode  # 処理結果
@@ -135,7 +136,7 @@ class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
     """予約済み入金発券取消
     """
 
-    # __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
+    __slots__ = ('resultCode', 'storeCode', 'sequenceNo', 'barCodeNo', 'orderId', 'replyCode')
 
     def __init__(self, resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyCode=None):
         self.resultCode = resultCode  # 処理結果
@@ -143,6 +144,7 @@ class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
         self.sequenceNo = sequenceNo  # 処理通番
         self.barCodeNo = barCodeNo  # 支払番号
         self.orderId = orderId  # 注文ID
+
         self.replyCode = replyCode  # 応答結果
         self._responseType = FamiPortResponseType.PaymentTicketingCancel
         self._encryptFields = []
@@ -153,7 +155,7 @@ class FamiPortInformationResponse(FamiPortResponse):
     """予約済み案内
     """
 
-    # __slots__ = ('resultCode', 'infoKubun', 'infoMessage')
+    __slots__ = ('resultCode', 'infoKubun', 'infoMessage')
 
     def __init__(self, resultCode=None, infoKubun=None, infoMessage=None):
         self.resultCode = resultCode  # 処理結果
@@ -168,7 +170,9 @@ class FamiPortCustomerInformationResponse(FamiPortResponse):
     """顧客情報取得
     """
 
-    # __slots__ = ('resultCode', 'replyCode', 'name', 'memberId', 'address1', 'address2', 'identifyNo')
+    _encrypt_key = None
+
+    __slots__ = ('resultCode', 'replyCode', 'name', 'memberId', 'address1', 'address2', 'identifyNo')
 
     def __init__(self, resultCode=None, replyCode=None, name=None, memberId=None, address1=None, address2=None, identifyNo=None):
         self.resultCode = resultCode  # 処理結果
@@ -180,4 +184,12 @@ class FamiPortCustomerInformationResponse(FamiPortResponse):
         self.identifyNo = identifyNo  # 半券個人識別番号
         self._requestType = FamiPortResponseType.CustomerInformation
         self._encryptFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
-        self._encrypt_key = 'test_key' # TODO get FamiPortPaymentTicketingResponse.orderId in some way
+        # self._encrypt_key = 'test_key' # TODO get FamiPortPaymentTicketingResponse.orderId in some way
+
+    @classmethod
+    def _set_encryptKey(cls, encrypt_key):
+        FamiPortCustomerInformationResponse._encrypt_key = encrypt_key
+
+    @property
+    def encrypt_key(self):
+        return FamiPortCustomerInformationResponse._encrypt_key

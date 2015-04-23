@@ -5,12 +5,13 @@ from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilde
 from .utils import FamiPortRequestType, FamiPortCrypt, prettify
 from .responses import FamiPortResponse
 
-from xml.etree.ElementTree import ElementTree, Element, SubElement
+from lxml.etree import ElementTree, Element, SubElement
 from io import BytesIO
 from inspect import ismethod
 
 import logging
 import hashlib
+import base64
 
 logger = logging.getLogger(__name__)
 
@@ -75,12 +76,15 @@ class XmlFamiPortResponseGeneratorFactory(object):
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
     def __init__(self, famiport_response):
-        # TODO Make sure this process is good
         encrypt_key_item = famiport_response.encrypt_key
-        digest = hashlib.md5(encrypt_key_item).digest()
-        self.famiport_crypt = FamiPortCrypt(digest)
+        if encrypt_key_item:
+            hash = hashlib.md5()
+            hash.update(encrypt_key_item)
+            str_digest = hash.hexdigest()
+            key = bytes(str_digest)
+            self.famiport_crypt = FamiPortCrypt(base64.urlsafe_b64encode(str_digest))
 
-    def generate_xmlResponse(cls_obj, famiport_response, root_name = "FMIF"):
+    def generate_xmlResponse(self, famiport_response, root_name = "FMIF"):
         """Generate XML text of famiport_response with encrypt_fields encrypted.
         Assume filed name in famiport_response is same as tag name in XML.
         List fields in famiport_response are repeated with same tag name in XML.
@@ -91,11 +95,11 @@ class XmlFamiPortResponseGenerator(object):
         """
 
         root = Element(root_name)
-        doc_root = cls_obj._build_xmlTree(root, famiport_response)
+        doc_root = self._build_xmlTree(root, famiport_response)
         elementTree = ElementTree(doc_root)
         bytesIO = BytesIO()
         # TODO Take care of problematic chars in UTF-8 to SJIS conversion
-        elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True)
+        elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True, pretty_print=True)
         xml_response = bytesIO.getvalue()
         bytesIO.close()
         return xml_response
@@ -111,19 +115,22 @@ class XmlFamiPortResponseGenerator(object):
         if object is None:
             return root
 
-        # List of attribute names of the object
-        attribute_names = [attribute for attribute in dir(object) if not ismethod(attribute) and not attribute.startswith("_") and attribute not in ['response_type', 'encrypt_fields', 'encrypt_key']]
+        attribute_names = object.__slots__ # Get attribute names of the object
         # Create an element for each attribute_name with element.text=attribute_value and put under root.
         for attribute_name in attribute_names:
             attribute_value = getattr(object, attribute_name)
             if attribute_value is not None:
-                element = SubElement(root, attribute_name)
-                if isinstance(object, FamiPortResponse):
-                    element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
-                elif isinstance(attribute_value, (list, tuple)):
-                    for attr_value in attribute_value:
-                        self._build_xmlTree(element, attr_value)
+                if isinstance(attribute_value, (list, tuple)): # In case of list or tuple attribute such as FamiPortPaymentTicketingResponse.ticket
+                    for value in attribute_value:
+                        element = SubElement(root, attribute_name)
+                        attr_names = [attribute for attribute in dir(value) if not ismethod(attribute) and not attribute.startswith("_")]
+                        for attr_name in attr_names:
+                            sub_element = SubElement(element, attr_name)
+                            attr_value = getattr(value, attr_name)
+                            if attr_value is not None:
+                                sub_element.text = attr_value
                 else:
-                    element.text = attribute_value
+                    element = SubElement(root, attribute_name)
+                    element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
 
         return root
