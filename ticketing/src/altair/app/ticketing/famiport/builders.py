@@ -5,7 +5,8 @@ from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilde
 from .utils import FamiPortRequestType, FamiPortCrypt, prettify
 from .responses import FamiPortResponse
 
-from lxml.etree import ElementTree, Element, SubElement
+# from lxml.etree import ElementTree, Element, SubElement
+from lxml import etree
 from io import BytesIO
 from inspect import ismethod
 
@@ -94,15 +95,15 @@ class XmlFamiPortResponseGenerator(object):
         :return: Shift-JIS encoded string of generated XML
         """
 
-        root = Element(root_name)
+        root = etree.Element(root_name)
         doc_root = self._build_xmlTree(root, famiport_response)
-        elementTree = ElementTree(doc_root)
-        bytesIO = BytesIO()
-        # TODO Take care of problematic chars in UTF-8 to SJIS conversion
-        elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True, pretty_print=True)
-        xml_response = bytesIO.getvalue()
-        bytesIO.close()
-        return xml_response
+        return etree.tostring(doc_root, encoding='shift_jis', xml_declaration=True, pretty_print=True)
+        # elementTree = ElementTree(doc_root)
+        # bytesIO = BytesIO()
+        # elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True, pretty_print=True)
+        # xml_response = bytesIO.getvalue()
+        # bytesIO.close()
+        # return xml_response
 
     def _build_xmlTree(self, root, object):
         """
@@ -122,15 +123,36 @@ class XmlFamiPortResponseGenerator(object):
             if attribute_value is not None:
                 if isinstance(attribute_value, (list, tuple)): # In case of list or tuple attribute such as FamiPortPaymentTicketingResponse.ticket
                     for value in attribute_value:
-                        element = SubElement(root, attribute_name)
+                        element = etree.SubElement(root, attribute_name)
                         attr_names = [attribute for attribute in dir(value) if not ismethod(attribute) and not attribute.startswith("_")]
                         for attr_name in attr_names:
-                            sub_element = SubElement(element, attr_name)
+                            sub_element = etree.SubElement(element, attr_name)
                             attr_value = getattr(value, attr_name)
                             if attr_value is not None:
-                                sub_element.text = attr_value
+                                # TODO Take care of problematic chars in UTF-8 to SJIS conversion
+                                sub_element.text = attr_value if attr_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attr_value.encode('shift_jis'))
+                                """
+                                if isinstance(attr_value, unicode):
+                                    sjis_attr_value = attr_value.encode('shift_jis')
+                                    print "sjis_attr_value: ", sjis_attr_value
+                                    sub_element.text = sjis_attr_value
+                                else:
+                                    sub_element.text = attr_value
+                                """
                 else:
-                    element = SubElement(root, attribute_name)
-                    element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
+                    element = etree.SubElement(root, attribute_name)
+                    # TODO Take care of problematic chars in UTF-8 to SJIS conversion
+                    # if isinstance(attribute_value, unicode):
+                    #    attribute_value = attribute_value.encode('shift_jis') # Encode for encrypt
+                    # print '(attribute_name, attribute_value)', (attribute_name, attribute_value)
+                    # element.text = attribute_value.decode('shift_jis') if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
+                    element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value.encode('shift_jis'))
+                    """
+                    if isinstance(attribute_value, unicode):
+                        sjis_attribute_value = attribute_value.encode('shift-jis')
+                        element.text = sjis_attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(sjis_attribute_value)
+                    else:
+                        element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
+                    """
 
         return root

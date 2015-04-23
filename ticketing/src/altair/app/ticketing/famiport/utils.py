@@ -31,6 +31,7 @@ class FamiPortCrypt:
         :param plain_data:
         :return: encrypted data
         """
+
         return self.fernet.encrypt(plain_data)
 
     def decrypt(self, encrypted_data):
