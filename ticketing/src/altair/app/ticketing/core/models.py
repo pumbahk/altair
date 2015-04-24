@@ -3847,6 +3847,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
 
+    auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
+
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
 
