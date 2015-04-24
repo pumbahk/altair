@@ -448,7 +448,10 @@ class TicketingCartResourceBase(object):
     def __acl__(self):
         acl = []
         if self.cart_setting is not None:
-            acl.append((Allow, 'altair.auth.authenticator:%s' % '+'.join(sorted(self.cart_setting.auth_types)), 'buy'))
+            if any(self._login_required(auth_type) for auth_type in self.cart_setting.auth_types):
+                acl.append((Allow, 'altair.auth.authenticator:%s' % '+'.join(sorted(self.cart_setting.auth_types)), 'buy'))
+            else:
+                acl.append((Allow, Everyone, 'buy'))
         acl.append(DENY_ALL)
         return acl
 
