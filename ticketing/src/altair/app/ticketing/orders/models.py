@@ -58,6 +58,7 @@ from altair.app.ticketing.users.models import (
     MemberGroup,
     Membership,
     UserCredential,
+    UserPointAccount,
 )
 from altair.app.ticketing.lots.models import (
     Lot,
@@ -249,6 +250,13 @@ orders_seat_table = sa.Table("orders_seat", Base.metadata,
     sa.Column("OrderedProductItem_id", Identifier, sa.ForeignKey("OrderedProductItem.id"))
 )
 
+
+order_user_point_account_table = sa.Table(
+    "Order_UserPointAccount", Base.metadata,
+    sa.Column("order_id", Identifier, sa.ForeignKey("Order.id")),
+    sa.Column("user_point_account_id", Identifier, sa.ForeignKey("UserPointAccount.id"))
+    )
+
 @implementer(IOrderLike)
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
@@ -308,6 +316,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
+
+    user_point_accounts = orm.relationship('UserPointAccount', secondary=order_user_point_account_table)
 
     @property
     @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_multicheckout_info()を使ってほしい")
@@ -731,7 +741,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             payment_start_at=cart.payment_start_at,
             payment_due_at=cart.payment_due_at,
             cart_setting_id=cart.cart_setting_id,
-            membership_id=cart.membership_id
+            membership_id=cart.membership_id,
+            user_point_accounts=cart.user_point_accounts
             )
 
         for product in cart.items:
@@ -1053,6 +1064,12 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = orm.relationship('Performance')
     operator = orm.relationship('Operator')
 
+proto_order_user_point_account_table = sa.Table(
+    "ProtoOrder_UserPointAccount", Base.metadata,
+    sa.Column("proto_order_id", Identifier, sa.ForeignKey("ProtoOrder.id")),
+    sa.Column("user_point_account_id", Identifier, sa.ForeignKey("UserPointAccount.id"))
+    )
+
 @implementer(IOrderLike)
 class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProtoOrder'
@@ -1118,6 +1135,8 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
     membergroup = orm.relationship('MemberGroup')
 
+    user_point_accounts = orm.relationship('UserPointAccount', secondary=proto_order_user_point_account_table)
+
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
 
@@ -1166,6 +1185,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             note=note,
             attributes=attributes,
             cart_setting_id=order_like.cart_setting_id,
+            user_point_accounts=order_like.user_point_accounts,
             items=[
                 OrderedProduct(
                     product=item.product,

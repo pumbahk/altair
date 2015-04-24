@@ -72,6 +72,10 @@ class LotResourceBase(object):
         acl.append(DENY_ALL)
         return acl
 
+    @property
+    def membershipinfo(self):
+        return cart_api.get_membership(self.authenticated_user())
+
 
 @implementer(ILotResource)
 class LotResource(LotResourceBase):
@@ -152,6 +156,7 @@ class LotResource(LotResourceBase):
                 if entry_count >= entry_limit:
                     logger.info('entry_limit exceeded')
                     raise OverEntryLimitPerPerformanceException(performance_name=performance.name, entry_limit=entry_limit)
+
 
 class LotOptionSelectionResource(LotResource):
     def __init__(self, request):

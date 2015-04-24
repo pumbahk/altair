@@ -128,19 +128,7 @@ class TicketingCartResourceBase(object):
 
     @property
     def membershipinfo(self):
-        membership_name = self.membership
-        organization = cart_api.get_organization(self.request)
-        from altair.app.ticketing.models import DBSession as session
-        if membership_name is not None:
-            membershipinfo = session.query(u_models.Membership)\
-                        .filter_by(organization_id=organization.id)\
-                        .filter_by(name=membership_name)\
-                        .first()
-        else:
-            membershipinfo = session.query(u_models.Membership)\
-                        .filter_by(organization_id=organization.id)\
-                        .first()
-        return membershipinfo
+        return cart_api.get_membership(self.authenticated_user())
 
     @reify
     def membergroups(self):

@@ -43,7 +43,7 @@ def decode_point_grant_history_entry_id(s):
 def do_import_point_grant_results(registry, organization, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.orders.models import Order
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
     logger.info("start importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
@@ -91,12 +91,16 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
                 try:
                     point_grant_history_entry = PointGrantHistoryEntry.query \
                         .join(PointGrantHistoryEntry.order) \
-                        .join(Order.user) \
-                        .join(User.user_point_accounts) \
+                        .outerjoin(Order.user) \
+                        .outerjoin(order_user_point_account_table) \
+                        .outerjoin(UserPointAccount,
+                            (UserPointAccount.user_id == Order.user_id) \
+                            | (UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)) \
                         .filter(Order.order_no == order_no) \
                         .filter(Order.organization_id == organization.id) \
                         .filter(UserPointAccount.type == type) \
                         .filter(UserPointAccount.account_number == account_number) \
+                        .distinct() \
                         .one()
                     point_grant_history_entry_id = point_grant_history_entry.id
                 except:
@@ -200,7 +204,7 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
-    from altair.app.ticketing.orders.models import Order
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table
 
     logger.info("start processing %s" % file)
     errors = 0
@@ -233,9 +237,19 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
             if not account_number:
                 if deduce_account:
                     try:
-                        user_point_account = UserPointAccount.query \
-                            .filter_by(type=type, user_id=order.user_id) \
-                            .one()
+                        base_q = DBSession.query(UserPointAccount).filter(UserPointAccount.type == type)
+
+                        q = base_q \
+                            .join(order_user_point_account_table,
+                                order_user_point_account_table.c.user_point_account_id == UserPointAccount.id) \
+                            .join(Order, order_user_point_account_table.c.order_id == Order.id) \
+                            .filter(Order.id == order.id) \
+                            .distinct()
+
+                        if order.user_id is not None:
+                            q = q.union(base_q.filter(UserPointAccount.user_id == order.user_id).distinct())
+
+                        user_point_account = q.one()
                     except NoResultFound:
                         raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
                     except MultipleResultsFound:
@@ -244,9 +258,18 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
                     raise RecordError("no account number is given for order (order_no=%s). Use --deduce-account option to enable automatic deduction of point account number" % (order_no,))
             else:
                 try:
-                    user_point_account = UserPointAccount.query \
-                        .filter_by(type=type, account_number=account_number) \
-                        .one()
+                    base_q = DBSession.query(UserPointAccount) \
+                        .filter(UserPointAccount.type == type, UserPointAccount.account_number == account_number)
+                    q = base_q \
+                        .outerjoin(order_user_point_account_table,
+                            UserPointAccount.id == order_user_point_account_table.c.user_point_account_id) \
+                        .outerjoin(Order, order_user_point_account_table.c.order_id == Order.id) \
+                        .filter(Order.id == order.id) \
+                        .distinct()
+                    if order.user_id is not None:
+                        q = q.union(base_q.filter(UserPointAccount.user_id == order.user_id).distinct())
+
+                    user_point_account = q.one()
                 except NoResultFound:
                     raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
                 except MultipleResultsFound:
@@ -372,7 +395,7 @@ def import_point_grant_data():
                 ) \
             .one()
     except:
-        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.write("No such organization: %s\n" % args.organization)
         sys.stderr.flush()
         sys.exit(255)
 
@@ -405,7 +428,7 @@ def import_point_grant_data():
 def do_make_point_grant_data(registry, organization, start_date, end_date, submitted_on):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization, OrganizationSetting
-    from altair.app.ticketing.orders.models import Order
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table
     from altair.app.ticketing.users.models import UserPointAccount
     from .models import PointGrantHistoryEntry
     from .api import calculate_point_for_order
@@ -450,7 +473,19 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                     point_grant_history_entries.append(point_grant_history_entry)
 
             point_by_type = calculate_point_for_order(order)
-            user_point_accounts = order.user_id and DBSession.query(UserPointAccount).filter_by(user_id=order.user_id).all()
+
+            base_q = DBSession.query(UserPointAccount)
+            q = base_q \
+                .join(order_user_point_account_table,
+                    order_user_point_account_table.c.user_point_account_id == UserPointAccount.id) \
+                .join(Order, order_user_point_account_table.c.order_id == Order.id) \
+                .filter(Order.id == order.id) \
+                .distinct()
+
+            if order.user_id is not None:
+                q = q.union(base_q.filter(UserPointAccount.user_id == order.user_id).distinct())
+                
+            user_point_accounts = q.all()
                     
             for type, point in point_by_type.items():
                 if user_point_accounts is None:
@@ -464,7 +499,7 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                     user_point_account = None
 
                 if user_point_account is None:
-                    logger.info('Order(order_no=%s): no point account information for point type (%d) is associated to User(id=%ld) .' % (order.order_no, type, order.user_id))
+                    logger.info('Order(order_no=%s): no point account information for point type (%d) is associated to User(id=%r) .' % (order.order_no, type, order.user_id))
                     continue
 
                 if type in point_grant_history_entries_by_type:
@@ -668,7 +703,7 @@ def export_point_grant_data():
                 ) \
             .one()
     except:
-        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.write("No such organization: %s\n" % args.organization)
         sys.stderr.flush()
         sys.exit(255)
 
