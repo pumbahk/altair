@@ -264,6 +264,7 @@ ${active_page.name}
       <h4>${active_page.label}</h4>
       <br>
 	  <h5 style="margin-bottom:10px;">上記のデータをuploadし直す</h5>
+      <h6>最終更新者：${active_page.last_editor} (更新日時：${active_page.uploaded_at})</h6>
 	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_pageset.id, child_id=active_page.id,_query=dict(endpoint=request.url))}"
 			    method="POST" enctype="multipart/form-data">
 		<label>zipfile: <input id="zipfile" type="file" name="zipfile"/></label>

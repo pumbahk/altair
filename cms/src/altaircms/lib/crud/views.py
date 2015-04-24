@@ -20,7 +20,6 @@ todo: resourceを登録する形式に変更
 """
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
-        import ipdb;ipdb.set_trace()
         self.form = form
         self.context = context
         self.circle_type = context.circle_type
@@ -230,7 +229,6 @@ class UpdateView(object):
     def input(self):
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form_from_model(obj, **self.request.GET)
-        import ipdb;ipdb.set_trace()
         raise self.context.AfterInput(form=form, context=self.context)
 
     def confirm(self):
@@ -260,7 +258,6 @@ class UpdateView(object):
     def update_model(self):
         before_obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=before_obj)
-        import ipdb;ipdb.set_trace()
         obj = self.context.update_model_from_form(before_obj, form)
         url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (self.context.title, url)

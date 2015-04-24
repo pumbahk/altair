@@ -110,9 +110,6 @@ class StaticPageForm(Form):
     def configure(self, request):
         self.request = request
         self.static_directory = get_static_page_utility(request)
-        import ipdb;ipdb.set_trace()
-        if self.request.user.screen_name:
-            self.last_editor = self.request.user.screen_name
 
     __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "last_editor"]
 
