@@ -3,6 +3,7 @@ import json
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.exceptions import PredicateMismatch
+from pyramid.authorization import ACLAuthorizationPolicy
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
@@ -72,8 +73,7 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.sqlahelper')
 
-    from .authorization import MypageAuthorizationPolicy
-    config.set_authorization_policy(MypageAuthorizationPolicy())
+    config.set_authorization_policy(ACLAuthorizationPolicy())
     config.include('altair.app.ticketing.cart')
     config.include('altair.app.ticketing.cart.setup__renderers')
     config.include('altair.app.ticketing.cart.setup_mobile')

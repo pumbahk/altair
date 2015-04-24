@@ -3,7 +3,7 @@ import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_defaults
 from urlparse import urlparse
-from altair.auth import who_api as get_who_api
+from altair.auth.api import get_auth_api
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mobile.api import is_mobile_request
@@ -27,9 +27,8 @@ def return_to_url(request):
 
 class FCAuthLoginViewMixin(object):
     @property
-    def who_api(self):
-        who_api, _ = get_who_api(self.request, "fc_auth")
-        return who_api
+    def auth_api(self):
+        return get_auth_api(self.request)
 
     def do_login(self, membership):
         username = self.request.POST['username']
@@ -38,43 +37,39 @@ class FCAuthLoginViewMixin(object):
 
         authenticated = None
         headers = None
-        identity = None
+        credentials = None
 
         result = do_authenticate(self.request, membership, username, password)
         if result is not None:
-            # result には user_id が含まれているが、これを identity とすべきかは
-            # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
-            # かなり減らすことができるだろう。
-            identity = {
+            credentials = {
                 'membership': membership,
                 'username': username,
                 }
 
-        if identity is not None:
-            authenticated, headers = self.who_api.login(identity)
+        identities = None
+        if credentials is not None:
+            identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
 
-        if authenticated is None:
+        if identities is None:
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
 
-        res = HTTPFound(location=return_to_url(self.request), headers=headers)
-        return res
+        return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)
    
     def do_guest_login(self, membership):
         logger.debug("guest authenticate for membership %s" % membership)
 
-        identity = {
+        credentials = {
             'membership': membership,
             'is_guest': True,
-        }
-        authenticated, headers = self.who_api.login(identity)
+            }
+        identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
 
-        if authenticated is None:
+        if identities is None:
             return {'username': '',
                     'guest_message': u''}
 
-        res = HTTPFound(location=return_to_url(self.request), headers=headers)
-        return res
+        return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)
 
 @view_defaults(context=FixedMembershipFCAuthResource, renderer=overridable_renderer('login.html'))
 class FixedMembershipLoginView(FCAuthLoginViewMixin):

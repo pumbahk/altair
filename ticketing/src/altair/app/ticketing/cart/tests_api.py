@@ -390,17 +390,14 @@ class pop_seatTests(unittest.TestCase):
 
 class CartFactoryTests(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db()
-
-
     def setUp(self):
-        pass
+        self.session = _setup_db()
 
     def tearDown(self):
         import transaction
         transaction.abort()
         self.session.remove()
+        _teardown_db()
 
     def _getTarget(self):
         from carting import CartFactory
@@ -427,11 +424,11 @@ class CartFactoryTests(unittest.TestCase):
         # event
         event = c_m.Event(organization=org)
         # performance
-        performance = c_m.Performance(event=event)
+        performance = c_m.Performance(event=event, public=True)
         # sales_segment_group
-        sales_segment_group = c_m.SalesSegmentGroup(event=event)
+        sales_segment_group = c_m.SalesSegmentGroup(event=event, kind=c_m.SalesSegmentKindEnum.normal.k, public=True)
         # sales_segment
-        sales_segment = c_m.SalesSegment(performance=performance, sales_segment_group=sales_segment_group)
+        sales_segment = c_m.SalesSegment(performance=performance, sales_segment_group=sales_segment_group, public=True)
         # site
         site = c_m.Site()
         # venue
@@ -508,8 +505,95 @@ class CartFactoryTests(unittest.TestCase):
         with self.assertRaises(InvalidProductSelectionException):
             target.create_cart(other_sales_segment, seats, ordered_products)
 
-    def test_pop_seats(self):
+    def test_create_cart_valid_user(self):
+        from altair.app.ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
+        from .exceptions import CartCreationException
+        sales_segment, product1, product2, product3, seats = self._add_seats()
 
+        membership = Membership(organization=sales_segment.performance.event.organization, name='m')
+        self.session.add(membership)
+        membergroup = MemberGroup(membership=membership, name='mg')
+        self.session.add(membergroup)
+        user = User()
+        self.session.add(user)
+        self.session.add(UserCredential(user=user, auth_identifier='XXX'))
+        self.session.add(Member(user=user, membergroup=membergroup))
+        sales_segment.membergroups.append(membergroup)
+        sales_segment.sales_segment_group.membergroups.append(membergroup)
+        self.session.flush()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+        seat5 = seats[4]
+
+        request = testing.DummyRequest()
+        ordered_products = [
+            (product1, 2),
+            (product2, 3),
+            (product3, 10),
+        ]
+
+        target = self._makeOne(request)
+        request.altair_auth_info = {
+            'auth_identifier': 'XXX',
+            'organization_id': membership.organization.id,
+            'is_guest': False,
+            'membership': membership.name,
+            'membergroup': membergroup.name,
+            }
+
+        target.create_cart(sales_segment, seats, ordered_products)
+
+    def test_create_cart_invalid_user(self):
+        from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum
+        from altair.app.ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
+        from .exceptions import CartCreationException
+        sales_segment, product1, product2, product3, seats = self._add_seats()
+
+        other_sales_segment_group = SalesSegmentGroup(event=sales_segment.sales_segment_group.event, kind=SalesSegmentKindEnum.normal.k, public=True)
+        other_sales_segment = SalesSegment(performance=sales_segment.performance, sales_segment_group=other_sales_segment_group, public=True)
+        self.session.add(other_sales_segment)
+
+        membership = Membership(organization=sales_segment.performance.event.organization, name='m')
+        self.session.add(membership)
+        membergroup = MemberGroup(membership=membership, name='mg')
+        self.session.add(membergroup)
+        user = User()
+        self.session.add(user)
+        self.session.add(UserCredential(user=user, auth_identifier='XXX'))
+        self.session.add(Member(user=user, membergroup=membergroup))
+        other_sales_segment.membergroups.append(membergroup)
+        other_sales_segment.sales_segment_group.membergroups.append(membergroup)
+        self.session.flush()
+
+        seat1 = seats[0]
+        seat2 = seats[1]
+        seat3 = seats[2]
+        seat4 = seats[3]
+        seat5 = seats[4]
+
+        request = testing.DummyRequest()
+        ordered_products = [
+            (product1, 2),
+            (product2, 3),
+            (product3, 10),
+        ]
+
+        target = self._makeOne(request)
+        request.altair_auth_info = {
+            'auth_identifier': 'XXX',
+            'organization_id': membership.organization.id,
+            'is_guest': False,
+            'membership': membership.name,
+            'membergroup': membergroup.name,
+            }
+
+        with self.assertRaises(CartCreationException):
+            target.create_cart(sales_segment, seats, ordered_products)
+
+    def test_pop_seats(self):
         performance, product1, product2, product3, seats = self._add_seats()
         product_item1 = product1.items[0]
 
@@ -845,7 +929,7 @@ class UserApiTest(unittest.TestCase):
     def test_get_or_create_user_create(self):
         from . import api as a
         result = a.get_or_create_user({
-            'auth_type': 'rakuten',
+            'membership_source': 'rakuten',
             'membership': 'rakuten',
             'claimed_id': 'http://example.com/claimed_id',
             'auth_identifier': 'http://example.com/claimed_id',
@@ -860,7 +944,7 @@ class UserApiTest(unittest.TestCase):
         
         user = self._add_user('http://example.com/claimed_id')
         result = a.get_or_create_user({
-            'auth_type': 'rakuten',
+            'membership_source': 'rakuten',
             'membership': 'rakuten',
             'claimed_id': 'http://example.com/claimed_id',
             'auth_identifier': 'http://example.com/claimed_id',
