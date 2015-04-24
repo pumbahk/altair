@@ -9,6 +9,14 @@ from sqlalchemy.pool import NullPool
 import sqlahelper
 from altair.app.ticketing.cart.rendering import selectable_renderer
 
+def decide_auth_types(request, classification):
+    auth_type = request.organization.setting.auth_type 
+    if auth_type is not None:
+        return [auth_type]
+    else:
+        return None
+
+
 def setup_static_views(config):
     config.add_static_view('static', 'altair.app.ticketing.orderreview:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
@@ -50,6 +58,20 @@ def includeme(config):
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
     config.add_route('order_review.information', '/information')  # refs 10883
 
+def setup_auth(config):
+    config.include('altair.auth')
+    config.include('altair.rakuten_auth')
+    config.include('altair.app.ticketing.fc_auth')
+    config.add_route('rakuten_auth.login', '/login', factory='.resources.LandingViewResource')
+    config.add_route('rakuten_auth.verify', '/verify', factory='.resources.LandingViewResource')
+    config.add_route('rakuten_auth.verify2', '/verify2', factory='.resources.LandingViewResource')
+    config.add_route('rakuten_auth.error', '/error', factory='.resources.LandingViewResource')
+    config.set_who_api_decider(decide_auth_types)
+    from altair.auth import set_auth_policy
+    from altair.app.ticketing.security import AuthModelCallback
+    set_auth_policy(config, AuthModelCallback(config))
+    config.set_authorization_policy(ACLAuthorizationPolicy())
+
 def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
@@ -73,14 +95,14 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.sqlahelper')
 
-    config.set_authorization_policy(ACLAuthorizationPolicy())
     config.include('altair.app.ticketing.cart')
     config.include('altair.app.ticketing.cart.setup__renderers')
-    config.include('altair.app.ticketing.cart.setup_mobile')
-    config.include('altair.app.ticketing.cart.import_mail_module')
     config.include('altair.app.ticketing.cart.setup_payment_delivery_plugins')
+    config.include('altair.app.ticketing.cart.setup_mobile')
+    config.include('altair.app.ticketing.cart.setup_cart_interface')
+    config.include('altair.app.ticketing.cart.import_mail_module')
     config.include('altair.app.ticketing.cart.setup_payment_renderers')
-    config.include('altair.app.ticketing.cart.setup_auth')
+    config.include(setup_auth)
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
