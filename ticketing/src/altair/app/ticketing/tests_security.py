@@ -91,10 +91,16 @@ class AuthModelCallbackTest(unittest.TestCase):
             }
         request = testing.DummyRequest()
 
+        dummy_plugin = mock.Mock(name='unknown')
+        from altair.auth.interfaces import IAuthenticator
+        from zope.interface import directlyProvides
+        directlyProvides(dummy_plugin, IAuthenticator)
+
         self.plugin_registry.lookup = lambda v: {
             'fc_auth': self.fc_auth_plugin,
             'rakuten': self.rakuten_auth_plugin,
             'nogizaka46': self.nogizaka46_auth_plugin,
+            'unknown': dummy_plugin,
             }[v]
 
         target = self._makeOne(self.config)
@@ -108,6 +114,13 @@ class AuthModelCallbackTest(unittest.TestCase):
             }
         result = target(identities, request)
         self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
+
+        identities = {
+            'nogizaka46': {'membership': 'nogizaka46'},
+            'unknown': {'username': 'test', 'membership': 'test-membership', 'membergroup': 'test-membergroup' },
+            }
+        result = target(identities, request)
+        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:unknown', 'membergroup:test-membergroup'])
         
     def test_priority_from_settings(self):
         identities = {
