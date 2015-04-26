@@ -6,6 +6,7 @@ from sqlalchemy.orm.session import make_transient
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.security import get_extra_auth_info_from_principals
+from pyramid.security import Everyone
 
 ENV_ORGANIZATION_ID_KEY = 'altair.app.ticketing.cart.organization_id'
 ENV_ORGANIZATION_PATH_KEY = 'altair.app.ticketing.cart.organization_path'
@@ -42,27 +43,18 @@ def get_organization(request):
 # XXX: 互換性のために変にごちゃごちゃしている
 def get_altair_auth_info(request):
     retval = {}
-    user_id = request.authenticated_userid
+    identities = request.authenticated_userid
     principals = request.effective_principals
-    if principals:
+    # [Everyone] (principalに唯一つEveryoneだけが存在する状態) は事実上のゲストなので...
+    if principals and (len(principals) != 1 or principals[0] != Everyone):
         extra = get_extra_auth_info_from_principals(principals)
         retval.update(extra)
-        retval['user_id'] = user_id
-        if extra['auth_type'] == 'rakuten':
-            retval['claimed_id'] = retval['auth_identifier'] = user_id
-            retval['membership'] = 'rakuten'
-        elif extra['auth_type']:
-            retval['username'] = retval['auth_identifier'] = user_id
-        else:
-            # auth_type が無いときは guest と見なす
-            retval['is_guest'] = True
-            retval['auth_identifier'] = None
-            retval['membership'] = None
     else:
         retval['is_guest'] = True
-        retval['user_id'] = None
-        retval['auth_identifier'] = None
         retval['membership'] = None
+    if 'auth_identifier' in retval:
+        # XXX: 互換性のため? もう不要なんじゃないかという気もする
+        retval['user_id'] = retval['auth_identifier']
     retval['organization_id'] = request.organization.id
     return retval
 

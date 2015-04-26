@@ -5,6 +5,8 @@ from zope.interface import Interface, Attribute
 class ILotResource(Interface):
     lot = Attribute('''''')
 
+    cart_setting = Attribute('''''')
+
 class IElecting(Interface):
 
     def elect_lot_entries():

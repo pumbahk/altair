@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
-from pyramid.security import effective_principals
+from pyramid.security import effective_principals, Allow, Authenticated, DENY_ALL
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
@@ -26,6 +26,11 @@ class DefaultResource(object):
         self.request = request
 
 class OrderReviewResourceBase(object):
+    __acl__ = [
+        (Allow, Authenticated, '*'),
+        DENY_ALL,
+        ]
+
     def __init__(self, request):
         self.request = request
         self.session = get_db_session(request, name="slave")

@@ -1,55 +1,45 @@
 from zope.interface import implementer
-from repoze.who.interfaces import IIdentifier, IAuthenticator, IChallenger, IMetadataProvider
-from .interfaces import IAugmentedWhoAPIFactory, IAugmentedWhoAPI
+from .interfaces import (
+    ISessionKeeper,
+    IAuthenticator,
+    IChallenger,
+    ILoginHandler,
+    IMetadataProvider,
+    )
 
-class DummyDecider(object):
-    def __init__(self, request):
-        self.request = request
-
-    def decide(self):
-        return self.request.testing_who_api_name
+def dummy_decider(request, classification):
+    return request.testing_who_api_name
 
 
-@implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
+@implementer(ISessionKeeper, ILoginHandler, IAuthenticator, IChallenger, IMetadataProvider)
 class DummyPlugin(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
-    def identify(self, environ):
-        return environ['return_value_for_identify']
+    def get_auth_factors(self, request, auth_context, credentials=None):
+        if credentials is not None:
+            return credentials
+        else:
+            return request.auth_factors
 
-    def forget(self, environ, identity):
-        environ['identity_passed_to_forget'] = identity
-        return environ['return_value_for_forget']
+    def forget(self, request, auth_context, response, auth_factor=None):
+        request.auth_factor_passed_to_forget = auth_factor
 
-    def remember(self, environ, identity):
-        environ['identity_passed_to_remember'] = identity
-        return environ['return_value_for_remember']
+    def remember(self, request, response, auth_factors=None):
+        request.auth_factors_passed_to_remember = auth_factors
 
-    def authenticate(self, environ, identity):
-        environ['identity_passed_to_authenticate'] = identity
-        return environ['return_value_for_authenticate']
+    def authenticate(self, request, auth_context, auth_factors):
+        request.auth_factors_passed_to_authenticate = auth_factors
 
-    def challenge(self, environ, status, app_headers, forget_headers):
-        environ['status_passed_to_challenge'] = status
-        environ['app_headers_passed_to_challenge'] = app_headers
-        environ['forget_headers_passed_to_challenge'] = forget_headers
-        return environ['return_value_for_challenge']
+    def challenge(self, request, auth_context, response):
+        pass
 
-    def add_metadata(self, environ, identity):
-        environ['identity_passed_to_add_metadata'] = identity
+    def get_metadata(self, request, auth_context, identities):
+        self.identities_passed_to_get_metadata = identities
+        return self.return_value_for_get_metadata
 
 
 class DummySession(dict):
     def save(self):
         pass
-
-def make_augmented_who_api_factory_with_dummy(*args, **kwargs):
-    from .facade import AugmentedWhoAPIFactory
-    plugin = DummyPlugin(*args, **kwargs)
-    return AugmentedWhoAPIFactory(
-        authenticators=[('dummy', plugin)],
-        challengers=[('dummy', plugin)],
-        mdproviders=[('dummy', plugin)]
-        )

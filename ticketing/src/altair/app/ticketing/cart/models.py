@@ -312,6 +312,24 @@ class Cart(Base, c_models.CartMixin):
     def from_order_no(cls, order_no):
         return Cart.query.filter_by(_order_no=order_no).one()
 
+    @property
+    def user(self):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        return self.shipping_address and self.shipping_address.user
+
+    @user.setter
+    def user(self, value):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        # XXX: 自動的に ShippingAddress はアサインしない
+        assert self.shipping_address is not None
+        self.shipping_address.user = value
+
+    @property
+    def user_id(self):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        return self.shipping_address and self.shipping_address.user_id 
+
+
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):
     __tablename__ = 'CartedProduct'
@@ -556,6 +574,17 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
     performance_selector = AnnotatedColumn(sa.Unicode(128), doc=u"カートでの公演絞り込み方法", _a_label=_(u"公演絞り込み方式"))
     performance_selector_label1_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル1'), _a_visible_column=True)
     performance_selector_label2_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル2'), _a_visible_column=True)
+    auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"認証方式")
+    secondary_auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"副認証方式")
+
+    @property
+    def auth_types(self):
+        retval = []
+        if self.auth_type is not None:
+            retval.append(self.auth_type)
+        if self.secondary_auth_type is not None:
+            retval.append(self.secondary_auth_type)
+        return retval
 
     @property
     def default_prefecture(self):
@@ -889,3 +918,13 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['embedded_html_complete_page_smartphone'] = value
+
+    @property
+    def nogizaka46_auth_key(self):
+        return self.data.get('nogizaka46_auth_key')
+
+    @nogizaka46_auth_key.setter
+    def nogizaka46_auth_key(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['nogizaka46_auth_key'] = value

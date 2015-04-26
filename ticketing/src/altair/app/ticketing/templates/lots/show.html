@@ -61,7 +61,7 @@ ${tabs.tabs(request)}
         </tr>
         <tr>
           <th>認証方法</th>
-          <td>${lot.auth_type or u'なし'}</td>
+          <td>${HH.auth_type_label(lot.auth_type)}</td>
         </tr>
         <tr>
           <th>抽選カートURL</th>
