@@ -8,7 +8,7 @@ from pyramid.view import view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 
-from altair.auth import who_api as get_who_api
+from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core.api import get_default_contact_url
@@ -129,7 +129,8 @@ class MypageView(object):
 
     @lbr_view_config(
         route_name='mypage.order.show',
-        renderer=selectable_renderer("mypage/order_show.html")
+        renderer=selectable_renderer("mypage/order_show.html"),
+        permission='*'
         )
     def order_show(self):
         authenticated_user = self.context.authenticated_user()

@@ -880,7 +880,7 @@ class ReserveView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -1213,7 +1213,7 @@ class PointAccountEnteringView(object):
             if point:
                 if not user:
                     user = api.get_or_create_user_from_point_no(point)
-                    cart.shipping_address.user = user
+                    cart.user = user
                     DBSession.add(cart)
                 api.create_user_point_account_from_point_no(
                     user.id,
@@ -1242,7 +1242,7 @@ class ConfirmView(object):
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = api.get_user_point_account(cart.shipping_address.user_id)
+        acc = api.get_user_point_account(cart.user_id)
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
@@ -1371,21 +1371,6 @@ class CompleteView(object):
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
         return dict(order=order)
-
-
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
-class InvalidMemberGroupView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    @lbr_view_config(context='.authorization.InvalidMemberGroupException')
-    def __call__(self):
-        event_id = self.context.event.id
-        event = c_models.Event.query.filter(c_models.Event.id==event_id).one()
-        location = api.get_valid_sales_url(self.request, event)
-        logger.debug('url: %s ' % location)
-        return HTTPFound(location=location)
 
 
 def is_kt_organization(out_term_exception, request):

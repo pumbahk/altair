@@ -1,11 +1,22 @@
 # encoding: utf-8
 
+import sys
 import urllib
 import urllib2
 from urlparse import urljoin
 import logging
 import uuid
+import pickle
+import logging
+from datetime import datetime
 from zope.interface import implementer
+from beaker.cache import Cache, CacheManager, cache_regions
+from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
+from pyramid.request import Request
+from pyramid.response import Response
+from pyramid.path import DottedNameResolver
+
+from altair.browserid import get_browserid
 from altair.httpsession.api import (
     HTTPSession,
     BasicHTTPSessionManager,
@@ -13,20 +24,19 @@ from altair.httpsession.api import (
     )
 from altair.httpsession.idgen import _generate_id
 
-from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
-from pyramid.response import Response
-from pyramid.path import DottedNameResolver
-from pyramid import security
-
-from altair.auth import who_api as get_who_api
+from altair.auth.api import get_auth_api
+from altair.auth.interfaces import IChallenger, IAuthenticator, IMetadataProvider, ILoginHandler
 from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
 
-from .interfaces import IRakutenOpenID
+from . import AUTH_PLUGIN_NAME
 from .events import Authenticated
-from . import IDENT_METADATA_KEY
+from .api import get_rakuten_oauth, get_rakuten_id_api_factory
+from .interfaces import IRakutenOpenID
 
 logger = logging.getLogger(__name__)
+
+cache_manager = CacheManager(cache_regions=cache_regions)
 
 
 class RakutenOpenIDHTTPSessionContext(object):
@@ -65,21 +75,44 @@ class RakutenOpenIDHTTPSessionFactory(object):
             )
 
 
-@implementer(IRakutenOpenID)
+def sex_no(s, encoding='utf-8'):
+    if isinstance(s, str):
+        s = s.decode(encoding)
+    if s == u'男性':
+        return 1
+    elif s == u'女性':
+        return 2
+    else:
+        return 0
+
+
+@implementer(IRakutenOpenID, IAuthenticator, ILoginHandler, IChallenger, IMetadataProvider)
 class RakutenOpenID(object):
     SESSION_KEY = '_%s_session' % __name__
     SESSION_IDENT_KEY = 'RakutenOpenIDPlugin.identity'
+    EXTRA_VERIFY_KEY = '%s.raw_identifier' % __name__
     IDENT_OPENID_PARAMS_KEY = '%s.params' % __name__
+    AUTHENTICATED_KEY = '%s.authenticated' % __name__
+    METADATA_KEY = '%s.metadata' % __name__
+    DEFAULT_CACHE_REGION_NAME = '%s.metadata' % __name__
+
+    cache_manager = cache_manager
 
     def __init__(self,
+            plugin_name,
             endpoint,
             verify_url,
             extra_verify_url,
             error_to,
             consumer_key,
             session_factory,
+            cache_region=None,
             return_to=None,
             timeout=10):
+        if cache_region is None:
+            cache_region = self.DEFAULT_CACHE_REGION_NAME
+        self.name = plugin_name
+        self.cache_region = cache_region
         self.endpoint = endpoint
         self.verify_url = verify_url
         self.extra_verify_url = extra_verify_url
@@ -103,10 +136,6 @@ class RakutenOpenID(object):
                 session = self.session_factory(request, id=id)
                 setattr(request, self.SESSION_KEY, session)
         return session
-
-    def get_who_api(self, request):
-        api, _ = get_who_api(request, 'rakuten')
-        return api
 
     def combine_session_id(self, request, session, url):
         q = '?ak=' + urllib.quote(session.id)
@@ -170,7 +199,6 @@ class RakutenOpenID(object):
             return False
 
     def openid_params(self, request):
-        logger.debug('openid verify GET: {0}\nPOST{1}'.format(request.GET.items(), request.POST.items()))
         request_get = request.params
         return dict(
             ns = request_get['openid.ns'],
@@ -204,7 +232,208 @@ class RakutenOpenID(object):
     def extra_verification_phase_exists(self, request):
         return self.extra_verify_url is not None 
 
-    def on_challenge(self, request):
+    def on_verify(self, request):
+        logger.debug('openid verify GET: {0}\nPOST: {1}'.format(request.GET.items(), request.POST.items()))
+        params = self.openid_params(request)
+        session = self.get_session(request)
+        if session is None:
+            logger.info('could not retrieve the temporary session')
+            return HTTPFound(location=self.error_to)
+        auth_api = get_auth_api(request)
+        identities, auth_factors, metadata = auth_api.login(
+            request,
+            request.response,
+            credentials={ self.IDENT_OPENID_PARAMS_KEY: params },
+            auth_factor_provider_name=self.name
+            )
+        response = request.response
+        if identities:
+            if self.extra_verification_phase_exists(request):
+                session[self.SESSION_IDENT_KEY] = auth_factors
+                session.save()
+                return HTTPFound(
+                    self.combine_session_id(
+                        request, session,
+                        self.extra_verify_url))
+            else:
+                identity = identities.get(AUTH_PLUGIN_NAME)
+                if identity is not None:
+                    return self._on_success(request, session, identity, metadata, response)
+                else:
+                    logger.info('authentication failure on verify. temporary session timeout, oauth API failures etc.')
+                    return HTTPFound(location=self.error_to)
+        else:
+            logger.info('who_api.login failed')
+            return HTTPFound(location=self.error_to)
+
+    def on_extra_verify(self, request):
+        if not self.extra_verification_phase(request):
+            logger.error('authentication failure on extra_verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, self.extra_verify_url))
+            return HTTPFound(location=self.error_to)
+
+        session = self.get_session(request)
+        if session is None:
+            logging.info('could not retrieve the temporary session')
+            return HTTPFound(location=self.error_to)
+        auth_factors = session.get(self.SESSION_IDENT_KEY)
+        if auth_factors is None:
+            logging.info('no identity stored in the temporary session')
+            return HTTPFound(location=self.error_to)
+        auth_api = get_auth_api(request)
+        identities, auth_factors, metadata = auth_api.authenticate(request, auth_factors=auth_factors, auth_factor_provider_name=self.name)
+        identity = identities.get(AUTH_PLUGIN_NAME) if identities is not None else None
+        if identity is not None:
+            auth_api.remember(request, request.response, auth_factors)
+            return self._on_success(request, session, identity, metadata, request.response)
+        else:
+            logger.info('authentication failure on extra_verify. temporary session timeout, oauth API failures etc.')
+            return HTTPFound(location=self.error_to)
+
+    def _on_success(self, request, session, identity, metadata, response):
+        if identity is None:
+            return HTTPUnauthorized()
+        request.registry.notify(Authenticated(
+            request,
+            identity['claimed_id'],
+            metadata
+            ))
+        return_url = self.get_return_url(session)
+        if not return_url:
+            # TODO: デフォルトURLをHostからひいてくる
+            return_url = "/"
+        session.invalidate()
+        return HTTPFound(location=return_url, headers=response.headers)
+
+    def _get_cache(self):
+        return self.cache_manager.get_cache_region(
+            __name__ + '.' + self.__class__.__name__,
+            self.cache_region
+            )
+
+    def _get_extras(self, request, identity):
+        access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
+        idapi = get_rakuten_id_api_factory(request)(access_token)
+        user_info = idapi.get_basic_info()
+        birthday = None
+        try:
+            birthday = datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+        except (ValueError, TypeError):
+            # 生年月日未登録
+            pass
+
+        contact_info = idapi.get_contact_info()
+        point_account = idapi.get_point_account()
+
+        return dict(
+            email_1=user_info.get('emailAddress'),
+            nick_name=user_info.get('nickName'),
+            first_name=user_info.get('firstName'),
+            last_name=user_info.get('lastName'),
+            first_name_kana=user_info.get('firstNameKataKana'),
+            last_name_kana=user_info.get('lastNameKataKana'),
+            birthday=birthday,
+            sex=sex_no(user_info.get('sex'), 'utf-8'),
+            zip=contact_info.get('zip'),
+            prefecture=contact_info.get('prefecture'),
+            city=contact_info.get('city'),
+            street=contact_info.get('street'),
+            tel_1=contact_info.get('tel'),
+            rakuten_point_account=point_account.get('pointAccount')
+            )
+
+    # ILoginHandler
+    def get_auth_factors(self, request, auth_context, credentials):
+        return credentials
+
+    # IAuthenticator
+    def authenticate(self, request, auth_context, auth_factors):
+        logger.debug('authenticate (request.path_url=%s, auth_factors=%s)' % (request.path_url, auth_factors))
+
+        auth_factors_for_this_plugin = auth_factors.get(self.name)
+        identity = {}
+        if auth_factors_for_this_plugin is not None:
+            openid_params = auth_factors_for_this_plugin.get(self.IDENT_OPENID_PARAMS_KEY, None)
+            stored_identity = auth_factors_for_this_plugin.get(self.EXTRA_VERIFY_KEY, None)
+        else:
+            openid_params = None
+            stored_identity = None
+            for session_keeper in auth_context.session_keepers:
+                auth_factors_for_session_keeper = auth_factors.get(session_keeper.name)
+                if auth_factors_for_session_keeper:
+                    identity.update(auth_factors_for_session_keeper)
+        if openid_params is not None:
+            # verify から呼ばれた場合
+            assert self.AUTHENTICATED_KEY not in request.environ
+            claimed_id = openid_params['claimed_id']
+            self._flush_cache(claimed_id)
+            if not self.verify_authentication(request, openid_params):
+                logger.debug('authentication failed')
+                return None, None
+            # claimed_id と oauth_request_token は、validate に成功した時のみ入る
+            identity['claimed_id'] = claimed_id
+            identity['oauth_request_token'] = openid_params['oauth_request_token']
+            # temporary session や rememberer には OpenID parameters は渡さない
+            del auth_factors_for_this_plugin[self.IDENT_OPENID_PARAMS_KEY]
+        elif stored_identity is not None:
+            # extra_verify; identity はセッションに保存されている
+            identity = stored_identity
+            del auth_factors_for_this_plugin[self.EXTRA_VERIFY_KEY]
+
+        if 'claimed_id' not in identity:
+            logger.debug("no claimed_id in identity: %r" % identity)
+            return None, None
+
+        # extra_verify もしくは普通のリクエストで通る
+        # ネガティブキャッシュなので、not in で調べる
+        logger.debug('metadata=%r' % request.environ.get(self.METADATA_KEY, '*not set*'))
+        if self.METADATA_KEY not in request.environ:
+            cache = self._get_cache()
+
+            def get_extras():
+                retval = self._get_extras(request, identity)
+                browserid = get_browserid(request)
+                retval['browserid'] = browserid
+                return retval
+
+            extras = None
+            try:
+                extras = cache.get(
+                    key=identity['claimed_id'],
+                    createfunc=get_extras
+                    )
+            except:
+                logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
+            request.environ[self.METADATA_KEY] = extras
+        else:
+            # ネガティブキャッシュなので extras is None になる可能性
+            extras = request.environ[self.METADATA_KEY]
+        if extras is None:
+            # ユーザ情報が取れない→ポイント口座番号が取れない
+            # →クリティカルな状況と考えられるので認証失敗
+            logger.info("Could not retrieve extra information")
+            return None, None
+
+        request.environ[self.AUTHENTICATED_KEY] = identity
+        return { 'claimed_id': identity['claimed_id'] }, { session_keeper.name: identity for session_keeper in auth_context.session_keepers }
+
+    def _flush_cache(self, claimed_id):
+        try:
+            self._get_cache().remove_value(claimed_id)
+        except:
+            import sys
+            logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
+
+    # IMetadataProvider
+    def get_metadata(self, request, auth_context, identities):
+        identity = identities.get(self.name)
+        if identity is not None and self.METADATA_KEY in request.environ:
+            return request.environ.pop(self.METADATA_KEY)
+        else:
+            return None
+
+    # IChallenger
+    def challenge(self, request, auth_context, response):
+        logger.debug('challenge')
         session = self.new_session(request)
         return_url = request.url
         _session = request.session # Session gets created here!
@@ -213,71 +442,13 @@ class RakutenOpenID(object):
             session_restorer = HybridHTTPBackend.get_session_restorer(request)
             if key and session_restorer:
                 return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
-            else:
-                logger.debug('key=%r, session_restorer=%r' % (key, session_restorer))
         self.set_return_url(session, return_url)
         session.save()
         redirect_to = self.get_redirect_url(request, session)
         logger.debug('redirect from %s to %s' % (request.url, redirect_to))
-        return HTTPFound(location=redirect_to)
-
-    def on_verify(self, request):
-        params = self.openid_params(request)
-        session = self.get_session(request)
-        if session is None:
-            logging.info('could not retrieve the temporary session')
-            return HTTPFound(location=self.error_to)
-        who_api = self.get_who_api(request)
-        identity, headers = who_api.login({ self.IDENT_OPENID_PARAMS_KEY: params })
-        if identity:
-            if self.extra_verification_phase_exists(request):
-                session[self.SESSION_IDENT_KEY] = identity
-                session.save()
-                return HTTPFound(
-                    self.combine_session_id(
-                        request, session,
-                        self.extra_verify_url))
-            else:
-                return self._on_success(request, session, identity, headers)
-        else:
-            return HTTPFound(location=self.error_to)
-
-    def on_extra_verify(self, request):
-        if not self.extra_verification_phase(request):
-            logger.error('authentication failure on verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, self.extra_verify_url))
-            return HTTPFound(location=self.error_to)
-
-        session = self.get_session(request)
-        if session is None:
-            logging.info('could not retrieve the temporary session')
-            return HTTPFound(location=self.error_to)
-        identity = session.get(self.SESSION_IDENT_KEY)
-        if identity is None:
-            logging.info('no identity stored in the temporary session')
-            return HTTPFound(location=self.error_to)
-        who_api = self.get_who_api(request)
-        identity, headers = who_api.login(identity)
-        if identity is not None:
-            session = self.get_session(request)
-            return self._on_success(request, session, identity, headers)
-        else:
-            logger.info('authentication failure on verify. temporary session timeout, oauth API failures etc.')
-            return HTTPFound(location=self.error_to)
-
-    def _on_success(self, request, session, identity, headers):
-        who_api = self.get_who_api(request)
-        identity = who_api.authenticate() # needed to fetch metadata
-        request.registry.notify(Authenticated(
-            request,
-            identity['repoze.who.userid'],
-            identity[IDENT_METADATA_KEY]
-            ))
-        return_url = self.get_return_url(session)
-        if not return_url:
-            # TODO: デフォルトURLをHostからひいてくる
-            return_url = "/"
-        session.invalidate()
-        return HTTPFound(location=return_url, headers=headers)
+        response.location = redirect_to
+        response.status = 302
+        return True
 
 
 def openid_consumer_from_settings(settings, prefix):
@@ -288,10 +459,12 @@ def openid_consumer_from_settings(settings, prefix):
     persistence_backend = settings[prefix + 'session']
 
     return RakutenOpenID(
+        plugin_name=AUTH_PLUGIN_NAME,
+        cache_region=None,
         endpoint=settings[prefix + 'endpoint'],
-        verify_url=settings[prefix + 'verify_url'],
-        extra_verify_url=settings[prefix + 'extra_verify_url'],
-        error_to=settings[prefix + 'error_to'],
+        verify_url=settings.get(prefix + 'verify_url'),
+        extra_verify_url=settings.get(prefix + 'extra_verify_url'),
+        error_to=settings.get(prefix + 'error_to'),
         consumer_key=settings[prefix + 'oauth.consumer_key'],
         session_factory=RakutenOpenIDHTTPSessionFactory(
             persistence_backend,
@@ -303,9 +476,9 @@ def openid_consumer_from_settings(settings, prefix):
 
 def includeme(config):
     from . import CONFIG_PREFIX
-    config.registry.registerUtility(
-        openid_consumer_from_settings(
-            config.registry.settings,
-            prefix=CONFIG_PREFIX),
-        IRakutenOpenID
+    rakuten_auth = openid_consumer_from_settings(
+        config.registry.settings,
+        prefix=CONFIG_PREFIX
         )
+    config.registry.registerUtility(rakuten_auth, IRakutenOpenID)
+    config.add_auth_plugin(rakuten_auth)

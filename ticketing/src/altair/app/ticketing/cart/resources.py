@@ -5,13 +5,12 @@ import logging
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
-from pyramid.security import Everyone, Authenticated, Allow
-from pyramid.security import effective_principals
+from pyramid.security import Everyone, Allow, DENY_ALL
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.orm.session import make_transient
-from sqlalchemy.orm.exc import NoResultFound, NO_STATE
+from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -43,10 +42,6 @@ from .exceptions import (
 from zope.deprecation import deprecate
 from altair.now import get_now
 import functools
-try:
-    from sqlalchemy.orm.utils import object_state
-except ImportError:
-    from sqlalchemy.orm.attributes import instance_state as object_state
 
 logger = logging.getLogger(__name__)
 
@@ -83,10 +78,6 @@ def get_default_cart_setting(request):
 
 @implementer(ICartResource)
 class TicketingCartResourceBase(object):
-    __acl__ = [
-        (Allow, Authenticated, 'view'),
-    ]
-
     def __init__(self, request, sales_segment_id=None):
         self.request = request
         self.now = get_now(request)
@@ -95,7 +86,6 @@ class TicketingCartResourceBase(object):
         self._cart = None
         self._read_only_cart = None
         self._populate_params()
-        self._validate_sales_segment()
 
     def _populate_params(self):
         if self.request.matchdict:
@@ -107,52 +97,13 @@ class TicketingCartResourceBase(object):
         except (ValueError, TypeError):
             pass
 
-    def _validate_sales_segment(self):
-        """現在認証済みのユーザが選択済みの販売区分を選択できるか"""
-        cart = None
-        try:
-            cart = self.read_only_cart
-        except NoCartError as e:
-            logger.debug('cart is not created (%s)' % e)
-
-        if cart and cart.sales_segment:
-            logger.info('validate sales_segment_id:%s' % cart.sales_segment_id)
-            user = self.authenticated_user()
-            if not cart.sales_segment.applicable(user=user, type='all'):
-                logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
-                cart_api.remove_cart(self.request)
-                raise InvalidCartStatusError(cart.id)
-        return
-
     @property
     def cart(self):
-        from altair.app.ticketing.models import DBSession as session
-        if self._cart is None:
-            self._cart = cart_api.get_cart_safe(self.request, for_update=True)
-        else:
-            self._cart = session.merge(self._cart)
-        return self._cart
+        return cart_api.get_cart_safe(self.request, for_update=True)
 
     @property
     def read_only_cart(self):
-        from altair.app.ticketing.models import DBSession as session
-        read_only_cart = None
-        if self._read_only_cart is not None:
-            read_only_cart = self._read_only_cart
-        else:
-            if self._cart is not None:
-                read_only_cart = self._cart
-        if read_only_cart is not None:
-            try:
-                state = object_state(self._read_only_cart)
-                if state.detached:
-                    read_only_cart = None
-            except NO_STATE:
-                read_only_cart = None
-        if read_only_cart is None:
-            read_only_cart = cart_api.get_cart_safe(self.request, for_update=False)
-            self._read_only_cart = read_only_cart
-        return read_only_cart
+        return cart_api.get_cart_safe(self.request, for_update=False)
 
     @property
     def sales_segments(self):
@@ -444,68 +395,65 @@ class TicketingCartResourceBase(object):
                     logger.info("order_limit exceeded: %d >= %d" % (total_quantity, max_quantity_per_user))
                     raise OverQuantityLimitException.from_resource(self, self.request, quantity_limit=max_quantity_per_user)
 
+    def _login_required(self, auth_type):
+        if auth_type == 'fc_auth':
+            """ 指定イベントがログイン画面を必要とするか """
+            # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもnon-guestがあれば True
+            q = u_models.MemberGroup.query \
+                .filter(u_models.MemberGroup.is_guest==False) \
+                .filter(u_models.MemberGroup.id == u_models.MemberGroup_SalesSegment.c.membergroup_id) \
+                .filter(c_models.SalesSegment.id == u_models.MemberGroup_SalesSegment.c.sales_segment_id) \
+                .filter(c_models.SalesSegment.public == True)
+
+            while True:
+                # まずは販売区分を見る
+                sales_segment = None
+                try:
+                    sales_segment = self.sales_segment
+                except:
+                    pass
+                if sales_segment is not None:
+                    q = q.filter(c_models.SalesSegment.id == sales_segment.id)
+                    break
+                # 次にパフォーマンス
+                performance = None
+                try:
+                    performance = self.performance
+                except:
+                    pass
+                if performance is not None:
+                    q = q.filter(c_models.SalesSegment.performance_id == performance.id)
+                    break
+
+                # 最後にイベントを見て
+                event = None
+                try:
+                    event = self.event
+                except:
+                    pass
+                if event is not None:
+                    # XXX: SalesSegment.event_id は deprecated
+                    q = q.filter(c_models.SalesSegment.event_id == event.id)
+                    break
+
+                # MemberGroup を特定できるものがなければ、エラーにする
+                logger.error("could not determine the event, performance nor sales_segment from the request URI")
+                return True
+
+            return q.first() is not None
+        else:
+            return True
+
     @reify
-    def login_required(self):
-        if self.event is None:
-            return False
-        organization = cart_api.get_organization(self.request)
-        if organization.setting.auth_type == "rakuten":
-            return True
-
-        """ 指定イベントがログイン画面を必要とするか """
-        # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True
-        q = u_models.MemberGroup.query.filter(
-            u_models.MemberGroup.is_guest==False
-        ).filter(
-            u_models.MemberGroup.id == u_models.MemberGroup_SalesSegment.c.membergroup_id
-        ).filter(
-            c_models.SalesSegment.id == u_models.MemberGroup_SalesSegment.c.sales_segment_id
-        ).filter(
-            c_models.SalesSegment.public == True
-        )
-
-        while True:
-            # まずは販売区分を見る
-            sales_segment = None
-            try:
-                sales_segment = self.sales_segment
-            except:
-                pass
-            if sales_segment is not None:
-                q = q.filter(
-                    c_models.SalesSegment.id == sales_segment.id
-                )
-                break
-            # 次にパフォーマンス
-            performance = None
-            try:
-                performance = self.performance
-            except:
-                pass
-            if performance is not None:
-                q = q.filter(
-                    c_models.SalesSegment.performance_id == performance.id
-                    )
-                break
-
-            # 最後にイベントを見て
-            event = None
-            try:
-                event = self.event
-            except:
-                pass
-            if event is not None:
-                q = q.filter(
-                    c_models.SalesSegment.event_id == event.id
-                    )
-                break
-
-            # MemberGroup を特定できるものがなければ、エラーにする
-            logger.error("could not determine the event, performance nor sales_segment from the request URI")
-            return True
-
-        logger.info(str(q))
-        return q.first() is not None
+    def __acl__(self):
+        acl = []
+        if self.cart_setting is not None:
+            if any(self._login_required(auth_type) for auth_type in self.cart_setting.auth_types):
+                acl.append((Allow, 'altair.auth.authenticator:%s' % '+'.join(sorted(self.cart_setting.auth_types)), 'buy'))
+            else:
+                acl.append((Allow, Everyone, 'buy'))
+        acl.append(DENY_ALL)
+        return acl
 
     @reify
     def cart_setting(self):
@@ -669,17 +617,18 @@ class CartBoundTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request):
         super(CartBoundTicketingCartResource, self).__init__(request)
 
-    @property
+    @reify
     def sales_segment(self):
-        return self.read_only_cart.sales_segment
+        cart = cart_api.get_cart(self.request, for_update=False)
+        return cart.sales_segment if cart else None
 
-    @property
+    @reify
     def performance(self):
-        return self.read_only_cart.sales_segment.performance
+        return self.sales_segment.performance if self.sales_segment is not None else None
 
-    @property
+    @reify
     def event(self):
-        return self.performance.event if self.performance else None
+        return self.performance.event if self.performance is not None else None
 
     @reify
     def sales_segments(self):

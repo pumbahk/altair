@@ -3,19 +3,9 @@ import pyramid.tweens
 SESSION_KEY = __name__
 
 def register_auth_plugin(config):
-    from altair.auth.facade import AugmentedWhoAPIFactory
-    from repoze.who.classifiers import default_request_classifier
     from .plugins import FCAuthPlugin
     fc_auth = FCAuthPlugin()
-    config.add_who_api_factory(
-        'fc_auth',
-        AugmentedWhoAPIFactory(
-            authenticators=[('fc_auth', fc_auth)],
-            challengers=[('fc_auth', fc_auth)],
-            mdproviders=[('fc_auth', fc_auth)],
-            request_classifier=default_request_classifier
-            )
-        )
+    config.add_auth_plugin(fc_auth)
 
 def setup_routes(config):
     config.add_route(

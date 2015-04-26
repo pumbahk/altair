@@ -323,6 +323,18 @@ class entry_infoTests(TestCase):
                 ),
                 entry_no="testENTRYNO",
                 membergroup=testing.DummyModel(),
+                user=testing.DummyModel(
+                    user_profile=testing.DummyModel(
+                        zip="1234567",
+                        prefecture=u"東京都",
+                        sex=1,
+                        nick_name=u"nick",
+                        last_name=u"らすと",
+                        first_name=u"ふぁーすと",
+                        last_name_kana=u"ふぁーすと",
+                        first_name_kana=u"ふぁーすと",
+                    )
+                    ),
                 shipping_address=ShippingAddress(
                     zip="1234567",
                     prefecture=u"東京都",

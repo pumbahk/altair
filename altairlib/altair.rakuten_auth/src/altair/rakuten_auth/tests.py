@@ -92,6 +92,7 @@ class RakutenOpenIDTests(unittest.TestCase):
         from mock import call
 
         target = self._makeOne(
+            'rakuten',
             'https://api.id.rakuten.co.jp/openid/auth', 
             'http://www.example.com/', 
             'http://www.example.com/', 
@@ -189,6 +190,7 @@ ns:http://specs.openid.net/auth/2.0
         from mock import call
 
         target = self._makeOne(
+            'rakuten',
             'https://api.id.rakuten.co.jp/openid/auth', 
             'http://www.example.com/', 
             'http://www.example.com/', 

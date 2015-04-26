@@ -4,12 +4,12 @@ from pyramid.httpexceptions import HTTPFound
 from string import Template
 from pyramid import security
 from pyramid.config import Configurator
-from .interfaces import IRakutenOpenID
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PREFIX = 'altair.rakuten_auth.'
 IDENT_METADATA_KEY = 'altair.rakuten_auth.metadata'
+AUTH_PLUGIN_NAME = 'rakuten'
 
 def index(request):
     logger.debug("%s" % request.environ)
@@ -32,21 +32,6 @@ def signout(request):
     res.headerlist.extend(headers)
     return res
 
-def register_auth_plugin(config):
-    from altair.auth.facade import AugmentedWhoAPIFactory
-    from repoze.who.classifiers import default_request_classifier
-    from .plugins import RakutenOpenIDPlugin
-    rakuten_auth = RakutenOpenIDPlugin(None)
-    config.add_who_api_factory(
-        'rakuten',
-        AugmentedWhoAPIFactory(
-            authenticators=[('rakuten', rakuten_auth)],
-            challengers=[('rakuten', rakuten_auth)],
-            mdproviders=[('rakuten', rakuten_auth)],
-            request_classifier=default_request_classifier
-            )
-        )
-
 def includeme(config):
     # openid設定
     settings = config.registry.settings
@@ -61,11 +46,8 @@ def includeme(config):
         'altair.rakuten_auth.tweens.RakutenAuthTween',
         under=(
             'altair.mobile.tweens.mobile_encoding_convert_factory',
-            'altair.auth.activation.activate_who_api_tween',
             )
         )
-
-    register_auth_plugin(config)
 
 def main(global_conf, **settings):
     """ fot the test """

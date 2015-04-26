@@ -357,16 +357,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
         )
-    auth_type = OurSelectField(
-        label=get_annotations_for(c_models.OrganizationSetting.auth_type)['label'],
-        coerce=lambda x: x or None,
-        encoder=lambda x: x or u'',
-        choices=[
-            (u'', u'未設定'),
-            (u'fc_auth', u'FC会員ログイン'),
-            (u'rakuten', u'楽天会員認証'),
-            ]
-        )
     margin_ratio = OurDecimalField(
         label=get_annotations_for(c_models.OrganizationSetting.margin_ratio)['label'],
         validators=[Optional()]

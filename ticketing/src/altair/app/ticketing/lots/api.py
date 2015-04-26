@@ -306,6 +306,7 @@ def format_sex(s):
 def _entry_info(wish):
     # TODO: shipping_addressも全部追加する
     shipping_address = wish.lot_entry.shipping_address
+    user = wish.lot_entry.user
     event = wish.lot_entry.lot.event
     performance = wish.performance
     venue = performance.venue
@@ -313,8 +314,8 @@ def _entry_info(wish):
     payment_method = pdmp.payment_method
     delivery_method = pdmp.delivery_method
     user_profile = None
-    if shipping_address.user:
-        user_profile = shipping_address.user.user_profile
+    if user:
+        user_profile = user.user_profile
 
     return OrderedDict([
         (u"状態", wish.status),
