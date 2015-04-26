@@ -44,7 +44,7 @@ from .models import DBSession
 from .. import logger
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCartStatusError
-from ..exceptions import PaymentPluginException
+from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery
 from altair.app.ticketing.payments.api import get_cart, get_confirm_url
