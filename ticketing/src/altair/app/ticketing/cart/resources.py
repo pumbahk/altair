@@ -437,7 +437,7 @@ class TicketingCartResourceBase(object):
                     break
 
                 # MemberGroup を特定できるものがなければ、エラーにする
-                logger.error("could not determine the event, performance nor sales_segment from the request URI")
+                logger.info("could not determine an event, performance nor sales_segment from the request URI")
                 return True
 
             return q.first() is not None
