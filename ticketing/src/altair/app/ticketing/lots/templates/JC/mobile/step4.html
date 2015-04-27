@@ -120,6 +120,7 @@ ${lot.name}
 <%mobile:form_header>${field.label}</%mobile:form_header>
 <div>
 ${render_field(field)}
+${h.error_list(request, field['field'])}
 </div>
 % endif
 % endfor

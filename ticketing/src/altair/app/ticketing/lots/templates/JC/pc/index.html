@@ -348,6 +348,7 @@ if label is None or label is True:
               </th>
               <td>
                 ${render_field(field)}
+                ${h.error_list(request, field['field'])}
               </td>
             </tr>
             % endif
