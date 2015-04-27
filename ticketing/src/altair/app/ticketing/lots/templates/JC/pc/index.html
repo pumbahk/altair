@@ -82,14 +82,14 @@ if label is None or label is True:
 </div>
 <div class="settlementBox2">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_public.gif')}" alt="大会一覧" width="106" height="29" /></h2>
     %for performance in performances:
     <table class="border" summary="イベント詳細情報">
       <tr>
         <th colspan="2" class="title" scope="row">${performance.name}</th>
       </tr>
       <tr class="none">
-        <th scope="row">公演日</th>
+        <th scope="row">大会日</th>
         <td>${ch.japanese_datetime(performance.start_on)}開演</td>
       </tr>
       <tr>
@@ -128,10 +128,10 @@ if label is None or label is True:
             </select>
             %endif
           </p>
-          <table class="chooser" summary="希望する公演と券種の選択" id="wish-cell-table-${i}">
+          <table class="chooser" summary="希望する大会と券種の選択" id="wish-cell-table-${i}">
             <tr>
               <th>
-                <label>公演日・会場</label>
+                <label>大会日・会場</label>
               </th>
               <td colspan="2">
                 <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">

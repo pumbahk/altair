@@ -39,7 +39,7 @@ ${lot.name}
 <%mobile:header>申込内容最終確認</%mobile:header>
 %for wish in wishes:
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
-<%mobile:form_header>公演・試合</%mobile:form_header>
+<%mobile:form_header>大会・試合</%mobile:form_header>
 <div>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
