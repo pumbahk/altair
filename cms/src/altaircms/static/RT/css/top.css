@@ -92,7 +92,7 @@ body {
 #tsMainArea #tsTopics li {
 /*	background: url(../images/icon_arrow3.gif) no-repeat 0 2px;
 	padding: 3px 0 3px 20px;*/
-	background: url(../images/icon_arrow.gif) no-repeat 0 7px;
+	background: url(../img/common/icon_arrow.gif) no-repeat 0 7px;
 	padding: 5px 0 5px 15px;
 	margin: 5px 0;
 	border-bottom: 1px dotted #D3D3C7;
@@ -115,7 +115,7 @@ body {
 	color: #555;
 	font-weight: bold;
 	font-size: 1.3em;
-	background: url(../images/icon_sl.png) no-repeat 0 5px;
+	background: url(../img/common/icon_sl.png) no-repeat 0 5px;
 	padding: 10px 0 0 35px;
 }
 #tsMainArea #tsSearchList p.more a {
@@ -123,7 +123,7 @@ body {
 	top: 7px;
 	right: 15px;
 	display: block;
-	background: #FFF url(../images/icon_sl_more.png) no-repeat 6px 5px;
+	background: #FFF url(../img/common/icon_sl_more.png) no-repeat 6px 5px;
 	-moz-border-radius:20px;
 	-webkit-border-radius:20px;
 	border-radius:20px;
@@ -135,7 +135,7 @@ body {
 }
 #tsMainArea #tsSearchList p.more a:hover {
 	text-decoration: none;
-	background: #FDE8E9 url(../images/icon_sl_more.png) no-repeat 6px 5px;
+	background: #FDE8E9 url(../img/common/icon_sl_more.png) no-repeat 6px 5px;
 }
 #tsMainArea #tsSearchList dl dt {
 	float: left;
@@ -217,10 +217,10 @@ body {
 	margin-bottom: 10px;
 	padding: 10px 0 0 50px;
 }
-#tsMainArea .tsMusicList h3 { background: url(../../_images/ttl_genre_music.gif) no-repeat 0 0; }
-#tsMainArea .tsStageList h3 { background: url(../../_images/ttl_genre_stage.gif) no-repeat 0 0; }
-#tsMainArea .tsSportsList h3 { background: url(../../_images/ttl_genre_sports.gif) no-repeat 0 0; }
-#tsMainArea .tsEventList h3 { background: url(../../_images/ttl_genre_event.gif) no-repeat 0 0; }
+#tsMainArea .tsMusicList h3 { background: url(../img/common/ttl_genre_music.gif) no-repeat 0 0; }
+#tsMainArea .tsStageList h3 { background: url(../img/common/ttl_genre_stage.gif) no-repeat 0 0; }
+#tsMainArea .tsSportsList h3 { background: url(../img/common/ttl_genre_sports.gif) no-repeat 0 0; }
+#tsMainArea .tsEventList h3 { background: url(../img/common/ttl_genre_event.gif) no-repeat 0 0; }
 
 
 /* tsSaleTicketInfo ============================== */
@@ -327,7 +327,7 @@ body {
 	padding: 0 10px 10px 10px;
 }
 #tsSideArea #tsInfo li {
-	background: url(../images/icon_arrow.gif) no-repeat 0 12px;
+	background: url(../img/common/icon_arrow.gif) no-repeat 0 12px;
 	border-bottom: 1px dotted #D3D3C7;
 	padding: 10px 0 10px 15px;
 }
