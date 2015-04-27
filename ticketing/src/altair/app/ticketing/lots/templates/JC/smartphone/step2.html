@@ -255,17 +255,6 @@ ${self.error(form, 'sex')}
 </p>
 </dd>
 
-<dt class="creditHl">メモ欄</dt>
-<dd>
-<p>
-${form['memo'](style="width: 98%")} ${self.error(form, 'error')}
-<div style="font-size: 90%;">
-※ご質問を入力されても返信はいたしかねます。<br>
-ご質問は下記のお問い合わせ先よりお願いいたします。
-</div>
-</p>
-</dd>
-
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <dt class="creditHl">${field.label}</dt>

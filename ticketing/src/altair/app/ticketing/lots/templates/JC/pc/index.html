@@ -333,20 +333,11 @@ if label is None or label is True:
                 ${self.error(form, 'birthday')}
               </td>
             </tr>
-            <tr>
+            <tr class="settlementSelectEnd">
               <th>${form['sex'].label}</th>
               <td>
                 ${form['sex']}
                 ${self.error(form, 'sex')}
-              </td>
-            </tr>
-            <tr class="settlementSelectEnd">
-              <th>メモ欄</th>
-              <td>
-                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
-                <div style="font-size: 90%;">
-                ※ご質問を入力されても返信はいたしかねます。<br>
-                </div>
               </td>
             </tr>
             % for field in form['extra']._contained_form:

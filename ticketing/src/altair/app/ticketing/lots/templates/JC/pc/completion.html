@@ -85,13 +85,9 @@
             <th>生年月日</th>
             <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
           </tr>
-          <tr>
+          <tr class="settlementSelectEnd">
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
-          </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
           </tr>
         </table>
       </div>
