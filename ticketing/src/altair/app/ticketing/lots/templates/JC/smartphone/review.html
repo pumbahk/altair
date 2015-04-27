@@ -51,7 +51,7 @@ dl.cost-detail > dd {
         <div class="subInner2">
         % if entry.is_ordered:
 抽選の結果、お客様はご当選されました。
-<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
+<a href="/orderreview/form" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
         % elif entry.is_rejected:
 抽選の結果、お客様は残念ながら落選となりました。
         % elif not entry.lot.is_elected():
