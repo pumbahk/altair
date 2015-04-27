@@ -44,7 +44,7 @@ ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
 会場 ${wish.performance.venue.name}<br />
 開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
-<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+<%mobile:form_header>希望種別と枚数</%mobile:form_header>
 <div><font size="-1">
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
