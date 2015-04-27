@@ -88,12 +88,12 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
         <div id="settlementSelectBox">
           <div id="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
               <tr>
-                <th><label>購入者氏名（全角）</label></th>
+                <th><label>選手氏名（全角）</label></th>
                 <td>
                   ${form['last_name']}
                   ${form['first_name']}
@@ -102,7 +102,7 @@
                 </td>
               </tr>
               <tr>
-                <th><label>購入者氏名（カナ）</label></th>
+                <th><label>選手氏名（カナ）</label></th>
                 <td>
                   ${form['last_name_kana']}
                   ${form['first_name_kana']}
