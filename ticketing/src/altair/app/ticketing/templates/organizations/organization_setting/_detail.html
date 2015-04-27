@@ -110,5 +110,21 @@
       <th>${HH.label_text_for(c_models.OrganizationSetting.mail_refund_to_user)}</th>
       <td>${u'送信する' if organization_setting.mail_refund_to_user else u'送信しない'}</td>
     </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid)}</th>
+      <td>${organization_setting.asid if organization_setting.asid else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid_mobile)}</th>
+      <td>${organization_setting.asid_mobile if organization_setting.asid_mobile else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid_smartphone)}</th>
+      <td>${organization_setting.asid_smartphone if organization_setting.asid_smartphone else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.lot_asid)}</th>
+      <td>${organization_setting.lot_asid if organization_setting.lot_asid else u'-'}</td>
+    </tr>
   <tbody>
 </table>

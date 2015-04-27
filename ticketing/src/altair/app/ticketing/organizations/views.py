@@ -245,6 +245,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_mypage = f.enable_mypage.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
+        organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
         return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))

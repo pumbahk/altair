@@ -405,6 +405,18 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
+    asid = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid)['label']
+        )
+    asid_mobile = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid_mobile)['label']
+        )
+    asid_smartphone = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid_smartphone)['label']
+        )
+    lot_asid = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.lot_asid)['label']
+        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\
