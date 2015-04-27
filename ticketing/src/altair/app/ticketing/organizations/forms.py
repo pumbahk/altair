@@ -418,6 +418,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     lot_asid = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.lot_asid)['label']
         )
+    sitecatalyst_use = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.sitecatalyst_use)['label']
+        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

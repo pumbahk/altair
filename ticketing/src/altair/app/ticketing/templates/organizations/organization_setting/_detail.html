@@ -111,6 +111,10 @@
       <td>${u'送信する' if organization_setting.mail_refund_to_user else u'送信しない'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.sitecatalyst_use)}</th>
+      <td>${u'使う' if organization_setting.sitecatalyst_use  else u'使わない'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.asid)}</th>
       <td>${organization_setting.asid if organization_setting.asid else u'-'}</td>
     </tr>
