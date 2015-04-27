@@ -3342,6 +3342,7 @@ class MailTypeEnum(StandardEnum):
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
+    PurchaseRefundMail = 31
 
 _mail_type_labels = {
     MailTypeEnum.PurchaseCompleteMail.v: u"購入完了メール",
@@ -3351,6 +3352,7 @@ _mail_type_labels = {
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知メール",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知メール",
     MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知メール",
+    MailTypeEnum.PurchaseRefundMail.v: u"払戻通知メール",
     }
 
 MailTypeChoices = [(str(e) , _mail_type_labels[e.v]) for e in sorted(iter(MailTypeEnum), key=lambda e: e.v)]
@@ -3850,6 +3852,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
     lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
+    mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
