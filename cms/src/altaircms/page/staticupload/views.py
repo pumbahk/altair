@@ -368,6 +368,7 @@ class StaticPageView(BaseView):
         downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
         downloader.add_filter(refine_link_on_download_factory(static_page, static_directory))
         zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
+
         return zm.download_response(static_directory.get_rootname(static_page))
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
@@ -389,6 +390,9 @@ class StaticPageView(BaseView):
             logger.error(str(e))
             FlashMessage.error(u"更新に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
             raise HTTPFound(self.context.endpoint(static_page))
+
+        if self.request.user.screen_name:
+            static_page.last_editor = self.request.user.screen_name
 
         self.context.touch(static_page)
         FlashMessage.success(u"%sが更新されました" % static_page.label, request=self.request)
