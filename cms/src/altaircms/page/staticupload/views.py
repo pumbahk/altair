@@ -69,8 +69,13 @@ class StaticPageSetView(BaseView):
         current_page = static_pageset.current(dt=get_now(self.request))
         if self.request.GET.get("child_id"):
             active_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
-        else:
+        # 表示中のページをactiveにする
+        elif current_page:
             active_page = current_page
+        # 非公開ページしかもっていない場合は、最も新しいページをactiveにする
+        else:
+            if len(static_pageset.pages):
+                active_page = static_pageset.pages[0]
 
         return {"static_pageset": static_pageset,
                 "pagetype": static_pageset.pagetype,
