@@ -6,7 +6,7 @@
 <tr class="product-select-tr<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
 	<th>
         <% if (j == 0) { %>
-        <label>券種</label>
+        <label>種別</label>
         <% } else { %>
         &nbsp;
         <% } %>

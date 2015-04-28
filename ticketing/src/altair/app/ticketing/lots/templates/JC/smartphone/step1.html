@@ -44,7 +44,7 @@
 
 
 <div id="wish-cell-table-${i}">
-<dt>公演日・会場</dt>
+<dt>大会日・会場</dt>
 <dd>
 <select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}" style="width: 100%">
 %for performance in performances:
@@ -60,12 +60,12 @@
 %endfor
 </select>
 <br/><br/>
-【選択した公演】
+【選択した大会】
 <div class="all_performance_name-${i}"></div>
 </dd>
 
 
-<dt>席種</dt>
+<dt>参加区分</dt>
 <dd>
 <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select" style="width: 100%">
 %for rec in stock_types:
