@@ -4,7 +4,7 @@ from altair.app.ticketing.cart.rendering import selectable_renderer
 
 
 @panel_config('order_detail.standard', renderer=selectable_renderer('order_review/_order_detail_standard.html'))
-@panel_config('order_detail.lots', renderer=selectable_renderer('order_review/_order_detail_lots.html'))
+@panel_config('order_detail.lot', renderer=selectable_renderer('order_review/_order_detail_lots.html'))
 def order_detail_standard(context, request, order, user_point_accounts=None):
     return {'order': order, 'user_point_accounts': user_point_accounts}
 
