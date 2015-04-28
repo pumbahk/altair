@@ -74,7 +74,8 @@ class StaticPageSetView(BaseView):
             active_page = current_page
         # 非公開ページしかもっていない場合は、最も新しいページをactiveにする
         else:
-            active_page = static_pageset.pages[0]
+            if len(static_pageset.pages):
+                active_page = static_pageset.pages[0]
 
         return {"static_pageset": static_pageset,
                 "pagetype": static_pageset.pagetype,
