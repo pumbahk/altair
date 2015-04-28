@@ -82,7 +82,7 @@ ${active_page.name}
   <tbody>
   %for page in static_pageset.pages:
     <tr>
-      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == current_page.id else "" |n} ></td>
+      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == active_page.id else "" |n} ></td>
       <td>
         <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a>
         ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
