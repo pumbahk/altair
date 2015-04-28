@@ -3014,7 +3014,6 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket = Ticket.clone(template)
         if 'event_id' in kwargs:
             ticket.event_id = kwargs['event_id']
-        ticket.original_ticket_id = template.id
         ticket.save()
         return {template.id:ticket.id}
 
