@@ -88,6 +88,9 @@ class ICompleteMailResource(IOrderMailResource):
 class IOrderCancelMailResource(IOrderMailResource):
     """ 購入キャンセルメールのビューレットのコンテキスト"""
 
+class IOrderRefundMailResource(IOrderMailResource):
+    """ 払戻メールのビューレットのコンテキスト"""
+
 class IRemindMailResource(IOrderMailResource):
     """ リマインドメールのビューレットのコンテキスト"""
 

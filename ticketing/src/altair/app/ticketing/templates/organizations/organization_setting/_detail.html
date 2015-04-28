@@ -114,5 +114,9 @@
       <th>${HH.label_text_for(c_models.OrganizationSetting.augus_use)}</th>
       <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
     </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.mail_refund_to_user)}</th>
+      <td>${u'送信する' if organization_setting.mail_refund_to_user else u'送信しない'}</td>
+    </tr>
   <tbody>
 </table>
