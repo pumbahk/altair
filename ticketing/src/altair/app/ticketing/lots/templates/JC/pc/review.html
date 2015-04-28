@@ -11,7 +11,7 @@
     <div class="confirmBoxText">
       % if entry.is_ordered:
 抽選の結果、お客様はご当選されました。
-<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
+<a href="/orderreview/form" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
       % elif entry.is_rejected:
 抽選の結果、お客様は残念ながら落選となりました。
       % elif not entry.lot.is_elected():
@@ -44,7 +44,7 @@
         <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
         <table summary="第一希望">
           <tr>
-            <th>公演日・会場</th>
+            <th>大会日・会場</th>
             <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
           </tr>
           <tr class="settlementSelectEnd">
@@ -75,20 +75,41 @@
     </div>
     %endfor
   </div>
-</div> 
+</div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2 class="title">追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+            <table summary="追加情報">
+                % for _, (display_name, display_value) in extra_form_data:
+                <tr>
+                    <th>${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                </tr>
+                % endfor
+            </table>
+        </div>
+      </div>
+  </div>
+</div>
+% endif
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
           <tr>
-            <th>購入者氏名</th>
+            <th>選手氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
-            <th>購入者氏名（カナ）</th>
+            <th>選手氏名（カナ）</th>
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>
@@ -127,3 +148,24 @@
     </div>
   </div>
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2 class="title">追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+            <table summary="追加情報">
+                % for _, (display_name, display_value) in extra_form_data:
+                <tr>
+                    <th>${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                </tr>
+                % endfor
+            </table>
+        </div>
+      </div>
+  </div>
+</div>
+% endif
