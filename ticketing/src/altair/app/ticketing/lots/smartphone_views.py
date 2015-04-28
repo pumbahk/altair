@@ -298,7 +298,8 @@ class EntryLotView(object):
             for k, errors in cform.errors.items():
                 if isinstance(errors, dict):
                     for k, errors in errors.items():
-                        self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
+                        for error in errors:
+                            self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
                 else:
                     for error in errors:
                         self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
