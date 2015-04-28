@@ -14,37 +14,38 @@
 <%
   genre = ""
   link = ""
-  style = "musicList"
+  genre_link = ""
+  style = "tsMusicList"
   if widget.system_tag:
       if widget.system_tag.label == u'音楽':
         genre = u"音楽"
         link = "/music"
-        style = "musicList"
+        genre_link = "/music"
+        style = "tsMusicList"
       elif widget.system_tag.label == u'演劇・ステージ・舞台':
         genre = u"演劇･ステージ"
         link = "/stage"
-        style = "stageList"
+        genre_link = "/stage"
+        style = "tsStageList"
       elif widget.system_tag.label == u'スポーツ':
         genre = u"スポーツ"
         link = "/sports"
-        style = "sportsList"
+        genre_link = "/sports"
+        style = "tsSportsList"
       elif widget.system_tag.label == u'イベント・その他':
         genre = u"イベント"
         link = "/event"
-        style = "eventList"
+        genre_link = "/event"
+        style = "tsEventList"
       endif
   endif
 %>
 
 <div id="notableEvents">
-  <div class="${style} genreTopics clearfix">
+  <div class="${style} tsGenreTopics">
     <h3>${genre}</h3>
-    <p class="listBtn">
-      <a href="${link}">
-        <span class="offleft">一覧を見る</span>
-      </a>
-    </p>
-    <ul>
+
+    <ul class=" clearfix">
       % for content in h.chunk(qs, 1):
         <% link  = h.link.get_link_from_topcontent(request,content[0]) %>
         ## Embed a tracking code to topcontent link if exists
@@ -72,11 +73,14 @@
                 (${content[0].countdown_type_ja}まであと${h.base.countdown_days_from(request, content[0].countdown_limit)}日)
               %endif
             </p>
+            <p class="tileLink"><a href="${genre_link}">詳細を見る</a></p>
           </dd>
         </dl>
       </li>
       % endfor
     </ul>
+    <p class="tsGenreIndex"><a href="${genre_link}">${widget.system_tag.label}の公演一覧 &raquo;</a></p>
+
   </div>
 </div>
 </%def>

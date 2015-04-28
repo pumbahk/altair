@@ -1,0 +1,343 @@
+﻿@charset "utf-8";
+
+/* layout
+--------------------------------------------------- */
+body {
+	color: #000;
+	line-height: 1.5;
+	font-size: 62.5%;
+    font-family:"Hiragino Kaku Gothic ProN",Meiryo,MS-PGothic,sans-serif;
+	text-align: center;
+	background: #FFF;
+}
+#tsWrapper { width: 100%; }
+
+#tsContents {
+	width: 950px;
+	text-align: left;
+	margin: 10px auto;
+	font-size: 1.2em;
+	line-height: 1.5em;
+}
+#tsContents #tsMainArea {
+	float: left;
+	width: 630px;
+}
+#tsContents #tsSideArea {
+	margin-left: 650px;
+	width: 300px;
+}
+
+#grpHeader {
+	position: relative;
+	text-align: left;
+	font-size: 12px;
+	margin: 0 auto;
+}
+#tsHeader {
+	width: 950px;
+	position: relative;
+	text-align: left;
+	font-size: 12px;
+	margin: 0 auto;
+}
+#grpFooter {
+	width: 950px;
+	clear: both;
+	position: relative;
+	text-align: left;
+	margin: 0 auto;
+}
+
+
+
+/* contents
+--------------------------------------------------- */
+
+
+#tsMainArea ul.tsMainareaBanner { margin-bottom: 20px; }
+#tsMainArea ul.tsMainareaBanner img { width: 630px; }
+
+
+/* topicks ============================== */
+#tsMainArea #tsTopics {
+	background: #F5F5F2;
+	border: 1px solid #D3D3C7;
+	margin-bottom: 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsMainArea #tsTopics h3 {
+/*	background: url(../../_images/ttl_h3_default.jpg) no-repeat 0 0;
+	height: 37px;*/
+	background: #c42d32;
+	font-weight: bold;
+	color: #EBEBEB;
+	font-size: 1.3em;
+	padding: 10px 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsMainArea #tsTopics ul {
+	padding: 0 10px 10px 10px;
+}
+#tsMainArea #tsTopics li {
+/*	background: url(../images/icon_arrow3.gif) no-repeat 0 2px;
+	padding: 3px 0 3px 20px;*/
+	background: url(../img/common/icon_arrow.gif) no-repeat 0 7px;
+	padding: 5px 0 5px 15px;
+	margin: 5px 0;
+	border-bottom: 1px dotted #D3D3C7;
+}
+/*#tsMainArea #tsTopics li:last-child {
+	border-bottom: none;
+}*/
+
+/* searchList ============================== */
+#tsMainArea #tsSearchList {
+	position: relative;
+	background: #EFEFEF;	
+	border: 1px solid #FFF;
+	outline: 1px solid #CCC;
+	padding: 0 15px 15px 15px;
+	margin-bottom: 20px;
+}
+#tsMainArea #tsSearchList h3 {
+	height: 30px;
+	color: #555;
+	font-weight: bold;
+	font-size: 1.3em;
+	background: url(../img/common/icon_sl.png) no-repeat 0 5px;
+	padding: 10px 0 0 35px;
+}
+#tsMainArea #tsSearchList p.more a {
+	position: absolute;
+	top: 7px;
+	right: 15px;
+	display: block;
+	background: #FFF url(../img/common/icon_sl_more.png) no-repeat 6px 5px;
+	-moz-border-radius:20px;
+	-webkit-border-radius:20px;
+	border-radius:20px;
+	border: 2px solid #C53237;
+	color: #C53237;	
+	font-weight: bold;
+	font-size: 1.0em;
+	padding: 4px 8px 0 23px;
+}
+#tsMainArea #tsSearchList p.more a:hover {
+	text-decoration: none;
+	background: #FDE8E9 url(../img/common/icon_sl_more.png) no-repeat 6px 5px;
+}
+#tsMainArea #tsSearchList dl dt {
+	float: left;
+	width: 120px;
+	min-height: 40px;
+	background: #F9F8F2;
+	text-indent: 10px;
+	margin-bottom: 5px;
+}
+#tsMainArea #tsSearchList dl dd {
+	width: 475px;
+	min-height: 40px;
+	background: #FFF;
+	text-indent: 10px;
+	margin-left: 125px;
+	margin-bottom: 5px;
+}
+#tsMainArea #tsSearchList ul li {
+	display: inline;
+}
+#tsMainArea #tsSearchList ul li:after {
+	content:" / ";
+}
+
+/* tsGenreTopics ============================== */
+#tsMainArea .tsGenreTopics {
+	position: relative;
+	margin-bottom: 20px;
+}
+#tsMainArea .tsGenreTopics ul {
+	margin-left: -10px;
+}
+#tsMainArea .tsGenreTopics ul li {
+	position: relative;
+	float: left;
+	width: 150px;
+	background: #F5F5F5;
+	margin-left: 10px;
+	margin-bottom: 20px;
+	color: #555;
+}
+#tsMainArea .tsGenreTopics ul li:hover {
+    background-color: #EFEFEF;
+}
+#tsMainArea .tsGenreTopics ul li dl dd .tileLink a {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	text-indent: -9999px;
+}
+#tsMainArea .tsGenreTopics ul li dl dt img { border: 1px solid #ecede7; width: 148px; height: 148px; }
+#tsMainArea .tsGenreTopics ul li dl dd {  padding: 5px; }
+#tsMainArea .tsGenreTopics ul li dl dd p.tileTitle { margin-bottom: 5px; color: #3171bd; }
+
+#tsMainArea .tsGenreTopics p.tsGenreIndex a {
+	display: block;
+	background: #F5F5F5;
+	color: #555;
+	font-size: 18px;
+	text-align: center;
+	padding: 10px;
+}
+#tsMainArea .tsGenreTopics p.tsGenreIndex a:hover {
+	background: #EFEFEF;
+	text-decoration: none;
+}
+
+#tsMainArea .tsMusicList h3,
+#tsMainArea .tsStageList h3,
+#tsMainArea .tsSportsList h3,
+#tsMainArea .tsEventList h3 {
+	width: 630px;
+	height: 40px;
+	color: #555;
+	font-size: 1.3em;
+	font-weight: bold;	
+	margin-bottom: 10px;
+	padding: 10px 0 0 50px;
+}
+#tsMainArea .tsMusicList h3 { background: url(../img/common/ttl_genre_music.gif) no-repeat 0 0; }
+#tsMainArea .tsStageList h3 { background: url(../img/common/ttl_genre_stage.gif) no-repeat 0 0; }
+#tsMainArea .tsSportsList h3 { background: url(../img/common/ttl_genre_sports.gif) no-repeat 0 0; }
+#tsMainArea .tsEventList h3 { background: url(../img/common/ttl_genre_event.gif) no-repeat 0 0; }
+
+
+/* tsSaleTicketInfo ============================== */
+
+#tsSaleTicketInfo {
+	background: #F5F5F2;
+	border: 1px solid #D3D3C7;
+	margin-bottom: 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSaleTicketInfo .tsInner {
+	padding: 10px;
+}
+#tsSaleTicketInfo h3 {
+	background: #c42d32;	
+	font-weight: bold;
+	color: #EBEBEB;
+	font-size: 1.3em;
+	padding: 10px 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSaleTicketInfo ul{
+	margin-bottom: 10px;
+}
+#tsSaleTicketInfo ul li {
+	display: inline;
+	line-height: 1.8;
+}
+#tsSaleTicketInfo ul li:after {
+	content:" / ";
+}
+#tsSaleTicketInfo h4 {
+	background: #ECECE6;
+	color: #555;
+	font-weight: bold;
+	padding: 5px;
+	margin: 10px 0;
+}
+
+
+
+/* SideArea
+--------------------------------------------------- */
+#tsSideArea #tsSideRectangleBanner,
+#tsSideArea #tsSidePickup,
+#tsSideArea #tsInfo,
+#tsSideArea #tsTweet {
+	margin-bottom: 20px;
+}
+#tsSideArea #tsSidePickup,
+#tsSideArea #tsInfo {
+	background: #F5F5F2;
+	border: 1px solid #D3D3C7;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSideArea #tsSidePickup h3,
+#tsSideArea #tsInfo h3 {
+	/*width: 300px;
+	height: 26px;
+	background: url(../../_images/ttl_side.jpg) no-repeat 0 0;*/
+	background: #81877d;
+	color: #EDEDED;
+	font-weight: bold;
+	font-size: 1.2em;
+	padding: 10px 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSideArea #tsSidePickup ul,
+#tsSideArea #tsInfo ul {
+/*	border-bottom: 1px solid #D3D3C7;
+	border-left: 1px solid #D3D3C7;
+	border-right: 1px solid #D3D3C7;
+	background: #F5F5F2;*/
+}
+#tsSideArea #tsSidePickup ul {
+	padding: 5px 0 3px 0;
+}
+#tsSideArea #tsSidePickup li {
+	text-align: center;
+	margin-bottom: 2px;
+}
+
+#tsSideArea #tsInfo ul {
+	padding: 0 10px 10px 10px;
+}
+#tsSideArea #tsInfo li {
+	background: url(../img/common/icon_arrow.gif) no-repeat 0 12px;
+	border-bottom: 1px dotted #D3D3C7;
+	padding: 10px 0 10px 15px;
+}
+#tsSideArea #tsTweet {
+	border: 1px solid #CCC;
+	padding: 0 10px 10px 10px;
+}
+
+
+#tsSideArea ul.tsSideBanner li {
+	text-align: center;
+	margin-bottom: 5px;
+}
