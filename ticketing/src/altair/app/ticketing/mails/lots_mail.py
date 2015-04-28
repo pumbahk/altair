@@ -114,7 +114,7 @@ class LotsMail(object):
                      fee_type=ch.fee_type,
                      plugins=plugins,
                      lot_entry=lot_entry,
-                     extra_form_data=order.get_lot_entry_attribute_pair_pairs(request),
+                     extra_form_data=lot_entry.get_lot_entry_attribute_pair_pairs(request),
                      shipping_address=shipping_address,
                      get=info_renderder.get,
                      name=u"{0} {1}".format(shipping_address.last_name, shipping_address.first_name),
