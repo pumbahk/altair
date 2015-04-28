@@ -45,6 +45,23 @@ ymd_widget = Switcher(
     select=widgets.Select(),
     input=widgets.TextInput()
     )
+            
+client_form_fields = {
+    'last_name_kana' : u"姓（カナ）",
+    'first_name_kana': u"名（カナ）",
+    'last_name': u"姓",
+    'first_name': u"名",
+    'zip': u"郵便番号",
+    'tel_1': u"電話番号",
+    'sex': u"性別",
+    'email_1': u"メールアドレス",
+    'email_1_confirm': u"メールアドレス（確認）",
+    'email_2': u"メールアドレス",
+    'city': u"市区町村",
+    'prefecture': u"都道府県を",
+    'address_1': u"住所",
+    'birthday': u"生年月日",
+    }
 
 class ClientForm(_ClientForm):
     sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
