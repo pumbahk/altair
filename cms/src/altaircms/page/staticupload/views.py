@@ -64,16 +64,21 @@ class StaticPageSetView(BaseView):
     def detail(self):
         pk = self.request.matchdict["static_page_id"]
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
+        static_pageset.pages.sort(key=lambda page: page.created_at, reverse=True)
         static_directory = get_static_page_utility(self.request)
-        static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
-        static_page = static_page or first_or_nullmodel(static_pageset, "pages") #hmm..
+        current_page = static_pageset.current(dt=get_now(self.request))
+        if self.request.GET.get("child_id"):
+            active_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
+        else:
+            active_page = current_page
+
         return {"static_pageset": static_pageset,
-                "static_page": static_page,
                 "pagetype": static_pageset.pagetype,
                 "static_directory": static_directory,
-                "current_page": static_pageset.current(dt=get_now(self.request)),
-                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")),
-                "now": get_now(self.request)}
+                "current_page": current_page,
+                "tree_renderer": static_page_directory_renderer(self.request, active_page, static_directory, self.request.GET.get("management")),
+                "now": get_now(self.request),
+                "active_page": active_page}
 
     @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
     def preview(self):
@@ -363,6 +368,7 @@ class StaticPageView(BaseView):
         downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
         downloader.add_filter(refine_link_on_download_factory(static_page, static_directory))
         zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
+
         return zm.download_response(static_directory.get_rootname(static_page))
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
@@ -384,6 +390,9 @@ class StaticPageView(BaseView):
             logger.error(str(e))
             FlashMessage.error(u"更新に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
             raise HTTPFound(self.context.endpoint(static_page))
+
+        if self.request.user.screen_name:
+            static_page.last_editor = self.request.user.screen_name
 
         self.context.touch(static_page)
         FlashMessage.success(u"%sが更新されました" % static_page.label, request=self.request)
