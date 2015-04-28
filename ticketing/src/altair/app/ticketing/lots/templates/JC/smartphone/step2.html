@@ -261,7 +261,7 @@ ${self.error(form, 'sex')}
 <dd>
   <p>
     ${render_field(field)}
-    ${h.error_list(request, field['field'])}
+    ${self.error(form, field)}
   </p>
 </dd>
 % endif
