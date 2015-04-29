@@ -38,6 +38,7 @@
             % endif
           % else:
             <div>${h.sensible_coerce(request, field['old_display_value'])}</div>
+            ${fh.render(field['field'], _widget=h.generic_hidden_input, password=field['descriptor']['kind'] == 'password')}
           % endif
         </td>
       </tr>
