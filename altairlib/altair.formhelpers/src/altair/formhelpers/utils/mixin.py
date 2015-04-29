@@ -5,8 +5,8 @@ import itertools
 
 __all__ = [
     'override',
-    'overridden',
-    'class_factory',
+    'isoverriding',
+    'make_class_factory',
     ]
 
 overriders = set()
