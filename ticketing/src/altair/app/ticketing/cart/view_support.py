@@ -756,6 +756,7 @@ def get_extra_form_class(request, cart_setting):
 
 def filter_extra_form_schema(extra_form_fields, mode=None):
     if mode is None:
+        # XXX: デフォルトを entry に変えるべきでは?
         mode = 'any'
 
     if isinstance(mode, basestring):
