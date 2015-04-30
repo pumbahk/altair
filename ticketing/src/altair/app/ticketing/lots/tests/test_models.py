@@ -326,6 +326,36 @@ class LotTests(unittest.TestCase):
         self.assertFalse(target.available_on(datetime(2010, 1, 1)))
 
 
+class LotEntryCartSettingTest(unittest.TestCase):
+    def setUp(self):
+        from altair.app.ticketing.cart.models import CartSetting
+        from altair.app.ticketing.core.models import (
+            Event,
+            EventSetting,
+            Organization,
+            OrganizationSetting,
+            )
+        from ..models import (
+            Lot,
+            LotEntry,
+            )
+        self._event_setting = EventSetting(cart_setting=CartSetting())
+        self._organization_setting = OrganizationSetting(cart_setting=CartSetting())
+
+        organization = Organization(_setting=self._organization_setting)
+        event = Event(setting=self._event_setting, organization=organization)
+
+        lot = Lot(event=event, organization=organization)
+        self._entry = LotEntry(lot=lot, organization=organization)
+
+    def test_cart_setting_of_event_setting(self):
+        self.assertEqual(self._entry.cart_setting, self._event_setting.cart_setting)
+
+    def test_cart_setting_of_organization_setting(self):
+        self._entry.lot.event.setting.cart_setting = None
+        self.assertEqual(self._entry.cart_setting, self._organization_setting.cart_setting)
+
+
 class LotEntryTests(unittest.TestCase):
     def _getTarget(self):
         from ..models import LotEntry
@@ -364,6 +394,7 @@ class LotEntryTests(unittest.TestCase):
         self.assertIsNotNone(target.wishes[2].rejected_at)
         self.assertEqual(result.lot_entry, target)
 
+
 class LotEntryWishTests(unittest.TestCase):
     def _getTarget(self):
         from ..models import LotEntryWish
@@ -375,9 +406,9 @@ class LotEntryWishTests(unittest.TestCase):
     def test_system_fee(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair,\
             SalesSegment, FeeTypeEnum
-            
+
         from ..models import LotEntry, Lot
-        
+
         system_fee = 315
 
         pdmp = PaymentDeliveryMethodPair(system_fee=system_fee,
@@ -385,6 +416,6 @@ class LotEntryWishTests(unittest.TestCase):
         ss = SalesSegment()
         lot = Lot(sales_segment=ss)
         lot_entry = LotEntry(payment_delivery_method_pair=pdmp, lot=lot)
-        
+
         target = self._makeOne(lot_entry=lot_entry)
         self.assertEqual(target.system_fee, system_fee)

@@ -13,7 +13,10 @@ from .select import (
     LazyGroupedSelectMultipleField,
     PHPCompatibleSelectMultipleField,
     )
-from .mixinutils import override, field_class_factory
+from ..utils.mixin import (
+    override,
+    make_class_factory,
+    )
 
 __all__ = [
     'RendererMixin',
@@ -40,6 +43,7 @@ __all__ = [
     'JSONField',
     ]
 
+field_class_factory = make_class_factory(type)
 
 class RendererMixin(object):
     def __mixin_init_pre__(self, **kwargs):

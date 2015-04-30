@@ -15,7 +15,7 @@ ${order.order_no}
 %else:
 <%
 shipping_address = order.shipping_address
-pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request, mode='orderreview'))
 %>
 <%mobile:form_header>購入情報</%mobile:form_header>
 ${view_context.title}

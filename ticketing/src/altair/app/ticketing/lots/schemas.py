@@ -6,7 +6,7 @@ from wtforms import Form
 from wtforms import widgets
 
 from altair.app.ticketing.cart.schemas import ClientForm as _ClientForm, ExtraForm
-from altair.app.ticketing.cart.view_support import build_dynamic_form
+from altair.app.ticketing.cart.view_support import build_dynamic_form, filter_extra_form_schema
 from altair.app.ticketing.users.models import SexEnum
 from altair.formhelpers import (
     Required,
@@ -102,7 +102,12 @@ class ClientForm(_ClientForm):
 class DynamicExtraForm(ExtraForm):
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        fields = build_dynamic_form.unbound_fields(context.cart_setting.extra_form_fields or [])
+        fields = build_dynamic_form.unbound_fields(
+            filter_extra_form_schema(
+                context.cart_setting.extra_form_fields or [],
+                mode='entry'
+                )
+            )
         super(DynamicExtraForm, self).__init__(*args, _fields=fields, **kwargs)
 
 

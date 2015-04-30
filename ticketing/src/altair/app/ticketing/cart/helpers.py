@@ -342,13 +342,15 @@ def error(names):
             if ns:
                 for err in ns:
                     errs[err] = err
-    if not errs:
+    return render_errors(request, errs.values())
+
+def render_errors(request, errors):
+    if not errors:
         return u''
-    errs = ", ".join(errs.values())
     if IMobileRequest.providedBy(request):
-        return Markup('<font color="red">%s</font><br />' % errs)
+        return Markup('<font color="red">%s</font><br />' % u', '.join(errors))
     else:
-        return Markup('<p class="error">%s</p>' % errs)
+        return Markup('<p class="error">%s</p>' % u', '.join(errors))
 
 def is_include_t_shirts(cart):
     for carted_product in cart.items:

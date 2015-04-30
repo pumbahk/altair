@@ -343,6 +343,9 @@ class OrganizationSettingSimpleForm(OurForm):
         choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(cart_models.CartSetting).filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
         )
+    mail_refund_to_user = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.mail_refund_to_user)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')

@@ -406,6 +406,42 @@ table.form-table input.submit:hover {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ebce75', endColorstr='#9b8e25',GradientType=0 ); /* IE6-9 */
 }
 
+.kadomaru table.form {
+	margin: 0px 0px 20px 0px;
+	border-spacing: 5px;
+	width: auto; 
+}
+
+.kadomaru table.form tbody th {
+	padding: 5px;
+	border-right: 2px solid #ddd;
+	width: 200px;
+}
+
+.kadomaru table.form thead th {
+	padding: 5px;
+	text-align: left;
+}
+
+.kadomaru table.form td {
+	padding: 5px;
+}
+
+.kadomaru table.form tfoot td {
+	padding: 5px;
+}
+
+.kadomaru table.form tr td ul {
+	list-style-type: none;
+	padding: 0 0;
+	margin: 0 0;
+}
+
+.kadomaru .form-footer {
+    text-align: center;
+}
+
+
 h1{
 	display: none;
 }

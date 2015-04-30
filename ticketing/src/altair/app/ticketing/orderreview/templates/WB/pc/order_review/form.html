@@ -3,7 +3,7 @@
 <form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
   <!-- wrapper -->
   <div class="formWrapper">
-    <table cellpadding="0" cellspacing="0" class="formeagles">
+    <table cellpadding="0" cellspacing="0" class="form">
       <colgroup>
         <col style="width:180px;">
         <col style="width:310px;">
@@ -14,7 +14,7 @@
           <td>
             ${form.order_no}
             (例: WB00000000AB)
-            <span class="red">${h.error('order_no')}</span>
+            <span class="red">${h.render_errors(request, form.order_no.errors)}</span>
           </td>
         </tr>
         <tr>
@@ -22,7 +22,7 @@
           <td>
             ${form.tel}
             (例: 080xxxxyyyy)
-            <span class="red">${h.error('tel')}</span><br/>
+            <span class="red">${h.render_errors(request, form.tel.errors)}</span><br/>
             ご予約時に登録した電話番号をご入力してください。
             </ul>
           </td>

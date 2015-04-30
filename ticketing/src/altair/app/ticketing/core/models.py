@@ -2923,6 +2923,18 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
             ],
             else_=null())
 
+    @property
+    def tels(self):
+        retval = []
+        tel_1 = self.tel_1 and self.tel_1.strip()
+        tel_2 = self.tel_2 and self.tel_2.strip()
+        if tel_1:
+            retval.append(tel_1)
+        if tel_2:
+            retval.append(tel_2)
+        return retval
+
+
 def no_filter(value):
     return value
 
@@ -3014,7 +3026,6 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket = Ticket.clone(template)
         if 'event_id' in kwargs:
             ticket.event_id = kwargs['event_id']
-        ticket.original_ticket_id = template.id
         ticket.save()
         return {template.id:ticket.id}
 
@@ -3339,6 +3350,7 @@ class MailTypeEnum(StandardEnum):
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
+    PurchaseRefundMail = 31
 
 _mail_type_labels = {
     MailTypeEnum.PurchaseCompleteMail.v: u"購入完了メール",
@@ -3348,6 +3360,7 @@ _mail_type_labels = {
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知メール",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知メール",
     MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知メール",
+    MailTypeEnum.PurchaseRefundMail.v: u"払戻通知メール",
     }
 
 MailTypeChoices = [(str(e) , _mail_type_labels[e.v]) for e in sorted(iter(MailTypeEnum), key=lambda e: e.v)]
@@ -3846,6 +3859,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
     lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
+    mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 

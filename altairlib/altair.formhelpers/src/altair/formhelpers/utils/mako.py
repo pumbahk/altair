@@ -7,6 +7,7 @@ from wtforms.widgets.core import HTMLString
 from mako.runtime import supports_caller as _supports_caller
 from altair.formhelpers.widgets.context import RenderingContext
 from altair.formhelpers.interactions import dyn_switch_disabled as dso
+from .javascript import DateTimeEncodingJavaScriptEncoder
 
 def supports_caller(func):
     return functools.wraps(func)(_supports_caller(func))
@@ -46,7 +47,9 @@ def render(context, render, **kwargs):
     else:
         return render(**kwargs)
 
-def inject_js(context, registry_var, **kwargs):
+def inject_js(context, registry_var, predefined_symbols={}, js_serializer=None, **kwargs):
+    if js_serializer is None:
+        js_serializer = DateTimeEncodingJavaScriptEncoder(ensure_ascii=False).encode
     retval = []
-    retval.append(dso.build_dyn_switch_disabled_js(context._kwargs['rendering_context'], registry_var))
+    retval.append(dso.build_dyn_switch_disabled_js(context._kwargs['rendering_context'], registry_var, predefined_symbols, js_serializer))
     return HTMLString(u''.join(retval))

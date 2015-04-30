@@ -45,7 +45,7 @@ def unescape(s):
     return re.sub(ur'\\.', r, s)
 
 class Tokenizer(object):
-    TOKEN_REGEXP = ur'(?:\{([^}]+)\})|([A-Za-z][0-9A-Za-z]*)|(<>|<=|>=|=>|=<|<|>|[&(),=+*/-])|(?:"((?:[^"\\]|(?:\\.))*)")|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([ \t]+)|(\r\n|\r|\n)|(.)'
+    TOKEN_REGEXP = ur'(?:\{([^}]+)\})|([A-Za-z_][0-9A-Za-z_]*)|(<>|<=|>=|=>|=<|<|>|[&(),=+*/-])|(?:"((?:[^"\\]|(?:\\.))*)")|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([ \t]+)|(\r\n|\r|\n)|(.)'
     def __init__(self, expr):
         self.tokens = re.finditer(self.TOKEN_REGEXP, expr)
         self.eof = False

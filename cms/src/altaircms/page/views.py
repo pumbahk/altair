@@ -18,7 +18,7 @@ from ..models import DBSession
 from altaircms.page.models import PageType
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
-from altaircms.page.models import StaticPageSet
+from altaircms.page.models import StaticPageSet, StaticPage
 from altaircms.layout.models import Layout
 from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
@@ -363,8 +363,10 @@ class ListView(object):
     def static_page_list(self):
         pagetype = get_pagetype(self.request)
         static_directory = get_static_page_utility(self.request)
-        pages = self.request.allowable(StaticPageSet).filter(StaticPageSet.pagetype==pagetype).order_by(sa.desc(StaticPageSet.updated_at))
-        return {"static_directory": static_directory, 
+        pages = self.request.allowable(StaticPageSet)\
+            .filter(StaticPageSet.pagetype == pagetype)\
+            .order_by(sa.desc(StaticPageSet.updated_at))
+        return {"static_directory": static_directory,
                 "pages": pages, 
                 "pagetype": pagetype}
 
