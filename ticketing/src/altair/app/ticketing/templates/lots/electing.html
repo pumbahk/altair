@@ -89,18 +89,34 @@ ${tabs.tabs(request)}
     </ul>
   </p>
   <div class="pull-left">
+    <p>
     <form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
       <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-primary">当選確定する</button>
     </form>
     <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
       <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-info">落選確定する</button>
     </form>
-    <form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}" class="pull-left">
+    <form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
       <button id="btn-entries-close" ${"disabled" if not closer.can_close() else ""} class="btn btn-large btn-warning"
               data-toggle="popover" data-placement="right" data-content="当落の確定していない申込があるのでオーソリ開放できません" data-original-title="">
         オーソリ開放する
       </button>
     </form>
+    </p>
+    <p>
+    <form method="POST" action="${request.route_url('lots.entries.send_elected_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
+      <button id="btn-entries-close"  class="btn btn-large btn-warning"
+              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+        当選メール送信
+      </button>
+    </form>
+    <form method="POST" action="${request.route_url('lots.entries.send_rejected_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
+      <button id="btn-entries-close" class="btn btn-large btn-warning"
+              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+        落選メール送信
+      </button>
+    </form>
+    </p>
     %if not closer.can_close():
     <script>
     $(function() {
