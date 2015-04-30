@@ -141,18 +141,8 @@ class MypageView(object):
         permission='*'
         )
     def order_show(self):
-        authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_user(authenticated_user)
-
-        if not user:
-            raise HTTPNotFound()
-
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10883
-
-        if not order or order.user_id != user.id:
-            raise HTTPNotFound()
-
         return dict(order=self.context.order)
 
     @lbr_view_config(
