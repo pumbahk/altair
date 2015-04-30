@@ -80,10 +80,18 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var, predefined_sym
     },
     NOW: function () {
       return new Date();
+    },
+    DATE: function (year, month, day, hour, minute, second) {
+      return new Date(
+        year, month - 1, day,
+        hour || 0,
+        minute || 0,
+        second || 0
+      );
     }
   };
 ''')
-    retval.append(u'''  var symbols = %(symbols)s;
+    retval.append(u'''  var symbolsFactory = function(ctx) { return %(symbols)s; };
 ''' % dict(symbols=js_serializer(predefined_symbols)))
     retval.append(u'''  var stateChangeHandlers = {
 ''')
@@ -98,16 +106,17 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var, predefined_sym
         if (name == 'THIS') {
           return provider.getValue();
         }
-        var f = builtinFunctions[name];
-        if (f !== void(0)) {
-          return f;
-        }
         var v = symbols[name];
         if (v !== void(0)) {
           return v;
         }
+        var f = builtinFunctions[name];
+        if (f !== void(0)) {
+          return f;
+        }
         return null;
       });
+      var symbols = symbolsFactory(ctx);
       return function () {
         if (predicate(ctx)) {
           for (var i = 0; i < elements.length; i++) {

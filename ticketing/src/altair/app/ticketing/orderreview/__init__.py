@@ -111,6 +111,7 @@ def main(global_config, **local_config):
     config.include(setup_static_views)
     config.include('.')
     config.include('.view_context')
+    config.include('.preview')
     config.scan(".views")
     config.scan(".panels")
     
