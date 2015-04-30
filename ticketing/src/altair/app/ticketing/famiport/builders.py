@@ -2,12 +2,10 @@
 
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .utils import FamiPortRequestType, FamiPortCrypt, prettify
-from .responses import FamiPortResponse
+from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum
+from .responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, FamiPortPaymentTicketingCancelResponse, FamiPortInformationResponse, FamiPortCustomerInformationResponse
 
-# from lxml.etree import ElementTree, Element, SubElement
 from lxml import etree
-from io import BytesIO
 from inspect import ismethod
 
 import logging
@@ -33,6 +31,8 @@ class FamiPortResponseBuilderFactory(object):
             return FamiPortPaymentTicketingCancelResponseBuilder()
         elif request_type == FamiPortRequestType.Information:
             return FamiPortInformationResponseBuilder()
+        elif request_type == FamiPortRequestType.CustomerInformation:
+            return FamiPortCustomerInformationResponseBuilder()
         else:
             pass
 
@@ -41,28 +41,112 @@ class FamiPortResponseBuilder(object):
     def __init__(self, *args, **kwargs):
         pass
 
-    def build_response(famiport_request=None):
+    def build_response(self, famiport_request=None):
         pass
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
-    def build_response(famiport_request=None):
-        pass
+    def build_response(self, famiport_reservation_inquiry_request=None):
+        resultCode = ResultCodeEnum.Normal # 正常応答 # TODO Change the value depending on the result
+        replyClass = ReplyClassEnum.CashOnDelivery # 代引き # TODO Change the value depending on the type
+        replyCode = ReplyCodeEnum.Normal # 正常応答 TODO Change the value depending on the result
+        playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
+            None, None, None, None, None, None, None, None, None, None, None, None, None
+        if replyCode == ReplyCodeEnum.Normal:
+            playGuideId = ''
+            reserveNumber = famiport_reservation_inquiry_request.reserveNumber
+            barCodeNo = '' # TODO retrieve barCodeNo by reserveNumber
+            # TODO Set these values accordingly
+            totalAmount = 0
+            ticketPayment = 0
+            systemFee = 0
+            ticketingFee = 0
+            ticketCountTotal = 0
+            ticketCount = 0
+            kogyoName = ''
+            koenDate = ''
+            name = ''
+
+            nameInput = 0 # 不要（画面表示なし）
+            phoneInput = 0 # 不要（画面表示なし）
+
+
+        # TODO Query barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name
+        famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(resultCode=resultCode, replyClass=replyClass, replyCode=replyCode, \
+                                                                                   playGuideId=playGuideId, barCodeNo=barCodeNo, totalAmount=totalAmount, ticketPayment=ticketPayment, systemFee=systemFee, \
+                                                                                   ticketingFee=ticketingFee, ticketCountTotal=ticketCountTotal, ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, \
+                                                                                   name=name, nameInput=nameInput, phoneInput=phoneInput)
+        return famiport_reservation_inquiry_response
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
-    def build_response(famiport_request=None):
-        pass
+    def build_response(self, famiport_payment_ticketing_request=None):
+        # TODO
+        famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyClass=None, replyCode=None, \
+                                                                               playGuideId=None, playGuideName=None, orderTicketNo=None, exchangeTicketNo=None, ticketingStart=None, ticketingEnd=None, \
+                                                                               totalAmount=None, ticketPayment=None, systemFee=None, ticketingFee=None, ticketCountTotal=None, ticketCount=None, \
+                                                                               kogyoName=None, koenDate=None, ticket=None)
+        return famiport_payment_ticketing_response
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
-    def build_response(famiport_request=None):
-        pass
+    def build_response(self, famiport_payment_ticketing_completion_request=None):
+        resultCode = ResultCodeEnum.Normal # TODO Change the value depending on the result
+        storeCode = famiport_payment_ticketing_completion_request.storeCode
+        sequenceNo = famiport_payment_ticketing_completion_request.sequenceNo
+        barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
+        orderId = '' # TODO Get orderId from DB
+        replyCode = '00' # 正常応答 # TODO Change the value depending on the result
+        famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, \
+                                                                                                    orderId=orderId, replyCode=replyCode)
+        return famiport_payment_ticketing_completion_response
 
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
-    def build_response(famiport_request=None):
-        pass
+    def build_response(self, famiport_payment_ticketing_cancel_request=None):
+        resultCode = ResultCodeEnum.Normal # 正常応答 # TODO Change the value depending on the result
+        storeCode = famiport_payment_ticketing_cancel_request.storeCode
+        sequenceNo = famiport_payment_ticketing_cancel_request.sequenceNo
+        barCodeNo = famiport_payment_ticketing_cancel_request.barCodeNo
+        orderId = '' # TODO Get orderId from DB
+        replyCode = ReplyCodeEnum.Normal # 正常応答 TODO Change the value depending on the result
+        famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyCode=replyCode)
+        return famiport_payment_ticketing_cancel_response
 
 class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
-    def build_response(famiport_request=None):
-        pass
+    def build_response(self, famiport_information_request=None):
+        resultCode = InformationResultCodeEnum.NoInformation # デフォルトは案内なし(正常)
+        # TODO Check something in DB and set appropriate resultCode and infoMessage
+        infoMessage = None
+        if resultCode in (InformationResultCodeEnum.NoInformation, InformationResultCodeEnum.OtherError): # 文言の設定なし
+            infoMessage = ''
+        elif resultCode == InformationResultCodeEnum.WithInformation: # 文言の設定あり
+            infoMessage = 'information message' # TODO Set the real message if needed
+        elif resultCode == InformationResultCodeEnum.ServinceUnavailable:
+            infoMessage = u'現在このサービスは利用できません。'
+        else:
+            infoMessage = None
+        infoKubun = famiport_information_request.infoKubun
+        famiport_information_response = FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
+        return famiport_information_response
+
+class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
+    def build_response(self, famiport_customer_information_request=None):
+        orderId = famiport_customer_information_request.orderId
+        # TODO Get name, memberId, address from DB with orderId
+        resultCode, replyCode = None, None
+        if orderId is not None:
+            resultCode = ResultCodeEnum.Normal
+            replyCode = ReplyCodeEnum.Normal
+        else:
+            resultCode = ResultCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.CustomerNamePrintInformationError
+        name, memberId, address1, address2, identifyNo = None, None, None, None, None
+        if replyCode == ReplyCodeEnum.Normal:
+            # TODO Set the real value for these
+            name = 'テスト名字' + '　' + 'テスト名前'
+            memberId =  '123abc'
+            address1 = '東京都品川区西五反田1-2-3'
+            address2 = 'HSビル 9F'
+            identifyNo = ''
+        famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
+        return famiport_customer_information_response
 
 """ Commenting out since seems not necessary at this point.
 @implementer(IXmlFamiPortResponseGeneratorFactory)
