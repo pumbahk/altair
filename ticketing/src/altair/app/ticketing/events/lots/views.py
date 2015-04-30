@@ -38,6 +38,10 @@ from altair.app.ticketing.lots.models import (
     LotRejectWork,
     LotEntryWish,
     )
+from altair.app.ticketing.lots.events import (
+    LotElectedEvent,
+    LotRejectedEvent,
+    )
 from altair.app.ticketing.sej.models import (
     SejOrder,
 )
@@ -713,6 +717,40 @@ class LotEntries(BaseView):
             if entry_no in reset_entries:
                  reset_entries.remove(entry_no)
         return elect_wishes, list(reject_entries), list(reset_entries)
+
+    @view_config(route_name='lots.entries.send_elected_mail', request_method='POST')
+    def send_elected_mail(self):
+        self.check_organization(self.context.event)
+        lot_id = self.context.lot_id
+        lot = Lot.query.filter(Lot.id == lot_id).one()
+        target_entries = [entry for entry in lot.entries if entry.is_elected]
+
+        if target_entries:
+            for entry in target_entries:
+                assert entry.lot_elected_entries and len(entry.lot_elected_entries) == 1, '???????????'
+                lot_elected_entry = entry.lot_elected_entries[0]
+                elected_wish = lot_elected_entry.lot_entry_wish
+                event = LotElectedEvent(self.request, elected_wish)
+                self.request.registry.notify(event)
+            self.request.session.flash(u'{}件のメールを送信しました。'.format(len(target_entries)))
+        else:
+            self.request.session.flash(u'送信対象がありませんでした。')
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+
+    @view_config(route_name='lots.entries.send_rejected_mail', request_method='POST')
+    def send_rejecting_mail(self):
+        self.check_organization(self.context.event)
+        lot_id = self.context.lot_id
+        lot = Lot.query.filter(Lot.id == lot_id).one()
+        target_entries = [entry for entry in lot.entries if entry.is_elected]
+        if target_entries:
+            for entry in target_entries:
+                event = LotRejectedEvent(self.request, entry)
+                self.request.registry.notify(event)
+            self.request.session.flash(u'{}件のメールを送信しました。'.format(len(target_entries)))
+        else:
+            self.request.session.flash(u'送信対象がありませんでした。')
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
