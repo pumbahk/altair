@@ -12,7 +12,7 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         # 予約照会
         # problematic_kogyoName=u'土吉サンプル興行♥♠♦♣⓪㉑㊿♫♬♩'
         regular_kogyoName=u'サンプル興行'
-        self.famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(resultCode='00', replyClass='1', replyCode='00', barCodeNo='4110000000006', totalAmount='00000670', ticketPayment='00000000', systemFee='00000500', ticketingFee='00000170', ticketCountTotal='1', ticketCount='1', kogyoName=regular_kogyoName, koenDate='201505011000', name=u'test_name', nameInput='0', phoneInput='0')
+        self.famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(resultCode='00', replyClass='1', replyCode='00', playGuideId = '00001', barCodeNo='4110000000006', totalAmount='00000670', ticketPayment='00000000', systemFee='00000500', ticketingFee='00000170', ticketCountTotal='1', ticketCount='1', kogyoName=regular_kogyoName, koenDate='201505011000', name=u'test_name', nameInput='0', phoneInput='0')
 
         # 入金発券
         tickets = [FamiPortTicket(barCodeNo='1234567890019', ticketClass='1', templateCode='TTEVEN0001', ticketData='test_ticketData1'), \

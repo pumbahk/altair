@@ -31,11 +31,12 @@ class FamiPortReservationInquiryResponse(FamiPortResponse):
     __slots__ = ('resultCode', 'replyClass', 'replyCode', 'barCodeNo', 'totalAmount', 'ticketPayment', 'systemFee',
                  'ticketingFee', 'ticketCountTotal', 'ticketCount', 'kogyoName', 'koenDate', 'name', 'nameInput', 'phoneInput')
 
-    def __init__(self, resultCode=None, replyClass=None, replyCode=None, barCodeNo=None, totalAmount=None, ticketPayment=None, \
+    def __init__(self, resultCode=None, replyClass=None, replyCode=None, playGuideId=None, barCodeNo=None, totalAmount=None, ticketPayment=None, \
                  systemFee=None, ticketingFee=None, ticketCountTotal=None, ticketCount=None, kogyoName=None, koenDate=None, name=None, nameInput=None, phoneInput=None):
         self.resultCode = resultCode  # 処理結果
         self.replyClass = replyClass  # 応答結果区分
         self.replyCode = replyCode  # 応答結果
+        self.playGuideId = playGuideId  # クライアントID
         self.barCodeNo = barCodeNo  # 支払番号
         self.totalAmount = totalAmount  # 合計金額
         self.ticketPayment = ticketPayment  # チケット料金

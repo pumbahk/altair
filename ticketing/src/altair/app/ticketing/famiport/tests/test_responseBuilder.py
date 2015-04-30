@@ -5,7 +5,9 @@ from unittest import TestCase
 from ..requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
                     FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
 
-class FamiPortResponseBuilderTest():
+from ..api import get_response_builder
+
+class FamiPortResponseBuilderTest(TestCase):
     def setUp(self):
         # 予約照会
         self.famiport_reservation_inquiry_request = FamiPortReservationInquiryRequest(storeCode='000009', ticketingDate='20150325151159', reserveNumber='5300000000001', authNumber='')
@@ -30,5 +32,12 @@ class FamiPortResponseBuilderTest():
         self.famiport_customer_information_request = FamiPortCustomerInformationRequest(storeCode='000009', mmkNo='1', ticketingDate='20150331182222', sequenceNo='15033100004', barCodeNo='4119000000005', \
                                                                                         playGuideId='', orderId='410900000005', totalAmount='2200')
 
-    def test_build_response(self):
-        pass
+    def test_build_ReservationInquiryResponseBuilder(self):
+        reservation_inquiry_response_builder = get_response_builder(self.famiport_reservation_inquiry_request)
+        # famiport_reservation_inquiry_response = reservation_inquiry_response_builder.build_response(self.famiport_reservation_inquiry_request)
+        self.check_build_response(reservation_inquiry_response_builder, self.famiport_reservation_inquiry_request)
+
+
+    def check_build_response(self, response_builder, famiport_request):
+        famiport_response = response_builder.build_response(famiport_request)
+        self.assertTrue(famiport_response)
