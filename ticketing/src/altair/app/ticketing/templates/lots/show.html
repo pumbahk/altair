@@ -77,6 +77,10 @@ ${tabs.tabs(request)}
             (<a href="${agreement_lots_cart_now_url}">時間指定して同意抽選カート購入</a>)
           </td>
         </tr>
+        <tr>
+            <th>当選/落選登録時に送信</th>
+            <td>${u'送信する' if lot.mail_send_now else u'送信しない'}</td>
+        </tr>
        </tbody>
     </table>
     <a class="btn" href="${request.route_url('lots.edit', lot_id=lot.id)}">編集</a>

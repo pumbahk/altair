@@ -115,6 +115,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lots')
 
+    mail_send_now = sa.Column('mail_send_now', sa.Boolean(), nullable=False, default=False)
+
     @staticmethod
     def create_from_template(template, **kwds):
         obj = Lot.clone(template)
