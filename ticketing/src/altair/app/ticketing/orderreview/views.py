@@ -96,17 +96,7 @@ class MypageView(object):
         permission='*'
         )
     def order_show(self):
-        authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_user(authenticated_user)
-
-        if not user:
-            raise HTTPNotFound()
-
         order = self.context.order
-
-        if not order:
-            raise HTTPNotFound()
-
         return dict(order=self.context.order)
 
     @lbr_view_config(
