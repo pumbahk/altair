@@ -80,12 +80,6 @@ def jump_infomation_page_om_for_10873(orderlike):
         raise HTTPFound('/orderreview/information')
 
 
-class InvalidForm(Exception):
-    def __init__(self, form, errors=[]):
-        self.form = form
-        self.errors = errors
-
-
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
     permission='*'
