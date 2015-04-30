@@ -35,7 +35,10 @@ def includeme(config):
     config.add_route('order_review.index', '/', factory='.resources.LandingViewResource')
     config.add_route('order_review.guest', '/guest')  # old url
     config.add_route('order_review.form', '/form', factory='.resources.LandingViewResource')
-    config.add_route('order_review.show', '/show', factory='.resources.OrderReviewResource')
+    config.add_route('order_review.form2', '/show', request_method='GET', factory='.resources.LandingViewResource')
+    config.add_route('order_review.edit_order_attributes.form', '/show', request_method='POST', request_param='action=edit_order_attributes.form', factory='.resources.OrderReviewResource')
+    config.add_route('order_review.edit_order_attributes.update', '/show', request_method='POST', request_param='action=edit_order_attributes.update', factory='.resources.OrderReviewResource')
+    config.add_route('order_review.show', '/show', request_method='POST', factory='.resources.OrderReviewResource')
 
     ## qr
     config.add_route('order_review.qr_print', '/qr/print', factory='.resources.QRViewResource')

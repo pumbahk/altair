@@ -9,6 +9,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.cart.api import get_auth_info
+from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
@@ -19,6 +20,8 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
 from .api import get_user_point_accounts
 from .views import unsuspicious_order_filter
+from .schemas import OrderReviewSchema
+from .exceptions import InvalidForm
 
 logger = logging.getLogger(__name__)
 
@@ -95,27 +98,25 @@ class MyPageListViewResource(OrderReviewResourceBase):
 class OrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(OrderReviewResource, self).__init__(request)
-        try:
-            self.order_no = self.request.params['order_no']
-        except KeyError:
-            raise HTTPNotFound()
-        self._order = None
-
-    def _populate_order(self):
-        if self._order is not None:
-            return
-        order_no = self.order_no
+        form = OrderReviewSchema(self.request.POST)
+        if not form.validate():
+            raise InvalidForm(form)
+        order_no = form.order_no.data
         order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
             filter(Order.organization_id==self.organization.id). \
             filter(Order.order_no==order_no).first()
         logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization.id, order_no, order))
-        self._order = order
-
-    @property
-    def order(self):
-        self._populate_order()
-        return self._order
+        if order is None:
+            raise InvalidForm(form, errors=[u'受付番号または電話番号が違います。'])
+        tel = form.tel.data
+        if not order.shipping_address or tel not in [_tel.replace('-', '') for _tel in order.shipping_address.tels]:
+            raise InvalidForm(form, errors=[u'受付番号または電話番号が違います。'])
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and \
+           (order.performance is None or order.performance.orion is None):
+            logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
+        self.form = form
+        self.order = order
 
     @reify
     def cart_setting(self):

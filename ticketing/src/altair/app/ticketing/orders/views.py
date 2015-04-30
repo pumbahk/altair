@@ -29,6 +29,7 @@ import  altair.viewhelpers.datetime_
 from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
+    OrganizationSetting,
     Performance,
     PaymentDeliveryMethodPair,
     ShippingAddress,
@@ -1006,6 +1007,7 @@ class OrdersRefundConfirmView(OrderBaseView):
         self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
         self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         self.organization_id = int(self.context.organization.id)
+        self.mail_refund_to_user = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().mail_refund_to_user
         self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
 
     @view_config(route_name='orders.refund.confirm', request_method='GET')
@@ -1061,7 +1063,7 @@ class OrdersRefundConfirmView(OrderBaseView):
         del self.request.session['orders']
         del self.request.session['ticketing.refund.condition']
 
-        send_refund_reserve_mail(self.request, refund)
+        send_refund_reserve_mail(self.request, refund, self.mail_refund_to_user, orders)
 
         self.request.session.flash(u'払戻予約しました')
         return HTTPFound(location=route_path('orders.refund.index', self.request))
@@ -1476,7 +1478,7 @@ class OrderDetailView(OrderBaseView):
             }))
         ## todo:validation?
         params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
-        OrderAttributeIO(include_undefined_items=True).unmarshal(self.request, order, params)
+        OrderAttributeIO(include_undefined_items=True, mode='any').unmarshal(self.request, order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

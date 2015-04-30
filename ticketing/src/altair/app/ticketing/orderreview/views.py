@@ -5,13 +5,18 @@ import json
 from datetime import datetime
 
 from pyramid.view import view_defaults
+from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.decorator import reify
+from pyramid.interfaces import IRouteRequest, IRequest
 
 from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core.api import get_default_contact_url
+from altair.request.adapters import UnicodeMultiDictAdapter
+
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
@@ -19,16 +24,19 @@ from altair.app.ticketing.payments import plugins
 
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.rendering import selectable_renderer
+from altair.app.ticketing.cart.view_support import filter_extra_form_schema, get_extra_form_schema, render_view_to_response_with_derived_request, render_display_value
 from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.api import OrderAttributeIO
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
+from .exceptions import InvalidForm
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -211,7 +219,6 @@ class OrderReviewView(object):
 
     @lbr_view_config(
         route_name='order_review.index',
-        request_method="GET",
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
@@ -224,61 +231,130 @@ class OrderReviewView(object):
         jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
-    @lbr_view_config(
-        route_name='order_review.form',
-        request_method="GET",
-        renderer=selectable_renderer("order_review/form.html")
-        )
+
+@view_defaults(renderer=selectable_renderer("order_review/form.html"))
+class OrderReviewFormView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(route_name='order_review.form')
     def form(self):
         jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
-    @lbr_view_config(
-        route_name='order_review.show',
-        request_method="GET"
-        )
-    def get(self):
-        jump_maintenance_page_om_for_trouble(self.request.organization)
+    @lbr_view_config(route_name='order_review.form2')
+    def form2(self):
         return HTTPFound(self.request.route_path('order_review.form'))
 
-    @lbr_view_config(
-        route_name='order_review.show',
-        request_method="POST",
-        renderer=selectable_renderer("order_review/show.html")
-        )
-    def post(self):
-        form = schemas.OrderReviewSchema(self.request.params)
-        if not form.validate():
-            raise InvalidForm(form)
-
-        order = self.context.order
-        if order is None or order.shipping_address is None:
-            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
-
-        address = order.shipping_address
-        if form.data["tel"] not in (schemas.strip_hyphen(_tel) for _tel in (address.tel_1, address.tel_2)):
-            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
-
-        jump_infomation_page_om_for_10873(order)  # refs 10873
-
-        # Orion受取りなのにOrionPerformanceが無い場合は、警告
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and order.performance.orion is None:
-            logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
-
-        return dict(order=order)
-
-    @lbr_view_config(
-        context=InvalidForm,
-        renderer=selectable_renderer("order_review/form.html")
-        )
-    def invalid_form(self):
+    @lbr_view_config(context=InvalidForm)
+    def exc(self):
         form = self.context.form
         order_no_errors = list(form.order_no.errors)
         order_no_errors.extend(self.context.errors)
         form.order_no.errors = order_no_errors
-        self.request.errors = form.errors
-        return dict(form=self.context.form)
+        return {"form": form}
+
+
+@view_defaults(route_name='order_review.show', renderer=selectable_renderer("order_review/show.html"), request_method='POST')
+class OrderReviewShowView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config()
+    @lbr_view_config(name='order_review.show')
+    def post(self):
+        order = self.context.order
+        jump_infomation_page_om_for_10873(order)  # refs 10873
+        return dict(order=order)
+
+
+@view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
+class OrderAttributesEditView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @reify
+    def _predefined_symbols(self):
+        performance = self.context.order.performance
+        if performance is not None:
+            performance_start_on = performance.start_on
+            performance_end_on = performance.end_on or performance.start_on
+        else:
+            performance_start_on = None
+            performance_end_on = None
+        return {
+            'PERFORMANCE_START': performance_start_on,
+            'PERFORMANCE_END': performance_end_on,
+            'ORDERED': self.context.order.created_at,
+            'ISSUED': self.context.order.issued_at,
+            'PAID': self.context.order.paid_at,
+            'CANCELED': self.context.order.canceled_at,
+            'REFUNDED': self.context.order.refunded_at,
+            }
+
+    def create_form(self, formdata=None, data=None):
+        mode = ['orderreview', 'editable']
+        order = self.context.order
+        data = {
+            entry[0]: entry[2]
+            for entry in OrderAttributeIO(for_='cart', mode=mode).marshal(self.request, order)
+            }
+        extra_form_field_descs = get_extra_form_schema(self.context, self.request, order.sales_segment, for_='cart')
+        form, form_fields = schemas.build_dynamic_form(
+            self.request,
+            filter_extra_form_schema(extra_form_field_descs, mode=mode),
+            _dynswitch_predefined_symbols=self._predefined_symbols,
+            formdata=formdata,
+            _data=data,
+            csrf_context=self.request
+            )
+        # retouch form_fields
+        for form_field in form_fields:
+            field_desc = form_field['descriptor']
+            form_field['old_display_value'] = render_display_value(self.request, field_desc, data.get(field_desc['name'])) if data is not None else u''
+        return form, form_fields
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.form')
+    def form(self):
+        # 抽選から当選処理で作られた予約についてサポートできていないので修正しないといけない
+        form, form_fields = self.create_form(formdata=None)
+        return dict(order=self.context.order, form=form, form_fields=form_fields)
+
+    def render_show_view(self):
+        return render_view_to_response_with_derived_request(
+            context_factory=lambda request:self.context,
+            request=self.request,
+            route=('order_review.show', {})
+            )
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.update', request_param='do_cancel')
+    def cancel(self):
+        return self.render_show_view()
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.update', request_param='do_update')
+    def update(self):
+        form, form_fields = self.create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        if not form.validate():
+            if len(form.csrf.errors) > 0:
+                return self.cancel()
+            else:
+                return dict(order=self.context.order, form=form, form_fields=form_fields)
+        # context.order は slave のやつなので書き込みできない
+        from altair.app.ticketing.models import DBSession
+        writable_order = DBSession.query(Order).filter_by(id=self.context.order.id).one()
+        updated_attributes = {
+            k: form.data[k]
+            for k in (form_field['descriptor']['name'] for form_field in form_fields if form_field['descriptor'].get('edit_in_orderreview', False))
+            }
+        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes)) 
+        # writable_order と self.context.order は別セッションのため、このタイミングでは同期していない。
+        # 強制的に上書きして render_show_view() に備える
+        self.context.order = writable_order
+        return self.render_show_view()
 
 
 @lbr_view_config(

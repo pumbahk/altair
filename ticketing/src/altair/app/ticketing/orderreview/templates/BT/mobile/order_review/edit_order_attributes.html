@@ -1,0 +1,39 @@
+<%inherit file="../layout.html"/>
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>入力情報の編集</%mobile:header>
+<form method="POST" action="${request.route_path('order_review.edit_order_attributes.update')}">
+${form.csrf()}
+<input type="hidden" name="action" value="edit_order_attributes.update" />
+<input type="hidden" name="order_no" value="${order.order_no}" />
+<input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+% for i, field in enumerate(form_fields):
+% if field['field']:
+<div>
+<%mobile:form_header>${field['field'].label}</%mobile:form_header>
+</div>
+% if field['descriptor'].get('edit_in_orderreview', False):
+% if field['field'].description:
+<div><font size="-1">${field['field'].description}</font></div>
+% endif
+<div>
+${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}
+${h.error_list(request, field['field'])}
+</div>
+% if field['field']._note:
+<div><font size="-1">${field['field']._note}</font></div>
+% endif
+% else:
+<div>${h.sensible_coerce(request, field['old_display_value'])}</div>
+% endif
+% else:
+% if i > 0:
+<hr />
+% endif
+<div>${field['description']}</div>
+% endif
+% endfor
+<hr />
+<input type="submit" name="do_update" value="保存する" />
+<input type="submit" name="do_cancel" value="キャンセル" />
+</form>
+

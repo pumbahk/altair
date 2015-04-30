@@ -26,7 +26,7 @@ ${self.widget.flow_widget(4)}
 
 ${(view_context.embedded_html_complete_page or u'')|n}
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
 % if extra_form_data:
 <div class="confirmBox">
 	<div class="confirmBoxInner">
@@ -104,7 +104,7 @@ ${(view_context.embedded_html_complete_page or u'')|n}
   </div>
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
 % if extra_form_data:
 <div class="confirmBox">
 	<div class="confirmBoxInner">

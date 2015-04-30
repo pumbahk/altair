@@ -48,7 +48,9 @@ class send_refund_reserve_mailTests(unittest.TestCase, MailTestMixin):
             organization=DummyModel(contact_email=u'testing@example.com'),
         )
 
-        result = self._callFUT(request, refund)
+        mail_refund_to_user = False
+        orders = None
+        result = self._callFUT(request, refund, mail_refund_to_user, orders)
 
         mailer = pyramid_mailer.get_mailer(request)
         self.assertTrue(result)

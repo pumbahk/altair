@@ -66,7 +66,7 @@ class OrderDependentsProvider(object):
             .order_by(Order.branch_no.desc()).all()
 
     def get_order_attributes(self):
-        return [(display_name, k, v, False, undefined) for k, display_name, v, undefined in OrderAttributeIO(include_undefined_items=True).marshal(self.request, self.order)]
+        return [(entry, False) for entry in OrderAttributeIO(include_undefined_items=True, mode='any').marshal(self.request, self.order)]
 
     @property
     def mail_magazines(self):
