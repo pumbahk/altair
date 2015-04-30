@@ -15,9 +15,12 @@ def compile_predicate_to_pycode(expr):
     emitters.GenericCodeEmittingVisitor(emit, emitters.generic_boolean_op_func_handler)(ast)
     return compile(u''.join(emit.buf), 'eval', 'eval')
 
-def eval_compiled_predicate(code, var_resolver, sym_resolver):
-    caster = eval_.Caster()
-    comparator = eval_.Comparator(caster)
+def eval_compiled_predicate(code, var_resolver, sym_resolver, comparator_factory=None, caster=None):
+    if comparator_factory is None:
+        comparator_factory = eval_.Comparator
+    if caster is None:
+        caster = eval_.Caster()
+    comparator = comparator_factory(caster)
     ctx = dict(
         to_float=caster.to_float,
         to_string=caster.to_string,

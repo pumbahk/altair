@@ -221,9 +221,9 @@ ${ch.breadcrumbs(
           <p>購入情報属性を追加して券面の文面を上書きする事ができます</p>
           <form method="POST" action="${request.route_path("orders.attributes_edit", order_id=order.id)}">
           <table class="table table-striped table-bordered">
-            %for label, key, value, show_only, undefined in order_attributes:
+            %for (key, label, _, value, field_desc), show_only in order_attributes:
               %if not key.startswith("memo_on_order"):
-              <tr${u' class="undefined"' if undefined else u''|n}>
+              <tr${u' class="undefined"' if not field_desc else u''|n}>
                 <th class="span3">${label}</th>
                 %if show_only:
                   <td class="span2">${value}</td>

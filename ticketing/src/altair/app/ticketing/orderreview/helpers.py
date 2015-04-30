@@ -6,6 +6,7 @@ from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.cart.helpers import *
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.cart.helpers import japanese_date, japanese_datetime
+from altair.formhelpers.widgets.generic import GenericHiddenInput
 
 __all__ = [
     "japanese_date",
@@ -21,11 +22,14 @@ __all__ = [
     "get_payment_status",
     "get_payment_status_image",
     "get_print_status",
+    "generic_hidden_input",
     "is_disabled_order",
     "get_entry_status",
     "get_entry_status_image",
     "safe_get_contact_url", # from altair.app.ticketing.cart.api
     ]
+
+generic_hidden_input = GenericHiddenInput()
 
 def order_desc(order):
     profile = None
@@ -140,3 +144,5 @@ def get_entry_status_image(entry):
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
+
+

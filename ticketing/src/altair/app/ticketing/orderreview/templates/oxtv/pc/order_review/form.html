@@ -9,7 +9,7 @@
             <th class="form-field-label">受付番号 <span class="red">*</span></th>
             <td class="form-field-controls">
               ${form.order_no(style="font-size:20px")}
-              ${h.error('order_no')}
+              ${h.render_errors(request, form.order_no.errors)}
             </td>
           </tr>
           <tr class="form-field">
@@ -17,7 +17,7 @@
             <td class="form-field-controls">
               ${form.tel(style="font-size:20px")}
               <div class="notice">電話番号は、ご登録時の電話番号をご入力ください<br />（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</div>
-              ${h.error('tel')}
+              ${h.render_errors(request, form.tel.errors)}
             </td>
           </tr>
           <tr>

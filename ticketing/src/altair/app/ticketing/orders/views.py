@@ -1478,7 +1478,7 @@ class OrderDetailView(OrderBaseView):
             }))
         ## todo:validation?
         params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
-        OrderAttributeIO(include_undefined_items=True).unmarshal(self.request, order, params)
+        OrderAttributeIO(include_undefined_items=True, mode='any').unmarshal(self.request, order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

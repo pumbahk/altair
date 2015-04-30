@@ -424,7 +424,8 @@ class ConfirmLotEntryView(object):
                 self.request,
                 self.context.lot.sales_segment,
                 raw_extra_form_data,
-                for_='lots'
+                for_='lots',
+                mode='entry'
                 )
         return dict(event=event,
                     lot=lot,
@@ -562,7 +563,9 @@ class CompletionLotEntryView(object):
         #         self.context,
         #         self.request,
         #         self.context.sales_segment,
-        #         raw_extra_form_data
+        #         raw_extra_form_data,
+        #         for_='lots',
+        #         mode='entry'
         #         )
 
         return dict(
