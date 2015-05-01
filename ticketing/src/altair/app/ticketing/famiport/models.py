@@ -7,6 +7,7 @@ from altair.app.ticketing.models import (
     Identifier,
     WithTimestamp,
     )
+from .utils import InformationResultCodeEnum
 
 
 class FamiPortOrderNoSequence(Base, BaseModel, WithTimestamp):
@@ -28,3 +29,17 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
     id = sa.Column(Identifier, primary_key=True)
     order_no = sa.Column(sa.String(255), nullable=False)
     barcode_no = sa.Column(sa.String(255), nullable=False)
+
+
+class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
+    __tablename__ = 'FamiPortInformationMessage'
+    __table_args__= (sa.UniqueConstraint('result_code'),)
+
+    id = sa.Column(Identifier, primary_key=True)
+    result_code = sa.Column(sa.Enum("WithInformation", "ServiceUnavailable"))
+    message = sa.Column(sa.Unicode(length=1000), nullable=True)
+
+    @classmethod
+    def get_message(cls, result_code, default_message=None):
+        query = FamiPortInformationMessage.filter_by(result_code=result_code)
+        return query.first() or default_message

@@ -25,7 +25,7 @@ class FamiPortResponseBuilderTest(TestCase):
                                                                                                playGuideId='', orderId='123456789012', cancelCode='10')
 
         # 案内
-        self.famiport_information_request = FamiPortInformationRequest(infoKubun='Reserve', storeCode='000009', kogyoCode='', kogyoSubCode='', koenCode='', uketsukeCode='', playGuideId='', authCode='', \
+        self.famiport_information_request = FamiPortInformationRequest(infoKubun='1', storeCode='000009', kogyoCode='', kogyoSubCode='', koenCode='', uketsukeCode='', playGuideId='', authCode='', \
                                                                        reserveNumber='4000000000001')
 
         # 顧客情報取得
@@ -33,11 +33,15 @@ class FamiPortResponseBuilderTest(TestCase):
                                                                                         playGuideId='', orderId='410900000005', totalAmount='2200')
 
     def test_build_ReservationInquiryResponseBuilder(self):
-        reservation_inquiry_response_builder = get_response_builder(self.famiport_reservation_inquiry_request)
-        # famiport_reservation_inquiry_response = reservation_inquiry_response_builder.build_response(self.famiport_reservation_inquiry_request)
-        self.check_build_response(reservation_inquiry_response_builder, self.famiport_reservation_inquiry_request)
+        # 予約照会
+        # reservation_inquiry_response_builder = get_response_builder(self.famiport_reservation_inquiry_request)
+        # self.check_build_response(reservation_inquiry_response_builder, self.famiport_reservation_inquiry_request)
 
+        # 案内
+        famiport_information_response_builder = get_response_builder(self.famiport_information_request)
+        self.check_build_response(famiport_information_response_builder, self.famiport_information_request)
 
     def check_build_response(self, response_builder, famiport_request):
         famiport_response = response_builder.build_response(famiport_request)
-        self.assertTrue(famiport_response)
+        print famiport_response
+        self.assertTrue(famiport_response is None)

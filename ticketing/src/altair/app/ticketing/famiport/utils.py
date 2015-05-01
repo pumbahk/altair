@@ -29,8 +29,12 @@ class ResultCodeEnum(Enum):
 class InformationResultCodeEnum(Enum):
     NoInformation = '00' # 案内なし(正常)
     WithInformation = '01' # 案内あり(正常)
-    ServinceUnavailable = '90' # サービス不可時案内
+    ServiceUnavailable = '90' # サービス不可時案内
     OtherError = '99' # その他エラー
+
+class InfoKubunEnum(IntEnum):
+    Reserved = 1 # 予済み
+    DirectSales = 2 # 直販
 
 class CustomerInformationResultCodeEnum(Enum):
     Normal = '00' # 正常応答
