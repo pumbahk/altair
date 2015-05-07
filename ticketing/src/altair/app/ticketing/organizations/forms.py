@@ -76,8 +76,9 @@ class OrganizationFormMixin(object):
     )
     prefecture_id = OurSelectField(
         label=u'都道府県',
+        coerce=int,
         validators=[Optional()],
-        choices=[(pref.name, pref.name) for pref in Prefecture.all()]
+        choices=[(pref.id, pref.name) for pref in Prefecture.all()]
     )
     city = OurTextField(
         label=u'市区町村',
@@ -140,7 +141,7 @@ class OrganizationForm(OurForm, OrganizationFormMixin):
         """
         organization_id = self._get_organization_id()
         if organization_id is None:
-            raise ValidationError(u'オーガにゼーションIDが不正です')
+            raise ValidationError(u'オーガ二ゼーションIDが不正です')
 
         duplicate_organizations = c_models.Organization \
             .query \
@@ -157,7 +158,7 @@ class OrganizationForm(OurForm, OrganizationFormMixin):
         """
         organization_id = self._get_organization_id()
         if organization_id is None:
-            raise ValidationError(u'オーガにゼーションIDが不正です')
+            raise ValidationError(u'オーガ二ゼーションIDが不正です')
 
         duplicate_organizations = c_models.Organization \
             .query \

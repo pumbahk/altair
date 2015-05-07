@@ -6,7 +6,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.url import route_path
-
+from altair.app.ticketing.master.models import Prefecture
 
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
@@ -82,6 +82,7 @@ class Organizations(BaseView):
 
         if f.validate():
             organization = merge_session_with_post(Organization(), f.data)
+            organization.prefecture = Prefecture.get_prefecture_label(f.prefecture_id.data)
             organization.user = User(
                 bank_account=BankAccount()
                 )
@@ -142,6 +143,7 @@ class Organizations(BaseView):
             return HTTPNotFound("organization id %d is not found" % organization_id)
 
         f = OrganizationForm(organization_id=organization_id)
+        f.prefecture_id.default = Prefecture.get_prefecture_id(organization.prefecture)
         f.process(record_to_multidict(organization))
         return {
             'form':f,
@@ -158,6 +160,7 @@ class Organizations(BaseView):
         f = OrganizationForm(self.request.POST, organization_id=organization_id)
         if f.validate():
             organization = merge_session_with_post(organization, f.data)
+            organization.prefecture = Prefecture.get_prefecture_label(f.prefecture_id.data)
             organization.save()
 
             self.request.session.flash(u'配券先／配券元を保存しました')
