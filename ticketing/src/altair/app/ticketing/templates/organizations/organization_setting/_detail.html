@@ -15,14 +15,6 @@
       <td>${organization_setting.name}</td>
     </tr>
     <tr>
-      <th>${HH.label_text_for(c_models.OrganizationSetting.auth_type)}</th>
-      <td>${organization_setting.auth_type or u'-'}</td>
-    </tr>
-    <tr>
-      <th>${HH.label_text_for(c_models.OrganizationSetting.performance_selector)}</th>
-      <td>${organization_setting.performance_selector}</td>
-    </tr>
-    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.margin_ratio)}</th>
       <td>${HH.format_percentage(organization_setting.margin_ratio)}</td>
     </tr>

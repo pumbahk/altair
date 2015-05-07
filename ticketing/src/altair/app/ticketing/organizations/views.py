@@ -220,7 +220,6 @@ class OrganizationSettings(BaseView):
 
         organization_setting.name = f.name.data
         organization_setting.cart_setting_id = f.cart_setting_id.data
-        organization_setting.auth_type = f.auth_type.data
         organization_setting.margin_ratio = f.margin_ratio.data
         organization_setting.refund_ratio = f.refund_ratio.data
         organization_setting.printing_fee = f.printing_fee.data
