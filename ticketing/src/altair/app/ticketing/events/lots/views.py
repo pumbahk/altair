@@ -742,7 +742,7 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id == lot_id).one()
-        target_entries = [entry for entry in lot.entries if entry.is_elected]
+        target_entries = [entry for entry in lot.entries if entry.is_rejected]
         if target_entries:
             for entry in target_entries:
                 event = LotRejectedEvent(self.request, entry)
