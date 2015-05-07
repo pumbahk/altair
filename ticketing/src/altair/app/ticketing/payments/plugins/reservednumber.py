@@ -177,19 +177,21 @@ class ReservedNumberPaymentPlugin(object):
         """ 前処理 なし"""
 
     def finish(self, request, cart):
+        order = order_models.Order.create_from_cart(cart)
+        self.finish2(request, order)
+        cart.finish()
+        return order
+
+    def finish2(self, request, order_like):
         """ 確定処理 """
         while True:
             number = rand_string(string.digits, 10)
             existing_number = m.PaymentReservedNumber.query.filter_by(number=number).first()
             if existing_number is None:
-                reserved_number = m.PaymentReservedNumber(order_no=cart.order_no, number=number)
+                reserved_number = m.PaymentReservedNumber(order_no=order_like.order_no, number=number)
                 break
         m.DBSession.add(reserved_number)
         logger.debug(u"支払い番号: %s" % reserved_number.number)
-        order = order_models.Order.create_from_cart(cart)
-        cart.finish()
-
-        return order
 
     def finished(self, request, order):
         """ 支払い番号が発行されていること """
