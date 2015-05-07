@@ -101,11 +101,11 @@ class OrganizationFormMixin(object):
         ]
     )
     tel_1 = OurTextField(
-        label=u'電話番号',
+        label=u'電話番号1',
         validators=[Phone()]
     )
     tel_2 = OurTextField(
-        label=u'携帯電話番号',
+        label=u'電話番号2',
         validators=[Phone()]
     )
     fax = OurTextField(
