@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+from datetime import datetime
 from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
 from altair.mobile.api import is_mobile_request
@@ -7,6 +7,7 @@ from altair.app.ticketing.cart.helpers import *
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.cart.helpers import japanese_date, japanese_datetime
 from altair.formhelpers.widgets.generic import GenericHiddenInput
+
 
 __all__ = [
     "japanese_date",
@@ -126,23 +127,21 @@ def is_disabled_order(entry):
     return False
 
 def get_entry_status(entry):
-    if entry.canceled_at:
+    if entry.canceled_at and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"無効"
-    elif entry.is_ordered:
+    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"当選"
-    elif entry.is_rejected:
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"落選"
     else:
         return u"結果抽選待ち"
 
 def get_entry_status_image(entry):
-    if entry.canceled_at:
+    if entry.canceled_at and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"icon_cancel.gif"
-    elif entry.is_ordered:
+    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"icon_tousen.gif"
-    elif entry.is_rejected:
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= datetime.now():
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
-
-
