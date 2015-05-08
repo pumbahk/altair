@@ -73,16 +73,19 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 <div>
 ${shipping.tel_1}
 </div>
-<%mobile:form_header>楽天スーパーポイント口座</%mobile:form_header>
-<div>
-% if accountno:
-  <div>
-    ${accountno}
-  </div>
-% else:
-  <div>
-    <span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span>
-  </div>
+% if membershipinfo.enable_point_input:
+    <%mobile:form_header>楽天スーパーポイント口座</%mobile:form_header>
+    <div>
+    % if accountno:
+        <div>
+        ${accountno}
+        </div>
+    % else:
+        <div>
+        <span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span>
+        </div>
+    % endif
+    </div>
 % endif
 <%mobile:form_header>配送先住所 <font size="-1">※配送を選択の場合</font></%mobile:form_header>
 <div>
