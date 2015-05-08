@@ -2,14 +2,14 @@
 """add_order_user_point_account_table
 
 Revision ID: 10ffc65de6c5
-Revises: cd9211f5a5b
+Revises: 16c1183bb7e0
 Create Date: 2015-04-24 17:57:14.090059
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '10ffc65de6c5'
-down_revision = 'cd9211f5a5b'
+down_revision = '16c1183bb7e0'
 
 from alembic import op
 import sqlalchemy as sa
