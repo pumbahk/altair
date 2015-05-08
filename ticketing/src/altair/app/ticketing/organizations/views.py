@@ -223,6 +223,7 @@ class OrganizationSettings(BaseView):
 
         organization_setting.name = f.name.data
         organization_setting.cart_setting_id = f.cart_setting_id.data
+        organization_setting.auth_type = f.auth_type.data
         organization_setting.margin_ratio = f.margin_ratio.data
         organization_setting.refund_ratio = f.refund_ratio.data
         organization_setting.printing_fee = f.printing_fee.data
@@ -248,6 +249,10 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_mypage = f.enable_mypage.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
+        organization_setting.asid = f.asid.data
+        organization_setting.asid_mobile = f.asid_mobile.data
+        organization_setting.asid_smartphone = f.asid_smartphone.data
+        organization_setting.lot_asid = f.lot_asid.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
