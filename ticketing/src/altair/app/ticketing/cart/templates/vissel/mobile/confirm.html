@@ -73,7 +73,7 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 <div>
 ${shipping.tel_1}
 </div>
-% if membershipinfo.enable_point_input:
+% if membershipinfo is not None and membershipinfo.enable_point_input:
     <%mobile:form_header>楽天スーパーポイント口座</%mobile:form_header>
     <div>
     % if accountno:
