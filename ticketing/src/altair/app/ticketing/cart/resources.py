@@ -131,10 +131,14 @@ class TicketingCartResourceBase(object):
         membership_name = self.membership
         organization = cart_api.get_organization(self.request)
         from altair.app.ticketing.models import DBSession as session
-        membershipinfo = session.query(u_models.Membership)\
+        if membership_name is not None:
+            membershipinfo = session.query(u_models.Membership)\
                         .filter_by(organization_id=organization.id)\
                         .filter_by(name=membership_name)\
-                        .filter_by(deleted_at=None)\
+                        .first()
+        else:
+            membershipinfo = session.query(u_models.Membership)\
+                        .filter_by(organization_id=organization.id)\
                         .first()
         return membershipinfo
 

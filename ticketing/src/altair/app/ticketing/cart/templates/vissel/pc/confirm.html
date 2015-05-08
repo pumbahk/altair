@@ -138,7 +138,7 @@ ${self.widget.flow_widget(3)}
 		  <th scope="row">電話番号</th>
           <td>${shipping.tel_1}</td>
 		</tr>
-        % if membershipinfo.enable_point_input:
+        % if membershipinfo is not None and membershipinfo.enable_point_input:
 		<tr>
 		  <th scope="row">楽天ポイント口座</th>
           <td>
