@@ -15,6 +15,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
+from altair.app.ticketing.famiport.utils import InformationResultCodeEnum
 
 Identifier = sa.BigInteger
 
@@ -23,7 +24,7 @@ def upgrade():
     op.create_table(
         'FamiPortInformationMessage',
         sa.Column('id', Identifier),
-        sa.Column('result_code', sa.String(255), nullable=False),  # 案内処理結果コード
+        sa.Column('result_code', sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False),  # 案内処理結果コード名
         sa.Column('message', sa.Unicode(1000), nullable=False),  # 案内文言
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),

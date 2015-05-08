@@ -36,10 +36,20 @@ class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
     __table_args__= (sa.UniqueConstraint('result_code'),)
 
     id = sa.Column(Identifier, primary_key=True)
-    result_code = sa.Column(sa.Enum("WithInformation", "ServiceUnavailable"))
+    result_code = sa.Column(sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False)
     message = sa.Column(sa.Unicode(length=1000), nullable=True)
 
     @classmethod
-    def get_message(cls, result_code, default_message=None):
-        query = FamiPortInformationMessage.filter_by(result_code=result_code)
-        return query.first() or default_message
+    def create(cls, result_code, message):
+        return cls(result_code=result_code, message=message)
+
+    @classmethod
+    def get_message(cls, information_result_code, default_message=None):
+        if not isinstance(information_result_code, InformationResultCodeEnum):
+            return None
+        query = FamiPortInformationMessage.filter_by(result_code=information_result_code.name)
+        famiport_information_message = query.first()
+        if famiport_information_message:
+            return famiport_information_message.message
+        else:
+            return default_message

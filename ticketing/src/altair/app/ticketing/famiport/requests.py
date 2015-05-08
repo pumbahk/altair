@@ -11,6 +11,10 @@ class FamiPortRequest(object):
     def request_type(self):
         return self._requestType
 
+    @request_type.setter
+    def request_type(self, requestType):
+        self._requestType = requestType
+
     @property
     def encrypted_fields(self):
         return self._encryptedFields

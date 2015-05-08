@@ -5,7 +5,10 @@ from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
 from .models import FamiPortInformationMessage
 from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum, InfoKubunEnum
-from .responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, FamiPortPaymentTicketingCancelResponse, FamiPortInformationResponse, FamiPortCustomerInformationResponse
+from .requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
+                    FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
+from .responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, \
+                    FamiPortPaymentTicketingCancelResponse, FamiPortInformationResponse, FamiPortCustomerInformationResponse
 
 from lxml import etree
 from inspect import ismethod
@@ -15,6 +18,34 @@ import hashlib
 import base64
 
 logger = logging.getLogger(__name__)
+
+class FamiPortRequestFactory(object):
+    @classmethod
+    def create_request(self, famiport_request_dict, request_type):
+        if not famiport_request_dict or not request_type:
+            return None
+
+        famiport_request = None
+        if request_type == FamiPortRequestType.ReservationInquiry:
+            famiport_request = FamiPortReservationInquiryRequest()
+        elif request_type == FamiPortRequestType.PaymentTicketing:
+            famiport_request = FamiPortPaymentTicketingRequest()
+        elif request_type == FamiPortRequestType.PaymentTicketingCompletion:
+            famiport_request =  FamiPortPaymentTicketingCompletionRequest()
+        elif request_type == FamiPortRequestType.PaymentTicketingCancel:
+            famiport_request = FamiPortPaymentTicketingCancelRequest()
+        elif request_type == FamiPortRequestType.Information:
+            famiport_request = FamiPortInformationRequest()
+        elif request_type == FamiPortRequestType.CustomerInformation:
+            famiport_request = FamiPortCustomerInformationRequest()
+        else:
+            pass
+        famiport_request.request_type = request_type
+
+        for key, value in famiport_request_dict.items():
+            setattr(famiport_request, key, value)
+
+        return famiport_request
 
 @implementer(IFamiPortResponseBuilderFactory)
 class FamiPortResponseBuilderFactory(object):
@@ -132,16 +163,6 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
         infoMessage = None
         try:
-            infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.WithInformation)
-        except DBAPIError:
-            resultCode == InformationResultCodeEnum.OtherError
-            infoMessage = u'エラーが起こりました。'
-            return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
-        if infoMessage != None: # 文言の設定あり
-            resultCode = InformationResultCodeEnum.WithInformation
-            return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
-
-        try:
             infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.ServiceUnavailable)
         except DBAPIError:
             resultCode == InformationResultCodeEnum.OtherError
@@ -149,6 +170,16 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
         if infoMessage != None: # サービス不可時案内
             resultCode = InformationResultCodeEnum.ServiceUnavailable
+            return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
+
+        try:
+            infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.WithInformation)
+        except DBAPIError:
+            resultCode == InformationResultCodeEnum.OtherError
+            infoMessage = u'エラーが起こりました。'
+            return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
+        if infoMessage != None: # 文言の設定あり
+            resultCode = InformationResultCodeEnum.WithInformation
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
 
         return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=None) # 案内なし(正常)
