@@ -16,7 +16,6 @@ from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
-from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders import models as order_models
@@ -126,6 +125,18 @@ class TicketingCartResourceBase(object):
         logger.debug('organization %s' % organization.code)
         logger.debug('memberships %s' % memberships)
         return memberships
+
+    @property
+    def membershipinfo(self):
+        membership_name = self.membership
+        organization = cart_api.get_organization(self.request)
+        from altair.app.ticketing.models import DBSession as session
+        membershipinfo = session.query(u_models.Membership)\
+                        .filter_by(organization_id=organization.id)\
+                        .filter_by(name=membership_name)\
+                        .filter_by(deleted_at=None)\
+                        .first()
+        return membershipinfo
 
     @reify
     def membergroups(self):
