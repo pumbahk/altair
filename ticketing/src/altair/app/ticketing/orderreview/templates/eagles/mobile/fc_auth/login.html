@@ -1,6 +1,6 @@
 <%inherit file="../layout.html" />
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
-<%mobile:header>各種会員の方はこちら</%mobile:header>
+<%mobile:header>各種会員IDでの確認はこちら</%mobile:header>
 <form method="post" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
 会員ID<br/>
 <input type="text" class="text" name="username"><br/>
@@ -12,7 +12,7 @@
 %endif
 </form>
 
-<%mobile:header>一般の方のチケット確認</%mobile:header>
+<%mobile:header>受付番号での確認はこちら<br>(REから始まる12ケタ)</%mobile:header>
 <%mobile:form_get method="get" action="${request.route_path('order_review.form')}">
 <input type="submit" value="次に進む" />
 </%mobile:form_get>
