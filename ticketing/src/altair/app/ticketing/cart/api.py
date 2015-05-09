@@ -435,10 +435,18 @@ def get_auth_info(request):
     return request.altair_auth_info
 
 def get_membership(d):
-    q = u_models.Membership.query \
-        .filter(u_models.Membership.name==d['membership'])
-    if d['membership'] != 'rakuten':
-        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    membership_name = d.get('membership') if d is not None else None
+    if membership_name is None:
+        # XXX: membership の名前が与えられていないときは
+        # primary key が一番若いものを使う
+        # ここのロジックを fc_auth と同じくする必要がある
+        q = u_models.Membership.query \
+            .filter_by(organization_id=d['organization_id']) \
+            .order_by(u_models.Membership.id)
+    else:
+        q = u_models.Membership.query \
+            .filter(u_models.Membership.name==d['membership']) \
+            .filter(u_models.Membership.organization_id == d['organization_id'])
     return q.first()
 
 def get_member_group(request, info):
@@ -447,14 +455,12 @@ def get_member_group(request, info):
     if membership_name is None or member_group_name is None:
         return None
     q = u_models.MemberGroup.query \
-        .filter(u_models.MemberGroup.name == member_group_name)
-    if membership_name != 'rakuten':
-        q = q \
-            .join(u_models.MemberGroup.membership) \
-            .filter(
-                u_models.Membership.name == membership_name,
-                u_models.Membership.organization_id == request.organization.id
-                )
+        .join(u_models.MemberGroup.membership) \
+        .filter(u_models.MemberGroup.name == member_group_name) \
+        .filter(
+            u_models.Membership.name == membership_name,
+            u_models.Membership.organization_id == request.organization.id
+            )
     return q.one()
 
 
@@ -462,9 +468,8 @@ def lookup_user_credential(d):
     q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
-        .filter(u_models.Membership.name==d['membership'])
-    if d['membership'] != 'rakuten':
-        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+        .filter(u_models.Membership.name==d['membership']) \
+        .filter(u_models.Membership.organization_id == d['organization_id'])
     credential = q.first()
     if credential:
         return credential.user

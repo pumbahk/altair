@@ -83,26 +83,21 @@ class SummarizedUser(object):
 
     @reify
     def _user_credential_member_pairs(self):
-        if self.membership_name == 'rakuten':
-            return self.session.query(UserCredential, null()) \
-                .filter(
-                    UserCredential.user_id == self.id,
-                    UserCredential.membership_id==self.membership_id
-                    ) \
-                .distinct() \
-                .all()
-        else:
-            return self.session.query(Member) \
-                .join(MemberGroup, and_(Member.membergroup_id == MemberGroup.id)) \
-                .join(UserCredential, and_(UserCredential.user_id == Member.user_id, UserCredential.membership_id == MemberGroup.membership_id)) \
-                .options(orm.contains_eager(Member.membergroup)) \
-                .filter(
-                    Member.user_id == self.id,
-                    MemberGroup.membership_id==self.membership_id
-                    ) \
-                .with_entities(UserCredential, Member) \
-                .distinct() \
-                .all()
+        return self.session.query(UserCredential, Member) \
+            .outerjoin(Member, UserCredential.user_id == Member.user_id) \
+            .outerjoin(MemberGroup,
+                and_(
+                    Member.membergroup_id == MemberGroup.id,
+                    UserCredential.membership_id == MemberGroup.membership_id
+                    )
+                ) \
+            .options(orm.contains_eager(Member.membergroup)) \
+            .filter(
+                UserCredential.user_id == self.id,
+                UserCredential.membership_id == self.membership_id
+                ) \
+            .distinct() \
+            .all()
 
     @reify
     def user_credential(self):
@@ -1179,6 +1174,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             organization_id=order_like.organization_id,
             operator=order_like.operator,
             user=order_like.user,
+            membership=order_like.membership,
             issuing_start_at=order_like.issuing_start_at,
             issuing_end_at=order_like.issuing_end_at,
             payment_due_at=order_like.payment_due_at,
