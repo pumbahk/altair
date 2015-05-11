@@ -7,10 +7,20 @@
 from .utils import FamiPortResponseType
 
 class FamiPortResponse(object):
-    # __slots__ = ()
 
-    def __init__(self, *args, **kwds):
-        pass
+    def __str__(self):
+        value_list = []
+        for attribute_name in self.__slots__:
+            attribute = getattr(self, attribute_name)
+            if attribute:
+                if not isinstance(attribute, (str, unicode)):
+                    value = attribute.value
+                else:
+                    value = attribute
+            else:
+                value = None
+            value_list.append((attribute_name, value))
+        return '\n'.join([str(value) for value in value_list])
 
     @property
     def response_type(self):
@@ -158,13 +168,18 @@ class FamiPortInformationResponse(FamiPortResponse):
 
     __slots__ = ('resultCode', 'infoKubun', 'infoMessage')
 
+    _responseType = FamiPortResponseType.Information
+    _encryptFields = []
+    _encrypt_key = None
+
     def __init__(self, resultCode=None, infoKubun=None, infoMessage=None):
+        super(FamiPortInformationResponse, self).__init__()
         self.resultCode = resultCode  # 処理結果
         self.infoKubun = infoKubun  # 案内区分
         self.infoMessage = infoMessage  # 案内文言
-        self._responseType = FamiPortResponseType.Information
-        self._encryptFields = []
-        self._encrypt_key = None
+        # self._responseType = FamiPortResponseType.Information
+        # self._encryptFields = []
+        # self._encrypt_key = None
 
 
 class FamiPortCustomerInformationResponse(FamiPortResponse):
@@ -183,7 +198,7 @@ class FamiPortCustomerInformationResponse(FamiPortResponse):
         self.address1 = address1  # 住所1
         self.address2 = address2  # 住所2
         self.identifyNo = identifyNo  # 半券個人識別番号
-        self._requestType = FamiPortResponseType.CustomerInformation
+        self._responseType = FamiPortResponseType.CustomerInformation
         self._encryptFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
         # self._encrypt_key = 'test_key' # TODO get FamiPortPaymentTicketingResponse.orderId in some way
 

@@ -13,7 +13,8 @@ def get_response_builder(famiport_request):
     :param famiport_request: FamiPortRequest object to get FamiPortResponseBuilder for.
     :return: Instance object of appropriate FamiPortResponseBuilder for famiport_request.
     """
-    return FamiPortResponseBuilderFactory(famiport_request)
+    famiport_response_builder_factory = FamiPortResponseBuilderFactory()
+    return famiport_response_builder_factory(famiport_request)
 
 def get_xmlResponse_generator(famiport_response):
     """Get appropriate XmlFamiPortResponseGenerator for the given FamiPortResponse
