@@ -15,6 +15,7 @@ from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.request.adapters import UnicodeMultiDictAdapter
+from altair.now import get_now, is_now_set
 
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
@@ -235,7 +236,7 @@ class OrderAttributesEditView(object):
         else:
             performance_start_on = None
             performance_end_on = None
-        return {
+        retval = {
             'PERFORMANCE_START': performance_start_on,
             'PERFORMANCE_END': performance_end_on,
             'ORDERED': self.context.order.created_at,
@@ -244,6 +245,37 @@ class OrderAttributesEditView(object):
             'CANCELED': self.context.order.canceled_at,
             'REFUNDED': self.context.order.refunded_at,
             }
+
+        if is_now_set(self.request):
+            from altair.dynpredicate.core import Node
+            now = get_now(self.request)
+            retval['NOW'] = Node(
+                type='CALL',
+                line=0,
+                column=0,
+                children=(
+                    Node(
+                        type='SYM',
+                        line=0,
+                        column=0,
+                        value='DATE',
+                        ),
+                    Node(
+                        type='TUPLE',
+                        line=0,
+                        column=0,
+                        children=(
+                            Node(type='NUM', line=0, column=0, value=now.year),
+                            Node(type='NUM', line=0, column=0, value=now.month),
+                            Node(type='NUM', line=0, column=0, value=now.day),
+                            Node(type='NUM', line=0, column=0, value=now.hour),
+                            Node(type='NUM', line=0, column=0, value=now.minute),
+                            Node(type='NUM', line=0, column=0, value=now.second)
+                            )
+                        )
+                    )
+                )
+        return retval
 
     def create_form(self, formdata=None, data=None):
         mode = ['orderreview', 'editable']
