@@ -30,6 +30,10 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
     order_no = sa.Column(sa.String(255), nullable=False)
     barcode_no = sa.Column(sa.String(255), nullable=False)
 
+    @classmethod
+    def get_from_orderId(cls, orderId):
+        FamiPortOrder.filter_by() # TODO filter by orderId
+
 
 class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
