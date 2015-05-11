@@ -84,7 +84,7 @@ class Evaluator(Visitor):
     def visit_CALL(self, n, ctx):
         fn = self.visit(n.children[0], n)
         args = self.visit(n.children[1], n)
-        return fn(args)
+        return fn(*args)
 
     def visit_TUPLE(self, n, ctx):
         return [self.visit(arg, n) for arg in n.children]
