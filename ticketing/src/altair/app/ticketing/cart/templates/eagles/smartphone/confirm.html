@@ -185,7 +185,7 @@
               <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
               </td>
             </tr>
-            % if membershipinfo.enable_point_input:
+            % if membershipinfo is not None and membershipinfo.enable_point_input:
                 <tr>
                     % if accountno:
                     <th scope="row">楽天ポイント口座</th>

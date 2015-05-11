@@ -124,6 +124,35 @@ class OrderReviewResource(OrderReviewResourceBase):
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
 
+class MyPageOrderReviewResource(OrderReviewResourceBase): 
+    def __init__(self, request):
+        super(MyPageOrderReviewResource, self).__init__(request)
+        order_no = self.request.params['order_no']
+        order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            filter(Order.organization_id==self.organization.id). \
+            filter(Order.order_no==order_no).first()
+        logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization.id, order_no, order))
+        if order is None:
+            raise HTTPNotFound()
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and \
+           (order.performance is None or order.performance.orion is None):
+            logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
+        self.order = order
+        authenticated_user = self.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        if user is None or self.order.user_id != user.id:
+            raise HTTPNotFound() 
+
+    @reify
+    def cart_setting(self):
+        return self.order.cart_setting
+
+    def order_detail_panel(self, order):
+        panel_name = 'order_detail.%s' % self.cart_setting.type
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
+
+
 class QRViewResource(OrderReviewResourceBase):
     pass
 

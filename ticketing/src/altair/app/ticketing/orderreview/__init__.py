@@ -55,7 +55,7 @@ def includeme(config):
     config.add_route('mypage.show', '/mypage', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.mailmag.confirm', '/mypage/mailmag/confirm', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.mailmag.complete', '/mypage/mailmag/complete', factory='.resources.MyPageListViewResource')
-    config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.OrderReviewResource')
+    config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
