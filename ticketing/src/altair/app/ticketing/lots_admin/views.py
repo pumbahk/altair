@@ -34,6 +34,7 @@ from .forms import (
     SearchLotEntryForm,
 )
 from altair.app.ticketing.lots import helpers as h
+from altair.app.ticketing.events.lots import helpers as eh
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,7 @@ class IndexView(object):
                     post_lots=post_lots,
                     past_lots=past_lots,
                     h=h,
+                    eh=eh,
         )
 
 
