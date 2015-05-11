@@ -334,7 +334,11 @@ def export_csv_for_laguna(request, fileobj, organization_id):
                 )
 
             if order.attributes:
-                attribute_values = [value for name, value in sorted(order.attributes.items())]
+                name_value = dict(order.attributes)
+                attribute_values.append(name_value.pop(u'生年月日'))
+                attribute_values.append(name_value.pop(u'性別'))
+                values = [value for name, value in sorted(name_value.items())][:3]
+                attribute_values += values
 
             current_mails += [
                 order.shipping_address.email_1,
