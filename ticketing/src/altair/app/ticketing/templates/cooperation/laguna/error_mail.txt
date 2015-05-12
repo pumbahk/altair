@@ -1,0 +1,5 @@
+ラグーナカスタムで不正と判断される可能性のあるデータがありました。
+
+%for record in error_records:
+  - ${record[0] or record[29]}
+%endfor

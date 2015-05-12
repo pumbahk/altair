@@ -26,6 +26,7 @@ from pyramid.paster import (
     bootstrap,
     setup_logging,
     )
+from pyramid.renderers import render_to_response
 
 if six.PY3:
     from os import makedirs
@@ -47,6 +48,7 @@ from altair.app.ticketing.core.models import (
     DeliveryMethod,
     Venue,
     PaymentDeliveryMethodPair,
+    Mailer,
     )
 from altair.app.ticketing.users.models import (
     User,
@@ -235,6 +237,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
     get_order_no = lambda record: record[0]
     order_no_record = sorted(order_no_order + entry_no_entry, key=get_order_no)
     writer.writerow(synagy_header)  # header書き込み
+    error_records = []
 
     for order_no, number_order_entry_pair in itertools.groupby(order_no_record, key=get_order_no):
         order = None
@@ -412,7 +415,95 @@ def export_csv_for_laguna(request, fileobj, organization_id):
 
         rec += rec_attriubtes
         rec = map(safe_encoding, rec)
-        writer.writerow(rec)
+
+        if verify_record(rec):
+            writer.writerow(rec)
+        else:
+            error_records.append(rec)
+    return error_records
+
+
+# 抽選
+LOT_COLUMN_START_INDEX = 0
+LOT_COLUMN_END_INDEX = 28
+LOT_COLUMN_INDEXES = range(LOT_COLUMN_START_INDEX, LOT_COLUMN_END_INDEX+1)
+LOT_UNNEED_COLUMN_INDEXES = (  # 空文字が許容されるcolumn
+    21,  # 住所2
+    )
+LOT_OR_COLUMN_INDEX_PAIRS = (  # どちらかが入っていれば良いcolumn
+    (22, 23),  # 電話番号
+    (24, 25),  # メールアドレス
+    )
+
+
+# 先着
+ORDER_COLUMN_START_INDEX = 29
+ORDER_COLUMN_END_INDEX = 75
+ORDER_COLUMN_INDEXES = range(ORDER_COLUMN_START_INDEX, ORDER_COLUMN_END_INDEX+1)
+ORDER_UNNEED_COLUMN_INDEXES = (  # 空文字が許容されるcolumn
+    49,  # メールマガジン(これは抽選/先着共通だけど拒否の場合はブランクになる)
+    50,  # 性別
+    51,  # 会員種別
+    52,  # 会員グループ名
+    53,  # 会員種別ID
+    63,  # 住所2
+    )
+ORDER_OR_COLUMN_INDEX_PAIRS = (  # どちらかが入っていれば良いcolumn
+    (64, 65),  # 電話番号
+    (66, 67),  # メールアドレス
+    )
+ORDER_UNNEED_COLUMN_INDEXES_ALL = ORDER_UNNEED_COLUMN_INDEXES
+
+# 追加情報
+ATTRIBUTE_COLUMN_START_INDEX = 76
+ATTRIBUTE_COLUMN_END_INDEX = 80
+ATTRIBUTE_COLUMN_INDEXES = range(ATTRIBUTE_COLUMN_START_INDEX, ATTRIBUTE_COLUMN_END_INDEX+1)
+
+
+def verify_record(rec):
+    """レコードがラグーナカスタム側が想定しているデータかどうかを検証
+    """
+    if rec[LOT_COLUMN_START_INDEX]:  # 抽選
+        unneed_indexes = list(itertools.chain(LOT_UNNEED_COLUMN_INDEXES, *LOT_OR_COLUMN_INDEX_PAIRS))
+        for ii, data in enumerate(rec):
+            if ii not in unneed_indexes and not data:
+                return False
+        for indexes in LOT_OR_COLUMN_INDEX_PAIRS:
+            if not any(rec[idx] for idx in indexes):
+                return False
+    elif rec[ORDER_COLUMN_START_INDEX]:  # 先着 もしくは 当選処理後抽選
+        unneed_indexes = list(itertools.chain(ORDER_UNNEED_COLUMN_INDEXES, *ORDER_OR_COLUMN_INDEX_PAIRS))
+        for ii, data in enumerate(rec):
+            if ii not in unneed_indexes and not data:
+                return False
+        for indexes in ORDER_OR_COLUMN_INDEX_PAIRS:
+            if not any(rec[idx] for idx in indexes):
+                return False
+
+    # 共通
+    try:
+        datetime.datetime.strftime('%Y-%m-%d', rec[76])  # 生年月日
+        int(rec[77])  # 性別
+        int(rec[78])  # 質問項目１
+        int(rec[79])  # 質問項目２
+        int(rec[80])  # 質問項目３
+    except (IndexError, TypeError, ValueError) as err:
+        logger.warn(err)
+        return False
+    return True
+
+
+def send_error_mail(error_records, mailer, recipients, sender):
+    subject = 'ラグーナカスタムデータ連携エラー'
+    template_path = 'altair.app.ticketing:templates/cooperation/laguna/mails/error_mail.txt',
+    body = render_to_response(template_path, error_records)
+    mailer.create_message(
+        sender=sender,
+        recipient=recipients,
+        subject=subject,
+        body=body.text,
+        )
+    mailer.send(sender, [recipients])
 
 
 def safe_encoding(x):
@@ -457,14 +548,18 @@ def main(argv=sys.argv[1:]):
     makedirs(staging, exist_ok=True)
     makedirs(pending, exist_ok=True)
 
+    recipients = map(lambda s: s.strip(), settings['laguna.mail.recipient'].split(','))
+    sender = settings['laguna.mail.sender']
+
     try:
         with multilock.MultiStartLock('laguna_csv'):
+            error_records = []
             stamp = time.strftime('%Y%m%d')
             csv_path = os.path.join(staging, 'TS{}.CSV'.format(stamp))
             zip_filename = 'TS{}.zip'.format(stamp)
             zip_path = os.path.join(staging, zip_filename)
             with open(csv_path, 'w+b') as fp:
-                export_csv_for_laguna(request, fp, args.organization_id)
+                error_records = export_csv_for_laguna(request, fp, args.organization_id)
             pyminizip.compress(csv_path, zip_path, zip_password, 9)
             os.remove(csv_path)
             rc = 0
@@ -479,6 +574,10 @@ def main(argv=sys.argv[1:]):
                 timestamp = time.strftime('%Y%m%d%H%M%S')
                 pending_filepath = os.path.join(pending, '{}.{}'.format(zip_filename, timestamp))
                 shutil.move(zip_path, pending_filepath)
+
+            if error_records:
+                mailer = Mailer(settings)
+                send_error_mail(error_records, mailer, recipients, sender)
 
             return rc
     except multilock.AlreadyStartUpError as err:
