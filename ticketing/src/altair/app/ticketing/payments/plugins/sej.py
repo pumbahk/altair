@@ -589,7 +589,8 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         from altair.app.ticketing.cart.models import Cart
         shipping_address = order_like.shipping_address
         current_date = datetime.now()
-        regrant_number_due_at = current_date + timedelta(days=365)
+        _365_days_from_now = current_date + timedelta(days=365)
+        regrant_number_due_at = min(_365_days_from_now, order_like.issuing_end_at) if order_like.issuing_end_at is not None else _365_days_from_now
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
@@ -670,7 +671,8 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def finish2(self, request, order_like):
         current_date = datetime.now()
-        regrant_number_due_at = current_date + timedelta(days=365)
+        _365_days_from_now = current_date + timedelta(days=365)
+        regrant_number_due_at = min(_365_days_from_now, order_like.issuing_end_at) if order_like.issuing_end_at is not None else _365_days_from_now
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         payment_type = determine_payment_type(current_date, order_like)
         try:
