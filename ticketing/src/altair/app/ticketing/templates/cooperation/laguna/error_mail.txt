@@ -1,0 +1,17 @@
+<% from altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export import synagy_header %>
+
+%if error_results:
+ラグーナカスタムで不正と判断される可能性のあるデータがありました。
+  %for result in error_results:
+    - ${result.no}
+      %for idx in result.error_indexes:
+          ${synagy_header[idx].decode('utf8')} が不正値です。
+      %endfor
+  %endfor
+%else:
+ラグーナカスタムに連携データを送信しました。
+%endif
+
+合計: ${total_count} 件
+成功: ${success_count} 件
+失敗: ${error_count} 件
