@@ -1,5 +1,6 @@
+<% from altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export import LOT_ENTRY_NO_INDEX, ORDER_NO_INDEX %>
 ラグーナカスタムで不正と判断される可能性のあるデータがありました。
 
 %for record in error_records:
-  - ${record[0] or record[29]}
+ - ${record[LOT_ENTRY_NO_INDEX] or record[ORDER_NO_INDEX]}
 %endfor

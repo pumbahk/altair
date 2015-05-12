@@ -180,7 +180,7 @@ CHANNEL_FIELD_INDEX = synagy_header.index(CHANNEL_FIELD_NAME)
 ATTRIBUTE_COL_COUNT = len(synagy_header_attributes)
 
 
-def export_csv_for_laguna(request, fileobj, organization_id):
+def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]):
     writer = csv.writer(fileobj)
 
     session = get_db_session(request, name='slave')
@@ -203,6 +203,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .outerjoin(Member) \
         .outerjoin(MemberGroup) \
         .outerjoin(Membership) \
+        .filter(~Event.id.in_(cancel_event_ids)) \
         .filter(Order.organization_id == organization_id) \
         .filter(Order.created_at.between(start, end))
 
@@ -214,6 +215,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .join(PaymentMethod) \
         .join(DeliveryMethod) \
         .join(ShippingAddress) \
+        .filter(~Event.id.in_(cancel_event_ids)) \
         .filter(LotEntry.organization_id == organization_id)\
         .filter(LotEntry.created_at.between(start, end)) \
         .filter(sa_exp.or_(
@@ -338,8 +340,8 @@ def export_csv_for_laguna(request, fileobj, organization_id):
 
             if order.attributes and not attribute_values:
                 name_value = dict(order.attributes)
-                attribute_values.append(name_value.pop(u'生年月日'))
-                attribute_values.append(name_value.pop(u'性別'))
+                attribute_values.append(name_value.pop(u'生年月日', ''))  # 値がない場合は後でエラー通知されデータは送信されない
+                attribute_values.append(name_value.pop(u'性別', ''))  # 値がない場合は後でエラー通知されデータは送信されない
                 values = [value for name, value in sorted(name_value.items())][:3]
                 attribute_values += values
 
@@ -424,6 +426,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
 
 
 # 抽選
+LOT_ENTRY_NO_INDEX = 1
 LOT_COLUMN_START_INDEX = 0
 LOT_COLUMN_END_INDEX = 28
 LOT_COLUMN_INDEXES = range(LOT_COLUMN_START_INDEX, LOT_COLUMN_END_INDEX+1)
@@ -437,6 +440,7 @@ LOT_OR_COLUMN_INDEX_PAIRS = (  # どちらかが入っていれば良いcolumn
 
 
 # 先着
+ORDER_NO_INDEX = 29
 ORDER_COLUMN_START_INDEX = 29
 ORDER_COLUMN_END_INDEX = 75
 ORDER_COLUMN_INDEXES = range(ORDER_COLUMN_START_INDEX, ORDER_COLUMN_END_INDEX+1)
@@ -494,16 +498,16 @@ def verify_record(rec):
 
 
 def send_error_mail(error_records, mailer, recipients, sender):
-    subject = 'ラグーナカスタムデータ連携エラー'
-    template_path = 'altair.app.ticketing:templates/cooperation/laguna/mails/error_mail.txt',
-    body = render_to_response(template_path, error_records)
+    subject = u'ラグーナカスタムデータ連携エラー'
+    template_path = 'altair.app.ticketing:templates/cooperation/laguna/error_mail.txt'
+    body = render_to_response(template_path, {'error_records': error_records})
     mailer.create_message(
         sender=sender,
-        recipient=recipients,
+        recipient=', '.join(recipients),
         subject=subject,
         body=body.text,
         )
-    mailer.send(sender, [recipients])
+    mailer.send(sender, recipients)
 
 
 def safe_encoding(x):
@@ -548,8 +552,10 @@ def main(argv=sys.argv[1:]):
     makedirs(staging, exist_ok=True)
     makedirs(pending, exist_ok=True)
 
-    recipients = map(lambda s: s.strip(), settings['laguna.mail.recipient'].split(','))
+    recipients = map(lambda s: s.strip(), settings['laguna.mail.recipients'].split(','))
     sender = settings['laguna.mail.sender']
+
+    cancel_event_ids = map(lambda s: s.strip(), settings['laguna.cancel_events'].split(','))  # キャンセル用イベント
 
     try:
         with multilock.MultiStartLock('laguna_csv'):
@@ -559,7 +565,7 @@ def main(argv=sys.argv[1:]):
             zip_filename = 'TS{}.zip'.format(stamp)
             zip_path = os.path.join(staging, zip_filename)
             with open(csv_path, 'w+b') as fp:
-                error_records = export_csv_for_laguna(request, fp, args.organization_id)
+                error_records = export_csv_for_laguna(request, fp, args.organization_id, cancel_event_ids)
             pyminizip.compress(csv_path, zip_path, zip_password, 9)
             os.remove(csv_path)
             rc = 0
