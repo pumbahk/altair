@@ -67,7 +67,7 @@ class Electing(object):
 
     @reify
     def required_stocks(self):
-        """ 当選予定の在庫数を商品明細ごとに取得 
+        """ 当選予定の在庫数を商品明細ごとに取得
         (stock_id, quantity)
         """
         s = [Stock, StockStatus, ProductItem, Performance,
@@ -99,7 +99,7 @@ class Electing(object):
 
         return q.all()
 
-        
+
     @property
     def election_publisher(self):
         return get_publisher(self.request, 'lots.election')
@@ -125,6 +125,23 @@ class Electing(object):
                               routing_key="lots.election",
                               properties=dict(content_type="application/json"))
 
+    def send_election_mails(self):
+        publisher = self.election_publisher
+        works = self.lot.electing_works
+        logger.info("publish electing lot: lot_id = {0} : count = {1}".format(
+            self.lot.id,
+            len(works),
+            ))
+        for work in works:
+            logger.info("publish entry_wish = {0}".format(work.entry_wish_no))
+            body = {"lot_id": self.lot.id,
+                    "entry_no": work.lot_entry_no,
+                    "wish_order": work.wish_order,
+                    }
+            publisher.publish(body=json.dumps(body),
+                              routing_key="lots.send_election_mail",
+                              properties=dict(content_type="application/json"))
+
     def reject_lot_entries(self):
         publisher = self.rejection_publisher
         works = self.lot.reject_works
@@ -140,4 +157,3 @@ class Electing(object):
             publisher.publish(body=json.dumps(body),
                               routing_key="lots.rejection",
                               properties=dict(content_type="application/json"))
-
