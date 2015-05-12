@@ -336,7 +336,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
                 for ordered_product in order.ordered_products
                 )
 
-            if order.attributes:
+            if order.attributes and not attribute_values:
                 name_value = dict(order.attributes)
                 attribute_values.append(name_value.pop(u'生年月日'))
                 attribute_values.append(name_value.pop(u'性別'))
