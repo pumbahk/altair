@@ -239,7 +239,7 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
     get_order_no = lambda record: record[0]
     order_no_record = sorted(order_no_order + entry_no_entry, key=get_order_no)
     writer.writerow(synagy_header)  # header書き込み
-    error_records = []
+    results = []
 
     for order_no, number_order_entry_pair in itertools.groupby(order_no_record, key=get_order_no):
         order = None
@@ -418,11 +418,11 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
         rec += rec_attriubtes
         rec = map(safe_encoding, rec)
 
-        if verify_record(rec):
+        verifier = LagunaCustomRecordVerifyer()
+        if verifier.verify(rec):
             writer.writerow(rec)
-        else:
-            error_records.append(rec)
-    return error_records
+        results.append(verifier)
+    return results
 
 
 # 抽選
@@ -464,43 +464,84 @@ ATTRIBUTE_COLUMN_END_INDEX = 80
 ATTRIBUTE_COLUMN_INDEXES = range(ATTRIBUTE_COLUMN_START_INDEX, ATTRIBUTE_COLUMN_END_INDEX+1)
 
 
+class LagunaCustomRecordVerifyer(object):
+    def __init__(self):
+        self.no = ''
+        self.error_indexes = []
+
+    def verify(self, rec):
+        self.no = rec[LOT_ENTRY_NO_INDEX] or rec[ORDER_NO_INDEX]
+        self.error_indexes = verify_record(rec)
+        return self.is_success
+
+    @property
+    def is_success(self):
+        return not self.error_indexes
+
+
 def verify_record(rec):
     """レコードがラグーナカスタム側が想定しているデータかどうかを検証
     """
+    rec = map(str, rec)
+    ng_indexes = []
     if rec[LOT_COLUMN_START_INDEX]:  # 抽選
+        target_rec = rec[LOT_COLUMN_START_INDEX:LOT_COLUMN_END_INDEX+1]
         unneed_indexes = list(itertools.chain(LOT_UNNEED_COLUMN_INDEXES, *LOT_OR_COLUMN_INDEX_PAIRS))
-        for ii, data in enumerate(rec):
+        for ii, data in enumerate(target_rec, start=LOT_COLUMN_START_INDEX):
             if ii not in unneed_indexes and not data:
-                return False
+                ng_indexes.append(ii)
         for indexes in LOT_OR_COLUMN_INDEX_PAIRS:
-            if not any(rec[idx] for idx in indexes):
-                return False
+            for idx in indexes:
+                if rec[idx]:
+                    break
+            else:
+                for idx in indexes:
+                    ng_indexes.append(idx)
     elif rec[ORDER_COLUMN_START_INDEX]:  # 先着 もしくは 当選処理後抽選
+        target_rec = rec[ORDER_COLUMN_START_INDEX:ORDER_COLUMN_END_INDEX+1]
         unneed_indexes = list(itertools.chain(ORDER_UNNEED_COLUMN_INDEXES, *ORDER_OR_COLUMN_INDEX_PAIRS))
-        for ii, data in enumerate(rec):
+        for ii, data in enumerate(target_rec, start=ORDER_COLUMN_START_INDEX):
             if ii not in unneed_indexes and not data:
-                return False
+                ng_indexes.append(ii)
         for indexes in ORDER_OR_COLUMN_INDEX_PAIRS:
-            if not any(rec[idx] for idx in indexes):
-                return False
+            for idx in indexes:
+                if rec[idx]:
+                    break
+            else:
+                for idx in indexes:
+                    ng_indexes.append(idx)
 
     # 共通
-    try:
-        datetime.datetime.strftime('%Y-%m-%d', rec[76])  # 生年月日
-        int(rec[77])  # 性別
-        int(rec[78])  # 質問項目１
-        int(rec[79])  # 質問項目２
-        int(rec[80])  # 質問項目３
-    except (IndexError, TypeError, ValueError) as err:
-        logger.warn(err)
-        return False
-    return True
+    check_funcs = [
+        lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),  # 生年月日
+        int,  # 性別
+        int,  # 質問項目１
+        int,  # 質問項目２
+        int,  # 質問項目３
+        ]
+    for ii, func in enumerate(check_funcs, start=ATTRIBUTE_COLUMN_START_INDEX):
+        try:
+            func(rec[ii])
+        except (IndexError, TypeError, ValueError) as err:
+            logger.warn(err)
+            ng_indexes.append(ii)
+    return sorted(list(set(ng_indexes)))
 
 
-def send_error_mail(error_records, mailer, recipients, sender):
+def send_error_mail(results, mailer, recipients, sender):
     subject = u'ラグーナカスタムデータ連携エラー'
     template_path = 'altair.app.ticketing:templates/cooperation/laguna/error_mail.txt'
-    body = render_to_response(template_path, {'error_records': error_records})
+
+    error_results = [result for result in results if not result.is_success]
+    total_count = len(results)
+    error_count = len(error_results)
+    success_count = total_count - error_count
+    body = render_to_response(template_path, {
+        'total_count': total_count,
+        'success_count': success_count,
+        'error_count': error_count,
+        'error_results': error_results,
+        })
     mailer.create_message(
         sender=sender,
         recipient=', '.join(recipients),
@@ -531,6 +572,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('conf')
     parser.add_argument('--stdout', default=False, action='store_true')
     parser.add_argument('--no-send', dest='no_send', default=False, action='store_true')
+    parser.add_argument('--notify', default=False, action='store_true')
     parser.add_argument('--organization_id', default=LAGUNA_ORG_ID, type=int)
     args = parser.parse_args()
 
@@ -559,13 +601,14 @@ def main(argv=sys.argv[1:]):
 
     try:
         with multilock.MultiStartLock('laguna_csv'):
-            error_records = []
+            successes = []
+            errors = []
             stamp = time.strftime('%Y%m%d')
             csv_path = os.path.join(staging, 'TS{}.CSV'.format(stamp))
             zip_filename = 'TS{}.zip'.format(stamp)
             zip_path = os.path.join(staging, zip_filename)
             with open(csv_path, 'w+b') as fp:
-                error_records = export_csv_for_laguna(request, fp, args.organization_id, cancel_event_ids)
+                results = export_csv_for_laguna(request, fp, args.organization_id, cancel_event_ids)
             pyminizip.compress(csv_path, zip_path, zip_password, 9)
             os.remove(csv_path)
             rc = 0
@@ -581,9 +624,9 @@ def main(argv=sys.argv[1:]):
                 pending_filepath = os.path.join(pending, '{}.{}'.format(zip_filename, timestamp))
                 shutil.move(zip_path, pending_filepath)
 
-            if error_records:
+            if args.notify:
                 mailer = Mailer(settings)
-                send_error_mail(error_records, mailer, recipients, sender)
+                send_error_mail(results, mailer, recipients, sender)
 
             return rc
     except multilock.AlreadyStartUpError as err:
