@@ -3,7 +3,7 @@
 from sqlalchemy.exc import DBAPIError
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .models import FamiPortInformationMessage
+from .models import FamiPortInformationMessage, FamiPortOrder
 from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum, InfoKubunEnum
 from .requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
                     FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
@@ -112,11 +112,54 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_request=None):
-        # TODO
-        famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(resultCode=None, storeCode=None, sequenceNo=None, barCodeNo=None, orderId=None, replyClass=None, replyCode=None, \
-                                                                               playGuideId=None, playGuideName=None, orderTicketNo=None, exchangeTicketNo=None, ticketingStart=None, ticketingEnd=None, \
-                                                                               totalAmount=None, ticketPayment=None, systemFee=None, ticketingFee=None, ticketCountTotal=None, ticketCount=None, \
-                                                                               kogyoName=None, koenDate=None, ticket=None)
+        resultCode = ResultCodeEnum.Normal
+        barCodeNo = famiport_payment_ticketing_request.barCodeNo
+        storeCode = famiport_payment_ticketing_request.storeCode
+        sequenceNo = famiport_payment_ticketing_request.sequenceNo
+        try:
+            famiport_order = FamiPortOrder.get_from_barCodeNo(barCodeNo)
+        except DBAPIError:
+            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). barCodeNo: " + barCodeNo + ", storeCode: " + storeCode + ", sequenceNo: " + sequenceNo)
+
+        orderId, replyClass, playGuideId, playGuideName, orderTicketNo, exchangeTicketNo, ticketingStart, ticketingEnd = None, None, None, None, None, None, None, None
+        totalAmount, ticketPayment, systemFee, ticketingFee, ticketingCountTotal, ticketCount, kogyoName, koenDate, ticket = None, None, None, None, None, None, None, None, None
+        if famiport_order is not None:
+            orderId = famiport_order.orderId
+            replyClass = ReplyClassEnum.CashOnDelivery # TODO Change the value depending on famiport_order's pdmp status
+            replyCode = ReplyCodeEnum.Normal # TODO Change the value depending on famiport_order's status
+            playGuideId = ''
+            playGuideName = ''
+            if replyClass == ReplyClassEnum.CashOnDelivery:
+                orderTicketNo = barCodeNo
+            elif replyClass == ReplyClassEnum.Prepayment:
+                orderTicketNo = barCodeNo
+                exchangeTicketNo = famiport_order.exchangeTicketNo
+                ticketingStart = famiport_order.ticketingStart
+                ticketingEnd = famiport_order.ticketingEnd
+            elif replyClass == ReplyClassEnum.Paid:
+                exchangeTicketNo = famiport_order.exchangeTicketNo
+            elif replyClass == ReplyClassEnum.PrepaymentOnly:
+                 orderTicketNo = barCodeNo
+            else:
+                pass
+            totalAmount = famiport_order.totalAmount
+            ticketPayment = famiport_order.ticketPayment
+            systemFee = famiport_order.systemFee
+            ticketingFee = famiport_order.ticketingFee
+            ticketingCountTotal = famiport_order.ticketingCountTotal
+            ticketCount = famiport_order.ticketCount
+            kogyoName = u'' # TODO Get from famiport_order -> order -> event.title
+            koenDate = u''# TODO Get from famiport_order -> order -> performance.start_on as YYYYMMDDhhmm
+            ticket = famiport_order.ticket
+        else:
+            resultCode = ResultCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError
+
+        famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyClass=replyClass, \
+                                                                               replyCode=replyCode, playGuideId=playGuideId, playGuideName=playGuideName, orderTicketNo=orderTicketNo, exchangeTicketNo=exchangeTicketNo,\
+                                                                               ticketingStart=ticketingStart, ticketingEnd=ticketingEnd, totalAmount=totalAmount, ticketPayment=ticketPayment, systemFee=systemFee,\
+                                                                               ticketingFee=ticketingFee, ticketCountTotal=ticketingCountTotal, ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, \
+                                                                               ticket=ticket)
         return famiport_payment_ticketing_response
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):

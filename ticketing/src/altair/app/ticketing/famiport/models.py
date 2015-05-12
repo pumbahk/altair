@@ -30,6 +30,13 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
     order_no = sa.Column(sa.String(255), nullable=False)
     barcode_no = sa.Column(sa.String(255), nullable=False)
 
+class FamiPortTicket(Base, WithTimestamp):
+    __tablename__ = 'FamiPortTicket' # TODO Consider how to store ticket info in DB. No alembic ready yet.
+
+    id = sa.Column(Identifier, primary_key=True)
+    ticketClass = sa.Column(sa.Enum('1', '2', '3', '4'), nullable=True)
+    templateCode = sa.Column(sa.String(length=10))
+    ticketData = sa.Column(sa.String(length=5000))
 
 class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
