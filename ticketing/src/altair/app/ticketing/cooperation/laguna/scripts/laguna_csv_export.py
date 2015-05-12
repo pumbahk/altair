@@ -219,7 +219,7 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
         .filter(LotEntry.organization_id == organization_id)\
         .filter(LotEntry.created_at.between(start, end)) \
         .filter(sa_exp.or_(
-            LotEntry.elected_at != None,
+            LotEntry.elected_at != None,  # noqa
             LotEntry.rejected_at != None,
             )) \
         .options(sa_orm.joinedload('shipping_address')) \
@@ -418,10 +418,10 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
         rec += rec_attriubtes
         rec = map(safe_encoding, rec)
 
-        verifier = LagunaCustomRecordVerifyer()
-        if verifier.verify(rec):
+        result = verify_record(rec)
+        if result.is_success:
             writer.writerow(rec)
-        results.append(verifier)
+        results.append(result)
     return results
 
 
@@ -464,19 +464,30 @@ ATTRIBUTE_COLUMN_END_INDEX = 80
 ATTRIBUTE_COLUMN_INDEXES = range(ATTRIBUTE_COLUMN_START_INDEX, ATTRIBUTE_COLUMN_END_INDEX+1)
 
 
-class LagunaCustomRecordVerifyer(object):
+class LagunaCustomRecordVerifyResult(object):
     def __init__(self):
         self.no = ''
-        self.error_indexes = []
+        self._error_indexes = ()
 
-    def verify(self, rec):
-        self.no = rec[LOT_ENTRY_NO_INDEX] or rec[ORDER_NO_INDEX]
-        self.error_indexes = verify_record(rec)
-        return self.is_success
+    @property
+    def error_indexes(self):
+        return self._error_indexes
+
+    @error_indexes.setter
+    def error_indexes(self, error_indexes):
+        self._error_indexes = tuple(sorted(set(error_indexes)))
 
     @property
     def is_success(self):
         return not self.error_indexes
+
+ATTRIBUTE_CHECK_FUNCS = [
+    lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),  # 生年月日
+    int,  # 性別
+    int,  # 質問項目１
+    int,  # 質問項目２
+    int,  # 質問項目３
+    ]
 
 
 def verify_record(rec):
@@ -495,8 +506,7 @@ def verify_record(rec):
                 if rec[idx]:
                     break
             else:
-                for idx in indexes:
-                    ng_indexes.append(idx)
+                ng_indexes += indexes
     elif rec[ORDER_COLUMN_START_INDEX]:  # 先着 もしくは 当選処理後抽選
         target_rec = rec[ORDER_COLUMN_START_INDEX:ORDER_COLUMN_END_INDEX+1]
         unneed_indexes = list(itertools.chain(ORDER_UNNEED_COLUMN_INDEXES, *ORDER_OR_COLUMN_INDEX_PAIRS))
@@ -504,28 +514,24 @@ def verify_record(rec):
             if ii not in unneed_indexes and not data:
                 ng_indexes.append(ii)
         for indexes in ORDER_OR_COLUMN_INDEX_PAIRS:
+
             for idx in indexes:
                 if rec[idx]:
                     break
             else:
-                for idx in indexes:
-                    ng_indexes.append(idx)
+                ng_indexes += indexes
 
     # 共通
-    check_funcs = [
-        lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),  # 生年月日
-        int,  # 性別
-        int,  # 質問項目１
-        int,  # 質問項目２
-        int,  # 質問項目３
-        ]
-    for ii, func in enumerate(check_funcs, start=ATTRIBUTE_COLUMN_START_INDEX):
+    for ii, func in enumerate(ATTRIBUTE_CHECK_FUNCS, start=ATTRIBUTE_COLUMN_START_INDEX):
         try:
             func(rec[ii])
         except (IndexError, TypeError, ValueError) as err:
-            logger.warn(err)
+            logger.warn('column={}: {}'.format(ii, err))
             ng_indexes.append(ii)
-    return sorted(list(set(ng_indexes)))
+    result = LagunaCustomRecordVerifyResult()
+    result.no = rec[LOT_ENTRY_NO_INDEX] or rec[ORDER_NO_INDEX]
+    result.error_indexes = ng_indexes
+    return result
 
 
 def send_error_mail(results, mailer, recipients, sender):
@@ -601,8 +607,6 @@ def main(argv=sys.argv[1:]):
 
     try:
         with multilock.MultiStartLock('laguna_csv'):
-            successes = []
-            errors = []
             stamp = time.strftime('%Y%m%d')
             csv_path = os.path.join(staging, 'TS{}.CSV'.format(stamp))
             zip_filename = 'TS{}.zip'.format(stamp)
