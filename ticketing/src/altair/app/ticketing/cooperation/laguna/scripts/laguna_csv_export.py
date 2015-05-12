@@ -26,6 +26,7 @@ from pyramid.paster import (
     bootstrap,
     setup_logging,
     )
+from pyramid.renderers import render_to_response
 
 if six.PY3:
     from os import makedirs
@@ -47,6 +48,7 @@ from altair.app.ticketing.core.models import (
     DeliveryMethod,
     Venue,
     PaymentDeliveryMethodPair,
+    Mailer,
     )
 from altair.app.ticketing.users.models import (
     User,
@@ -178,7 +180,7 @@ CHANNEL_FIELD_INDEX = synagy_header.index(CHANNEL_FIELD_NAME)
 ATTRIBUTE_COL_COUNT = len(synagy_header_attributes)
 
 
-def export_csv_for_laguna(request, fileobj, organization_id):
+def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]):
     writer = csv.writer(fileobj)
 
     session = get_db_session(request, name='slave')
@@ -201,6 +203,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .outerjoin(Member) \
         .outerjoin(MemberGroup) \
         .outerjoin(Membership) \
+        .filter(~Event.id.in_(cancel_event_ids)) \
         .filter(Order.organization_id == organization_id) \
         .filter(Order.created_at.between(start, end))
 
@@ -212,10 +215,11 @@ def export_csv_for_laguna(request, fileobj, organization_id):
         .join(PaymentMethod) \
         .join(DeliveryMethod) \
         .join(ShippingAddress) \
+        .filter(~Event.id.in_(cancel_event_ids)) \
         .filter(LotEntry.organization_id == organization_id)\
         .filter(LotEntry.created_at.between(start, end)) \
         .filter(sa_exp.or_(
-            LotEntry.elected_at != None,
+            LotEntry.elected_at != None,  # noqa
             LotEntry.rejected_at != None,
             )) \
         .options(sa_orm.joinedload('shipping_address')) \
@@ -235,6 +239,7 @@ def export_csv_for_laguna(request, fileobj, organization_id):
     get_order_no = lambda record: record[0]
     order_no_record = sorted(order_no_order + entry_no_entry, key=get_order_no)
     writer.writerow(synagy_header)  # header書き込み
+    results = []
 
     for order_no, number_order_entry_pair in itertools.groupby(order_no_record, key=get_order_no):
         order = None
@@ -333,10 +338,10 @@ def export_csv_for_laguna(request, fileobj, organization_id):
                 for ordered_product in order.ordered_products
                 )
 
-            if order.attributes:
+            if order.attributes and not attribute_values:
                 name_value = dict(order.attributes)
-                attribute_values.append(name_value.pop(u'生年月日'))
-                attribute_values.append(name_value.pop(u'性別'))
+                attribute_values.append(name_value.pop(u'生年月日', ''))  # 値がない場合は後でエラー通知されデータは送信されない
+                attribute_values.append(name_value.pop(u'性別', ''))  # 値がない場合は後でエラー通知されデータは送信されない
                 values = [value for name, value in sorted(name_value.items())][:3]
                 attribute_values += values
 
@@ -412,7 +417,144 @@ def export_csv_for_laguna(request, fileobj, organization_id):
 
         rec += rec_attriubtes
         rec = map(safe_encoding, rec)
-        writer.writerow(rec)
+
+        result = verify_record(rec)
+        if result.is_success:
+            writer.writerow(rec)
+        results.append(result)
+    return results
+
+
+# 抽選
+LOT_ENTRY_NO_INDEX = 1
+LOT_COLUMN_START_INDEX = 0
+LOT_COLUMN_END_INDEX = 28
+LOT_COLUMN_INDEXES = range(LOT_COLUMN_START_INDEX, LOT_COLUMN_END_INDEX+1)
+LOT_UNNEED_COLUMN_INDEXES = (  # 空文字が許容されるcolumn
+    21,  # 住所2
+    )
+LOT_OR_COLUMN_INDEX_PAIRS = (  # どちらかが入っていれば良いcolumn
+    (22, 23),  # 電話番号
+    (24, 25),  # メールアドレス
+    )
+
+
+# 先着
+ORDER_NO_INDEX = 29
+ORDER_COLUMN_START_INDEX = 29
+ORDER_COLUMN_END_INDEX = 75
+ORDER_COLUMN_INDEXES = range(ORDER_COLUMN_START_INDEX, ORDER_COLUMN_END_INDEX+1)
+ORDER_UNNEED_COLUMN_INDEXES = (  # 空文字が許容されるcolumn
+    49,  # メールマガジン(これは抽選/先着共通だけど拒否の場合はブランクになる)
+    50,  # 性別
+    51,  # 会員種別
+    52,  # 会員グループ名
+    53,  # 会員種別ID
+    63,  # 住所2
+    )
+ORDER_OR_COLUMN_INDEX_PAIRS = (  # どちらかが入っていれば良いcolumn
+    (64, 65),  # 電話番号
+    (66, 67),  # メールアドレス
+    )
+ORDER_UNNEED_COLUMN_INDEXES_ALL = ORDER_UNNEED_COLUMN_INDEXES
+
+# 追加情報
+ATTRIBUTE_COLUMN_START_INDEX = 76
+ATTRIBUTE_COLUMN_END_INDEX = 80
+ATTRIBUTE_COLUMN_INDEXES = range(ATTRIBUTE_COLUMN_START_INDEX, ATTRIBUTE_COLUMN_END_INDEX+1)
+
+
+class LagunaCustomRecordVerifyResult(object):
+    def __init__(self):
+        self.no = ''
+        self._error_indexes = ()
+
+    @property
+    def error_indexes(self):
+        return self._error_indexes
+
+    @error_indexes.setter
+    def error_indexes(self, error_indexes):
+        self._error_indexes = tuple(sorted(set(error_indexes)))
+
+    @property
+    def is_success(self):
+        return not self.error_indexes
+
+ATTRIBUTE_CHECK_FUNCS = [
+    lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),  # 生年月日
+    int,  # 性別
+    int,  # 質問項目１
+    int,  # 質問項目２
+    int,  # 質問項目３
+    ]
+
+
+def verify_record(rec):
+    """レコードがラグーナカスタム側が想定しているデータかどうかを検証
+    """
+    rec = map(str, rec)
+    ng_indexes = []
+    if rec[LOT_COLUMN_START_INDEX]:  # 抽選
+        target_rec = rec[LOT_COLUMN_START_INDEX:LOT_COLUMN_END_INDEX+1]
+        unneed_indexes = list(itertools.chain(LOT_UNNEED_COLUMN_INDEXES, *LOT_OR_COLUMN_INDEX_PAIRS))
+        for ii, data in enumerate(target_rec, start=LOT_COLUMN_START_INDEX):
+            if ii not in unneed_indexes and not data:
+                ng_indexes.append(ii)
+        for indexes in LOT_OR_COLUMN_INDEX_PAIRS:
+            for idx in indexes:
+                if rec[idx]:
+                    break
+            else:
+                ng_indexes += indexes
+    elif rec[ORDER_COLUMN_START_INDEX]:  # 先着 もしくは 当選処理後抽選
+        target_rec = rec[ORDER_COLUMN_START_INDEX:ORDER_COLUMN_END_INDEX+1]
+        unneed_indexes = list(itertools.chain(ORDER_UNNEED_COLUMN_INDEXES, *ORDER_OR_COLUMN_INDEX_PAIRS))
+        for ii, data in enumerate(target_rec, start=ORDER_COLUMN_START_INDEX):
+            if ii not in unneed_indexes and not data:
+                ng_indexes.append(ii)
+        for indexes in ORDER_OR_COLUMN_INDEX_PAIRS:
+
+            for idx in indexes:
+                if rec[idx]:
+                    break
+            else:
+                ng_indexes += indexes
+
+    # 共通
+    for ii, func in enumerate(ATTRIBUTE_CHECK_FUNCS, start=ATTRIBUTE_COLUMN_START_INDEX):
+        try:
+            func(rec[ii])
+        except (IndexError, TypeError, ValueError) as err:
+            logger.warn('column={}: {}'.format(ii, err))
+            ng_indexes.append(ii)
+    result = LagunaCustomRecordVerifyResult()
+    result.no = rec[LOT_ENTRY_NO_INDEX] or rec[ORDER_NO_INDEX]
+    result.error_indexes = ng_indexes
+    return result
+
+
+def send_error_mail(results, mailer, recipients, sender):
+    subject = u'ラグーナカスタムデータ連携エラー'
+    template_path = 'altair.app.ticketing:templates/cooperation/laguna/error_mail.txt'
+
+    error_results = [result for result in results if not result.is_success]
+    total_count = len(results)
+    error_count = len(error_results)
+    success_count = total_count - error_count
+    body = render_to_response(template_path, {
+        'total_count': total_count,
+        'success_count': success_count,
+        'error_count': error_count,
+        'error_results': error_results,
+        })
+    mailer.create_message(
+        sender=sender,
+        recipient=', '.join(recipients),
+        subject=subject,
+        body=body.text,
+        )
+    mailer.send(sender, recipients)
 
 
 def safe_encoding(x):
@@ -436,6 +578,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('conf')
     parser.add_argument('--stdout', default=False, action='store_true')
     parser.add_argument('--no-send', dest='no_send', default=False, action='store_true')
+    parser.add_argument('--notify', default=False, action='store_true')
     parser.add_argument('--organization_id', default=LAGUNA_ORG_ID, type=int)
     args = parser.parse_args()
 
@@ -457,6 +600,11 @@ def main(argv=sys.argv[1:]):
     makedirs(staging, exist_ok=True)
     makedirs(pending, exist_ok=True)
 
+    recipients = map(lambda s: s.strip(), settings['laguna.mail.recipients'].split(','))
+    sender = settings['laguna.mail.sender']
+
+    cancel_event_ids = map(lambda s: s.strip(), settings['laguna.cancel_events'].split(','))  # キャンセル用イベント
+
     try:
         with multilock.MultiStartLock('laguna_csv'):
             stamp = time.strftime('%Y%m%d')
@@ -464,7 +612,7 @@ def main(argv=sys.argv[1:]):
             zip_filename = 'TS{}.zip'.format(stamp)
             zip_path = os.path.join(staging, zip_filename)
             with open(csv_path, 'w+b') as fp:
-                export_csv_for_laguna(request, fp, args.organization_id)
+                results = export_csv_for_laguna(request, fp, args.organization_id, cancel_event_ids)
             pyminizip.compress(csv_path, zip_path, zip_password, 9)
             os.remove(csv_path)
             rc = 0
@@ -479,6 +627,10 @@ def main(argv=sys.argv[1:]):
                 timestamp = time.strftime('%Y%m%d%H%M%S')
                 pending_filepath = os.path.join(pending, '{}.{}'.format(zip_filename, timestamp))
                 shutil.move(zip_path, pending_filepath)
+
+            if args.notify:
+                mailer = Mailer(settings)
+                send_error_mail(results, mailer, recipients, sender)
 
             return rc
     except multilock.AlreadyStartUpError as err:
