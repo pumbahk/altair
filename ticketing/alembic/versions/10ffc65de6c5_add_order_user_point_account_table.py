@@ -20,38 +20,34 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    """alembic予約用"""
-    if False:
-        op.create_table(
-            'Order_UserPointAccount',
-            sa.Column('order_id', Identifier(), sa.ForeignKey('Order.id'), nullable=False),
-            sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
-            sa.PrimaryKeyConstraint('order_id', 'user_point_account_id')
-            )
-        op.create_table(
-            'ProtoOrder_UserPointAccount',
-            sa.Column('proto_order_id', Identifier(), sa.ForeignKey('ProtoOrder.id'), nullable=False),
-            sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
-            sa.PrimaryKeyConstraint('proto_order_id', 'user_point_account_id')
-            )
-        op.create_table(
-            'Cart_UserPointAccount',
-            sa.Column('cart_id', Identifier(), sa.ForeignKey('Cart.id'), nullable=False),
-            sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
-            sa.PrimaryKeyConstraint('cart_id', 'user_point_account_id')
-            )
-        op.create_table(
-            'LotEntry_UserPointAccount',
-            sa.Column('lot_entry_id', Identifier(), sa.ForeignKey('LotEntry.id'), nullable=False),
-            sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
-            sa.PrimaryKeyConstraint('lot_entry_id', 'user_point_account_id')
-            )
-        op.execute('INSERT INTO Order_UserPointAccount (order_id, user_point_account_id) SELECT `Order`.id order_id, `UserPointAccount`.id user_point_account_id FROM `Order` JOIN `UserPointAccount` ON `Order`.user_id=`UserPointAccount`.user_id WHERE `Order`.user_id IS NOT NULL')
+    op.create_table(
+        'Order_UserPointAccount',
+        sa.Column('order_id', Identifier(), sa.ForeignKey('Order.id'), nullable=False),
+        sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
+        sa.PrimaryKeyConstraint('order_id', 'user_point_account_id')
+        )
+    op.create_table(
+        'ProtoOrder_UserPointAccount',
+        sa.Column('proto_order_id', Identifier(), sa.ForeignKey('ProtoOrder.id'), nullable=False),
+        sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
+        sa.PrimaryKeyConstraint('proto_order_id', 'user_point_account_id')
+        )
+    op.create_table(
+        'Cart_UserPointAccount',
+        sa.Column('cart_id', Identifier(), sa.ForeignKey('Cart.id'), nullable=False),
+        sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
+        sa.PrimaryKeyConstraint('cart_id', 'user_point_account_id')
+        )
+    op.create_table(
+        'LotEntry_UserPointAccount',
+        sa.Column('lot_entry_id', Identifier(), sa.ForeignKey('LotEntry.id'), nullable=False),
+        sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
+        sa.PrimaryKeyConstraint('lot_entry_id', 'user_point_account_id')
+        )
+    op.execute('INSERT INTO Order_UserPointAccount (order_id, user_point_account_id) SELECT `Order`.id order_id, `UserPointAccount`.id user_point_account_id FROM `Order` JOIN `UserPointAccount` ON `Order`.user_id=`UserPointAccount`.user_id WHERE `Order`.user_id IS NOT NULL')
 
 def downgrade():
-    """alembic予約用"""
-    if False:
-        op.drop_table('LotEntry_UserPointAccount')
-        op.drop_table('Cart_UserPointAccount')
-        op.drop_table('ProtoOrder_UserPointAccount')
-        op.drop_table('Order_UserPointAccount')
+    op.drop_table('LotEntry_UserPointAccount')
+    op.drop_table('Cart_UserPointAccount')
+    op.drop_table('ProtoOrder_UserPointAccount')
+    op.drop_table('Order_UserPointAccount')

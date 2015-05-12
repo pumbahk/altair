@@ -71,6 +71,12 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
+cart_user_point_account_table = sa.Table(
+    "Cart_UserPointAccount", Base.metadata,
+    sa.Column("cart_id", Identifier, sa.ForeignKey("Cart.id")),
+    sa.Column("user_point_account_id", Identifier, sa.ForeignKey("UserPointAccount.id"))
+    )
+
 @implementer(IPaymentCart)
 class Cart(Base, c_models.CartMixin):
     __tablename__ = 'Cart'
@@ -121,6 +127,8 @@ class Cart(Base, c_models.CartMixin):
 
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
+
+    user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
 
     @property
     def products(self):

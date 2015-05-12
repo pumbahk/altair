@@ -259,12 +259,8 @@ class OrderReviewShowView(object):
         if not form.validate():
             raise InvalidForm(form)
         order = self.context.order
-<<<<<<< HEAD
         jump_infomation_page_om_for_10873(order)  # refs 10873
-        return dict(order=order)
-=======
         announceable = True
->>>>>>> stg/20150508
 
         try:
             lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()

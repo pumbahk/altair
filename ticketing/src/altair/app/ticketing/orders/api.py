@@ -991,7 +991,8 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         items=[build_item(item) for item in proto_order.items],
         created_at=proto_order.new_order_created_at or (prev_order and prev_order.created_at),
         paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at),
-        cart_setting_id=proto_order.cart_setting_id
+        cart_setting_id=proto_order.cart_setting_id,
+        user_point_accounts=proto_order.user_point_accounts
         )
     attributes = proto_order.attributes
     if prev_order is not None:
@@ -1438,7 +1439,8 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         new_order_created_at=original_order.created_at,
         cart_setting_id=original_order.cart_setting_id,
         note=original_order.note,
-        attributes=attributes
+        attributes=attributes,
+        user_point_accounts=original_order.user_point_accounts
         )
     # item => OrderedProduct, element => OrderedProductItem になる
     # この分かりにくい対応は歴史的経緯によるものです...

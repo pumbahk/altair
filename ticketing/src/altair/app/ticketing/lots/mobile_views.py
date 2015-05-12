@@ -291,7 +291,7 @@ class EntryLotView(object):
 
     @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))
     def step4(self):
-        cform = self._create_form(formdata=self.request.params)
+        cform = self._create_form()
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
