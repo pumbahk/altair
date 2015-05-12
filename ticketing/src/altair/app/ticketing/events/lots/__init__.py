@@ -55,9 +55,9 @@ def includeme(config):
                      factory=lot_resource_factory)
 
     # メール送信用API
-    config.add_route('lots.entries.send_elected_mail', 'entries/send_electing_mail/{lot_id}',
+    config.add_route('lots.entries.send_election_mail', 'entries/send_election_mail/{lot_id}',
                      factory=lot_resource_factory)
-    config.add_route('lots.entries.send_rejected_mail', 'entries/send_rejecting_mail/{lot_id}',
+    config.add_route('lots.entries.send_rejection_mail', 'entries/send_rejection_mail/{lot_id}',
                      factory=lot_resource_factory)
 
     config.add_route('lots.entries.reject', 'entries/reject/{lot_id}',

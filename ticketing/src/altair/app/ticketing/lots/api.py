@@ -453,23 +453,24 @@ def get_ordered_lot_entry(order):
         Cart.order_id==order.id
     ).first()
 
+
 def notify_entry_lot(request, entry):
     event = LotEntriedEvent(request, entry)
     request.registry.notify(event)
 
+
 def send_result_mails(request):
     """ 当選落選メール送信
     """
-    send_elected_mails(request)
+    send_election_mails(request)
     send_rejected_mails(request)
 
-def send_elected_mails(request):
-    q = DBSession.query(LotElectedEntry).filter(LotElectedEntry.mail_sent_at==None).all()
 
-    for elected_entry in q:
-        sendmail.send_elected_mail(request, elected_entry)
-        elected_entry.mail_sent_at = get_now(request)
-        transaction.commit()
+def send_election_mails(request, lot_id):
+    lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+    elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
+    return elector.send_election_mails()
+
 
 def send_rejected_mails(request):
     q = DBSession.query(LotRejectedEntry).filter(LotRejectedEntry.mail_sent_at==None).all()
