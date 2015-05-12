@@ -1,5 +1,7 @@
 import json.encoder
 from datetime import date, datetime
+from altair.dynpredicate.core import Node
+from altair.dynpredicate.emitters import javascript_boolean_op_func_handler, JavaScriptCodeEmitter, GenericCodeEmittingVisitor
 
 class RawJavaScriptCode(unicode):
     pass
@@ -82,5 +84,12 @@ class DateTimeEncodingJavaScriptEncoder(JavaScriptEncoder):
                     day=self.encode(o.day)
                     )
                 )
+        elif isinstance(o, Node):
+            emit = JavaScriptCodeEmitter()
+            GenericCodeEmittingVisitor(emit, javascript_boolean_op_func_handler)(o)
+            emit.buf.insert(0, u'function () { return ');
+            emit.buf.append(u'; }');
+            compiled_code = u''.join(emit.buf)
+            return RawJavaScriptCode(compiled_code)
         else:
             return o

@@ -3,10 +3,10 @@
 
 <%mobile:header>チケット購入</%mobile:header>
 <div>購入を完了いたしました。</div>
-<div>下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</div>
+<div style="color:red;font-weight:bold">下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</div>
 
 <%mobile:header>受付番号</%mobile:header>
-<div>${order.order_no}</div>
+<div style="color:red;font-weight:bold">${order.order_no}</div>
 <%mobile:header>お買い物内容</%mobile:header>
 <div>
 ${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}

@@ -1278,6 +1278,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
+            membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else ""
         )

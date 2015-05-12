@@ -13,7 +13,7 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
-from altair.app.ticketing.lots.models import LotEntry
+from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core import api as core_api
@@ -76,9 +76,12 @@ class MyPageListViewResource(OrderReviewResourceBase):
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            join(LotEntry, Order.order_no == LotEntry.entry_no). \
+            join(Lot, LotEntry.lot_id == Lot.id). \
             filter(Order.organization_id==self.organization.id). \
             filter(Order.user_id==user.id). \
             filter(SalesSegmentSetting.disp_orderreview==True). \
+            filter(Lot.lotting_announce_datetime <= datetime.now()). \
             order_by(Order.updated_at.desc())
         orders = unsuspicious_order_filter(orders)  # refs 10883
         orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))

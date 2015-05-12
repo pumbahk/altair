@@ -16,6 +16,7 @@ from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core.api import get_default_contact_url
 from altair.request.adapters import UnicodeMultiDictAdapter
+from altair.now import get_now, is_now_set
 
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
@@ -31,6 +32,7 @@ from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orio
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.orders.api import OrderAttributeIO
+from altair.app.ticketing.lots.models import LotEntry
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -247,13 +249,34 @@ class OrderReviewShowView(object):
         self.context = context
         self.request = request
 
-    @lbr_view_config()
-    @lbr_view_config(name='order_review.show')
+    @lbr_view_config(
+        route_name='order_review.show',
+        request_method="POST",
+        renderer=selectable_renderer("order_review/show.html")
+        )
     def post(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        if not form.validate():
+            raise InvalidForm(form)
         order = self.context.order
+<<<<<<< HEAD
         jump_infomation_page_om_for_10873(order)  # refs 10873
         return dict(order=order)
+=======
+        announceable = True
+>>>>>>> stg/20150508
 
+        try:
+            lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
+            announce_datetime = lot_entry.lot.lotting_announce_datetime
+            if announce_datetime > datetime.now():
+                announceable = False
+        except (AttributeError, TypeError):
+            pass
+
+        if order is None or order.shipping_address is None or announceable:
+            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
+        return dict(order=order)
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
@@ -270,7 +293,7 @@ class OrderAttributesEditView(object):
         else:
             performance_start_on = None
             performance_end_on = None
-        return {
+        retval = {
             'PERFORMANCE_START': performance_start_on,
             'PERFORMANCE_END': performance_end_on,
             'ORDERED': self.context.order.created_at,
@@ -279,6 +302,37 @@ class OrderAttributesEditView(object):
             'CANCELED': self.context.order.canceled_at,
             'REFUNDED': self.context.order.refunded_at,
             }
+
+        if is_now_set(self.request):
+            from altair.dynpredicate.core import Node
+            now = get_now(self.request)
+            retval['NOW'] = Node(
+                type='CALL',
+                line=0,
+                column=0,
+                children=(
+                    Node(
+                        type='SYM',
+                        line=0,
+                        column=0,
+                        value='DATE',
+                        ),
+                    Node(
+                        type='TUPLE',
+                        line=0,
+                        column=0,
+                        children=(
+                            Node(type='NUM', line=0, column=0, value=now.year),
+                            Node(type='NUM', line=0, column=0, value=now.month),
+                            Node(type='NUM', line=0, column=0, value=now.day),
+                            Node(type='NUM', line=0, column=0, value=now.hour),
+                            Node(type='NUM', line=0, column=0, value=now.minute),
+                            Node(type='NUM', line=0, column=0, value=now.second)
+                            )
+                        )
+                    )
+                )
+        return retval
 
     def create_form(self, formdata=None, data=None):
         mode = ['orderreview', 'editable']
@@ -334,7 +388,7 @@ class OrderAttributesEditView(object):
             k: form.data[k]
             for k in (form_field['descriptor']['name'] for form_field in form_fields if form_field['descriptor'].get('edit_in_orderreview', False))
             }
-        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes)) 
+        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes))
         # writable_order と self.context.order は別セッションのため、このタイミングでは同期していない。
         # 強制的に上書きして render_show_view() に備える
         self.context.order = writable_order

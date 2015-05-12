@@ -9,6 +9,7 @@ from altair.timeparse import parse_time_spec
 
 logger = logging.getLogger(__name__)
 
+
 @subscriber('altair.app.ticketing.lots.events.LotEntriedEvent')
 def send_lot_accepted_mail(event):
     entry = event.lot_entry
@@ -29,11 +30,13 @@ def finish_elected_lot_entry(event):
     except Exception as e:
         logger.exception(e)
 
+
 @subscriber('altair.app.ticketing.lots.events.LotRejectedEvent')
 def finish_rejected_lot_entry(event):
     try:
         entry = event.lot_entry
-
+        if entry.ordered_mail_sent_at:
+            return
         request = event.request
         sendmail.send_rejected_mail(request, entry)
         entry.ordered_mail_sent_at = get_now(request)
@@ -72,5 +75,3 @@ class LotEntryCloser(object):
 def includeme(config):
     config.scan('.subscribers')
     config.add_subscriber(LotEntryCloser(config.registry), '.events.LotClosedEvent')
-
-

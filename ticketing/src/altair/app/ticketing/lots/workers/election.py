@@ -18,6 +18,9 @@ from altair.app.ticketing.cart import api as cart_api
 
 from .. import models as lot_models
 from ..events import LotElectedEvent
+from altair.app.ticketing.lots.models import (
+    Lot
+)
 
 from altair.app.ticketing.payments.api import (
     is_finished_payment,
@@ -146,8 +149,10 @@ def elect_lots_task(context, request):
                 wish.order_id = order.id
                 wish.lot_entry.order_id = order.id
                 wish.lot_entry.order = order
-                event = LotElectedEvent(request, wish)
-                request.registry.notify(event)
+                mail_send_now = Lot.query.filter_by(id=context.lot.id).first().mail_send_now
+                if mail_send_now is not None and mail_send_now:
+                    event = LotElectedEvent(request, wish)
+                    request.registry.notify(event)
         except Exception as e:
             work = s.query(lot_models.LotElectWork).filter_by(id=context.work.id).one()
             history.error = work.error = str(e).decode('utf-8')

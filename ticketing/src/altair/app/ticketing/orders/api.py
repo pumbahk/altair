@@ -378,7 +378,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
                         .filter(aliased_targets['subject'].total_amount > minimum_price * value) \
                         .group_by(aliased_targets['subject'].id,
                                   aliased_targets['OrderedProductItem'].product_item_id) \
-                        .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
+                        .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) == value) \
                     )
                 )
         return query
