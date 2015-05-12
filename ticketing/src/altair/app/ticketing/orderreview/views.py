@@ -216,8 +216,17 @@ class OrderReviewShowView(object):
         if not form.validate():
             raise InvalidForm(form)
         order = self.context.order
-        lot = LotEntry.query.filter_by(entry_no=order.order_no).first().lot
-        if order is None or order.shipping_address is None or lot.lotting_announce_datetime >= datetime.now():
+        announceable = True
+
+        try:
+            lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
+            announce_datetime = lot_entry.lot.lotting_announce_datetime
+            if announce_datetime > datetime.now():
+                announceable = False
+        except (AttributeError, TypeError):
+            pass
+
+        if order is None or order.shipping_address is None or announceable:
             raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
         return dict(order=order)
 
