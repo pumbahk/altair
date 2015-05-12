@@ -49,6 +49,8 @@ from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.app.ticketing.fanstatic import with_bootstrap
 from .utils import is_drawing_compressed, get_s3_url
 from .interfaces import IVenueSiteDrawingHandler
+from .api import set_visible_venue, set_invisible_venue
+from . import VISIBLE_VENUES_SESSION_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -540,6 +542,10 @@ def index(request):
     query = DBSession.query(Venue, Site, Performance)
     query = query.filter(Venue.organization_id==request.context.user.organization_id)
     query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
+    # 会場の表示、非表示
+    from . import VISIBLE_VENUES_SESSION_KEY
+    if not request.session.get(VISIBLE_VENUES_SESSION_KEY, None):
+        query = query.filter(Site.visible==True)
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
@@ -687,7 +693,7 @@ def show_checker(context, request):
         'drawing': get_venue_site_adapter(request, venue.site),
     }
 
-@view_config(route_name='venues.new', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html',
+@view_config(route_name='venues.new', request_method='GET', renderer='altair.app.ticketing:templates/venues/new_edit.html',
              decorator=with_bootstrap, permission='event_editor')
 def new_get(request):
     f = SiteForm()
@@ -709,13 +715,14 @@ def new_get(request):
         'route_path': request.path,
     }
 
-@view_config(route_name='venues.new', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html',
+@view_config(route_name='venues.new', request_method='POST', renderer='altair.app.ticketing:templates/venues/new_edit.html',
              decorator=with_bootstrap, permission='event_editor')
 def new_post(request):
     f = SiteForm(request.POST)
 
     if f.validate():
         site = merge_session_with_post(Site(), f.data)
+        site.visible = True
         site.save()
 
         venue = merge_session_with_post(Venue(site_id=site.id, organization_id=request.context.user.organization_id), f.data)
@@ -776,6 +783,15 @@ def edit_post(request):
             'route_path': request.path,
             }
 
+@view_config(route_name='venues.visible', decorator=with_bootstrap, permission='event_editor')
+def visible_venues(request):
+    set_visible_venue(request)
+    return HTTPFound(request.route_path("venues.index"))
+
+@view_config(route_name='venues.invisible', decorator=with_bootstrap, permission='event_editor')
+def invisible_venues(request):
+    set_invisible_venue(request)
+    return HTTPFound(request.route_path("venues.index"))
 
 def includeme(config):
     config.registry.registerUtility(

@@ -1,6 +1,14 @@
 <%page args="items" />
 <%namespace file="/common/helpers.html" name="ch"/>
 
+<% from altair.app.ticketing.venues import VISIBLE_VENUES_SESSION_KEY %>
+% if request.session.get(VISIBLE_VENUES_SESSION_KEY, None):
+  <a href="${request.route_path('venues.invisible')}">非表示の会場を表示しない</a>
+% else:
+  <a href="${request.route_path('venues.visible')}">非表示の会場を表示する</a>
+% endif
+
+
 % if items:
 <table class="table table-striped table-bordered">
   <thead>
