@@ -44,6 +44,7 @@ def lot_wish_cart(wish):
         sales_segment=wish.lot_entry.lot.sales_segment,
         channel=wish.lot_entry.channel,
         membership_id=wish.lot_entry.membership_id,
+        user_point_accounts=wish.lot_entry.user_point_accounts,
         products=[
             cart_models.CartedProduct(
                 product=p.product,
@@ -100,6 +101,7 @@ def elect_lot_wish(request, wish, order=None):
         product_requires = [(p.product, p.quantity) for p in cart.items]
         stocked = stocker.take_stock(performance.id, product_requires)
         order = payment.call_payment()
+        order.user_point_accounts = cart.user_point_accounts
 
     else:
         pdmp = wish.lot_entry.payment_delivery_method_pair
