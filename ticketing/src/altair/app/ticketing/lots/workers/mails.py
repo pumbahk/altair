@@ -116,4 +116,4 @@ def send_rejection_mail_task(context, request):
             request.registry.notify(event)
         except Exception as e:
             history.error = str(e).decode('utf-8')
-            Raise
+            raise
