@@ -459,13 +459,6 @@ def notify_entry_lot(request, entry):
     request.registry.notify(event)
 
 
-def send_result_mails(request):
-    """ 当選落選メール送信
-    """
-    send_election_mails(request)
-    send_rejection_mails(request)
-
-
 def send_election_mails(request, lot_id):
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
