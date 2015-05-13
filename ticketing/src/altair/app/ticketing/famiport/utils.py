@@ -43,7 +43,7 @@ class CustomerInformationResultCodeEnum(Enum):
     TimeoutError = '15' # タイムアウトエラー
     OtherError = '99' # その他エラー
 
-class ReplyClassEnum(Enum):
+class ReplyClassEnum(IntEnum):
     CashOnDelivery = 1 # 代引き
     Prepayment = 2 # 前払い（後日渡し）の前払い時
     Paid = 3 # 代済発券と前払い(後日渡し)の後日渡し時

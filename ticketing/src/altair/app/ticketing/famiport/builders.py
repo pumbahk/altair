@@ -79,31 +79,32 @@ class FamiPortResponseBuilder(object):
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_reservation_inquiry_request=None):
-        resultCode = ResultCodeEnum.Normal # 正常応答 # TODO Change the value depending on the result
-        replyClass = ReplyClassEnum.CashOnDelivery # 代引き # TODO Change the value depending on the type
-        replyCode = ReplyCodeEnum.Normal # 正常応答 TODO Change the value depending on the result
+        reserveNumber = famiport_reservation_inquiry_request.reserveNumber
+        famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber)
+        if famiport_order is not None:
+            resultCode = ResultCodeEnum.Normal
+            replyCode = ReplyCodeEnum.Normal
+
+        replyClass = ReplyClassEnum.CashOnDelivery # TODO Change the value depending on the type
+
         playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
             None, None, None, None, None, None, None, None, None, None, None, None, None
         if replyCode == ReplyCodeEnum.Normal:
             playGuideId = ''
-            reserveNumber = famiport_reservation_inquiry_request.reserveNumber
-            barCodeNo = '' # TODO retrieve barCodeNo by reserveNumber
-            # TODO Set these values accordingly
-            totalAmount = 0
-            ticketPayment = 0
-            systemFee = 0
-            ticketingFee = 0
-            ticketCountTotal = 0
-            ticketCount = 0
-            kogyoName = ''
-            koenDate = ''
-            name = ''
+            barCodeNo = famiport_order.barCodeNo
+            totalAmount = famiport_order.totalAmount
+            ticketPayment = famiport_order.ticketPayment
+            systemFee = famiport_order.systemFee
+            ticketingFee = famiport_order.ticketingFee
+            ticketCountTotal = famiport_order.ticketCountTotal
+            ticketCount = famiport_order.ticketCount
+            kogyoName = '' # TODO Set the values accordingly
+            koenDate = '' # TODO Set the values accordingly
+            name = famiport_order.name
 
-            nameInput = 0 # 不要（画面表示なし）
-            phoneInput = 0 # 不要（画面表示なし）
+        nameInput = 0 # 不要（画面表示なし）
+        phoneInput = 0 # 不要（画面表示なし）
 
-
-        # TODO Query barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name
         famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(resultCode=resultCode, replyClass=replyClass, replyCode=replyCode, \
                                                                                    playGuideId=playGuideId, barCodeNo=barCodeNo, totalAmount=totalAmount, ticketPayment=ticketPayment, systemFee=systemFee, \
                                                                                    ticketingFee=ticketingFee, ticketCountTotal=ticketCountTotal, ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, \

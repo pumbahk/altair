@@ -30,6 +30,10 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
     order_no = sa.Column(sa.String(255), nullable=False)
     barcode_no = sa.Column(sa.String(255), nullable=False)
 
+    @classmethod
+    def get_by_reserveNumber(cls, reserveNumber):
+        FamiPortOrder.filter_by().one() # TODO filter by reserveNumber
+
 
 class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
