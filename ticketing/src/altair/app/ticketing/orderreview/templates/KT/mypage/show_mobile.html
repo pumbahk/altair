@@ -81,7 +81,7 @@ ${entry.entry_no}<br/>
 申込日時：
 ${h.japanese_datetime(entry.created_at)}<br/>
 ステータス：
-${h.get_entry_status(entry)}<br/>
+${h.get_entry_status(request, entry)}<br/>
 抽選名称：
 ${entry.lot.name}<br/>
 <form name="" action="/lots/review" method="POST">
