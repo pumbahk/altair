@@ -617,8 +617,8 @@ class LotReviewView(object):
     def post_validated(self):
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
-        event_id = lot_entry.lot.event.id
-        lot_id = lot_entry.lot.id
+        event_id = lot_entry.lot.event.id # いる？
+        lot_id = lot_entry.lot.id # いる？
         user_point_accounts = get_user_point_accounts(self.request, lot_entry.user_id)
 
         # 当選して、未決済の場合、決済画面に移動可能
@@ -629,7 +629,8 @@ class LotReviewView(object):
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
             user_point_accounts=user_point_accounts,
-            memo=lot_entry.memo)
+            memo=lot_entry.memo,
+            now=get_now(self.request))
 
 
 @lbr_view_config(

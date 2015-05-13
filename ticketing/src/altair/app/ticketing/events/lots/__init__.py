@@ -53,6 +53,13 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
+
+    # メール送信用API
+    config.add_route('lots.entries.send_elected_mail', 'entries/send_electing_mail/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.send_rejected_mail', 'entries/send_rejecting_mail/{lot_id}',
+                     factory=lot_resource_factory)
+
     config.add_route('lots.entries.reject', 'entries/reject/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel', 'entries/cancel/{lot_id}',
@@ -63,6 +70,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.index', 'entries/{lot_id}',
                      factory=lot_resource_factory)
+
+
 
     # レポートメール設定
     config.add_route('lot.entries.new_report_setting',

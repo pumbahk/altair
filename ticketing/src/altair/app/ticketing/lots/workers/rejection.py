@@ -20,6 +20,9 @@ from altair.app.ticketing.cart import api as cart_api
 
 from .. import models as lot_models
 from ..events import LotRejectedEvent
+from altair.app.ticketing.lots.models import (
+    Lot
+)
 
 from altair.app.ticketing.payments.api import (
     is_finished_payment,
@@ -68,8 +71,10 @@ def reject_lots_task(context, request):
             lot_entry.reject()
             DBSession.delete(context.work)
             # TODO: イベント
-            event = LotRejectedEvent(request, lot_entry)
-            request.registry.notify(event)
+            mail_send_now = Lot.query.filter_by(id=context.lot.id).first().mail_send_now
+            if mail_send_now is not None and mail_send_now:
+                event = LotRejectedEvent(request, lot_entry)
+                request.registry.notify(event)
         except Exception as e:
             work = s.query(lot_models.LotRejectWork).filter_by(id=context.work.id).one()
             history.error = work.error = str(e).decode('utf-8')

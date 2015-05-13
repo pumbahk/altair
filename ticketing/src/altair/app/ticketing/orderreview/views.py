@@ -31,6 +31,7 @@ from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orio
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.orders.api import OrderAttributeIO
+from altair.app.ticketing.lots.models import LotEntry
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -205,12 +206,30 @@ class OrderReviewShowView(object):
         self.context = context
         self.request = request
 
-    @lbr_view_config()
-    @lbr_view_config(name='order_review.show')
+    @lbr_view_config(
+        route_name='order_review.show',
+        request_method="POST",
+        renderer=selectable_renderer("order_review/show.html")
+        )
     def post(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        if not form.validate():
+            raise InvalidForm(form)
         order = self.context.order
-        return dict(order=order)
+        announce_datetime = None
 
+        # 抽選発表予定日のチェック
+        if order is not None:
+            lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
+            if lot_entry is not None:
+                announce_datetime = lot_entry.lot.lotting_announce_datetime
+        if announce_datetime is not None:
+            if announce_datetime > datetime.now():
+                raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
+
+        if order is None or order.shipping_address is None:
+            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
+        return dict(order=order)
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
@@ -322,7 +341,7 @@ class OrderAttributesEditView(object):
             k: form.data[k]
             for k in (form_field['descriptor']['name'] for form_field in form_fields if form_field['descriptor'].get('edit_in_orderreview', False))
             }
-        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes)) 
+        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes))
         # writable_order と self.context.order は別セッションのため、このタイミングでは同期していない。
         # 強制的に上書きして render_show_view() に備える
         self.context.order = writable_order
@@ -362,12 +381,12 @@ class QRView(object):
     def qr_confirm(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
-        
+
         return dict(
             sign = sign,
             order = ticket.order,
@@ -385,7 +404,7 @@ class QRView(object):
         sign = self.request.matchdict.get('sign', 0)
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
 
@@ -393,7 +412,7 @@ class QRView(object):
             gate = None
         else:
             gate = ticket.seat.attributes.get("gate", None)
-        
+
         return dict(
             token = ticket.item_token.id, # dummy
             serial = ticket_id,           # dummy
@@ -419,7 +438,7 @@ class QRView(object):
         data = OrderedProductItemToken.filter_by(id = token).first()
         if data is None:
             return HTTPNotFound()
-        
+
         ticket = type('FakeTicketPrintHistory', (), {
             'id': serial,
             'performance': data.item.ordered_product.order.performance,
@@ -428,7 +447,7 @@ class QRView(object):
             'seat': data.seat,
         })
         qr = build_qr_by_orion(self.request, ticket, serial)
-        
+
         if sign == qr.sign:
             return qrdata_as_image_response(qr)
         else:
@@ -441,7 +460,7 @@ class QRView(object):
     def qr_image(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
         if ticket is None:
             raise HTTPNotFound()
@@ -513,7 +532,7 @@ class QRView(object):
                     r.text = response['message']
                     return r
                 raise Exception()
-            
+
             return dict(
                 _overwrite_generate_qrimage_route_name = 'order_review.orion_draw',
                 token = token.id,
@@ -529,7 +548,7 @@ class QRView(object):
         elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
             # altair
             ticket = build_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
-            
+
             return dict(
                 token = token.id,    # dummy
                 serial = ticket.id,  # dummy
@@ -544,18 +563,18 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.qr_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html")
         )
     def send_mail(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         try:
@@ -574,17 +593,17 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.orion_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html"))
     def send_to_orion(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         result = []
@@ -635,13 +654,13 @@ def render_qrmail_viewlet(context, request):
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
     else:
         name = u''
-    
+
     return dict(
         name=name,
-        event=ticket.event, 
-        performance=ticket.performance, 
-        product=ticket.product, 
-        seat=ticket.seat, 
+        event=ticket.event,
+        performance=ticket.performance,
+        product=ticket.product,
+        seat=ticket.seat,
         mail = request.params['mail'],
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
