@@ -718,38 +718,30 @@ class LotEntries(BaseView):
                  reset_entries.remove(entry_no)
         return elect_wishes, list(reject_entries), list(reset_entries)
 
-    @view_config(route_name='lots.entries.send_elected_mail', request_method='POST')
-    def send_elected_mail(self):
+    @view_config(route_name='lots.entries.send_election_mail', request_method='POST')
+    def send_election_mail(self):
+        """当選メール送信処理"""
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
-        lot = Lot.query.filter(Lot.id == lot_id).one()
-        target_entries = [entry for entry in lot.entries if entry.is_elected]
-
-        if target_entries:
-            for entry in target_entries:
-                assert entry.lot_elected_entries and len(entry.lot_elected_entries) == 1, '???????????'
-                lot_elected_entry = entry.lot_elected_entries[0]
-                elected_wish = lot_elected_entry.lot_entry_wish
-                event = LotElectedEvent(self.request, elected_wish)
-                self.request.registry.notify(event)
-            self.request.session.flash(u'{}件のメールを送信しました。'.format(len(target_entries)))
-        else:
-            self.request.session.flash(u'送信対象がありませんでした。')
+        lot = Lot.query.filter(Lot.id == lot_id).first()
+        if lot is None:
+            raise HTTPNotFound()
+        total_count = lots_api.send_election_mails(self.request, lot.id)
+        msg = u'当選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'当選メールの送信対象がありません'
+        self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
-    @view_config(route_name='lots.entries.send_rejected_mail', request_method='POST')
-    def send_rejecting_mail(self):
+    @view_config(route_name='lots.entries.send_rejection_mail', request_method='POST')
+    def send_rejection_mail(self):
+        """落選メール送信処理"""
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
-        lot = Lot.query.filter(Lot.id == lot_id).one()
-        target_entries = [entry for entry in lot.entries if entry.is_rejected]
-        if target_entries:
-            for entry in target_entries:
-                event = LotRejectedEvent(self.request, entry)
-                self.request.registry.notify(event)
-            self.request.session.flash(u'{}件のメールを送信しました。'.format(len(target_entries)))
-        else:
-            self.request.session.flash(u'送信対象がありませんでした。')
+        lot = Lot.query.filter(Lot.id == lot_id).first()
+        if lot is None:
+            raise HTTPNotFound()
+        total_count = lots_api.send_rejection_mails(self.request, lot.id)
+        msg = u'落選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'落選メールの送信対象がありません'
+        self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
@@ -770,8 +762,6 @@ class LotEntries(BaseView):
         return dict(lot=lot,
                     closer=closer,
                     electing=electing)
-
-
 
     @view_config(route_name='lots.entries.close',
                  renderer="string",

@@ -453,34 +453,27 @@ def get_ordered_lot_entry(order):
         Cart.order_id==order.id
     ).first()
 
+
 def notify_entry_lot(request, entry):
     event = LotEntriedEvent(request, entry)
     request.registry.notify(event)
 
-def send_result_mails(request):
-    """ 当選落選メール送信
-    """
-    send_elected_mails(request)
-    send_rejected_mails(request)
 
-def send_elected_mails(request):
-    q = DBSession.query(LotElectedEntry).filter(LotElectedEntry.mail_sent_at==None).all()
+def send_election_mails(request, lot_id):
+    lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+    elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
+    return elector.send_election_mails()
 
-    for elected_entry in q:
-        sendmail.send_elected_mail(request, elected_entry)
-        elected_entry.mail_sent_at = get_now(request)
-        transaction.commit()
 
-def send_rejected_mails(request):
-    q = DBSession.query(LotRejectedEntry).filter(LotRejectedEntry.mail_sent_at==None).all()
+def send_rejection_mails(request, lot_id):
+    lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+    elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
+    return elector.send_rejection_mails()
 
-    for rejected_entry in q:
-        sendmail.send_rejected_mail(request, rejected_entry)
-        rejected_entry.mail_sent_at = get_now(request)
-        transaction.commit()
 
 def get_entry_user(request):
     return cart_api.get_auth_info(request)
+
 
 def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
