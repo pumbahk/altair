@@ -225,17 +225,18 @@ class OrderReviewShowView(object):
         if not form.validate():
             raise InvalidForm(form)
         order = self.context.order
-        announceable = True
+        announce_datetime = None
 
-        try:
+        # 抽選発表予定日のチェック
+        if order is not None:
             lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
-            announce_datetime = lot_entry.lot.lotting_announce_datetime
+            if lot_entry is not None:
+                announce_datetime = lot_entry.lot.lotting_announce_datetime
+        if announce_datetime is not None:
             if announce_datetime > datetime.now():
-                announceable = False
-        except (AttributeError, TypeError):
-            pass
+                raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
 
-        if order is None or order.shipping_address is None or announceable:
+        if order is None or order.shipping_address is None:
             raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
         return dict(order=order)
 
