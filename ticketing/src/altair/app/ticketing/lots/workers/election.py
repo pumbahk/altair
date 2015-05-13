@@ -149,7 +149,7 @@ def elect_lots_task(context, request):
                 wish.order_id = order.id
                 wish.lot_entry.order_id = order.id
                 wish.lot_entry.order = order
-                mail_send_now = Lot.query.filter_by(id=context.lot.id).first().mail_send_now
+                mail_send_now = context.lot.mail_send_now
                 if mail_send_now is not None and mail_send_now:
                     event = LotElectedEvent(request, wish)
                     request.registry.notify(event)
