@@ -121,7 +121,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_completion_request=None):
-        resultCode = ResultCodeEnum.Normal # TODO Change the value depending on the result
+        resultCode = ResultCodeEnum.Normal
         storeCode = famiport_payment_ticketing_completion_request.storeCode
         sequenceNo = famiport_payment_ticketing_completion_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
@@ -145,12 +145,27 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_cancel_request=None):
-        resultCode = ResultCodeEnum.Normal # 正常応答 # TODO Change the value depending on the result
+        resultCode = ResultCodeEnum.Normal
         storeCode = famiport_payment_ticketing_cancel_request.storeCode
+        mmkNo = famiport_payment_ticketing_cancel_request.mmkNo
+        ticketingDate = famiport_payment_ticketing_cancel_request.ticketingDate
         sequenceNo = famiport_payment_ticketing_cancel_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_cancel_request.barCodeNo
-        orderId = '' # TODO Get orderId from DB
-        replyCode = ReplyCodeEnum.Normal # 正常応答 TODO Change the value depending on the result
+
+        try:
+            famiport_order = FamiPortOrder.get_from_barCodeNo(barCodeNo)
+        except DBAPIError:
+            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
+                         "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo)
+
+        orderId, replyCode = None, None
+        if famiport_order is not None:
+            orderId = famiport_order.orderId
+            replyCode = ReplyCodeEnum.Normal
+        else:
+            resultCode = ResultCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError
+
         famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyCode=replyCode)
         return famiport_payment_ticketing_cancel_response
 
