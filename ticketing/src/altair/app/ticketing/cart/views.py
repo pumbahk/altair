@@ -940,7 +940,7 @@ class PaymentView(object):
 
         user = api.get_or_create_user(self.context.authenticated_user())
         user_profile = None
-        if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form:
+        if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form and user is not None:
             user_profile = user.user_profile
 
         if user_profile is not None:
