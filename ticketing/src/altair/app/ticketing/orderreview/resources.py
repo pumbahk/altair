@@ -8,6 +8,8 @@ from pyramid.security import effective_principals, Allow, Authenticated, DENY_AL
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import or_
+import webhelpers.paginate as paginate
+from altair.now import get_now
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.payments import plugins
@@ -16,7 +18,6 @@ from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
 from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
-import webhelpers.paginate as paginate
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
 from .api import get_user_point_accounts
@@ -71,6 +72,7 @@ class LandingViewResource(OrderReviewResourceBase):
 
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
+        now = get_now(self.request)
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
@@ -79,7 +81,7 @@ class MyPageListViewResource(OrderReviewResourceBase):
             filter(Order.organization_id==self.organization.id). \
             filter(Order.user_id==user.id). \
             filter(SalesSegmentSetting.disp_orderreview==True). \
-            filter(or_(Lot.lotting_announce_datetime <= datetime.now(), Lot.lotting_announce_datetime == None)). \
+            filter(or_(Lot.lotting_announce_datetime <= now, Lot.lotting_announce_datetime == None)). \
             order_by(Order.updated_at.desc())
 
         orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))

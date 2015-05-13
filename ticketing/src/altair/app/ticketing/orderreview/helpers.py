@@ -2,6 +2,7 @@
 from datetime import datetime
 from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
+from altair.now import get_now
 from altair.mobile.api import is_mobile_request
 from altair.app.ticketing.cart.helpers import *
 from altair.app.ticketing.orders.models import OrderCancelReasonEnum
@@ -126,22 +127,24 @@ def is_disabled_order(entry):
         return True
     return False
 
-def get_entry_status(entry):
-    if entry.canceled_at and entry.lot.lotting_announce_datetime <= datetime.now():
+def get_entry_status(request, entry):
+    now = get_now(request)
+    if entry.canceled_at and entry.lot.lotting_announce_datetime <= now:
         return u"無効"
-    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= datetime.now():
+    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u"当選"
-    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= datetime.now():
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
         return u"落選"
     else:
         return u"結果抽選待ち"
 
-def get_entry_status_image(entry):
-    if entry.canceled_at and entry.lot.lotting_announce_datetime <= datetime.now():
+def get_entry_status_image(request, entry):
+    now = get_now(request)
+    if entry.canceled_at and entry.lot.lotting_announce_datetime <= now:
         return u"icon_cancel.gif"
-    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= datetime.now():
+    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u"icon_tousen.gif"
-    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= datetime.now():
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"

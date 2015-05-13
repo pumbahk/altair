@@ -52,7 +52,7 @@ ${render_mailmagazine(request)}
   <div id="mypageHistory">
     % for entry in lot_entries:
       <div class="box">
-        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(entry))}" alt="${h.get_entry_status(entry)}" width="60" height="60" /></p>
+        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
         <dl>
           <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
             <input type="hidden" name="entry_no" value="${entry.entry_no}"/>

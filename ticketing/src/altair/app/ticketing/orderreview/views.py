@@ -218,13 +218,15 @@ class OrderReviewShowView(object):
         order = self.context.order
         announce_datetime = None
 
+        now = get_now(self.request)
+
         # 抽選発表予定日のチェック
         if order is not None:
             lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
             if lot_entry is not None:
                 announce_datetime = lot_entry.lot.lotting_announce_datetime
         if announce_datetime is not None:
-            if announce_datetime > datetime.now():
+            if announce_datetime > now:
                 raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
 
         if order is None or order.shipping_address is None:
