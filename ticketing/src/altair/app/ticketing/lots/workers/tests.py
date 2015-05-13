@@ -161,20 +161,36 @@ class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
             self.session.bind
             )
         CoreTestMixin.setUp(self)
-        from altair.app.ticketing.core.models import OrganizationSetting, SalesSegmentGroup
+        from altair.app.ticketing.core.models import OrganizationSetting, SalesSegmentGroup, SalesSegment, Product
         from altair.app.ticketing.cart.models import CartSetting
         self.sales_segment_group = SalesSegmentGroup(event=self.event)
         self.organization.settings = [OrganizationSetting(cart_setting=CartSetting())]
-        from ..models import Lot, LotElectWork, LotEntry, LotEntryWish
+        self.sales_segment = SalesSegment(sales_segment_group=self.sales_segment_group)
+        from ..models import Lot, LotElectWork, LotEntry, LotEntryWish, LotEntryProduct
+        import transaction
         self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(self.sales_segment_group)
         self.lot = Lot()
         self.session.add(self.lot)
         self.lot_entry = LotEntry(lot=self.lot, payment_delivery_method_pair=self.payment_delivery_method_pairs[0])
         self.session.add(self.lot_entry)
-        self.lot_entry_wish = LotEntryWish(wish_order=1, lot_entry=self.lot_entry, performance=self.performance)
+        self.lot_entry_wish = LotEntryWish(
+            wish_order=1,
+            lot_entry=self.lot_entry,
+            performance=self.performance,
+            products=[
+                LotEntryProduct(
+                    product=Product(sales_segment=self.sales_segment, price=0)
+                    )
+                ])
         self.session.add(self.lot_entry_wish)
         self.work = LotElectWork(lot_entry_no='XX0000000000', wish_order=1)
         self.session.add(self.work)
+        self.session.flush()
+        transaction.commit()
+        self.lot = self.session.merge(self.lot)
+        self.lot_entry = self.session.merge(self.lot_entry)
+        self.lot_entry_wish = self.session.merge(self.lot_entry_wish)
+        self.work = self.session.merge(self.work)
 
         from altair.app.ticketing.cart.interfaces import IStocker
         from pyramid.interfaces import IRequest
