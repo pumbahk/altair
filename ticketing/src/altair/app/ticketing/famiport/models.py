@@ -43,6 +43,9 @@ class FamiPortTicket(Base, WithTimestamp):
     templateCode = sa.Column(sa.String(length=10))
     ticketData = sa.Column(sa.String(length=5000))
 
+    def get_from_orderId(cls, orderId):
+        FamiPortOrder.filter_by() # TODO filter by orderId
+
 
 class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'

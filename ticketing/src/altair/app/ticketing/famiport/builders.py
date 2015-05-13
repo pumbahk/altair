@@ -4,7 +4,7 @@ from sqlalchemy.exc import DBAPIError
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
 from .models import FamiPortOrder, FamiPortInformationMessage
-from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum, InfoKubunEnum
+from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum, CustomerInformationResultCodeEnum, InfoKubunEnum
 from .requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
                     FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
 from .responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, \
@@ -258,24 +258,25 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_customer_information_request=None):
         orderId = famiport_customer_information_request.orderId
-        # TODO Get name, memberId, address from DB with orderId
+        famiport_order = FamiPortOrder.get_from_orderId(orderId)
+
         resultCode, replyCode = None, None
-        if orderId is not None:
-            resultCode = ResultCodeEnum.Normal
+        if famiport_order is not None:
+            resultCode = CustomerInformationResultCodeEnum.Normal
             replyCode = ReplyCodeEnum.Normal
         else:
-            resultCode = ResultCodeEnum.OtherError
+            resultCode = CustomerInformationResultCodeEnum.OtherError
             replyCode = ReplyCodeEnum.CustomerNamePrintInformationError
+
         name, memberId, address1, address2, identifyNo = None, None, None, None, None
         if replyCode == ReplyCodeEnum.Normal:
-            # TODO Set the real value for these
-            name = 'テスト名字' + '　' + 'テスト名前'
-            memberId =  '123abc'
-            address1 = '東京都品川区西五反田1-2-3'
-            address2 = 'HSビル 9F'
-            identifyNo = ''
-        famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
-        return famiport_customer_information_response
+            name = famiport_order.name
+            memberId =  famiport_order.memberId
+            address1 = famiport_order.address1
+            address2 = famiport_order.address2
+            identifyNo = famiport_order.identifyNo
+
+        return FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
 
 """ Commenting out since seems not necessary at this point.
 @implementer(IXmlFamiPortResponseGeneratorFactory)
