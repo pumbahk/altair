@@ -727,7 +727,7 @@ class LotEntries(BaseView):
         if lot is None:
             raise HTTPNotFound()
         lots_api.send_election_mails(self.request, lot.id)
-        self.request.session.flash(u'当選メールの送信を開始しました。')
+        self.request.session.flash(u'当選メールの送信を開始しました')
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.send_rejection_mail', request_method='POST')

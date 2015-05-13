@@ -469,7 +469,7 @@ def send_result_mails(request):
 def send_election_mails(request, lot_id):
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
-    return lot_mail_sender.send_election_mails()
+    return elector.send_election_mails()
 
 
 def send_rejected_mails(request):
