@@ -3,7 +3,7 @@
 from sqlalchemy.exc import DBAPIError
 from zope.interface import implementer
 from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .models import FamiPortInformationMessage
+from .models import FamiPortOrder, FamiPortInformationMessage
 from .utils import FamiPortRequestType, FamiPortCrypt, ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum, InformationResultCodeEnum, InfoKubunEnum
 from .requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
                     FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
@@ -125,8 +125,20 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         storeCode = famiport_payment_ticketing_completion_request.storeCode
         sequenceNo = famiport_payment_ticketing_completion_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
-        orderId = '' # TODO Get orderId from DB
-        replyCode = '00' # 正常応答 # TODO Change the value depending on the result
+
+        try:
+            famiport_order = FamiPortOrder.get_from_barCodeNo(barCodeNo)
+        except DBAPIError:
+            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). barCodeNo: " + barCodeNo + ", storeCode: " + storeCode + ", sequenceNo: " + sequenceNo)
+
+        orderId, replyCode = None, None
+        if famiport_order is not None:
+            orderId = famiport_order.orderId
+            replyCode = ReplyCodeEnum.Normal
+        else:
+            resultCode = ResultCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError
+
         famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, \
                                                                                                     orderId=orderId, replyCode=replyCode)
         return famiport_payment_ticketing_completion_response
