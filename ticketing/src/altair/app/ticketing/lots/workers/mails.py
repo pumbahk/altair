@@ -3,7 +3,6 @@ import logging
 from pyramid.decorator import reify
 from altair.sqlahelper import named_transaction
 from altair.mq.decorators import task_config
-from .election import ElectionWorkerResource
 from .. import models as lot_models
 from ..events import (
     LotElectedEvent,
@@ -117,4 +116,4 @@ def send_rejection_mail_task(context, request):
             request.registry.notify(event)
         except Exception as e:
             history.error = str(e).decode('utf-8')
-            raise
+            Raise

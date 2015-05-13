@@ -151,18 +151,29 @@ class Electing(object):
                               routing_key="lots.rejection",
                               properties=dict(content_type="application/json"))
 
-    def send_election_mails(self):
-        """当選メール送信taskをworkerに送信"""
-        publisher = self.election_mail_publisher
-        lot_elected_entries = LotElectedEntry \
+    def get_election_mail_target_lot_elected_entries(self, lot_id):
+        return LotElectedEntry \
             .query \
             .join(LotEntryWish) \
             .join(LotEntry) \
             .join(Lot) \
-            .filter(Lot.id == self.lot.id) \
+            .filter(Lot.id == lot_id) \
             .filter(LotEntry.ordered_mail_sent_at == None) \
             .all()
 
+    def get_rejection_mail_target_lot_rejected_entries(self, lot_id):
+        return LotRejectedEntry \
+            .query \
+            .join(LotEntry) \
+            .join(Lot) \
+            .filter(Lot.id == lot_id) \
+            .filter(LotEntry.ordered_mail_sent_at == None) \
+            .all()
+
+    def send_election_mails(self):
+        """当選メール送信taskをworkerに送信"""
+        publisher = self.election_mail_publisher
+        lot_elected_entries = self.get_election_mail_target_lot_elected_entries(self.lot.id)
         total_count = len(lot_elected_entries)
         logger.info('publish send election mail: Lot.id={}: count={}'.format(self.lot.id, total_count))
 
@@ -179,14 +190,7 @@ class Electing(object):
     def send_rejection_mails(self):
         """落選メール送信taskをworkerに送信"""
         publisher = self.rejection_mail_publisher
-        lot_rejected_entries = LotRejectedEntry \
-            .query \
-            .join(LotEntry) \
-            .join(Lot) \
-            .filter(Lot.id == self.lot.id) \
-            .filter(LotEntry.ordered_mail_sent_at == None) \
-            .all()
-
+        lot_rejected_entries = self.get_rejection_mail_target_lot_rejected_entries(self.lot.id)
         total_count = len(lot_rejected_entries)
         logger.info('publish send rejection mail: Lot.id={}: count={}'.format(
             self.lot.id, total_count))
