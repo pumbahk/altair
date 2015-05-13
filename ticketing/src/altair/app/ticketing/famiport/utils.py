@@ -23,6 +23,8 @@ class FamiPortResponseType(IntEnum):
 
 class ResultCodeEnum(Enum):
     Normal = '00' # 正常
+    BusinessDivisionError = '11' # 業務区分エラー
+    ServinceUnavailable = '14' # サービス時間帯エラー
     TimeoutError = '15' # タイムアウトエラー
     OtherError = '99' # その他エラー
 
