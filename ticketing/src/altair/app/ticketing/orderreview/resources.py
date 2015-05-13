@@ -7,6 +7,7 @@ from pyramid.decorator import reify
 from pyramid.security import effective_principals, Allow, Authenticated, DENY_ALL
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import or_
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.payments import plugins
@@ -73,12 +74,12 @@ class MyPageListViewResource(OrderReviewResourceBase):
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
-            join(LotEntry, Order.order_no == LotEntry.entry_no). \
-            join(Lot, LotEntry.lot_id == Lot.id). \
+            outerjoin(LotEntry, Order.order_no == LotEntry.entry_no). \
+            outerjoin(Lot, LotEntry.lot_id == Lot.id). \
             filter(Order.organization_id==self.organization.id). \
             filter(Order.user_id==user.id). \
             filter(SalesSegmentSetting.disp_orderreview==True). \
-            filter(Lot.lotting_announce_datetime <= datetime.now()). \
+            filter(or_(Lot.lotting_announce_datetime <= datetime.now(), Lot.lotting_announce_datetime == None)). \
             order_by(Order.updated_at.desc())
 
         orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))
@@ -92,7 +93,7 @@ class MyPageListViewResource(OrderReviewResourceBase):
         return entries
 
 
-class OrderReviewResource(OrderReviewResourceBase): 
+class OrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(OrderReviewResource, self).__init__(request)
         form = OrderReviewSchema(self.request.POST)
