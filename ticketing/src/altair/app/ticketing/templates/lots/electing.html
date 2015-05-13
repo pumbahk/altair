@@ -104,13 +104,13 @@ ${tabs.tabs(request)}
     </form>
     </p>
     <p>
-    <form method="POST" action="${request.route_url('lots.entries.send_elected_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
+    <form method="POST" action="${request.route_url('lots.entries.send_election_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
       <button id="btn-entries-close"  class="btn btn-large btn-warning"
               data-toggle="popover" data-placement="right" data-content="" data-original-title="">
         当選メール送信
       </button>
     </form>
-    <form method="POST" action="${request.route_url('lots.entries.send_rejected_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
+    <form method="POST" action="${request.route_url('lots.entries.send_rejection_mail', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
       <button id="btn-entries-close" class="btn btn-large btn-warning"
               data-toggle="popover" data-placement="right" data-content="" data-original-title="">
         落選メール送信
