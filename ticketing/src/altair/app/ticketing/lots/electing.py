@@ -135,8 +135,24 @@ class Electing(object):
                               routing_key="lots.election",
                               properties=dict(content_type="application/json"))
 
+    def reject_lot_entries(self):
+        publisher = self.rejection_publisher
+        works = self.lot.reject_works
+        logger.info("publish rejecting lot: lot_id = {0} : count = {1}".format(
+            self.lot.id,
+            len(works),
+        ))
+        for work in works:
+            body = {
+                "lot_id": self.lot.id,
+                "entry_no": work.lot_entry_no,
+                }
+            publisher.publish(body=json.dumps(body),
+                              routing_key="lots.rejection",
+                              properties=dict(content_type="application/json"))
+
     def send_election_mails(self):
-        """メール送信taskをworkerに送信"""
+        """当選メール送信taskをworkerに送信"""
         publisher = self.election_mail_publisher
         lot_elected_entries = LotElectedEntry \
             .query \
@@ -159,18 +175,24 @@ class Electing(object):
                 properties=dict(content_type='application/json'),
                 )
 
-    def reject_lot_entries(self):
-        publisher = self.rejection_publisher
-        works = self.lot.reject_works
-        logger.info("publish rejecting lot: lot_id = {0} : count = {1}".format(
-            self.lot.id,
-            len(works),
-        ))
-        for work in works:
-            body = {
-                "lot_id": self.lot.id,
-                "entry_no": work.lot_entry_no,
-                }
-            publisher.publish(body=json.dumps(body),
-                              routing_key="lots.rejection",
-                              properties=dict(content_type="application/json"))
+    def send_rejection_mails(self):
+        """落選メール送信taskをworkerに送信"""
+        publisher = self.rejection_mail_publisher
+        lot_rejected_entries = LotRejectedEntry \
+            .query \
+            .join(LotEntry) \
+            .join(Lot) \
+            .filter(Lot.id == self.lot.id) \
+            .filter(LotEntry.ordered_mail_sent_at == None) \
+            .all()
+
+        logger.info('publish send rejection mail: Lot.id={}: count={}'.format(
+            self.lot.id, len(lot_rejected_entries)))
+
+        for lot_rejected_entry in lot_rejected_entries:
+            logger.info('publish LotRejectedEntry.id = {0}'.format(lot_rejected_entry.id))
+            publisher.publish(
+                body=json.dumps({'lot_rejected_entry_id': lot_rejected_entry.id}),
+                routing_key='lots.rejection_mail',
+                properties=dict(content_type='application/json'),
+                )

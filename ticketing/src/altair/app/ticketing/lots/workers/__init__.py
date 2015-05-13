@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import transaction
 from pyramid.interfaces import IRequest
@@ -41,4 +42,5 @@ def includeme(config):
 
     # mail
     config.add_publisher_consumer('lots.election_mail', 'altair.ticketing.lots.mq')
+    config.add_publisher_consumer('lots.rejection_mail', 'altair.ticketing.lots.mq')
     config.scan()
