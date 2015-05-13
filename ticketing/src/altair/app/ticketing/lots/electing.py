@@ -163,8 +163,8 @@ class Electing(object):
             .filter(LotEntry.ordered_mail_sent_at == None) \
             .all()
 
-        logger.info('publish send election mail: Lot.id={}: count={}'.format(
-            self.lot.id, len(lot_elected_entries)))
+        total_count = len(lot_elected_entries)
+        logger.info('publish send election mail: Lot.id={}: count={}'.format(self.lot.id, total_count))
 
         for lot_elected_entry in lot_elected_entries:
             wish = lot_elected_entry.lot_entry_wish
@@ -174,6 +174,7 @@ class Electing(object):
                 routing_key='lots.election_mail',
                 properties=dict(content_type='application/json'),
                 )
+        return total_count
 
     def send_rejection_mails(self):
         """落選メール送信taskをworkerに送信"""
@@ -186,8 +187,9 @@ class Electing(object):
             .filter(LotEntry.ordered_mail_sent_at == None) \
             .all()
 
+        total_count = len(lot_rejected_entries)
         logger.info('publish send rejection mail: Lot.id={}: count={}'.format(
-            self.lot.id, len(lot_rejected_entries)))
+            self.lot.id, total_count))
 
         for lot_rejected_entry in lot_rejected_entries:
             logger.info('publish LotRejectedEntry.id = {0}'.format(lot_rejected_entry.id))
@@ -196,3 +198,4 @@ class Electing(object):
                 routing_key='lots.rejection_mail',
                 properties=dict(content_type='application/json'),
                 )
+        return total_count

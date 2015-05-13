@@ -726,8 +726,9 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id == lot_id).first()
         if lot is None:
             raise HTTPNotFound()
-        lots_api.send_election_mails(self.request, lot.id)
-        self.request.session.flash(u'当選メールの送信を開始しました')
+        total_count = lots_api.send_election_mails(self.request, lot.id)
+        msg = u'当選メールの送信対象がありません' if total_count else u'当選メールの送信を開始しました: {}件'.format(total_count)
+        self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.send_rejection_mail', request_method='POST')
@@ -738,8 +739,9 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id == lot_id).first()
         if lot is None:
             raise HTTPNotFound()
-        lots_api.send_rejection_mails(self.request, lot.id)
-        self.request.session.flash(u'落選メールの送信を開始しました')
+        total_count = lots_api.send_rejection_mails(self.request, lot.id)
+        msg = u'落選メールの送信対象がありません' if total_count else u'落選メールの送信を開始しました: {}件'.format(total_count)
+        self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
