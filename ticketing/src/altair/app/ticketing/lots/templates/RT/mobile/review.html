@@ -9,13 +9,13 @@
 <div>${entry.entry_no}</div>
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
-<%self:enclose_if tag="font" color="red" condition="${entry.is_elected}">
 %if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選待ち
 %else:
+<span style="color:red;">
 ${h.lot_entry_status_as_string(entry)}
+</span>
 %endif
-</%self:enclose_if>
 <%mobile:band bgcolor="#ffffdd">
 %if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
