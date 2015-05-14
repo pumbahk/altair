@@ -43,7 +43,7 @@ def upgrade():
         sa.Column('user_point_account_id', Identifier(), sa.ForeignKey('UserPointAccount.id'), nullable=False),
         sa.PrimaryKeyConstraint('lot_entry_id', 'user_point_account_id')
         )
-    op.execute('INSERT INTO Order_UserPointAccount (order_id, user_point_account_id) SELECT `Order`.id order_id, `UserPointAccount`.id user_point_account_id FROM `Order` JOIN `UserPointAccount` ON `Order`.user_id=`UserPointAccount`.user_id WHERE `Order`.user_id IS NOT NULL')
+    # op.execute('INSERT INTO Order_UserPointAccount (order_id, user_point_account_id) SELECT `Order`.id order_id, `UserPointAccount`.id user_point_account_id FROM `Order` JOIN `UserPointAccount` ON `Order`.user_id=`UserPointAccount`.user_id WHERE `Order`.user_id IS NOT NULL')
 
 def downgrade():
     op.drop_table('LotEntry_UserPointAccount')
