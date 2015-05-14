@@ -550,13 +550,6 @@ def create_user_point_account_from_point_no(user_id, type, account_number):
 
     return acc
 
-def get_user_point_account(user_id, type):
-    acc = u_models.UserPointAccount.query.filter(
-        u_models.UserPointAccount.user_id==user_id,
-        u_models.UserPointAccount.type == type
-    ).first()
-    return acc
-
 def get_or_create_user_profile(user, data):
     profile = None
     if user.user_profile:
