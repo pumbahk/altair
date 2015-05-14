@@ -3,8 +3,9 @@
 import types
 from datetime import datetime, date
 from wtforms import validators
+from altair.dynpredicate.core import Node
 from altair.dynpredicate.utils import compile_predicate_to_pycode, compile_predicate_to_ast, eval_compiled_predicate
-from altair.dynpredicate.eval import Caster
+from altair.dynpredicate.eval import Caster, Evaluator, Comparator
 
 __all__ = (
     'SwitchOptional',
@@ -50,9 +51,26 @@ class CompatibleCaster(Caster):
         else:
             return super(CompatibleCaster, self).to_float(o)
 
-class DynSwitchMixin(object):
-    def _sym_THIS(self, form, field):
-        return field.data
+class PredicateHandler(object):
+    def __init__(self, form, field):
+        self.form = form
+        self.field = field
+        self.caster = CompatibleCaster()
+        self._evaluator = None
+
+    @property
+    def evaluator(self):
+        if self._evaluator is None:
+            self._evaluator = Evaluator(
+                sym_resolver=self._resolve_sym,
+                var_resolver=self._resolve_var,
+                caster=self.caster,
+                comparator=Comparator(self.caster)
+                )
+        return self._evaluator
+
+    def _sym_THIS(self):
+        return self.field.data
 
     @staticmethod
     def _sym_YEAR(v):
@@ -70,28 +88,39 @@ class DynSwitchMixin(object):
     def _sym_NOW():
         return datetime.now()
 
-    def _resolve_sym(self, form, field):
-        def _(n):
-            f = getattr(self, '_sym_%s' % n, None)
-            if f is not None:
-                if isinstance(f, types.FunctionType):
-                    return f
-                else:
-                    return f(form, field)
-            else:
-                if hasattr(form, '_dynswitch_predefined_symbols'):
-                    predefined_symbols = form._dynswitch_predefined_symbols
-                    if n in predefined_symbols:
-                        return predefined_symbols[n]
-            return None
-        return _
+    @staticmethod
+    def _sym_DATE(year, month, day, hour=0, minute=0, second=0):
+        return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 
+    def _resolve_var(self, n):
+        return self.form[n].data
+
+    def _resolve_sym(self, n):
+        if hasattr(self.form, '_dynswitch_predefined_symbols'):
+            predefined_symbols = self.form._dynswitch_predefined_symbols
+            if n in predefined_symbols:
+                v = predefined_symbols[n]
+                if isinstance(v, Node):
+                    return lambda: self.evaluator(v)
+                else:
+                    return v
+        f = getattr(self, '_sym_%s' % n, None)
+        if f is not None:
+            if isinstance(f, types.FunctionType):
+                return f
+            else:
+                return f()
+        return None
+
+
+class DynSwitchMixin(object):
     def _predicate(self, form, field):
+        handler = PredicateHandler(form, field)
         return eval_compiled_predicate(
             self.predicate_code,
-            var_resolver=lambda n:form[n].data,
-            sym_resolver=self._resolve_sym(form, field),
-            caster=CompatibleCaster()
+            var_resolver=handler._resolve_var,
+            sym_resolver=handler._resolve_sym,
+            caster=handler.caster
             )
 
 class DynSwitchOptional(SwitchOptionalBase, DynSwitchMixin):

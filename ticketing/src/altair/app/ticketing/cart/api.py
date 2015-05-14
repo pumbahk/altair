@@ -405,20 +405,6 @@ def is_point_input_required(context, request):
 def is_fc_auth_organization(context, request):
     return context.cart_setting.auth_type == "fc_auth"
 
-def enable_auto_input_form(user):
-    from altair.app.ticketing.users.models import User
-    if not isinstance(user, User):
-        return False
-
-    if user.member is None:
-        # 楽天認証
-        return True
-
-    if user.member.membergroup.membership.enable_auto_input_form:
-        return True
-
-    return False
-
 def get_temporary_store(request):
     return request.registry.queryUtility(ITemporaryStore)
 
@@ -449,10 +435,18 @@ def get_auth_info(request):
     return request.altair_auth_info
 
 def get_membership(d):
-    q = u_models.Membership.query \
-        .filter(u_models.Membership.name==d['membership'])
-    if d['membership'] != 'rakuten':
-        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    membership_name = d.get('membership') if d is not None else None
+    if membership_name is None:
+        # XXX: membership の名前が与えられていないときは
+        # primary key が一番若いものを使う
+        # ここのロジックを fc_auth と同じくする必要がある
+        q = u_models.Membership.query \
+            .filter_by(organization_id=d['organization_id']) \
+            .order_by(u_models.Membership.id)
+    else:
+        q = u_models.Membership.query \
+            .filter(u_models.Membership.name==d['membership']) \
+            .filter(u_models.Membership.organization_id == d['organization_id'])
     return q.first()
 
 def get_member_group(request, info):
@@ -461,14 +455,12 @@ def get_member_group(request, info):
     if membership_name is None or member_group_name is None:
         return None
     q = u_models.MemberGroup.query \
-        .filter(u_models.MemberGroup.name == member_group_name)
-    if membership_name != 'rakuten':
-        q = q \
-            .join(u_models.MemberGroup.membership) \
-            .filter(
-                u_models.Membership.name == membership_name,
-                u_models.Membership.organization_id == request.organization.id
-                )
+        .join(u_models.MemberGroup.membership) \
+        .filter(u_models.MemberGroup.name == member_group_name) \
+        .filter(
+            u_models.Membership.name == membership_name,
+            u_models.Membership.organization_id == request.organization.id
+            )
     return q.one()
 
 
@@ -476,9 +468,8 @@ def lookup_user_credential(d):
     q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
-        .filter(u_models.Membership.name==d['membership'])
-    if d['membership'] != 'rakuten':
-        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+        .filter(u_models.Membership.name==d['membership']) \
+        .filter(u_models.Membership.organization_id == d['organization_id'])
     credential = q.first()
     if credential:
         return credential.user
@@ -529,33 +520,6 @@ def get_or_create_user(info):
     DBSession.add(user)
     return user
 
-def get_or_create_user_from_point_no(point):
-    if not point:
-        return None
-
-    credential = u_models.UserCredential.query.filter(
-        u_models.UserCredential.auth_identifier==point
-    ).filter(
-        u_models.UserCredential.membership_id==u_models.Membership.id
-    ).filter(
-        u_models.Membership.name=='rakuten'
-    ).first()
-    if credential:
-        return credential.user
-
-    user = u_models.User()
-    membership = u_models.Membership.query.filter(u_models.Membership.name=='rakuten').first()
-    if membership is None:
-        membership = u_models.Membership(name='rakuten')
-        DBSession.add(membership)
-    credential = u_models.UserCredential(user=user, auth_identifier=point, membership=membership)
-    DBSession.add(user)
-
-    credential = u_models.UserCredential.query.filter(
-        u_models.UserCredential.auth_identifier==point
-    ).first()
-    return credential.user
-
 def create_user_point_account_from_point_no(user_id, type, account_number):
     assert account_number is not None and account_number != ""
 
@@ -563,24 +527,27 @@ def create_user_point_account_from_point_no(user_id, type, account_number):
        not re.match(r'^\d{4}-\d{4}-\d{4}-\d{4}$', account_number):
         raise ValueError('invalid account number format; %s' % account_number)
 
-    acc = u_models.UserPointAccount.query.filter(
-        u_models.UserPointAccount.user_id==user_id
-    ).first()
+    if user_id is not None:
+        q = u_models.UserPointAccount.query \
+            .filter(
+                u_models.UserPointAccount.user_id == user_id,
+                u_models.UserPointAccount.type == int(type),
+                u_models.UserPointAccount.account_number == account_number
+                )
+        acc = q.first()
+    else:
+        acc = None
 
     if not acc:
-        acc = u_models.UserPointAccount()
+        acc = u_models.UserPointAccount(
+            user_id=user_id,
+            type=int(type),
+            account_number=account_number,
+            status=u_models.UserPointAccountStatusEnum.Valid.v
+            )
+        DBSession.add(acc)
+        DBSession.flush()
 
-    acc.user_id = user_id
-    acc.account_number = account_number
-    acc.type = int(type)
-    acc.status = u_models.UserPointAccountStatusEnum.Valid.v
-    DBSession.add(acc)
-    return acc
-
-def get_user_point_account(user_id):
-    acc = u_models.UserPointAccount.query.filter(
-        u_models.UserPointAccount.user_id==user_id
-    ).first()
     return acc
 
 def get_or_create_user_profile(user, data):

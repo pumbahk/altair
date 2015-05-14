@@ -95,6 +95,12 @@ class LotForm(Form):
         choices=_auth_types
     )
 
+    mail_send_now = OurBooleanField(
+        label=u'当選／落選登録時に送信',
+        default=False,
+        widget=CheckboxInput()
+    )
+
     ### 販売区分
 
     sales_segment_group_id = SelectField(
@@ -160,6 +166,8 @@ class LotForm(Form):
         label=u'クレジットカード 3D認証フォーム 注記事項',
         validators=[Optional()],
     )
+
+
 
     def create_lot(self, event):
         sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id==self.data['sales_segment_group_id']).one()
@@ -228,6 +236,7 @@ class LotForm(Form):
         lot.lotting_announce_timezone=self.data['lotting_announce_timezone']
         lot.custom_timezone_label=self.data['custom_timezone_label']
         lot.auth_type = self.data['auth_type']
+        lot.mail_send_now = self.data['mail_send_now']
 
         return lot
 

@@ -24,7 +24,6 @@ from altair.app.ticketing.cart.view_support import (
     )
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart.rendering import selectable_renderer
-from altair.app.ticketing.orderreview.api import get_user_point_accounts
 from altair.now import get_now
 from . import api
 from . import helpers as h
@@ -227,7 +226,7 @@ class EntryLotView(object):
         jump_maintenance_page_for_trouble(self.request.organization)
 
         if form is None:
-            form = self._create_form(formdata=self.request.params)
+            form = self._create_form()
 
         event = self.context.event
         lot = self.context.lot
@@ -413,10 +412,7 @@ class ConfirmLotEntryView(object):
                                             payment_delivery_method_pair=payment_delivery_method_pair,
                                             sales_segment=lot.sales_segment)
 
-        acc = None
-        user = api.get_point_user(self.request)
-        if user:
-            acc = cart_api.get_user_point_account(user.id)
+        acc = api.get_user_point_account_from_session(self.request)
 
         for wish in wishes:
             assert wish.performance, type(wish)
@@ -480,9 +476,7 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
-        user = api.get_point_user(self.request)
-        if not user:
-            user = cart_api.get_or_create_user(self.context.authenticated_user())
+        user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
@@ -501,6 +495,14 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
+        acc = api.get_user_point_account_from_session(self.request)
+        if acc is not None:
+            accs = [acc]
+        elif self.context.membershipinfo is not None and not self.context.membershipinfo.enable_point_input and user is not None:
+            accs = user.user_point_accounts.values()
+        else:
+            accs = []
+
         entry = api.entry_lot(
             self.request,
             entry_no=entry_no,
@@ -513,10 +515,11 @@ class ConfirmLotEntryView(object):
             birthday=entry['birthday'],
             memo=entry['memo'],
             extra=entry.get('extra', []),
+            user_point_accounts=accs
             )
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
-        api.clear_point_user(self.request)
+        api.clear_user_point_account_from_session(self.request)
 
         # extra_form_data = cart_api.load_extra_form_data(self.request)
         # if extra_form_data is not None:
@@ -630,9 +633,9 @@ class LotReviewView(object):
         jump_maintenance_page_om_for_trouble(self.request.organization)
         lot_entry = self.context
         api.entry_session(self.request, lot_entry)
-        event_id = lot_entry.lot.event.id
-        lot_id = lot_entry.lot.id
-        user_point_accounts = get_user_point_accounts(self.request, lot_entry.user_id)
+        event_id = lot_entry.lot.event.id # いる？
+        lot_id = lot_entry.lot.id # いる？
+        user_point_accounts = lot_entry.user_point_accounts
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
@@ -642,7 +645,8 @@ class LotReviewView(object):
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
             user_point_accounts=user_point_accounts,
-            memo=lot_entry.memo)
+            memo=lot_entry.memo,
+            now=get_now(self.request))
 
 
 @lbr_view_config(

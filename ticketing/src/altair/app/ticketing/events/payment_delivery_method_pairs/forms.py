@@ -298,7 +298,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
     system_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.system_fee_type)['label'],
-        default=FeeTypeEnum.Once.v[0],
+        default=FeeTypeEnum.PerUnit.v[1],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
@@ -317,7 +317,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
     special_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_type)['label'],
-        default=FeeTypeEnum.Once.v[0],
+        default=FeeTypeEnum.PerUnit.v[1],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int

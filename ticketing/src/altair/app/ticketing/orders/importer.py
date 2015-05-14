@@ -800,12 +800,8 @@ class ImportCSVParserContext(object):
 
         try:
             q = self.session.query(Membership) \
-                .filter(Membership.name == membership_name)
-            if membership_name == 'rakuten':
-                # これだけ特別扱い
-                q = q.filter(Membership.organization_id == None)
-            else:
-                q = q.filter(Membership.organization_id == self.organization.id)
+                .filter(Membership.name == membership_name) \
+                .filter(Membership.organization_id == self.organization.id)
             membership = q.one()
         except NoResultFound:
             raise self.exc_factory(u'会員種別が見つかりません (membership_name=%s)' % membership_name)
@@ -824,7 +820,7 @@ class ImportCSVParserContext(object):
                 q = self.session.query(UserCredential) \
                     .filter(
                         UserCredential.auth_identifier == auth_identifier,
-                        Membership.id == membership.id,
+                        UserCredential.membership_id == membership.id
                         )
                 if membergroup is not None: 
                     q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))

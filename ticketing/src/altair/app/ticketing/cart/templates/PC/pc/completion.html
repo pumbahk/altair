@@ -13,12 +13,12 @@
 ${self.widget.flow_widget(4)}
 
 <p><img src="${request.static_url('altair.app.ticketing.cart:static/PC/pc/images/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
-<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+<p class="settlementNotice">下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.cart:static/PC/pc/images/title_order_number.gif')}" alt="注文番号" width="103" height="30" /></h2>
-    <div class="confirm-message">
+    <div class="confirm-message settlementNotice">
       ${order.order_no}
     </div>
   </div>

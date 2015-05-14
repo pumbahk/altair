@@ -1,4 +1,5 @@
 <%inherit file="/layout_2cols.html" />
+<%namespace file="/common/modal.html" name="common_modal" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 
@@ -89,18 +90,31 @@ ${tabs.tabs(request)}
     </ul>
   </p>
   <div class="pull-left">
-    <form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
-      <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-primary">当選確定する</button>
-    </form>
-    <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}" class="pull-left" style="margin-right: 5px;">
-      <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-info">落選確定する</button>
-    </form>
-    <form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}" class="pull-left">
+    <p>
+      <button ${"disabled" if electing.blockers else ""} id="btn-election"
+              class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
+        当選確定する
+      </button>
+      <button ${"disabled" if electing.blockers else ""} id="btn-rejection"
+              class="btn btn-large btn-info" style="margin-right: 5px;">
+        落選確定する
+      </button>
       <button id="btn-entries-close" ${"disabled" if not closer.can_close() else ""} class="btn btn-large btn-warning"
-              data-toggle="popover" data-placement="right" data-content="当落の確定していない申込があるのでオーソリ開放できません" data-original-title="">
+              style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-original-title=""
+              data-content="当落の確定していない申込があるのでオーソリ開放できません" >
         オーソリ開放する
       </button>
-    </form>
+    </p>
+    <p>
+      <button id="btn-send-election-mail"  class="btn btn-large btn-primary"
+              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+        当選結果通知
+      </button>
+      <button id="btn-send-rejection-mail" class="btn btn-large btn-info"
+              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+        落選結果通知
+      </button>
+    </p>
     %if not closer.can_close():
     <script>
     $(function() {
@@ -111,3 +125,58 @@ ${tabs.tabs(request)}
   </div>
   %endif
 </div>
+
+
+<script>
+$("#btn-election").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.elect', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("確定");
+    var message = "当選確定します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+$("#btn-rejection").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.reject', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("確定");
+    var message = "落選確定します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+$("#btn-entries-close").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.close', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("オーソリ解放");
+    var message = "オーソリ解放します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+$("#btn-send-election-mail").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.send_election_mail', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("送信");
+    var message = "当選メールを送信します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+$("#btn-send-rejection-mail").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.send_rejection_mail', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("送信");
+    var message = "落選メールを送信します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+</script>
+${common_modal.confirm_modal()}

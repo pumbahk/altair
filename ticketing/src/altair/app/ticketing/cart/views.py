@@ -17,6 +17,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTP
 from pyramid.response import Response
 from pyramid.view import view_defaults, view_config
 from pyramid.threadlocal import get_current_request
+from pyramid.decorator import reify
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -44,18 +45,18 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, enable_auto_input_form
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .rendering import selectable_renderer
 from .view_support import (
-    IndexViewMixin,
-    get_amount_without_pdmp,
-    get_seat_type_dicts,
-    assert_quantity_within_bounds,
-    build_dynamic_form,
-    filter_extra_form_schema,
+IndexViewMixin,
+get_amount_without_pdmp,
+get_seat_type_dicts,
+assert_quantity_within_bounds,
+build_dynamic_form,
+filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
     back,
     back_to_top,
@@ -939,26 +940,25 @@ class PaymentView(object):
 
         user = api.get_or_create_user(self.context.authenticated_user())
         user_profile = None
-        if enable_auto_input_form(user):
+        if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form and user is not None:
             user_profile = user.user_profile
 
         if user_profile is not None:
-            formdata = None  # 自動補完のロジックを一時的にやめる  https://redmine.ticketstar.jp/issues/10876
-            # formdata = MultiDict(
-            #     last_name=user_profile.last_name,
-            #     last_name_kana=user_profile.last_name_kana,
-            #     first_name=user_profile.first_name,
-            #     first_name_kana=user_profile.first_name_kana,
-            #     tel_1=user_profile.tel_1,
-            #     fax=getattr(user_profile, "fax", None),
-            #     zip=user_profile.zip,
-            #     prefecture=user_profile.prefecture,
-            #     city=user_profile.city,
-            #     address_1=user_profile.address_1,
-            #     address_2=user_profile.address_2,
-            #     email_1=user_profile.email_1,
-            #     email_2=user_profile.email_2
-            #     )
+            formdata = MultiDict(
+                last_name=user_profile.last_name,
+                last_name_kana=user_profile.last_name_kana,
+                first_name=user_profile.first_name,
+                first_name_kana=user_profile.first_name_kana,
+                tel_1=user_profile.tel_1,
+                fax=getattr(user_profile, "fax", None), 
+                zip=user_profile.zip,
+                prefecture=user_profile.prefecture,
+                city=user_profile.city,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
+                )
         else:
             formdata = None
 
@@ -1015,6 +1015,9 @@ class PaymentView(object):
         """
         cart = self.context.cart
         user = api.get_or_create_user(self.context.authenticated_user())
+        if user is not None:
+            # 一旦ここでポイント口座をセットする
+            cart.user_point_accounts = user.user_point_accounts.values()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
@@ -1163,18 +1166,23 @@ class PointAccountEnteringView(object):
             accountno=form.data['accountno'],
             )
 
+    @reify
+    def existing_user_point_account(self):
+        user_point_accounts = [user_point_account for user_point_account in self.context.read_only_cart.user_point_accounts if user_point_account.type == UserPointAccountTypeEnum.Rakuten.v]
+        if len(user_point_accounts) > 0:
+            return user_point_accounts[0]
+        else:
+            return None
+
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def point(self):
-        cart = self.context.cart
+        cart = self.context.read_only_cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
 
-        formdata = MultiDict(
-            accountno=""
-            )
-        form = schemas.PointForm(formdata=formdata)
+        form = schemas.PointForm()
 
         asid = self.context.asid
         if is_mobile_request(self.request):
@@ -1184,13 +1192,12 @@ class PointAccountEnteringView(object):
             asid = self.context.asid_smartphone
 
         accountno = self.request.params.get('account')
-        user = api.get_or_create_user(self.context.authenticated_user())
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            if enable_auto_input_form(user) and user:
-                acc = api.get_user_point_account(user.id)
-                form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+            if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form:
+                if self.existing_user_point_account is not None:
+                    form.accountno.data = self.existing_user_point_account.account_number
 
         return dict(
             form=form,
@@ -1202,7 +1209,7 @@ class PointAccountEnteringView(object):
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
-        cart = self.context.cart
+        cart = self.context.read_only_cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1221,19 +1228,18 @@ class PointAccountEnteringView(object):
 
         point_params = self.get_point_data()
 
-        if is_point_input_required(self.context, self.request):
-            point = point_params.pop("accountno", None)
-            if point:
-                if not user:
-                    user = api.get_or_create_user_from_point_no(point)
-                    cart.user = user
-                    DBSession.add(cart)
-                api.create_user_point_account_from_point_no(
-                    user.id,
-                    type=UserPointAccountTypeEnum.Rakuten,
-                    account_number=point
-                    )
-
+        account_number = point_params.pop("accountno", None)
+        if account_number:
+            user_point_account = api.create_user_point_account_from_point_no(
+                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
+                type=UserPointAccountTypeEnum.Rakuten.v,
+                account_number=account_number
+                )
+            # append だと二度押しではまるかも
+            cart.user_point_accounts = [user_point_account]
+        else:
+            # ユーザはあえてポイント入力しなかったようなので...
+            del cart.user_point_accounts[:]
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
@@ -1255,7 +1261,7 @@ class ConfirmView(object):
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = api.get_user_point_account(cart.user_id)
+        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None # XXX
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
@@ -1278,6 +1284,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
+            membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else ""
         )

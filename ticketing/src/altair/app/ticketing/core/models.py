@@ -915,20 +915,26 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
     elif type == 'before':
         q = q.filter(SalesSegment.end_at < now)
 
-    if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
-        q = q \
-            .outerjoin(SalesSegmentGroup.membergroups) \
-            .filter(or_(MemberGroup.is_guest != False,
-                        MemberGroup.id == None))
-    elif user and 'membership' in user:
-        q = q \
-            .join(SalesSegmentGroup.membergroups) \
-            .join(MemberGroup.membership) \
-            .filter(
-                MemberGroup.is_guest == False,
-                MemberGroup.name == user['membergroup'],
-                Membership.name == user['membership']
-                )
+    if user:
+        membergroup = user.get('membergroup')
+        if membergroup:
+            q = q \
+                .join(SalesSegmentGroup.membergroups) \
+                .join(MemberGroup.membership) \
+                .filter(
+                    MemberGroup.is_guest == user.get('is_guest', False),
+                    MemberGroup.name == membergroup,
+                    Membership.name == user.get('membership'),
+                    Membership.organization_id == user['organization_id']
+                    )
+        else:
+            q = q \
+                .outerjoin(SalesSegmentGroup.membergroups) \
+                .outerjoin(MemberGroup.membership) \
+                .filter(or_(MemberGroup.is_guest == user.get('is_guest', False),
+                            MemberGroup.id == None)) \
+                .filter(or_(Membership.organization_id == user['organization_id'],
+                            Membership.id == None)) 
     return q
 
 @implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)

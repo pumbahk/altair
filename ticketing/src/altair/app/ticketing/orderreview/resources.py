@@ -5,20 +5,21 @@ from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
 from pyramid.security import effective_principals, Allow, Authenticated, DENY_ALL
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import or_
+import webhelpers.paginate as paginate
+from altair.now import get_now
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
-from altair.app.ticketing.lots.models import LotEntry
+from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
-import webhelpers.paginate as paginate
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
-from .api import get_user_point_accounts
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm
@@ -59,7 +60,7 @@ class OrderReviewResourceBase(object):
     def user_point_accounts(self):
         if not self.order:
             return None
-        return get_user_point_accounts(self.request, self.order.user_id)
+        return self.order.user_point_accounts
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
@@ -73,12 +74,16 @@ from .views import unsuspicious_order_filter
 
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
+        now = get_now(self.request)
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            outerjoin(LotEntry, Order.order_no == LotEntry.entry_no). \
+            outerjoin(Lot, LotEntry.lot_id == Lot.id). \
             filter(Order.organization_id==self.organization.id). \
             filter(Order.user_id==user.id). \
             filter(SalesSegmentSetting.disp_orderreview==True). \
+            filter(or_(Lot.lotting_announce_datetime <= now, Lot.lotting_announce_datetime == None)). \
             order_by(Order.updated_at.desc())
         orders = unsuspicious_order_filter(orders)  # refs 10883
         orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
@@ -127,17 +132,17 @@ class OrderReviewResource(OrderReviewResourceBase):
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
 
-class MyPageOrderReviewResource(OrderReviewResourceBase): 
+class MyPageOrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(MyPageOrderReviewResource, self).__init__(request)
-        order_no = self.request.params['order_no']
+        order_no = self.request.params.get('order_no', None)
         order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
             filter(Order.organization_id==self.organization.id). \
             filter(Order.order_no==order_no).first()
         logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization.id, order_no, order))
         if order is None:
-            raise HTTPNotFound()
+            raise HTTPFound(location=self.request.route_url('mypage.show'))
         if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and \
            (order.performance is None or order.performance.orion is None):
             logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
@@ -145,7 +150,7 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
         authenticated_user = self.authenticated_user()
         user = cart_api.get_user(authenticated_user)
         if user is None or self.order.user_id != user.id:
-            raise HTTPNotFound() 
+            raise HTTPNotFound()
 
     @reify
     def cart_setting(self):

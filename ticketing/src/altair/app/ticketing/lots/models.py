@@ -52,7 +52,6 @@ from altair.app.ticketing.cart.models import (
     Cart,
 )
 
-
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
     ExclusivePerformance = 1
@@ -79,6 +78,7 @@ Lot_SalesSegment = sa.Table(
     sa.Column("lot_id", Identifier, sa.ForeignKey("Lot.id")),
     sa.Column("sales_segment_id", Identifier, sa.ForeignKey("SalesSegment.id")),
 )
+
 
 class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Lot'
@@ -114,6 +114,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lots')
+
+    mail_send_now = sa.Column('mail_send_now', sa.Boolean(), nullable=False, default=False)
 
     @staticmethod
     def create_from_template(template, **kwds):
@@ -439,6 +441,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         traverser.end_lot(self)
 
 
+lot_entry_user_point_account_table = sa.Table(
+    "LotEntry_UserPointAccount", Base.metadata,
+    sa.Column("lot_entry_id", Identifier, sa.ForeignKey("LotEntry.id")),
+    sa.Column("user_point_account_id", Identifier, sa.ForeignKey("UserPointAccount.id"))
+    )
+
 @implementer(IPurchase)
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
@@ -505,6 +513,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     cart_session_id = sa.Column(sa.VARBINARY(72), unique=False)
     user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
+
+    user_point_accounts = orm.relationship('UserPointAccount', secondary=lot_entry_user_point_account_table)
 
     #xxx: for order
     @property
