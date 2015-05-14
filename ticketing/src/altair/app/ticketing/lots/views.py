@@ -24,7 +24,6 @@ from altair.app.ticketing.cart.view_support import (
     )
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart.rendering import selectable_renderer
-from altair.app.ticketing.orderreview.api import get_user_point_accounts
 from altair.now import get_now
 from . import api
 from . import helpers as h
@@ -636,7 +635,7 @@ class LotReviewView(object):
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
         lot_id = lot_entry.lot.id
-        user_point_accounts = get_user_point_accounts(self.request, lot_entry.user_id)
+        user_point_accounts = lot_entry.user_point_accounts
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,

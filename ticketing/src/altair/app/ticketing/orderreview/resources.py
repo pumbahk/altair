@@ -18,7 +18,6 @@ from altair.app.ticketing.users.models import User, UserCredential, Membership, 
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
-from .api import get_user_point_accounts
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm
@@ -59,7 +58,7 @@ class OrderReviewResourceBase(object):
     def user_point_accounts(self):
         if not self.order:
             return None
-        return get_user_point_accounts(self.request, self.order.user_id)
+        return self.order.user_point_accounts
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
