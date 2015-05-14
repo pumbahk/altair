@@ -17,6 +17,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest, HTTP
 from pyramid.response import Response
 from pyramid.view import view_defaults, view_config
 from pyramid.threadlocal import get_current_request
+from pyramid.decorator import reify
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -44,18 +45,18 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, enable_auto_input_form
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .rendering import selectable_renderer
 from .view_support import (
-    IndexViewMixin,
-    get_amount_without_pdmp,
-    get_seat_type_dicts,
-    assert_quantity_within_bounds,
-    build_dynamic_form,
-    filter_extra_form_schema,
+IndexViewMixin,
+get_amount_without_pdmp,
+get_seat_type_dicts,
+assert_quantity_within_bounds,
+build_dynamic_form,
+filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
     back,
     back_to_top,
@@ -65,9 +66,9 @@ from .view_support import (
     )
 from .exceptions import (
     NoSalesSegment,
-    NoCartError, 
+    NoCartError,
     NoPerformanceError,
-    InvalidCSRFTokenException, 
+    InvalidCSRFTokenException,
     CartCreationException,
     InvalidCartStatusError,
     PaymentMethodEmptyError,
@@ -129,10 +130,10 @@ class PaymentAction(flow.PageFlowActionBase):
         response = Payment(context.cart, request).call_prepare()
         if response is not None:
             assert isinstance(response, HTTPFound)
-            flow_context['prepared'] = True 
+            flow_context['prepared'] = True
             return flow.Transition(context, request, url_or_path=response.location)
         else:
-            flow_context['prepared'] = True 
+            flow_context['prepared'] = True
 
 
 # 画面フローの定義
@@ -209,7 +210,7 @@ flow_graph = flow.PageFlowGraph(
 
 @view_defaults(
     route_name='cart.agreement',
-    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), 
+    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
     renderer=selectable_renderer("agreement.html"),
     xhr=False, permission="buy")
 class PerEventAgreementView(IndexViewMixin):
@@ -309,6 +310,16 @@ class CompatAgreementView(object):
         return PerPerformanceAgreementView(self.request).post()
 
 
+def jump_maintenance_page_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    誤表示問題の時に使用していたコード
+    有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
+    """
+    return
+    #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
+    #    raise HTTPFound('/maintenance.html')
+
+
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -321,9 +332,11 @@ class IndexView(IndexViewMixin):
     @lbr_view_config(route_name='cart.index',
                  renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -360,7 +373,7 @@ class IndexView(IndexViewMixin):
                 preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
                 if preferred_performance is not None:
                     if preferred_performance.event_id != self.context.event.id:
-                        preferred_performance = None 
+                        preferred_performance = None
 
         set_rendered_event(self.request, self.context.event)
 
@@ -393,9 +406,11 @@ class IndexView(IndexViewMixin):
     @lbr_view_config(route_name='cart.index2',
                  renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index2',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
 
@@ -613,7 +628,7 @@ class IndexAjaxView(object):
             elif stock_type_id is not None:
                 seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                 seat_groups_queries = [
-                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                     for seat_groups_query in seat_groups_queries
                     ]
             seats = seats_query.all()
@@ -625,7 +640,7 @@ class IndexAjaxView(object):
                         'name': seat_group_name,
                         'seats': [],
                         }
-                seat_group['seats'].append(seat_l0_id) 
+                seat_group['seats'].append(seat_l0_id)
         else:
             seats = []
             seat_groups = {}
@@ -633,7 +648,7 @@ class IndexAjaxView(object):
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
-                
+
 
         return dict(
             seats=dict(
@@ -857,9 +872,9 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        return dict(result='OK', 
+        return dict(result='OK',
                     payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
+                    cart=dict(products=[dict(name=p.product.name,
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if sales_segment.setting.display_seat_no else [],
@@ -915,7 +930,7 @@ class PaymentView(object):
             payment_delivery_pair
             for payment_delivery_pair in payment_delivery_methods
             if api.check_if_payment_delivery_method_pair_is_applicable(
-                self.request, 
+                self.request,
                 cart,
                 payment_delivery_pair
                 )
@@ -925,7 +940,7 @@ class PaymentView(object):
 
         user = api.get_or_create_user(self.context.authenticated_user())
         user_profile = None
-        if enable_auto_input_form(user):
+        if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form and user is not None:
             user_profile = user.user_profile
 
         if user_profile is not None:
@@ -1000,6 +1015,9 @@ class PaymentView(object):
         """
         cart = self.context.cart
         user = api.get_or_create_user(self.context.authenticated_user())
+        if user is not None:
+            # 一旦ここでポイント口座をセットする
+            cart.user_point_accounts = user.user_point_accounts.values()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
@@ -1030,11 +1048,10 @@ class PaymentView(object):
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
             sales_segment = self.context.sales_segment
-            
             payment_delivery_methods = [pdmp
                                         for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
                                         if pdmp.payment_method.public]
-        
+
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
@@ -1149,18 +1166,23 @@ class PointAccountEnteringView(object):
             accountno=form.data['accountno'],
             )
 
+    @reify
+    def existing_user_point_account(self):
+        user_point_accounts = [user_point_account for user_point_account in self.context.read_only_cart.user_point_accounts if user_point_account.type == UserPointAccountTypeEnum.Rakuten.v]
+        if len(user_point_accounts) > 0:
+            return user_point_accounts[0]
+        else:
+            return None
+
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def point(self):
-        cart = self.context.cart
+        cart = self.context.read_only_cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
 
-        formdata = MultiDict(
-            accountno=""
-            )
-        form = schemas.PointForm(formdata=formdata)
+        form = schemas.PointForm()
 
         asid = self.context.asid
         if is_mobile_request(self.request):
@@ -1170,13 +1192,12 @@ class PointAccountEnteringView(object):
             asid = self.context.asid_smartphone
 
         accountno = self.request.params.get('account')
-        user = api.get_or_create_user(self.context.authenticated_user())
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            if enable_auto_input_form(user) and user:
-                acc = api.get_user_point_account(user.id)
-                form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+            if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form:
+                if self.existing_user_point_account is not None:
+                    form.accountno.data = self.existing_user_point_account.account_number
 
         return dict(
             form=form,
@@ -1188,7 +1209,7 @@ class PointAccountEnteringView(object):
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
-        cart = self.context.cart
+        cart = self.context.read_only_cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1207,19 +1228,18 @@ class PointAccountEnteringView(object):
 
         point_params = self.get_point_data()
 
-        if is_point_input_required(self.context, self.request):
-            point = point_params.pop("accountno", None)
-            if point:
-                if not user:
-                    user = api.get_or_create_user_from_point_no(point)
-                    cart.user = user
-                    DBSession.add(cart)
-                api.create_user_point_account_from_point_no(
-                    user.id,
-                    type=UserPointAccountTypeEnum.Rakuten,
-                    account_number=point
-                    )
-
+        account_number = point_params.pop("accountno", None)
+        if account_number:
+            user_point_account = api.create_user_point_account_from_point_no(
+                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
+                type=UserPointAccountTypeEnum.Rakuten.v,
+                account_number=account_number
+                )
+            # append だと二度押しではまるかも
+            cart.user_point_accounts = [user_point_account]
+        else:
+            # ユーザはあえてポイント入力しなかったようなので...
+            del cart.user_point_accounts[:]
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
@@ -1241,7 +1261,7 @@ class ConfirmView(object):
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = api.get_user_point_account(cart.user_id)
+        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None # XXX
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 

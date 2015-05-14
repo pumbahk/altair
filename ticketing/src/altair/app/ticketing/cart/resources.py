@@ -128,19 +128,7 @@ class TicketingCartResourceBase(object):
 
     @property
     def membershipinfo(self):
-        membership_name = self.membership
-        organization = cart_api.get_organization(self.request)
-        from altair.app.ticketing.models import DBSession as session
-        if membership_name is not None:
-            membershipinfo = session.query(u_models.Membership)\
-                        .filter_by(organization_id=organization.id)\
-                        .filter_by(name=membership_name)\
-                        .first()
-        else:
-            membershipinfo = session.query(u_models.Membership)\
-                        .filter_by(organization_id=organization.id)\
-                        .first()
-        return membershipinfo
+        return cart_api.get_membership(self.authenticated_user())
 
     @reify
     def membergroups(self):
@@ -452,7 +440,7 @@ class TicketingCartResourceBase(object):
                     break
 
                 # MemberGroup を特定できるものがなければ、エラーにする
-                logger.error("could not determine the event, performance nor sales_segment from the request URI")
+                logger.info("could not determine an event, performance nor sales_segment from the request URI")
                 return True
 
             return q.first() is not None
@@ -658,7 +646,7 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     @reify
     def order_like(self):
         try:
-            cart = self.read_only_cart 
+            cart = self.read_only_cart
             return cart
         except NoCartError:
             try:

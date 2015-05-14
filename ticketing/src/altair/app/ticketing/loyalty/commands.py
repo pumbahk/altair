@@ -40,6 +40,79 @@ def decode_point_grant_history_entry_id(s):
     except ValueError:
         raise PointGrantHistoryEntryIdDecodeError(s)
 
+def lookup_point_grant_history_entry(type, organization_id=None, order_no=None, account_number=None):
+    from .models import PointGrantHistoryEntry
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table
+    from altair.app.ticketing.users.models import User
+
+    def add_conditions(q):
+        if order_no is not None: 
+            q = q.filter(Order.order_no == order_no)
+        if organization_id is not None:
+            q = q.filter(Order.organization_id == organization_id)
+        if type is not None:
+            q = q.filter(UserPointAccount.type == type)
+        if account_number is not None:
+            q = q.filter(UserPointAccount.account_number == account_number)
+        return q
+
+    base_q = PointGrantHistoryEntry.query.join(PointGrantHistoryEntry.order)
+    try:
+        return add_conditions(base_q.join(Order.user_point_accounts)).one()
+    except NoResultFound:
+        return add_conditions(base_q.join(Order.user).join(User.user_point_accounts)).one()
+
+def build_user_point_account_queries(type, order, account_number=None):
+    from altair.app.ticketing.users.models import UserPointAccount
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table
+
+    def add_conditions(q):
+        if account_number is not None:
+            q = q.filter(UserPointAccount.account_number == account_number)
+        if type is not None:
+            q = q.filter(UserPointAccount.type == type)
+        return q
+
+    queries = [ 
+        add_conditions(
+            UserPointAccount.query \
+                .join(order_user_point_account_table, UserPointAccount.id == order_user_point_account_table.c.user_point_account_id) \
+                .join(Order, order_user_point_account_table.c.order_id == Order.id) \
+                .filter(Order.id == order.id)
+            )
+        ]
+
+    if order.user_id is not None:
+        queries.append(
+            add_conditions(
+                UserPointAccount.query \
+                    .filter(UserPointAccount.user_id == order.user_id)
+                )
+            )
+    return queries
+
+def lookup_user_point_account(order, type, account_number=None):
+    queries = build_user_point_account_queries(type, order, account_number)
+    last_exception = None
+    for query in queries:
+        try:
+            return query.one()
+        except NoResultFound as e:
+            last_exception = e
+            continue
+    if last_exception is None:
+        raise NoResultFound()
+    else:
+        raise e
+
+def lookup_user_point_accounts(order, type=None, account_number=None):
+    queries = build_user_point_account_queries(type, order, account_number)
+    for query in queries:
+        retval = query.all()
+        if len(retval) > 0:
+            return retval
+    return []
+
 def do_import_point_grant_results(registry, organization, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
@@ -89,15 +162,12 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
                 if not type:
                     raise RecordError(u'If you want to use force option, you have to specify point type via -t')
                 try:
-                    point_grant_history_entry = PointGrantHistoryEntry.query \
-                        .join(PointGrantHistoryEntry.order) \
-                        .join(Order.user) \
-                        .join(User.user_point_accounts) \
-                        .filter(Order.order_no == order_no) \
-                        .filter(Order.organization_id == organization.id) \
-                        .filter(UserPointAccount.type == type) \
-                        .filter(UserPointAccount.account_number == account_number) \
-                        .one()
+                    point_grant_history_entry = lookup_point_grant_history_entry(
+                        organization_id=organization.id,
+                        order_no=order_no,
+                        type=type,
+                        account_number=account_number
+                        )
                     point_grant_history_entry_id = point_grant_history_entry.id
                 except:
                     pass
@@ -233,9 +303,7 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
             if not account_number:
                 if deduce_account:
                     try:
-                        user_point_account = UserPointAccount.query \
-                            .filter_by(type=type, user_id=order.user_id) \
-                            .one()
+                        user_point_account = lookup_user_point_account(order=order, type=type)
                     except NoResultFound:
                         raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
                     except MultipleResultsFound:
@@ -244,9 +312,7 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
                     raise RecordError("no account number is given for order (order_no=%s). Use --deduce-account option to enable automatic deduction of point account number" % (order_no,))
             else:
                 try:
-                    user_point_account = UserPointAccount.query \
-                        .filter_by(type=type, account_number=account_number) \
-                        .one()
+                    user_point_account = lookup_user_point_account(order=order, type=type, account_number=account_number)
                 except NoResultFound:
                     raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
                 except MultipleResultsFound:
@@ -372,7 +438,7 @@ def import_point_grant_data():
                 ) \
             .one()
     except:
-        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.write("No such organization: %s\n" % args.organization)
         sys.stderr.flush()
         sys.exit(255)
 
@@ -450,7 +516,7 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                     point_grant_history_entries.append(point_grant_history_entry)
 
             point_by_type = calculate_point_for_order(order)
-            user_point_accounts = order.user_id and DBSession.query(UserPointAccount).filter_by(user_id=order.user_id).all()
+            user_point_accounts = lookup_user_point_accounts(order=order)
                     
             for type, point in point_by_type.items():
                 if user_point_accounts is None:
@@ -464,7 +530,7 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                     user_point_account = None
 
                 if user_point_account is None:
-                    logger.info('Order(order_no=%s): no point account information for point type (%d) is associated to User(id=%ld) .' % (order.order_no, type, order.user_id))
+                    logger.info('Order(order_no=%s): no point account information for point type (%d) is associated to User(id=%r) .' % (order.order_no, type, order.user_id))
                     continue
 
                 if type in point_grant_history_entries_by_type:
@@ -668,7 +734,7 @@ def export_point_grant_data():
                 ) \
             .one()
     except:
-        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.write("No such organization: %s\n" % args.organization)
         sys.stderr.flush()
         sys.exit(255)
 

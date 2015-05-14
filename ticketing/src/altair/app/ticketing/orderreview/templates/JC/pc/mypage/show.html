@@ -19,7 +19,7 @@
 % endif
 
 <br/><br/>
-
+<%include file="../../../__commons__/trouble_message.html" />
 <h3>メールマガジン</h3>
 ${render_mailmagazine(request)}
 
@@ -142,4 +142,3 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
   </form>
   % endif
 </%def>
-

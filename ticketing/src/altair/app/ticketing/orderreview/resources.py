@@ -20,7 +20,7 @@ from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
-from .api import get_user_point_accounts
+from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm
 
@@ -60,7 +60,7 @@ class OrderReviewResourceBase(object):
     def user_point_accounts(self):
         if not self.order:
             return None
-        return get_user_point_accounts(self.request, self.order.user_id)
+        return self.order.user_point_accounts
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
@@ -69,6 +69,8 @@ class OrderReviewResourceBase(object):
 
 class LandingViewResource(OrderReviewResourceBase):
     pass
+
+from .views import unsuspicious_order_filter
 
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
@@ -83,15 +85,18 @@ class MyPageListViewResource(OrderReviewResourceBase):
             filter(SalesSegmentSetting.disp_orderreview==True). \
             filter(or_(Lot.lotting_announce_datetime <= now, Lot.lotting_announce_datetime == None)). \
             order_by(Order.updated_at.desc())
-
-        orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))
+        orders = unsuspicious_order_filter(orders)  # refs 10883
+        orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
         return orders
 
     def get_lots_entries(self, user, page, per):
         entries = LotEntry.query.filter(
             LotEntry.user_id==user.id
         ).order_by(LotEntry.updated_at.desc())
-        entries = paginate.Page(entries.all(), page, per, url=paginate.PageURL_WebOb(self.request))
+
+        entries = unsuspicious_order_filter(entries)  # refs 10883
+        entries = paginate.Page(entries, page, per, url=paginate.PageURL_WebOb(self.request))
+
         return entries
 
 

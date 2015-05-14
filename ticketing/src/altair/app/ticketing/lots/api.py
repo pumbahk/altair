@@ -31,7 +31,6 @@
 """
 
 import transaction
-from datetime import datetime, date
 from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
@@ -57,6 +56,7 @@ from altair.app.ticketing.users.models import (
     MemberGroup,
     Membership,
     SexEnum,
+    UserPointAccount,
 )
 from altair.app.ticketing.cart.models import (
     Cart,
@@ -208,7 +208,7 @@ def prepare2_for_payment(request, entry_dict):
             )
         multicheckout_api.keep_authorization(cart.order_no, u"lots")
 
-def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[]):
+def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[], user_point_accounts=[]):
     """
     wishes
     {product_id, quantity} の希望順リスト
@@ -233,6 +233,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     entry.browserid = getattr(request, 'browserid', '')
     entry.user_agent = getattr(request, 'user_agent', '')
     entry.cart_session_id = getattr(request.session, 'id', '')
+    entry.user_point_accounts = user_point_accounts if user_point_accounts is not None else []
 
     if extra:
         entry.attributes = coerce_extra_form_data(request, extra)
@@ -502,16 +503,15 @@ def clear_lot_entry(request):
     except KeyError:
         pass
 
-def get_point_user(request):
+def get_user_point_account_from_session(request):
     from altair.app.ticketing.users.models import User
-    user_id = request.session.get(LOT_ENTRY_POINT_USER)
-    return User.get(user_id)
+    user_point_account_id = request.session.get(LOT_ENTRY_POINT_USER)
+    return UserPointAccount.query.filter_by(id=user_point_account_id).first()
 
-def set_point_user(request, point_user):
-    clear_point_user(request)
-    request.session[LOT_ENTRY_POINT_USER] = point_user.id
+def set_user_point_account_to_session(request, user_point_account):
+    request.session[LOT_ENTRY_POINT_USER] = user_point_account.id if user_point_account is not None else None
 
-def clear_point_user(request):
+def clear_user_point_account_from_session(request):
     try:
         if request.session:
             del request.session[LOT_ENTRY_POINT_USER]
@@ -567,62 +567,9 @@ class Options(object):
 def get_options(request, lot_id):
     return Options(request, lot_id)
 
-def create_client_form(context, request, **kwds):
-    user = cart_api.get_or_create_user(context.authenticated_user())
-    user_profile = None
-    if user is not None:
-        user_profile = user.user_profile
-
-    retval = schemas.ClientForm(context=context, **kwds)
-
-    # XXX:ゆるふわなデフォルト値
-    sex = SexEnum.Female.v
-    birthday = date(1990, 1, 1)
-    if user_profile is not None:
-        retval.last_name.data = user_profile.last_name
-        retval.last_name_kana.data = user_profile.last_name_kana
-        retval.first_name.data = user_profile.first_name
-        retval.first_name_kana.data = user_profile.first_name_kana
-        retval.tel_1.data = user_profile.tel_1
-        retval.fax.data = getattr(user_profile, "fax", None)
-        retval.zip.data = user_profile.zip
-        retval.prefecture.data = user_profile.prefecture
-        retval.city.data = user_profile.city
-        retval.address_1.data = user_profile.address_1
-        retval.address_2.data = user_profile.address_2
-        retval.email_1.data = user_profile.email_1
-        retval.email_2.data = user_profile.email_2
-        if user_profile.sex:
-            sex = user_profile.sex
-        if user_profile.birthday:
-            birthday = user_profile.birthday
-    retval.sex.process_data(unicode(sex or u''))
-    retval.birthday.process_data(birthday)
-
-    if 'formdata' in kwds:
-        retval.process(**kwds)  # 入力フォームの値を反映
-    return retval
-
 def get_lotting_announce_timezone(timezone):
     label = u""
     labels = dict(morning=u'午前', day=u'昼以降', evening=u'夕方以降', night=u'夜', next_morning=u'明朝')
     if timezone in labels:
         label = labels[timezone]
     return label
-
-def enable_auto_input_form(request, user):
-    from altair.app.ticketing.users.models import User
-    if not isinstance(user, User):
-        return False
-
-    if user.member is None:
-        # 楽天認証
-        return True
-
-    info = request.altair_auth_info
-    membership = cart_api.get_membership(info)
-
-    if membership.enable_auto_input_form:
-        return True
-
-    return False

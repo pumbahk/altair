@@ -26,8 +26,8 @@ def setup_static_views(config):
     from altair.cdnpath import S3StaticPathFactory
     settings = config.registry.settings
     config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            settings["s3.bucket_name"],
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
             mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
 
 def includeme(config):
@@ -59,6 +59,7 @@ def includeme(config):
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
+    config.add_route('order_review.information', '/information')  # refs 10883
 
 def setup_auth(config):
     config.include('altair.auth')
@@ -114,7 +115,5 @@ def main(global_config, **local_config):
     config.include('.preview')
     config.scan(".views")
     config.scan(".panels")
-    
+
     return config.make_wsgi_app()
-
-

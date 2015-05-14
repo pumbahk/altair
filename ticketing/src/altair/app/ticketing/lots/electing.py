@@ -135,6 +135,30 @@ class Electing(object):
                               routing_key="lots.election",
                               properties=dict(content_type="application/json"))
 
+    def send_election_mails(self):
+        """メール送信taskをworkerに送信"""
+        publisher = self.election_mail_publisher
+        lot_elected_entries = LotElectedEntry \
+            .query \
+            .join(LotEntryWish) \
+            .join(LotEntry) \
+            .join(Lot) \
+            .filter(Lot.id == self.lot.id) \
+            .filter(LotEntry.ordered_mail_sent_at == None) \
+            .all()
+
+        logger.info('publish send election mail: Lot.id={}: count={}'.format(
+            self.lot.id, len(lot_elected_entries)))
+
+        for lot_elected_entry in lot_elected_entries:
+            wish = lot_elected_entry.lot_entry_wish
+            logger.info('publish entry_wish = {0}'.format(wish.entry_wish_no))
+            publisher.publish(
+                body=json.dumps({'lot_elected_entry_id': lot_elected_entry.id}),
+                routing_key='lots.election_mail',
+                properties=dict(content_type='application/json'),
+                )
+
     def reject_lot_entries(self):
         publisher = self.rejection_publisher
         works = self.lot.reject_works

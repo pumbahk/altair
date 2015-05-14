@@ -19,6 +19,7 @@ from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProdu
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -365,7 +366,12 @@ class ProductItems(BaseView):
         product = self.context.product
         f = ProductItemForm(self.request.POST, product=product)
         if f.validate():
-            f.product.price += f.product_item_price.data * f.product_item_quantity.data
+            price = Decimal()
+            if f.product.items:
+                price = sum(item.price * item.quantity for item in f.product.items)
+
+            price += f.product_item_price.data * f.product_item_quantity.data
+            f.product.price = price
             f.product.save()
 
             stock = Stock.query.filter_by(

@@ -67,6 +67,9 @@ def extract_form_data(form):
            or not any(isinstance(validator, DynSwitchDisabled) for validator in field.validators)
         )
 
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
+
+
 @view_defaults(
     route_name='cart.index',
     decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
@@ -81,6 +84,8 @@ class FCEventIndexView(object):
 
     @lbr_view_config(request_method='GET')
     def get(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         performances = set(
             sales_segment.performance
             for sales_segment in self.context.available_sales_segments
@@ -157,11 +162,13 @@ class FCIndexView(object):
 
     @lbr_view_config(request_method='GET')
     def get(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = self.product_form_from_user_profile(load_user_profile(self.request))
         return dict(form=form)
 
     @lbr_view_config(request_method='POST')
     def post(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
         form = self.product_form(UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         if not form.validate():
             self.request.errors = form.errors
@@ -217,7 +224,7 @@ class FCPaymentView(PaymentView):
             country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
-            fax=address_data.get("fax"), 
+            fax=address_data.get("fax"),
             sex=sex_value(address_data.get("sex"))
             )
 
