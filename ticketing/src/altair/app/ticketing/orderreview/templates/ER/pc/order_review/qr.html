@@ -1,0 +1,47 @@
+<html>
+<head>
+  <title>${event.title} - ${performance.name}</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/GM/pc/css/common/qr2.css')}" media="all" />
+</head>
+<body>
+<div align="center" style="text-align:center">
+  <hr size="10" color="#872434" />
+  <h3>${event.title}</h3>
+  % if performance and performance.name:
+  <h3>${performance.name}</h3>
+  % endif
+  <hr size="1" color="#ECAC00" />
+  <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
+  <hr size="1" color="#ECAC00" />
+  <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
+  発券番号 ${ticket.id} <br />
+  注文番号 ${order.order_no} <br />
+  パフォーマンス ${performance.code} <br />
+  <font size="5">興行日 ${performance.start_on}</font> <br />
+  <font size="5">商品名 ${product.name} (${product.id})</font> <br />
+  %if gate:
+  <font size="5">入場ゲート ${gate}</font> <br />
+  %endif
+  %if ticket.seat:
+  <font size="5">席番号 ${ticket.seat.name} (${ticket.seat.l0_id})</font> <br />
+  %endif
+  <br style="clear: both;" />
+  <div style="background-color:#ECAC00;">
+    <b><font size="4" color="#fff">注意事項</font></b>
+  </div>
+  <div align="left">
+    <ul>
+      <li>携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。</li>
+      <li>QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。</li>
+      <li>QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。</li>
+    </ul>
+  </div>
+  <hr size="1" color="#ECAC00" />
+  <hr size="10" color="#872434" />
+  <a href="javascript:window.close();">閉じる</a>
+</div>
+
+</body>
+</html>
