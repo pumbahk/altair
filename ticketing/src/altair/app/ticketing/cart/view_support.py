@@ -483,7 +483,7 @@ class DynamicFormBuilder(object):
                     if cset is not None and validator_flags[name]:
                         sets.append(cset)
                         cdescs.append(cdesc)
-                sets.append(u']')
+                sets.append(u']+')
                 concatenated_csets = u''.join(sets)
                 message = u'%sのみ入力できます' % u'・'.join(cdescs)
             validators.append(Regexp(concatenated_csets, message=message))
