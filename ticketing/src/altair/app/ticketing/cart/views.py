@@ -272,9 +272,8 @@ class PerPerformanceAgreementView(object):
     def get(self):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
-        performance_id = self.request.matchdict['performance_id']
         if not selected_sales_segment.setting.disp_agreement:
-            return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
+            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
