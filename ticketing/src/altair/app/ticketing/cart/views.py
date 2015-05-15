@@ -320,10 +320,15 @@ def jump_maintenance_page_for_trouble(organization):
     #    raise HTTPFound('/maintenance.html')
 
 def create_event_dict(view, performance_id, sales_segments):
+    try:
+        performance_id = long(performance_id)
+    except (ValueError, TypeError):
+        performance_id = None
+
     performance = None
     if performance_id:
         for p in view.context.event.performances:
-            if str(p.id) == str(performance_id) and p.public:
+            if p.id == performance_id and p.public:
                 performance = p
 
     # 公演が特定できる場合は、その公演の情報のみ表示する
