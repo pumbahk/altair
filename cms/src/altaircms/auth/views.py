@@ -221,7 +221,8 @@ class OrganizationView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name='organization.new', request_method='GET', renderer='altaircms:templates/auth/organization/new.html')
+    @view_config(route_name='organization.new', request_method='GET',
+                renderer='altaircms:templates/auth/organization/new.html',permission='organization_create')
     def new_get(self):
         form = OrganizationForm()
         if len(DBSession.query(func.max(Organization.backend_id)).first()) > 0:
@@ -231,7 +232,8 @@ class OrganizationView(object):
             display_fields=form.__display_fields__
         )
 
-    @view_config(route_name='organization.new', request_method='POST', renderer='altaircms:templates/auth/organization/new.html')
+    @view_config(route_name='organization.new', request_method='POST',
+                renderer='altaircms:templates/auth/organization/new.html', permission='organization_create')
     def new_post(self):
         form = OrganizationForm(self.request.POST)
         if form.validate():
@@ -259,7 +261,8 @@ class HostView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name='host.new', request_method='GET', renderer='altaircms:templates/auth/host/new.html')
+    @view_config(route_name='host.new', request_method='GET',
+                renderer='altaircms:templates/auth/host/new.html', permission='host_create')
     def new_get(self):
         form = forms.HostForm().configure(Organization.query)
         return dict(
@@ -267,7 +270,8 @@ class HostView(object):
             display_fields=form.__display_fields__
         )
 
-    @view_config(route_name='host.new', request_method='POST', renderer='altaircms:templates/auth/host/new.html')
+    @view_config(route_name='host.new', request_method='POST',
+                renderer='altaircms:templates/auth/host/new.html', permission='host_create')
     def new_post(self):
         form = forms.HostForm(self.request.POST).configure(Organization.query)
         if form.validate():

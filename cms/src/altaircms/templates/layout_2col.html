@@ -6,13 +6,15 @@
   <div class="span1.5">
     ## sidebar
     <ul class="nav nav-list">
-      %for role in request.user.roles:
-        %if u'administrator' == role.name:
+        %if request.has_permission('organization_create') or request.has_permission('host_create'):
           <li class="nav-header">組織管理</li>
+        %endif
+        %if request.has_permission('organization_create'):
           <li><a class="link-organization" href="${request.route_path("organization.new")}">組織追加</a></li>
+        %endif
+        %if request.has_permission('host_create'):
           <li><a class="link-organization" href="${request.route_path("host.new")}">Host追加</a></li>
         %endif
-      %endfor
       <li class="nav-header">イベント管理</li>
       <li><a class="link-event" href="${request.route_path("event_list")}">イベント</a></li>
       <li class="nav-header">ページ管理</li>
