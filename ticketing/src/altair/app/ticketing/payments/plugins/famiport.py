@@ -44,6 +44,21 @@ class FamiPortPluginFailure(PaymentPluginException):
     pass
 
 
+def refund_order(request, order, refund_record, now=None):
+    """払い戻し"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
+
+
+def cancel_order(request, order, now=None):
+    """キャンセル"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
+
+
+def refresh_order(request, order, now=None):
+    """予約更新"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
+
+
 def _overridable_payment(path, fallback_ua_type=None):
     """ここがどこに作用してくるのかわからない
     """
@@ -120,7 +135,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            return famiport_api.create_famiport_order(request, cart)  # noqa
+            return famiport_api.create_famiport_order(request, cart)
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -130,12 +145,15 @@ class FamiPortPaymentPlugin(object):
 
     def refresh(self, request, order):
         """決済側の状態をDBに反映"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
+        return refund_order(request, order, refund_record)
 
 
 @lbr_view_config(context=ICartDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
@@ -189,12 +207,15 @@ class FamiPortDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
+        return refund_order(request, order, refund_record)
 
 
 @implementer(IDeliveryPlugin)
@@ -225,9 +246,12 @@ class FamiPortPaymentDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
+        return refund_order(request, order, refund_record)
