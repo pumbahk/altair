@@ -100,7 +100,7 @@ def model_clone(obj):
         if p.key not in  pk_keys:
             setattr(cloned, p.key, getattr(obj, p.key, None))
     return cloned
-            
+
 class BaseOriginalMixin(object):
     def __copy__(self):
         copied = model_clone(self)
@@ -110,7 +110,7 @@ class BaseOriginalMixin(object):
         if hasattr(copied, "updated_at"):
             copied.updated_at = now
         return copied
-            
+
     def to_dict(self):
         return model_to_dict(self)
 
@@ -146,7 +146,7 @@ class MutationDict(Mutable, dict):
         "Convert plain dictionaries to MutationDict."
 
         if isinstance(value, basestring):
-            return MutationDict(json.loads(value))   
+            return MutationDict(json.loads(value))
         elif not isinstance(value, MutationDict):
             if isinstance(value, dict):
                 return MutationDict(value)
@@ -167,7 +167,7 @@ class MutationDict(Mutable, dict):
 
         dict.__delitem__(self, key)
         self.changed()
-    
+
     def update(self, *args, **kwargs):
         dict.update(self, *args, **kwargs)
         self.changed()

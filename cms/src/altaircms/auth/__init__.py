@@ -1,7 +1,7 @@
 def install_utilities(config): #rename
     """
     requirement in settings:
-    
+
     altaircms.logout.external.url
     altaircms.logout.action
 
@@ -14,19 +14,19 @@ def install_utilities(config): #rename
     settings = config.registry.settings
     url = settings.get("altaircms.logout.external.url")
     logout_action_class = config.maybe_dotted(settings.get("altaircms.logout.action"))
-    config.registry.registerUtility(logout_action_class(url), 
+    config.registry.registerUtility(logout_action_class(url),
                                     config.maybe_dotted(".interfaces.ILogoutAction"))
 
     oauth_component_class = config.maybe_dotted(".api.OAuthComponent")
     oauth_component = oauth_component_class(
-        settings["altair.oauth.client_id"], 
-        settings["altair.oauth.secret_key"], 
-        settings["altair.oauth.authorize_url"], 
-        settings["altair.oauth.access_token_url"], 
+        settings["altair.oauth.client_id"],
+        settings["altair.oauth.secret_key"],
+        settings["altair.oauth.authorize_url"],
+        settings["altair.oauth.access_token_url"],
         )
-    config.registry.registerUtility(oauth_component, 
+    config.registry.registerUtility(oauth_component,
                                     config.maybe_dotted(".interfaces.IOAuthComponent"))
-    
+
 
 def includeme(config):
     ## bind event
@@ -49,6 +49,9 @@ def includeme(config):
     config.add_route('role', '/role/{id}')
 
     config.add_route('role_permission', '/role/{role_id}/permission/{id}')
+
+    config.add_route('organization.new', '/organization/new/')
+    config.add_route('host.new', '/host/new/')
 
     config.add_route("nowsetting", "/nowsetting")
     config.add_route("nowsetting.invalidate", "/nowsetting/invalidate")
