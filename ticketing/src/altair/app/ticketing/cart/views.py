@@ -319,6 +319,44 @@ def jump_maintenance_page_for_trouble(organization):
     #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
     #    raise HTTPFound('/maintenance.html')
 
+def create_event_dict(view, performance_id, sales_segments):
+    try:
+        performance_id = long(performance_id)
+    except (ValueError, TypeError):
+        performance_id = None
+
+    performance = None
+    if performance_id:
+        for p in view.context.event.performances:
+            if p.id == performance_id and p.public:
+                performance = p
+
+    # 公演が特定できる場合は、その公演の情報のみ表示する
+    if performance:
+        for s in sales_segments:
+            if s.performance.id == performance.id:
+                sales_segment = s
+        return dict(
+            id=view.context.event.id,
+            code=view.context.event.code,
+            title=view.context.event.title,
+            abbreviated_title=view.context.event.abbreviated_title,
+            sales_start_on=str(sales_segment.start_at),
+            sales_end_on=str(sales_segment.end_at),
+            venues=set([performance.venue.name]),
+            product=view.context.event.products
+            )
+
+    return dict(
+        id=view.context.event.id,
+        code=view.context.event.code,
+        title=view.context.event.title,
+        abbreviated_title=view.context.event.abbreviated_title,
+        sales_start_on=str(view.context.event.sales_start_on),
+        sales_end_on=str(view.context.event.sales_end_on),
+        venues=set(p.venue.name for p in view.context.event.performances if p.public==True),
+        product=view.context.event.products
+        )
 
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
@@ -378,16 +416,7 @@ class IndexView(IndexViewMixin):
         set_rendered_event(self.request, self.context.event)
 
         return dict(
-            event=dict(
-                id=self.context.event.id,
-                code=self.context.event.code,
-                title=self.context.event.title,
-                abbreviated_title=self.context.event.abbreviated_title,
-                sales_start_on=str(self.context.event.sales_start_on),
-                sales_end_on=str(self.context.event.sales_end_on),
-                venues=set(p.venue.name for p in self.context.event.performances),
-                product=self.context.event.products
-                ),
+            event=create_event_dict(self, performance_id, sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             selected=Markup(
@@ -423,16 +452,7 @@ class IndexView(IndexViewMixin):
         selected_sales_segment = sales_segments[0]
 
         return dict(
-            event=dict(
-                id=self.context.event.id,
-                code=self.context.event.code,
-                title=self.context.event.title,
-                abbreviated_title=self.context.event.abbreviated_title,
-                sales_start_on=str(self.context.event.sales_start_on),
-                sales_end_on=str(self.context.event.sales_end_on),
-                venues=set(p.venue.name for p in self.context.event.performances),
-                product=self.context.event.products
-                ),
+            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             selected=Markup(
