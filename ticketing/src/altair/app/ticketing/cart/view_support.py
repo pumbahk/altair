@@ -772,17 +772,23 @@ def filter_extra_form_schema(extra_form_fields, mode=None):
             bitmask |= 2
         elif mode == 'editable':
             bitmask |= 4
+        elif mode == 'hidden':
+            bitmask |= 8
         elif mode == 'any':
-            bitmask |= 7
+            bitmask |= 15
         else:
             raise ValueError('invalid mode: %s' % mode)
+
+    def mask(field_desc):
+        v = ((1 if field_desc.get('show_on_entry', True) else 0) \
+             | (2 if field_desc.get('show_in_orderreview', True) else 0) \
+             | (4 if field_desc.get('edit_in_orderreview', False) else 0))
+        return 8 if v == 0 else v
 
     return [
         field_desc
         for field_desc in extra_form_fields
-        if ((1 if field_desc.get('show_on_entry', True) else 0) \
-             | (2 if field_desc.get('show_in_orderreview', True) else 0) \
-             | (4 if field_desc.get('edit_in_orderreview', False) else 0)) & bitmask != 0
+        if mask(field_desc) & bitmask != 0
         ]
 
 def get_extra_form_schema(context, request, sales_segment, for_=None):
