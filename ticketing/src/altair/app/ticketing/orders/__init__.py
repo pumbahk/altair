@@ -52,6 +52,7 @@ def includeme(config):
     config.add_route('orders.refund.export_result'      , '/refund/export_result/{refund_id}')
     config.add_route('orders.refund.search'             , '/refund/search/')
     config.add_route('orders.refund.checked'            , '/refund/checked/')
+    config.add_route('orders.refund.settings'           , '/refund/settings/')
     config.add_route('orders.refund.confirm'            , '/refund/confirm/')
     config.add_route('orders.refund.immediate'          , '/refund/immediate/{order_id}')
 

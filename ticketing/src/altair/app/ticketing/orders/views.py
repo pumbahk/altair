@@ -5,6 +5,7 @@ import json
 import logging
 import csv
 import itertools
+from collections import OrderedDict
 from datetime import datetime
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPInternalServerError
@@ -998,36 +999,36 @@ class OrdersRefundCreateView(OrderBaseView):
         }
 
 
-@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
-class OrdersRefundConfirmView(OrderBaseView):
-
+@view_defaults(decorator=with_bootstrap, permission='event_editor', route_name='orders.refund.settings', renderer='altair.app.ticketing:templates/orders/refund/settings.html')
+class OrdersRefundSettingsView(OrderBaseView):
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
-
         self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
         self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         self.organization_id = int(self.context.organization.id)
-        self.mail_refund_to_user = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().mail_refund_to_user
         self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
 
-    @view_config(route_name='orders.refund.confirm', request_method='GET')
+    @view_config(request_method='GET')
     def get(self):
         if not self.checked_orders:
             self.request.session.flash(u'払戻対象を選択してください')
-            return HTTPFound(location=route_path('orders.refund.checked', self.request))
+            return HTTPFound(location=self.request.route_path('orders.refund.checked'))
 
-        params = MultiDict()
-        if self.form_search.payment_method.data:
-            params.add('payment_method_id', self.form_search.payment_method.data)
-        form_refund = OrderRefundForm(params, organization_id=self.organization_id)
+        data = self.request.session.get('ticketing.refund.settings')
+        if data is None:
+            data = {}
+            if self.form_search.payment_method.data:
+                data['payment_method_id'] = self.form_search.payment_method.data
+        form_refund = OrderRefundForm(_data=data, organization_id=self.organization_id)
+
         return {
             'orders':self.checked_orders,
             'refund_condition':self.refund_condition,
             'form_search':self.form_search,
             'form_refund':form_refund,
-        }
+            }
 
-    @view_config(route_name='orders.refund.confirm', request_method='POST')
+    @view_config(request_method='POST')
     def post(self):
         if not self.checked_orders:
             self.request.session.flash(u'払戻対象を選択してください')
@@ -1045,25 +1046,78 @@ class OrdersRefundConfirmView(OrderBaseView):
                 'refund_condition':self.refund_condition,
                 'form_search':self.form_search,
                 'form_refund':form_refund,
-            }
+                }
 
+        warnings = OrderedDict()
+        # 未発券のコンビニ払戻を警告
+        from altair.app.ticketing.core.models import PaymentMethod
+        refund_pm = PaymentMethod.query.filter_by(id=form_refund.payment_method_id.data).one()
+        if refund_pm.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            for order in orders:
+                if not order.is_issued():
+                    warnings_for_order = warnings.get(order.order_no, )
+                    if warnings_for_order is None:
+                        warnings_for_order = warnings[order.order_no] = []
+                    warnings_for_order.append(u'未発券の予約をコンビニ払戻しようとしています')
+        self.request.session['ticketing.refund.settings'] = form_refund.data
+        self.request.session['warnings'] = warnings
+        return HTTPFound(location=self.request.route_path('orders.refund.confirm'))
+
+
+@view_defaults(decorator=with_bootstrap, permission='event_editor', route_name='orders.refund.confirm', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
+class OrdersRefundConfirmView(OrderBaseView):
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+
+    @view_config(request_method='GET')
+    def get(self):
+        # 払戻予約
+        from altair.app.ticketing.core.models import PaymentMethod
+        refund_settings = self.request.session['ticketing.refund.settings']
+        payment_method = PaymentMethod.query.filter_by(id=refund_settings['payment_method_id']).one()
+        warnings = [
+            (
+                Order.query.filter_by(order_no=order_no).one(),
+                warnings
+                )
+            for order_no, warnings in self.request.session['warnings'].items()
+            ]
+        return dict(
+            form_refund=OrderRefundForm(_data=refund_settings),
+            form_search=OrderRefundSearchForm(
+                MultiDict(self.request.session.get('ticketing.refund.condition', [])),
+                organization_id=self.context.organization.id
+                ),
+            payment_method=payment_method,
+            is_sej=(payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID),
+            warnings=warnings,
+            **refund_settings
+            )
+
+
+    @view_config(route_name='orders.refund.confirm', request_method='POST')
+    def post(self):
         # 払戻予約
         performances = []
+        orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
         for o in orders:
             if o.performance not in performances:
                 performances.append(o.performance)
-        refund_param = form_refund.data
-        refund_param.update(dict(
+        refund_params = dict(self.request.session['ticketing.refund.settings'])
+        refund_params.update(
             orders=orders,
             order_count=len(orders),
             performances=performances,
-        ))
-        refund = Order.reserve_refund(refund_param)
+            )
+        refund = Order.reserve_refund(refund_params)
+
+        mail_refund_to_user = self.context.organization.setting.mail_refund_to_user
+        send_refund_reserve_mail(self.request, refund, mail_refund_to_user, orders)
 
         del self.request.session['orders']
+        del self.request.session['ticketing.refund.settings']
         del self.request.session['ticketing.refund.condition']
-
-        send_refund_reserve_mail(self.request, refund, self.mail_refund_to_user, orders)
 
         self.request.session.flash(u'払戻予約しました')
         return HTTPFound(location=route_path('orders.refund.index', self.request))
