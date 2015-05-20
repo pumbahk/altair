@@ -273,7 +273,7 @@ class HostView(object):
     @view_config(route_name='host.new', request_method='POST',
                 renderer='altaircms:templates/auth/host/new.html', permission='host_create')
     def new_post(self):
-        form = forms.HostForm(self.request.POST).configure(Organization.query)
+        form = forms.HostForm(self.request.POST)
         if form.validate():
             host = Host.from_dict(form.data)
             ## flash messsage

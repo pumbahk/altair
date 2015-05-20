@@ -101,7 +101,7 @@ class OrganizationForm(Form):
 
 class HostForm(Form):
     organization_id = fields.SelectField(
-        label=u'organization_id',
+        label=u"organization_id",
         choices=[],
         coerce=unicode,
     )
@@ -126,5 +126,8 @@ class HostForm(Form):
         super(HostForm, self).validate()
         if "organization_id" in self.errors:
             del self.errors["organization_id"] # xxx:
+
+        if bool(self.errors):
+            return False
 
         return True
