@@ -1,5 +1,5 @@
 # encoding: utf-8
-from .fileio import (
+from ..data_interchange.fileio import (
     Column,
     FixedRecordMarshaller,
     ZeroPaddedNumericString,

@@ -1,22 +1,46 @@
+from zope.interface import implementer, provider
 from ftplib import FTP_TLS
 import logging, os
+from .interfaces import IFileSender, IFileSenderFactory
 
 logger = logging.getLogger(__name__)
 
-def send_file_over_ftps(file_path, host, username = None, password = None, upload_dir_path = '/'): # TODO Make it possible to send multiple files?
-    ftp = FTP_TLS() # FTP over SSL/TLS
-    ftp.set_debuglevel(1) # Moderate amount of debugging output for now
+@provider(IFileSenderFactory)
+@implementer(IFileSender)
+class FTPSFileSender(object):
+    FTP_TLS = FTP_TLS
 
-    ftp.connect(host=host, port=21, timeout=600)
-    ftp.login(user=username, passwd=password)
-    ftp.cwd(upload_dir_path)
+    def __init__(self, host, port=21, timeout=600, username=None, password=None, passive=True, debuglevel=1):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+        self.username = username
+        self.password = password
+        self.passive = passive
+        self.debuglevel = debuglevel
 
-    ftp.set_pasv(True) # Enable PASV mode
-    ftp.prot_p() # Secure data connection
+    def send_file(self, remote_path, f): # TODO Make it possible to send multiple files?
+        remote_dir = os.path.dirname(remote_path)
+        remote_file = os.path.basename(remote_path)
 
-    file = open(file_path, 'rb')
-    file_name = os.path.basename(file.name)
-    ftp.storbinary("STOR %s" % file_name, file) # STOR the file with file_name. Override if same file_name exists.
-    file.close()
+        logger.info('uploading file to %s' % remote_path)
 
-    ftp.quit()
+        ftp = self.FTP_TLS() # FTP over SSL/TLS
+        ftp.set_debuglevel(self.debuglevel) # Moderate amount of debugging output for now
+
+        logger.info('trying to connect to %s:%d' % (self.host, self.port))
+        ftp.connect(host=self.host, port=self.port, timeout=self.timeout)
+        try:
+            ftp.login(user=self.username, passwd=self.password)
+            ftp.cwd(remote_dir)
+
+            ftp.set_pasv(self.passive) # Enable PASV mode
+            ftp.prot_p() # Secure data connection
+
+            ftp.storbinary("STOR %s" % remote_file, f) # STOR the file with file_name. Override if same file_name exists.
+            logger.info('file successfully sent as %s' % remote_path)
+        finally:
+            try:
+                ftp.quit()
+            except:
+                logger.exception('exception ignored')

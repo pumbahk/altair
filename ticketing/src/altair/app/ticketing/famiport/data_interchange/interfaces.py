@@ -22,3 +22,10 @@ class ITabularDataUnmarshaller(Interface):
     def __call__(row):
         pass
 
+class IFileSender(Interface):
+    def send_file(remote_path, f):
+        pass
+
+class IFileSenderFactory(Interface):
+    def __call__(**kwargs):
+        pass

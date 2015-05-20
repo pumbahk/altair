@@ -6,7 +6,7 @@ import os
 import logging
 from datetime import date
 from pyramid.paster import bootstrap, setup_logging
-from altair.app.ticketing.famiport.data_interchange.file_transfer import send_file_over_ftps
+from altair.app.ticketing.famiport.data_interchange.file_transfer import FTPSFileSender
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,8 @@ def main(argv=sys.argv):
     upload_dir_path = settings['altair.famiport.send_file.ftp.upload_dir_path']
 
     logger.info('Sending sales file in %s to %s' % (sales_file_dir, host))
-    send_file_over_ftps(sales_file_path, host, username, password, upload_dir_path)
+    with open(sales_file_path) as f:
+        sender.send_file(os.path.join(upload_dir_path, sales_file_name), f)
 
 if __name__ == u"__main__":
     main(sys.argv)
