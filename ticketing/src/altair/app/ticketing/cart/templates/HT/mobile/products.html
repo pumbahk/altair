@@ -1,0 +1,46 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+% if seat_type.description:
+<div>${seat_type.description|n}</div>
+% endif
+商品をお選びください
+<form action="${request.current_route_path()}" method="post">
+  % for product in products:
+    <div>
+      <br/>
+      <%mobile:form_header>${product['name']}</%mobile:form_header>
+      % if product['description']:
+        <div>${product['description']}</div>
+      % endif
+      % if product['detail']:
+        ${product['detail']}<br/>
+      % endif
+      金額: &yen;${product['price']}<br />
+      数量:
+      <select name="product-${product['id']}">
+        % for num in product['possible_quantities']:
+        <option value="${num}">${num}</option>
+        % endfor
+      </select>
+    </div>
+  % endfor
+  <div style="text-align:center;">
+  <br/>
+  <input type="hidden" name="performance_id" value="${performance.id}" />
+  <input type="hidden" name="seat_type_id" value="${seat_type.id}" />
+  ${form.csrf_token()}
+  <input type="submit" value="次へ" />
+  </div>
+</form>
+<form action="${back_url}" method="get">
+<div style="text-align:center;"><input type="submit" value="戻る" /></div>
+</form>
+<%mobile:header>選択内容</%mobile:header>
+<%mobile:form_header>会場</%mobile:form_header>
+<div>${venue.name}</div>
+<%mobile:form_header>日程</%mobile:form_header>
+<div>${h.performance_date(performance)}</div>
+<%mobile:form_header>席種</%mobile:form_header>
+<div>${seat_type.name}</div>
