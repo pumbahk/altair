@@ -35,6 +35,7 @@ def includeme(config):
     config.include('.communicator')
     config.add_tween('.tweens.sej_dbsession_tween_factory')
 
+
 def configure_session(config):
     from .models import _session
     from sqlahelper import get_engine

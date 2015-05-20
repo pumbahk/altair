@@ -19,12 +19,15 @@ CHECKOUT_PAYMENT_PLUGIN_ID = 2
 SEJ_PAYMENT_PLUGIN_ID = 3
 RESERVE_NUMBER_PAYMENT_PLUGIN_ID = 4
 FREE_PAYMENT_PLUGIN_ID = 5
+FAMIPORT_PAYMENT_PLUGIN_ID = 6
 
 SHIPPING_DELIVERY_PLUGIN_ID = 1
 SEJ_DELIVERY_PLUGIN_ID = 2
 RESERVE_NUMBER_DELIVERY_PLUGIN_ID = 3
 QR_DELIVERY_PLUGIN_ID = 4
 ORION_DELIVERY_PLUGIN_ID = 5
+FAMIPORT_DELIVERY_PLUGIN_ID = 6
+
 
 class Env(text_type):
     def __init__(self, path_or_renderer_name, type, for_, plugin_type, plugin_id, **kwargs):
@@ -56,7 +59,7 @@ class PaymentPluginRendererHelperFactory(object):
         self.default_renderer_factories = default_renderer_factories
 
     def __call__(self, env, package, registry, request=None, system_values=None, **kwargs):
-        # try to retrieve request from the system vars when not directly provided 
+        # try to retrieve request from the system vars when not directly provided
         if request is None:
             if system_values is not None:
                 request = system_values.get('request')
@@ -112,3 +115,4 @@ def includeme(config):
     config.include(".qr")
     config.include(".orion")
     config.include(".free")
+    config.include(".famiport")

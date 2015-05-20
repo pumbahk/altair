@@ -950,7 +950,7 @@ class PaymentView(object):
                 first_name=user_profile.first_name,
                 first_name_kana=user_profile.first_name_kana,
                 tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None), 
+                fax=getattr(user_profile, "fax", None),
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
