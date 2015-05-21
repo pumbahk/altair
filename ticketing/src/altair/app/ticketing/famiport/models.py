@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy as sa
-from altair.app.ticketing.models import (
-    Base,
-    BaseModel,
-    DBSession,
-    Identifier,
-    WithTimestamp,
-    )
+from sqlalchemy.orm import scoped_session, sessionmaker
+import sqlahelper
+from altair.models import Identifier, WithTimestamp
 from .utils import InformationResultCodeEnum
 
+Base = sqlahelper.get_base()
 
-class FamiPortOrderNoSequence(Base, BaseModel, WithTimestamp):
+# 内部トランザクション用
+_session = scoped_session(sessionmaker())
+
+class FamiPortOrderNoSequence(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrderNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -18,12 +18,12 @@ class FamiPortOrderNoSequence(Base, BaseModel, WithTimestamp):
     @classmethod
     def get_next_value(cls, name):
         seq = cls()
-        DBSession.add(seq)
-        DBSession.flush()
+        _session.add(seq)
+        _session.flush()
         return seq.id
 
 
-class FamiPortOrder(Base, BaseModel, WithTimestamp):
+class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -31,7 +31,7 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
     barcode_no = sa.Column(sa.String(255), nullable=False)
 
 
-class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
+class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
     __table_args__= (sa.UniqueConstraint('result_code'),)
 
