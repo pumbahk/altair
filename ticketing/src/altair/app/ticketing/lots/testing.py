@@ -124,9 +124,13 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
     
 class DummyAuthenticatedResource(testing.DummyResource):
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        self.membershipinfo = kwargs.pop('membershipinfo', None)
         testing.DummyResource.__init__(self, *args, **kwargs)
-        if 'user' not in kwargs:
-            self.user = None
             
     def authenticated_user(self):
         return self.user
+
+    @property
+    def membershipinfo(self):
+        return self.membership

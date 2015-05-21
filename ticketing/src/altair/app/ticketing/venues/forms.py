@@ -9,7 +9,7 @@ from wtforms.validators import Regexp, Length, Optional
 from altair.formhelpers import Translations, Required, JISX0208, strip_spaces, NFKC
 from altair.formhelpers.filters import NFKC, replace_ambiguous
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurTextField, OurSelectField
+from altair.formhelpers.fields import OurTextField, OurSelectField, OurBooleanField
 from altair.app.ticketing.core.models import Site, Venue
 from altair.app.ticketing.master.models import Prefecture
 
@@ -137,6 +137,11 @@ class SiteForm(Form):
             JISX0208, 
             Length(max=32, message=u'32文字以内で入力してください'),
         ]
+    )
+
+    visible = OurBooleanField(
+        label=u'会場の表示/非表示',
+        default=True,
     )
 
     def validate_code(form, field):

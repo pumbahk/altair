@@ -50,7 +50,7 @@
 % for performance in performances:
 <dt><span>${performance.name}</span></dt>
 <dt>大会日</dt>
-<dd>${h.japanese_datetime(performance.start_on)}開演</dd>
+<dd>${h.performance_datetime(performance)}</dd>
 <dt>会場</dt>
 <dd>${performance.venue.name}</dd>
 % endfor

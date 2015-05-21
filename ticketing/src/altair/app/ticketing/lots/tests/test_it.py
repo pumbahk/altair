@@ -68,13 +68,18 @@ class EntryLotViewTests(unittest.TestCase):
             )
         from pyramid.authorization import ACLAuthorizationPolicy
         cls.config.set_authorization_policy(ACLAuthorizationPolicy())
+        cls._get_organization_patch = mock.patch('altair.app.ticketing.cart.request.get_organization')
+        cls._get_organization = cls._get_organization_patch.start()
+        cls._get_organization.return_value = testing.DummyResource(id=1)
         cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
         cls.config.include('altair.pyramid_tz')
+        cls.config.include('altair.app.ticketing.cart.request')
 
 
     @classmethod
     def tearDownClass(cls):
+        cls._get_organization_patch.stop()
         testing.tearDown()
         _teardown_db()
 
@@ -119,6 +124,7 @@ class EntryLotViewTests(unittest.TestCase):
             request=request,
             event=event, lot=lot,
             user={'auth_identifier': 'test', 'is_guest': True, 'organization_id': 1, 'membership': "test-membership", 'membergroup': "test-group"},
+            membershipinfo=membergroup.membership,
             cart_setting=testing.DummyModel(
                 extra_form_fields=[],
                 flavors=None,
@@ -279,12 +285,22 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
             )
         from pyramid.authorization import ACLAuthorizationPolicy
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
+        self._get_organization_patch = mock.patch('altair.app.ticketing.cart.request.get_organization')
+        self._get_organization = self._get_organization_patch.start()
+        self._get_organization.return_value = testing.DummyResource()
+        self._get_altair_auth_info_patch = mock.patch('altair.app.ticketing.cart.request.get_altair_auth_info')
+        self._get_altair_auth_info = self._get_altair_auth_info_patch.start()
+        self._get_altair_auth_info.return_value = dict(
+            organization_id=1
+            )
         self.config.include('altair.auth')
         self.config.include('pyramid_layout')
         self.config.include('altair.app.ticketing.lots.setup_routes')
         self.config.include('altair.app.ticketing.cart.request')
 
     def tearDown(self):
+        self._get_organization_patch.stop()
+        self._get_altair_auth_info.stop()
         import transaction
         self.session.remove()
         transaction.abort()
@@ -475,7 +491,10 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'altair.app.ticketing:templates/lots_accept_entry.txt'
-        context = DummyAuthenticatedResource(user={ 'auth_identifier': None, 'is_guest': True, 'organization_id': 1, 'membership': 'test' })
+        context = DummyAuthenticatedResource(
+            user={ 'auth_identifier': None, 'is_guest': True, 'organization_id': 1, 'membership': 'test' },
+            membershipinfo=testing.DummyResource(enable_point_input=False)
+            )
         context.lot = lot
         context.event = lot.event
         request.context = context
@@ -512,12 +531,17 @@ class LotReviewViewTests(unittest.TestCase):
             )
         from pyramid.authorization import ACLAuthorizationPolicy
         cls.config.set_authorization_policy(ACLAuthorizationPolicy())
+        cls._get_organization_patch = mock.patch('altair.app.ticketing.cart.request.get_organization')
+        cls._get_organization = cls._get_organization_patch.start()
+        cls._get_organization.return_value = testing.DummyResource(id=1)
         cls.config.include('altair.auth')
         cls.config.include('pyramid_layout')
+        cls.config.include('altair.app.ticketing.cart.request')
 
 
     @classmethod
     def tearDownClass(cls):
+        cls._get_organization_patch.stop()
         testing.tearDown()
         _teardown_db()
 
@@ -537,7 +561,7 @@ class LotReviewViewTests(unittest.TestCase):
 
     def test_get(self):
         from .. import schemas
-        request = testing.DummyRequest()
+        request = DummyRequest()
         context = testing.DummyResource()
         target = self._makeOne(context, request)
         result = target.get()

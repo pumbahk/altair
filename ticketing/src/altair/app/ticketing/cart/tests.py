@@ -1253,6 +1253,7 @@ class PaymentViewTests(unittest.TestCase):
     def test_it(self, check_if_payment_delivery_method_pair_is_applicable):
         check_if_payment_delivery_method_pair_is_applicable.return_value = True
         from datetime import datetime, timedelta
+        from altair.app.ticketing.users.models import Membership
         from altair.app.ticketing.core.models import Performance, Event, Organization, PaymentDeliveryMethodPair
         self._register_starndard_payment_methods()
         request = DummyRequest()
@@ -1266,10 +1267,12 @@ class PaymentViewTests(unittest.TestCase):
         payment_delivery_method_pair.payment_method = payment_method
         payment_delivery_method_pair.delivery_method = delivery_method
 
-        performance = Performance(event=Event(organization=Organization(id=1, code='XX', short_name='XX')))
+        organization = Organization(id=1, code='XX', short_name='XX')
+        performance = Performance(event=Event(organization=organization))
         cart = self._add_cart(u'x', performance=performance)
 
         cart_setting = testing.DummyModel(type='standard', flavors={}, default_prefecture=u'沖縄県')
+        membership = Membership(name='membership', organization=organization)
         context = request.context = testing.DummyResource(
             request=request,
             read_only_cart=cart,
@@ -1286,6 +1289,7 @@ class PaymentViewTests(unittest.TestCase):
                 finished_at=None,
                 ),
             available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method_pair],
+            membershipinfo = membership,
             authenticated_user = lambda: {
                 'membership_source': 'rakuten',
                 'claimed_id': 'http://ticketstar.example.com/user/1',

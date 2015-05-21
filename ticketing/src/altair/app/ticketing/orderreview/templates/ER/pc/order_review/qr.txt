@@ -1,0 +1,22 @@
+${mail} 様
+
+${u'%s様からのご依頼で、' % name if name else ''}下記公演のQRチケットに関してご連絡させていただきます。
+内容ご確認いただき、下記リンクよりQRチケットを取得してください。
+
+${event.title}
+${performance.name}
+
+会場: ${performance.venue.name}
+
+日付: ${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}
+開演: ${performance.start_on.strftime(u"%H:%M-".encode('utf-8')).decode('utf-8')}
+
+席種: ${product.name}
+%if seat:
+席番号: ${seat.name}
+%endif
+
+↓こちらからQRチケットを取得してください.
+${url}
+
+このメールには返信できません.
