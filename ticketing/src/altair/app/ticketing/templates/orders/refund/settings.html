@@ -1,0 +1,91 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'トップ', u'払戻予約', u'払戻確認'],
+    urls=[
+      request.route_path('index'),
+      request.route_path('orders.refund.search')
+    ]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>払戻確認</h1>
+</div>
+
+<div class="alert alert-danger">
+  <h4>
+    <span class="badge badge-important" style="font-size: 15px;">${len(orders)} 件</span> の予約に払戻条件を設定し、払戻を予約します。
+  </h4>
+  <div style="margin-top: 8px;">
+    払戻対象の検索条件が適切か、対象件数が適切か確認し、払戻予約してください。<br>
+    払戻対象をダウンロードして確認することもできます。
+  </div>
+</div>
+
+<%def name="extra()">
+<div class="clearfix">
+  <div class="pull-right">
+    <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">
+      <i class="icon-file icon-white"></i> 払戻対象をダウンロード
+    </a>
+  </div>
+</div>
+</%def>
+<%include file="/orders/_search_condition.html" args="form=form_search, extra=extra" />
+
+<h4>払戻設定</h4>
+<div class="well">
+  <script type="text/javascript">
+    $(function() {
+      $('form').find("input[type='checkbox']").change(function() {
+        if ($(this).attr('checked')) {
+          $(this).val(1);
+        } else {
+          $(this).val(0);
+        }
+      }).change();
+
+      $('#payment_method_id').change(function(){
+        var sej_field = $('.sej_field');
+        if ($.inArray(parseInt($(this).val()), ${form_refund.payment_method_id.sej_plugin_id}) == -1) {
+          sej_field.css('display', 'none');
+        } else {
+          sej_field.css('display', 'block');
+        }
+      }).change();
+
+      $('form').disableOnSubmit();
+      $('[rel=popover]').popover({html:true});
+    });
+  </script>
+
+  <form class="form-horizontal" action="${request.route_path('orders.refund.settings')}" method="POST">
+    ${ch.form_item(form_refund.payment_method_id)}
+    <label class="required control-label">払戻対象</label>
+    ${ch.form_item(form_refund.include_item)}
+    ${ch.form_item(form_refund.include_system_fee)}
+    ${ch.form_item(form_refund.include_special_fee)}
+    ${ch.form_item(form_refund.include_transaction_fee)}
+    ${ch.form_item(form_refund.include_delivery_fee)}
+    ${ch.form_item(form_refund.cancel_reason)}
+    <div class="sej_field">
+      <div class="control-group">
+        <label class="control-label">コンビニでの払戻期間</label>
+        <div class="controls">
+          ${form_refund.start_at} 〜 ${form_refund.end_at}
+          ${ch.validate_errors(form_refund.start_at)}
+          ${ch.validate_errors(form_refund.end_at)}
+        </div>
+      </div>
+      ${ch.form_item(form_refund.need_stub, help=ch.help(form_refund.need_stub))}
+    </div>
+    <div class="pull-right">
+      <a href="${request.route_path('orders.refund.search')}" class="btn">戻る</a>
+      <button type="submit" class="btn btn-danger">内容確認へ</button>
+    </div>
+  </form>
+  <div style="clear: both;"></div>
+</div>

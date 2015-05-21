@@ -808,7 +808,7 @@ class OrderReserveForm(Form):
                     raise ValidationError(u'コンビニ引取の場合、1予約あたり発券枚数が20枚以内になるよう指定してください')
 
 
-class OrderRefundForm(Form):
+class OrderRefundForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -917,10 +917,6 @@ class OrderRefundForm(Form):
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
                         raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
-                else:
-                    # 未発券ならコンビニ払戻は不可
-                    if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                        raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ発券していないのでコンビニ払戻は選択できません', refund_order.order_no))
             elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                 # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))

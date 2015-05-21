@@ -150,3 +150,10 @@ def error_level_to_html(request, error_level):
             label=label
             )
         )
+
+def cancel_reason(reason):
+    from .models import OrderCancelReasonEnum
+    for e in OrderCancelReasonEnum:
+        if e.v[0] == reason:
+            return e.v[1]
+    return u'?'
