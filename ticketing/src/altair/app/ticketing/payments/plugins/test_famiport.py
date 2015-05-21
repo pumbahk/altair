@@ -241,8 +241,7 @@ class FamiPortPaymentPluginTestMixin(object):
         # barCodeNo: 支払い番号 (char(8))
         from altair.app.ticketing.famiport.models import FamiPortOrderNoSequence
         from altair.app.ticketing.utils import sensible_alnum_encode
-        no_sequence = FamiPortOrderNoSequence \
-            .query \
+        no_sequence = self.session.query(FamiPortOrderNoSequence) \
             .order_by(FamiPortOrderNoSequence.id.desc()) \
             .first()
         barcode_no = self.organization.code + sensible_alnum_encode(no_sequence.id).zfill(11)
@@ -347,6 +346,7 @@ class FamiPortPaymentPluginTestMixin(object):
             order_like.organization.famiport_tenant.phoneInput,
             'FamiPortTenant.phoneInputを使う',
             )
+
 
 class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPortPaymentPluginTestMixin):
     def setUp(self):

@@ -37,32 +37,14 @@ class FamiPortOrder(Base, WithTimestamp):
     barcode_no = sa.Column(sa.String(255), nullable=False)
 
     name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
-    # storeCode = sa.Column(sa.String)  # 店舗コード
-    # ticketingDate = sa.Column(sa.String)  # 利用日時
-    # reserveNumber = sa.Column(sa.String)  # 予約番号
-    # authNumber = sa.Column(sa.String)  # 認証番号
-    # mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
-    # sequenceNo = sa.Column(sa.String)  # 処理通番
     playGuideId = sa.Column(sa.String, default='', nullable=False)  # クライアントID
     barCodeNo = sa.Column(sa.String)  # 支払番号
-    # customerName = sa.Column(sa.String)  # カナ氏名
-    # phoneNumber = sa.Column(sa.String)  # 電話番号
-    # requestClass = sa.Column(sa.String)  # 要求区分 TODO Delete the field?
-    # orderId = sa.Column(sa.String)  # 注文ID
     totalAmount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 入金金額
     ticketPayment = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # チケット料金
     systemFee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # システム利用料
     ticketingFee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 店頭発券手数料
-    # cancelCode = sa.Column(sa.String)  # 取消理由
-    # infoKubun = sa.Column(sa.String)  # 案内種別
-    # storeCode = sa.Column(sa.String)  # 店舗コード
-    # kogyoCode = sa.Column(sa.String)  # 興行コード
-    # kogyoSubCode = sa.Column(sa.String)  # 興行サブコード
-    # koenCode = sa.Column(sa.String)  # 公演コード
     koenDate = sa.Column(sa.DateTime, nullable=True)  # 公演日時
     kogyoName = sa.Column(sa.Unicode(40), nullable=False)  # 興行名
-    # uketsukeCode = sa.Column(sa.String)  # 受付コード
-    # authCode = sa.Column(sa.String)  # 認証コード
     ticketTotalCount = sa.Column(sa.Integer, nullable=False)  # 本件購入枚数
     ticketCount = sa.Column(sa.Integer, nullable=False)  # 本件購入枚数
     nameInput = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ

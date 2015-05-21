@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from ..utils import sensible_alnum_encode
 from .models import (
+    _session,
     FamiPortOrder,
     FamiPortOrderNoSequence,
     )
@@ -53,5 +54,6 @@ def create_famiport_order(request, order_like, name='famiport'):
     famiport_order.kogyoName = order_like.sales_segment.event.title
     famiport_order.ticketCount = len([item for product in order_like.items() for item in product.items()])
     famiport_order.ticketTotalCount = len([item for product in order_like.items() for item in product.items()])
-    famiport_order.save()
+    _session.add(famiport_order)
+    _session.flush()
     return famiport_order
