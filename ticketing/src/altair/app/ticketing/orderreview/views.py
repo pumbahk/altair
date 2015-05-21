@@ -718,11 +718,12 @@ def render_qrmail_viewlet(context, request):
         name = u''
 
     return dict(
+        h=h,
         name=name,
         event=ticket.event,
         performance=ticket.performance,
         product=ticket.product,
         seat=ticket.seat,
-        mail = request.params['mail'],
-        url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
+        mail=request.params['mail'],
+        url=request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
