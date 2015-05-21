@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy as sa
-from altair.app.ticketing.models import (
-    Base,
-    BaseModel,
-    DBSession,
-    Identifier,
-    WithTimestamp,
-    )
+from sqlalchemy.orm import scoped_session, sessionmaker
+import sqlahelper
+from altair.models import Identifier, WithTimestamp
 from altair.app.ticketing.orders.api import get_order_by_order_no
 from .utils import (
     InformationResultCodeEnum,
@@ -14,7 +10,13 @@ from .utils import (
     )
 
 
-class FamiPortOrderNoSequence(Base, BaseModel, WithTimestamp):
+Base = sqlahelper.get_base()
+
+# 内部トランザクション用
+_session = scoped_session(sessionmaker())
+
+
+class FamiPortOrderNoSequence(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrderNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -22,12 +24,12 @@ class FamiPortOrderNoSequence(Base, BaseModel, WithTimestamp):
     @classmethod
     def get_next_value(cls, name):
         seq = cls()
-        DBSession.add(seq)
-        DBSession.flush()
+        _session.add(seq)
+        _session.flush()
         return seq.id
 
 
-class FamiPortOrder(Base, BaseModel, WithTimestamp):
+class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -73,7 +75,7 @@ class FamiPortOrder(Base, BaseModel, WithTimestamp):
         return 0 if order.paid_at else order.total_amount
 
 
-class FamiPortInformationMessage(Base, BaseModel, WithTimestamp):
+class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
     __table_args__ = (sa.UniqueConstraint('result_code'),)
 
@@ -111,7 +113,7 @@ class FamiPortRequest(object):
         return self._encryptedFields
 
 
-class FamiPortReservationInquiryRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortReservationInquiryRequest(Base, WithTimestamp, FamiPortRequest):
     """予約済み予約照会
     """
     __tablename__ = 'FamiPortReservationInquiryRequest'
@@ -126,7 +128,7 @@ class FamiPortReservationInquiryRequest(Base, BaseModel, WithTimestamp, FamiPort
     _encryptedFields = ()
 
 
-class FamiPortPaymentTicketingRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingRequest(Base, WithTimestamp, FamiPortRequest):
     """予約済み入金発券
     """
     __tablename__ = 'FamiPortPaymentTicketingRequest'
@@ -145,7 +147,7 @@ class FamiPortPaymentTicketingRequest(Base, BaseModel, WithTimestamp, FamiPortRe
     _encryptedFields = ['customerName', 'phoneNumber']
 
 
-class FamiPortPaymentTicketingCompletionRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingCompletionRequest(Base, WithTimestamp, FamiPortRequest):
     """予約済み入金発券完了
     """
     __tablename__ = 'FamiPortPaymentTicketingCompletionRequest'
@@ -165,7 +167,7 @@ class FamiPortPaymentTicketingCompletionRequest(Base, BaseModel, WithTimestamp, 
     _encryptedFields = []
 
 
-class FamiPortPaymentTicketingCancelRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingCancelRequest(Base, WithTimestamp, FamiPortRequest):
     """予約済み入金発券取消
     """
     __tablename__ = 'FamiPortPaymentTicketingCancelRequest'
@@ -185,7 +187,7 @@ class FamiPortPaymentTicketingCancelRequest(Base, BaseModel, WithTimestamp, Fami
     _encryptedFields = []
 
 
-class FamiPortInformationRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortInformationRequest(Base, WithTimestamp, FamiPortRequest):
     """予約済み案内
     """
     __tablename__ = 'FamiPortInformationRequest'
@@ -205,7 +207,7 @@ class FamiPortInformationRequest(Base, BaseModel, WithTimestamp, FamiPortRequest
     _encryptedFields = []
 
 
-class FamiPortCustomerInformationRequest(Base, BaseModel, WithTimestamp, FamiPortRequest):
+class FamiPortCustomerInformationRequest(Base, WithTimestamp, FamiPortRequest):
     """顧客情報取得
     """
     __tablename__ = 'FamiPortCustomerInformationRequest'
