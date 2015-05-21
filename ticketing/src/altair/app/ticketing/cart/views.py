@@ -333,16 +333,24 @@ def create_event_dict(view, performance_id, sales_segments):
 
     # 公演が特定できる場合は、その公演の情報のみ表示する
     if performance:
+        sales_segment = None
         for s in sales_segments:
             if s.performance.id == performance.id:
                 sales_segment = s
+
+        sales_start_on=u''
+        sales_end_on=u''
+        if sales_segment:
+            sales_start_on=str(sales_segment.start_at),
+            sales_end_on=str(sales_segment.end_at),
+
         return dict(
             id=view.context.event.id,
             code=view.context.event.code,
             title=view.context.event.title,
             abbreviated_title=view.context.event.abbreviated_title,
-            sales_start_on=str(sales_segment.start_at),
-            sales_end_on=str(sales_segment.end_at),
+            sales_start_on=sales_start_on,
+            sales_end_on=sales_end_on,
             venues=set([performance.venue.name]),
             product=view.context.event.products
             )
