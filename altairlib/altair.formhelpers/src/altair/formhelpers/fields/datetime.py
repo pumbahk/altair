@@ -266,6 +266,8 @@ class OurDateTimeFieldBase(OurField):
         retval.append(u'); }')
         return u''.join(retval)
 
+    def _value(self):
+        return u'' if self.data is None else unicode(self.data.strftime(self.format))
 
 class OurDateTimeField(OurDateTimeFieldBase):
     widget = OurDateTimeWidget()

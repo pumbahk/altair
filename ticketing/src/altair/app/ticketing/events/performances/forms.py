@@ -29,7 +29,8 @@ class PerformanceForm(OurForm):
             venue_by_pref = dict()
             venues = Venue.query.join(Site).filter(
                 Venue.organization_id==kwargs['organization_id'],
-                Venue.original_venue_id==None
+                Venue.original_venue_id==None,
+                Site.visible==True
             ).with_entities(
                 Venue.id, Venue.name, Venue.sub_name, Site.prefecture
             ).order_by(Venue.name, Venue.sub_name).all()

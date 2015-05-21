@@ -1,0 +1,12 @@
+<%inherit file='../../layout_2col.html'/>
+<%namespace name="fco" file="../../formcomponents.html"/>
+
+<a href="#" onclick="history.back(); return false;">戻る</a>
+<h3>Host情報</h3>
+
+<form action="${request.route_url('host.new')}" method="POST">
+  ${ fco.form_as_table_strict(form, display_fields) }
+  <button class="btn" type="submit">保存</button>
+</form>
+
+<a href="#" onclick="history.back(); return false;">戻る</a>

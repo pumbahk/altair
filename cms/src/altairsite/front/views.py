@@ -171,7 +171,7 @@ def get_smartphone_route_path(request, pcurl):
         'purchase': request.route_path('smartphone.page', kind='purchase'),
         'change': request.route_path('smartphone.page', kind='canceled'),
         'smartphone/inquiry': request.route_path('smartphone.page', kind='inquiry'),
-        'privacy': request.route_path('smartphone.page', kind='privacy'),
+        'privacy': "http://privacy.rakuten.co.jp/",
         'legal': request.route_path('smartphone.page', kind='legal'),
         })
     ret = None
