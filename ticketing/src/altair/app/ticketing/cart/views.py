@@ -338,8 +338,8 @@ def create_event_dict(view, performance_id, sales_segments):
             if s.performance.id == performance.id:
                 sales_segment = s
 
-        sales_start_on=None
-        sales_end_on=None
+        sales_start_on=u''
+        sales_end_on=u''
         if sales_segment:
             sales_start_on=str(sales_segment.start_at),
             sales_end_on=str(sales_segment.end_at),
