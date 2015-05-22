@@ -13,6 +13,7 @@ down_revision = '4855569c078d'
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
 
@@ -21,9 +22,11 @@ Identifier = sa.BigInteger
 
 def upgrade():
     from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
-    op.execute(u"INSERT INTO DeliveryMethodPlugin (id, name) VALUES(%d, 'ファミポート引取');" % FAMIPORT_DELIVERY_PLUGIN_ID)
+    sql = u"INSERT INTO DeliveryMethodPlugin (id, name) VALUES({plugin_id}, 'ファミポート引取') ON DUPLICATE KEY UPDATE id={plugin_id} ;".format(plugin_id=FAMIPORT_DELIVERY_PLUGIN_ID)  # noqa
+    op.execute(sql)
 
 
 def downgrade():
     from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
-    op.execute(u"DELETE FROM DeliveryMethodPlugin WHERE id=%d;" % FAMIPORT_DELIVERY_PLUGIN_ID)
+    sql = 'DELETE FROM DeliveryMethodPlugin WHERE id={plugin_id} AND (SELECT COUNT(*) FROM DeliveryMethod WHERE DeliveryMethod.delivery_plugin_id={plugin_id}) = 0;'.format(plugin_id=FAMIPORT_DELIVERY_PLUGIN_ID)  # noqa
+    op.execute(sql)
