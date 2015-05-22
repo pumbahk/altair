@@ -223,6 +223,7 @@ class FamiPortEvent(Base, WithTimestamp):
     genre_1                 = orm.relationship(FamiPortGenre1)
     genre_2                 = orm.relationship(FamiPortGenre2)
 
+
 class FamiPortPerformanceType(Enum):
     Normal  = 1
     Spanned = 2 
@@ -292,7 +293,7 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
 
     famiport_ticket = orm.relationship('FamiPortTicket')
-    famiport_refund = orm.relationship('FamiPortRefund')
+    famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 
 
 class FamiPortOrder(Base, WithTimestamp):

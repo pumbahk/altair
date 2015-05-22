@@ -19,7 +19,7 @@ refund_report_schema = [
     Column('management_number', ZeroPaddedNumericString(length=9)), # 管理番号
     Column('event_code', ZeroPaddedNumericString(length=6)),      # 興行コード
     Column('event_code_sub', ZeroPaddedNumericString(length=4)),  # 興行コード (サブ)
-    Column('sales_segment_code', ZeroPaddedInteger(length=3)),  # 受付情報コード
+    Column('sales_segment_code', ZeroPaddedNumericString(length=3)),  # 受付情報コード
     Column('performance_code', ZeroPaddedNumericString(length=3)),# 公演コード
     Column('event_name', WideWidthString(length=60)),             # 興行名称
     Column('performance_date', DateTime(length=12, format=u'%Y%m%d%H%M')), # 開演日時
@@ -85,4 +85,9 @@ def gen_record_from_refund_model(refund_entry):
         barcode_number=famiport_ticket.barcode_number,
         send_back_due_at=famiport_refund.send_back_due_at,
         )
+
+def build_refund_file(f, refund_entries, **kwargs):
+    marshaller = make_marshaller(f, **kwargs)
+    for refund_entry in refund_entries:
+        marshaller(gen_record_from_refund_model(refund_entry))
 

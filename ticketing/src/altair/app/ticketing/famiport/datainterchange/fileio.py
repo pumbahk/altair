@@ -199,7 +199,7 @@ class DateTime(object):
 
     def marshal(self, context, pyval):
         if not isinstance(pyval, self.pytype):
-            raise TypeError('date type expected')
+            raise TypeError('%s expected, got %r' % (self.pytype.__name__, pyval))
         retval = unicode(pyval.strftime(self.format))
         if len(retval) > self.length:
             raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))

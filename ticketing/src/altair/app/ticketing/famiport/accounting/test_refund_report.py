@@ -16,7 +16,7 @@ class RefundReportMarshallerTest(unittest.TestCase):
             'management_number': u'0',
             'event_code': u'0',
             'event_code_sub': u'0',
-            'sales_segment_code': 0,
+            'sales_segment_code': u'0',
             'performance_code': u'0',
             'event_name': u'イベント名',
             'performance_date': datetime(2015, 1, 1, 0, 0, 0),
@@ -85,7 +85,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
             type=FamiPortRefundType.Type1.value,
             start_at=datetime(2015, 1, 1, 10, 0, 0),
             end_at=datetime(2015, 1, 7, 23, 59, 59),
-            send_back_due_at=date(2015, 2, 1),
+            send_back_due_at=datetime(2015, 2, 1),
             last_serial=0
             )
         refund_entry = FamiPortRefundEntry(
@@ -104,3 +104,90 @@ class RefundReportGenRecordTest(unittest.TestCase):
                 )
             )
         gen_record_from_refund_model(refund_entry)
+
+
+class BuildRefundReportFileTest(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.famiport.models',
+            ])
+        from ..models import FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment
+        from datetime import datetime, date
+        self.famiport_client = FamiPortClient(
+            code=u'000',
+            playguide=FamiPortPlayguide(discrimination_code=1)
+            )
+        self.famiport_event = FamiPortEvent(
+            code_1=u'000000',
+            code_2=u'0000',
+            name_1=u'イベント',
+            name_2=u'イベント副題',
+            client=self.famiport_client,
+            venue=FamiPortVenue(name=u'venue', name_kana=u'ヴェニュー'),
+            genre_1=FamiPortGenre1(code=u'1', name=u'genre1'),
+            genre_2=FamiPortGenre2(code=u'2', name=u'genre2'),
+            keywords=[u'a', u'b', u'c'],
+            search_code=u'search'
+            )
+        self.famiport_performance = FamiPortPerformance(
+            famiport_event=self.famiport_event,
+            code=u'000',
+            name=u'performance',
+            start_at=datetime(2015, 2, 2)
+            )
+        self.famiport_sales_segment = FamiPortSalesSegment(
+            code=u'000',
+            famiport_performance=self.famiport_performance,
+            name=u'name',
+            start_at=datetime(2015, 1, 1),
+            end_at=datetime(2015, 1, 7),
+            )
+        self.session.add(self.famiport_sales_segment)
+        self.session.flush()
+
+    def tearDown(self):
+        _teardown_db()
+
+    def test_it(self):
+        from datetime import datetime, date
+        from io import BytesIO
+        from .refund_report import build_refund_file
+        from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
+        refunds = [
+            FamiPortRefund(
+                type=FamiPortRefundType.Type1.value,
+                start_at=datetime(2015, 1, 1, 10, 0, 0),
+                end_at=datetime(2015, 1, 7, 23, 59, 59),
+                send_back_due_at=date(2015, 2, 1),
+                last_serial=0
+                )
+            for _ in range(0, 10)
+            ]
+        refund_entries = [
+            FamiPortRefundEntry(
+                famiport_refund=refund,
+                serial=refund.last_serial + i,
+                ticket_payment=100,
+                ticketing_fee=10,
+                system_fee=20,
+                other_fees=30,
+                shop_code=u'0000000',
+                famiport_ticket=FamiPortTicket(
+                    famiport_order=FamiPortOrder(
+                        fm_order_no=u'123000000000',
+                        famiport_sales_segment=self.famiport_sales_segment,
+                        created_at=datetime(2014, 12, 31),
+                        shop_code=u'000000'
+                        ),
+                    barcode_number=u'0000000000000',
+                    issued_at=datetime(2014, 12, 31)
+                    )
+                )
+            for refund in refunds
+            for i in range(0, 10)
+            ]
+        f = BytesIO()
+        eor = '\n'
+        build_refund_file(f, refund_entries, eor=eor)
+        self.assertEqual(f.getvalue().count(eor), 100)
+
