@@ -42,11 +42,17 @@ class FamiPortPaymentPluginTestMixin(object):
             DateCalculationBase
             )
 
-        class DummyCart(CartMixin):
-            def __init__(self, sales_segment, payment_delivery_pair, created_at):
-                self.sales_segment = sales_segment
-                self.payment_delivery_pair = payment_delivery_pair
-                self.created_at = created_at
+        class DummyCart(DummyModel, CartMixin):
+            pass
+            # def __init__(self, order_no, total_amount, sales_segment, payment_delivery_pair, created_at,
+            #              shipping_address,
+            #              ):
+            #     self.order_no = order_no
+            #     self.total_amount = total_amount
+            #     self.sales_segment = sales_segment
+            #     self.payment_delivery_pair = payment_delivery_pair
+            #     self.shipping_address = shipping_address
+            #     self.created_at = created_at
 
         self.pdmps = [
             DummyModel(
@@ -107,8 +113,10 @@ class FamiPortPaymentPluginTestMixin(object):
                 ),
             ]
 
+        self.user = DummyModel()
         self.shipping_addresses = [
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -120,6 +128,7 @@ class FamiPortPaymentPluginTestMixin(object):
                 email_2=u'test2@test.com'
                 ),
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -131,6 +140,7 @@ class FamiPortPaymentPluginTestMixin(object):
                 email_2=None
                 ),
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -142,6 +152,7 @@ class FamiPortPaymentPluginTestMixin(object):
                 email_2=u'test2@test.com'
                 ),
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -153,6 +164,7 @@ class FamiPortPaymentPluginTestMixin(object):
                 email_2=u'test2@test.com'
                 ),
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -164,6 +176,7 @@ class FamiPortPaymentPluginTestMixin(object):
                 email_2=u'test2@test.com'
                 ),
             DummyModel(
+                user=self.user,
                 first_name=u'first_name',
                 last_name=u'last_name',
                 first_name_kana=u'first_name_kana',
@@ -183,30 +196,68 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         self.organization = DummyModel(
+            id=99,
             code='XX',
             famiport_tenant=self.famiport_tenant,
             )
 
         orders = []
+        carts = []
 
         for ii, payment_delivery_pair in enumerate(self.pdmps):
             for shipping_address in self.shipping_addresses:
-                sales_segment = DummyModel(
-                    event=DummyModel(
-                        title=u'event title日本語日本語日本語'
-                        ),
-                    performance=DummyModel(
-                        start_on=datetime(2013, 3, 1, 1, 2, 3),
-                        end_on=datetime(2013, 3, 1, 2, 3, 4),
-                        event=DummyModel(
-                            title=u'event title日本語日本語日本語'
-                            ),
-                        )
+                operator = DummyModel()
+
+                event = DummyModel(
+                    title=u'event title日本語日本語日本語',
+                    organization=self.organization,
+                    organization_id=self.organization.id,
                     )
-                cart = DummyCart(sales_segment, payment_delivery_pair, self.now)
+
+                performance = DummyModel(
+                    event=event,
+                    start_on=datetime(2013, 3, 1, 1, 2, 3),
+                    end_on=datetime(2013, 3, 1, 2, 3, 4),
+                    )
+
+                sales_segment_group = DummyModel(
+                    event=event,
+                    organization_id=self.organization.id,
+                    )
+
+                sales_segment = DummyModel(
+                    event=performance.event,
+                    performance=performance,
+                    sales_segment_group=sales_segment_group,
+                    )
+
+                order_no = 'XX00000001'
+
+                cart = DummyCart(
+                    order_no=order_no,
+                    performance=performance,
+                    shipping_address=shipping_address,
+                    payment_delivery_pair=payment_delivery_pair,
+                    total_amount=1000,
+                    system_fee=300,
+                    transaction_fee=400,
+                    delivery_fee=200,
+                    special_fee_name=u'特別手数料',
+                    special_fee=1,
+                    channel=1,
+                    cart_setting_id=1,
+                    membership_id=None,
+                    operator=operator,
+                    sales_segment=sales_segment,
+                    organization=self.organization,
+                    created_at=self.now,
+                    paid_at=(datetime.now() if ii % 2 else None),
+                    )
+
+                carts.append(cart)
                 orders.append(
                     DummyModel(
-                        order_no='00000001',
+                        order_no=order_no,
                         shipping_address=shipping_address,
                         payment_delivery_pairo=payment_delivery_pair,
                         total_amount=1000,
@@ -221,9 +272,11 @@ class FamiPortPaymentPluginTestMixin(object):
                         sales_segment=sales_segment,
                         organization=self.organization,
                         paid_at=(datetime.now() if ii % 2 else None),
+                        cart=cart,
                         )
                     )
         self.orders = orders
+        self.carts = carts
 
     def tearDown(self):
         tearDown()
@@ -233,7 +286,7 @@ class FamiPortPaymentPluginTestMixin(object):
     def assert_valid_famiport_order(self, famiport_order, order_like):
         # playGuildeId: クライアントID (varchar(24))
         self.assertEqual(
-            famiport_order.playGuideId,
+            famiport_order.playguide_id,
             self.organization.famiport_tenant.playGuideId,
             'プレイガイド固有の画像を表示させる時のみ使う',
             )
@@ -246,7 +299,7 @@ class FamiPortPaymentPluginTestMixin(object):
             .first()
         barcode_no = self.organization.code + sensible_alnum_encode(no_sequence.id).zfill(11)
         self.assertEqual(
-            famiport_order.barCodeNo,
+            famiport_order.barcode_no,
             barcode_no,
             '支払番号',
             )
@@ -254,7 +307,7 @@ class FamiPortPaymentPluginTestMixin(object):
         # totalAmount: 合計金額(実際に店頭で支払う金額) (integer(8))
         total_amount = 0 if order_like.paid_at else order_like.total_amount
         self.assertEqual(
-            famiport_order.totalAmount,
+            famiport_order.total_amount,
             total_amount,
             '合計金額(実際に店頭で支払う金額)',
             )
@@ -263,7 +316,7 @@ class FamiPortPaymentPluginTestMixin(object):
         ticket_payment = 0 if order_like.paid_at else order_like.total_amount - \
             (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
         self.assertEqual(
-            famiport_order.ticketPayment,
+            famiport_order.ticket_payment,
             ticket_payment,
             'チケット料金(代済は0になる)',
             )
@@ -271,7 +324,7 @@ class FamiPortPaymentPluginTestMixin(object):
         # systemFee: システム利用料(代済は0になる) (integer(8))
         system_fee = 0 if order_like.paid_at else order_like.system_fee
         self.assertEqual(
-            famiport_order.systemFee,
+            famiport_order.system_fee,
             system_fee,
             'システム利用料(代済は0になる)',
             )
@@ -279,7 +332,7 @@ class FamiPortPaymentPluginTestMixin(object):
         # ticketingFee: 店頭発券手数料 (integer(8))
         ticketing_fee = 0 if order_like.paid_at else order_like.delivery_fee
         self.assertEqual(
-            famiport_order.ticketingFee,
+            famiport_order.ticketing_fee,
             ticketing_fee,
             '店頭発券手数料',
             )
@@ -290,7 +343,7 @@ class FamiPortPaymentPluginTestMixin(object):
             for ordered_product in order_like.items()
             )
         self.assertEqual(
-            famiport_order.ticketTotalCount,
+            famiport_order.ticket_total_count,
             ticket_total_count,
             '発券枚数 (副券を含む)',
             )
@@ -301,21 +354,21 @@ class FamiPortPaymentPluginTestMixin(object):
             for ordered_product in order_like.items()
             )
         self.assertEqual(
-            famiport_order.ticketCount,
+            famiport_order.ticket_count,
             ticket_count,
             '発券枚数 (副券を含まない)',
             )
 
         # kogyoName: 興行名 (varchar(40))
         self.assertEqual(
-            famiport_order.kogyoName,
+            famiport_order.kogyo_name,
             order_like.sales_segment.event.title,
             '興行名',
             )
 
         # koenDate: 公演日時 (datetime(12))
         self.assertEqual(
-            famiport_order.koenDate,
+            famiport_order.koen_date,
             order_like.sales_segment.performance.start_on,
             'Performance.start_onを使う',
             )
@@ -329,20 +382,20 @@ class FamiPortPaymentPluginTestMixin(object):
 
         # phoneNumber: お客様指名 (varchar())
         self.assertEqual(
-            famiport_order.phoneNumber,
+            famiport_order.phone_number,
             (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2).replace('-', '')
             )
 
         # nameInput: 指名要求フラグ (integer(1))
         self.assertEqual(
-            famiport_order.nameInput,
+            famiport_order.name_input,
             order_like.organization.famiport_tenant.nameInput,
             'FamiPortTenant.nameInputを使う',
             )
 
         # phoneInput: 電話番号要求フラグ (integer(1))
         self.assertEqual(
-            famiport_order.phoneInput,
+            famiport_order.phone_input,
             order_like.organization.famiport_tenant.phoneInput,
             'FamiPortTenant.phoneInputを使う',
             )
@@ -363,7 +416,6 @@ class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPort
     def _callFUT(self, func, *args, **kwds):
         return func(*args, **kwds)
 
-    @skip('uninplemented')
     def test_validate_order_success(self):
         """FamiPortOrder作成可能なorder_like"""
         request = DummyRequest()
@@ -382,7 +434,6 @@ class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPort
         with self.assertRailses(OrderLikeValidationFailure):
             self._callFUT(plugin.validate_order, request, cart)
 
-    @skip('uninplemented')
     def test_prepare(self):
         """前処理"""
         request = DummyRequest()
@@ -391,14 +442,14 @@ class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPort
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
-    @skip('uninplemented')
+    @skip('unimpl')
     def test_finish(self):
         """確定処理成功"""
         request = DummyRequest()
-        cart = DummyModel()
         plugin = self._makeOne()
-        res = self._callFUT(plugin.finish, request, cart)
-        self.assert_(res is None)
+        for cart in self.carts:
+            res = self._callFUT(plugin.finish, request, cart)
+            self.assert_(res is None)
 
     def test_finish2_success(self):
         """確定処理2成功"""
