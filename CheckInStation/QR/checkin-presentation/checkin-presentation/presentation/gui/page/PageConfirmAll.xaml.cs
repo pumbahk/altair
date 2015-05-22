@@ -172,8 +172,8 @@ namespace checkin.presentation.gui.page
                     // QR‚ğ“Ç‚İ‚ñ‚¾‚à‚Ì‚¾‚¯‰Šú”­Œ”—\’è‚Æ‚·‚éB
                     if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
                     {
-                        dtdata.IsSelected = false;
-                        ctx.NumberOfPrintableTicket--;
+                        dtdata.IsSelected = true;
+                        //ctx.NumberOfPrintableTicket--;
                     }
                 }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
