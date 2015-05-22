@@ -6,7 +6,7 @@ class FTPSFileSenderTest(unittest.TestCase):
         self.ftp_tls = mock.Mock()
 
     def _makeOne(self, *args, **kwargs):
-        from .file_transfer import FTPSFileSender
+        from .filetransfer import FTPSFileSender
         retval = FTPSFileSender(*args, **kwargs)
         retval.FTP_TLS = lambda *args, **kwargs: self.ftp_tls
         return retval
