@@ -9,5 +9,5 @@ def includeme(config):
     password = settings['altair.famiport.send_file.ftp.password']
     certificate = settings['altair.famiport.send_file.ftp.certificate']
 
-    sender = FTPSFileSender(host=host, timeout=10, username=username, password=password, certfile=certificate)
+    sender = FTPSFileSender(host=host, timeout=10, username=username, password=password, ca_certs=certificate)
     config.registry.registerUtility(sender, IFileSender, name='ftps')

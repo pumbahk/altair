@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 class FTPSFileSender(object):
     FTP_TLS = FTP_TLS
 
-    def __init__(self, host, port=21, timeout=600, username=None, password=None, certfile = None, passive=True, debuglevel=1):
+    def __init__(self, host, port=21, timeout=600, username=None, password=None, ca_certs = None, passive=True, debuglevel=1):
         self.host = host
         self.port = port
         self.timeout = timeout
         self.username = username
         self.password = password
-        self.certfile = certfile
+        self.ca_certs = ca_certs
         self.passive = passive
         self.debuglevel = debuglevel
 
@@ -27,7 +27,7 @@ class FTPSFileSender(object):
 
         logger.info('uploading file to %s' % remote_path)
 
-        ftp = self.FTP_TLS(ca_certs=self.certfile) # FTP over SSL/TLS
+        ftp = self.FTP_TLS(ca_certs=self.ca_certs) # FTP over SSL/TLS
         ftp.set_debuglevel(self.debuglevel) # Moderate amount of debugging output for now
 
         logger.info('trying to connect to %s:%d' % (self.host, self.port))
