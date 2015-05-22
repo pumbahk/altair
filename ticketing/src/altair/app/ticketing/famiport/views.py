@@ -81,7 +81,6 @@ class ResevationView(object):
         famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
         famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
         famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        # famiport_request.requestClass = self.request.POST.get('requestClass', '')
         famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
         famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
         famiport_request.orderId = self.request.POST.get('orderId', '')
@@ -107,7 +106,6 @@ class ResevationView(object):
         famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
         famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
         famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.requestClass = self.request.POST.get('requestClass', '')
         famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
         famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
         famiport_request.orderId = self.request.POST.get('orderId', '')
@@ -159,7 +157,6 @@ class ResevationView(object):
         famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
         famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
         famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.requestClass = self.request.POST.get('requestClass', '')
         famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
         famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
         famiport_request.orderId = self.request.POST.get('orderId', '')
@@ -169,7 +166,6 @@ class ResevationView(object):
                 famiport_request.mmkNo and
                 famiport_request.ticketingDate and
                 famiport_request.sequenceNo and
-                famiport_request.requestClass and
                 famiport_request.barCodeNo and
                 famiport_request.playGuideId and
                 famiport_request.orderId and

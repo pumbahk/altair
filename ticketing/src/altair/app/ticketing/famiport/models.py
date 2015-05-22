@@ -139,7 +139,6 @@ class FamiPortPaymentTicketingCompletionRequest(Base, WithTimestamp, FamiPortReq
     mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
     ticketingDate = sa.Column(sa.String)  # 利用日時
     sequenceNo = sa.Column(sa.String)  # 処理通番
-    requestClass = sa.Column(sa.String)  # 要求区分 TODO Delete the field?
     barCodeNo = sa.Column(sa.String)  # 支払番号
     playGuideId = sa.Column(sa.String)  # クライアントID
     orderId = sa.Column(sa.String)  # 注文ID
@@ -159,7 +158,6 @@ class FamiPortPaymentTicketingCancelRequest(Base, WithTimestamp, FamiPortRequest
     mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
     ticketingDate = sa.Column(sa.String)  # 利用日時
     sequenceNo = sa.Column(sa.String)  # 処理通番
-    requestClass = sa.Column(sa.String)  # 要求区分 TODO Delete the field?
     barCodeNo = sa.Column(sa.String)  # 支払番号
     playGuideId = sa.Column(sa.String)  # クライアントID
     orderId = sa.Column(sa.String)  # 注文ID
@@ -199,7 +197,6 @@ class FamiPortCustomerInformationRequest(Base, WithTimestamp, FamiPortRequest):
     mmkNo = sa.Column(sa.String)  # 発券Famiポート番号
     ticketingDate = sa.Column(sa.String)  # 利用日時
     sequenceNo = sa.Column(sa.String)  # 処理通番
-    requestClass = sa.Column(sa.String)  # 要求区分 TODO Delete the field?
     barCodeNo = sa.Column(sa.String)  # バーコード情報
     playGuideId = sa.Column(sa.String)  # クライアントID
     orderId = sa.Column(sa.String)  # 注文ID
