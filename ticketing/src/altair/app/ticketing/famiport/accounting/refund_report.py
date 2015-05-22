@@ -19,11 +19,11 @@ refund_report_schema = [
     Column('management_number', ZeroPaddedNumericString(length=9)), # 管理番号
     Column('event_code', ZeroPaddedNumericString(length=6)),      # 興行コード
     Column('event_code_sub', ZeroPaddedNumericString(length=4)),  # 興行コード (サブ)
-    Column('acceptance_info_code', ZeroPaddedInteger(length=3)),  # 受付情報コード
+    Column('sales_segment_code', ZeroPaddedInteger(length=3)),  # 受付情報コード
     Column('performance_code', ZeroPaddedNumericString(length=3)),# 公演コード
     Column('event_name', WideWidthString(length=60)),             # 興行名称
     Column('performance_date', DateTime(length=12, format=u'%Y%m%d%H%M')), # 開演日時
-    Column('ticket_price', ZeroPaddedInteger(length=9)),          # チケット料金
+    Column('ticket_payment', ZeroPaddedInteger(length=9)),          # チケット料金
     Column('ticketing_fee', ZeroPaddedInteger(length=8)),         # 発券料金
     Column('other_fees', ZeroPaddedInteger(length=8)),            # その他手数料
     Column('start_at', DateTime(length=12, format=u'%Y%m%d%H%M')), # 払戻開始日時
@@ -43,3 +43,46 @@ def make_marshaller(f, encoding='cp932', eor='\n'):
     def _(row):
         f.write(encoder(marshaller(row))[0] + eor)
     return _
+
+def gen_record_from_refund_model(refund_entry):
+    famiport_refund = refund_entry.famiport_refund
+    famiport_ticket = refund_entry.famiport_ticket
+    famiport_order = famiport_ticket.famiport_order
+    famiport_sales_segment = famiport_order.famiport_sales_segment
+    famiport_performance = famiport_sales_segment.famiport_performance
+    famiport_event = famiport_performance.famiport_event
+    famiport_client = famiport_event.client
+    playguide = famiport_client.playguide
+    
+    management_number = famiport_order.fm_order_no[3:12]
+    unique_key = '%d%s%02d%05d' % (
+        playguide.discrimination_code,
+        management_number,
+        0,
+        refund_entry.serial,
+        )
+
+    return dict(
+        unique_key=unique_key,
+        type=famiport_refund.type,
+        management_number=management_number,
+        event_code=famiport_event.code_1,
+        event_code_sub=famiport_event.code_2,
+        sales_segment_code=famiport_sales_segment.code,
+        performance_code=famiport_performance.code,
+        event_name=famiport_event.name_1,
+        performance_date=famiport_performance.start_at,
+        ticket_payment=refund_entry.ticket_payment,
+        ticketing_fee=refund_entry.ticketing_fee,
+        other_fees=refund_entry.other_fees,
+        start_at=famiport_refund.start_at,
+        end_at=famiport_refund.end_at,
+        processed_at=famiport_order.created_at,
+        shop=refund_entry.shop_code,
+        shop_of_issue=famiport_order.shop_code,
+        issued_at=famiport_ticket.issued_at,
+        valid=True,
+        barcode_number=famiport_ticket.barcode_number,
+        send_back_due_at=famiport_refund.send_back_due_at,
+        )
+
