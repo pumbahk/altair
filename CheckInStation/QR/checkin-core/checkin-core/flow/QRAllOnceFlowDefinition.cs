@@ -37,8 +37,8 @@ namespace checkin.core.flow
 
         public ICase AfterQRDataFetch(IResource resource, TicketData tdata)
         {
-            return new CaseQRConfirmForAll(resource, tdata);
-            //return new CaseQRConfirmForAllHidden(resource, tdata);
+            //return new CaseQRConfirmForAll(resource, tdata);
+            return new CaseQRConfirmForAllHidden(resource, tdata);
         }
 
         public ICase AfterPrintFinish(IResource resource)
