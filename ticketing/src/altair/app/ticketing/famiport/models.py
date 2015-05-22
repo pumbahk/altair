@@ -296,24 +296,49 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 
 
+class FamiPortOrderType(Enum):
+    CashOnDelivery       = 1
+    Payment              = 2
+    Ticketing            = 3
+    PaymentOnly          = 4
+
+
 class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
     id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    type                      = sa.Column(sa.Integer, nullable=False)
     fm_order_no               = sa.Column(sa.Unicode(12), nullable=False)
     shop_code                 = sa.Column(sa.Unicode(6), nullable=False)
     famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'))
     generation                = sa.Column(sa.Integer, nullable=False, default=0)
     invalidated_at            = sa.Column(sa.DateTime(), nullable=True)
+    ticket_payment            = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
+    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)
+    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)
+    paid_at                   = sa.Column(sa.DateTime(), nullable=True)
+    issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
+
+    @property
+    def ticket_count_total(self):
+        return len(self.famiport_tickets)
+
+    @property
+    def ticket_count(self):
+        return sum(0 if famiport_ticket.is_subticket else 1 for famiport_ticket in famiport_order.famiport_tickets)
+
+    @property
+    def subticket_count(self):
+        return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in famiport_order.famiport_tickets)
 
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
     TicketWithBarcode      = 1
     ExtraTicket            = 4
-    ExtraTicketWIthBarcode = 3
+    ExtraTicketWithBarcode = 3
 
 
 class FamiPortTicket(Base, WithTimestamp):
@@ -328,6 +353,11 @@ class FamiPortTicket(Base, WithTimestamp):
     issued_at                 = sa.Column(sa.DateTime(), nullable=False)
 
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_tickets')
+
+    @property
+    def is_subticket(self):
+        return self.type in (FamiPortTicketType.ExtraTicket.value, FamiPortTicketType.ExtraTicketWithBarcode.value)
+
 
 class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'

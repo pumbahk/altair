@@ -74,7 +74,7 @@ def gen_record_from_refund_model(refund_entry):
         performance_date=famiport_performance.start_at,
         ticket_payment=refund_entry.ticket_payment,
         ticketing_fee=refund_entry.ticketing_fee,
-        other_fees=refund_entry.other_fees,
+        other_fees=refund_entry.system_fee,
         start_at=famiport_refund.start_at,
         end_at=famiport_refund.end_at,
         processed_at=famiport_order.created_at,
