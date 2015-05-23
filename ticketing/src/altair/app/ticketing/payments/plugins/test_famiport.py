@@ -323,7 +323,7 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # systemFee: システム利用料(代済は0になる) (integer(8))
-        system_fee = order_like.system_fee if plugin._in_payment else 0
+        system_fee = order_like.system_fee + order_like.special_fee if plugin._in_payment else 0
         self.assertEqual(
             famiport_order.system_fee,
             system_fee,
