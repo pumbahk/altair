@@ -55,8 +55,8 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     famiport_order.phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2).replace('-', '')
     famiport_order.koen_date = order_like.sales_segment.performance.start_on
     famiport_order.kogyo_name = order_like.sales_segment.event.title
-    famiport_order.ticket_count = len([item for product in order_like.items() for item in product.items()])
-    famiport_order.ticket_total_count = len([item for product in order_like.items() for item in product.items()])
+    famiport_order.ticket_count = len([item for product in order_like.items for item in product.items])
+    famiport_order.ticket_total_count = len([item for product in order_like.items for item in product.items])
     _session.add(famiport_order)
     _session.flush()
     return famiport_order
