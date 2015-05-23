@@ -251,7 +251,6 @@ class FamiPortPaymentPluginTestMixin(object):
                     sales_segment=sales_segment,
                     organization=self.organization,
                     created_at=self.now,
-                    paid_at=(datetime.now() if ii % 2 else None),
                     )
 
                 carts.append(cart)
@@ -456,7 +455,7 @@ class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPort
         request = DummyRequest()
         plugin = self._makeOne()
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order)
+            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
             self.assert_valid_famiport_order(famiport_order, order)
 
     @skip('uninplemented')
@@ -606,7 +605,7 @@ class FamiPortDeliveryPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPor
         request = DummyRequest()
         plugin = self._makeOne()
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order)
+            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
             self.assert_valid_famiport_order(famiport_order, order)
 
     @skip('uninplemented')
@@ -756,7 +755,7 @@ class FamiPortPaymentDeliveryPluginTest(TestCase, CoreTestMixin, CartTestMixin, 
         request = DummyRequest()
         plugin = self._makeOne()
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order)
+            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
             self.assert_valid_famiport_order(famiport_order, order)
 
     @skip('uninplemented')
