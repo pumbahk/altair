@@ -36,7 +36,7 @@ class ResevationView(object):
     def inquiry(self):
         klass = FamiPortReservationInquiryRequest
         famiport_request = klass()
-        famiport_request.storeCode = self.request.POST('storeCode', '')
+        famiport_request.storeCode = self.request.POST.get('storeCode', '')
         famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
         famiport_request.reserveNumber = self.request.POST.get('reserveNumber', '')
         famiport_request.authNumber = self.request.POST.get('authNumber', '')
@@ -117,7 +117,7 @@ class ResevationView(object):
                 famiport_request.sequenceNo and
                 famiport_request.barCodeNo and
                 famiport_request.orderId and
-                famiport_request.totalAmount):
+                famiport_request.cancelCode):
             return HTTPBadRequest()
 
         buf = self._build_payload(famiport_request)

@@ -264,7 +264,7 @@ class FamiPortReservationInquiryResponse(Base, WithTimestamp, FamiPortResponse):
     ticketCount = sa.Column(sa.String, nullable=False, default='')  # 本券購入枚数
     kogyoName = sa.Column(sa.Unicode, nullable=False, default=u'')  # 興行名
     koenDate = sa.Column(sa.String, nullable=False, default='')  # 公園日時
-    name = sa.Column(sa.Unicode, nullable=False, default='')  # お客様氏名
+    name = sa.Column(sa.Unicode, nullable=False, default=u'')  # お客様氏名
     nameInput = sa.Column(sa.String, nullable=False, default='')  # 氏名要求フラグ
     phoneInput = sa.Column(sa.String, nullable=False, default='')  # 電話番号要求フラグ
 
