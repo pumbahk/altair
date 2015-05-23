@@ -282,7 +282,7 @@ class FamiPortPaymentPluginTestMixin(object):
         self.session.remove()
         _teardown_db()
 
-    def assert_valid_famiport_order(self, famiport_order, order_like):
+    def assert_valid_famiport_order(self, famiport_order, order_like, plugin):
         # playGuildeId: クライアントID (varchar(24))
         self.assertEqual(
             famiport_order.playguide_id,
@@ -304,7 +304,7 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # totalAmount: 合計金額(実際に店頭で支払う金額) (integer(8))
-        total_amount = 0 if order_like.paid_at else order_like.total_amount
+        total_amount = order_like.total_amount if plugin._in_payment else 0
         self.assertEqual(
             famiport_order.total_amount,
             total_amount,
@@ -312,8 +312,10 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # ticketPayment: チケット料金(代済は0になる) (integer(8))
-        ticket_payment = 0 if order_like.paid_at else order_like.total_amount - \
-            (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
+        ticket_payment = 0
+        if plugin._in_payment:
+            ticket_payment = order_like.total_amount - \
+                (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
         self.assertEqual(
             famiport_order.ticket_payment,
             ticket_payment,
@@ -321,7 +323,7 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # systemFee: システム利用料(代済は0になる) (integer(8))
-        system_fee = 0 if order_like.paid_at else order_like.system_fee
+        system_fee = order_like.system_fee if plugin._in_payment else 0
         self.assertEqual(
             famiport_order.system_fee,
             system_fee,
@@ -329,7 +331,7 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # ticketingFee: 店頭発券手数料 (integer(8))
-        ticketing_fee = 0 if order_like.paid_at else order_like.delivery_fee
+        ticketing_fee = order_like.delivery_fee if plugin._in_payment else 0
         self.assertEqual(
             famiport_order.ticketing_fee,
             ticketing_fee,
@@ -456,7 +458,7 @@ class FamiPortPaymentPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPort
         plugin = self._makeOne()
         for order in self.orders:
             famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order)
+            self.assert_valid_famiport_order(famiport_order, order, plugin)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
@@ -606,7 +608,7 @@ class FamiPortDeliveryPluginTest(TestCase, CoreTestMixin, CartTestMixin, FamiPor
         plugin = self._makeOne()
         for order in self.orders:
             famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order)
+            self.assert_valid_famiport_order(famiport_order, order, plugin)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
@@ -756,7 +758,7 @@ class FamiPortPaymentDeliveryPluginTest(TestCase, CoreTestMixin, CartTestMixin, 
         plugin = self._makeOne()
         for order in self.orders:
             famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order)
+            self.assert_valid_famiport_order(famiport_order, order, plugin)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
