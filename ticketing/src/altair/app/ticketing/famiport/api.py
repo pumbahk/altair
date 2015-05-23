@@ -42,7 +42,7 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     famiport_order.barcode_no = get_next_barcode_no(request, order_like.organization, name)
     if in_payment:
         famiport_order.total_amount = order_like.total_amount
-        famiport_order.system_fee = order_like.system_fee
+        famiport_order.system_fee = order_like.system_fee + order_like.special_fee
         famiport_order.ticketing_fee = order_like.delivery_fee
         famiport_order.ticket_payment = order_like.total_amount - \
             (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
