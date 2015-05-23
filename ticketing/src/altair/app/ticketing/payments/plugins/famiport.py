@@ -14,6 +14,7 @@ from altair.app.ticketing.payments.interfaces import (
     IOrderPayment,
     IPaymentPlugin,
     IDeliveryPlugin,
+    IPaymentDeliveryPlugin,
     )
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailResource,
@@ -119,6 +120,8 @@ def lot_payment_notice_viewlet(context, request):
 class FamiPortPaymentPlugin(object):
     """ファミポート用決済プラグイン"""
 
+    _in_payment = False  # FamiPortでの決済を行う
+
     def validate_order(self, request, order_like):
         """予約を作成する前にvalidationする"""
 
@@ -135,7 +138,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            return famiport_api.create_famiport_order(request, cart)
+            return famiport_api.create_famiport_order(request, cart, in_payment=self._in_payment)
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -191,6 +194,8 @@ def delivery_notice_viewlet(context, request):
 
 @implementer(IDeliveryPlugin)
 class FamiPortDeliveryPlugin(object):
+    _in_payment = False  # FamiPortで決済を行わない (例えばクレカ決済)
+
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -204,7 +209,7 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            return famiport_api.create_famiport_order(request, order_like)  # noqa
+            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -225,8 +230,10 @@ class FamiPortDeliveryPlugin(object):
         return refund_order(request, order, refund_record)
 
 
-@implementer(IDeliveryPlugin)
+@implementer(IPaymentDeliveryPlugin)
 class FamiPortPaymentDeliveryPlugin(object):
+    _in_payment = True  # FamiPortで決済を行う
+
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -243,7 +250,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            return famiport_api.create_famiport_order(request, order_like)  # noqa
+            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 
