@@ -44,15 +44,6 @@ class FamiPortPaymentPluginTestMixin(object):
 
         class DummyCart(DummyModel, CartMixin):
             pass
-            # def __init__(self, order_no, total_amount, sales_segment, payment_delivery_pair, created_at,
-            #              shipping_address,
-            #              ):
-            #     self.order_no = order_no
-            #     self.total_amount = total_amount
-            #     self.sales_segment = sales_segment
-            #     self.payment_delivery_pair = payment_delivery_pair
-            #     self.shipping_address = shipping_address
-            #     self.created_at = created_at
 
         self.pdmps = [
             DummyModel(
