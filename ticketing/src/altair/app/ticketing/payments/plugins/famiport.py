@@ -157,21 +157,28 @@ class FamiPortPaymentPlugin(object):
 
 
 @lbr_view_config(context=ICartDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
-                 renderer=_overridable_delivery('famiport_confirm.html'))
+                 renderer=_overridable_delivery('famiport_delivery_confirm.html'))
 def deliver_confirm_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """引取方法の確認画面のhtmlを生成"""
+    cart = context.cart
+    delivery_method = cart.payment_delivery_pair.delivery_method
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 
 @lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
-                 renderer=_overridable_delivery('famiport_complete.html'))
+                 renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """引取方法の完了画面のhtmlを生成"""
+    delivery_method = context.order.delivery_delivery_pair.delivery_method
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_mail_complete.html', fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """購入完了メールの配送方法部分のhtmlを出力する"""
+    notice = context.mail_data("P", "notice")
+    return dict(notice=notice)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
