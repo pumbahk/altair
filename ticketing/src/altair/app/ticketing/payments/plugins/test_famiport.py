@@ -582,6 +582,87 @@ class FamiPortViewletTest(TestCase):
         return func(*args, **kwds)
 
 
+class FamiPortPaymentViewletTest(FamiPortViewletTest):
+    def setUp(self):
+        self.name = u'ファミポート'
+        self.description = u'説明説明説明説明説明'
+        self.notice = u'日本語日本語日本語日本語'
+        self.payment_method = DummyModel(
+            name=self.name,
+            description=self.description,
+            )
+        self.payment_delivery_pair = DummyModel(payment_method=self.payment_method)
+        self.order = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.cart = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.context = DummyResource(
+            order=self.order,
+            cart=self.cart,
+            description=self.payment_method.description,
+            mail_data=mock.Mock(return_value=self.notice),
+            )
+        self.request = DummyRequest()
+
+    def _target(self):
+        from .famiport import payment_completion_viewlet as func
+        return func
+
+
+class FamiPortPaymentConfirmViewletTest(FamiPortPaymentViewletTest):
+    def _target(self):
+        from .famiport import reserved_number_payment_confirm_viewlet as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res, {
+            'payment_name': self.name,
+            'description': self.description,
+            })
+
+
+class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
+    def _target(self):
+        from .famiport import reserved_number_payment_viewlet as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res, {
+            'payment_name': self.name,
+            'description': self.description,
+            })
+
+
+class FamiPortPaymentCompletionMailViewletTest(FamiPortPaymentViewletTest):
+    def _target(self):
+        from .famiport import complete_mail as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res, {'notice': self.notice})
+
+
+class FamiPortPaymentCancelMailViewletTest(FamiPortPaymentViewletTest):
+    def _target(self):
+        from .famiport import cancel_mail as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res.text, self.notice)
+
+
+class FamiPortPaymentNoticeViewletTest(FamiPortPaymentViewletTest):
+    def _target(self):
+        from .famiport import lot_payment_notice_viewlet as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res.text, self.notice)
+
+
 class FamiPortDeliveryViewletTest(FamiPortViewletTest):
     def setUp(self):
         self.name = u'ファミポート'
