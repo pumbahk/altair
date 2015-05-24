@@ -311,7 +311,7 @@ class CreateFamiPortOrderTest(TestCase, CoreTestMixin, CartTestMixin, FamiPortTe
             self.assertEqual(famiport_order.ticket_count, len([item for product in order.items for item in product.items]))
             self.assertEqual(famiport_order.ticket_total_count, len([item for product in order.items for item in product.items]))
 
-    def _test_not_in_payment(self):
+    def test_not_in_payment(self):
         for order in self.orders:
             famiport_order = self._callFUT(self.request, order.cart, in_payment=False)
             self.assertEqual(famiport_order.order_no, order.order_no)
