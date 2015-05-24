@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from datetime import datetime
+import mock
 from pyramid.testing import (
     setUp,
     tearDown,
@@ -211,14 +212,23 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
 
                 order_no = 'XX00000001'
 
-                product_items = [
-                    DummyModel()
-                    for ii in range(5)]
-                products = [
-                    DummyModel(
+                products = []
+                ordered_products = []
+
+                for ii in range(5):
+                    product_items = [DummyModel() for jj in range(5)]
+                    ordered_product_items = [DummyModel(product_item=product_item) for product_item in product_items]
+                    product = DummyModel(
+                        num_tickets=mock.Mock(return_value=len(product_items)),
+                        num_principal_tickets=mock.Mock(return_value=len(product_items)),
                         items=product_items,
                         )
-                    for ii in range(5)]
+                    ordered_product = DummyModel(
+                        product=product,
+                        items=ordered_product_items,
+                        )
+                    products.append(product)
+                    ordered_products.append(ordered_product)
 
                 cart = DummyCart(
                     order_no=order_no,
@@ -238,12 +248,12 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                     sales_segment=sales_segment,
                     organization=self.organization,
                     created_at=self.now,
-                    items=products,
+                    items=ordered_products,
                     )
                 order = DummyModel(
                     order_no=order_no,
                     shipping_address=shipping_address,
-                    payment_delivery_pairo=payment_delivery_pair,
+                    payment_delivery_pair=payment_delivery_pair,
                     total_amount=1000,
                     system_fee=300,
                     transaction_fee=400,
