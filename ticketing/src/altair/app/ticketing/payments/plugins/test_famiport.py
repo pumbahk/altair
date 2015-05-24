@@ -4,6 +4,7 @@ import mock
 from pyramid.testing import (
     DummyModel,
     DummyRequest,
+    DummyResource,
     )
 from altair.app.ticketing.famiport.tests import FamiPortTestCase
 
@@ -566,3 +567,51 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         record = mock.Mock()
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.refund, request, order, record)
+
+
+class FamiPortViewletTest(FamiPortTestCase):
+    def _target(self):
+        from .famiport import FamiPortPaymentDeliveryPlugin
+        return FamiPortPaymentDeliveryPlugin
+
+    def _callFUT(self, *args, **kwds):
+        func = self._target()
+        return func(*args, **kwds)
+
+
+class FamiPortDeliveryConfirmViewletTest(FamiPortViewletTest):
+    def _target(self):
+        from .famiport import deliver_confirm_viewlet as func
+        return func
+
+    def _test_it(self):
+        return
+        # res = self._callFUT()
+        self.fail()
+
+
+class FamiPortDeliveryCompletionViewletTest(FamiPortViewletTest):
+    def _target(self):
+        from .famiport import deliver_completion_viewlet as func
+        return func
+
+    def test_it(self):
+        name = u'ファミポート'
+        description = u'説明説明説明説明説明'
+        delivery_method = DummyModel(
+            name=name,
+            description=description,
+            )
+        payment_delivery_pair = DummyModel(delivery_method=delivery_method)
+        order = DummyModel(payment_delivery_pair=payment_delivery_pair)
+        context = DummyResource(
+            order=order,
+            description=delivery_method.description,
+            )
+        request = DummyRequest()
+
+        res = self._callFUT(context, request)
+        self.assertEqual(res, {
+            'delivery_name': name,
+            'description': description,
+            })
