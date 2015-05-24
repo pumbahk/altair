@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from unittest import skip
+from unittest import (
+    skip,
+    TestCase,
+    )
 import mock
 from pyramid.testing import (
     DummyModel,
@@ -569,7 +572,7 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
             self._callFUT(plugin.refund, request, order, record)
 
 
-class FamiPortViewletTest(FamiPortTestCase):
+class FamiPortViewletTest(TestCase):
     def _target(self):
         from .famiport import FamiPortPaymentDeliveryPlugin
         return FamiPortPaymentDeliveryPlugin
@@ -579,39 +582,72 @@ class FamiPortViewletTest(FamiPortTestCase):
         return func(*args, **kwds)
 
 
-class FamiPortDeliveryConfirmViewletTest(FamiPortViewletTest):
+class FamiPortDeliveryViewletTest(FamiPortViewletTest):
+    def setUp(self):
+        self.name = u'ファミポート'
+        self.description = u'説明説明説明説明説明'
+        self.notice = u'日本語日本語日本語日本語'
+        self.delivery_method = DummyModel(
+            name=self.name,
+            description=self.description,
+            )
+        self.payment_delivery_pair = DummyModel(delivery_method=self.delivery_method)
+        self.order = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.cart = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.context = DummyResource(
+            order=self.order,
+            cart=self.cart,
+            description=self.delivery_method.description,
+            mail_data=mock.Mock(return_value=self.notice),
+            )
+        self.request = DummyRequest()
+
+    def _target(self):
+        from .famiport import deliver_completion_viewlet as func
+        return func
+
+
+class FamiPortDeliveryConfirmViewletTest(FamiPortDeliveryViewletTest):
     def _target(self):
         from .famiport import deliver_confirm_viewlet as func
         return func
 
-    def _test_it(self):
-        return
-        # res = self._callFUT()
-        self.fail()
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res, {
+            'delivery_name': self.name,
+            'description': self.description,
+            })
 
 
-class FamiPortDeliveryCompletionViewletTest(FamiPortViewletTest):
+class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
     def _target(self):
         from .famiport import deliver_completion_viewlet as func
         return func
 
     def test_it(self):
-        name = u'ファミポート'
-        description = u'説明説明説明説明説明'
-        delivery_method = DummyModel(
-            name=name,
-            description=description,
-            )
-        payment_delivery_pair = DummyModel(delivery_method=delivery_method)
-        order = DummyModel(payment_delivery_pair=payment_delivery_pair)
-        context = DummyResource(
-            order=order,
-            description=delivery_method.description,
-            )
-        request = DummyRequest()
-
-        res = self._callFUT(context, request)
+        res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
-            'delivery_name': name,
-            'description': description,
+            'delivery_name': self.name,
+            'description': self.description,
             })
+
+
+class FamiPortDeliveryCompletionMailViewletTest(FamiPortDeliveryViewletTest):
+    def _target(self):
+        from .famiport import deliver_completion_mail_viewlet as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res, {'notice': self.notice})
+
+
+class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
+    def _target(self):
+        from .famiport import delivery_notice_viewlet as func
+        return func
+
+    def test_it(self):
+        res = self._callFUT(self.context, self.request)
+        self.assertEqual(res.text, u'ファミポート受け取り')
