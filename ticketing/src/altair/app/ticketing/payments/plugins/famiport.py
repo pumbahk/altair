@@ -172,7 +172,7 @@ def deliver_confirm_viewlet(context, request):
                  renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
     """引取方法の完了画面のhtmlを生成"""
-    delivery_method = context.order.delivery_delivery_pair.delivery_method
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 
