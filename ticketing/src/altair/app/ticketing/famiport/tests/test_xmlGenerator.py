@@ -59,4 +59,4 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
          xml_response_generator = get_xmlResponse_generator(famiport_response)
          result = xml_response_generator.generate_xmlResponse(famiport_response)
          print unicode(result, 'shift_jis')
-         self.assertTrue(result is None) # resultのprintを表示するためにAssertionErrorが起こるようにしておく
+         self.assertTrue(result is not None)

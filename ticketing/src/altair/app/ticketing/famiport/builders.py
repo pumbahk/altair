@@ -82,7 +82,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         storeCode = famiport_reservation_inquiry_request.storeCode
         ticketingDate = famiport_reservation_inquiry_request.ticketingDate
         reserveNumber = famiport_reservation_inquiry_request.reserveNumber
-        authNumber = famiport_reservation_inquiry_request.authNumber
+        authNumber = famiport_reservation_inquiry_request.authNumber # TODO Make sure what to do with authNumber
 
         logger.info("Processing famiport reservation inquiry request. " + \
                     "店舗コード: " + storeCode +  ", 利用日時: " + ticketingDate + ", 予約番号: " + reserveNumber)
@@ -104,15 +104,14 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             None, None, None, None, None, None, None, None, None, None, None, None, None
         if replyCode == ReplyCodeEnum.Normal:
             playGuideId = ''
-            barCodeNo = famiport_order.barCodeNo
-            totalAmount = famiport_order.totalAmount
-            ticketPayment = famiport_order.ticketPayment
-            systemFee = famiport_order.systemFee
-            ticketingFee = famiport_order.ticketingFee
-            ticketCountTotal = famiport_order.ticketCountTotal
-            ticketCount = famiport_order.ticketCount
-            kogyoName = '' # TODO Set the values accordingly
-            koenDate = '' # TODO Set the values accordingly
+            barCodeNo = famiport_order.barcode_no
+            totalAmount = famiport_order.total_amount
+            ticketPayment = famiport_order.ticket_payment
+            systemFee = famiport_order.system_fee
+            ticketingFee = famiport_order.ticketing_fee
+            ticketCountTotal = famiport_order.ticket_total_count
+            ticketCount = famiport_order.ticket_count
+            kogyoName = famiport_order.kogyo_name
             name = famiport_order.name
 
         nameInput = 0 # 不要（画面表示なし）
@@ -164,15 +163,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                  orderTicketNo = barCodeNo
             else:
                 pass
-            totalAmount = famiport_order.totalAmount
-            ticketPayment = famiport_order.ticketPayment
-            systemFee = famiport_order.systemFee
-            ticketingFee = famiport_order.ticketingFee
-            ticketingCountTotal = famiport_order.ticketingCountTotal
-            ticketCount = famiport_order.ticketCount
-            kogyoName = u'' # TODO Get from famiport_order -> order -> event.title
-            koenDate = u''# TODO Get from famiport_order -> order -> performance.start_on as YYYYMMDDhhmm
-            ticket = famiport_order.ticket
+            totalAmount = famiport_order.total_amount
+            ticketPayment = famiport_order.ticket_payment
+            systemFee = famiport_order.system_fee
+            ticketingFee = famiport_order.ticketing_fee
+            ticketingCountTotal = famiport_order.ticket_total_count
+            ticketCount = famiport_order.ticket_count
+            kogyoName = famiport_order.kogyo_name
+            koenDate = famiport_order.koen_date
+            ticket = famiport_order.famiport_tickets
         else:
             resultCode = ResultCodeEnum.OtherError
             replyCode = ReplyCodeEnum.OtherError
@@ -230,7 +229,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
         orderId, replyCode = None, None
         if famiport_order is not None:
-            orderId = famiport_order.orderId # TODO Get orderId from FamiportPaymentTicketingResponse.orderId? Same as famiport_order.orderId.
+            orderId = famiport_order.orderId
             replyCode = ReplyCodeEnum.Normal # TODO Change the value depending on famiport_order's status
         else:
             resultCode = ResultCodeEnum.OtherError

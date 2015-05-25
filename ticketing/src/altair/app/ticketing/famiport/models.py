@@ -52,20 +52,12 @@ class FamiPortOrder(Base, WithTimestamp):
     phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
 
     @classmethod
-    def get_by_reserveNumber(cls, reserveNumber):
-        FamiPortOrder.filter_by().one() # TODO filter by reserveNumber
-
-
-class FamiPortTicket(Base, WithTimestamp):
-    __tablename__ = 'FamiPortTicket' # TODO Consider how to store ticket info in DB. No alembic ready yet.
-
-    id = sa.Column(Identifier, primary_key=True)
-    ticketClass = sa.Column(sa.Enum('1', '2', '3', '4'), nullable=True)
-    templateCode = sa.Column(sa.String(length=10))
-    ticketData = sa.Column(sa.String(length=5000))
-
     def get_from_orderId(cls, orderId):
         FamiPortOrder.filter_by() # TODO filter by orderId
+
+    @classmethod
+    def get_by_reserveNumber(cls, reserveNumber):
+        FamiPortOrder.filter_by().one() # TODO filter by reserveNumber
 
 
 class FamiPortInformationMessage(Base, WithTimestamp):
@@ -80,11 +72,15 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     def create(cls, result_code, message):
         return cls(result_code=result_code, message=message)
 
+    def save(self):
+        _session.add(self)
+        _session.flush()
+
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
         if not isinstance(information_result_code, InformationResultCodeEnum):
             return None
-        query = FamiPortInformationMessage.filter_by(result_code=information_result_code.name)
+        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message
