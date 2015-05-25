@@ -6,8 +6,8 @@
 <meta name = "format-detection" content = "telephone=no">
 <meta http-equiv="content-style-type" content="text/css">
 <meta http-equiv="content-script-type" content="text/javascript">
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/GM/smartphone/css/import.css')}" type="text/css" media="all">
-<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.lots:static/GM/common/img/favicon.ico')}">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/TK/smartphone/css/import.css')}" type="text/css" media="all">
+<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.lots:static/TK/common/img/favicon.ico')}">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/underscore-min.js')}"></script>
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -17,14 +17,14 @@
     $('form').disableOnSubmit();
   });
 </script>
-<title>GreeN Music</title>
+<title>時之栖</title>
 </head>
 <body>
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/GM/smartphone/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/TK/smartphone/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
 <div id="container">
 
 <div id="header">
-    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/GM/mobile/img/logo.gif')}" width="240" height="96" alt="GreeN Music"></h1>
+    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/TK/mobile/img/logo.gif')}" width="240" height="96" alt="時之栖"></h1>
       % if lot:
         <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">

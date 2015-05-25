@@ -1,7 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/settlement/title_review.gif')}" alt="申込状況確認" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TK/pc/img/settlement/title_review.gif')}" alt="申込状況確認" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <form action="${request.url}" class="bigform" method="post">
@@ -9,7 +9,7 @@
             <tr>
               <th>${form['entry_no'].label}</th>
               <td>
-                ${form['entry_no'](class_="text")}（例：GM00000000AB）
+                ${form['entry_no'](class_="text")}（例：TK00000000AB）
                 ${self.error(form, 'entry_no', enclose=True)}
               </td>
             </tr>
@@ -22,7 +22,7 @@
             </tr>
           </table>
           <div style="text-align: center; margin-top: 10px;">
-            <input type="image" src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/btn_review.gif')}" width="225" height="46" value="確認" />
+            <input type="image" src="${request.static_url('altair.app.ticketing.lots:static/TK/pc/img/order/btn_review.gif')}" width="225" height="46" value="確認" />
           </div>
         </form>
       </div>
