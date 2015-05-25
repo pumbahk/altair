@@ -44,7 +44,7 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # orderId: 注文ID (char(13))
-        self.assertEqual(len(famiport_order.famiport_order_identifier), 13,
+        self.assertEqual(len(famiport_order.famiport_order_identifier), 12,
                          '注文ID プレイガイド管理の注文識別ID (下9桁を管理番号として扱う（会計実績ファイルに出力)',
                          )
 

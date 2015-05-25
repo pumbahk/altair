@@ -105,7 +105,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=u'03-0000-0001',
                 zip=u'123-4567',
                 email_1=u'test1@test.com',
-                email_2=u'test2@test.com'
+                email_2=u'test2@test.com',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             DummyModel(
                 user=self.user,
@@ -117,7 +121,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=u'03-0000-0001',
                 zip=u'123-4567',
                 email_1=u'test1@test.com',
-                email_2=None
+                email_2=None,
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             DummyModel(
                 user=self.user,
@@ -129,7 +137,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=u'03-0000-0001',
                 zip=u'123-4567',
                 email_1=None,
-                email_2=u'test2@test.com'
+                email_2=u'test2@test.com',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             DummyModel(
                 user=self.user,
@@ -141,7 +153,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=None,
                 zip=u'123-4567',
                 email_1=u'test1@test.com',
-                email_2=u'test2@test.com'
+                email_2=u'test2@test.com',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             DummyModel(
                 user=self.user,
@@ -153,7 +169,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=u'03-0000-0001',
                 zip=u'123-4567',
                 email_1=u'test1@test.com',
-                email_2=u'test2@test.com'
+                email_2=u'test2@test.com',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             DummyModel(
                 user=self.user,
@@ -165,7 +185,11 @@ class FamiPortTestCase(TestCase, CoreTestMixin, CartTestMixin):
                 tel_2=u'03-0000-0001',
                 zip=None,
                 email_1=u'test1@test.com',
-                email_2=u'test2@test.com'
+                email_2=u'test2@test.com',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'いぇい',
                 ),
             ]
 
