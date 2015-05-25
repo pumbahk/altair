@@ -19,7 +19,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm, OrionPerformanceForm
-from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrionPerformance
+from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 
@@ -359,6 +359,10 @@ class Performances(BaseView):
             .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id==self.context.event.id)
 
+        if self.request.params.get('format') == 'xml':
+            event_query = slave_session.query(Event).filter(Event.id==self.context.event.id)
+            return self.index_xml(event_query, query)
+
         from . import VISIBLE_PERFORMANCE_SESSION_KEY
         if not self.request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY):
             query = query.filter(PerformanceSetting.visible==True)
@@ -377,6 +381,25 @@ class Performances(BaseView):
             'performances':performances,
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
+
+    def index_xml(self, event_query, query):
+        import xml.etree.ElementTree as ElementTree
+        from pyramid.response import Response
+
+        e = event_query.one()
+
+        root = ElementTree.Element('Result')
+        event = ElementTree.SubElement(root, 'Event')
+        ElementTree.SubElement(event, 'Code').text = e.code
+        ElementTree.SubElement(event, 'Title').text = e.title
+        for p in query.all():
+            performance = ElementTree.SubElement(root, 'Performance')
+            ElementTree.SubElement(performance, 'Code').text = p.code
+            ElementTree.SubElement(performance, 'DateTime').text = str(p.start_on)
+            ElementTree.SubElement(performance, 'Name').text = p.name
+            ElementTree.SubElement(performance, 'Site').text = p.venue.name
+
+        return Response(ElementTree.tostring(root), headers=[ ('Content-Type', 'text/xml') ])
 
     @view_config(route_name='performances.new', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_get(self):
