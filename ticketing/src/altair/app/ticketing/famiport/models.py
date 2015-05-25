@@ -38,7 +38,9 @@ class FamiPortOrder(Base, WithTimestamp):
 
     name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
     playguide_id = sa.Column(sa.String, default='', nullable=False)  # クライアントID
+    reserve_number = sa.Column(sa.String)  # 予約番号
     barcode_no = sa.Column(sa.String)  # 支払番号
+    exchange_number = sa.Column(sa.String)  # 引換票番号(後日予済アプリで発券するための予約番号)
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 入金金額
     ticket_payment = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # チケット料金
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # システム利用料
