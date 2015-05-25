@@ -52,6 +52,15 @@ def get_exchange_ticket_no(request, organization, name='famiport'):
     return FamiPortExchangeTicketNoSequence.get_next_value()
 
 
+def get_famiport_order(order_no, session=None):
+    if session is None:
+        session = _session
+    retval = session.query(FamiPortOrder) \
+                    .filter_by(order_no=order_no) \
+                    .first()
+    return retval
+
+
 def create_famiport_order(request, order_like, in_payment, name='famiport'):
     """FamiPortOrderを作成する
 
