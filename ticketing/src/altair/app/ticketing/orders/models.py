@@ -790,15 +790,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from .api import get_order_attribute_pair_pairs
         return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items)
 
+
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
     __clone_excluded__ = ['id', 'order_id', 'order']
 
     id = sa.Column(Identifier, primary_key=True)
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id", ondelete='CASCADE'), nullable=False, unique=True)
-    sej_remind_at = sa.Column(sa.DateTime(), nullable=True) # SEJ 支払い期限リマインドメール送信日時
+    sej_remind_at = sa.Column(sa.DateTime(), nullable=True)  # SEJ 支払い期限リマインドメール送信日時
 
     order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))
+
 
 @sqlalchemy.event.listens_for(Order, 'after_insert')
 def create_order_notification(mapper, connection, order):
@@ -823,6 +825,7 @@ def create_order_notification(mapper, connection, order):
 
     order_notification.order_id = order.id
     DBSession.add(order_notification)
+
 
 @implementer(IOrderedProductLike)
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1485,4 +1488,3 @@ class OrderSummary(Base):
         self.request = context.query._request
 
 sqlalchemy.event.listen(OrderSummary, 'load', OrderSummary._init_on_load)
-

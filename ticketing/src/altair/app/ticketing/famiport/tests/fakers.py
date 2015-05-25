@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os.path
 import lxml
 
 
@@ -43,6 +44,15 @@ class FamiPortReservationInquiryResponseFakeFactory(FamiPortFakeFactory):
 
 
 class FamiPortPaymentTicketingResponseFakeFactory(FamiPortFakeFactory):
+    @classmethod
+    def create(cls, *args, **kwds):
+        here = os.path.abspath(os.path.dirname(__file__))
+        xml_path = os.path.join(here, 'data/payment_ticketing_response.xml')
+        with open(xml_path, 'rb') as fp:
+            buf = fp.read()
+            text = buf.decode('cp932')
+            return cls.parse(text)
+
     xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>

@@ -22,6 +22,10 @@ class FamiPortAPIViewTest(TestCase):
         extra_environ = {'HTTP_HOST': 'localhost:8063'}
         self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)
 
+    def tearDown(self):
+        self.session.remove()
+        _teardown_db()
+
     def _callFUT(self, *args, **kwds):
         return self.app.post(self.url, *args, **kwds)
 
@@ -135,7 +139,6 @@ class PaymentTest(FamiPortAPIViewTest):
     """
     url = '/famiport/reservation/payment'
 
-    @skip(u'未実装')
     def test_it(self):
         from .fakers import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
         res = self._callFUT({
@@ -160,6 +163,7 @@ class CompletionTest(FamiPortAPIViewTest):
     """
     request
 ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&mmkNo=01&barCodeNo=1000000000000&sequenceNo=15033100010&storeCode=000009&
+
     response
 <?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
@@ -311,14 +315,14 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
     def test_it(self):
         from .fakers import FamiPortCustomerResponseFakeFactory as FakeFactory
         res = self._callFUT({
+            'storeCode': '000009',
+            'mmkNo': '01',
             'ticketingDate': '20150331182222',
+            'sequenceNo': '15033100004',
+            'barCodeNo': '4119000000005',
+            'playGuideId': '11345',
             'orderId': '410900000005',
             'totalAmount': '2200',
-            'playGuideId': '',
-            'mmkNo': '01',
-            'barCodeNo': '4119000000005',
-            'sequenceNo': '15033100004',
-            'storeCode': '000009',
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(

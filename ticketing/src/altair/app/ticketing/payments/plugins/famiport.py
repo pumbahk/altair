@@ -14,6 +14,7 @@ from altair.app.ticketing.payments.interfaces import (
     IOrderPayment,
     IPaymentPlugin,
     IDeliveryPlugin,
+    IPaymentDeliveryPlugin,
     )
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailResource,
@@ -42,6 +43,21 @@ def includeme(config):
 
 class FamiPortPluginFailure(PaymentPluginException):
     pass
+
+
+def refund_order(request, order, refund_record, now=None):
+    """払い戻し"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
+
+
+def cancel_order(request, order, now=None):
+    """キャンセル"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
+
+
+def refresh_order(request, order, now=None):
+    """予約更新"""
+    raise FamiPortPluginFailure('unimplemented', None, None, None)
 
 
 def _overridable_payment(path, fallback_ua_type=None):
@@ -104,6 +120,8 @@ def lot_payment_notice_viewlet(context, request):
 class FamiPortPaymentPlugin(object):
     """ファミポート用決済プラグイン"""
 
+    _in_payment = False  # FamiPortでの決済を行う
+
     def validate_order(self, request, order_like):
         """予約を作成する前にvalidationする"""
 
@@ -120,7 +138,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            return famiport_api.create_famiport_order(request, cart)  # noqa
+            return famiport_api.create_famiport_order(request, cart, in_payment=self._in_payment)
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -130,30 +148,40 @@ class FamiPortPaymentPlugin(object):
 
     def refresh(self, request, order):
         """決済側の状態をDBに反映"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
+        return refund_order(request, order, refund_record)
 
 
 @lbr_view_config(context=ICartDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
-                 renderer=_overridable_delivery('famiport_confirm.html'))
+                 renderer=_overridable_delivery('famiport_delivery_confirm.html'))
 def deliver_confirm_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """引取方法の確認画面のhtmlを生成"""
+    cart = context.cart
+    delivery_method = cart.payment_delivery_pair.delivery_method
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 
 @lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
-                 renderer=_overridable_delivery('famiport_complete.html'))
+                 renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """引取方法の完了画面のhtmlを生成"""
+    delivery_method = context.order.payment_delivery_pair.delivery_method
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_mail_complete.html', fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    """購入完了メールの配送方法部分のhtmlを出力する"""
+    notice = context.mail_data("P", "notice")
+    return dict(notice=notice)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
@@ -166,6 +194,8 @@ def delivery_notice_viewlet(context, request):
 
 @implementer(IDeliveryPlugin)
 class FamiPortDeliveryPlugin(object):
+    _in_payment = False  # FamiPortで決済を行わない (例えばクレカ決済)
+
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -179,7 +209,7 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            return famiport_api.create_famiport_order(request, order_like)  # noqa
+            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -189,16 +219,21 @@ class FamiPortDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
+        return refund_order(request, order, refund_record)
 
 
-@implementer(IDeliveryPlugin)
+@implementer(IPaymentDeliveryPlugin)
 class FamiPortPaymentDeliveryPlugin(object):
+    _in_payment = True  # FamiPortで決済を行う
+
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -215,7 +250,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            return famiport_api.create_famiport_order(request, order_like)  # noqa
+            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -225,9 +260,12 @@ class FamiPortPaymentDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
+        return refresh_order(request, order)
 
     def cancel(self, request, order):
         """キャンセル処理"""
+        return cancel_order(request, order)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
+        return refund_order(request, order, refund_record)
