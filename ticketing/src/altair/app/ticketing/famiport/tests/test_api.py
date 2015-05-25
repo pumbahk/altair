@@ -1,5 +1,21 @@
 # -*- coding:utf-8 -*-
+import mock
 from . import FamiPortTestCase
+
+
+class GetFamiPortOrderTest(FamiPortTestCase):
+    def _get_target(self):
+        from ..api import get_famiport_order as target
+        return target
+
+    def test_get_famiport_order(self):
+        exp_famiport_order = mock.Mock()
+        target = self._get_target()
+        session = mock.Mock()
+        session.query().filter_by().first.return_value = exp_famiport_order
+        order_no = 'XX000012345'
+        famiport_order = target(order_no, session)
+        self.assertEqual(famiport_order, exp_famiport_order)
 
 
 class CreateFamiPortOrderTest(FamiPortTestCase):
@@ -17,7 +33,7 @@ class CreateFamiPortOrderTest(FamiPortTestCase):
             self.assertEqual(famiport_order.order_no, order.order_no)
             self.assert_(famiport_order.barcode_no)
             self.assertEqual(famiport_order.total_amount, order.total_amount)
-            self.assertEqual(famiport_order.system_fee, order.system_fee + order.special_fee)
+            self.assertEqual(famiport_order.system_fee, order.transaction_fee + order.system_fee + order.special_fee)
             self.assertEqual(famiport_order.ticketing_fee, order.delivery_fee)
             self.assertEqual(
                 famiport_order.ticket_payment,

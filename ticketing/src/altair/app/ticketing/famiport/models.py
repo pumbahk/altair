@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+import time
+import random
+import hashlib
 import sqlalchemy as sa
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import scoped_session, sessionmaker
 import sqlahelper
 from altair.models import Identifier, WithTimestamp
@@ -8,12 +12,20 @@ from .utils import (
     FamiPortResponseType,
     InformationResultCodeEnum,
     )
+from .exc import FamiPortNumberingError
 
 
 Base = sqlahelper.get_base()
 
 # 内部トランザクション用
 _session = scoped_session(sessionmaker())
+
+
+def create_random_sequence_number(length, prefix=''):
+    seq = prefix
+    while len(seq) < length:
+        seq += hashlib.md5((str(time.time()) + str(random.random())).encode()).hexdigest()
+    return seq[:length]
 
 
 class FamiPortOrderNoSequence(Base, WithTimestamp):
@@ -29,6 +41,98 @@ class FamiPortOrderNoSequence(Base, WithTimestamp):
         return seq.id
 
 
+class FamiPortOrderIdentifierSequence(Base, WithTimestamp):
+    __tablename__ = 'FamiPortOrderIdentifierSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(12, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
+class FamiPortOrderTicketNoSequence(Base, WithTimestamp):
+    __tablename__ = 'FamiPortOrderTicketNoSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
+class FamiPortExchangeTicketNoSequence(Base, WithTimestamp):
+    __tablename__ = 'FamiPortExchangeTicketNoSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
+class FamiPortReserveNumberSequence(Base, WithTimestamp):
+    __tablename__ = 'FamiPortReserveNumberSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
 class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
@@ -38,7 +142,10 @@ class FamiPortOrder(Base, WithTimestamp):
 
     name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
     playguide_id = sa.Column(sa.String, default='', nullable=False)  # クライアントID
+    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 予約番号
+    reserve_number = sa.Column(sa.String)  # 予約番号
     barcode_no = sa.Column(sa.String)  # 支払番号
+    exchange_number = sa.Column(sa.String)  # 引換票番号(後日予済アプリで発券するための予約番号)
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 入金金額
     ticket_payment = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # チケット料金
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # システム利用料
@@ -50,6 +157,8 @@ class FamiPortOrder(Base, WithTimestamp):
     name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
     phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
     phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
+    address_1 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所1
+    address_2 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所2
 
     @classmethod
     def get_from_orderId(cls, orderId):

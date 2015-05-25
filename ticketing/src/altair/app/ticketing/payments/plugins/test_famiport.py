@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""ファミポート決済pluginテスト
+
+支払番号: barCodeNo(13) 入金発券要求の「支払番号」にセットする番号で予約照会時に裁判
+注文ID: orderId(12) 下9桁を管理番号として扱う（会計実績ファイルに出力）
+払込票番号: orderTicketNo(13) 予済み場合は予約照会応答の「支払番号」
+引換票番号: exchangeTicketNo(13) 後日予済アプリで発券するための予約番号予
+約番号: reserveNumber(13) 画面入力／QRコード／番号入力GWにより入力された予約番号
+"""
 from unittest import (
     skip,
     TestCase,
@@ -22,7 +30,7 @@ class FamiPortPaymentPluginTestMixin(object):
             'プレイガイド固有の画像を表示させる時のみ使う',
             )
 
-        # barCodeNo: 支払い番号 (char(8))
+        # barCodeNo: 支払い番号 (char(13))
         from altair.app.ticketing.famiport.models import FamiPortOrderNoSequence
         from altair.app.ticketing.utils import sensible_alnum_encode
         no_sequence = self.session.query(FamiPortOrderNoSequence) \
@@ -34,6 +42,26 @@ class FamiPortPaymentPluginTestMixin(object):
             barcode_no,
             '支払番号',
             )
+
+        # orderId: 注文ID (char(13))
+        self.assertEqual(len(famiport_order.famiport_order_identifier), 12,
+                         '注文ID プレイガイド管理の注文識別ID (下9桁を管理番号として扱う（会計実績ファイルに出力)',
+                         )
+
+        # orderTicketNo: 払込票番号
+        self.assertEqual(len(famiport_order.order_ticket_no), 13,
+                         '払込票番号 予済み場合は予約照会応答の「支払番号」',
+                         )
+
+        # exchangeTiketNo: 引換票番号
+        self.assertEqual(len(famiport_order.exchange_ticket_no), 13,
+                         '後日予済アプリで発券するための予約番号予',
+                         )
+
+        # reserveNumber: 予約番号
+        self.assertEqual(len(famiport_order.reserve_number), 13,
+                         '画面入力／QRコード／番号入力GWにより入力された予約番号',
+                         )
 
         # totalAmount: 合計金額(実際に店頭で支払う金額) (integer(8))
         total_amount = order_like.total_amount if plugin._in_payment else 0
@@ -55,11 +83,11 @@ class FamiPortPaymentPluginTestMixin(object):
             )
 
         # systemFee: システム利用料(代済は0になる) (integer(8))
-        system_fee = order_like.system_fee + order_like.special_fee if plugin._in_payment else 0
+        system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee if plugin._in_payment else 0
         self.assertEqual(
             famiport_order.system_fee,
             system_fee,
-            'システム利用料(代済は0になる)',
+            'システム利用料(代済は0になる) 決済手数料 + システム利用料 + 特別手数料になる (決済手数料の項目がないのでここに含める)',
             )
 
         # ticketingFee: 店頭発券手数料 (integer(8))
@@ -105,17 +133,32 @@ class FamiPortPaymentPluginTestMixin(object):
             'Performance.start_onを使う',
             )
 
-        # name: お客様指名 (varchar(42))
+        # name: お客様氏名 (varchar(42))
         self.assertEqual(
             famiport_order.name,
             order_like.shipping_address.last_name + order_like.shipping_address.first_name,
             '氏名はShippingAddressのlast_nameとfirst_nameをつなげたものにする',
             )
 
-        # phoneNumber: お客様指名 (varchar())
+        # phoneNumber: お客様電話番号 (varchar())
         self.assertEqual(
             famiport_order.phone_number,
             (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2).replace('-', '')
+            )
+
+        # phoneNumber: お客様住所1 (varchar(200))
+        address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
+        self.assertEqual(
+            famiport_order.address_1,
+            address_1,
+            'お客様住所1',
+            )
+
+        # phoneNumber: お客様住所2 (varchar(200))
+        address_2 = order_like.shipping_address.address_2
+        self.assertEqual(
+            famiport_order.address_2,
+            address_2
             )
 
         # nameInput: 指名要求フラグ (integer(1))
