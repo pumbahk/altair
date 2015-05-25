@@ -684,8 +684,8 @@ class ExportableReporter(object):
         self.event = event
 
         self.performance_codes = None
-        if self.request.params.get('performance_ids'):
-            self.performance_codes = self.request.params.get('performance_ids').split(',')
+        if self.request.params.get('performance_code'):
+            self.performance_codes = self.request.params.get('performance_code').split(',')
 
         self.by_stock = None
 
