@@ -80,6 +80,7 @@ class FamiPortOrderTest(FamiPortModelTestCase):
             'name_input': 1,
             'phone_input': 1,
             'phone_number': '07011112222',
+            'famiport_order_identifier': '1'.zfill(12),
             }
 
         old_obj = self._makeOne(**kwds)
