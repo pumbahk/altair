@@ -392,28 +392,8 @@ class XmlFamiPortResponseGenerator(object):
                             if attr_value is not None:
                                 # TODO Take care of problematic chars in UTF-8 to SJIS conversion
                                 sub_element.text = attr_value if attr_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attr_value.encode('shift_jis'))
-                                """
-                                if isinstance(attr_value, unicode):
-                                    sjis_attr_value = attr_value.encode('shift_jis')
-                                    print "sjis_attr_value: ", sjis_attr_value
-                                    sub_element.text = sjis_attr_value
-                                else:
-                                    sub_element.text = attr_value
-                                """
                 else:
                     element = etree.SubElement(root, attribute_name)
                     # TODO Take care of problematic chars in UTF-8 to SJIS conversion
-                    # if isinstance(attribute_value, unicode):
-                    #    attribute_value = attribute_value.encode('shift_jis') # Encode for encrypt
-                    # print '(attribute_name, attribute_value)', (attribute_name, attribute_value)
-                    # element.text = attribute_value.decode('shift_jis') if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
                     element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value.encode('shift_jis'))
-                    """
-                    if isinstance(attribute_value, unicode):
-                        sjis_attribute_value = attribute_value.encode('shift-jis')
-                        element.text = sjis_attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(sjis_attribute_value)
-                    else:
-                        element.text = attribute_value if attribute_name not in object.encrypt_fields else self.famiport_crypt.encrypt(attribute_value)
-                    """
-
         return root
