@@ -62,6 +62,10 @@ class OrderReviewResourceBase(object):
             return None
         return self.order.user_point_accounts
 
+    @reify
+    def host_base_url(self):
+        return core_api.get_host_base_url(self.request)
+
     def authenticated_user(self):
         """現在認証中のユーザ"""
         return get_auth_info(self.request)
