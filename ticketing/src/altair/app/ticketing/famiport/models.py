@@ -147,8 +147,8 @@ class FamiPortOrder(Base, WithTimestamp):
     name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
     phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
     phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
-    address_1 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所1
-    address_2 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所2
+    address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
+    address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     auth_number = sa.Column(sa.String(13))  # 認証番号
 
 
