@@ -6,7 +6,7 @@
              xmlns:converter="clr-namespace:checkin.presentation.gui.converter"
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
-             StartupUri="presentation/gui/HomeWIndow.xaml">
+             StartupUri="presentation/gui/HomeWindow.xaml">
 
 
 

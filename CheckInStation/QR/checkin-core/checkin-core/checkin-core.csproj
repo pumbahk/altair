@@ -73,8 +73,10 @@
   <ItemGroup>
     <Compile Include="Configurator.cs" />
     <Compile Include="DynamicJson.cs" />
+    <Compile Include="events\WelcomeEvent.cs" />
     <Compile Include="FlowDefinitionType.cs" />
     <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />
+    <Compile Include="flow\CaseWelcome.cs" />
     <Compile Include="flow\QRAllOnceFlowDefinition.cs" />
     <Compile Include="flow\CommonFlowDefinition.cs" />
     <Compile Include="IConfigurator.cs" />

@@ -13,6 +13,7 @@ namespace checkin.core.flow
 
         ICase AfterPrintFinish(IResource resource);
         ICase AfterAuthorization(IResource resource);
+        ICase AfterWelcome(IResource resource);
         ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected);
         ICase AfterQRDataFetch(IResource resource, TicketData tdata);
 

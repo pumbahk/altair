@@ -26,6 +26,12 @@ namespace checkin.core.flow
             return new CaseInputStrategySelect (resource);
         }
 
+        public ICase AfterWelcome(IResource resource)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
         public ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected)
         {
             this.CurrentInputUnit = Selected;

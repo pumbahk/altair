@@ -92,6 +92,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="presentation\gui\control\ToggleButton.cs" />
+    <Compile Include="presentation\gui\page\PageWelcome.xaml.cs">
+      <DependentUpon>PageWelcome.xaml</DependentUpon>
+    </Compile>
     <Compile Include="support\ApplicationVersion.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
@@ -263,6 +266,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageWelcome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
