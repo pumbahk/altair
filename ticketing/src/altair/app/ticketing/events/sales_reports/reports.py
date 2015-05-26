@@ -11,6 +11,8 @@ from sqlalchemy.orm import aliased
 
 from datetime import date, timedelta
 
+import xml.etree.ElementTree as ElementTree
+
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
@@ -675,14 +677,24 @@ class PerformanceReporter(object):
 class ExportableReporter(object):
     def __init__(self, request, event):
         self.slave_session = get_db_session(request, name="slave")
+        self.request = request
+
         organization = event.organization
         self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
         self.event = event
+
+        self.performance_codes = None
+        if self.request.params.get('performance_code'):
+            self.performance_codes = self.request.params.get('performance_code').split(',')
+
         self.by_stock = None
 
-    def fetch(self):
+    def make_query(self):
+        """
+        請求明細のデータを出力するクエリを返す
+        """
         q = self.slave_session.query(
-            Performance, Stock, ProductItem, SalesSegmentGroup,
+            Performance, Stock, ProductItem, SalesSegmentGroup, SalesSegment,
             func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("ordered"),
             func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("ordered_price"),
             func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("paid"),
@@ -706,20 +718,70 @@ class ExportableReporter(object):
             # Productはsales_segment_idとsales_segment_group_idの両方を持つ
             # SalesSegmentはperformance_idを持つ
 
+        if self.performance_codes:
+            q = q.filter(Performance.code.in_(self.performance_codes))
+
+        return q
+
+    def fetch(self):
+        """
+        CSV出力用のデータを準備
+        """
         by_stock = dict()
-        for r in q.all():
+        for r in self.make_query().all():
             if not r.Stock.id in by_stock:
                 by_stock[r.Stock.id] = dict(stock=r.Stock, available=r.Stock.quantity, data=[ ])
             if r.SalesSegmentGroup.reporting:
+                # レポート出力設定されている販売区分グループのみ掲載(クエリで絞りこむと合計がずれる!)
                 by_stock[r.Stock.id]['data'].append(r)
             by_stock[r.Stock.id]['available'] = by_stock[r.Stock.id]['available'] - r.ordered
-        self.by_stock = dict((k, v) for (k, v) in by_stock.items() if 0 < len(v['data']))
+
+        # 出力可能な販売区分が1つも無い在庫は省略
+        return dict((k, v) for (k, v) in by_stock.items() if 0 < len(v['data']))
 
     def get(self):
+        """
+        CSV出力用のデータを準備
+        """
         if self.by_stock is None:
-            self.fetch()
+            self.by_stock = self.fetch()
         return self.by_stock
 
+    def get_xml(self):
+        """
+        XMLを文字列として準備
+        """
+        query = self.make_query()
+
+        performances = self.slave_session.query(Performance).filter(Performance.event_id==self.event.id)
+        if self.performance_codes:
+            performances = performances.filter(Performance.code.in_(self.performance_codes))
+
+        root = ElementTree.Element('Result')
+        event = ElementTree.SubElement(root, 'Event')
+        ElementTree.SubElement(event, 'Code').text = self.event.code
+        ElementTree.SubElement(event, 'Title').text = self.event.title
+        ElementTree.SubElement(event, 'Account').text = self.event.account.name
+        for p in sorted(performances.all(), key=lambda x:[x.start_on]):
+            performance = ElementTree.SubElement(root, 'Performance')
+            ElementTree.SubElement(performance, 'Code').text = p.code
+            ElementTree.SubElement(performance, 'Name').text = p.name
+            ElementTree.SubElement(performance, 'DateTime').text = str(p.start_on)
+            ElementTree.SubElement(performance, 'Site').text = p.venue.name
+        for r in query.all():
+            rec = ElementTree.Element('Record')
+            performance = ElementTree.SubElement(rec, 'Performance')
+            ElementTree.SubElement(performance, 'Code').text = r.Performance.code
+            ElementTree.SubElement(rec, 'Stock').text = r.Stock.stock_type.name
+            ElementTree.SubElement(rec, 'Product').text = r.ProductItem.name
+            ElementTree.SubElement(rec, 'SalesSegment').text = r.SalesSegmentGroup.name
+            ElementTree.SubElement(rec, 'UnitPrice').text = "%u" % r.ProductItem.price
+            ElementTree.SubElement(rec, 'NumberOfPaidSeats').text = "%u" % r.paid
+            ElementTree.SubElement(rec, 'MarginRatio').text = "%.2f" % r.SalesSegment.margin_ratio
+            ElementTree.SubElement(rec, 'PrintingFee').text = "%.2f" % r.SalesSegment.printing_fee
+            root.append(rec)
+
+        return ElementTree.tostring(root)
 
 class EventReporter(object):
 
