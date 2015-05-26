@@ -10,7 +10,7 @@
 <div class="header" id="top">
   <div class="header-inner">
     <h1>
-      <a href="http://lagunatenbosch.tstar.jp/">
+      <a href="${request.context.host_base_url}">
         <img src="${request.static_url('altair.app.ticketing.orderreview:static/LG/pc/images/logo.png')}" alt="ラグーナテンボス 購入確認ページ" height="64"/>
       </a>
     </h1>
@@ -19,7 +19,7 @@
 
 <div class="gnavi">
   <ul>
-    <li><a href="http://lagunatenbosch.tstar.jp/">TOP</a></li>
+    <li><a href="${request.context.host_base_url}">TOP</a></li>
   </ul>
 </div>
 
@@ -35,8 +35,7 @@ ${next.body()}
       <ul>
 <li><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
 <li><a href="http://www.lagunatenbosch.co.jp/laguna/privacy/index.html">個人情報保護方針</a></li>
-<li><a href="http://lagunatenbosch.tstar.jp/legal">特定商取引法に基づく表示</a></li>
-<li><a href="http://lagunatenbosch.tstar.jp/agreement">サービス利用規約</a></li>
+<li><a href="https://lagunatenbosch.tstar.jp/legal">特定商取引法に基づく表示</a></li>
 <li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
       </ul>
     </div>
