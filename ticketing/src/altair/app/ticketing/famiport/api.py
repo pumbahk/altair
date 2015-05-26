@@ -45,7 +45,8 @@ def get_order_ticket_no(request, organization, name='famiport'):
 
 
 def get_famiport_order_identifier(request, organization, name='famiport'):
-    return FamiPortOrderIdentifierSequence.get_next_value()
+    value = str(FamiPortOrderIdentifierSequence.get_next_value())
+    return value.zfill(12)
 
 
 def get_exchange_ticket_no(request, organization, name='famiport'):
