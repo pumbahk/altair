@@ -128,11 +128,10 @@ class FamiPortOrder(Base, WithTimestamp):
 
     id = sa.Column(Identifier, primary_key=True)
     order_no = sa.Column(sa.String(255), nullable=False)
-    barcode_no = sa.Column(sa.String(255), nullable=False)
 
     name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
     playguide_id = sa.Column(sa.String, default='', nullable=False)  # クライアントID
-    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 予約番号
+    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 注文ID
     reserve_number = sa.Column(sa.String)  # 予約番号
     barcode_no = sa.Column(sa.String)  # 支払番号
     exchange_number = sa.Column(sa.String)  # 引換票番号(後日予済アプリで発券するための予約番号)
@@ -152,12 +151,12 @@ class FamiPortOrder(Base, WithTimestamp):
     auth_number = sa.Column(sa.String(13))  # 認証番号
 
     @classmethod
-    def get_from_orderId(cls, orderId):
-        FamiPortOrder.filter_by() # TODO filter by orderId
+    def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
+        _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
 
     @classmethod
-    def get_by_reserveNumber(cls, reserveNumber):
-        FamiPortOrder.filter_by().one() # TODO filter by reserveNumber
+    def get_by_barCodeNo(cls, barCodeNo):
+        _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
 
 
 class FamiPortInformationMessage(Base, WithTimestamp):
