@@ -149,6 +149,7 @@ class FamiPortOrder(Base, WithTimestamp):
     phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
     address_1 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所1
     address_2 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所2
+    auth_number = sa.Column(sa.String(13))  # 認証番号
 
 
 class FamiPortInformationMessage(Base, WithTimestamp):
