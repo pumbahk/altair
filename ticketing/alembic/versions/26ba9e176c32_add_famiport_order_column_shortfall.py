@@ -24,6 +24,7 @@ def upgrade():
     op.add_column('FamiPortOrder', sa.Column('order_ticket_no', sa.String(13), nullable=False))
     op.add_column('FamiPortOrder', sa.Column('exchange_ticket_no', sa.String(13), nullable=False))
     op.add_column('FamiPortOrder', sa.Column('reserve_number', sa.String(13), nullable=False))
+    op.add_column('FamiPortOrder', sa.Column('auth_number', sa.String(13)))
     op.create_table(
         'FamiPortOrderIdentifierSequence',
         sa.Column('id', Identifier),
@@ -62,6 +63,7 @@ def downgrade():
     op.drop_column('FamiPortOrder', 'order_ticket_no')
     op.drop_column('FamiPortOrder', 'exchange_ticket_no')
     op.drop_column('FamiPortOrder', 'reserve_number')
+    op.drop_column('FamiPortOrder', 'auth_number')
     op.drop_table('FamiPortOrderIdentifierSequence')
     op.drop_table('FamiPortOrderTicketNoSequence')
     op.drop_table('FamiPortExchangeTicketNoSequence')
