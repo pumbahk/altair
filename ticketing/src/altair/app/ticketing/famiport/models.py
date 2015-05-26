@@ -45,23 +45,13 @@ class FamiPortOrderIdentifierSequence(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrderIdentifierSequence'
 
     id = sa.Column(Identifier, primary_key=True)
-    value = sa.Column(sa.String(12), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, *args, **kwds):
-        for ii in range(15):  # retry count
-            try:
-                return cls._get_next_value(*args, **kwds)
-            except InvalidRequestError:
-                pass
-        raise FamiPortNumberingError()
-
-    @classmethod
-    def _get_next_value(cls, name=''):
-        seq = cls(value=create_random_sequence_number(12, name))
+    def get_next_value(cls, name=''):
+        seq = cls()
         _session.add(seq)
         _session.flush()
-        return seq.value
+        return seq.id
 
 
 class FamiPortOrderTicketNoSequence(Base, WithTimestamp):
@@ -157,8 +147,9 @@ class FamiPortOrder(Base, WithTimestamp):
     name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
     phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
     phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
-    address_1 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所1
-    address_2 = sa.Column(sa.Unicode(200), nullable=False, default='')  # 住所2
+    address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
+    address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
+    auth_number = sa.Column(sa.String(13))  # 認証番号
 
     @classmethod
     def get_from_orderId(cls, orderId):
