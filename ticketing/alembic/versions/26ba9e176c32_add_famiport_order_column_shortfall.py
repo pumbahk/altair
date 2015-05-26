@@ -27,7 +27,6 @@ def upgrade():
     op.create_table(
         'FamiPortOrderIdentifierSequence',
         sa.Column('id', Identifier),
-        sa.Column('value', sa.String(12), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
         sa.PrimaryKeyConstraint('id'),
