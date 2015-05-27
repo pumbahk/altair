@@ -28,8 +28,7 @@ def upgrade():
         sa.Column('message', sa.Unicode(1000), nullable=False),  # 案内文言
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
-        sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('result_code')
+        sa.PrimaryKeyConstraint('id')
         )
 
 def downgrade():

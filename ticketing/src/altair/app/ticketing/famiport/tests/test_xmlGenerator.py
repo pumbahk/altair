@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from unittest import TestCase
+from lxml import etree
 
 from ..api import get_xmlResponse_generator
 from ..responses import FamiPortReservationInquiryResponse, FamiPortPaymentTicketingResponse, FamiPortPaymentTicketingCompletionResponse, FamiPortPaymentTicketingCancelResponse, FamiPortInformationResponse, FamiPortCustomerInformationResponse, FamiPortTicket
-from ..utils import prettify
 
 
 class XmlFamiPortResponseGeneratorTest(TestCase):
@@ -35,7 +35,7 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
 
         # 顧客情報取得
         self.famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode='00', replyCode='00', name=u'テスト氏名', memberId='test_memberId', address1=u'テストアドレス１', address2=u'テストアドレス２', identifyNo='1234567890123456')
-        # self.famiport_customer_information_response.set_encryptKey(self.famiport_payment_ticketing_response.orderId)
+        self.famiport_customer_information_response.set_encryptKey(self.famiport_payment_ticketing_response.orderId)
 
     def test_generate_xmlFamiPortReservationInquiryResponse(self):
         self.check_generate_xmlFamiPortResponse(self.famiport_reservation_inquiry_response)
@@ -56,7 +56,21 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         self.check_generate_xmlFamiPortResponse(self.famiport_customer_information_response)
 
     def check_generate_xmlFamiPortResponse(self, famiport_response):
-         xml_response_generator = get_xmlResponse_generator(famiport_response)
-         result = xml_response_generator.generate_xmlResponse(famiport_response)
-         print unicode(result, 'shift_jis')
-         self.assertTrue(result is None) # resultのprintを表示するためにAssertionErrorが起こるようにしておく
+        xml_response_generator = get_xmlResponse_generator(famiport_response)
+        result = xml_response_generator.generate_xmlResponse(famiport_response)
+        root = etree.fromstring(result)
+        encrypt_fields = famiport_response.encrypt_fields
+        for element in root.iter():
+            print 'element.tag: ' + element.tag
+            if element.tag != 'FMIF' and element.tag not in FamiPortTicket.__slots__: # Skip the root element and tickets
+                response_value = getattr(famiport_response, element.tag)
+                if isinstance(response_value, (str, unicode)) and response_value != '': # fromstring() removes empty text element
+                    if element.tag not in encrypt_fields:
+                        if element.text != response_value:
+                            print "(tag, text): (%s, %s), response_value: %s" % (element.tag, element.text, response_value)
+                        self.assertTrue(element.text == response_value)
+                    else:
+                        decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text).decode('shift_jis')
+                        if decrypted_text_value != response_value:
+                            print "(tag, decrypted_text): (%s, %s), response_value: %s" % (element.tag, decrypted_text_value, response_value)
+                        self.assertTrue(decrypted_text_value == response_value)

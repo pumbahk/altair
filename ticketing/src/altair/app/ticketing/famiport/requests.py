@@ -55,7 +55,6 @@ class FamiPortPaymentTicketingCompletionRequest(FamiPortRequest):
         self.mmkNo = None  # 発券ファミポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
@@ -72,7 +71,6 @@ class FamiPortPaymentTicketingCancelRequest(FamiPortRequest):
         self.mmkNo = None  # 発券ファミポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # 支払番号
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID
@@ -106,7 +104,6 @@ class FamiPortCustomerInformationRequest(FamiPortRequest):
         self.mmkNo = None  # 発券Famiポート番号
         self.ticketingDate = None  # 利用日時
         self.sequenceNo = None  # 処理通番
-        self.requestClass = None  # 要求区分 TODO Delete the field?
         self.barCodeNo = None  # バーコード情報
         self.playGuideId = None  # クライアントID
         self.orderId = None  # 注文ID

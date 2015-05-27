@@ -41,8 +41,9 @@ class FamiPortResponseBuilderTest(TestCase):
         self.famiport_information_request = FamiPortRequestFactory.create_request(famiport_information_request_dict, FamiPortRequestType.Information)
 
         # 顧客情報取得
-        # self.famiport_customer_information_request = FamiPortCustomerInformationRequest(storeCode='000009', mmkNo='1', ticketingDate='20150331182222', sequenceNo='15033100004', barCodeNo='4119000000005', \
-        #                                                                                playGuideId='', orderId='410900000005', totalAmount='2200')
+        famiport_customer_information_request_dict = {'storeCode':'000009', 'mmkNo':'1', 'ticketingDate':'20150331182222', 'sequenceNo':'15033100004', 'barCodeNo':'4119000000005', 'playGuideId':'', \
+                                                      'orderId':'410900000005', 'totalAmount':'2200'}
+        self.famiport_customer_information_request = FamiPortCustomerInformationRequest(famiport_customer_information_request_dict, FamiPortRequestType.CustomerInformation)
 
     def test_build_ReservationInquiryResponseBuilder(self):
         # 予約照会
@@ -56,4 +57,4 @@ class FamiPortResponseBuilderTest(TestCase):
     def check_build_response(self, response_builder, famiport_request):
         famiport_response = response_builder.build_response(famiport_request)
         print famiport_response
-        self.assertTrue(famiport_response is None) # famiport_responseのprintを表示するためにAssertionErrorが起こるようにしておく
+        self.assertTrue(famiport_response is not None) # famiport_responseのprintを表示するためにAssertionErrorが起こるようにしておく

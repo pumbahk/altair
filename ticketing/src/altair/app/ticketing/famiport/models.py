@@ -128,11 +128,10 @@ class FamiPortOrder(Base, WithTimestamp):
 
     id = sa.Column(Identifier, primary_key=True)
     order_no = sa.Column(sa.String(255), nullable=False)
-    barcode_no = sa.Column(sa.String(255), nullable=False)
 
     name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
     playguide_id = sa.Column(sa.String, default='', nullable=False)  # クライアントID
-    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 予約番号
+    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 注文ID
     reserve_number = sa.Column(sa.String)  # 予約番号
     barcode_no = sa.Column(sa.String)  # 支払番号
     exchange_number = sa.Column(sa.String)  # 引換票番号(後日予済アプリで発券するための予約番号)
@@ -151,6 +150,14 @@ class FamiPortOrder(Base, WithTimestamp):
     address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     auth_number = sa.Column(sa.String(13))  # 認証番号
 
+    @classmethod
+    def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
+        _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
+
+    @classmethod
+    def get_by_barCodeNo(cls, barCodeNo):
+        _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+
 
 class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
@@ -164,11 +171,15 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     def create(cls, result_code, message):
         return cls(result_code=result_code, message=message)
 
+    def save(self):
+        _session.add(self)
+        _session.flush()
+
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
         if not isinstance(information_result_code, InformationResultCodeEnum):
             return None
-        query = FamiPortInformationMessage.filter_by(result_code=information_result_code.name)
+        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message
