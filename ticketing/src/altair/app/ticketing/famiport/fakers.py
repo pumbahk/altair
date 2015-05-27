@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from .requests import (
+import lxml.etree
+from .models import (
     FamiPortReservationInquiryRequest,
     FamiPortPaymentTicketingRequest,
     FamiPortPaymentTicketingCompletionRequest,
     FamiPortPaymentTicketingCancelRequest,
     FamiPortInformationRequest,
     FamiPortCustomerInformationRequest,
-    )
-from .responses import (
     FamiPortReservationInquiryResponse,
     FamiPortPaymentTicketingResponse,
     FamiPortPaymentTicketingCompletionResponse,
@@ -54,7 +53,15 @@ def get_response_builder(*args, **kwds):
 def get_payload_builder(*args, **kwds):
     import mock
     builder = mock.Mock()
-    builder.build_payload = lambda response, *_args, **_kwds: response_faker.get(type(response)).create(*_args, **_kwds)
+
+    def _build_payload_str(response, *args, **kwds):
+        typ = type(response)
+        fake = response_faker.get(typ)
+        assert fake, 'no fake...: {}'.format(typ)
+        tree = fake.create(*args, **kwds)
+        bstr = lxml.etree.tostring(tree, pretty_print=True)
+        return bstr
+    builder.build_payload = _build_payload_str
     return builder
 
 

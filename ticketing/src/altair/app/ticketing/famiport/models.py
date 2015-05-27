@@ -1,31 +1,30 @@
 # -*- coding: utf-8 -*-
 import types
+import time
+import random
+import hashlib
+from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import orm
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.mutable import Mutable
 import sqlahelper
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
-from .utils import InformationResultCodeEnum
-from enum import Enum
+from .utils import (
+    InformationResultCodeEnum,
+    FamiPortRequestType,
+    FamiPortResponseType,
+    InformationResultCodeEnum,
+    )
+from .exc import FamiPortNumberingError
 
 Base = sqlahelper.get_base()
 
 # 内部トランザクション用
 _session = orm.scoped_session(orm.sessionmaker())
-
-class FamiPortOrderNoSequence(Base, WithTimestamp):
-    __tablename__ = 'FamiPortOrderNoSequence'
-
-    id = sa.Column(Identifier, primary_key=True)
-
-    @classmethod
-    def get_next_value(cls, name):
-        seq = cls()
-        _session.add(seq)
-        _session.flush()
-        return seq.id
 
 
 class FamiPortSalesChannel(Enum):
@@ -140,10 +139,10 @@ class FamiPortPlayguide(Base, WithTimestamp):
 class FamiPortClient(Base, WithTimestamp):
     __tablename__ = 'FamiPortClient'
 
-    playguide_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPlayguide.id'), nullable=False)
-    code         = sa.Column(sa.Unicode(24), nullable=False, primary_key=True)
+    famiport_playguide_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPlayguide.id'), nullable=False)
+    code                  = sa.Column(sa.Unicode(24), nullable=False, primary_key=True)
 
-    playguide    = orm.relationship(FamiPortPlayguide)
+    playguide             = orm.relationship(FamiPortPlayguide)
 
 
 class FamiPortGenre1(Base, WithTimestamp):
@@ -208,8 +207,8 @@ class FamiPortEvent(Base, WithTimestamp):
     name_1                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
     name_2                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
-    client_code             = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'))
-    venue_id                = sa.Column(Identifier, sa.ForeignKey('FamiPortVenue.id'))
+    client_code             = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
+    venue_id                = sa.Column(Identifier, sa.ForeignKey('FamiPortVenue.id'), nullable=False)
     purchasable_prefectures = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137)))
     start_at                = sa.Column(sa.DateTime(), nullable=True)
     end_at                  = sa.Column(sa.DateTime(), nullable=True)
@@ -256,7 +255,7 @@ class FamiPortSalesSegment(Base, WithTimestamp):
     published_at            = sa.Column(sa.DateTime(), nullable=True)
     start_at                = sa.Column(sa.DateTime(), nullable=False)
     end_at                  = sa.Column(sa.DateTime(), nullable=True)
-    auth_required           = sa.Column(sa.Boolean, nullable=False, default=1)
+    auth_required           = sa.Column(sa.Boolean, nullable=False, default=False)
     auth_message            = sa.Column(sa.Unicode(320), nullable=False, default=u'')
     seat_selection_start_at = sa.Column(sa.DateTime(), nullable=True)
 
@@ -303,26 +302,158 @@ class FamiPortOrderType(Enum):
     PaymentOnly          = 4
 
 
+def create_random_sequence_number(length, prefix=''):
+    seq = prefix
+    while len(seq) < length:
+        seq += hashlib.md5((str(time.time()) + str(random.random())).encode()).hexdigest()
+    return seq[:length]
+
+
+class FamiPortOrderNoSequence(Base):
+    __tablename__ = 'FamiPortOrderNoSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    @classmethod
+    def get_next_value(cls, name):
+        seq = cls()
+        _session.add(seq)
+        _session.flush()
+        return seq.id
+
+
+class FamiPortOrderIdentifierSequence(Base):
+    __tablename__ = 'FamiPortOrderIdentifierSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    @classmethod
+    def get_next_value(cls, name=''):
+        seq = cls()
+        _session.add(seq)
+        _session.flush()
+        return seq.id
+
+
+class FamiPortOrderTicketNoSequence(Base):
+    __tablename__ = 'FamiPortOrderTicketNoSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
+class FamiPortExchangeTicketNoSequence(Base):
+    __tablename__ = 'FamiPortExchangeTicketNoSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
+class FamiPortReserveNumberSequence(Base):
+    __tablename__ = 'FamiPortReserveNumberSequence'
+
+    id = sa.Column(Identifier, primary_key=True)
+    value = sa.Column(sa.String(12), nullable=False, unique=True)
+
+    @classmethod
+    def get_next_value(cls, *args, **kwds):
+        for ii in range(15):  # retry count
+            try:
+                return cls._get_next_value(*args, **kwds)
+            except InvalidRequestError:
+                pass
+        raise FamiPortNumberingError()
+
+    @classmethod
+    def _get_next_value(cls, name=''):
+        seq = cls(value=create_random_sequence_number(13, name))
+        _session.add(seq)
+        _session.flush()
+        return seq.value
+
+
 class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
     id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
     type                      = sa.Column(sa.Integer, nullable=False)
-    fm_order_no               = sa.Column(sa.Unicode(12), nullable=False)
+    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
     shop_code                 = sa.Column(sa.Unicode(6), nullable=False)
-    famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'))
+    famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
+    client_code               = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     generation                = sa.Column(sa.Integer, nullable=False, default=0)
     invalidated_at            = sa.Column(sa.DateTime(), nullable=True)
+    total_amount              = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)  # 入金金額
     ticket_payment            = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
-    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)
-    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)
+    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # 店頭発券手数料
+    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # システム利用料
     paid_at                   = sa.Column(sa.DateTime(), nullable=True)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
+    barcode_no                = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
+    reserve_number            = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
+    exchange_number           = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
+
+    customer_name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
+    customer_name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
+    customer_phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
+    customer_address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
+    customer_address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
+    costomer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
+
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
+    famiport_client = orm.relationship('FamiPortClient')
+    
+    @property
+    def koen_date(self):
+        raise NotImplementedError
 
     @property
-    def ticket_count_total(self):
+    def kogyo_name(self):
+        raise NotImplementedError
+
+    @classmethod
+    def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
+        _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
+
+    @classmethod
+    def get_by_barCodeNo(cls, barCodeNo):
+        _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+
+    @property
+    def ticket_total_count(self):
         return len(self.famiport_tickets)
 
     @property
@@ -361,7 +492,7 @@ class FamiPortTicket(Base, WithTimestamp):
 
 class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
-    __table_args__= (sa.UniqueConstraint('result_code'),)
+    __table_args__ = (sa.UniqueConstraint('result_code'),)
 
     id = sa.Column(Identifier, primary_key=True)
     result_code = sa.Column(sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False)
@@ -371,11 +502,15 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     def create(cls, result_code, message):
         return cls(result_code=result_code, message=message)
 
+    def save(self):
+        _session.add(self)
+        _session.flush()
+
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
         if not isinstance(information_result_code, InformationResultCodeEnum):
             return None
-        query = FamiPortInformationMessage.filter_by(result_code=information_result_code.name)
+        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message

@@ -59,6 +59,7 @@ class FamiPortReservationInquiryResponse(FamiPortResponse):
         self.name = name # お客様氏名
         self.nameInput = nameInput  # 氏名要求フラグ
         self.phoneInput = phoneInput  # 電話番号要求フラグ
+
         self._responseType = FamiPortResponseType.ReservationInquiry
         self._encryptFields = ['name']
         self._encrypt_key = self.barCodeNo
@@ -81,7 +82,6 @@ class FamiPortPaymentTicketingResponse(FamiPortResponse):
         self.sequenceNo = sequenceNo  # 処理通番
         self.barCodeNo = barCodeNo  # 支払番号
         self.orderId = orderId  # 注文ID
-        FamiPortCustomerInformationResponse._set_encryptKey(orderId)
         self.replyClass = replyClass  # 応答結果区分
         self.replyCode = replyCode  # 応答結果
         self.playGuideId = playGuideId  # クライアントID
@@ -138,6 +138,7 @@ class FamiPortPaymentTicketingCompletionResponse(FamiPortResponse):
         self.barCodeNo = barCodeNo  # 支払番号
         self.orderId = orderId  # 注文ID
         self.replyCode = replyCode  # 応答結果
+
         self._responseType = FamiPortResponseType.PaymentTicketingCompletion
         self._encryptFields = []
         self._encrypt_key = None
@@ -155,8 +156,8 @@ class FamiPortPaymentTicketingCancelResponse(FamiPortResponse):
         self.sequenceNo = sequenceNo  # 処理通番
         self.barCodeNo = barCodeNo  # 支払番号
         self.orderId = orderId  # 注文ID
-
         self.replyCode = replyCode  # 応答結果
+
         self._responseType = FamiPortResponseType.PaymentTicketingCancel
         self._encryptFields = []
         self._encrypt_key = None
@@ -177,9 +178,10 @@ class FamiPortInformationResponse(FamiPortResponse):
         self.resultCode = resultCode  # 処理結果
         self.infoKubun = infoKubun  # 案内区分
         self.infoMessage = infoMessage  # 案内文言
-        # self._responseType = FamiPortResponseType.Information
-        # self._encryptFields = []
-        # self._encrypt_key = None
+
+        self._responseType = FamiPortResponseType.Information
+        self._encryptFields = []
+        self._encrypt_key = None
 
 
 class FamiPortCustomerInformationResponse(FamiPortResponse):
@@ -198,14 +200,14 @@ class FamiPortCustomerInformationResponse(FamiPortResponse):
         self.address1 = address1  # 住所1
         self.address2 = address2  # 住所2
         self.identifyNo = identifyNo  # 半券個人識別番号
+
         self._responseType = FamiPortResponseType.CustomerInformation
         self._encryptFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
-        # self._encrypt_key = 'test_key' # TODO get FamiPortPaymentTicketingResponse.orderId in some way
+        self._encrypt_key = None # orderId to be set
 
-    @classmethod
-    def _set_encryptKey(cls, encrypt_key):
-        FamiPortCustomerInformationResponse._encrypt_key = encrypt_key
+    def set_encryptKey(self, encrypt_key):
+        self._encrypt_key = encrypt_key
 
     @property
     def encrypt_key(self):
-        return FamiPortCustomerInformationResponse._encrypt_key
+        return self._encrypt_key

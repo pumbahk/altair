@@ -1,0 +1,399 @@
+# -*- coding: utf-8 -*-
+"""famiport
+
+Revision ID: 33471c50fbc0
+Revises: c35141f8f11
+Create Date: 2015-04-22 15:03:39.513828
+
+"""
+
+# revision identifiers, used by Alembic.
+revision = '33471c50fbc0'
+down_revision = 'c35141f8f11'
+
+
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql import functions as sqlf
+
+Identifier = sa.BigInteger
+
+
+def upgrade():
+    from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType, FamiPortTicketType, FamiPortRefundType, MutableSpaceDelimitedList, SpaceDelimitedList
+    op.create_table(
+        'FamiPortOrderNoSequence',
+        sa.Column('id', Identifier, autoincrement=True, primary_key=True),
+        )
+    op.create_table(
+        'FamiPortOrderIdentifierSequence',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortOrderTicketNoSequence',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('value', sa.String(12), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortExchangeTicketNoSequence',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('value', sa.String(12), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortReserveNumberSequence',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('value', sa.String(12), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPlayguide',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True, nullable=False),
+        sa.Column('discrimination_code', sa.Integer, nullable=False),
+        )
+    op.create_table(
+        'FamiPortClient',
+        sa.Column('famiport_playguide_id', Identifier, sa.ForeignKey('FamiPortPlayguide.id'), nullable=False),
+        sa.Column('code', sa.Unicode(24), nullable=False, primary_key=True)
+        )
+    op.create_table(
+        'FamiPortGenre1',
+        sa.Column('code', sa.Unicode(23), primary_key=True),
+        sa.Column('name', sa.Unicode(255), nullable=False)
+        )
+    op.create_table(
+        'FamiPortGenre2',
+        sa.Column('code', sa.Unicode(35), primary_key=True),
+        sa.Column('name', sa.Unicode(255), nullable=False)
+        )
+    op.create_table(
+        'FamiPortVenue',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('name', sa.Unicode(50), nullable=False),
+        sa.Column('name_kana', sa.Unicode(200), nullable=False),
+        sa.Column('prefecture', sa.Integer, nullable=False, default=0)
+        )
+    op.create_table(
+        'FamiPortEvent',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('code_1', sa.Unicode(6), nullable=False),
+        sa.Column('code_2', sa.Unicode(4), nullable=False),
+        sa.Column('name_1', sa.Unicode(80), nullable=False, default=u''),
+        sa.Column('name_2', sa.Unicode(80), nullable=False, default=u''),
+        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('client_code', sa.Unicode(24), sa.ForeignKey('FamiPortClient.code')),
+        sa.Column('venue_id', Identifier, sa.ForeignKey('FamiPortVenue.id')),
+        sa.Column('purchasable_prefectures', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137))),
+        sa.Column('start_at', sa.DateTime(), nullable=True),
+        sa.Column('end_at', sa.DateTime(), nullable=True),
+        sa.Column('genre_1_code', sa.Unicode(23), sa.ForeignKey('FamiPortGenre1.code')),
+        sa.Column('genre_2_code', sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code')),
+        sa.Column('keywords', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000))),
+        sa.Column('search_code', sa.Unicode(20))
+        )
+    op.create_table(
+        'FamiPortPerformance',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('famiport_event_id', Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False),
+        sa.Column('code', sa.Unicode(3)),
+        sa.Column('name', sa.Unicode(60)),
+        sa.Column('type', sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value),
+        sa.Column('searchable', sa.Boolean, nullable=False, default=True),
+        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('start_at', sa.DateTime(), nullable=True),
+        sa.Column('ticket_name', sa.Unicode(20), nullable=True) # only valid if type', = Spanned
+        )
+    op.create_table(
+        'FamiPortSalesSegment',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('famiport_performance_id',  Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False),
+        sa.Column('code', sa.Unicode(3), nullable=False),
+        sa.Column('name', sa.Unicode(40), nullable=False),
+        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('published_at', sa.DateTime(), nullable=True),
+        sa.Column('start_at', sa.DateTime(), nullable=False),
+        sa.Column('end_at', sa.DateTime(), nullable=True),
+        sa.Column('auth_required', sa.Boolean, nullable=False, default=False),
+        sa.Column('auth_message', sa.Unicode(320), nullable=False, default=u''),
+        sa.Column('seat_selection_start_at', sa.DateTime(), nullable=True)
+        )
+    op.create_table(
+        'FamiPortOrder',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('order_no', sa.Unicode(255), nullable=False),  # altair側予約番号
+        sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
+        sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
+        sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
+        sa.Column('client_code', sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False),
+        sa.Column('famiport_sales_segment_id', Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False),
+        sa.Column('total_amount', sa.Numeric(precision=16, scale=0), nullable=False),
+        sa.Column('ticket_payment', sa.Numeric(precision=16, scale=0), nullable=False),
+        sa.Column('system_fee', sa.Numeric(precision=16, scale=0), nullable=False),
+        sa.Column('ticketing_fee', sa.Numeric(precision=16, scale=0), nullable=False),
+        sa.Column('famiport_order_identifier', sa.String(12), nullable=False),
+        sa.Column('order_ticket_no', sa.String(13), nullable=False),
+        sa.Column('exchange_ticket_no', sa.String(13), nullable=False),
+        sa.Column('reserve_number', sa.String(13), nullable=False),
+        sa.Column('customer_name_input', sa.Boolean, nullable=False, default=False, server_default=text('FALSE')),
+        sa.Column('customer_name', sa.Unicode(42), nullable=False),
+        sa.Column('customer_phone_input', sa.Boolean, nullable=False, default=False, server_default=text('FALSE')),
+        sa.Column('customer_phone_number', sa.Unicode(12), nullable=False, server_default=text("''")),
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortTicket',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
+        sa.Column('type', sa.Integer, nullable=False, default=FamiPortTicketType.TicketWithBarcode.value),
+        sa.Column('barcode_number', sa.Unicode(13), nullable=False),
+        sa.Column('template_code', sa.Unicode(10), nullable=False),
+        sa.Column('data', sa.Unicode(4000), nullable=False),
+        sa.Column('issued_at', sa.DateTime(), nullable=False)
+        )
+    op.create_table(
+        'FamiPortRefund',
+        sa.Column('id', Identifier, nullable=False, primary_key=True, autoincrement=True),
+        sa.Column('type', sa.Integer, nullable=False, default=FamiPortRefundType.Type1.value),
+        sa.Column('send_back_due_at', sa.Date(), nullable=False),
+        sa.Column('start_at', sa.DateTime(), nullable=False),
+        sa.Column('end_at', sa.DateTime(), nullable=False),
+        sa.Column('last_serial', sa.Integer, nullable=False, default=0)
+        )
+    op.create_table(
+        'FamiPortRefundEntry',
+        sa.Column('id',                    Identifier, primary_key=True, autoincrement=True),
+        sa.Column('famiport_refund_id',    Identifier, sa.ForeignKey('FamiPortRefund.id'), nullable=False),
+        sa.Column('serial',                sa.Integer, nullable=False, default=0),
+        sa.Column('famiport_ticket_id',    Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False),
+        sa.Column('ticket_payment',        sa.Numeric(precision=9, scale=0)),
+        sa.Column('ticketing_fee',         sa.Numeric(precision=8, scale=0)),
+        sa.Column('system_fee',            sa.Numeric(precision=8, scale=0)),
+        sa.Column('other_fees',            sa.Numeric(precision=8, scale=0)),
+        sa.Column('shop_code',             sa.Unicode(7), nullable=False)
+        )
+    op.create_table(
+        'FamiPortInformationMessage',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('result_code', sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False),  # 案内処理結果コード名
+        sa.Column('message', sa.Unicode(1000), nullable=False),  # 案内文言
+        sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
+        sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
+        sa.PrimaryKeyConstraint('id')
+        )
+    op.create_table(
+        'FamiPortReservationInquiryRequest',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
+        sa.Column('reserveNumber', sa.Unicode(255), nullable=False),  # 予約番号
+        sa.Column('authNumber', sa.Unicode(255), nullable=False),  # 認証番号
+        sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
+        sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
+        sa.PrimaryKeyConstraint('id'),
+        )
+
+    op.create_table(
+        'FamiPortPaymentTicketingRequest',
+        sa.Column('id', Identifier),
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
+        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
+        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
+        sa.Column('customerName', sa.Unicode(255), nullable=False),  # カナ氏名
+        sa.Column('phoneNumber', sa.Unicode(255), nullable=False),  # 電話番号
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPaymentTicketingCompletionRequest',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
+        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
+        sa.Column('totalAmount', sa.Unicode(255), nullable=False),  # 入金金額
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPaymentTicketingCancelRequest',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
+        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
+        sa.Column('cancelCode', sa.Unicode(255), nullable=False),  # 取消理由
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortInformationRequest',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('infoKubun', sa.Unicode(255), nullable=False),  # 案内種別
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('kogyoCode', sa.Unicode(255), nullable=False),  # 興行コード
+        sa.Column('kogyoSubCode', sa.Unicode(255), nullable=False),  # 興行サブコード
+        sa.Column('koenCode', sa.Unicode(255), nullable=False),  # 公演コード
+        sa.Column('uketsukeCode', sa.Unicode(255), nullable=False),  # 受付コード
+        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
+        sa.Column('authCode', sa.Unicode(255), nullable=False),  # 認証コード
+        sa.Column('reserveNumber', sa.Unicode(255), nullable=False),  # 予約照会番号
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortCustomerInformationRequest',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券Famiポート番号
+        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # バーコード情報
+        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
+        sa.Column('totalAmount', sa.Unicode(255), nullable=False),  # 入金金額
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortReservationInquiryResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
+        sa.Column('replyClass', sa.Unicode(1), nullable=False, server_default=''),  # 応答結果区分
+        sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False, server_default=''),  # クライアントID
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, server_default=''),  # チケットバーコード番号
+        sa.Column('totalAmount', sa.Unicode(8), nullable=False, server_default=''),  # 合計金額
+        sa.Column('ticketPayment', sa.Unicode(8), nullable=False, server_default=''),  # チケット料金
+        sa.Column('systemFee', sa.Unicode(8), nullable=False, server_default=''),  # システム利用料
+        sa.Column('ticketingFee', sa.Unicode(8), nullable=False, server_default=''),  # チケット料金
+        sa.Column('ticketCountTotal', sa.Unicode(8), nullable=False, server_default=''),  # チケット枚数
+        sa.Column('ticketCount', sa.Unicode(8), nullable=False, server_default=''),  # 本券購入枚数
+        sa.Column('kogyoName', sa.Unicode(40), nullable=False, server_default=''),  # 興行名
+        sa.Column('koenDate', sa.Unicode(12), nullable=False, server_default=''),  # 公演日時
+        sa.Column('name', sa.Unicode(42), nullable=False, server_default=''),  # お客様指名
+        sa.Column('nameInput', sa.Unicode(1), nullable=False, server_default=''),  # 氏名要求フラグ
+        sa.Column('phoneInput', sa.Unicode(1), nullable=False, server_default=''),  # 電話番号要求フラグ
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPaymentTicketingResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
+        sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, server_default=''),  # 支払番号
+        sa.Column('orderId', sa.Unicode(12), nullable=False, server_default=''),  # 注文ID
+        sa.Column('replyClass', sa.Unicode(1), nullable=False, server_default=''),  # 応答結果区分
+        sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False, server_default=''),  # クライアントID
+        sa.Column('playGuideName', sa.Unicode(50), nullable=False, server_default=''),  # クライアント漢字名称
+        sa.Column('orderTicketNo', sa.Unicode(13), nullable=False, server_default=''),  # 払込票番号
+        sa.Column('exchangeTicketNo', sa.Unicode(13), nullable=False, server_default=''),  # 引換票番号
+        sa.Column('ticketingStart', sa.Unicode(12), nullable=False, server_default=''),  # 発券開始日時
+        sa.Column('ticketingEnd', sa.Unicode(12), nullable=False, server_default=''),  # 発券期限日時
+        sa.Column('totalAmount', sa.Unicode(8), nullable=False, server_default=''),  # 合計金額
+        sa.Column('ticketPayment', sa.Unicode(8), nullable=False, server_default=''),  # チケット料金
+        sa.Column('systemFee', sa.Unicode(8), nullable=False, server_default=''),  # システム利用料
+        sa.Column('ticketingFee', sa.Unicode(8), nullable=False, server_default=''),  # 店頭発券手数料
+        sa.Column('ticketCountTotal', sa.Unicode(2), nullable=False, server_default=''),  # チケット枚数
+        sa.Column('ticketCount', sa.Unicode(2), nullable=False, server_default=''),  # 本券購入枚数
+        sa.Column('kogyoName', sa.Unicode(40), nullable=False, server_default=''),  # 興行名
+        sa.Column('koenDate', sa.Unicode(12), nullable=False, server_default=''),  # 公演日時
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, server_default=''),  # チケットバーコード番号
+        sa.Column('ticketClass', sa.Unicode(1), nullable=False, server_default=''),  # チケット区分
+        sa.Column('templateCode', sa.Unicode(10), nullable=False, server_default=''),  # テンプレートコード
+        sa.Column('ticketData', sa.Unicode(4000), nullable=False, server_default=''),  # 券面データ
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPaymentTicketingCompletionResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
+        sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, server_default=''),  # 支払番号
+        sa.Column('orderId', sa.Unicode(12), nullable=False, server_default=''),  # 注文ID
+        sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortPaymentTicketingCancelResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
+        sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, server_default=''),  # 支払番号
+        sa.Column('orderId', sa.Unicode(12), nullable=False, server_default=''),  # 注文ID
+        sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortInformationResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果コード
+        sa.Column('infoKubu', sa.Unicode(1), nullable=False, server_default=''),  # 案内区分
+        sa.Column('infoMessage', sa.Unicode(500), nullable=False, server_default=''),  # 案内文言
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortCustomerInformationResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
+        sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
+        sa.Column('name', sa.Unicode(42), nullable=False, server_default=''),  # 氏名
+        sa.Column('memberId', sa.Unicode(100), nullable=False, server_default=''),  # 会員ID
+        sa.Column('address1', sa.Unicode(200), nullable=False, server_default=''),  # 住所1
+        sa.Column('address2', sa.Unicode(200), nullable=False, server_default=''),  # 住所1
+        sa.Column('identifyNo', sa.Unicode(16), nullable=False, server_default=''),  # 半券個人識別番号
+        sa.PrimaryKeyConstraint('id'),
+        )
+    op.create_table(
+        'FamiPortTicketResponse',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('famiport_payment_ticketing_response_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingResponse.id')),
+        sa.PrimaryKeyConstraint('id'),
+        )
+
+
+def downgrade():
+    op.drop_table('FamiPortTicketResponse')
+    op.drop_table('FamiPortCustomerInformationResponse')
+    op.drop_table('FamiPortInformationResponse')
+    op.drop_table('FamiPortPaymentTicketingCancelResponse')
+    op.drop_table('FamiPortPaymentTicketingCompletionResponse')
+    op.drop_table('FamiPortPaymentTicketingResponse')
+    op.drop_table('FamiPortReservationInquiryResponse')
+    op.drop_table('FamiPortCustomerInformationRequest')
+    op.drop_table('FamiPortInformationRequest')
+    op.drop_table('FamiPortPaymentTicketingCancelRequest')
+    op.drop_table('FamiPortPaymentTicketingCompletionRequest')
+    op.drop_table('FamiPortPaymentTicketingRequest')
+    op.drop_table('FamiPortReservationInquiryRequest')
+    op.drop_table('FamiPortInformationMessage')
+    op.drop_table('FamiPortRefundEntry')
+    op.drop_table('FamiPortRefund')
+    op.drop_table('FamiPortTicket')
+    op.drop_table('FamiPortOrder')
+    op.drop_table('FamiPortSalesSegment')
+    op.drop_table('FamiPortPerformance')
+    op.drop_table('FamiPortEvent')
+    op.drop_table('FamiPortVenue')
+    op.drop_table('FamiPortGenre2')
+    op.drop_table('FamiPortGenre1')
+    op.drop_table('FamiPortClient')
+    op.drop_table('FamiPortPlayguide')
+    op.drop_table('FamiPortReserveNumberSequence')
+    op.drop_table('FamiPortExchangeTicketNoSequence')
+    op.drop_table('FamiPortOrderTicketNoSequence')
+    op.drop_table('FamiPortOrderIdentifierSequence')
+    op.drop_table('FamiPortOrderNoSequence')

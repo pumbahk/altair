@@ -23,6 +23,8 @@ class FamiPortResponseType(IntEnum):
 
 class ResultCodeEnum(Enum):
     Normal = '00' # 正常
+    BusinessDivisionError = '11' # 業務区分エラー
+    ServinceUnavailable = '14' # サービス時間帯エラー
     TimeoutError = '15' # タイムアウトエラー
     OtherError = '99' # その他エラー
 
@@ -36,14 +38,7 @@ class InfoKubunEnum(IntEnum):
     Reserved = 1 # 予済み
     DirectSales = 2 # 直販
 
-class CustomerInformationResultCodeEnum(Enum):
-    Normal = '00' # 正常応答
-    BusinessDivisionError = '11' # 業務区分エラー
-    ServinceUnavailable = '14' # サービス時間帯エラー
-    TimeoutError = '15' # タイムアウトエラー
-    OtherError = '99' # その他エラー
-
-class ReplyClassEnum(Enum):
+class ReplyClassEnum(IntEnum):
     CashOnDelivery = 1 # 代引き
     Prepayment = 2 # 前払い（後日渡し）の前払い時
     Paid = 3 # 代済発券と前払い(後日渡し)の後日渡し時
@@ -83,7 +78,7 @@ class FamiPortCrypt:
         :param encrypted data:
         :return: decrypted data
         """
-        # TODO 復号化する項目をBase64で文字列からバイト配列に変換
+
         return self.fernet.decrypt(encrypted_data)
 
 def prettify(elem):

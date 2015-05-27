@@ -54,7 +54,7 @@ def gen_record_from_refund_model(refund_entry):
     famiport_client = famiport_event.client
     playguide = famiport_client.playguide
     
-    management_number = famiport_order.fm_order_no[3:12]
+    management_number = famiport_order.famiport_order_identifier[3:12]
     unique_key = '%d%s%02d%05d' % (
         playguide.discrimination_code,
         management_number,

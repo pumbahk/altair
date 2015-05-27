@@ -98,7 +98,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
             shop_code=u'0000000',
             famiport_ticket=FamiPortTicket(
                 famiport_order=FamiPortOrder(
-                    fm_order_no=u'123000000000',
+                    famiport_order_identifier=u'123000000000',
                     famiport_sales_segment=self.famiport_sales_segment
                     )
                 )
@@ -174,7 +174,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 shop_code=u'0000000',
                 famiport_ticket=FamiPortTicket(
                     famiport_order=FamiPortOrder(
-                        fm_order_no=u'123000000000',
+                        famiport_order_identifier=u'123000000000',
                         famiport_sales_segment=self.famiport_sales_segment,
                         created_at=datetime(2014, 12, 31),
                         shop_code=u'000000'

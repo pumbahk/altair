@@ -3,3 +3,7 @@
 
 class FamiPortError(Exception):
     pass
+
+
+class FamiPortNumberingError(FamiPortError):
+    pass

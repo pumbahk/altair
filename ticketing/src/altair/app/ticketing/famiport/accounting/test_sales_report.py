@@ -78,7 +78,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
-            fm_order_no=u'123000000000',
+            famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.CashOnDelivery.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
@@ -97,7 +97,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
-            fm_order_no=u'123000000000',
+            famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.CashOnDelivery.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
@@ -118,7 +118,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
-            fm_order_no=u'123000000000',
+            famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
@@ -137,7 +137,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
-            fm_order_no=u'123000000000',
+            famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
@@ -157,7 +157,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
-            fm_order_no=u'123000000000',
+            famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
