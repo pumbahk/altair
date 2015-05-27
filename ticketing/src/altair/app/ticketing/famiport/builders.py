@@ -152,14 +152,14 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             replyClass = ReplyClassEnum.CashOnDelivery # TODO Change the value depending on famiport_order's pdmp status
             replyCode = ReplyCodeEnum.Normal # TODO Change the value depending on famiport_order's status
             playGuideId = famiport_order.playguide_id
-            playGuideName = '' # TODO Make sure what to do with playGuideName
+            playGuideName = famiport_order.playguide_name
             if replyClass == ReplyClassEnum.CashOnDelivery:
                 orderTicketNo = barCodeNo
             elif replyClass == ReplyClassEnum.Prepayment:
                 orderTicketNo = barCodeNo
                 exchangeTicketNo = famiport_order.exchangeTicketNo
-                ticketingStart = famiport_order.ticketingStart # TODO Make sure about this
-                ticketingEnd = famiport_order.ticketingEnd # TODO Make sure about this
+                ticketingStart = famiport_order.ticketing_start
+                ticketingEnd = famiport_order.ticketing_end
             elif replyClass == ReplyClassEnum.Paid:
                 exchangeTicketNo = famiport_order.exchangeTicketNo
             elif replyClass == ReplyClassEnum.PrepaymentOnly:
@@ -173,7 +173,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             ticketingCountTotal = str(famiport_order.ticket_total_count)
             ticketCount = str(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
-            koenDate = famiport_order.koen_date # TODO Convert datetime to str as YYYYMMDDhhmm
+            koenDate = famiport_order.koen_date.strftime("%Y%m%d%H%M")
             ticket = famiport_order.famiport_tickets
         else:
             resultCode = ResultCodeEnum.OtherError
@@ -200,15 +200,16 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
+            replyCode = ReplyCodeEnum.OtherError
             logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
                          "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo + ", 注文ID: " + orderId)
 
         replyCode = None
         if famiport_order is not None:
-            replyCode = ReplyCodeEnum.Normal # TODO Make sure when to use SearchKeyError
+            replyCode = ReplyCodeEnum.Normal
         else:
             resultCode = ResultCodeEnum.OtherError
-            replyCode = ReplyCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.SearchKeyError
 
         famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, \
                                                                                                     orderId=orderId, replyCode=replyCode)
@@ -326,16 +327,6 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
         famiport_customer_information_respose = FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
         famiport_customer_information_respose.set_encryptKey(orderId)
         return famiport_customer_information_respose
-
-""" Commenting out since seems not necessary at this point.
-@implementer(IXmlFamiPortResponseGeneratorFactory)
-class XmlFamiPortResponseGeneratorFactory(object):
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, famiport_response):
-        return XmlFamiPortResponseGenerator()
-"""
 
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
