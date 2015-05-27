@@ -78,7 +78,7 @@ class FamiPortCrypt:
         :param encrypted data:
         :return: decrypted data
         """
-        # TODO 復号化する項目をBase64で文字列からバイト配列に変換
+
         return self.fernet.decrypt(encrypted_data)
 
 def prettify(elem):

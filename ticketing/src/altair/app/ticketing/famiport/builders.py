@@ -323,7 +323,9 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
             address2 = famiport_order.address2
             identifyNo = famiport_order.identifyNo
 
-        return FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
+        famiport_customer_information_respose = FamiPortCustomerInformationResponse(resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId, address1=address1, address2=address2, identifyNo=identifyNo)
+        famiport_customer_information_respose.set_encryptKey(orderId)
+        return famiport_customer_information_respose
 
 """ Commenting out since seems not necessary at this point.
 @implementer(IXmlFamiPortResponseGeneratorFactory)
@@ -338,12 +340,10 @@ class XmlFamiPortResponseGeneratorFactory(object):
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
     def __init__(self, famiport_response):
-        encrypt_key_item = famiport_response.encrypt_key
-        if encrypt_key_item:
+        if famiport_response.encrypt_key:
             hash = hashlib.md5()
-            hash.update(encrypt_key_item)
+            hash.update(famiport_response.encrypt_key)
             str_digest = hash.hexdigest()
-            key = bytes(str_digest)
             self.famiport_crypt = FamiPortCrypt(base64.urlsafe_b64encode(str_digest))
 
     def generate_xmlResponse(self, famiport_response, root_name = "FMIF"):
@@ -359,12 +359,6 @@ class XmlFamiPortResponseGenerator(object):
         root = etree.Element(root_name)
         doc_root = self._build_xmlTree(root, famiport_response)
         return etree.tostring(doc_root, encoding='shift_jis', xml_declaration=True, pretty_print=True)
-        # elementTree = ElementTree(doc_root)
-        # bytesIO = BytesIO()
-        # elementTree.write(bytesIO, encoding='Shift_JIS', xml_declaration=True, pretty_print=True)
-        # xml_response = bytesIO.getvalue()
-        # bytesIO.close()
-        # return xml_response
 
     def _build_xmlTree(self, root, object):
         """
