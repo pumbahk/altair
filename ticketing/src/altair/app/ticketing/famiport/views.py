@@ -6,7 +6,7 @@ from pyramid.view import (
     view_defaults,
     )
 
-from .models import (
+from .communication import (
     FamiPortReservationInquiryRequest,
     FamiPortPaymentTicketingRequest,
     FamiPortPaymentTicketingCompletionRequest,

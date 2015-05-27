@@ -41,119 +41,9 @@ class FamiPortModelTestCase(TestCase):
         return func(*args, **kwds)
 
 
-class FamiPortOrderNoSequenceTest(FamiPortModelTestCase):
-
-    def _target(self):
-        from ..models import FamiPortOrderNoSequence as klass
-        return klass
-
-    def test_it(self):
-        target = self._target()
-        base = None
-        for ii in range(10):
-            _id = self._callFUT(target.get_next_value, 'XX')
-            if base is None:
-                base = _id
-            self.assertEqual(base+ii, _id)
-
-
-class FamiPortOrderTest(FamiPortModelTestCase):
-    def _target(self):
-        from ..models import FamiPortOrder as klass
-        return klass
-
-    def test_it(self):
-        target = self._target()
-        kwds = {
-            'order_no': 'XX000001234',
-            'name': u'楽天太郎',
-            'playguide_id': '1234',
-            'barcode_no': '11234567890abcdef',
-            'total_amount': 1,
-            'ticket_payment': 2,
-            'system_fee': 3,
-            'ticketing_fee': 4,
-            'koen_date': self.now,
-            'kogyo_name': u'興行名',
-            'ticket_total_count': 5,
-            'ticket_count': 6,
-            'name_input': 1,
-            'phone_input': 1,
-            'phone_number': '07011112222',
-            'famiport_order_identifier': '1'.zfill(12),
-            }
-
-        old_obj = self._makeOne(**kwds)
-        self.session.add(old_obj)
-        self.session.flush()
-        filter_sql = (target.id == old_obj.id)
-        new_obj = self.session \
-            .query(target) \
-            .filter(filter_sql) \
-            .one()
-
-        for key, value in kwds.items():
-            self.assertEqual(getattr(new_obj, key), value)
-
-
-class FamiPortInformationMessageTest(FamiPortModelTestCase):
-    def _target(self):
-        from ..models import FamiPortInformationMessage as klass
-        return klass
-
-    def test_it(self):
-        target = self._target()
-        kwds = {
-            'result_code': 'WithInformation',
-            'message': u'日本語のメッセージ',
-            }
-
-        old_obj = self._makeOne(**kwds)
-        self.session.add(old_obj)
-        self.session.flush()
-        filter_sql = (target.id == old_obj.id)
-        new_obj = self.session \
-            .query(target) \
-            .filter(filter_sql) \
-            .one()
-
-        for key, value in kwds.items():
-            self.assertEqual(getattr(new_obj, key), value)
-
-    def test_create(self):
-        target = self._target()
-        kwds = {
-            'result_code': 'WithInformation',
-            'message': u'日本語のメッセージ',
-            }
-
-        old_obj = self._callFUT(target.create, **kwds)
-
-        self.session.add(old_obj)
-        self.session.flush()
-        filter_sql = (target.id == old_obj.id)
-        new_obj = self.session \
-            .query(target) \
-            .filter(filter_sql) \
-            .one()
-
-        for key, value in kwds.items():
-            self.assertEqual(getattr(new_obj, key), value)
-
-    def test_get_message(self):
-        target = self._target()
-        kwds = {
-            'information_result_code': None,
-            'default_message': None,
-            }
-
-        msg = self._callFUT(target.get_message, **kwds)
-        self.assertEqual(msg, None)
-
-
 class FamiPortReservationInquiryRequestTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortReservationInquiryRequest as klass
+        from ..communication import FamiPortReservationInquiryRequest as klass
         return klass
 
     def test_it(self):
@@ -180,7 +70,7 @@ class FamiPortReservationInquiryRequestTest(FamiPortModelTestCase):
 class FamiPortPaymentTicketingRequestTest(FamiPortModelTestCase):
 
     def _target(self):
-        from ..models import FamiPortPaymentTicketingRequest as klass
+        from ..communication import FamiPortPaymentTicketingRequest as klass
         return klass
 
     def test_it(self):
@@ -211,7 +101,7 @@ class FamiPortPaymentTicketingRequestTest(FamiPortModelTestCase):
 
 class FamiPortPaymentTicketingCompletionRequestTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortPaymentTicketingRequest as klass
+        from ..communication import FamiPortPaymentTicketingRequest as klass
         return klass
 
     def test_it(self):
@@ -242,7 +132,7 @@ class FamiPortPaymentTicketingCompletionRequestTest(FamiPortModelTestCase):
 
 class FamiPortPaymentTicketingCancelRequestTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortPaymentTicketingCancelRequest as klass
+        from ..communication import FamiPortPaymentTicketingCancelRequest as klass
         return klass
 
     def test_it(self):
@@ -273,7 +163,7 @@ class FamiPortPaymentTicketingCancelRequestTest(FamiPortModelTestCase):
 
 class FamiPortInformationRequestTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortInformationRequest as klass
+        from ..communication import FamiPortInformationRequest as klass
         return klass
 
     def test_it(self):
@@ -305,7 +195,7 @@ class FamiPortInformationRequestTest(FamiPortModelTestCase):
 
 class FamiPortCustomerInformationRequestTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortCustomerInformationRequest as klass
+        from ..communication import FamiPortCustomerInformationRequest as klass
         return klass
 
     def test_it(self):
@@ -334,9 +224,9 @@ class FamiPortCustomerInformationRequestTest(FamiPortModelTestCase):
             self.assertEqual(getattr(new_obj, key), value)
 
 
-class FamiPortTicketTest(FamiPortModelTestCase):
+class FamiPortTicketResponseTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortTicket as klass
+        from ..communication import FamiPortTicketResponse as klass
         return klass
 
     def test_it(self):
@@ -363,7 +253,7 @@ class FamiPortTicketTest(FamiPortModelTestCase):
 
 class FamiPortReservationInquiryResponseTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortReservationInquiryResponse as klass
+        from ..communication import FamiPortReservationInquiryResponse as klass
         return klass
 
     def test_it(self):
@@ -403,7 +293,7 @@ class FamiPortReservationInquiryResponseTest(FamiPortModelTestCase):
 class FamiPortPaymentTicketingResponseTest(FamiPortModelTestCase):
 
     def _target(self):
-        from ..models import FamiPortPaymentTicketingResponse as klass
+        from ..communication import FamiPortPaymentTicketingResponse as klass
         return klass
 
     def test_it(self):
@@ -434,7 +324,6 @@ class FamiPortPaymentTicketingResponseTest(FamiPortModelTestCase):
             'ticketClass': '13',  # チケット区分
             'templateCode': '14',  # テンプレートコード
             'ticketData': '15',  # 券面データ
-            'ticket': '16',  # チケット情報 (FamiPortTicketのリスト)
             }
 
         old_obj = self._makeOne(**kwds)
@@ -453,7 +342,7 @@ class FamiPortPaymentTicketingResponseTest(FamiPortModelTestCase):
 class FamiPortPaymentTicketingCompletionResponseTest(FamiPortModelTestCase):
 
     def _target(self):
-        from ..models import FamiPortPaymentTicketingCompletionResponse as klass
+        from ..communication import FamiPortPaymentTicketingCompletionResponse as klass
         return klass
 
     def test_it(self):
@@ -483,7 +372,7 @@ class FamiPortPaymentTicketingCompletionResponseTest(FamiPortModelTestCase):
 class FamiPortPaymentTicketingCancelResponseTest(FamiPortModelTestCase):
 
     def _target(self):
-        from ..models import FamiPortPaymentTicketingCancelResponse as klass
+        from ..communication import FamiPortPaymentTicketingCancelResponse as klass
         return klass
 
     def test_it(self):
@@ -513,7 +402,7 @@ class FamiPortPaymentTicketingCancelResponseTest(FamiPortModelTestCase):
 class FamiPortInformationResponseTest(FamiPortModelTestCase):
 
     def _target(self):
-        from ..models import FamiPortInformationResponse as klass
+        from ..communication import FamiPortInformationResponse as klass
         return klass
 
     def test_it(self):
@@ -539,7 +428,7 @@ class FamiPortInformationResponseTest(FamiPortModelTestCase):
 
 class FamiPortCustomerInformationResponseTest(FamiPortModelTestCase):
     def _target(self):
-        from ..models import FamiPortCustomerInformationResponse as klass
+        from ..communication import FamiPortCustomerInformationResponse as klass
         return klass
 
     def test_it(self):

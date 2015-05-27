@@ -13,13 +13,8 @@ from sqlalchemy.ext.mutable import Mutable
 import sqlahelper
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
-from .utils import (
-    InformationResultCodeEnum,
-    FamiPortRequestType,
-    FamiPortResponseType,
-    InformationResultCodeEnum,
-    )
 from .exc import FamiPortNumberingError
+from .communication import InformationResultCodeEnum
 
 Base = sqlahelper.get_base()
 
@@ -302,24 +297,85 @@ class FamiPortOrderType(Enum):
     PaymentOnly          = 4
 
 
-def create_random_sequence_number(length, prefix=''):
-    seq = prefix
+def create_random_sequence_number(length):
+    seq = ''
     while len(seq) < length:
         seq += hashlib.md5((str(time.time()) + str(random.random())).encode()).hexdigest()
     return seq[:length]
 
 
-class FamiPortOrderNoSequence(Base):
-    __tablename__ = 'FamiPortOrderNoSequence'
+class DigitCodec(object):
+    def __init__(self, digits):
+        self.digits = digits
+
+    def encode(self, num):
+        l = len(self.digits)
+        retval = []
+        n = num
+        while True:
+            rem = n % l
+            quo = n // l
+            retval.insert(0, self.digits[rem])
+            if quo == 0:
+                break
+            n = quo
+        return ''.join(retval)
+
+    def decode(self, s):
+        i = 0
+        sl = len(s)
+        l = len(self.digits)
+        retval = 0
+        while i < sl:
+            c = s[i]
+            d = self.digits.find(c)
+            if d < 0:
+                raise ValueError("Invalid digit: " + c)
+            retval *= l
+            retval += d
+            i += 1
+        return retval
+
+digit_encoder = DigitCodec("0123456789ACFGHJKLPRSUWXY")
+       
+def screw(x, s):
+    x = long(x)
+    return (((x & 0x3000) >> 12) \
+        | ((x & 0x20) >> 3) \
+        | ((x & 0x600) >> 6) \
+        | ((x & 0x4000) >> 9) \
+        | ((x & 0x100) >> 2) \
+        | ((x & 0x38000) >> 8) \
+        | ((x & 0x40) << 4) \
+        | ((x & 0xfc0000) >> 7) \
+        | ((x & 0x8) << 14) \
+        | ((x & 0x3000000) >> 6) \
+        | ((x & 0x80) << 13) \
+        | ((x & 0x1c000000) >> 5) \
+        | ((x & 0x1) << 24) \
+        | ((x & 0xe0000000) >> 4) \
+        | ((x & 0x10) << 24) \
+        | ((x & 0x700000000) >> 3) \
+        | ((x & 0x2) << 31) \
+        | ((x & 0x1ff800000000) >> 2) \
+        | ((x & 0x4) << 41) \
+        | ((x & 0x800) << 33) \
+        | ((x & 0x600000000000))
+        ) \
+        ^ s
+
+
+class FamiPortBarcodeNoSequence(Base):
+    __tablename__ = 'FamiPortBarcodeNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
 
     @classmethod
-    def get_next_value(cls, name):
+    def get_next_value(cls, session=_session):
         seq = cls()
-        _session.add(seq)
-        _session.flush()
-        return seq.id
+        session.add(seq)
+        session.flush()
+        return u'%013ld' % screw(seq.id, 0x12345678901L)
 
 
 class FamiPortOrderIdentifierSequence(Base):
@@ -328,11 +384,11 @@ class FamiPortOrderIdentifierSequence(Base):
     id = sa.Column(Identifier, primary_key=True)
 
     @classmethod
-    def get_next_value(cls, name=''):
+    def get_next_value(cls, session=_session):
         seq = cls()
-        _session.add(seq)
-        _session.flush()
-        return seq.id
+        session.add(seq)
+        session.flush()
+        return digit_encoder(screw(seq.id, 0x23456789012L))[:9] # math.log(0x7ffffffffff) / math.log(35) = 8.3832...
 
 
 class FamiPortOrderTicketNoSequence(Base):
@@ -342,19 +398,19 @@ class FamiPortOrderTicketNoSequence(Base):
     value = sa.Column(sa.String(12), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, *args, **kwds):
+    def get_next_value(cls, session=_session):
         for ii in range(15):  # retry count
             try:
-                return cls._get_next_value(*args, **kwds)
+                return cls._get_next_value(session)
             except InvalidRequestError:
                 pass
         raise FamiPortNumberingError()
 
     @classmethod
-    def _get_next_value(cls, name=''):
-        seq = cls(value=create_random_sequence_number(13, name))
-        _session.add(seq)
-        _session.flush()
+    def _get_next_value(cls, session):
+        seq = cls(value=create_random_sequence_number(13))
+        session.add(seq)
+        session.flush()
         return seq.value
 
 
@@ -365,19 +421,19 @@ class FamiPortExchangeTicketNoSequence(Base):
     value = sa.Column(sa.String(12), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, *args, **kwds):
+    def get_next_value(cls, session=_session):
         for ii in range(15):  # retry count
             try:
-                return cls._get_next_value(*args, **kwds)
+                return cls._get_next_value(session)
             except InvalidRequestError:
                 pass
         raise FamiPortNumberingError()
 
     @classmethod
-    def _get_next_value(cls, name=''):
-        seq = cls(value=create_random_sequence_number(13, name))
-        _session.add(seq)
-        _session.flush()
+    def _get_next_value(cls, session):
+        seq = cls(value=create_random_sequence_number(13))
+        session.add(seq)
+        session.flush()
         return seq.value
 
 
@@ -388,7 +444,7 @@ class FamiPortReserveNumberSequence(Base):
     value = sa.Column(sa.String(12), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, *args, **kwds):
+    def get_next_value(cls):
         for ii in range(15):  # retry count
             try:
                 return cls._get_next_value(*args, **kwds)
@@ -436,14 +492,6 @@ class FamiPortOrder(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
     
-    @property
-    def koen_date(self):
-        raise NotImplementedError
-
-    @property
-    def kogyo_name(self):
-        raise NotImplementedError
-
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
         _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
@@ -508,8 +556,7 @@ class FamiPortInformationMessage(Base, WithTimestamp):
 
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
-        if not isinstance(information_result_code, InformationResultCodeEnum):
-            return None
+        assert isinstance(information_result_code, InformationResultCodeEnum)
         query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
         famiport_information_message = query.first()
         if famiport_information_message:

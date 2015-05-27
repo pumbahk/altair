@@ -23,7 +23,7 @@ Identifier = sa.BigInteger
 def upgrade():
     from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType, FamiPortTicketType, FamiPortRefundType, MutableSpaceDelimitedList, SpaceDelimitedList
     op.create_table(
-        'FamiPortOrderNoSequence',
+        'FamiPortBarcodeNoSequence',
         sa.Column('id', Identifier, autoincrement=True, primary_key=True),
         )
     op.create_table(
@@ -396,4 +396,4 @@ def downgrade():
     op.drop_table('FamiPortExchangeTicketNoSequence')
     op.drop_table('FamiPortOrderTicketNoSequence')
     op.drop_table('FamiPortOrderIdentifierSequence')
-    op.drop_table('FamiPortOrderNoSequence')
+    op.drop_table('FamiPortBarcodeNoSequence')

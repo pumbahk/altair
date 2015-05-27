@@ -4,7 +4,7 @@
 変数名はタグ名に合わせる
 """
 
-from .utils import FamiPortRequestType
+from .communication import FamiPortRequestType
 
 class FamiPortRequest(object):
     @property

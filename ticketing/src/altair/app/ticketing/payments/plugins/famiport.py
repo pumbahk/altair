@@ -24,15 +24,23 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailResource,
     )
 
-import altair.app.ticketing.famiport.api as famiport_api
+from altair.app.ticketing.famiport.models import FamiPortTicketType
+from altair.app.ticketing.famiport.api import do_order as do_famiport_order
 from altair.app.ticketing.famiport.exc import FamiPortError
+from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
+from altair.app.ticketing.tickets.utils import (
+    NumberIssuer,
+    build_dicts_from_ordered_product_item,
+    build_dicts_from_carted_product_item,
+    transform_matrix_from_ticket_format
+    )
 
 from ..interfaces import IOrderDelivery
 from ..exceptions import PaymentPluginException
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-
+import pystache
 
 def includeme(config):
     config.add_payment_plugin(FamiPortPaymentPlugin(), PAYMENT_PLUGIN_ID)
@@ -43,6 +51,130 @@ def includeme(config):
 
 class FamiPortPluginFailure(PaymentPluginException):
     pass
+
+def applicable_tickets_iter(bundle):
+    return ApplicableTicketsProducer(bundle).famiport_only_tickets()
+
+def build_ticket_dict(type_, data, template_code):
+    return dict(
+        type=type_,
+        data=data,
+        template=template_code
+        )
+
+DICT_XML_ELEMENT_NAME_MAP = {
+    u'TTEVEN00001': [
+        (u'TitleOver', u'{{{イベント名}}}'),
+        (u'TitleMain', u'{{{パフォーマンス名}}}'),
+        (u'TitleSub', u'{{{公演名副題}}}'),
+        (u'Date', u'{{{開催日}}}'),
+        (u'OpenTime', u'{{{開場時刻}}}'),
+        (u'StartTime', u'{{{開始時刻}}}'),
+        (u'Price', u'{{{チケット価格}}}'),
+        (u'Hall', u'{{{会場名}}}'),
+        (u'Note1', u'{{{aux.注意事項1}}}'),
+        (u'Note2', u'{{{aux.注意事項2}}}'),
+        (u'Note3', u'{{{aux.注意事項3}}}'),
+        (u'Note4', u'{{{aux.注意事項4}}}'),
+        (u'Note5', u'{{{aux.注意事項5}}}'),
+        (u'Note6', u'{{{aux.注意事項6}}}'),
+        (u'Note7', u'{{{aux.注意事項7}}}'),
+        (u'Seat1', u'{{{券種名}}}'),
+        (u'Sub-Title1', u'{{{イベント名}}}'),
+        (u'Sub-Title2', u'{{{パフォーマンス名}}}'),
+        (u'Sub-Title3', u'{{{公演名副題}}}'),
+        (u'Sub-Date', u'{{{開催日s}}}'),
+        (u'Sub-OpenTime', u'{{{開場時刻s}}}'),
+        (u'Sub-StartTime', u'{{{開始時刻s}}}'),
+        (u'Sub-Price', u'{{{チケット価格}}}'),
+        (u'Sub-Seat1', u'{{{券種名}}}'),
+        ],
+    }
+
+
+def build_xml_from_dicts(template_code, dicts):
+    render = pystache.render
+    root = etree.Element(u'TICKET')
+    map_ = DICT_XML_ELEMENT_NAME_MAP[template_code]
+    for element_name, t in map_:
+        e = etree.Element(element_name)
+        e.text = render(t, dicts)
+        root.append(e)
+    return root
+
+
+def get_ticket_template_code_from_ticket_format(ticket_format):
+    retval = None
+    aux = ticket_format.data.get('aux')
+    if aux is not None:
+        retval = aux.get('famiport_ticket_template_code')
+    if retval is None:
+        retval = u'TTEVEN0001' # XXX: デフォルト
+    return retval
+
+def build_ticket_dicts_from_order_like(request, order_like):
+    tickets = []
+    issuer = NumberIssuer()
+    for ordered_product in order.items:
+        for ordered_product_item in ordered_product.elements:
+            dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
+            bundle = ordered_product_item.product_item.ticket_bundle
+            for seat, dict_ in dicts:
+                for ticket in applicable_tickets_iter(bundle):
+                    if ticket.principal:
+                        ticket_type = FamiPortTicketType.TicketWithBarcode
+                    else:
+                        ticket_type = FamiPortTicketType.ExtraTicket
+                    ticket_format = ticket.ticket_format
+                    template_code = get_ticket_template_code_from_ticket_format(ticket_format)
+                    xml = etree.tostring(
+                        build_xml_from_dicts(template_code, dicts),
+                        encoding='unicode'
+                        )
+                    ticket = build_ticket_dict(
+                        type_=ticket_type,
+                        data=xml,
+                        template_code=template_code
+                        )
+                    tickets.append(ticket)
+    return tickets
+
+
+def create_famiport_order(request, order_like, in_payment, name='famiport'):
+    """FamiPortOrderを作成する
+
+    クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
+    """
+
+    # FamiPortで決済しない場合は0をセットする
+    total_amount = 0
+    system_fee = 0
+    ticketing_fee = 0
+    ticket_payment = 0
+
+    if in_payment:
+        total_amount = order_like.total_amount
+        system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
+        ticketing_fee = order_like.delivery_fee
+        ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
+
+    customer_address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
+    customer_address_2 = order_like.shipping_address.address_2
+    customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
+    customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
+
+    return do_famiport_order(
+        order_no=order_like.order_no
+        customer_address_1=customer_address_1,
+        customer_address_2=customer_address_2,
+        customer_name=customer_name,
+        customer_phone_number=customer_phone_number,
+        total_amount=total_amount,
+        system_fee=system_fee,
+        ticketing_fee=ticketing_fee,
+        ticket_payment=ticket_payment,
+        tickets=build_ticket_dicts_from_order_like(request, order_like)
+        )
 
 
 def refund_order(request, order, refund_record, now=None):
@@ -138,7 +270,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            return famiport_api.create_famiport_order(request, cart, in_payment=self._in_payment)
+            return create_famiport_order(request, cart, in_payment=self._in_payment)
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -209,7 +341,7 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+            return create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 
@@ -250,7 +382,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            return famiport_api.create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+            return create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
         except FamiPortError:
             raise FamiPortPluginFailure()
 

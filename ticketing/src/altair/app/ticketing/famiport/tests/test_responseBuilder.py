@@ -8,7 +8,7 @@ from ..requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketi
                     FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
 from ..api import get_response_builder
 from ..builders import FamiPortRequestFactory
-from ..utils import FamiPortRequestType, InformationResultCodeEnum
+from ..communication import FamiPortRequestType, InformationResultCodeEnum
 from ..models import FamiPortInformationMessage
 
 class FamiPortResponseBuilderTest(TestCase):

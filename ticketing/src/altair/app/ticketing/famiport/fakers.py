@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import lxml.etree
-from .models import (
+from .communication import (
     FamiPortReservationInquiryRequest,
     FamiPortPaymentTicketingRequest,
     FamiPortPaymentTicketingCompletionRequest,

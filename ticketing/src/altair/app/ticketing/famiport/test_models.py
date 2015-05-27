@@ -36,3 +36,80 @@ class TestFamiportEvent(unittest.TestCase):
         self.assertEqual(stored_value, u'a b c')
 
 
+class TestScrew(unittest.TestCase):
+    def test_it(self):
+        from .models import screw
+        v = screw(0x555555555555, 0x12345678901)
+        self.assertEqual(v, 0x4d54b5a4ad71 ^ 0x12345678901)
+        v = screw(0x2aaaaaaaaaaa, 0x12345678901)
+        self.assertEqual(v, 0x32ab4a5b528e ^ 0x12345678901)
+
+
+class FamiPortInformationMessageTest(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.famiport.models',
+            ])
+
+    def tearDown(self):
+        _teardown_db()
+
+    def _target(self):
+        from .models import FamiPortInformationMessage as klass
+        return klass
+
+    def _makeOne(self, *args, **kwargs):
+        return self._target()(*args, **kwargs)
+
+    def test_it(self):
+        target = self._target()
+        kwds = {
+            'result_code': 'WithInformation',
+            'message': u'日本語のメッセージ',
+            }
+
+        old_obj = self._makeOne(**kwds)
+        self.session.add(old_obj)
+        self.session.flush()
+        filter_sql = (target.id == old_obj.id)
+        new_obj = self.session \
+            .query(target) \
+            .filter(filter_sql) \
+            .one()
+
+        for key, value in kwds.items():
+            self.assertEqual(getattr(new_obj, key), value)
+
+    def test_create(self):
+        target = self._target()
+        kwds = {
+            'result_code': 'WithInformation',
+            'message': u'日本語のメッセージ',
+            }
+
+        old_obj = target.create(**kwds)
+
+        self.session.add(old_obj)
+        self.session.flush()
+        filter_sql = (target.id == old_obj.id)
+        new_obj = self.session \
+            .query(target) \
+            .filter(filter_sql) \
+            .one()
+
+        for key, value in kwds.items():
+            self.assertEqual(getattr(new_obj, key), value)
+
+    def test_get_message(self):
+        from .communication import InformationResultCodeEnum
+        target = self._target()
+        kwds = {
+            'information_result_code': InformationResultCodeEnum.WithInformation,
+            'default_message': None,
+            }
+
+        msg = target.get_message(**kwds)
+        self.assertEqual(msg, None)
+
+
+

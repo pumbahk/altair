@@ -6,18 +6,6 @@ import sqlalchemy as sa
 import sqlalchemy.pool as sa_pool
 import sqlahelper
 
-from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
-
-STATIC_URL_PREFIX = '/static/'
-STATIC_URL_S3_PREFIX = '/lots/static/'
-STATIC_ASSET_SPEC = 'altair.app.ticketing.lots:static/'
-CART_STATIC_URL_PREFIX = '/c_static/'
-CART_STATIC_S3_URL_PREFIX = '/cart/static/'
-CART_STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
-FC_AUTH_URL_PREFIX = '/fc_auth/static/'
-FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
-
-
 def main(global_config, **local_config):
     """ファミポートAPIサーバのエントリーポイント"""
     settings = dict(global_config)
@@ -33,13 +21,7 @@ def main(global_config, **local_config):
     config.include(includeme, '/famiport/')
     config.include('altair.app.ticketing.famiport.scripts')
 
-    app = config.make_wsgi_app()
-    direct_static_server = direct_static_serving_filter_factory({
-        STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
-        CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
-        FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
-        })
-    return direct_static_server(global_config, app)
+    return config.make_wsgi_app()
 
 
 def includeme(config):
