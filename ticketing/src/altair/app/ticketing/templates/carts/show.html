@@ -31,8 +31,8 @@
       <th>browserid</th>
       <td>${cart.browserid}</td>
     </tr>
-    % if cart.shipping_address:
-    <% user = cart.shipping_address.user %>
+    <% user = cart.user %>
+    % if user is not None:
     <tr>
       <th>ユーザーID</th>
       <td>

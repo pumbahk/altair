@@ -8,7 +8,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
-from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField
+from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField, OurBooleanField
 from altair.formhelpers import replace_ambiguous
 from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
@@ -156,6 +156,11 @@ class PerformanceForm(OurForm):
         default=1,
         hide_on_new=True,
         )
+
+    visible = OurBooleanField(
+        label=u'パフォーマンスの表示/非表示',
+        default=True,
+    )
 
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:

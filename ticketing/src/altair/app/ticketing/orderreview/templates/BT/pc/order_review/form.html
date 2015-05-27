@@ -1,5 +1,5 @@
 <%inherit file="../layout.html" />
-<h2>バンビシャス奈良 バンビシャスチケット 購入確認ページ</h2>
+<h2>バンビシャス奈良 購入確認ページ</h2>
 <form action="${request.route_path('order_review.show')}" method="post">
   <table class="form-table fancy">
     <colgroup>
@@ -11,14 +11,14 @@
         <th>受付番号 <span class="red">*</span></th>
         <td>
           ${form.order_no}
-          ${h.error('order_no')}
+          ${h.render_errors(request, form.order_no.errors)}
         </td>
       </tr>
       <tr>
         <th>電話番号 <span class="red">*</span></th>
         <td>
           ${form.tel}
-          ${h.error('tel')}
+          ${h.render_errors(request, form.tel.errors)}
           <p class="notice">電話番号は、ご登録時の電話番号をご入力ください<br />（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</p>
         </td>
       </tr>

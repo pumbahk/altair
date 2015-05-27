@@ -26,6 +26,7 @@ from .models import (
     LotElectedEntry,
 )
 from . import urls
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from . import utils
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,8 @@ class EntryLotView(object):
 
     @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         event = self.context.event
         lot = self.context.lot
 
@@ -288,7 +291,7 @@ class EntryLotView(object):
 
     @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))
     def step4(self):
-        cform = self._create_form(formdata=self.request.params)
+        cform = self._create_form()
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)

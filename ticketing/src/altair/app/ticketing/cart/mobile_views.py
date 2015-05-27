@@ -31,7 +31,7 @@ from .exceptions import (
     NoEventError,
     NoPerformanceError,
     NoSalesSegment,
-    InvalidCSRFTokenException, 
+    InvalidCSRFTokenException,
     QuantityOutOfBoundsError,
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
@@ -39,7 +39,7 @@ from .exceptions import (
     CartCreationException,
     TooManyCartsCreated,
 )
-from .views import limiter
+from .views import limiter, jump_maintenance_page_for_trouble
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,8 @@ class MobileIndexView(IndexViewMixin):
 
     @lbr_view_config(route_name='cart.index')
     def event_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         logger.debug('mobile index')
 
         try:
@@ -89,7 +91,7 @@ class MobileIndexView(IndexViewMixin):
                     preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
                     if preferred_performance is not None:
                         if preferred_performance.event_id != self.context.event.id:
-                            preferred_performance = None 
+                            preferred_performance = None
 
         if sales_segment is not None:
             return HTTPFound(self.request.route_url(
@@ -124,6 +126,8 @@ class MobileIndexView(IndexViewMixin):
 
     @lbr_view_config(route_name='cart.index2')
     def performance_based_landing_page(self):
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         logger.debug('mobile index')
 
         try:
@@ -509,7 +513,7 @@ class MobileReserveView(object):
 
         data = dict(
             event=event,
-            sales_segment_id=sales_segment_id, 
+            sales_segment_id=sales_segment_id,
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment_id),
             cart=dict(
                 products=[

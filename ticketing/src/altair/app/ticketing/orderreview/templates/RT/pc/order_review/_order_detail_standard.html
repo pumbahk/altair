@@ -165,7 +165,7 @@
   </div>
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">
@@ -179,6 +179,14 @@
       %endfor
     </table>      
   </div>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" class="historySearchBtn" value="入力情報の編集" />
+  </form>
+  % endif
 </div>
 % endif
 

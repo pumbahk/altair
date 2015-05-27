@@ -1,4 +1,5 @@
 from .core import DSLError, Visitor
+import math
 
 NaN = float('NaN')
 
@@ -19,8 +20,10 @@ class Caster(object):
             return o
 
     def to_string(self, o):
-        if isinstance(o, float):
-            return '%g' % o
+        if o is None:
+            return u''
+        elif isinstance(o, float):
+            return u'%g' % o
         elif not isinstance(o, unicode):
             return unicode(o)
         else:
@@ -32,12 +35,11 @@ class Comparator(object):
         self.caster = caster
 
     def _cast(self, l, r):
-        if isinstance(l, float) and not isinstance(r, float):
-            return l, self.caster.to_float(r)
-        elif not isinstance(l, float) and isinstance(r, float):
-            return self.caster.to_float(l), r
-        else:
-            return l, r
+        _l = self.caster.to_float(l)
+        _r = self.caster.to_float(r)
+        if not math.isnan(_l) and not math.isnan(_r):
+            return _l, _r
+        return self.caster.to_string(l), self.caster.to_string(r)
 
     def equal(self, l, r):
         l, r = self._cast(l, r)
@@ -82,7 +84,7 @@ class Evaluator(Visitor):
     def visit_CALL(self, n, ctx):
         fn = self.visit(n.children[0], n)
         args = self.visit(n.children[1], n)
-        return fn(args)
+        return fn(*args)
 
     def visit_TUPLE(self, n, ctx):
         return [self.visit(arg, n) for arg in n.children]

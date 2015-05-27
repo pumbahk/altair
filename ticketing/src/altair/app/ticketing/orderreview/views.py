@@ -5,12 +5,18 @@ import json
 from datetime import datetime
 
 from pyramid.view import view_defaults
+from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.decorator import reify
+from pyramid.interfaces import IRouteRequest, IRequest
 
-from altair.auth import who_api as get_who_api
+from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.app.ticketing.core.api import get_default_contact_url
+from altair.request.adapters import UnicodeMultiDictAdapter
+from altair.now import get_now, is_now_set
 
 from altair.app.ticketing.core.models import ShippingAddress
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
@@ -19,25 +25,62 @@ from altair.app.ticketing.payments import plugins
 
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.rendering import selectable_renderer
+from altair.app.ticketing.cart.view_support import filter_extra_form_schema, get_extra_form_schema, render_view_to_response_with_derived_request, render_display_value
 from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.api import OrderAttributeIO
+from altair.app.ticketing.lots.models import LotEntry
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
+from .exceptions import InvalidForm
+
+def jump_maintenance_page_om_for_trouble(organization):
+    """https://redmine.ticketstar.jp/issues/10878
+    誤表示問題の時に使用していたコード
+    有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
+    """
+    return
+    #if organization is None or organization.code not in ['KE', 'RT', 'CR', 'KT', 'TH', 'TC', 'PC', 'SC', 'YT', 'OG', 'JC', 'NH', '89', 'VS', 'IB', 'FC', 'TG', 'BT', 'LS', 'BA', 'VV', 'KH', 'VK', 'RE','TS', 'RK']:
+    #    raise HTTPFound('/maintenance.html')
+
 
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
 
-class InvalidForm(Exception):
-    def __init__(self, form, errors=[]):
-        self.form = form
-        self.errors = errors
+
+suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketstar.jp/issues/10873 で問題が発生しだしたと思われる30分前
+suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
+
+
+def is_suspicious_order(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return suspicious_start_dt <= orderlike.created_at <= suspicious_end_dt
+
+
+def unsuspicious_order_filter(orderlikes):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもを取り除く
+
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    return [orderlike for orderlike in orderlikes if not is_suspicious_order(orderlike)]
+
+
+def jump_infomation_page_om_for_10873(orderlike):
+    """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもはinfomationページにリダイレクトさせる
+    """
+    if is_suspicious_order(orderlike):
+        raise HTTPFound('/orderreview/information')
+
 
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
@@ -61,6 +104,7 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         authenticated_user = self.context.authenticated_user()
         user = cart_api.get_user(authenticated_user)
         per = 10
@@ -72,7 +116,6 @@ class MypageView(object):
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
-
         magazines_to_subscribe = None
         if shipping_address:
             magazines_to_subscribe = get_magazines_to_subscribe(
@@ -90,20 +133,12 @@ class MypageView(object):
 
     @lbr_view_config(
         route_name='mypage.order.show',
-        renderer=selectable_renderer("mypage/order_show.html")
+        renderer=selectable_renderer("mypage/order_show.html"),
+        permission='*'
         )
     def order_show(self):
-        authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_user(authenticated_user)
-
-        if not user:
-            raise HTTPNotFound()
-
         order = self.context.order
-
-        if not order:
-            raise HTTPNotFound()
-
+        jump_infomation_page_om_for_10873(order)  # refs 10883
         return dict(order=self.context.order)
 
     @lbr_view_config(
@@ -170,32 +205,49 @@ class OrderReviewView(object):
 
     @lbr_view_config(
         route_name='order_review.index',
-        request_method="GET",
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
     @lbr_view_config(route_name='order_review.guest')
     def guest(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
-    @lbr_view_config(
-        route_name='order_review.form',
-        request_method="GET",
-        renderer=selectable_renderer("order_review/form.html")
-        )
+
+@view_defaults(renderer=selectable_renderer("order_review/form.html"))
+class OrderReviewFormView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(route_name='order_review.form')
     def form(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
-    @lbr_view_config(
-        route_name='order_review.show',
-        request_method="GET"
-        )
-    def get(self):
+    @lbr_view_config(route_name='order_review.form2')
+    def form2(self):
         return HTTPFound(self.request.route_path('order_review.form'))
+
+    @lbr_view_config(context=InvalidForm)
+    def exc(self):
+        form = self.context.form
+        order_no_errors = list(form.order_no.errors)
+        order_no_errors.extend(self.context.errors)
+        form.order_no.errors = order_no_errors
+        return {"form": form}
+
+
+@view_defaults(route_name='order_review.show', renderer=selectable_renderer("order_review/show.html"), request_method='POST')
+class OrderReviewShowView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
     @lbr_view_config(
         route_name='order_review.show',
@@ -206,32 +258,140 @@ class OrderReviewView(object):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
             raise InvalidForm(form)
-
         order = self.context.order
+        jump_infomation_page_om_for_10873(order)  # refs 10873
+        announce_datetime = None
+
+        now = get_now(self.request)
+
+        # 抽選発表予定日のチェック
+        if order is not None:
+            lot_entry = LotEntry.query.filter_by(entry_no=order.order_no).first()
+            if lot_entry is not None:
+                announce_datetime = lot_entry.lot.lotting_announce_datetime
+        if announce_datetime is not None:
+            if announce_datetime > now:
+                raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
+
         if order is None or order.shipping_address is None:
             raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
-
-        address = order.shipping_address
-        if form.data["tel"] not in (schemas.strip_hyphen(_tel) for _tel in (address.tel_1, address.tel_2)):
-            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
-
-        # Orion受取りなのにOrionPerformanceが無い場合は、警告
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and order.performance.orion is None:
-            logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
-
         return dict(order=order)
 
-    @lbr_view_config(
-        context=InvalidForm,
-        renderer=selectable_renderer("order_review/form.html")
-        )
-    def invalid_form(self):
-        form = self.context.form
-        order_no_errors = list(form.order_no.errors)
-        order_no_errors.extend(self.context.errors)
-        form.order_no.errors = order_no_errors
-        self.request.errors = form.errors
-        return dict(form=self.context.form)
+@view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
+class OrderAttributesEditView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @reify
+    def _predefined_symbols(self):
+        performance = self.context.order.performance
+        if performance is not None:
+            performance_start_on = performance.start_on
+            performance_end_on = performance.end_on or performance.start_on
+        else:
+            performance_start_on = None
+            performance_end_on = None
+        retval = {
+            'PERFORMANCE_START': performance_start_on,
+            'PERFORMANCE_END': performance_end_on,
+            'ORDERED': self.context.order.created_at,
+            'ISSUED': self.context.order.issued_at,
+            'PAID': self.context.order.paid_at,
+            'CANCELED': self.context.order.canceled_at,
+            'REFUNDED': self.context.order.refunded_at,
+            }
+
+        if is_now_set(self.request):
+            from altair.dynpredicate.core import Node
+            now = get_now(self.request)
+            retval['NOW'] = Node(
+                type='CALL',
+                line=0,
+                column=0,
+                children=(
+                    Node(
+                        type='SYM',
+                        line=0,
+                        column=0,
+                        value='DATE',
+                        ),
+                    Node(
+                        type='TUPLE',
+                        line=0,
+                        column=0,
+                        children=(
+                            Node(type='NUM', line=0, column=0, value=now.year),
+                            Node(type='NUM', line=0, column=0, value=now.month),
+                            Node(type='NUM', line=0, column=0, value=now.day),
+                            Node(type='NUM', line=0, column=0, value=now.hour),
+                            Node(type='NUM', line=0, column=0, value=now.minute),
+                            Node(type='NUM', line=0, column=0, value=now.second)
+                            )
+                        )
+                    )
+                )
+        return retval
+
+    def create_form(self, formdata=None, data=None):
+        mode = ['orderreview', 'editable']
+        order = self.context.order
+        data = {
+            entry[0]: entry[2]
+            for entry in OrderAttributeIO(for_='cart', mode=mode).marshal(self.request, order)
+            }
+        extra_form_field_descs = get_extra_form_schema(self.context, self.request, order.sales_segment, for_='cart')
+        form, form_fields = schemas.build_dynamic_form(
+            self.request,
+            filter_extra_form_schema(extra_form_field_descs, mode=mode),
+            _dynswitch_predefined_symbols=self._predefined_symbols,
+            formdata=formdata,
+            _data=data,
+            csrf_context=self.request
+            )
+        # retouch form_fields
+        for form_field in form_fields:
+            field_desc = form_field['descriptor']
+            form_field['old_display_value'] = render_display_value(self.request, field_desc, data.get(field_desc['name'])) if data is not None else u''
+        return form, form_fields
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.form')
+    def form(self):
+        # 抽選から当選処理で作られた予約についてサポートできていないので修正しないといけない
+        form, form_fields = self.create_form(formdata=None)
+        return dict(order=self.context.order, form=form, form_fields=form_fields)
+
+    def render_show_view(self):
+        return render_view_to_response_with_derived_request(
+            context_factory=lambda request:self.context,
+            request=self.request,
+            route=('order_review.show', {})
+            )
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.update', request_param='do_cancel')
+    def cancel(self):
+        return self.render_show_view()
+
+    @lbr_view_config(route_name='order_review.edit_order_attributes.update', request_param='do_update')
+    def update(self):
+        form, form_fields = self.create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        if not form.validate():
+            if len(form.csrf.errors) > 0:
+                return self.cancel()
+            else:
+                return dict(order=self.context.order, form=form, form_fields=form_fields)
+        # context.order は slave のやつなので書き込みできない
+        from altair.app.ticketing.models import DBSession
+        writable_order = DBSession.query(Order).filter_by(id=self.context.order.id).one()
+        updated_attributes = {
+            k: form.data[k]
+            for k in (form_field['descriptor']['name'] for form_field in form_fields if form_field['descriptor'].get('edit_in_orderreview', False))
+            }
+        writable_order.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes))
+        # writable_order と self.context.order は別セッションのため、このタイミングでは同期していない。
+        # 強制的に上書きして render_show_view() に備える
+        self.context.order = writable_order
+        return self.render_show_view()
 
 
 @lbr_view_config(
@@ -256,6 +416,22 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return HTTPFound(cart_api.safe_get_contact_url(request, default=request.route_path("order_review.form")))
 
+
+@lbr_view_config(
+    route_name="order_review.information",
+    renderer=selectable_renderer("information.html")
+    )
+def information_view(context, request):
+    """お問い合わせページ
+    https://redmine.ticketstar.jp/issues/10883
+    """
+    infomation_tel = '0800-808-0010'
+    return dict(
+        request=request,
+        infomation_tel=infomation_tel,
+        )
+
+
 class QRView(object):
     def __init__(self, context, request):
         self.context = context
@@ -267,12 +443,12 @@ class QRView(object):
     def qr_confirm(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
-        
+
         return dict(
             sign = sign,
             order = ticket.order,
@@ -290,7 +466,7 @@ class QRView(object):
         sign = self.request.matchdict.get('sign', 0)
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
-        
+
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
 
@@ -298,7 +474,7 @@ class QRView(object):
             gate = None
         else:
             gate = ticket.seat.attributes.get("gate", None)
-        
+
         return dict(
             token = ticket.item_token.id, # dummy
             serial = ticket_id,           # dummy
@@ -324,7 +500,7 @@ class QRView(object):
         data = OrderedProductItemToken.filter_by(id = token).first()
         if data is None:
             return HTTPNotFound()
-        
+
         ticket = type('FakeTicketPrintHistory', (), {
             'id': serial,
             'performance': data.item.ordered_product.order.performance,
@@ -333,7 +509,7 @@ class QRView(object):
             'seat': data.seat,
         })
         qr = build_qr_by_orion(self.request, ticket, serial)
-        
+
         if sign == qr.sign:
             return qrdata_as_image_response(qr)
         else:
@@ -346,7 +522,7 @@ class QRView(object):
     def qr_image(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
         sign = self.request.matchdict.get('sign', 0)
-        
+
         ticket = build_qr_by_history_id(self.request, ticket_id)
         if ticket is None:
             raise HTTPNotFound()
@@ -418,7 +594,7 @@ class QRView(object):
                     r.text = response['message']
                     return r
                 raise Exception()
-            
+
             return dict(
                 _overwrite_generate_qrimage_route_name = 'order_review.orion_draw',
                 token = token.id,
@@ -434,7 +610,7 @@ class QRView(object):
         elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
             # altair
             ticket = build_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
-            
+
             return dict(
                 token = token.id,    # dummy
                 serial = ticket.id,  # dummy
@@ -449,18 +625,18 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.qr_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html")
         )
     def send_mail(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         try:
@@ -479,17 +655,17 @@ class QRView(object):
 
     @lbr_view_config(
         route_name='order_review.orion_send',
-        request_method="POST", 
+        request_method="POST",
         renderer=selectable_renderer("order_review/send.html"))
     def send_to_orion(self):
         # TODO: validate mail address
-        
+
         mail = self.request.params['mail']
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
         if not form.validate():
-            return dict(mail=mail, 
+            return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
         result = []
@@ -540,13 +716,13 @@ def render_qrmail_viewlet(context, request):
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
     else:
         name = u''
-    
+
     return dict(
         name=name,
-        event=ticket.event, 
-        performance=ticket.performance, 
-        product=ticket.product, 
-        seat=ticket.seat, 
+        event=ticket.event,
+        performance=ticket.performance,
+        product=ticket.product,
+        seat=ticket.seat,
         mail = request.params['mail'],
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )

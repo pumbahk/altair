@@ -177,15 +177,17 @@
               <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
               </td>
             </tr>
-            <tr>
-            % if accountno:
-              <th scope="row">楽天ポイント口座</th>
-              <td>${accountno}</td>
-            % else:
-              <th scope="row">楽天ポイント口座</th>
-              <td><span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span></td>
+            % if membershipinfo is not None and membershipinfo.enable_point_input:
+                <tr>
+                % if accountno:
+                    <th scope="row">楽天ポイント口座</th>
+                    <td>${accountno}</td>
+                % else:
+                    <th scope="row">楽天ポイント口座</th>
+                    <td><span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span></td>
+                % endif
+                </tr>
             % endif
-            </tr>
           </table>
         </div>
       </div>

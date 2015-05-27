@@ -18,6 +18,9 @@ from altair.app.ticketing.cart import api as cart_api
 
 from .. import models as lot_models
 from ..events import LotElectedEvent
+from altair.app.ticketing.lots.models import (
+    Lot
+)
 
 from altair.app.ticketing.payments.api import (
     is_finished_payment,
@@ -41,6 +44,7 @@ def lot_wish_cart(wish):
         sales_segment=wish.lot_entry.lot.sales_segment,
         channel=wish.lot_entry.channel,
         membership_id=wish.lot_entry.membership_id,
+        user_point_accounts=wish.lot_entry.user_point_accounts,
         products=[
             cart_models.CartedProduct(
                 product=p.product,
@@ -97,6 +101,7 @@ def elect_lot_wish(request, wish, order=None):
         product_requires = [(p.product, p.quantity) for p in cart.items]
         stocked = stocker.take_stock(performance.id, product_requires)
         order = payment.call_payment()
+        order.user_point_accounts = cart.user_point_accounts
 
     else:
         pdmp = wish.lot_entry.payment_delivery_method_pair
@@ -146,8 +151,10 @@ def elect_lots_task(context, request):
                 wish.order_id = order.id
                 wish.lot_entry.order_id = order.id
                 wish.lot_entry.order = order
-                event = LotElectedEvent(request, wish)
-                request.registry.notify(event)
+                mail_send_now = context.lot.mail_send_now
+                if mail_send_now is not None and mail_send_now:
+                    event = LotElectedEvent(request, wish)
+                    request.registry.notify(event)
         except Exception as e:
             work = s.query(lot_models.LotElectWork).filter_by(id=context.work.id).one()
             history.error = work.error = str(e).decode('utf-8')

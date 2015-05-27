@@ -67,6 +67,10 @@ class LotEntryCart(object):
     def name(self):
         return "LOT" + str(self.entry.lot.id)
 
+    @property
+    def user_point_accounts(self):
+        return []
+
 
 @implementer(IShippingAddress)
 class LotSessionShippingAddress(object):
@@ -278,6 +282,10 @@ class LotSessionCart(object):
     @property
     def items(self):
         # 決済時は商品も券面も決まっていないので、空のリストを返せばよいはず...
+        return []
+
+    @property
+    def user_point_accounts(self):
         return []
 
 

@@ -647,6 +647,93 @@ class SejTest(unittest.TestCase):
         self.assertEqual(e.exception.error_msg, 'Already Paid')
         self.assertEqual(e.exception.error_field, 'X_shop_id,X_shop_order_id,X_ticket_hon_cnt')
 
+    def test_request_order_update_11554(self):
+        import webob.util
+        import sqlahelper
+        from altair.app.ticketing.sej.exceptions import SejError
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejOrderUpdateReason, SejPaymentType
+        from altair.app.ticketing.sej.payment import request_update_order
+        webob.util.status_reasons[800] = 'OK'
+
+        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=02&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
+
+        sej_order = SejOrder(
+            payment_type='%d' % SejPaymentType.CashOnDelivery.v,
+            shop_id           = u'30520',
+            billing_number    = u'00000001',
+            exchange_number   = u'00001111',
+            ticket_count      = 0,
+            total_ticket_count = 2,
+            total_price       = 15000,
+            ticket_price      = 13000,
+            commission_fee    = 1000,
+            ticketing_fee     = 1000,
+            exchange_sheet_url      = u'https://www.r1test.com/order/hi.do',
+            order_no      = u'orderid00001',
+            exchange_sheet_number = u'11111111',
+            order_at      = datetime.datetime.now(),
+            regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700'
+            tickets=[
+                SejTicket(
+                    ticket_idx=1,
+                    ticket_type=('%d' % SejTicketType.TicketWithBarcode.v),
+                    barcode_number='00001000',
+                    event_name=u'イベント',
+                    performance_name=u'パフォーマンス',
+                    performance_datetime=datetime.datetime(2012,8,30,19,00),
+                    ticket_template_id='TTTS0001',
+                    ticket_data_xml=u'<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>',
+                    product_item_id=12345
+                    ),
+                SejTicket(
+                    ticket_idx=2,
+                    ticket_type=('%d' % SejTicketType.ExtraTicket.v),
+                    barcode_number='00001001',
+                    event_name=u'イベント',
+                    performance_name=u'パフォーマンス',
+                    performance_datetime=datetime.datetime(2012,8,30,19,00),
+                    ticket_template_id='TTTS0001',
+                    ticket_data_xml=u'<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>',
+                    product_item_id=12345
+                    ),
+                ]
+            )
+
+        request_update_order(
+            self.config.registry,
+            tenant=self.tenant,
+            sej_order=sej_order, 
+            update_reason=SejOrderUpdateReason.Change
+            )
+
+        self.server.poll()
+
+        result = cgi.parse_qs(self.server.request.body)
+        self.assertEqual(result['X_hakken_daikin'], ['001000'])
+        self.assertEqual(result['X_ticket_cnt'], ['02'])
+        self.assertEqual(result['X_ticket_hon_cnt'], ['01'])
+        self.assertEqual(result['xcode'], ['93aec2f6f4954f25b752a39fb7f92719'])
+        self.assertEqual(result['X_hikikae_no'], ['00001111'])
+        self.assertEqual(result['X_shop_order_id'], ['orderid00001'])
+        self.assertEqual(result['X_shop_id'], ['30520'])
+        self.assertEqual(result['X_goukei_kingaku'], ['015000'])
+        self.assertEqual(result['X_saifuban_hakken_lmt'], ['201207300700'])
+        self.assertEqual(result['X_ticket_kbn_01'], ['1'])
+        self.assertEqual(result['X_upd_riyu'], ['01'])
+        self.assertEqual(result['ticket_text_01'], ["<?xml version='1.0' encoding='Shift_JIS' ?>\n<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>"])
+        self.assertEqual(result['X_ticket_kounyu_daikin'], ['001000'])
+        self.assertEqual(result['X_haraikomi_no'], ['00000001'])
+        self.assertEqual(result['X_ticket_daikin'], ['013000'])
+        self.assertEqual(result['X_kouen_date_01'], ['201208301900'])
+        self.assertEqual(result['kougyo_mei_01'], ['\x83C\x83x\x83\x93\x83g'])
+        self.assertEqual(result['X_ticket_template_01'], ['TTTS0001'])
+        self.assertEqual(result['kouen_mei_01'], ['\x83p\x83t\x83H\x81[\x83}\x83\x93\x83X'])
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/updateorder.do')
+        self.assertEqual(sej_order.ticket_count, 1)
+        self.assertEqual(sej_order.total_ticket_count, 2)
+
+
     def test_create_ticket_template_without_css(self):
         from altair.app.ticketing.sej.models import SejTicketTemplateFile
         from altair.app.ticketing.sej.ticket import package_ticket_template_to_zip

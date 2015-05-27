@@ -20,6 +20,9 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.name = form.data['name']
     if form.data['type'] is not None:
         cart_setting.type = form.data['type']
+    cart_setting.auth_type = form.data['auth_type']
+    cart_setting.secondary_auth_type = form.data['secondary_auth_type']
+    cart_setting.nogizaka46_auth_key = form.data['nogizaka46_auth_key']
     cart_setting.performance_selector = form.data['performance_selector']
     cart_setting.performance_selector_label1_override = form.data['performance_selector_label1_override']
     cart_setting.performance_selector_label2_override = form.data['performance_selector_label2_override']
@@ -28,6 +31,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.title = form.data['title']
     cart_setting.fc_kind_title = form.data['fc_kind_title']
     cart_setting.fc_name = form.data['fc_name']
+    cart_setting.lots_date_title = form.data['lots_date_title']
     cart_setting.contact_url = form.data['contact_url']
     cart_setting.contact_url_mobile = form.data['contact_url_mobile']
     cart_setting.contact_tel = form.data['contact_tel']

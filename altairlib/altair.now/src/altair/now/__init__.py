@@ -14,6 +14,9 @@ def get_now(request):
     logger.info("get now=%s", dt)
     return dt
 
+def is_now_set(request):
+    return request.session.get(session_key) is not None
+
 def set_now(request, dt):
     if dt:
         request.session[session_key] = dt

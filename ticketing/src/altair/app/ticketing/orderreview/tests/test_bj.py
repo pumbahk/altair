@@ -5,31 +5,48 @@
 
 import unittest
 from pyramid import testing
-from altair.app.ticketing.testing import DummyRequest
-
-def _setup_db():
-    from sqlalchemy import create_engine
-    import sqlahelper
-    engine = create_engine('sqlite:///')
-    sqlahelper.add_engine(engine)
-    session = sqlahelper.get_session()
-    import altair.app.ticketing.models
-    import altair.app.ticketing.core.models
-    import altair.app.ticketing.cart.models
-    sqlahelper.get_base().metadata.create_all(bind=session.bind)
-    return session
-
-def _teardown_db():
-    import sqlahelper
-    session = sqlahelper.get_session()
-    session.remove()
-    sqlahelper.get_base().metadata.drop_all(bind=session.bind)
+from altair.app.ticketing.testing import DummyRequest, _setup_db, _teardown_db
 
 class OrderReviewResourceTests(unittest.TestCase):
     def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.users.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.cart.models',
+            ])
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.cart.request')
-        self.session = _setup_db()
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.core.models import Organization, ShippingAddress, Host, SalesSegment, SalesSegmentSetting, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
+        self.organization = Organization(short_name='AA')
+        self.host = Host(host_name='example.com', organization=self.organization)
+        self.session.add(self.organization)
+        self.session.add(self.host)
+        self.session.flush()
+        order = Order(
+            ordered_from=self.organization,
+            sales_segment=SalesSegment(setting=SalesSegmentSetting(disp_orderreview=True)),
+            order_no='000000000001',
+            total_amount=0,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            payment_delivery_pair=PaymentDeliveryMethodPair(
+                system_fee=0,
+                transaction_fee=0,
+                discount=0,
+                payment_method=PaymentMethod(
+                    fee=0
+                    ),
+                delivery_method=DeliveryMethod(
+                    )
+                ),
+            shipping_address=ShippingAddress(tel_1='0000')
+            )
+        self.order = order
+        self.session.add(order)
         from altair.sqlahelper import register_sessionmaker_with_engine
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -52,15 +69,11 @@ class OrderReviewResourceTests(unittest.TestCase):
     def test_order_no(self):
         from altair.app.ticketing.core.models import Host, Organization
         from altair.app.ticketing.users.models import Membership
-        request = DummyRequest(params=dict(order_no='000000000001'))
-        host = Host(host_name=request.host,
-                    organization=Organization(short_name="testing"))
-        organization = host.organization
-        membership = Membership(organization=organization, name="89ers")
-        self.session.add(host)
+        request = DummyRequest(POST=dict(order_no='000000000001', tel='0000'), host='example.com')
+        membership = Membership(organization=self.organization, name="89ers")
         self.session.add(membership)
         self.session.flush()
 
         target = self._makeOne(request)
-        self.assertEqual(target.order_no, '000000000001')
+        self.assertEqual(target.order.order_no, '000000000001')
         self.assertEqual(target.primary_membership.id, membership.id)

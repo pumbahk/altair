@@ -31,6 +31,8 @@ def main(global_config, **local_config):
         settings=settings, root_factory='.resources.famiport_resource_factory')
 
     config.include(includeme, '/famiport/')
+    config.include('altair.app.ticketing.famiport.scripts')
+
     app = config.make_wsgi_app()
     direct_static_server = direct_static_serving_filter_factory({
         STATIC_URL_PREFIX: STATIC_ASSET_SPEC,

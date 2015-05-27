@@ -1,0 +1,49 @@
+<%inherit file="./base.html"/>
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+<form id="form1" name="form1" method="post" action="${request.url}">
+  <div class="confirmBox">
+    <div class="confirmBoxInner">
+      <h2>追加情報の入力</h2>
+      <% beginning_of_group = True %>
+      % for field in form_fields:
+        % if field['field']:
+      % if beginning_of_group:
+      <table id="confirmDelivery">
+      <% beginning_of_group = False %>
+      % endif
+        <tr>
+          <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
+          <td>
+            % if field['field'].description:
+            <div class="extra-form-description">${field['field'].description}</div>
+            % endif
+            <ul>
+              <li>
+                ${field['field']()}
+                ${h.error_list(request, field['field'])}
+              </li>
+            </ul>
+            % if field['field']._note:
+            <div class="extra-form-note">${field['field']._note}</div>
+            % endif
+          </td>
+        </tr>
+        % else:
+      % if not beginning_of_group:
+      </table>
+      % endif
+      <div class="confirmBoxContent">${field['description']}</div>
+      <% beginning_of_group = True %>
+      % endif
+      % endfor
+      % if not beginning_of_group:
+      </table>
+      % endif
+    </div>
+  </div>
+  <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/ticketstar/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+</form>

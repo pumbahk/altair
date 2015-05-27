@@ -76,8 +76,9 @@ class OrganizationFormMixin(object):
     )
     prefecture_id = OurSelectField(
         label=u'都道府県',
+        coerce=int,
         validators=[Optional()],
-        choices=[(pref.name, pref.name) for pref in Prefecture.all()]
+        choices=[(pref.id, pref.name) for pref in Prefecture.all()]
     )
     city = OurTextField(
         label=u'市区町村',
@@ -101,11 +102,11 @@ class OrganizationFormMixin(object):
         ]
     )
     tel_1 = OurTextField(
-        label=u'電話番号',
+        label=u'電話番号1',
         validators=[Phone()]
     )
     tel_2 = OurTextField(
-        label=u'携帯電話番号',
+        label=u'電話番号2',
         validators=[Phone()]
     )
     fax = OurTextField(
@@ -140,7 +141,7 @@ class OrganizationForm(OurForm, OrganizationFormMixin):
         """
         organization_id = self._get_organization_id()
         if organization_id is None:
-            raise ValidationError(u'オーガにゼーションIDが不正です')
+            raise ValidationError(u'オーガ二ゼーションIDが不正です')
 
         duplicate_organizations = c_models.Organization \
             .query \
@@ -157,7 +158,7 @@ class OrganizationForm(OurForm, OrganizationFormMixin):
         """
         organization_id = self._get_organization_id()
         if organization_id is None:
-            raise ValidationError(u'オーガにゼーションIDが不正です')
+            raise ValidationError(u'オーガ二ゼーションIDが不正です')
 
         duplicate_organizations = c_models.Organization \
             .query \
@@ -343,6 +344,9 @@ class OrganizationSettingSimpleForm(OurForm):
         choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(cart_models.CartSetting).filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
         )
+    mail_refund_to_user = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.mail_refund_to_user)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
@@ -356,16 +360,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
-        )
-    auth_type = OurSelectField(
-        label=get_annotations_for(c_models.OrganizationSetting.auth_type)['label'],
-        coerce=lambda x: x or None,
-        encoder=lambda x: x or u'',
-        choices=[
-            (u'', u'未設定'),
-            (u'fc_auth', u'FC会員ログイン'),
-            (u'rakuten', u'楽天会員認証'),
-            ]
         )
     margin_ratio = OurDecimalField(
         label=get_annotations_for(c_models.OrganizationSetting.margin_ratio)['label'],
@@ -411,6 +405,21 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
+        )
+    asid = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid)['label']
+        )
+    asid_mobile = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid_mobile)['label']
+        )
+    asid_smartphone = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.asid_smartphone)['label']
+        )
+    lot_asid = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.lot_asid)['label']
+        )
+    sitecatalyst_use = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.sitecatalyst_use)['label']
         )
 
     def validate_multicheckout_shop_name(form, field):

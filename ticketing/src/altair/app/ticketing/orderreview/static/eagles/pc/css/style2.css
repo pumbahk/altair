@@ -884,6 +884,10 @@ div.section-inner h4 {
     margin-left: -1em;
 }
 
+.section table.form ul {
+    list-style-type: none;
+}
+
 /* added */
 
 .red {

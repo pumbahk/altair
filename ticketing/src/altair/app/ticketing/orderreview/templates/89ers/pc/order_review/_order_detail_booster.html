@@ -25,7 +25,7 @@
 </div>
 % else:
 <%
-pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request))
+pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request, mode='orderreview'))
 shipping_address = order.shipping_address
 %>
 <div class="kadomaru">

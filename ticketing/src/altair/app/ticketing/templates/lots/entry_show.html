@@ -1,4 +1,5 @@
 <%inherit file="/layout_2cols.html" />
+<%namespace file="/common/modal.html" name="m" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 <%
@@ -51,7 +52,16 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
               <td class="span3">${lot_entry.browserid}</td>
             </tr>
           </table>
-	  申込内容
+          <div class="pagination-right">
+            %if lot_entry.canceled_at:
+            <a class="btn btn-danger delete-lot-entry" data-dismiss="modal"><i class="icon-remove"></i>非表示</a>
+
+            %endif
+          </div>
+
+          <h4>
+	        申込内容
+          </h4>
           <table class="table table-striped table-bordered">
 	    <tr>
 	      <th>希望</th>
@@ -216,9 +226,24 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
     <a href="javascript:void(0);" onclick="$('#modal-shipping-address').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
+
+
 <script type="text/javascript">
   var endpoint = ${HH.json(request.route_path('lots.entries.shipping_address.edit', lot_id=lot_entry.lot_id, entry_no=lot_entry.entry_no))|n};
   $('#btn-edit-shipping-address').click(function () {
     load_modal_form($('#modal-shipping-address'), endpoint, null, null);
   });
+
+$(".delete-lot-entry").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_path('lots.entries.delete', lot_id=lot_entry.lot_id, entry_no=lot_entry.entry_no)}");
+    form.find("input[type=submit]").val("非表示にする");
+    var message = "抽選申込を削除します。(この操作を戻すことはできません)"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+
 </script>
+${m.confirm_modal()}

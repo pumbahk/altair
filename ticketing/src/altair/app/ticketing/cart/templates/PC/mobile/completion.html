@@ -3,10 +3,10 @@
 
 <%mobile:header>チケット購入</%mobile:header>
 <div>購入を完了いたしました。</div>
-<div>下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</div>
+<div style="color:red;font-weight:bold">下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</div>
 
 <%mobile:header>受付番号</%mobile:header>
-<div>${order.order_no}</div>
+<div style="color:red;font-weight:bold">${order.order_no}</div>
 <%mobile:header>お買い物内容</%mobile:header>
 <div>
 ${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}
@@ -46,7 +46,7 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 &yen;${h.format_number(order.total_amount)}
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
 % if extra_form_data:
 <%mobile:header>追加情報</%mobile:header>
 % for _, (display_name, display_value) in extra_form_data:

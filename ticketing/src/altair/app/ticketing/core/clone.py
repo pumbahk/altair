@@ -159,6 +159,7 @@ class CoreModelCloner(object):
                 'middle_stock_threshold': event_setting.middle_stock_threshold,
                 'middle_stock_threshold_percent': event_setting.middle_stock_threshold_percent,
                 'cart_setting_id': event_setting.cart_setting_id,
+                'visible': True,
                 'created_at': self.now,
                 'updated_at': self.now,
                 }
@@ -589,6 +590,7 @@ class CoreModelCloner(object):
                 'min_product_quantity': product.min_product_quantity,
                 'max_product_quantity': product.max_product_quantity,
                 'augus_ticket_id': None, # XXX
+                'must_be_chosen': product.must_be_chosen,
                 'created_at': self.now,
                 'updated_at': self.now,
                 }

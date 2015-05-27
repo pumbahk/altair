@@ -5,6 +5,7 @@
     'ja': {
       'kind': {
         'text': '自由入力',
+        'password': 'パスワード',
         'textarea': '自由入力ボックス',
         'select': 'プルダウン',
         'multiple_select': 'リストボックス (複数選択可)',
@@ -34,6 +35,9 @@
       'label': 'ラベル',
       'value': '値',
       'required': '必須',
+      'show_on_entry': '購入画面に表示',
+      'show_in_orderreview': '予約確認画面に表示',
+      'edit_in_orderreview': '予約確認画面で編集',
       'max_length': '最大入力文字数',
       'remove': '削除',
       'validators': '入力値の制限',
@@ -96,6 +100,27 @@
         .empty()
         .append(
           $('<input type="text" class="input-medium" />')
+          .attr("maxlength", this.model.get('max_length'))
+        );
+      return this;
+    }
+  });
+
+  var PasswordFieldPreviewView = Backbone.View.extend({
+    tagName: 'div',
+
+    initialize: function () {
+      this.model.on('change:type', this.render, this);
+      this.model.on('change:max_length', function () {
+        this.$el.find('input').attr("maxlength", this.model.get('max_length'));
+      }, this);
+    },
+
+    render: function () {
+      this.$el
+        .empty()
+        .append(
+          $('<input type="password" class="input-medium" />')
           .attr("maxlength", this.model.get('max_length'))
         );
       return this;
@@ -247,6 +272,14 @@
       return {
         preview_view: function (model) {
           return new TextFieldPreviewView({ model: model });
+        },
+        configuration_form_content_view: configuration_form_content_view_text
+      };
+    },
+    'password': function () {
+      return {
+        preview_view: function (model) {
+          return new PasswordFieldPreviewView({ model: model });
         },
         configuration_form_content_view: configuration_form_content_view_text
       };
@@ -498,6 +531,9 @@
       description: '',
       note: '',
       required: false,
+      show_on_entry: true,
+      show_in_orderreview: true,
+      edit_in_orderreview: false,
       activation_conditions: '',
       max_length: null,
       validators: null,
@@ -575,6 +611,15 @@
       this.model.on("change:note", function () {
         this.$el.find('> td.preview > div.note').html(this.model.get('note'));
       }, this);
+      this.model.on("change:show_on_entry", function () {
+        this.$el.find('> td.name-and-kind :checkbox[name="show_on_entry"]').attr('checked', this.model.get('show_on_entry') ? 'checked': null);
+      }, this);
+      this.model.on("change:show_in_orderreview", function () {
+        this.$el.find('> td.name-and-kind :checkbox[name="show_in_orderreview"]').attr('checked', this.model.get('show_in_orderreview') ? 'checked': null);
+      }, this);
+      this.model.on("change:edit_in_orderreview", function () {
+        this.$el.find('> td.name-and-kind :checkbox[name="edit_in_orderreview"]').attr('checked', this.model.get('edit_in_orderreview') ? 'checked': null);
+      }, this);
       this.model.on("change", function (model) {
         this.$el.removeClass("error");
         this.$el.find('.control-group').removeClass('error');
@@ -621,7 +666,7 @@
 
     render_kind_selector: function () {
       var self = this;
-      var retval = $('<select class="span2"></select>');
+      var retval = $('<select style="margin-left:8px; margin-bottom:0; width:12em;"></select>');
       var selected_kind = this.model.get('kind');
       _.map(self.handler_factories, function (v, k) {
         retval.append(
@@ -638,7 +683,7 @@
     },
 
     render_display_name: function () {
-      var retval = $('<input type="text" name="display_name" class="span2" />')
+      var retval = $('<input type="text" name="display_name" style="width:10em;margin-bottom:0; " />')
         .attr("placeholder", translations['ja']['placeholder']['display_name'])
         .val(this.model.get('display_name'));
       var self = this;
@@ -676,7 +721,7 @@
 
     render_requisite_checkbox: function () {
       var self = this;
-      return $('<label class="checkbox span1"></label>')
+      return $('<label class="checkbox inline" style="margin-left:8px"></label>')
         .text(translations['ja']['required'])
         .prepend(
           $('<input name="required" type="checkbox" />')
@@ -697,6 +742,43 @@
             .on('change', function () { self.model.set('activation_conditions', this.value); })
           )
         );
+    },
+
+    render_show_on_entry: function () {
+      var self = this;
+      return $('<label class="checkbox inline"></label>')
+          .text(translations['ja']['show_on_entry'])
+          .prepend(
+            $('<input type="checkbox" name="show_on_entry" />')
+            .attr('checked', this.model.get('show_on_entry') ? 'checked': null)
+            .on('click', function () { self.model.set('show_on_entry', this.checked); })
+          );
+    },
+
+    render_show_in_orderreview: function () {
+      var self = this;
+      return $('<label class="checkbox inline"></label>')
+          .text(translations['ja']['show_in_orderreview'])
+          .prepend(
+            $('<input type="checkbox" name="show_in_orderreview" />')
+            .attr('checked', this.model.get('show_in_orderreview') ? 'checked': null)
+            .on('click', function () { self.model.set('show_in_orderreview', this.checked); })
+          );
+    },
+
+    render_edit_in_orderreview: function () {
+      var self = this;
+      return $('<label class="checkbox inline"></label>')
+          .text(translations['ja']['edit_in_orderreview'])
+          .prepend(
+            $('<input type="checkbox" name="edit_in_orderreview" />')
+            .attr('checked', this.model.get('edit_in_orderreview') ? 'checked': null)
+            .on('click', function () {
+                self.model.set('edit_in_orderreview', this.checked);
+                if (this.checked)
+                    self.model.set('show_in_orderreview', true);
+            })
+          );
     },
 
     refresh_subviews: function () {
@@ -728,6 +810,12 @@
             .append(this.render_display_name())
             .append(this.render_kind_selector())
             .append(this.render_requisite_checkbox())
+          )
+          .append(
+            $('<div class="controls control-row" style="height:2.5em"></div>')
+            .append(this.render_show_on_entry())
+            .append(this.render_show_in_orderreview())
+            .append(this.render_edit_in_orderreview())
           )
           .append(
             $('<div class="form-inline control-group" style="margin-bottom: 6px"></div>')

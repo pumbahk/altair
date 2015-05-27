@@ -1,4 +1,5 @@
 import unittest
+import mock
 from pyramid import testing
 from altair.auth import REQUEST_KEY
 from altair.auth.testing import DummySession
@@ -33,15 +34,8 @@ class FCAuthPluginTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
 
-    def _makeEnv(self, *kwargs):
-        environ = { REQUEST_KEY: DummyRequest() }
-        from wsgiref.util import setup_testing_defaults
-        setup_testing_defaults(environ)
-        environ.update(kwargs)
-        return environ
-
     def test_provided(self):
-        from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
+        from altair.auth.interfaces import ISessionKeeper, IChallenger, IAuthenticator
         from zope.interface.verify import verifyObject
 
         target = self._makeOne()
@@ -53,17 +47,21 @@ class FCAuthPluginTests(unittest.TestCase):
         username = "test_user"
         password = "secret"
 
-        identity = {
-            membership: membership,
-            username: username,
-            password: password,
-            }
-        environ = self._makeEnv()
-        
         target = self._makeOne()
-        result = target.authenticate(environ, identity)
 
-        self.assertFalse(result)
+        auth_factors = {
+            target.name: {
+                membership: membership,
+                username: username,
+                password: password,
+                },
+            }
+
+        request = DummyRequest()
+        dummy_session_keeper = mock.Mock()
+        result = target.authenticate(request, mock.Mock(session_keepers=[dummy_session_keeper]), auth_factors)
+
+        self.assertEqual(result, (None, None))
 
     def _addCredential(self, membership, membergroup, username, password):
         user_credential = add_credential(membership, membergroup, username, password)
@@ -78,16 +76,17 @@ class FCAuthPluginTests(unittest.TestCase):
         password = "secret"
         self._addCredential(membership, membergroup, username, password)
 
-        identity = {
-            "membership": membership,
-            "username": username,
-            "login": True,
-            }
-        environ = self._makeEnv()
-
-
         target = self._makeOne()
-        result = target.authenticate(environ, identity)
+        auth_factors = {
+            target.name: {
+                "membership": membership,
+                "username": username,
+                "login": True,
+                }
+            }
+        request = DummyRequest()
+        dummy_session_keeper = mock.Mock()
+        result = target.authenticate(request, mock.Mock(session_keepers=[dummy_session_keeper]), auth_factors)
 
         self.assertTrue(result)
 
@@ -108,45 +107,26 @@ class TestIt(unittest.TestCase):
             'slave',
             self.session.bind
             )
+        from altair.auth.interfaces import ISessionKeeper
+        from zope.interface import directlyProvides
+        dummy_session_keeper = mock.Mock()
+        directlyProvides(dummy_session_keeper, ISessionKeeper)
+        self.dummy_session_keeper = dummy_session_keeper
 
     def tearDown(self):
         _teardown_db()
         testing.tearDown()
 
-    def _makeAPIFactory(self, *args, **kwargs):
-        
-        from repoze.who.api import APIFactory
-        from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
-        from .plugins import FCAuthPlugin, logger
+    def _makeAuthAPI(self, *args, **kwargs):
+        from altair.auth.api import AuthAPI
+        from altair.auth import PluginRegistry
+        from .plugins import FCAuthPlugin
 
-        fc_auth = FCAuthPlugin()
-        auth_tkt = AuthTktCookiePlugin('secret', 'auth_tkt')
-        identifiers = [('auth_tkt', auth_tkt),]
-        authenticators = [('fc_auth', fc_auth), 
-                          ('auth_tkt', auth_tkt),
-                          ]
-        challengers = [('fc_auth', fc_auth), 
-                       ]
-        mdproviders = [('fc_auth', fc_auth), ]
+        pr = PluginRegistry(None)
+        pr.register(self.dummy_session_keeper)
+        pr.register(FCAuthPlugin())
+        return AuthAPI(pr.lookup_by_interface)
 
-        factory = APIFactory(
-            identifiers=identifiers,
-            authenticators=authenticators,
-            challengers=challengers,
-            mdproviders=mdproviders,
-            request_classifier=None,
-            challenge_decider=None,
-            remote_user_key = 'REMOTE_USER',
-            logger=logger,
-            )
-        return factory
-
-    def _makeEnv(self, *kwargs):
-        environ = { REQUEST_KEY: self.request }
-        from wsgiref.util import setup_testing_defaults
-        setup_testing_defaults(environ)
-        environ.update(kwargs)
-        return environ
 
     def _addCredential(self, membership, membergroup, username, password, organization_short_name="testing"):
         user_credential = add_credential(membership, membergroup, username, password, organization_short_name)
@@ -155,13 +135,10 @@ class TestIt(unittest.TestCase):
         return user_credential
 
     def test_it(self):
-        factory = self._makeAPIFactory()
-        environ = self._makeEnv()
-        api = factory(environ)
-        environ['repoze.who.plugins'] = api.name_registry
+        api = self._makeAuthAPI()
 
-        membership = "fc"
-        membergroup = "fc_plutinum"
+        membership = u"fc"
+        membergroup = u"fc_plutinum"
         username = "test_user"
         password = "secret"
         self._addCredential(membership, membergroup, username, password)
@@ -171,30 +148,29 @@ class TestIt(unittest.TestCase):
             "username": username,
             }
 
-        authenticated, headers = api.login(creds)
+        request = DummyRequest()
+        identifiers, auth_factors, metadata = api.login(request, request.response, creds)
 
-        import pickle
-        self.assertEqual(authenticated, {
-            'username': username,
-            'login': True,
-            'membership': membership,
-            'membergroup': membergroup,
-            'repoze.who.userid': username,
-            "is_guest": False
-            })
+        self.assertEqual(
+            identifiers,
+            {
+                'fc_auth': {
+                    'username': username,
+                    'membership': membership,
+                    'membergroup': membergroup,
+                    "is_guest": False
+                    }
+                }
+            )
 
     def test_challenge_not_required(self):
         login_url = 'http://example.com/login'
-        factory = self._makeAPIFactory(login_url=login_url)
-        environ = self._makeEnv()
-        api = factory(environ)
-        environ['repoze.who.plugins'] = api.name_registry
+        api = self._makeAuthAPI()
         request = self.request
         request.organization = testing.DummyModel(id=None)
-        environ[REQUEST_KEY] = request
 
-        result = api.challenge()
-        self.assertIsNone(result)
+        result = api.challenge(request, request.response)
+        self.assertFalse(result)
 
 
         
@@ -206,6 +182,7 @@ class TestIt(unittest.TestCase):
         from altair.app.ticketing.cart.interfaces import ICartResource
 
         self.config.add_route('fc_auth.login', '/membership/{membership}/login')
+        self.dummy_session_keeper.get_auth_factors.return_value = None
 
         membership = "fc"
         membergroup = "fc_plutinum"
@@ -232,18 +209,11 @@ class TestIt(unittest.TestCase):
         directlyProvides(request.context, ICartResource)
         request.session = DummySession()
 
-        factory = self._makeAPIFactory()
-        environ = self._makeEnv()
-        environ[REQUEST_KEY] = request
-        api = factory(environ)
-        environ['repoze.who.plugins'] = api.name_registry
-        session = request.session
-        environ['session.rakuten_openid'] = session
-
-        result = api.challenge()
-
-        self.assertEqual(result.location, 'http://example.com/membership/fc/login')
-        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?event_id=58')
+        api = self._makeAuthAPI()
+        result = api.challenge(request, request.response)
+        self.assertTrue(result)
+        self.assertEqual(request.response.location, 'http://example.com/membership/fc/login')
+        self.assertEqual(request.session[SESSION_KEY]['return_url'], '/dummy?event_id=58')
 
 
 class guest_authenticateTests(unittest.TestCase):
@@ -276,9 +246,9 @@ class guest_authenticateTests(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_no_guest_membergroup(self):
-        environ = { REQUEST_KEY: DummyRequest() }
+        request = DummyRequest()
         identity = { "membership": 'testing' }
-        result = self._callFUT(environ, identity)
+        result = self._callFUT(request, identity)
 
         self.assertIsNone(result)
 
@@ -293,11 +263,11 @@ class guest_authenticateTests(unittest.TestCase):
 
     def test_it(self):
         import pickle
-        environ = { REQUEST_KEY: DummyRequest() }
         identity = { "membership": 'testing' }
 
         self._create_guest(identity['membership'])
-        result = self._callFUT(environ, identity)
+        request = DummyRequest()
+        result = self._callFUT(request, identity)
         self.assertEqual(result['membership'], 'testing')
         self.assertEqual(result['membergroup'], 'testing_guest')
         self.assertTrue(result['is_guest'])
@@ -307,18 +277,14 @@ class LoginViewTests(unittest.TestCase):
         self.config = testing.setUp()
         from pyramid.authorization import ACLAuthorizationPolicy
         from zope.interface import directlyProvides
-        from altair.auth.interfaces import IAugmentedWhoAPIFactory
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
         self.config.include('altair.auth')
-        def factory(request, identifier):
-            return DummyWhoApi(
-                {'membership': 'testing', 'is_guest': True},
-                [('X-TESTING', 'TESTING')]
-                )
-        directlyProvides(factory, IAugmentedWhoAPIFactory)
-        self.config.add_who_api_factory('fc_auth', factory)
+        get_auth_api_patch = mock.patch('altair.auth.api.get_auth_api')
+        self.get_auth_api = get_auth_api_patch.start()
+        self.get_auth_api_patch = get_auth_api_patch
 
     def tearDown(self):
+        self.get_auth_api_patch.stop() 
         testing.tearDown()
 
     def _getTarget(self):
@@ -332,6 +298,7 @@ class LoginViewTests(unittest.TestCase):
         from . import SESSION_KEY
         from repoze.who.interfaces import IAPIFactory
 
+        self.get_auth_api.return_value.login.return_value = ({ 'username': 'username' }, {}, {})
         request = DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
         context = request.context = testing.DummyResource(
@@ -349,7 +316,8 @@ class LoginViewTests(unittest.TestCase):
         from repoze.who.interfaces import IAPIFactory
         from .resources import FCAuthResource
 
-        request = DummyRequest(matchdict={'membership': 'testing'}, environ={'wsgi.version':'0.0'})
+        self.get_auth_api.return_value.login.return_value = ({ 'username': 'username' }, {}, {})
+        request = DummyRequest(matchdict={'membership': 'this will not be referred to'}, environ={'wsgi.version':'0.0'})
         request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
         context = request.context = testing.DummyResource(
             request=request,
@@ -361,13 +329,4 @@ class LoginViewTests(unittest.TestCase):
         result = target.guest_login()
 
         self.assertEqual(result.location, '/return/to/url')
-        self.assertEqual(result.headers['X-TESTING'], 'TESTING')
-
-class DummyWhoApi(object):
-    def __init__(self, authenticated, headers=[]):
-        self.authenticated = authenticated
-        self.headers = headers
-
-
-    def login(self, identity):
-        return self.authenticated, self.headers
+        self.get_auth_api.return_value.login.assert_called_with(request, request.response, {'membership':'XX', 'is_guest':True}, auth_factor_provider_name='fc_auth')

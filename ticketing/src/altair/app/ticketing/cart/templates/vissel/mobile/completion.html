@@ -56,7 +56,7 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 ￥${h.format_number(order.total_amount)}
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
 % if extra_form_data:
 <%mobile:header>追加情報</%mobile:header>
 % for _, (display_name, display_value) in extra_form_data:

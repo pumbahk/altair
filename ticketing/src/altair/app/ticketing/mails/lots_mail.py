@@ -87,7 +87,7 @@ class LotsMail(object):
     def build_message_from_mail_body(self, request, (lot_entry, elected_wish), traverser, mail_body):
         if not self.validate(lot_entry):
             logger.warn("validation error")
-            return 
+            return
 
         organization = lot_entry.lot.event.organization or request.context.organization
         mail_setting_default = get_mail_setting_default(request)
@@ -107,19 +107,20 @@ class LotsMail(object):
         return self.build_message_from_mail_body(request, subject, traverser, mail_body)
 
     def _body_tmpl_vars(self, request, (lot_entry, elected_wish), traverser):
-        shipping_address = lot_entry.shipping_address 
+        shipping_address = lot_entry.shipping_address
         pair = lot_entry.payment_delivery_method_pair
         info_renderder = SubjectInfoRenderer(request, lot_entry, traverser.data, default_impl=get_subject_info_default())
-        value = dict(h=ch, 
-                     fee_type=ch.fee_type, 
-                     plugins=plugins, 
+        value = dict(h=ch,
+                     fee_type=ch.fee_type,
+                     plugins=plugins,
                      lot_entry=lot_entry,
+                     extra_form_data=lot_entry.get_lot_entry_attribute_pair_pairs(request),
                      shipping_address=shipping_address,
-                     get=info_renderder.get, 
+                     get=info_renderder.get,
                      name=u"{0} {1}".format(shipping_address.last_name, shipping_address.first_name),
-                     payment_method_name=pair.payment_method.name, 
-                     delivery_method_name=pair.delivery_method.name, 
-                     elected_wish=elected_wish, 
+                     payment_method_name=pair.payment_method.name,
+                     delivery_method_name=pair.delivery_method.name,
+                     elected_wish=elected_wish,
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
@@ -138,7 +139,7 @@ class LotsMail(object):
 
 class LotsAcceptedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
-        return (traverser.data["subject"] or 
+        return (traverser.data["subject"] or
                 u'抽選申込受付完了のお知らせ 【{organization}】'.format(organization=organization.name))
 
     def build_context_factory(self, subject):
@@ -146,7 +147,7 @@ class LotsAcceptedMail(LotsMail):
 
 class LotsElectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
-        return (traverser.data["subject"] or 
+        return (traverser.data["subject"] or
                 u'抽選当選のお知らせ 【{organization}】'.format(organization=organization.name))
 
     def build_context_factory(self, subject):
@@ -154,7 +155,7 @@ class LotsElectedMail(LotsMail):
 
 class LotsRejectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
-        return (traverser.data["subject"] or 
+        return (traverser.data["subject"] or
                 u'抽選予約結果のお知らせ 【{organization}】'.format(organization=organization.name))
 
     def build_message_from_mail_body(self, request, subject, traverser, mail_body):
@@ -166,4 +167,3 @@ class LotsRejectedMail(LotsMail):
 
     def build_context_factory(self, subject):
         return lambda request: LotsRejectedMailResource(request, subject)
-

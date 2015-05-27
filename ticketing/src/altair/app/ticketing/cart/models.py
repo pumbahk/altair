@@ -71,6 +71,12 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
+cart_user_point_account_table = sa.Table(
+    "Cart_UserPointAccount", Base.metadata,
+    sa.Column("cart_id", Identifier, sa.ForeignKey("Cart.id")),
+    sa.Column("user_point_account_id", Identifier, sa.ForeignKey("UserPointAccount.id"))
+    )
+
 @implementer(IPaymentCart)
 class Cart(Base, c_models.CartMixin):
     __tablename__ = 'Cart'
@@ -121,6 +127,8 @@ class Cart(Base, c_models.CartMixin):
 
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
+
+    user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
 
     @property
     def products(self):
@@ -312,6 +320,24 @@ class Cart(Base, c_models.CartMixin):
     def from_order_no(cls, order_no):
         return Cart.query.filter_by(_order_no=order_no).one()
 
+    @property
+    def user(self):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        return self.shipping_address and self.shipping_address.user
+
+    @user.setter
+    def user(self, value):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        # XXX: 自動的に ShippingAddress はアサインしない
+        assert self.shipping_address is not None
+        self.shipping_address.user = value
+
+    @property
+    def user_id(self):
+        """いずれは、Cartにもuser_idをカラムとして持たせたい"""
+        return self.shipping_address and self.shipping_address.user_id 
+
+
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):
     __tablename__ = 'CartedProduct'
@@ -488,7 +514,10 @@ class CartedProductItem(Base):
         """ 確保済の座席ステータス
         """
         if len(self.seats) > 0:
-            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+            # although seat_id is the primary key, optimizer may wrongly choose other index
+            # if IN predicate has many values, because of implicit "deleted_at IS NULL" (#11358)
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats]))\
+                .with_hint(c_models.SeatStatus, 'USE INDEX (primary)').with_lockmode('update').all()
         else:
             return []
 
@@ -553,6 +582,17 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
     performance_selector = AnnotatedColumn(sa.Unicode(128), doc=u"カートでの公演絞り込み方法", _a_label=_(u"公演絞り込み方式"))
     performance_selector_label1_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル1'), _a_visible_column=True)
     performance_selector_label2_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル2'), _a_visible_column=True)
+    auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"認証方式")
+    secondary_auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"副認証方式")
+
+    @property
+    def auth_types(self):
+        retval = []
+        if self.auth_type is not None:
+            retval.append(self.auth_type)
+        if self.secondary_auth_type is not None:
+            retval.append(self.secondary_auth_type)
+        return retval
 
     @property
     def default_prefecture(self):
@@ -603,6 +643,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['fc_name'] = value
+
+    @property
+    def lots_date_title(self):
+        return self.data.get('lots_date_title')
+
+    @lots_date_title.setter
+    def lots_date_title(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['lots_date_title'] = value
 
     @property
     def contact_url(self):
@@ -876,3 +926,13 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['embedded_html_complete_page_smartphone'] = value
+
+    @property
+    def nogizaka46_auth_key(self):
+        return self.data.get('nogizaka46_auth_key')
+
+    @nogizaka46_auth_key.setter
+    def nogizaka46_auth_key(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['nogizaka46_auth_key'] = value

@@ -190,7 +190,7 @@ def refund_sej_order(request,
 
 def get_sej_order(order_no, session=None):
     if session is None:
-        session = _session 
+        session = _session
     retval = session.query(SejOrder) \
         .filter_by(order_no=order_no) \
         .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)) \
@@ -199,7 +199,7 @@ def get_sej_order(order_no, session=None):
 
 def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_number=None, billing_number=None, session=None):
     if session is None:
-        session = _session 
+        session = _session
     if order_no is None and exchange_number is None and billing_number is None:
         raise ValueError('any of order_no, exchange_number and billing_number must be non-null value')
     q = session.query(SejOrder)

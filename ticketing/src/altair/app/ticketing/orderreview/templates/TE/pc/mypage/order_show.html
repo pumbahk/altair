@@ -231,7 +231,7 @@ shipping =order.shipping_address
   </div>
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">

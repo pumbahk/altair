@@ -22,7 +22,7 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 ORGANIZATION_ID = 12345
 AUTH_ID = 23456
-    
+
 def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.operators.models import OperatorAuth
     from altair.app.ticketing.operators.models import Operator
@@ -32,8 +32,8 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     operator = Operator.query.first()
     if operator is None:
         organization = Organization(name=":Organization:name",
-                                    short_name=":Organization:short_name", 
-                                    code=":Organization:code", 
+                                    short_name=":Organization:short_name",
+                                    code=":Organization:code",
                                     id=organization_id)
         organization.settings = [
             OrganizationSetting(
@@ -50,46 +50,49 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     return operator
 
 def setup_product_item(quantity, quantity_only, organization, stock_type=None):
-    from altair.app.ticketing.core.models import Stock
-    from altair.app.ticketing.core.models import StockStatus
-    from altair.app.ticketing.core.models import StockType
-    from altair.app.ticketing.core.models import StockHolder
-    from altair.app.ticketing.core.models import Performance
-    from altair.app.ticketing.core.models import PerformanceSetting
-    from altair.app.ticketing.core.models import Product
-    from altair.app.ticketing.core.models import ProductItem
-    from altair.app.ticketing.core.models import SalesSegment
-    from altair.app.ticketing.core.models import SalesSegmentGroup
-    from altair.app.ticketing.core.models import Event
-    from altair.app.ticketing.core.models import Venue
-    from altair.app.ticketing.core.models import Site
-    from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-    from altair.app.ticketing.core.models import PaymentMethod
-    from altair.app.ticketing.core.models import DeliveryMethod
+    from altair.app.ticketing.core.models import (
+        Stock,
+        StockStatus,
+        StockType,
+        StockHolder,
+        Performance,
+        PerformanceSetting,
+        Product,
+        ProductItem,
+        SalesSegment,
+        SalesSegmentGroup,
+        Event,
+        EventSetting,
+        Venue,
+        Site,
+        PaymentDeliveryMethodPair,
+        PaymentMethod,
+        DeliveryMethod,
+        )
 
-    sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
-                         end_at=datetime(2000, 1, 1, 23), 
-                         max_quantity=8, 
+    sales_segment = SalesSegment(start_at=datetime(2000, 1, 1),
+                         end_at=datetime(2000, 1, 1, 23),
+                         max_quantity=8,
                          seat_choice=True
                          )
     sales_segment.sales_segment_group = SalesSegmentGroup(
-        name=":SalesSegmentGroup:name", 
+        name=":SalesSegmentGroup:name",
         kind=":kind")
 
     payment_delivery_method_pair = PaymentDeliveryMethodPair(
-        system_fee=100, 
-        transaction_fee=200, 
+        system_fee=100,
+        transaction_fee=200,
         delivery_fee_per_order=0,
         delivery_fee_per_principal_ticket=300,
         delivery_fee_per_subticket=0,
-        discount=0, 
+        discount=0,
         payment_method=PaymentMethod(
-            name=":PaymentMethod:name", 
-            fee=300, 
-            fee_type=1, 
-            payment_plugin_id=2), 
+            name=":PaymentMethod:name",
+            fee=300,
+            fee_type=1,
+            payment_plugin_id=2),
         delivery_method=DeliveryMethod(
-            name=":DeliveryMethod:name", 
+            name=":DeliveryMethod:name",
             fee_per_order=0,
             fee_per_principal_ticket=300,
             fee_per_subticket=0,
@@ -97,48 +100,52 @@ def setup_product_item(quantity, quantity_only, organization, stock_type=None):
     )
 
     sales_segment.payment_delivery_method_pairs.append(payment_delivery_method_pair)
+
+    event_setting = EventSetting()
+
     performance = Performance(
         name=":Performance:name",
-        code=":code", 
-        open_on=datetime(2000, 1, 1), 
-        start_on=datetime(2000, 1, 1, 10), 
-        end_on=datetime(2000, 1, 1, 23), 
-        abbreviated_title=":PerformanceSetting:abbreviated_title", 
-        subtitle=":PerformanceSetting:subtitle", 
-        note=":PerformanceSetting:note", 
+        code=":code",
+        open_on=datetime(2000, 1, 1),
+        start_on=datetime(2000, 1, 1, 10),
+        end_on=datetime(2000, 1, 1, 23),
+        abbreviated_title=":PerformanceSetting:abbreviated_title",
+        subtitle=":PerformanceSetting:subtitle",
+        note=":PerformanceSetting:note",
         event=Event(
             title=":Event:title",
-            abbreviated_title=":abbreviated_title", 
-            organization=organization, 
-            code=":Event:code"), 
+            abbreviated_title=":abbreviated_title",
+            organization=organization,
+            setting=event_setting,
+            code=":Event:code"),
         venue=Venue(
-            name=":Venue:name", 
-            organization=organization, 
-            sub_name=":sub_name", 
+            name=":Venue:name",
+            organization=organization,
+            sub_name=":sub_name",
             site=Site()
         )
     )
     performance.setting = PerformanceSetting()
 
     product_item = ProductItem(
-        name=":ProductItem:name", 
-        price=12000, 
-        quantity=quantity, 
-        performance=performance, 
+        name=":ProductItem:name",
+        price=12000,
+        quantity=quantity,
+        performance=performance,
         product=Product(
-            sales_segment=sales_segment, 
-            name=":Product:name", 
-            price=10000), 
+            sales_segment=sales_segment,
+            name=":Product:name",
+            price=10000),
         stock=Stock(
             quantity=10,
-            performance=performance, 
+            performance=performance,
             stock_type=StockType(
                 name=":StockType:name",
                 type=":type",
                 display_order=50,
                 quantity_only=quantity_only
-            ), 
-            stock_holder=StockHolder(name=":StockHolder:name"), 
+            ),
+            stock_holder=StockHolder(name=":StockHolder:name"),
             stock_status=StockStatus(quantity=10)
         )
     )
@@ -178,26 +185,26 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
     order = Order(
         shipping_address=setup_shipping_address(), #xxx:
-        total_amount=600, 
-        system_fee=100, 
-        transaction_fee=200, 
-        delivery_fee=300, 
-        special_fee=400, 
-        order_no=order_no, 
-        paid_at=datetime(2000, 1, 1, 1, 10), 
-        delivered_at=None, 
-        canceled_at=None, 
-        created_at=datetime(2000, 1, 1, 1), 
+        total_amount=600,
+        system_fee=100,
+        transaction_fee=200,
+        delivery_fee=300,
+        special_fee=400,
+        order_no=order_no,
+        paid_at=datetime(2000, 1, 1, 1, 10),
+        delivered_at=None,
+        canceled_at=None,
+        created_at=datetime(2000, 1, 1, 1),
         issued_at=datetime(2000, 1, 1, 1, 13),
-        organization_id=organization.id, 
+        organization_id=organization.id,
         ordered_from=organization,  #xxx:
-        payment_delivery_pair = payment_delivery_method_pair, 
-        performance=product_item.performance, 
+        payment_delivery_pair = payment_delivery_method_pair,
+        performance=product_item.performance,
     )
     ordered_product = OrderedProduct(
-        price=12000, 
-        product=product_item.product, 
-        order=order, 
+        price=12000,
+        product=product_item.product,
+        order=order,
         quantity=quantity
     )
     return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
@@ -208,8 +215,8 @@ def setup_order(quantity, quantity_only, organization, order_no="Order:order_no"
 
 def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:entry_no", product_item=None, stock_type=None):
     from altair.app.ticketing.lots.models import (
-        LotEntryWish, 
-        LotEntry, 
+        LotEntryWish,
+        LotEntry,
         Lot
     )
     product_item = product_item or setup_product_item(quantity, quantity_only, organization, stock_type)
@@ -217,20 +224,20 @@ def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:en
     payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0] #xxx:
     lot_entry = LotEntry(
         organization=organization,
-        created_at=datetime(2000, 1, 1, 1), 
-        payment_delivery_method_pair=payment_delivery_method_pair, 
+        created_at=datetime(2000, 1, 1, 1),
+        payment_delivery_method_pair=payment_delivery_method_pair,
         shipping_address=setup_shipping_address(), #xxx:
-        entry_no=entry_no, 
+        entry_no=entry_no,
         lot=Lot(
-            name="Lot:name", 
-            created_at=datetime(2000, 1, 1, 1), 
-            sales_segment=sales_segment, 
+            name="Lot:name",
+            created_at=datetime(2000, 1, 1, 1),
+            sales_segment=sales_segment,
             event=product_item.performance.event
         )
     )
     LotEntryWish(
-        lot_entry=lot_entry, 
-        wish_order=0, 
+        lot_entry=lot_entry,
+        wish_order=0,
         performance=product_item.performance
     )
     return lot_entry
@@ -288,7 +295,7 @@ class MailTemplateCreationTest(unittest.TestCase):
         _teardown_db()
 
     def _getTarget(self, request, mtype):
-        from .api import get_mail_utility        
+        from .api import get_mail_utility
         return get_mail_utility(request, mtype)
 
     def _callAction(self, request, subject, mtype):
@@ -308,7 +315,7 @@ class MailTemplateCreationTest(unittest.TestCase):
         stock_type.type = StockTypeEnum.Other.v
         order = setup_order(quantity=2,
                             quantity_only=True,
-                            organization=operator.organization, 
+                            organization=operator.organization,
                             order_no=order_no,
                             stock_type=stock_type)
         request = _make_request(operator.organization)
@@ -344,7 +351,7 @@ class MailTemplateCreationTest(unittest.TestCase):
         order_no = "*orderno*"
         order = setup_order(quantity=2,
                             quantity_only=True,
-                            organization=operator.organization, 
+                            organization=operator.organization,
                             order_no=order_no)
         request = _make_request(operator.organization)
 
@@ -362,7 +369,7 @@ class MailTemplateCreationTest(unittest.TestCase):
         entry_no = "*entryno*"
         lot_entry = setup_lot_entry(quantity=2,
                                     quantity_only=True,
-                                    organization=operator.organization, 
+                                    organization=operator.organization,
                                     entry_no=entry_no)
         request = _make_request(operator.organization)
         with mock.patch("altair.app.ticketing.mails.lots_mail.ch.render_payment_lots_accepted_mail_viewlet") as prender:
@@ -386,13 +393,13 @@ class MailTemplateCreationTest(unittest.TestCase):
         )
         product_item = setup_product_item(**quantity_settings)
         order = setup_order(
-            order_no=entry_no, 
-            product_item=product_item, 
+            order_no=entry_no,
+            product_item=product_item,
             **quantity_settings
         )
         lot_entry = setup_lot_entry(
-            entry_no=entry_no, 
-            product_item=product_item, 
+            entry_no=entry_no,
+            product_item=product_item,
             **quantity_settings
         )
         elected_wish = setup_eleted_wish(lot_entry=lot_entry, order=order)
@@ -414,7 +421,7 @@ class MailTemplateCreationTest(unittest.TestCase):
 
         lot_entry = setup_lot_entry(quantity=2,
                                     quantity_only=True,
-                                    organization=operator.organization, 
+                                    organization=operator.organization,
                                     entry_no=entry_no)
         request = _make_request(operator.organization)
 
@@ -423,7 +430,7 @@ class MailTemplateCreationTest(unittest.TestCase):
                 result = self._callAction(request, (lot_entry, None), MailTypeEnum.LotsRejectedMail)
                 self.assertTrue(result.body.data, str) #xxx:
                 self.assertIn("*entryno*", result.body.data)
-                
+
                 ## 落選メールは呼ばれないのが正しい？
                 self.assertFalse(prender.called)
                 self.assertFalse(drender.called)

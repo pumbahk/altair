@@ -1,0 +1,28 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+  <form action="${request.url}" class="wishForm" method="post">
+    <div class="subbox">
+      <dl>
+        <dt><p class="lineRed">申込状況確認</p></dt>
+        <dd>
+          <div class="subInner2">
+            <dl class="creditList">
+              <dt class="creditHl">${form['entry_no'].label}</dt>
+              <dd>
+                ${form['entry_no'](class_="text")}（例：RP00000000AB）
+                ${self.error(form, 'entry_no', enclose=True)}
+              </dd>
+              <dt class="creditHl">${form['tel_no'].label}</dt>
+              <dd>
+                ${form['tel_no'](class_="text")}（例：080xxxxvvvv）
+                ${self.error(form, 'tel_no', enclose=True)}
+              </dd>
+            </dl>
+          </div>
+        </dd>
+      </dl>
+    </div>
+    <p class="nextBtn"><input type="submit" value="確認する" />
+  </form>
+</div>
+

@@ -13,12 +13,16 @@ Cancel = MailTypeEnum.PurchaseCancelMail
 def on_order_canceled(event):
     get_mail_utility(event.request, Cancel).send_mail(event.request, event.order)
 
-def send_refund_reserve_mail(request, refund):
+def send_refund_reserve_mail(request, refund, mail_refund_to_user, orders):
     subject_prefix = u'[払戻予約]'
     subject = subject_prefix + u' ' + u', '.join([p.name for p in refund.performances])
     recipients = [refund.organization.contact_email]
     body_template = 'altair.app.ticketing:templates/orders/refund_reserve_mail.txt'
     body = render_to_response(body_template, dict(refund=refund))
+    mutil = get_mail_utility(request, MailTypeEnum.PurchaseRefundMail)
+    if mail_refund_to_user is not None and mail_refund_to_user:
+        for order in orders:
+            mutil.send_mail(request, order)
     return send(request, subject, recipients, body)
 
 def send_refund_complete_mail(request, refund):

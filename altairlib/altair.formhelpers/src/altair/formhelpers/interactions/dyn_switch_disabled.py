@@ -18,7 +18,9 @@ def build_js_from_predicates(asts):
     emit.buf.append(u'; }')
     return u''.join(emit.buf)
 
-def build_dyn_switch_disabled_js(rendering_context, registry_var):
+def build_dyn_switch_disabled_js(rendering_context, registry_var, predefined_symbols={}, js_serializer=None):
+    if js_serializer is None:
+        js_serializer = json.dumps
     dyn_switches = {}
     for name, rendrant in rendering_context.rendrants.items():
         validators = [validator for validator in rendrant.field.validators if isinstance(validator, DynSwitchDisabled)]
@@ -28,6 +30,9 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
     retval.append(u'''<script type="text/javascript">
 (function (registry) {
   var providers = registry.providers;
+  function daysSince19000100(v) {
+    return 25568. + v.getTime() / 86400000.;
+  }
 ''')
     retval.append(u'''  var Context = function(sym) { if (sym) this.sym = sym; };
   Context.prototype = {
@@ -35,12 +40,24 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
       return providers[name].getValue();
     },
     sym: function (_) { return null },
+    _toNumber: function (v) {
+      if (v instanceof Date)
+        return daysSince19000100(v);
+      else
+        return +v;
+    },
+    _toString: function (v) {
+      if (v === null || v === void(0))
+        return "";
+      else
+        return v.toString();
+    },
     _cast: function (l, r) {
-      if (typeof l == 'number')
-        r = 0 + r;
-      else if (typeof h == 'number')
-        l = 0 + l;
-      return [l, r];
+      var _l = this._toNumber(l),
+          _r = this._toNumber(r);
+      if (!isNaN(_l) && !isNaN(_r))
+        return [_l, _r];
+      return [this._toString(l), this._toString(r)];
     },
     equal: function (l, r) {
       var p = this._cast(l, r);
@@ -63,9 +80,19 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
     },
     NOW: function () {
       return new Date();
+    },
+    DATE: function (year, month, day, hour, minute, second) {
+      return new Date(
+        year, month - 1, day,
+        hour || 0,
+        minute || 0,
+        second || 0
+      );
     }
   };
 ''')
+    retval.append(u'''  var symbolsFactory = function(ctx) { return %(symbols)s; };
+''' % dict(symbols=js_serializer(predefined_symbols)))
     retval.append(u'''  var stateChangeHandlers = {
 ''')
     for i, (name, validators) in enumerate(dyn_switches.items()):
@@ -78,14 +105,18 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
       var ctx = new Context(function (name) {
         if (name == 'THIS') {
           return provider.getValue();
-        } else {
-          var f = builtinFunctions[name];
-          if (f !== void(0)) {
-            return f;
-          }
+        }
+        var v = symbols[name];
+        if (v !== void(0)) {
+          return v;
+        }
+        var f = builtinFunctions[name];
+        if (f !== void(0)) {
+          return f;
         }
         return null;
       });
+      var symbols = symbolsFactory(ctx);
       return function () {
         if (predicate(ctx)) {
           for (var i = 0; i < elements.length; i++) {
@@ -97,7 +128,7 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
           }
         }
       };
-    })(%(name)s, %(predicate)s)''' % dict(name=json.dumps(name), predicate=predicate))
+    })(%(name)s, %(predicate)s)''' % dict(name=js_serializer(name), predicate=predicate))
     retval.append(u'\n  };\n')
     dependencies_rev_map = {}
     for name, validators in dyn_switches.items():
@@ -114,10 +145,11 @@ def build_dyn_switch_disabled_js(rendering_context, registry_var):
       };
     }
   })(%(name)s, %(dependants)s);
+''' % dict(name=js_serializer(dependent_on_var), dependants=js_serializer(dependants)))
+    retval.append(u'''
   for (var i in stateChangeHandlers) {
     stateChangeHandlers[i]();
   }
-''' % dict(name=json.dumps(dependent_on_var), dependants=json.dumps(dependants)))
-    retval.append(u'''})(%(registry_var)s);
+})(%(registry_var)s);
 </script>''' % dict(registry_var=registry_var))
     return u''.join(retval)

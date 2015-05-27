@@ -64,6 +64,13 @@ class SearchLotEntryForm(Form):
             ),
         widget=OurDateWidget()
     )
+
+    event = SelectField(
+        label=u"イベント",
+        validators=[],
+        choices=[],
+    )
+
     lot = SelectField(
         label=u"抽選",
         validators=[
@@ -81,7 +88,8 @@ class SearchLotEntryForm(Form):
                not self.email.data and \
                not self.entried_from.data and \
                not self.entried_to.data and \
-               not self.lot.data:
+               not self.lot.data and \
+               not self.event.data:
                 self.entry_no.errors.append(u'条件を1つ以上指定してください')
                 status = False
         return status

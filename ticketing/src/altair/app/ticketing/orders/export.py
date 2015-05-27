@@ -252,7 +252,7 @@ class OrderAttributeRenderer(object):
     def __call__(self, record, context):
         order = dereference(record, self.key)
         retval = []
-        for (attr_key, attr_value), _ in get_order_attribute_pair_pairs(context.request, order, include_undefined_items=True):
+        for (attr_key, attr_value), _ in get_order_attribute_pair_pairs(context.request, order, include_undefined_items=True, mode='any'):
             renderer = self.renderer_class(u'_', u'%s[%s]' % (self.variable_name, attr_key))
             attr_value = attribute_coerce(attr_value)
             retval.extend(renderer(dict(_=attr_value), context))

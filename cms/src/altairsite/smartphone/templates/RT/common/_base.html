@@ -55,3 +55,7 @@
 ${self.body()}
 <%block name="fnavi" />
 <%include file="_footer.html"/>
+
+% if request.featuresettingmanager.get_boolean_value("altair.cms.usersite.front.usesitecatalyst"):
+    <%include file="altaircms:templates/front/sitecatalyst.html"/>
+% endif

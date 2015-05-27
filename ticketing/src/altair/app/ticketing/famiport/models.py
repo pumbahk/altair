@@ -1,24 +1,305 @@
 # -*- coding: utf-8 -*-
+import types
 import time
 import random
 import hashlib
+from enum import Enum
 import sqlalchemy as sa
+from sqlalchemy.types import TypeDecorator
+from sqlalchemy import orm
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.mutable import Mutable
 import sqlahelper
+from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from .utils import (
+    InformationResultCodeEnum,
     FamiPortRequestType,
     FamiPortResponseType,
     InformationResultCodeEnum,
     )
 from .exc import FamiPortNumberingError
 
-
 Base = sqlahelper.get_base()
 
 # 内部トランザクション用
-_session = scoped_session(sessionmaker())
+_session = orm.scoped_session(orm.sessionmaker())
+
+
+class FamiPortSalesChannel(Enum):
+    FamiPortOnly    = 1
+    WebOnly         = 2
+    FamiPortAndWeb  = 3
+
+
+class HardcodedModel(object):
+    class __metaclass__(type):
+        def __new__(mcs, name, bases, d):
+            retval = type.__new__(mcs, name, bases, d)
+            map_ = {}
+            for k, v in d.items():
+                if not k.startswith('__') and not isinstance(v, (classmethod, types.UnboundMethodType, types.FunctionType)):
+                    try:
+                        i = iter(v)
+                    except TypeError:
+                        i = (v, )
+                    o = retval(*i)
+                    id_ = getattr(o, 'id', None)
+                    if id_ is not None:
+                        map_[id_] = o
+                    setattr(retval, k, o)
+            setattr(retval, '__map__', map_)
+            return retval
+
+    @classmethod
+    def get(cls, id):
+        return cls.__map__.get(id)
+
+
+class FamiPortArea(HardcodedModel):
+    Nationwide     = (1, u'全国')
+    Hokkaido       = (2, u'北海道')
+    Tohoku         = (3, u'東北')
+    Kanto          = (4, u'関東')
+    Tokai          = (5, u'東海')
+    Hokushinetsu   = (6, u'北信越')
+    Kansai         = (7, u'関西')
+    ChugokuShikoku = (8, u'中国・四国')
+    KyushuOkinawa  = (9, u'九州・沖縄')
+
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+
+class FamiPortPrefecture(HardcodedModel):
+    Nationwide = (0, u'全国', FamiPortArea.Nationwide)
+    Hokkaido   = (1, u'北海道', FamiPortArea.Hokkaido)
+    Aomori     = (2, u'青森県', FamiPortArea.Tohoku)
+    Iwate      = (3, u'岩手県', FamiPortArea.Tohoku)
+    Miyagi     = (4, u'宮城県', FamiPortArea.Tohoku)
+    Akita      = (5, u'秋田県', FamiPortArea.Tohoku)
+    Yamagata   = (6, u'山形県', FamiPortArea.Tohoku)
+    Fukushima  = (7, u'福島県', FamiPortArea.Tohoku)
+    Ibaraki    = (8, u'茨城県', FamiPortArea.Kanto)
+    Tochigi    = (9, u'栃木県', FamiPortArea.Kanto)
+    Gunma      = (10, u'群馬県', FamiPortArea.Kanto)
+    Saitama    = (11, u'埼玉県', FamiPortArea.Kanto)
+    Chiba      = (12, u'千葉県', FamiPortArea.Kanto)
+    Tokyo      = (13, u'東京都', FamiPortArea.Kanto)
+    Kanagawa   = (14, u'神奈川県', FamiPortArea.Kanto)
+    Yamanashi  = (19, u'山梨県', FamiPortArea.Kanto)
+    Gifu       = (21, u'岐阜県', FamiPortArea.Tokai)
+    Shizuoka   = (22, u'静岡県', FamiPortArea.Tokai)
+    Aichi      = (23, u'愛知県', FamiPortArea.Tokai)
+    Mie        = (24, u'三重県', FamiPortArea.Tokai)
+    Niigata    = (15, u'新潟県', FamiPortArea.Hokushinetsu)
+    Toyama     = (16, u'富山県', FamiPortArea.Hokushinetsu)
+    Ishikawa   = (17, u'石川県', FamiPortArea.Hokushinetsu)
+    Fukui      = (18, u'福井県', FamiPortArea.Hokushinetsu)
+    Nagano     = (20, u'長野県', FamiPortArea.Hokushinetsu)
+    Shiga      = (25, u'滋賀県', FamiPortArea.Kansai)
+    Kyoto      = (26, u'京都府', FamiPortArea.Kansai)
+    Osaka      = (27, u'大阪府', FamiPortArea.Kansai)
+    Hyogo      = (28, u'兵庫県', FamiPortArea.Kansai)
+    Nara       = (29, u'奈良県', FamiPortArea.Kansai)
+    Wakayama   = (30, u'和歌山県', FamiPortArea.Kansai)
+    Tottori    = (31, u'鳥取県', FamiPortArea.ChugokuShikoku)
+    Shimane    = (32, u'島根県', FamiPortArea.ChugokuShikoku)
+    Okayama    = (33, u'岡山県', FamiPortArea.ChugokuShikoku)
+    Hiroshima  = (34, u'広島県', FamiPortArea.ChugokuShikoku)
+    Yamaguchi  = (35, u'山口県', FamiPortArea.ChugokuShikoku)
+    Tokushima  = (36, u'徳島県', FamiPortArea.ChugokuShikoku)
+    Kagawa     = (37, u'香川県', FamiPortArea.ChugokuShikoku)
+    Ehime      = (38, u'愛媛県', FamiPortArea.ChugokuShikoku)
+    Kochi      = (39, u'高知県', FamiPortArea.ChugokuShikoku)
+    Fukushima  = (40, u'福岡県', FamiPortArea.KyushuOkinawa)
+    Saga       = (41, u'佐賀県', FamiPortArea.KyushuOkinawa)
+    Nagasaki   = (42, u'長崎県', FamiPortArea.KyushuOkinawa)
+    Kumamoto   = (43, u'熊本県', FamiPortArea.KyushuOkinawa)
+    Oita       = (44, u'大分県', FamiPortArea.KyushuOkinawa)
+    Miyagi     = (45, u'宮城県', FamiPortArea.KyushuOkinawa)
+    Kagoshima  = (46, u'鹿児島県', FamiPortArea.KyushuOkinawa)
+    Okinawa    = (47, u'沖縄県', FamiPortArea.KyushuOkinawa)
+
+    def __init__(self, id, name, area):
+        self.id = id
+        self.name = name
+        self.area = area
+
+
+class FamiPortPlayguide(Base, WithTimestamp):
+    __tablename__ = 'FamiPortPlayguide'
+
+    id                  = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
+    discrimination_code = sa.Column(sa.Integer, nullable=False)
+
+
+class FamiPortClient(Base, WithTimestamp):
+    __tablename__ = 'FamiPortClient'
+
+    famiport_playguide_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPlayguide.id'), nullable=False)
+    code                  = sa.Column(sa.Unicode(24), nullable=False, primary_key=True)
+
+    playguide             = orm.relationship(FamiPortPlayguide)
+
+
+class FamiPortGenre1(Base, WithTimestamp):
+    __tablename__ = 'FamiPortGenre1'
+    code = sa.Column(sa.Unicode(23), primary_key=True)
+    name = sa.Column(sa.Unicode(255), nullable=False)
+
+
+class FamiPortGenre2(Base, WithTimestamp):
+    __tablename__ = 'FamiPortGenre2'
+    code = sa.Column(sa.Unicode(35), primary_key=True)
+    name = sa.Column(sa.Unicode(255), nullable=False)
+
+
+class FamiPortVenue(Base, WithTimestamp):
+    __tablename__ = 'FamiPortVenue'
+
+    id            = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    name          = sa.Column(sa.Unicode(50), nullable=False)
+    name_kana     = sa.Column(sa.Unicode(200), nullable=False)
+    prefecture    = sa.Column(sa.Integer, nullable=False, default=0)
+
+
+class SpaceDelimitedList(TypeDecorator):
+    impl = sa.Unicode
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            return u' '.join(unicode(v).strip() for v in value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        else:
+            return value.split(u' ')
+
+
+class MutableSpaceDelimitedList(Mutable, NervousList):
+    @classmethod
+    def coerce(cls, key, value):
+        if not isinstance(value, MutableSpaceDelimitedList):
+            try:
+                i = iter(value)
+            except TypeError:
+                return Mutable.coerce(key, value)
+            return MutableSpaceDelimitedList(i)
+        else:
+            return value
+
+    def _changed(self, modified):
+        self.changed() 
+
+
+class FamiPortEvent(Base, WithTimestamp):
+    __tablename__ = 'FamiPortEvent'
+   
+    id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    code_1                  = sa.Column(sa.Unicode(6), nullable=False) 
+    code_2                  = sa.Column(sa.Unicode(4), nullable=False) 
+    name_1                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
+    name_2                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
+    sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
+    client_code             = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
+    venue_id                = sa.Column(Identifier, sa.ForeignKey('FamiPortVenue.id'), nullable=False)
+    purchasable_prefectures = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137)))
+    start_at                = sa.Column(sa.DateTime(), nullable=True)
+    end_at                  = sa.Column(sa.DateTime(), nullable=True)
+    genre_1_code            = sa.Column(sa.Unicode(23), sa.ForeignKey('FamiPortGenre1.code'))
+    genre_2_code            = sa.Column(sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code'))
+    keywords                = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000)))
+    search_code             = sa.Column(sa.Unicode(20))
+
+    client                  = orm.relationship(FamiPortClient)
+    venue                   = orm.relationship(FamiPortVenue)
+    genre_1                 = orm.relationship(FamiPortGenre1)
+    genre_2                 = orm.relationship(FamiPortGenre2)
+
+
+class FamiPortPerformanceType(Enum):
+    Normal  = 1
+    Spanned = 2 
+
+
+class FamiPortPerformance(Base, WithTimestamp):
+    __tablename__ = 'FamiPortPerformance'
+
+    id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    famiport_event_id       = sa.Column(Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False)
+    code                    = sa.Column(sa.Unicode(3))
+    name                    = sa.Column(sa.Unicode(60))
+    type                    = sa.Column(sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value)
+    searchable              = sa.Column(sa.Boolean, nullable=False, default=True)
+    sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
+    start_at                = sa.Column(sa.DateTime(), nullable=True)
+    ticket_name             = sa.Column(sa.Unicode(20), nullable=True) # only valid if type == Spanned
+
+    famiport_event = orm.relationship('FamiPortEvent')
+
+
+class FamiPortSalesSegment(Base, WithTimestamp):
+    __tablename__ = 'FamiPortSalesSegment'
+
+    id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    famiport_performance_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False)
+    code                    = sa.Column(sa.Unicode(3), nullable=False)
+    name                    = sa.Column(sa.Unicode(40), nullable=False)
+    sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
+    published_at            = sa.Column(sa.DateTime(), nullable=True)
+    start_at                = sa.Column(sa.DateTime(), nullable=False)
+    end_at                  = sa.Column(sa.DateTime(), nullable=True)
+    auth_required           = sa.Column(sa.Boolean, nullable=False, default=False)
+    auth_message            = sa.Column(sa.Unicode(320), nullable=False, default=u'')
+    seat_selection_start_at = sa.Column(sa.DateTime(), nullable=True)
+
+    famiport_performance = orm.relationship('FamiPortPerformance')
+
+
+class FamiPortRefundType(Enum):
+    Type1 = 1
+    Type2 = 2
+
+
+class FamiPortRefund(Base, WithTimestamp):
+    __tablename__ = 'FamiPortRefund'
+
+    id                   = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
+    type                 = sa.Column(sa.Integer, nullable=False, default=FamiPortRefundType.Type1.value)
+    send_back_due_at     = sa.Column(sa.Date(), nullable=False)
+    start_at             = sa.Column(sa.DateTime(), nullable=False)
+    end_at               = sa.Column(sa.DateTime(), nullable=False)
+    last_serial          = sa.Column(sa.Integer, nullable=False, default=0)
+
+
+class FamiPortRefundEntry(Base, WithTimestamp):
+    __tablename__ = 'FamiPortRefundEntry'
+
+    id                   = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    famiport_refund_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortRefund.id'), nullable=False)
+    serial               = sa.Column(sa.Integer, nullable=False, default=0)
+    famiport_ticket_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False)
+    ticket_payment       = sa.Column(sa.Numeric(precision=9, scale=0))
+    ticketing_fee        = sa.Column(sa.Numeric(precision=8, scale=0))
+    system_fee           = sa.Column(sa.Numeric(precision=8, scale=0))
+    other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
+    shop_code            = sa.Column(sa.Unicode(7), nullable=False)
+
+    famiport_ticket = orm.relationship('FamiPortTicket')
+    famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
+
+
+class FamiPortOrderType(Enum):
+    CashOnDelivery       = 1
+    Payment              = 2
+    Ticketing            = 3
+    PaymentOnly          = 4
 
 
 def create_random_sequence_number(length, prefix=''):
@@ -28,7 +309,7 @@ def create_random_sequence_number(length, prefix=''):
     return seq[:length]
 
 
-class FamiPortOrderNoSequence(Base, WithTimestamp):
+class FamiPortOrderNoSequence(Base):
     __tablename__ = 'FamiPortOrderNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -41,7 +322,7 @@ class FamiPortOrderNoSequence(Base, WithTimestamp):
         return seq.id
 
 
-class FamiPortOrderIdentifierSequence(Base, WithTimestamp):
+class FamiPortOrderIdentifierSequence(Base):
     __tablename__ = 'FamiPortOrderIdentifierSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -54,7 +335,7 @@ class FamiPortOrderIdentifierSequence(Base, WithTimestamp):
         return seq.id
 
 
-class FamiPortOrderTicketNoSequence(Base, WithTimestamp):
+class FamiPortOrderTicketNoSequence(Base):
     __tablename__ = 'FamiPortOrderTicketNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -77,7 +358,7 @@ class FamiPortOrderTicketNoSequence(Base, WithTimestamp):
         return seq.value
 
 
-class FamiPortExchangeTicketNoSequence(Base, WithTimestamp):
+class FamiPortExchangeTicketNoSequence(Base):
     __tablename__ = 'FamiPortExchangeTicketNoSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -100,7 +381,7 @@ class FamiPortExchangeTicketNoSequence(Base, WithTimestamp):
         return seq.value
 
 
-class FamiPortReserveNumberSequence(Base, WithTimestamp):
+class FamiPortReserveNumberSequence(Base):
     __tablename__ = 'FamiPortReserveNumberSequence'
 
     id = sa.Column(Identifier, primary_key=True)
@@ -126,29 +407,42 @@ class FamiPortReserveNumberSequence(Base, WithTimestamp):
 class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
-    id = sa.Column(Identifier, primary_key=True)
-    order_no = sa.Column(sa.String(255), nullable=False)
+    id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    type                      = sa.Column(sa.Integer, nullable=False)
+    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
+    shop_code                 = sa.Column(sa.Unicode(6), nullable=False)
+    famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
+    client_code               = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
+    generation                = sa.Column(sa.Integer, nullable=False, default=0)
+    invalidated_at            = sa.Column(sa.DateTime(), nullable=True)
+    total_amount              = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)  # 入金金額
+    ticket_payment            = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
+    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # 店頭発券手数料
+    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # システム利用料
+    paid_at                   = sa.Column(sa.DateTime(), nullable=True)
+    issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
-    name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
-    playguide_id = sa.Column(sa.String, default='', nullable=False)  # クライアントID
-    famiport_order_identifier = sa.Column(sa.String, nullable=False)  # 注文ID
-    reserve_number = sa.Column(sa.String)  # 予約番号
-    barcode_no = sa.Column(sa.String)  # 支払番号
-    exchange_number = sa.Column(sa.String)  # 引換票番号(後日予済アプリで発券するための予約番号)
-    total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 入金金額
-    ticket_payment = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # チケット料金
-    system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # システム利用料
-    ticketing_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)  # 店頭発券手数料
-    koen_date = sa.Column(sa.DateTime, nullable=True)  # 公演日時
-    kogyo_name = sa.Column(sa.Unicode(40), nullable=False)  # 興行名
-    ticket_total_count = sa.Column(sa.Integer, nullable=False)  # 本件購入枚数
-    ticket_count = sa.Column(sa.Integer, nullable=False)  # 本件購入枚数
-    name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
-    phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
-    phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
-    address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
-    address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
-    auth_number = sa.Column(sa.String(13))  # 認証番号
+    barcode_no                = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
+    reserve_number            = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
+    exchange_number           = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
+
+    customer_name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
+    customer_name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
+    customer_phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
+    customer_address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
+    customer_address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
+    costomer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
+
+    famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
+    famiport_client = orm.relationship('FamiPortClient')
+    
+    @property
+    def koen_date(self):
+        raise NotImplementedError
+
+    @property
+    def kogyo_name(self):
+        raise NotImplementedError
 
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
@@ -157,6 +451,43 @@ class FamiPortOrder(Base, WithTimestamp):
     @classmethod
     def get_by_barCodeNo(cls, barCodeNo):
         _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+
+    @property
+    def ticket_total_count(self):
+        return len(self.famiport_tickets)
+
+    @property
+    def ticket_count(self):
+        return sum(0 if famiport_ticket.is_subticket else 1 for famiport_ticket in famiport_order.famiport_tickets)
+
+    @property
+    def subticket_count(self):
+        return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in famiport_order.famiport_tickets)
+
+
+class FamiPortTicketType(Enum):
+    Ticket                 = 2
+    TicketWithBarcode      = 1
+    ExtraTicket            = 4
+    ExtraTicketWithBarcode = 3
+
+
+class FamiPortTicket(Base, WithTimestamp):
+    __tablename__ = 'FamiPortTicket'
+
+    id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    famiport_order_id         = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
+    type                      = sa.Column(sa.Integer, nullable=False, default=FamiPortTicketType.TicketWithBarcode.value)
+    barcode_number            = sa.Column(sa.Unicode(13), nullable=False)
+    template_code             = sa.Column(sa.Unicode(10), nullable=False)
+    data                      = sa.Column(sa.Unicode(4000), nullable=False)
+    issued_at                 = sa.Column(sa.DateTime(), nullable=False)
+
+    famiport_order = orm.relationship('FamiPortOrder', backref='famiport_tickets')
+
+    @property
+    def is_subticket(self):
+        return self.type in (FamiPortTicketType.ExtraTicket.value, FamiPortTicketType.ExtraTicketWithBarcode.value)
 
 
 class FamiPortInformationMessage(Base, WithTimestamp):
@@ -185,318 +516,3 @@ class FamiPortInformationMessage(Base, WithTimestamp):
             return famiport_information_message.message
         else:
             return default_message
-
-
-class FamiPortRequest(object):
-    @property
-    def request_type(self):
-        return self._requestType
-
-    @request_type.setter
-    def request_type(self, requestType):
-        self._requestType = requestType
-
-    @property
-    def encrypted_fields(self):
-        return self._encryptedFields
-
-
-class FamiPortReservationInquiryRequest(Base, WithTimestamp, FamiPortRequest):
-    """予約済み予約照会
-    """
-    __tablename__ = 'FamiPortReservationInquiryRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    ticketingDate = sa.Column(sa.String)  # 利用日時
-    reserveNumber = sa.Column(sa.String)  # 予約番号
-    authNumber = sa.Column(sa.String)  # 認証番号
-
-    _requestType = FamiPortRequestType.ReservationInquiry
-    _encryptedFields = ()
-
-
-class FamiPortPaymentTicketingRequest(Base, WithTimestamp, FamiPortRequest):
-    """予約済み入金発券
-    """
-    __tablename__ = 'FamiPortPaymentTicketingRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
-    ticketingDate = sa.Column(sa.String)  # 利用日時
-    sequenceNo = sa.Column(sa.String)  # 処理通番
-    playGuideId = sa.Column(sa.String, nullable=False, default='')  # クライアントID
-    barCodeNo = sa.Column(sa.String)  # 支払番号
-    customerName = sa.Column(sa.String)  # カナ氏名
-    phoneNumber = sa.Column(sa.String)  # 電話番号
-
-    _requestType = FamiPortRequestType.PaymentTicketing
-    _encryptedFields = ['customerName', 'phoneNumber']
-
-
-class FamiPortPaymentTicketingCompletionRequest(Base, WithTimestamp, FamiPortRequest):
-    """予約済み入金発券完了
-    """
-    __tablename__ = 'FamiPortPaymentTicketingCompletionRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
-    ticketingDate = sa.Column(sa.String)  # 利用日時
-    sequenceNo = sa.Column(sa.String)  # 処理通番
-    barCodeNo = sa.Column(sa.String)  # 支払番号
-    playGuideId = sa.Column(sa.String)  # クライアントID
-    orderId = sa.Column(sa.String)  # 注文ID
-    totalAmount = sa.Column(sa.String)  # 入金金額
-
-    _requestType = FamiPortRequestType.PaymentTicketingCompletion
-    _encryptedFields = []
-
-
-class FamiPortPaymentTicketingCancelRequest(Base, WithTimestamp, FamiPortRequest):
-    """予約済み入金発券取消
-    """
-    __tablename__ = 'FamiPortPaymentTicketingCancelRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    mmkNo = sa.Column(sa.String)  # 発券ファミポート番号
-    ticketingDate = sa.Column(sa.String)  # 利用日時
-    sequenceNo = sa.Column(sa.String)  # 処理通番
-    barCodeNo = sa.Column(sa.String)  # 支払番号
-    playGuideId = sa.Column(sa.String)  # クライアントID
-    orderId = sa.Column(sa.String)  # 注文ID
-    cancelCode = sa.Column(sa.String)  # 取消理由
-
-    _requestType = FamiPortRequestType.PaymentTicketingCancel
-    _encryptedFields = []
-
-
-class FamiPortInformationRequest(Base, WithTimestamp, FamiPortRequest):
-    """予約済み案内
-    """
-    __tablename__ = 'FamiPortInformationRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    infoKubun = sa.Column(sa.String)  # 案内種別
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    kogyoCode = sa.Column(sa.String)  # 興行コード
-    kogyoSubCode = sa.Column(sa.String)  # 興行サブコード
-    koenCode = sa.Column(sa.String)  # 公演コード
-    uketsukeCode = sa.Column(sa.String)  # 受付コード
-    playGuideId = sa.Column(sa.String)  # クライアントID
-    authCode = sa.Column(sa.String)  # 認証コード
-    reserveNumber = sa.Column(sa.String)  # 予約照会番号
-
-    _requestType = FamiPortRequestType.Information
-    _encryptedFields = []
-
-
-class FamiPortCustomerInformationRequest(Base, WithTimestamp, FamiPortRequest):
-    """顧客情報取得
-    """
-    __tablename__ = 'FamiPortCustomerInformationRequest'
-
-    id = sa.Column(Identifier, primary_key=True)
-    storeCode = sa.Column(sa.String)  # 店舗コード
-    mmkNo = sa.Column(sa.String)  # 発券Famiポート番号
-    ticketingDate = sa.Column(sa.String)  # 利用日時
-    sequenceNo = sa.Column(sa.String)  # 処理通番
-    barCodeNo = sa.Column(sa.String)  # バーコード情報
-    playGuideId = sa.Column(sa.String)  # クライアントID
-    orderId = sa.Column(sa.String)  # 注文ID
-    totalAmount = sa.Column(sa.String)  # 入金金額
-
-    _requestType = FamiPortRequestType.CustomerInformation
-    _encryptedFields = []
-
-
-class FamiPortResponse(object):
-
-    def __str__(self):
-        value_list = []
-        for attribute_name in self.__slots__:
-            attribute = getattr(self, attribute_name)
-            if attribute:
-                if not isinstance(attribute, (str, unicode)):  # noqa
-                    value = attribute.value
-                else:
-                    value = attribute
-            else:
-                value = None
-            value_list.append((attribute_name, value))
-        return '\n'.join([str(_value) for _value in value_list])
-
-    @property
-    def response_type(self):
-        return self._responseType
-
-    @property
-    def encrypt_fields(self):
-        return self._encryptFields
-
-    @property
-    def encrypt_key(self):
-        return self._encrypt_key
-
-
-class FamiPortTicket(Base, WithTimestamp):
-    """チケット情報
-
-    FamiPortPaymentTicketingResponseに含まれる情報です。
-    このクラスに対応する単体のレスポンスはありません。
-    """
-    __tablename__ = 'FamiPortTicket'
-
-    id = sa.Column(Identifier, primary_key=True)
-    barCodeNo = sa.Column(sa.String, nullable=False, default='')  # チケットバーコード番号
-    ticketClass = sa.Column(sa.String, nullable=False, default='')  # チケット区分
-    templateCode = sa.Column(sa.String, nullable=False, default='')  # テンプレートコード
-    ticketData = sa.Column(sa.String, nullable=False, default='')  # 券面データ
-
-
-class FamiPortReservationInquiryResponse(Base, WithTimestamp, FamiPortResponse):
-    """予約済み予約照会
-    """
-    __tablename__ = 'FamiPortReservationInquiryResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    replyClass = sa.Column(sa.String, nullable=False, default='')  # 応答結果区分
-    replyCode = sa.Column(sa.String, nullable=False, default='')  # 応答結果
-    playGuideId = sa.Column(sa.Unicode, nullable=False, default=u'')  # クライアントID
-    barCodeNo = sa.Column(sa.String, nullable=False, default='')  # 支払番号
-    totalAmount = sa.Column(sa.String, nullable=False, default='')  # 合計金額
-    ticketPayment = sa.Column(sa.String, nullable=False, default='')  # チケット料金
-    systemFee = sa.Column(sa.String, nullable=False, default='')  # システム利用料
-    ticketingFee = sa.Column(sa.String, nullable=False, default='')  # 店頭発券手数料
-    ticketCountTotal = sa.Column(sa.String, nullable=False, default='')  # チケット枚数
-    ticketCount = sa.Column(sa.String, nullable=False, default='')  # 本券購入枚数
-    kogyoName = sa.Column(sa.Unicode, nullable=False, default=u'')  # 興行名
-    koenDate = sa.Column(sa.String, nullable=False, default='')  # 公園日時
-    name = sa.Column(sa.Unicode, nullable=False, default=u'')  # お客様氏名
-    nameInput = sa.Column(sa.String, nullable=False, default='')  # 氏名要求フラグ
-    phoneInput = sa.Column(sa.String, nullable=False, default='')  # 電話番号要求フラグ
-
-    _responseType = FamiPortResponseType.ReservationInquiry
-    _encryptFields = ['name']
-
-    @property
-    def _encrypt_key(self):
-        return self.barCodeNo
-
-
-class FamiPortPaymentTicketingResponse(Base, WithTimestamp, FamiPortResponse):
-    """予約済み入金発券
-    """
-    __tablename__ = 'FamiPortPaymentTicketingResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    storeCode = sa.Column(sa.String, nullable=False, default='')  # 店舗コード
-    sequenceNo = sa.Column(sa.String, nullable=False, default='')  # 処理通番
-    barCodeNo = sa.Column(sa.String, nullable=False, default='')  # 支払番号
-    orderId = sa.Column(sa.String, nullable=False, default='')  # 注文ID
-    replyClass = sa.Column(sa.String, nullable=False, default='')  # 応答結果区分
-    replyCode = sa.Column(sa.String, nullable=False, default='')  # 応答結果
-    playGuideId = sa.Column(sa.Unicode, nullable=False, default=u'')  # クライアントID
-    playGuideName = sa.Column(sa.Unicode, nullable=False, default=u'')  # クライアント漢字名称
-    orderTicketNo = sa.Column(sa.String, nullable=False, default='')  # 払込票番号
-    exchangeTicketNo = sa.Column(sa.String, nullable=False, default='')  # 引換票番号
-    ticketingStart = sa.Column(sa.String, nullable=False, default='')  # 発券開始日時
-    ticketingEnd = sa.Column(sa.String, nullable=False, default='')  # 発券期限日時
-    totalAmount = sa.Column(sa.Unicode, nullable=False, default=u'')  # 合計金額
-    ticketPayment = sa.Column(sa.Unicode, nullable=False, default=u'')  # チケット料金
-    systemFee = sa.Column(sa.Unicode, nullable=False, default=u'')  # システム利用料
-    ticketingFee = sa.Column(sa.Unicode, nullable=False, default=u'')  # 店頭発券手数料
-    ticketCountTotal = sa.Column(sa.Unicode, nullable=False, default=u'')  # チケット枚数
-    ticketCount = sa.Column(sa.Unicode, nullable=False, default=u'')  # 本券購入枚数
-    kogyoName = sa.Column(sa.Unicode, nullable=False, default=u'')  # 興行名
-    koenDate = sa.Column(sa.String, nullable=False, default='')  # 公演日時
-    barCodeNo = sa.Column(sa.String(13), nullable=False, default='')  # チケットバーコード番号
-    ticketClass = sa.Column(sa.String(1), nullable=False, default='')  # チケット区分
-    templateCode = sa.Column(sa.String(10), nullable=False, default='')  # テンプレートコード
-    ticketData = sa.Column(sa.Unicode(4000), nullable=False, default=u'')  # 券面データ
-    ticket = sa.Column(sa.String, nullable=False, default='')  # チケット情報 (FamiPortTicketのリスト)
-
-    _responseType = FamiPortResponseType.PaymentTicketing
-    _encryptFields = []
-    _encrypt_key = None
-
-
-class FamiPortPaymentTicketingCompletionResponse(Base, WithTimestamp, FamiPortResponse):
-    """予約済み入金発券完了
-    """
-    __tablename__ = 'FamiPortPaymentTicketingCompletionResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    storeCode = sa.Column(sa.String, nullable=False, default='')  # 店舗コード
-    sequenceNo = sa.Column(sa.String, nullable=False, default='')  # 処理通番
-    barCodeNo = sa.Column(sa.String, nullable=False, default='')  # 支払番号
-    orderId = sa.Column(sa.String, nullable=False, default='')  # 注文ID
-    replyCode = sa.Column(sa.String, nullable=False, default='')  # 応答結果
-
-    _responseType = FamiPortResponseType.PaymentTicketingCompletion
-    _encryptFields = []
-    _encrypt_key = None
-
-
-class FamiPortPaymentTicketingCancelResponse(Base, WithTimestamp, FamiPortResponse):
-    """予約済み入金発券取消
-    """
-    __tablename__ = 'FamiPortPaymentTicketingCancelResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    storeCode = sa.Column(sa.String, nullable=False, default='')  # 店舗コード
-    sequenceNo = sa.Column(sa.String, nullable=False, default='')  # 処理通番
-    barCodeNo = sa.Column(sa.String, nullable=False, default='')  # 支払番号
-    orderId = sa.Column(sa.String, nullable=False, default='')  # 注文ID
-    replyCode = sa.Column(sa.String, nullable=False, default='')  # 応答結果
-
-    _responseType = FamiPortResponseType.PaymentTicketingCancel
-    _encryptFields = []
-    _encrypt_key = None
-
-
-class FamiPortInformationResponse(Base, WithTimestamp, FamiPortResponse):
-    """予約済み案内
-    """
-    __tablename__ = 'FamiPortInformationResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    infoKubun = sa.Column(sa.String, nullable=False, default='')  # 案内区分
-    infoMessage = sa.Column(sa.Unicode, nullable=False, default=u'')  # 案内文言
-
-    _responseType = FamiPortResponseType.Information
-    _encryptFields = []
-    _encrypt_key = None
-
-
-class FamiPortCustomerInformationResponse(Base, WithTimestamp, FamiPortResponse):
-    """顧客情報取得
-    """
-    __tablename__ = 'FamiPortCustomerInformationResponse'
-
-    id = sa.Column(Identifier, primary_key=True)
-    resultCode = sa.Column(sa.String, nullable=False, default='')  # 処理結果
-    replyCode = sa.Column(sa.String, nullable=False, default='')  # 応答結果
-    name = sa.Column(sa.Unicode, nullable=False, default=u'')  # 氏名
-    memberId = sa.Column(sa.Unicode, nullable=False, default=u'')  # 会員ID
-    address1 = sa.Column(sa.Unicode, nullable=False, default=u'')  # 住所1
-    address2 = sa.Column(sa.Unicode, nullable=False, default=u'')  # 住所2
-    identifyNo = sa.Column(sa.Unicode, nullable=False, default=u'')  # 半券個人識別番号
-
-    _responseType = FamiPortResponseType.CustomerInformation
-    _encryptFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
-    _encrypt_key = None
-
-    def _set_encryptKey(self, encrypt_key):
-        self._encrypt_key = encrypt_key
-
-    @property
-    def encrypt_key(self):
-        return self._encrypt_key

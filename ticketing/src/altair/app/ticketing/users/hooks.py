@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 @subscriber(Authenticated)
 def hook(event):
     info = event.request.altair_auth_info
+    logger.debug('info=%r' % info)
     user = get_or_create_user(info)
     metadata = event.metadata
     if metadata is None:

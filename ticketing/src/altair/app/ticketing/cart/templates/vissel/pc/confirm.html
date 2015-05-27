@@ -138,6 +138,7 @@ ${self.widget.flow_widget(3)}
 		  <th scope="row">電話番号</th>
           <td>${shipping.tel_1}</td>
 		</tr>
+        % if membershipinfo is not None and membershipinfo.enable_point_input:
 		<tr>
 		  <th scope="row">楽天ポイント口座</th>
           <td>
@@ -148,6 +149,7 @@ ${self.widget.flow_widget(3)}
             % endif
           </td>
 		</tr>
+        % endif
 		<tr>
 		  <th scope="row">配送先住所 <br />※配送を選択した場合</th>
           <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}

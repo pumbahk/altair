@@ -258,7 +258,6 @@ class UpdateView(object):
     def update_model(self):
         before_obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.confirmed_form(obj=before_obj)
-
         obj = self.context.update_model_from_form(before_obj, form)
         url = self.request.route_path(self.context.join("update"), id=obj.id, action="input")
         mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (self.context.title, url)

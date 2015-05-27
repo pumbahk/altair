@@ -1015,7 +1015,7 @@ class OrderSearchBase(list):
                 ).group_by(
                     t_ordered_product.c.order_id
                 ).having(
-                    func.sum(t_ordered_product_item.c.quantity)>=value
+                    func.sum(t_ordered_product_item.c.quantity) == value
                 )
     
                 cond = and_(cond,

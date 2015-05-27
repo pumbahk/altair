@@ -84,32 +84,34 @@ ${ch.breadcrumbs(
   <div class="tab-content">
     <div class="tab-page-active">
 
-  <p> ${max(users.items_per_page * (users.page-1) + 1,0)}～${min(users.items_per_page * users.page, users.item_count)} / ${users.item_count}件</p>
-  ${users.pager()}
-  <table class="table fullwidth checkboxed_table">
-    <thead>
-      <tr>
-        <th class="minwidth"></th>
-        <th><a href="#" class="sortable">user id</a></th>
-        <th><a href="#" class="sortable">名前</a></th>
-        <th><a href="#" class="sortable">password</a></th>
-      </tr>
-    </thead>
-    <tbody>
-    % for user in users:
-      <tr>
-        <td class="checkbox-row"><input type="checkbox" name="user_id" value="${user.id}" /></td>
-        <td>${user.id}</td>
-        <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-               class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a>
-        </td>
-        <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-               class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_secret}</a>
-        </td>
-      </tr>
-    % endfor
-    </tbody>
-  </table>
+        <p> ${max(users.items_per_page * (users.page-1) + 1,0)}～${min(users.items_per_page * users.page, users.item_count)} / ${users.item_count}件</p>
+        ${users.pager()}
+          <table class="table fullwidth checkboxed_table">
+            <thead>
+              <tr>
+                <th class="minwidth"></th>
+                <th><a href="#" class="sortable">membergroup</a></th>
+                <th><a href="#" class="sortable">user id</a></th>
+                <th><a href="#" class="sortable">名前</a></th>
+                <th><a href="#" class="sortable">password</a></th>
+              </tr>
+            </thead>
+            <tbody>
+            % for user in users:
+              <tr>
+                <td class="checkbox-row"><input type="checkbox" name="user_id" value="${user.id}" /></td>
+                <td>${user.member.membergroup.name}</td>
+                <td>${user.id}</td>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a>
+                </td>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_secret}</a>
+                </td>
+              </tr>
+            % endfor
+            </tbody>
+          </table>
     </div>
   </div>
 </div>

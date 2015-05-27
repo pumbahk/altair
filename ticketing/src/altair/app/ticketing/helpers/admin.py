@@ -426,3 +426,7 @@ class AdminHelperAdapter(object):
         if setting_renderer is None:
             setting_renderer = DefaultSettingRenderer(setting)
         return setting_renderer.get_iter(self.request)
+
+    def auth_type_label(self, auth_type):
+        from altair.app.ticketing.security import get_display_name
+        return get_display_name(self.request, auth_type)
