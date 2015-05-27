@@ -31,10 +31,51 @@ namespace checkin.core.flow
             return new CaseWelcome(resource);
         }
 
-        public ICase AfterWelcome(IResource resource)
+        public ICase AfterWelcome(IResource resource, int printtype)
         {
-            this.CurrentInputUnit = InputUnit.qrcode;
-            return new CaseQRCodeInput(resource);
+            if (printtype == 0)
+            {
+                this.CurrentInputUnit = InputUnit.qrcode;
+                return new CaseQRCodeInput(resource);
+            }
+            else 
+            {
+                this.CurrentInputUnit = InputUnit.order_no;
+                return new CaseOrdernoOrdernoInput(resource);
+            }
+            
+        }
+
+        public ICase AfterCountChoice(IResource resource, int printcount, TicketData tdata)
+        {
+            if (printcount == 0)
+            {
+
+                return new CaseQRConfirmForOne(resource, tdata);
+            }
+            else
+            {
+                return new CasePartOrAll(resource, tdata);
+            }
+
+        }
+
+        public ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata)
+        {
+            if (printcount == 0)
+            {
+
+                return new CaseQRConfirmForAll(resource, tdata);
+            }
+            else
+            {
+                return new CaseQRConfirmForAll(resource, tdata);
+            }
+        }
+
+        public ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata)
+        {
+            return new CaseOrdernoConfirmForAll(resource, verifieddata);
         }
 
         public ICase AfterSelectInputStrategy(IResource resource, InputUnit Selected)
@@ -44,8 +85,9 @@ namespace checkin.core.flow
 
         public ICase AfterQRDataFetch(IResource resource, TicketData tdata)
         {
-            return new CaseQRConfirmForAll(resource, tdata);
+            //return new CaseQRConfirmForAll(resource, tdata);
             //return new CaseQRConfirmForAllHidden(resource, tdata);
+            return new CaseOneOrPart(resource, tdata);
         }
 
         public ICase AfterPrintFinish(IResource resource)
@@ -64,11 +106,11 @@ namespace checkin.core.flow
             {
                 case InputUnit.qrcode:
                     this.CurrentInputUnit = InputUnit.order_no;
-                    return new CaseOrdernoOrdernoInput(previous.Resource);
+                    return new CaseWelcome(previous.Resource);
                 case InputUnit.order_no:
                     this.CurrentInputUnit = InputUnit.qrcode;
                     return
-                        new CaseQRCodeInput(previous.Resource);
+                        new CaseWelcome(previous.Resource);
                 default:
                     logger.Warn("invalid redirect is found. (get alternative case from {0})".WithMachineName(), previous);
                     this.CurrentInputUnit = InputUnit.before_auth;

@@ -32,15 +32,7 @@ namespace checkin.core.flow
         public override ICase OnSuccess (IFlow flow)
         {
             flow.Finish();
-            if ((this.PresentationChanel as WelcomeEvent).PrintType == 1)
-            {
-                return flow.GetFlowDefinition().AfterWelcome(Resource);
-            }
-            else
-            {
-                return flow.GetFlowDefinition().AfterWelcome(Resource);
-            }
-           
+            return flow.GetFlowDefinition().AfterWelcome(Resource, (this.PresentationChanel as WelcomeEvent).PrintType);
         }
 
         public override ICase OnFailure(IFlow flow)

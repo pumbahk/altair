@@ -100,7 +100,7 @@ namespace checkin.presentation.gui.page
                     case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
 
-                    
+                    /*
                     if (ctx.Event.Status == InternalEventStaus.success)
                     {
                         var ctx_ = new PageConfirmAllDataContext(this)
@@ -112,6 +112,7 @@ namespace checkin.presentation.gui.page
                         case_ = await ctx_.SubmitAsync();
                         ctx_.TreatErrorMessage();
                     }
+                     * */
                      
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);

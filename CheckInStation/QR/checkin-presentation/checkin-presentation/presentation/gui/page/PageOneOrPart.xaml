@@ -1,4 +1,4 @@
-﻿<Page x:Class="checkin.presentation.gui.page.PageWelcome" 
+﻿<Page x:Class="checkin.presentation.gui.page.PageOneOrPart" 
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,7 +7,7 @@
     
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
-	Title="PageWelcome">
+	Title="PageOneOrPart">
     <Page.Resources>
         <Style x:Key="MainBorder" TargetType="Border">
             <Setter Property="CornerRadius" Value="24.5"/>
@@ -55,10 +55,10 @@
                      Canvas.Top="200"
                      Height="400"
                      Width="400"
-                     Click="Button_Click_QR"
+                     Click="Button_Click_Single"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            QRコード読み込み
+                            一枚発券
                         </TextBlock>
                     </Button>
 
@@ -67,10 +67,10 @@
                      Canvas.Top="200"
                      Height="400"
                      Width="400"
-                     Click="Button_Click_Code"
+                     Click="Button_Click_All"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            受付番号読み込み
+                            複数発券
                         </TextBlock>
                     </Button>
 

@@ -50,7 +50,8 @@ namespace checkin.core.flow
 
         public override ICase OnSuccess (IFlow flow)
         {
-            return new CaseOrdernoConfirmForAll (this.Resource, this.VerifiedData);
+            //return new CaseOrdernoConfirmForAll (this.Resource, this.VerifiedData);
+            return flow.GetFlowDefinition().AfterOrdernoConfirmed(this.Resource, this.VerifiedData);
         }
 
         public override ICase OnFailure(IFlow flow)

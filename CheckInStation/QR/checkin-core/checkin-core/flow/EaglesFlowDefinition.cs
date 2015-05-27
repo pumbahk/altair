@@ -29,10 +29,27 @@ namespace checkin.core.flow
             return new CaseQRCodeInput(resource);
         }
 
-        public ICase AfterWelcome(IResource resource)
+        public ICase AfterWelcome(IResource resource, int printtype)
         {
             this.CurrentInputUnit = InputUnit.qrcode;
             return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterCountChoice(IResource resource, int printcount, TicketData tdata)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata)
+        {
+            return new CaseOrdernoConfirmForAll(resource, verifieddata);
         }
         
         public ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected)

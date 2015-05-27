@@ -13,7 +13,10 @@ namespace checkin.core.flow
 
         ICase AfterPrintFinish(IResource resource);
         ICase AfterAuthorization(IResource resource);
-        ICase AfterWelcome(IResource resource);
+        ICase AfterWelcome(IResource resource, int printtype);
+        ICase AfterCountChoice(IResource resource, int printcount, TicketData tdata);
+        ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata);
+        ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata);
         ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected);
         ICase AfterQRDataFetch(IResource resource, TicketData tdata);
 
