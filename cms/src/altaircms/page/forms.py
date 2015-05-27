@@ -55,7 +55,7 @@ def url_not_conflict(form, field):
         page = Page.query.filter_by(id=pk).first()
         qs = qs.filter(PageSet.id!=page.pageset_id)
  
-    if qs.count() > 0 and field.data is not u"":
+    if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
 def pagetype_filter(model, request, query):
