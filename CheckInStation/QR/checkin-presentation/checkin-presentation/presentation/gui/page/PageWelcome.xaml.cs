@@ -50,30 +50,35 @@ namespace checkin.presentation.gui.page
 
         private async void Button_Click_QR(object sender, RoutedEventArgs e)
         {
+
             var ctx = this.DataContext as InputDataContext;
-            
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
-                ctx.SubmitAsync();
-                this.Dispatcher.Invoke(() =>
-                {
-                    var nextPage = new PageQRCodeInput();
-                    var service = this.NavigationService;
-                    if (service != null)
-                    {
-                        service.Navigate(nextPage);
-                        nextPage.Dispatcher.Invoke(() =>
-                        {
-                            (nextPage.DataContext as InputDataContext).PassingErrorMessage("");
-                        }
-                            );
-                    }
-                    else
-                    {
-                        logger.Info("previous:NavigationService is not found");
-                    }
-                });
+                var case_ = await ctx.SubmitAsync(); //入力値チェック
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
+            /*
+            this.Dispatcher.Invoke(() =>
+            {
+                var nextPage = new PageQRCodeInput();
+                var service = this.NavigationService;
+                if (service != null)
+                {
+                    service.Navigate(nextPage);
+                    nextPage.Dispatcher.Invoke(() =>
+                    {
+                        (nextPage.DataContext as InputDataContext).PassingErrorMessage("");
+                    }
+                        );
+                }
+                else
+                {
+                    logger.Info("previous:NavigationService is not found");
+                }
+            });
+              * */
+            
         }
 
         private void Button_Click_Code(object sender, RoutedEventArgs e)

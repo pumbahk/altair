@@ -33,6 +33,7 @@ namespace checkin.core.flow
 
         public ICase AfterWelcome(IResource resource)
         {
+            this.CurrentInputUnit = InputUnit.qrcode;
             return new CaseQRCodeInput(resource);
         }
 
