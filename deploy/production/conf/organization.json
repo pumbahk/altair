@@ -46,6 +46,11 @@
             "backend_id": 32, 
             "short_name": "PC"
         },
+        "TK": {
+            "auth_source": "oauth",
+            "backend_id": 55,
+            "short_name": "TK"
+        },
         "YT": {
             "auth_source": "oauth", 
             "backend_id": 39, 

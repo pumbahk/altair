@@ -1,0 +1,50 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="t" />
+<style type="text/css">
+form {
+  padding: 0 0;
+  margin: 0 0;
+}
+</style>
+<%block name="javascript">
+</%block>
+
+<%block name="css">
+    <style>
+        .error {
+            color: #ff0000;
+        }
+    </style>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+<form id="form1" name="form1" method="post" action="${request.url}">
+
+    <br/>
+    <div class="dispBox">
+      <%t:header>楽天スーパーポイント口座(半角数字)</%t:header>
+      <div class="dispBoxInner">
+        お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>
+        ${form['accountno']} (例: 1111-2222-3333-4444)<br/><br/>
+        楽天ポイント口座を確認するには、<a href="https://point.rakuten.co.jp/PointAccount/PointAccountView/?asid=${asid}" target=”_blank”>こちら</a>
+        <font color="red">${h.error_list(request, form, 'accountno')}</font>
+      </div>
+    </div>
+
+<!--
+  </div>
+  </div>
+  -->
+    </div>
+  </div>
+
+</div>
+<div class="buttonbox">
+    <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
+</div>
+</form>
