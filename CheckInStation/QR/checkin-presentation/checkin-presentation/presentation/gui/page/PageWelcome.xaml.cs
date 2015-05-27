@@ -18,11 +18,13 @@ using checkin.core.flow;
 
 namespace checkin.presentation.gui.page
 {
-    class PageWelcomeDataContext: InputDataContext
+    class WelcomeDataContext: InputDataContext
     {
+        public int PrintType { get; set; }
         public override void OnSubmit()
         {
             var ev = this.Event as WelcomeEvent;
+            ev.PrintType = this.PrintType;
             base.OnSubmit();
         }
     }
@@ -41,49 +43,38 @@ namespace checkin.presentation.gui.page
 
         private object CreateDataContext()
         {
-            return new PageWelcomeDataContext()
+            return new WelcomeDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new WelcomeEvent(),
             };
         }
 
-        private async void Button_Click_QR(object sender, RoutedEventArgs e)
+        private void Button_Click_QR(object sender, RoutedEventArgs e)
         {
+            e.Handled = true;
+            (this.DataContext as WelcomeDataContext).PrintType = 0;
+            this.OnSubmitWithBoundContext(sender, e);
+            
+        }
 
+        private void Button_Click_Code(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            (this.DataContext as WelcomeDataContext).PrintType = 1;
+            this.OnSubmitWithBoundContext(sender, e);
+        }
+
+        private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
+        {
             var ctx = this.DataContext as InputDataContext;
+
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
                 ctx.TreatErrorMessage();
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
-            /*
-            this.Dispatcher.Invoke(() =>
-            {
-                var nextPage = new PageQRCodeInput();
-                var service = this.NavigationService;
-                if (service != null)
-                {
-                    service.Navigate(nextPage);
-                    nextPage.Dispatcher.Invoke(() =>
-                    {
-                        (nextPage.DataContext as InputDataContext).PassingErrorMessage("");
-                    }
-                        );
-                }
-                else
-                {
-                    logger.Info("previous:NavigationService is not found");
-                }
-            });
-              * */
-            
-        }
-
-        private void Button_Click_Code(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

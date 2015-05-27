@@ -20,6 +20,11 @@ namespace checkin.core.flow
             : base(resource)
         {
         }
+        public CaseWelcome(IResource resource, int printtype)
+            : base(resource)
+        {
+            this.PrintType = printtype;
+        }
         public override async Task<bool> VerifyAsync()
         {        
             return true;
@@ -27,7 +32,15 @@ namespace checkin.core.flow
         public override ICase OnSuccess (IFlow flow)
         {
             flow.Finish();
-            return flow.GetFlowDefinition().AfterWelcome(Resource);
+            if ((this.PresentationChanel as WelcomeEvent).PrintType == 1)
+            {
+                return flow.GetFlowDefinition().AfterWelcome(Resource);
+            }
+            else
+            {
+                return flow.GetFlowDefinition().AfterWelcome(Resource);
+            }
+           
         }
 
         public override ICase OnFailure(IFlow flow)
