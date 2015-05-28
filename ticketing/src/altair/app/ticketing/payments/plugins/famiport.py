@@ -4,8 +4,8 @@
 from markupsafe import Markup
 from zope.interface import implementer
 from pyramid.response import Response
-
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.cart.interfaces import (
     ICartPayment,
     ICartDelivery,
@@ -25,6 +25,7 @@ from altair.app.ticketing.mails.interfaces import (
     )
 
 from altair.app.ticketing.famiport.models import FamiPortTicketType
+import altair.app.ticketing.famiport.api as famiport_api
 from altair.app.ticketing.famiport.api import do_order as do_famiport_order
 from altair.app.ticketing.famiport.exc import FamiPortError
 from altair.app.ticketing.core.models import FamiPortTenant
@@ -43,6 +44,7 @@ from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 import pystache
 
+
 def includeme(config):
     config.add_payment_plugin(FamiPortPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.add_delivery_plugin(FamiPortDeliveryPlugin(), DELIVERY_PLUGIN_ID)
@@ -53,8 +55,10 @@ def includeme(config):
 class FamiPortPluginFailure(PaymentPluginException):
     pass
 
+
 def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).famiport_only_tickets()
+
 
 def build_ticket_dict(type_, data, template_code):
     return dict(
@@ -116,7 +120,7 @@ def get_ticket_template_code_from_ticket_format(ticket_format):
 def build_ticket_dicts_from_order_like(request, order_like):
     tickets = []
     issuer = NumberIssuer()
-    for ordered_product in order.items:
+    for ordered_product in order_like.items:
         for ordered_product_item in ordered_product.elements:
             dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
             bundle = ordered_product_item.product_item.ticket_bundle
@@ -222,7 +226,10 @@ def _overridable_delivery(path, fallback_ua_type=None):
 def reserved_number_payment_viewlet(context, request):
     """決済方法の完了画面用のhtmlを生成"""
     payment_method = context.order.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
+    from altair.app.ticketing.famiport.models import _session
+    famiport_order = famiport_api.get_famiport_order(context.order.order_no, _session)
+    return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
+                famiport_order=famiport_order, h=cart_helper)
 
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
@@ -231,7 +238,7 @@ def reserved_number_payment_confirm_viewlet(context, request):
     """決済方法の確認画面用のhtmlを生成"""
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
+    return dict(payment_name=payment_method.name, description=Markup(payment_method.description), h=cart_helper)
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID,
@@ -239,7 +246,7 @@ def reserved_number_payment_confirm_viewlet(context, request):
 def complete_mail(context, request):
     """購入完了メールの決済方法部分のhtmlを出力する"""
     notice = context.mail_data("P", "notice")
-    return dict(notice=notice)
+    return dict(notice=notice, h=cart_helper)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
@@ -304,15 +311,18 @@ def deliver_confirm_viewlet(context, request):
     """引取方法の確認画面のhtmlを生成"""
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description), h=cart_helper)
 
 
 @lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
     """引取方法の完了画面のhtmlを生成"""
+    from altair.app.ticketing.famiport.models import _session
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
+    famiport_order = famiport_api.get_famiport_order(context.order.order_no, _session)
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
+                famiport_order=famiport_order, h=cart_helper)
 
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
@@ -320,7 +330,7 @@ def deliver_completion_viewlet(context, request):
 def deliver_completion_mail_viewlet(context, request):
     """購入完了メールの配送方法部分のhtmlを出力する"""
     notice = context.mail_data("P", "notice")
-    return dict(notice=notice)
+    return dict(notice=notice, h=cart_helper)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
