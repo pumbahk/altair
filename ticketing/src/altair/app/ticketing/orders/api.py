@@ -378,7 +378,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
                         .filter(aliased_targets['subject'].total_amount > minimum_price * value) \
                         .group_by(aliased_targets['subject'].id,
                                   aliased_targets['OrderedProductItem'].product_item_id) \
-                        .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
+                        .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) == value) \
                     )
                 )
         return query
@@ -991,7 +991,8 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         items=[build_item(item) for item in proto_order.items],
         created_at=proto_order.new_order_created_at or (prev_order and prev_order.created_at),
         paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at),
-        cart_setting_id=proto_order.cart_setting_id
+        cart_setting_id=proto_order.cart_setting_id,
+        user_point_accounts=proto_order.user_point_accounts
         )
     attributes = proto_order.attributes
     if prev_order is not None:
@@ -1438,7 +1439,8 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         new_order_created_at=original_order.created_at,
         cart_setting_id=original_order.cart_setting_id,
         note=original_order.note,
-        attributes=attributes
+        attributes=attributes,
+        user_point_accounts=original_order.user_point_accounts
         )
     # item => OrderedProduct, element => OrderedProductItem になる
     # この分かりにくい対応は歴史的経緯によるものです...
@@ -1886,68 +1888,30 @@ def get_multicheckout_info(request, order):
     return multicheckout_info
 
 
-def get_extra_form_fields_for_order(request, order_like, for_=None):
+def get_extra_form_fields_for_order(request, order_like, for_=None, mode=None):
     if order_like.sales_segment is None:
         return []
-    from altair.app.ticketing.cart.view_support import get_extra_form_schema, DummyCartContext
+    from altair.app.ticketing.cart.view_support import get_extra_form_schema, filter_extra_form_schema, DummyCartContext
     extra_form_fields = get_extra_form_schema(
         DummyCartContext(request, order_like),
         request,
         order_like.sales_segment,
         for_,
         )
+    extra_form_fields = filter_extra_form_schema(extra_form_fields, mode) 
     if not extra_form_fields:
         return []
     return extra_form_fields
 
-def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False, for_=None):
+def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=False, for_=None, mode=None):
+    from altair.app.ticketing.cart.view_support import render_display_value
     retval = []
-    remaining_attributes = set(order_like.attributes.keys())
-    for field_desc in get_extra_form_fields_for_order(request, order_like, for_):
-        if field_desc['kind'] == 'description_only':
-            continue
-        field_name = field_desc['name']
-        field_value = order_like.attributes.get(field_name)
-        display_value = None
-        if field_desc['kind'] in ('text', 'textarea'):
-            display_value = field_value
-        elif field_desc['kind'] in ('select', 'radio'):
-            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
-            if len(v) > 0:
-                display_value = v[0]['label']
-            else:
-                display_value = field_value
-        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
-            field_value = field_value.strip() if field_value is not None else u''
-            if len(field_value) > 0:
-                field_value = [c.strip() for c in field_value.split(',')]
-            else:
-                field_value = []
-            display_value = []
-            for c in field_value:
-                v = [pair for pair in field_desc['choices'] if pair['value'] == c]
-                if len(v) > 0:
-                    v = v[0]['label']
-                else:
-                    v = c
-                display_value.append(v)
-        elif field_desc['kind'] == 'bool':
-            try:
-                field_value = int(field_value)
-            except (ValueError, TypeError):
-                pass
-            field_value = bool(field_value)
-            display_value = u'はい' if field_value else u'いいえ'
-        elif field_desc['kind'] == 'date':
-            dtf = create_date_time_formatter(request)
-            if field_value is not None:
-                field_value = parsedate(field_value)
-            display_value = dtf.format_date(field_value) if field_value is not None else u''
+    values = OrderAttributeIO(include_undefined_items=include_undefined_items, for_=for_, mode=mode).marshal(request, order_like)
+    for field_name, display_name, field_value, _, field_desc in values:
+        if field_desc is not None:
+            display_value = render_display_value(request, field_desc, field_value)
         else:
-            logger.warning('unsupported kind: %s' % field_desc['kind'])
             display_value = field_value
-        if field_name in remaining_attributes:
-            remaining_attributes.remove(field_name)
         retval.append(
             (
                 (
@@ -1955,46 +1919,36 @@ def get_order_attribute_pair_pairs(request, order_like, include_undefined_items=
                     field_value
                     ),
                 (
-                    field_desc['display_name'],
+                    display_name,
                     display_value
                     )
                 )
             )
-    if include_undefined_items:
-        for field_name in remaining_attributes:
-            field_value = order_like.attributes[field_name]
-            retval.append(
-                (
-                    (
-                        field_name,
-                        field_value
-                        ),
-                    (
-                        field_name,
-                        field_value
-                        )
-                    )
-                )
     return retval
 
 class OrderAttributeIO(object):
-    def __init__(self, blank_value=u"", include_undefined_items=False):
+    def __init__(self, blank_value=u"", include_undefined_items=False, for_=None, mode=None):
         self.blank_value = blank_value
         self.include_undefined_items = include_undefined_items
+        self.for_ = for_
+        self.mode = mode
 
     def blank_if_none(self, v):
         return self.blank_value if v is None else v
 
+    def get_extra_form_fields(self, request, order_like):
+        return get_extra_form_fields_for_order(request, order_like, self.for_, self.mode)
+
     def marshal(self, request, order_like):
         retval = []
         remaining_attributes = set(order_like.attributes.keys())
-        for field_desc in get_extra_form_fields_for_order(request, order_like):
+        for field_desc in self.get_extra_form_fields(request, order_like): 
             if field_desc['kind'] == 'description_only':
                 continue
             field_name = field_desc['name']
             field_value = order_like.attributes.get(field_name)
             stringized_value = None
-            if field_desc['kind'] in ('text', 'textarea'):
+            if field_desc['kind'] in ('text', 'password', 'textarea'):
                 stringized_value = self.blank_if_none(field_value)
             elif field_desc['kind'] in ('select', 'radio'):
                 v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
@@ -2050,8 +2004,9 @@ class OrderAttributeIO(object):
                 (
                     field_name,
                     field_desc['display_name'],
+                    field_value,
                     stringized_value,
-                    False,
+                    field_desc,
                     )
                 )
         if self.include_undefined_items:
@@ -2062,20 +2017,21 @@ class OrderAttributeIO(object):
                         field_name,
                         field_name,
                         field_value,
-                        True,
+                        field_value,
+                        None,
                         )
                     )
         return retval
 
     def unmarshal(self, request, order_like, params):
         remaining_attributes = set(params.keys())
-        for field_desc in get_extra_form_fields_for_order(request, order_like):
+        for field_desc in self.get_extra_form_fields(request, order_like): 
             if field_desc['kind'] == 'description_only':
                 continue
             field_name = field_desc['name']
             v = params.get(field_name)
             stored_value = None
-            if field_desc['kind'] in ('text', 'textarea'):
+            if field_desc['kind'] in ('text', 'password', 'textarea'):
                 stored_value = v
             elif field_desc['kind'] in ('select', 'radio'):
                 for pair in field_desc['choices']:

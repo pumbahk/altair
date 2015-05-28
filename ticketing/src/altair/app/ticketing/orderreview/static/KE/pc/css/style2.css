@@ -834,13 +834,21 @@ div.section-inner h4 {
     margin-left: -1em;
 }
 
+.section table.form ul {
+    list-style-type: none;
+}
+
+.section table.form ul {
+    list-style-type: none;
+}
+
 /* added */
 
 .red {
 color: #f00;
 }
 
-table.form {
+.formWrapper table.form {
 border-collapse: collapse;
 margin: 0px auto 20px auto;
 padding: 10px;
@@ -848,7 +856,7 @@ width: 100%;
 border: 5px solid #09355F;
 }
 
-table.form tbody th{
+.formWrapper table.form tbody th{
 background-color: #205A86;
 border-collapse: collapse;
 padding: 10px;
@@ -858,7 +866,7 @@ color: #FFF;
 }
 
 
-table.form thead th{
+.formWrapper table.form thead th{
 background-color: #efefef;
 border-collapse: collapse;
 padding: 10px;
@@ -868,7 +876,7 @@ color: #000;
 }
 
 
-table.form td{
+.formWrapper table.form td{
 background-color: #fff;
 padding: 20px 10px;
 border-bottom: 1px solid #09355F;
@@ -876,7 +884,7 @@ text-align: left;
 
 }
 
-table.form tfoot td{
+.formWrapper table.form tfoot td{
 background-color: #fff;
 padding: 10px;
 border-top: 2px solid #09355F;
@@ -884,14 +892,14 @@ font-size: 16px;
 text-align: left;
 }
 
-table.form input{
+.formWrapper table.form input{
 border: 1px solid #09355F;
 font-size: 20px;
 line-height: 120%;
 height: 30px;
 }
 
-table.form input.submit,
+.formWrapper table.form input.submit,
 .btnLogin {
   background-image: linear-gradient(top, #a3ce75 0%, #96c762 48%, #89c04e 50%, #7cb93b);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#a3ce75), color-stop(0.48, #96c762), color-stop(0.5, #89c04e), to(#7cb93b));
@@ -923,7 +931,7 @@ text-decoration:none;
 text-align:center;
 }
 
-table.form input.submit:hover,
+.formWrapper table.form input.submit:hover,
 .btnLogin:hover {
 color: #fff;
 opacity:0.9;

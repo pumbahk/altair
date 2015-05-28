@@ -9,7 +9,7 @@ def includeme(config):
     lot_product_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotProductResource'))
     lot_entry_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotEntryResource'))
     lot_report_setting_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotEntryReportSettingResource'))
-    
+
     # 抽選内容管理
     config.add_route('lots.index', '/{event_id}',
                      factory=lot_collection_resource_factory)
@@ -33,6 +33,8 @@ def includeme(config):
                      factory=lot_entry_resource_factory)
     config.add_route('lots.entries.shipping_address.edit', 'entries/search/{lot_id}/entry/{entry_no}/shipping_address/edit',
                      factory=lot_entry_resource_factory)
+    config.add_route('lots.entries.delete', 'entries/delete/{lot_id}/entry/{entry_no}',
+                     factory=lot_entry_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.export', 'entries/export/{lot_id}',
@@ -51,6 +53,13 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
+
+    # メール送信用API
+    config.add_route('lots.entries.send_election_mail', 'entries/send_election_mail/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.send_rejection_mail', 'entries/send_rejection_mail/{lot_id}',
+                     factory=lot_resource_factory)
+
     config.add_route('lots.entries.reject', 'entries/reject/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel', 'entries/cancel/{lot_id}',
@@ -61,6 +70,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.index', 'entries/{lot_id}',
                      factory=lot_resource_factory)
+
+
 
     # レポートメール設定
     config.add_route('lot.entries.new_report_setting',
@@ -87,9 +98,8 @@ def includeme(config):
     from altair.app.ticketing.lots.electing import Electing
     from altair.app.ticketing.lots.interfaces import IElecting
 
-    reg.registerAdapter(LotEntryStatus, [Lot, IRequest], 
+    reg.registerAdapter(LotEntryStatus, [Lot, IRequest],
                         ILotEntryStatus)
     reg.registerAdapter(Electing, [Lot, IRequest],
                         IElecting)
     config.include("altair.app.ticketing.lots")
-

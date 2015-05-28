@@ -41,6 +41,9 @@ class IOrderLike(IPurchase):
     shipping_address      = Attribute(u"")
     channel               = Attribute(u"")
     operator              = Attribute(u"")
+    user                  = Attribute(u"")
+    membership            = Attribute(u"")
+    user_point_accounts   = Attribute(u"")
 
 class IShippingAddress(Interface):
     user_id         = Attribute(u"")

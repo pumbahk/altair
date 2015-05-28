@@ -12,25 +12,25 @@ h3{
 
 <div class="row-fluid">
     ${nco.breadcrumbs(
-        names=["Top", "Page", static_page.name],
+        names=["Top", "Page", active_page.name],
         urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype=pagetype.name)]
     )}
 
 <div class="circle circle-page circle-top"></div>
 
 <h2>
-${static_page.name}
-%if static_page.interceptive:
+${active_page.name}
+%if active_page.interceptive:
 <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
 %endif
 </h2>
 
-%if static_page.interceptive:
+%if active_page.interceptive:
 <div class="alert">
   横取り中では、登録されたURLの*widgetページがあった場合でも*優先して表示されます。
 </div>
 %endif
-%if not static_page:
+%if not active_page:
 <div class="alert alert-error">
   このページセットは管理しているページを持っていないようです
 </div>
@@ -82,7 +82,7 @@ ${static_page.name}
   <tbody>
   %for page in static_pageset.pages:
     <tr>
-      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == static_page.id else "" |n}></td>
+      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == active_page.id else "" |n} ></td>
       <td>
         <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a>
         ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
@@ -107,7 +107,7 @@ ${static_page.name}
   %endfor
   </tbody>
   </table>
-
+  <hr id="internal_link_for_tabs" />
   ##位置的にinternal_link_for_tabsにするとちょうどよい。
   <div class="btn-group" id="internal_link_for_tabs"> 
 	  <a class="btn btn-success action submit" href="${request.route_path("static_page", action="shallow_copy", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id="__id__")}"
@@ -120,7 +120,7 @@ ${static_page.name}
     </a>
       <a class="btn btn-success do-post"
        message="本当に登録されたデータを削除しますか?"
-	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
+	   href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
           <i class="icon-trash"></i> 選択したページを削除
     </a>
   </div>
@@ -132,85 +132,98 @@ ${static_page.name}
 
 <ul class="nav nav-tabs">
   %for page in static_pageset.pages:
-  %if page.id == static_page.id:
-    <li class="active"><a href="#">${page.label}
-    %if page.interceptive:
-      <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+    %if active_page.id == page.id:
+        <li class="active">
+        <a href="#">
+    %else:
+        <li>
+        <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">
     %endif
-    </a></li>
-  %else:
-    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}
+
+    ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
+    ${page.label[:15]+"..."}
+
     %if page.interceptive:
-      <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+        <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
     %endif
-    </a></li>
-  %endif
+    </a>
+    </li>
   %endfor
 </ul>
 
 <h3>ページ詳細</h3>
 <table class="table table-striped">
       <tr>
-        <th class="span2">name</th><td>${static_page.name}</td>
+        <th class="span2">name</th><td>${active_page.name}</td>
       </tr>
       <tr>
-        <th class="span2">タイトル</th><td>${static_page.label}</td>
+        <th class="span2">タイトル</th><td>${active_page.label}</td>
       </tr>
       <tr>
-        <th>掲載期間</th><td>${h.jterm(static_page.publish_begin, static_page.publish_end)}</td>
+        <th>公開期間</th><td>${h.jterm(active_page.publish_begin, active_page.publish_end)}</td>
       </tr>
       <tr>
         <th>レイアウト</th><td>
-          %if static_page.layout_id:
-            ${static_page.layout.title}(<a href="${request.route_path("layout_preview", layout_id=static_page.layout.id)}"><i class="icon-eye-open"></i></a>)
+          %if active_page.layout_id:
+            ${active_page.layout.title}(<a href="${request.route_path("layout_preview", layout_id=active_page.layout.id)}"><i class="icon-eye-open"></i></a>)
           %else:
             -
           %endif
         </td>
       </tr>
       <tr>
-        <th>作成日時</th><td>${h.base.jdatetime(static_page.created_at)}</td>
+        <th>作成日時</th><td>${h.base.jdatetime(active_page.created_at)}</td>
       </tr>
       <tr>
-        <th>更新日時</th><td>${h.base.jdatetime(static_page.updated_at)}</td>
+        <th>更新日時</th><td>${h.base.jdatetime(active_page.updated_at)}</td>
       </tr>
       <tr>
-        <th>アップロード日時</th><td>${h.base.jdatetime(static_page.uploaded_at)}</td>
+        <th>アップロード日時</th><td>${h.base.jdatetime(active_page.uploaded_at)}</td>
       </tr>
       <tr>
-        <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
+        <th>公開ステータス</th><td>${active_page.publish_status(now)}</td>
       </tr>
     </table>
 
 <div class="btn-group">
-  <a href="${request.route_path("static_page", action="toggle_publish", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id=static_page.id)}" class="btn btn-inverse">
-    <i class="icon-plus icon-white"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
+  <a href="${request.route_path("static_page", action="toggle_publish", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id=active_page.id)}" class="btn btn-inverse">
+    <i class="icon-plus icon-white"></i> この静的ページを${u"非公開にする" if active_page.published else u"公開する"}</a>
   <a class="btn btn-primary"
-	   href="${request.route_path("static_page_update", action="input", id=static_page.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
+	   href="${request.route_path("static_page_update", action="input", id=active_page.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
     <i class="icon-cog"></i> 変更
   </a>
   <a class="do-post btn btn-danger"
      message="本当に登録されたデータを削除しますか?"
-	 href="${request.route_path("static_page",action="delete",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
+	 href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
     <i class="icon-trash"></i> 削除
   </a>
   <a class="do-post btn"
      message="本当に${static_pageset.url}のページを横取りしますか？"
-	 href="${request.route_path("static_page",action="intercept",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
+	 href="${request.route_path("static_page",action="intercept",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
     <i class="icon-plus"></i> widgetのページを横取り
   </a>
 </div>
 <hr id="internal_link_for_files" />
 
 <h3>登録されているファイル</h3>
-
 <ul class="nav nav-tabs">
   %for page in static_pageset.pages:
-  %if page.id == static_page.id:
-    <li class="active"><a href="#">${page.label}</a></li>
-  %else:
-    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_files">${page.label}</a></li>
-  %endif
+    %if active_page.id == page.id:
+        <li class="active">
+        <a href="#">
+    %else:
+        <li>
+        <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_files">
+    %endif
+
+    ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
+    ${page.label[:15]+"..."}
+
+    %if page.interceptive:
+        <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+    %endif
+    </a>
+    </li>
   %endfor
 </ul>
 
@@ -234,18 +247,25 @@ ${static_page.name}
 </div>
 
 <h3>操作</h3>
-<div class="row">
-  <div class="span5">
+<div class="row-fluid">
+  <div class="span6">
 	<div class="well" style="height:120px;">
-	  <h4 style="margin-bottom:10px;">zipファイルにまとめてdownloadする</h4>
-	  <a href="${request.route_path("static_page", action="download", static_page_id=static_pageset.id, child_id=static_page.id)}" class="btn">zipでdownload</a>
+      <span class="label">${active_page.publish_status(now)}</span>
+      <h4>${active_page.label}</h4>
+      <br>
+	  <h5 style="margin-bottom:10px;">上記のデータをまとめてdownloadする</h5>
+	  <a href="${request.route_path("static_page", action="download", static_page_id=static_pageset.id, child_id=active_page.id)}" class="btn">zipでdownload</a>
 	</div>
   </div>
 
   <div class="span6">
-	<div class="well" style="height:120px;">
-	  <h4 style="margin-bottom:10px;">zipファイルでuploadし直す</h4>
-	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_pageset.id, child_id=static_page.id,_query=dict(endpoint=request.url))}" 
+	<div class="well">
+      <span class="label">${active_page.publish_status(now)}</span>
+      <h4>${active_page.label}</h4>
+      <br>
+	  <h5 style="margin-bottom:10px;">上記のデータをuploadし直す</h5>
+      <h6>最終更新者：${active_page.last_editor} (更新日時：${active_page.uploaded_at})</h6>
+	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_pageset.id, child_id=active_page.id,_query=dict(endpoint=request.url))}"
 			    method="POST" enctype="multipart/form-data">
 		<label>zipfile: <input id="zipfile" type="file" name="zipfile"/></label>
 		<input class="btn" type="submit" value="zipでupload"/>

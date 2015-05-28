@@ -8,8 +8,9 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
 from wtforms import fields
-from altair.formhelpers.form import OurSessionSecureForm
+from altair.formhelpers.form import OurForm, SecureFormMixin
 from wtforms.validators import Regexp, Length
+from wtforms.ext.csrf.fields import CSRFTokenField
 
 import markupsafe
 
@@ -44,7 +45,7 @@ from .models import DBSession
 from .. import logger
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCartStatusError
-from ..exceptions import PaymentPluginException
+from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery
 from altair.app.ticketing.payments.api import get_cart, get_confirm_url
@@ -97,9 +98,6 @@ error_messages = {
 }
 
 
-class CSRFSecureForm(OurSessionSecureForm):
-    SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
-
 CARD_NUMBER_REGEXP = r'^\d{14,16}$'
 CARD_HOLDER_NAME_REGEXP = r'^[A-Z\s]+$'
 CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
@@ -110,7 +108,9 @@ def card_exp_year(form):
     now = datetime.now() # safe to use datetime.now() here
     return [(u'%02d' % (y % 100), '%d' % y) for y in range(now.year, now.year + 20)]
 
-class CardForm(CSRFSecureForm):
+class CardForm(OurForm, SecureFormMixin):
+    SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
+
     def _get_translations(self):
         return Translations({
             'This field is required.' : u'入力してください',
@@ -120,6 +120,8 @@ class CardForm(CSRFSecureForm):
             'Field must be between %(min)d and %(max)d characters long.': u'正しく入力してください。',
             'Invalid input.': u'形式が正しくありません。',
         })
+
+    csrf_token = CSRFTokenField()
 
     card_number = fields.TextField('card',
                                    filters=[ignore_space_hyphen],
@@ -475,7 +477,6 @@ class MultiCheckoutView(object):
             return dict(form=form)
         assert not form.csrf_token.errors
         order = self._form_to_order(form)
-
         self.request.session['order'] = order
         self.request.session['secure_type'] = 'secure_code'
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
@@ -514,7 +515,7 @@ class MultiCheckoutView(object):
         secure_code = form['secure_code'].data
         card_holder_name = form['card_holder_name'].data.upper()
 
-        order = self.request.session.get('order', dict())
+        order = self.request.session['order']
         order.update(
             order_no=cart.order_no,
             card_holder_name=card_holder_name,

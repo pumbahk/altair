@@ -6,7 +6,7 @@ from pyramid.decorator import reify
 
 from altaircms.layout.models import Layout
 from .renderable import LayoutRender
-from altaircms.auth.api import get_or_404
+from altaircms.auth.api import get_or_404, set_request_organization
 
 from pyramid.view import view_defaults
 from pyramid.response import FileResponse
@@ -178,6 +178,7 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    set_request_organization(request, layout.organization_id)
     real_layout_file = RealLayoutFile(request, layout)
     real_layout_file.abspath() #xxx:
 

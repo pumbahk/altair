@@ -6,6 +6,7 @@ import operator
 from markupsafe import Markup
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
+from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
@@ -22,6 +23,7 @@ from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart import schemas as cart_schemas
 from altair.app.ticketing.cart.rendering import selectable_renderer
+from altair.app.ticketing.cart.view_support import render_view_to_response_with_derived_request
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 from . import api
@@ -32,6 +34,7 @@ from .models import (
     LotEntry,
 )
 from . import urls
+from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from . import utils
 
 logger = logging.getLogger(__name__)
@@ -113,6 +116,8 @@ class EntryLotView(object):
         """
         イベント詳細
         """
+        jump_maintenance_page_for_trouble(self.request.organization)
+
         event = self.context.event
         lot = self.context.lot
 
@@ -135,7 +140,6 @@ class EntryLotView(object):
         """
         抽選第N希望まで選択
         """
-        form = self._create_form(formdata=self.request.params)
         event = self.context.event
         lot = self.context.lot
 
@@ -182,7 +186,7 @@ class EntryLotView(object):
                 )
             ]
 
-        return dict(form=form, event=event, sales_segment=sales_segment,
+        return dict(event=event, sales_segment=sales_segment,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
             stock_types=stock_types,
@@ -195,7 +199,10 @@ class EntryLotView(object):
         """
         購入情報入力
         """
-        form = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        form = self.request.environ.get('cform')
+        if form is None:
+            form = self._create_form()
+
         event = self.context.event
         lot = self.context.lot
 
@@ -244,6 +251,7 @@ class EntryLotView(object):
         """
         申し込み確認
         """
+        self.request.session.pop_flash()
         event = self.context.event
         lot = self.context.lot
         if not lot:
@@ -288,37 +296,25 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
-            error_messages = {
-                'last_name_kana' : u"姓（カナ）を入力して下さい",
-                'first_name': u"名を入力して下さい",
-                'last_name': u"姓を入力して下さい",
-                'zip': u"郵便番号を入力して下さい",
-                'tel_1': u"電話番号を入力して下さい",
-                'sex': u"性別を入力して下さい",
-                'email_1': u"メールアドレス（確認）が一致していないか、メールアドレスが入力されていません。",
-                'first_name_kana': u"名（カナ）を入力して下さい",
-                'city': u"市区町村を入力して下さい",
-                'email_1_confirm': u"メールアドレス（確認）を入力して下さい",
-                'email_2': u"メールアドレス（確認）を入力して下さい",
-                'prefecture': u"都道府県を入力して下さい",
-                'address_1': u"住所を入力して下さい",
-                'birthday': u"生年月日の入力が不正です",
-                }
-            for error in cform.errors:
-                if error in error_messages:
-                    self.request.session.flash(error_messages[error])
+            for k, errors in cform.errors.items():
+                if isinstance(errors, dict):
+                    for k, errors in errors.items():
+                        for error in errors:
+                            self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
+                else:
+                    for error in errors:
+                        self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
 
-            query = dict(self.request.params)
-            for cnt, wish in enumerate(wishes):
-                wish_order = wish['wished_products'][0]['wish_order']
-                performance_id = wishes[cnt]['performance_id']
-                product_id = wish['wished_products'][0]['product_id']
-                quantity = wish['wished_products'][0]['quantity']
-                query.update({'wish_order-' + str(wish_order) + '-performance_id' : performance_id})
-                query.update({'wish_order-' + str(wish_order) + '-product_id' : product_id})
-                query.update({'wish_order-' + str(wish_order) + '-quantity' : quantity})
-            return HTTPFound(self.request.route_path(
-                'lots.entry.sp_step2', event_id=event.id, lot_id=lot.id, _query=query))
+            def retoucher(subrequest):
+                subrequest.session = self.request.session
+                subrequest.environ['cform'] = cform
+
+            return render_view_to_response_with_derived_request(
+                context_factory=lambda request: self.context,
+                request=self.request,
+                retoucher=retoucher,
+                route=('lots.entry.sp_step2', self.request.matchdict)
+                )
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
@@ -348,6 +344,14 @@ class EntryLotView(object):
             return result
         return HTTPFound(urls.entry_confirm(self.request))
 
+    @reify
+    def existing_user_point_account(self):
+        user = cart_api.get_user(self.context.authenticated_user())
+        if user is not None and UserPointAccountTypeEnum.Rakuten.v in user.user_point_accounts:
+            return user.user_point_accounts[UserPointAccountTypeEnum.Rakuten.v]
+        else:
+            return None
+
     @lbr_view_config(request_method="GET", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
     def rsp(self):
         formdata = MultiDict(
@@ -361,9 +365,10 @@ class EntryLotView(object):
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            if api.enable_auto_input_form(self.request, user) and user:
-                acc = cart_api.get_user_point_account(user.id)
-                form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+            if self.context.membershipinfo is not None and \
+               self.context.membershipinfo.enable_auto_input_form:
+                if self.existing_user_point_account is not None:
+                    form.accountno.data = self.existing_user_point_account.account_number
 
         return dict(
             form=form,
@@ -382,19 +387,15 @@ class EntryLotView(object):
             asid = self.request.context.asid_smartphone
             return dict(form=form, asid=asid)
 
-        if cart_api.is_point_input_required(self.context, self.request):
-            point = point_params.pop("accountno", None)
-            user = cart_api.get_or_create_user(self.context.authenticated_user())
-            if point:
-                if not user:
-                    user = cart_api.get_or_create_user_from_point_no(point)
-
-                cart_api.create_user_point_account_from_point_no(
-                    user.id,
-                    type=UserPointAccountTypeEnum.Rakuten,
-                    account_number=point
-                    )
-                api.set_point_user(self.request, user)
+        account_number = point_params.pop("accountno", None)
+        user = cart_api.get_or_create_user(self.context.authenticated_user())
+        if account_number:
+            acc = cart_api.create_user_point_account_from_point_no(
+                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
+                type=UserPointAccountTypeEnum.Rakuten,
+                account_number=account_number
+                )
+            api.set_user_point_account_to_session(self.request, acc)
 
         from .adapters import LotSessionCart
         from altair.app.ticketing.payments.payment import Payment

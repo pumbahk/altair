@@ -201,26 +201,8 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                 <div class="venueViewerWrapper">
                   <div class="slider"></div>
                   <div class="venueViewer"></div>
-                  <div class="guidanceBackground"></div>
                   <div class="guidance" style="display: none;">
                     <div class="guidanceInner" style="margin-top: 0; font-size: 12px;">
-                      <h3>チケット購入方法</h3>
-                      <p>1. 左側の席種一覧から希望の席種をクリックしてください。</p>
-                      <p>2. 希望の券種と購入枚数を選択してください。</p>
-                      <p>3. 購入方法を選び、座席を確保してください。</p>
-<ul>
-<li style="list-style-type: disc; margin-left: 24px; list-style-position: outside;">「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。</li>
-<li style="list-style-type: disc; margin-left: 24px; list-style-position: outside;">「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。</li>
-<ul>
-<li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">色のついた座席が選択可能な席です。</li>
-<li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">座席をクリックすることで座席の色が変わり、選択された状態になります。</li>
-<li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">座席図の下にある「選択」ボタンをクリックすると座席選択は完了です。</li>
-<li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">座席が小さくてみづらい場合には、左側のズーム機能を使って座席を拡大してください。　</li>
-<li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">座席を選び直す場合は、一度選択した座席をクリックし、選択カーソルを解除することで選び直すことができます。</li>
-</ul>
-</li></ul>
-<br />
-                      <p>4. 席種を選び直したい場合は「キャンセル」ボタンをクリックしてください。</p>
                     </div>
                   </div>
                   <div class="guidance without-venue" style="display: none;">
@@ -239,40 +221,5 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-      <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/LG/pc/images/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-        <table summary="イベント詳細情報">
-          <tbody>
-            <tr>
-              <th scope="row">イベント名</th>
-              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            <tr>
-              <th scope="row">開催日時</th>
-              <td id="descPerformanceDate"></td>
-            </tr>
-            <tr>
-              <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(set(event['venues']))}</td>
-            </tr>
-<%doc>
-            <tr>
-              <th scope="row">販売期間</th>
-              <td id="descSalesTerm">
-                ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-              </td>
-            </tr>
-</%doc>
-          %for v in event_extra_info:
-            <tr>
-              <th scope="row">${v['label']}</th>
-              <td>${v['content']|n}</td>
-            </tr>
-          %endfor
-          </tbody>
-        </table>
       </div>
     </div>

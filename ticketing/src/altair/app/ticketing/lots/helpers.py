@@ -28,6 +28,7 @@ from altair.app.ticketing.cart.helpers import (
     error_list,
     safe_get_contact_url,
     sensible_widget,
+    sensible_coerce,
 )
 from altair.app.ticketing.helpers.base import is_required
 
@@ -282,16 +283,27 @@ def mobile_error_list(request, form, name, with_label=False):
 def mobile_list_widget(request):
     return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
 
-def lot_entry_status_as_string(request, status):
-    if status == LotEntryStatusEnum.New:
+def lot_entry_status_as_string(entry):
+    if entry.status == LotEntryStatusEnum.New:
         return u'抽選待ち'
-    elif status == LotEntryStatusEnum.Elected:
+    elif entry.status == LotEntryStatusEnum.Elected:
         return u'当選'
-    elif status == LotEntryStatusEnum.Rejected:
+    elif entry.status == LotEntryStatusEnum.Rejected:
         return u'落選'
-    elif status == LotEntryStatusEnum.Ordered:
+    elif entry.status == LotEntryStatusEnum.Ordered:
         return u'注文済み'
     return u'???' # never get here
+
+def lot_entry_display_status(entry, now):
+    # 当選or注文済み
+    if entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
+        return u'当選表示'
+    # 落選
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
+        return u'落選表示'
+    # 抽選待ち
+    else:
+        return u'抽選待ち表示'
 
 def _enclose_if(content, tag, condition, **kwargs):
     buf = []

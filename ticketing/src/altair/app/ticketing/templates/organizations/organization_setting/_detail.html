@@ -5,7 +5,7 @@
 <table class="table table-bordered fullwidth" style="margin-top: 10px;">
   <thead>
     <tr>
-      <th>設定名</th>
+      <th class="span5">設定名</th>
       <th>設定値</th>
     </tr>
   </thead>
@@ -13,14 +13,6 @@
     <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.name)}</th>
       <td>${organization_setting.name}</td>
-    </tr>
-    <tr>
-      <th>${HH.label_text_for(c_models.OrganizationSetting.auth_type)}</th>
-      <td>${organization_setting.auth_type or u'-'}</td>
-    </tr>
-    <tr>
-      <th>${HH.label_text_for(c_models.OrganizationSetting.performance_selector)}</th>
-      <td>${organization_setting.performance_selector}</td>
     </tr>
     <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.margin_ratio)}</th>
@@ -113,6 +105,30 @@
     <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.augus_use)}</th>
       <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.mail_refund_to_user)}</th>
+      <td>${u'送信する' if organization_setting.mail_refund_to_user else u'送信しない'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.sitecatalyst_use)}</th>
+      <td>${u'使う' if organization_setting.sitecatalyst_use  else u'使わない'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid)}</th>
+      <td>${organization_setting.asid if organization_setting.asid else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid_mobile)}</th>
+      <td>${organization_setting.asid_mobile if organization_setting.asid_mobile else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.asid_smartphone)}</th>
+      <td>${organization_setting.asid_smartphone if organization_setting.asid_smartphone else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.lot_asid)}</th>
+      <td>${organization_setting.lot_asid if organization_setting.lot_asid else u'-'}</td>
     </tr>
   <tbody>
 </table>

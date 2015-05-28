@@ -1,10 +1,7 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 ${order.order_no}
-<%
-extra_form_data = order.get_order_attribute_pair_pairs(request)
-shipping_address = order.shipping_address
-%>
+<% shipping_address = order.shipping_address %>
 <%mobile:form_header>購入情報</%mobile:form_header>
 ${view_context.title}
 <%mobile:form_header>会員種別</%mobile:form_header>
@@ -22,10 +19,21 @@ ${shipping_address.address_2}
 ${shipping_address.tel_1 or shipping_address.tel_2}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping_address.email_1}<br />
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
+% if extra_form_data:
 % for _, (display_name, display_value) in extra_form_data:
 <%mobile:form_header>${display_name}</%mobile:form_header>
 ${h.sensible_coerce(request, display_value)}<br />
 % endfor
+% if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+<form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+  <input type="hidden" name="action" value="edit_order_attributes.form" />
+  <input type="hidden" name="order_no" value="${order.order_no}" />
+  <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+  <input type="submit" value="入力情報の編集" />
+</form>
+% endif
+% endif
 % if order.status == 'canceled' or order.payment_status == 'refunded':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <hr/>

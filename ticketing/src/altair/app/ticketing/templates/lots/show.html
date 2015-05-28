@@ -61,7 +61,7 @@ ${tabs.tabs(request)}
         </tr>
         <tr>
           <th>認証方法</th>
-          <td>${lot.auth_type or u'なし'}</td>
+          <td>${HH.auth_type_label(lot.auth_type)}</td>
         </tr>
         <tr>
           <th>抽選カートURL</th>
@@ -76,6 +76,10 @@ ${tabs.tabs(request)}
             <a href="${agreement_lots_cart_url}">${agreement_lots_cart_url}</a>
             (<a href="${agreement_lots_cart_now_url}">時間指定して同意抽選カート購入</a>)
           </td>
+        </tr>
+        <tr>
+            <th>当選/落選登録時に送信</th>
+            <td>${u'送信する' if lot.mail_send_now else u'送信しない'}</td>
         </tr>
        </tbody>
     </table>

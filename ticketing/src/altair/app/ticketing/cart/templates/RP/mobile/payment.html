@@ -1,0 +1,162 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+<form method="post" action="${request.current_route_path()}">
+<div>
+購入者情報を入力して下さい。
+</div>
+
+<div>
+<%mobile:form_header>購入者氏名(全角)</%mobile:form_header>
+</div>
+<div>
+  ${form['last_name'].label}
+  ${form['last_name']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'last_name')}
+  </div>
+</div>
+<div>
+  ${form['first_name'].label}
+  ${form['first_name']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'first_name')}
+  </div>
+</div>
+
+<div>
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
+</div>
+<div>
+  ${form['last_name_kana'].label}
+  ${form['last_name_kana']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'last_name_kana')}
+  </div>
+</div>
+<div>
+  ${form['first_name_kana'].label}
+  ${form['first_name_kana']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'first_name_kana')}
+  </div>
+</div>
+
+<div>
+<%mobile:form_header>${form['email_1'].label}</%mobile:form_header>
+</div>
+<div>
+  ${form['email_1']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'email_1')}
+  </div>
+</div>
+
+<div>
+<%mobile:form_header>${form['email_1_confirm'].label}</%mobile:form_header>
+</div>
+<div>
+  ${form['email_1_confirm']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'email_1_confirm')}
+  </div>
+</div>
+<p>${view_context.mail_filter_domain_notice}</p>
+
+<div>
+<%mobile:form_header>住所</%mobile:form_header>
+</div>
+<div>
+  ${form['zip'].label}(例:1410022)<br/>
+  ${form['zip']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'zip')}
+  </div>
+</div>
+<div>
+  ${form['prefecture'].label}<br/>
+  ${form['prefecture']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'prefecture')}
+  </div>
+</div>
+<div>
+  ${form['city'].label}<br/>
+  ${form['city']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'city')}
+  </div>
+</div>
+<div>
+  町名番地<br/>
+  ${form['address_1']}<br/>
+  建物名等<br/>
+  ${form['address_2']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'address_1')}
+  </div>
+</div>
+
+<div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+</div>
+<div>
+  ${form['tel_1'].label}<br/>
+  ${form['tel_1']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'tel_1')}
+  </div>
+</div>
+<hr />
+<div>
+代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
+購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
+</div>
+<% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div style="color:red">** ${message} **</div>
+    %endfor
+%endif
+
+%for m in payment_delivery_methods:
+<hr />
+<% checked = 'checked' if str(m.id) == checked_id else '' %>
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}+${m.delivery_method.name}<br/>
+手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)}) + ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br />
+%if m.system_fee > 0:
+システム利用料:${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br/>
+%endif
+%if m.special_fee > 0:
+${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br/>
+%endif
+<div>
+% if m.payment_method.payment_plugin_id == 1:
+<font size="-2">
+注文受付完了と同時に決済され、即時注文確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/amex_logo.gif')}" height="30px" />
+</font>
+% elif m.payment_method.payment_plugin_id == 2:
+<font size="-2">
+楽天会員IDでお支払いいただけます。<br />
+お支払い額に応じて楽天スーパーポイントが貯まります。<br />
+※ 楽天サイトに移動して、お支払い手続きを行っていただきます。<br />
+<img src='https://checkout.rakuten.co.jp/p/common/img/img_cardface_h4.gif?c9cc8c1b9ae94c18920540a80b95c16a' border='0' width="100%"/>
+</font>
+% elif m.payment_method.payment_plugin_id == 3:
+<font size="-2">
+注文有効期日までにお支払頂きます。<br />
+お支払が確認できた時点で注文確定となります。<br />
+</font>
+% endif
+</div>
+%endfor
+<hr />
+<div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
+<div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
+</form>

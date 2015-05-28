@@ -6,7 +6,7 @@ from wtforms import Form
 from wtforms import widgets
 
 from altair.app.ticketing.cart.schemas import ClientForm as _ClientForm, ExtraForm
-from altair.app.ticketing.cart.view_support import build_dynamic_form
+from altair.app.ticketing.cart.view_support import build_dynamic_form, filter_extra_form_schema
 from altair.app.ticketing.users.models import SexEnum
 from altair.formhelpers import (
     Required,
@@ -45,6 +45,23 @@ ymd_widget = Switcher(
     select=widgets.Select(),
     input=widgets.TextInput()
     )
+            
+client_form_fields = {
+    'last_name_kana' : u"姓（カナ）",
+    'first_name_kana': u"名（カナ）",
+    'last_name': u"姓",
+    'first_name': u"名",
+    'zip': u"郵便番号",
+    'tel_1': u"電話番号",
+    'sex': u"性別",
+    'email_1': u"メールアドレス",
+    'email_1_confirm': u"メールアドレス（確認）",
+    'email_2': u"メールアドレス",
+    'city': u"市区町村",
+    'prefecture': u"都道府県を",
+    'address_1': u"住所",
+    'birthday': u"生年月日",
+    }
 
 class ClientForm(_ClientForm):
     sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
@@ -85,7 +102,12 @@ class ClientForm(_ClientForm):
 class DynamicExtraForm(ExtraForm):
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        fields = build_dynamic_form.unbound_fields(context.cart_setting.extra_form_fields or [])
+        fields = build_dynamic_form.unbound_fields(
+            filter_extra_form_schema(
+                context.cart_setting.extra_form_fields or [],
+                mode='entry'
+                )
+            )
         super(DynamicExtraForm, self).__init__(*args, _fields=fields, **kwargs)
 
 

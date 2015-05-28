@@ -101,10 +101,3 @@ def is_rakuten_auth_organization(context, request):
         if organization.id == org:
             return True
     return False
-
-def get_user_point_accounts(request, user_id):
-    from altair.app.ticketing.users.models import UserPointAccount
-    session = get_db_session(request, name="slave")
-    return session.query(UserPointAccount) \
-        .filter_by(user_id=user_id) \
-        .all()

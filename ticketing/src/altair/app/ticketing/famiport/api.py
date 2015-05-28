@@ -3,7 +3,8 @@ from ..utils import sensible_alnum_encode
 from .models import (
     _session,
     FamiPortOrder,
-    FamiPortOrderNoSequence,
+    FamiPortTicket,
+    FamiPortBarcodeNoSequence,
     FamiPortReserveNumberSequence,
     FamiPortOrderTicketNoSequence,
     FamiPortOrderIdentifierSequence,
@@ -31,28 +32,6 @@ def get_xmlResponse_generator(famiport_response):
     return XmlFamiPortResponseGenerator(famiport_response)
 
 
-def get_next_barcode_no(request, organization, name='famiport'):
-    base_id = FamiPortOrderNoSequence.get_next_value(name)
-    return organization.code + sensible_alnum_encode(base_id).zfill(11)
-
-
-def get_reserve_number(request, organization, name=''):
-    return FamiPortReserveNumberSequence.get_next_value()
-
-
-def get_order_ticket_no(request, organization, name='famiport'):
-    return FamiPortOrderTicketNoSequence.get_next_value()
-
-
-def get_famiport_order_identifier(request, organization, name='famiport'):
-    value = str(FamiPortOrderIdentifierSequence.get_next_value())
-    return value.zfill(12)
-
-
-def get_exchange_ticket_no(request, organization, name='famiport'):
-    return FamiPortExchangeTicketNoSequence.get_next_value()
-
-
 def get_famiport_order(order_no, session=None):
     if session is None:
         session = _session
@@ -62,39 +41,51 @@ def get_famiport_order(order_no, session=None):
     return retval
 
 
-def create_famiport_order(request, order_like, in_payment, name='famiport'):
-    """FamiPortOrderを作成する
+def create_famiport_ticket(ticket_dict, session=None):
+    if session is None:
+        session = _session
+    return FamiPortTicket(
+        type=ticket_dict['type'],
+        barcode_number=FamiPortBarcodeNoSequence.get_next_value(session),
+        template_code=ticket_dict['template'],
+        data=ticket_dict['data']
+        )
 
-    クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
-    """
-    famiport_order = FamiPortOrder()
-    famiport_order.order_no = order_like.order_no
-    famiport_order.barcode_no = get_next_barcode_no(request, order_like.organization, name)
-    famiport_order.reserve_number = get_reserve_number(request, order_like.organization, name)
-    famiport_order.order_ticket_no = get_order_ticket_no(request, order_like.organization, name)
-    famiport_order.famiport_order_identifier = get_famiport_order_identifier(request, order_like.organization, name)
-    famiport_order.exchange_ticket_no = get_exchange_ticket_no(request, order_like.organization, name)
-
-    famiport_order.address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
-    famiport_order.address_2 = order_like.shipping_address.address_2
-
-    if in_payment:
-        famiport_order.total_amount = order_like.total_amount
-        famiport_order.system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
-        famiport_order.ticketing_fee = order_like.delivery_fee
-        famiport_order.ticket_payment = order_like.total_amount - \
-            (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
-    else:  # FamiPortで決済しない場合は0をセットする
-        famiport_order.total_amount = 0
-        famiport_order.system_fee = 0
-        famiport_order.ticketing_fee = 0
-        famiport_order.ticket_payment = 0
-    famiport_order.name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
-    famiport_order.phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2).replace('-', '')
-    famiport_order.koen_date = order_like.sales_segment.performance.start_on
-    famiport_order.kogyo_name = order_like.sales_segment.event.title
-    famiport_order.ticket_count = len([item for product in order_like.items for item in product.items])
-    famiport_order.ticket_total_count = len([item for product in order_like.items for item in product.items])
-    _session.add(famiport_order)
-    _session.flush()
+def create_famiport_order(
+        client,
+        order_no,
+        customer_name,
+        customer_phone_number,
+        customer_address_1,
+        customer_address_2,
+        total_amount,
+        sytem_fee,
+        ticketing_fee,
+        ticket_payment,
+        tickets,
+        session=None):
+    """FamiPortOrderを作成する"""
+    if session is None:
+        session = _session
+    famiport_order = FamiPortOrder(
+        order_no=order_no,
+        barcode_no=client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
+        reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+        order_ticket_no=famiport_order.barcode_no,
+        famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(session),
+        exchange_ticket_no=FamiPortExchangeTicketNoSequence.get_next_value(session),
+        customer_name=customer_name,
+        customer_phone_number=customer_phone_number,
+        customer_address_1=customer_address_1,
+        customer_address_2=customer_address_2,
+        total_amount=total_amount,
+        system_fee=system_fee,
+        ticketing_fee=ticketing_fee,
+        ticket_payment=ticket_payment,
+        famiport_tickets=[
+            create_famiport_ticket(ticket_dict, session)
+            for ticket_dict in tickets
+            ]
+        )
+    session.add(famiport_order)
     return famiport_order

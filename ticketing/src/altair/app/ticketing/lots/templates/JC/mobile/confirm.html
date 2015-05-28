@@ -39,7 +39,7 @@ ${lot.name}
 <%mobile:header>申込内容最終確認</%mobile:header>
 %for wish in wishes:
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
-<%mobile:form_header>公演・試合</%mobile:form_header>
+<%mobile:form_header>大会・試合</%mobile:form_header>
 <div>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
@@ -78,7 +78,7 @@ ${h.format_currency(wish.special_fee)}
 </font></div>
 </div>
 %endfor
-<%mobile:header>購入者情報</%mobile:header>
+<%mobile:header>選手情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
 ${shipping_address['last_name']} ${shipping_address['first_name']}
@@ -109,10 +109,6 @@ ${shipping_address['tel_1']}
 ${shipping_address['prefecture']}${shipping_address['city']}<br />
 ${shipping_address['address_1']}<br />
 ${shipping_address['address_2']}
-</div>
-<%mobile:form_header>メモ</%mobile:form_header>
-<div>
-${memo|h.nl2br}
 </div>
 
 % if extra_form_data:

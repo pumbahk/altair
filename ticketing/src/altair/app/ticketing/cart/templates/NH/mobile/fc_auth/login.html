@@ -11,22 +11,23 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#FEBF00">■</font>各種会員の方はこちらから</font>
+<div><font color="#FEBF00">■</font>クラブハピネッツ会員の方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="NH" />
 <div>
-  会員ID<br/>
+  ポイントカードID<br/>
   <input type="text" name="username" size="22" value="" istyle="4"><br/>
-  パスワード<br/>
+  会員ID<br/>
   <input type="password" name="password" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">ポイントカードIDまたは会員IDが一致しません</span>
   %endif
 </div>
 <input type="submit" value="ログイン" />
+<p>ハイフンを除いてご入力ください。</p>
 </form>
 </div>
 

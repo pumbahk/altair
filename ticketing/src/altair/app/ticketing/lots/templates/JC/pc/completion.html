@@ -20,7 +20,7 @@
         <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
         <table summary="第${wish.wish_order + 1}希望">
           <tr>
-            <th>公演日・会場</th>
+            <th>大会日・会場</th>
             <td>${h.japanese_datetime(wish.performance.start_on)} ${wish.performance.venue.name}</td>
           </tr>
           <tr class="settlementSelectEnd">
@@ -54,16 +54,16 @@
 </div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
           <tr>
-            <th>購入者氏名（全角）</th>
+            <th>選手氏名（全角）</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
-            <th>購入者氏名（カナ）</th>
+            <th>選手氏名（カナ）</th>
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>
@@ -85,13 +85,9 @@
             <th>生年月日</th>
             <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
           </tr>
-          <tr>
+          <tr class="settlementSelectEnd">
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
-          </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
           </tr>
         </table>
       </div>
@@ -123,7 +119,7 @@
       <div class="settlementSelectBoxInner02">
         <p>お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</p>
         <p>登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</p>
-        <p>お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。</p>
+        <p>お問合せの際は、お申し込み時のお名前、電話番号、大会名、受付番号を記載お願いいたします。</p>
         <p>お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
       </div>
     </div>

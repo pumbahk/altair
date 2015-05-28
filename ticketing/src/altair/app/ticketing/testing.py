@@ -68,7 +68,7 @@ class DummyRequest(_DummyRequest):
             self._set_extensions(extensions)
         if not hasattr(self.__class__, k):
             raise AttributeError(k)
-        return getattr(self, k)
+        return self.__getattribute__(k)
 
     def copy(self):
         return self.__class__(

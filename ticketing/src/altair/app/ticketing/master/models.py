@@ -75,6 +75,18 @@ class Prefecture(object):
             self.__list = l
         return self.__list
 
+    @classmethod
+    def get_prefecture_id(self, label):
+        for entry in self.__source:
+            if entry[1] == label:
+                return entry[0]
+
+    @classmethod
+    def get_prefecture_label(self, id):
+        for entry in self.__source:
+            if entry[0] == id:
+                return entry[1]
+
 class Bank(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Bank'
     id = Column(Identifier, primary_key=True)

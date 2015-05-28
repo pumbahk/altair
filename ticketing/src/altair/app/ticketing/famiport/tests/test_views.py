@@ -15,7 +15,9 @@ class FamiPortAPIViewTest(TestCase):
 
         from webtest import TestApp
         from pyramid.config import Configurator
-        self.session = _setup_db()
+        self.session = _setup_db([
+            'altair.app.ticketing.famiport.models'
+            ])
         config = Configurator()
         config.include('altair.app.ticketing.famiport', '/famiport/')
 

@@ -44,7 +44,7 @@ ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
 会場 ${wish.performance.venue.name}<br />
 開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
-<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+<%mobile:form_header>希望種別と枚数</%mobile:form_header>
 <div><font size="-1">
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
@@ -73,7 +73,7 @@ ${h.format_currency(wish.special_fee)}
 合計 ${h.format_currency(wish.total_amount)} (税込)
 </font></div>
 %endfor
-<%mobile:header>購入者情報</%mobile:header>
+<%mobile:header>選手情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
 ${shipping_address.last_name} ${shipping_address.first_name}
@@ -102,10 +102,6 @@ ${shipping_address.tel_1}
 <div>
 ${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
 </div>
-<%mobile:form_header>メモ</%mobile:form_header>
-<div>
-${memo|h.nl2br}
-</div>
 
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
@@ -122,7 +118,7 @@ ${memo|h.nl2br}
 <%mobile:header>注意事項</%mobile:header>
 <div>・お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</div>
 <div>・登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</div>
-<div>・お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。</div>
+<div>・お問合せの際は、お申し込み時のお名前、電話番号、大会名、受付番号を記載お願いいたします。</div>
 <div>・お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
 <hr />
 <a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>

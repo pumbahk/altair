@@ -82,6 +82,10 @@ requires = [
     "radix",
     "requests",
     "pyOpenSSL",
+    "pyminizip",
+    "paramiko",
+    "enum34",
+    "scp",
     "altair.augus",
     "altair.auth",
     "altair.sqla",
@@ -184,8 +188,11 @@ setup(name='altair.app.ticketing',
       send_sej_remind_mail=altair.app.ticketing.mails.scripts.send_sej_remind_mail:main
       sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
+      famiport_send_sales_file=altair.app.ticketing.famiport.scripts.famiport_send_sales_file:main
+      famiport_send_refund_file=altair.app.ticketing.famiport.scripts.famiport_send_refund_file:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
       send_mail=altair.app.ticketing.scripts.send_mail:main
+      laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main
       """,
       dependency_links = [
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',

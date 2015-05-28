@@ -3,13 +3,13 @@
 <p>修正・変更箇所があれば訂正の上、「次へ」をクリックしてください。</p>
 <div class="settlementBox2" id="settlementEventDetail">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_content.gif')}" alt="大会一覧" width="97" height="30" /></h2>
     <table class="border" summary="イベント詳細情報">
       <tr>
         <th colspan="2" scope="row"><span><strong>${performance.name}</strong></span></th>
       </tr>
       <tr class="none">
-        <th scope="row">公演日</th>
+        <th scope="row">大会日</th>
         <td>${h.japanese_datetime(performance.open_on)}開演</td>
       </tr>
       <tr>
@@ -86,12 +86,12 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
             <tr>
-              <th><label>購入者氏名（全角）</label></th>
+              <th><label>選手氏名（全角）</label></th>
               <td>
                 ${form['last_name']}
                 ${form['first_name']}
@@ -100,7 +100,7 @@
               </td>
             </tr>
             <tr>
-              <th><label>購入者氏名（カナ）</label></th>
+              <th><label>選手氏名（カナ）</label></th>
               <td>
                 ${form['last_name_kana']}
                 ${form['first_name_kana']}

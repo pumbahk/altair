@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+from datetime import datetime
 from pyramid import testing
 from pyramid.testing import DummySession
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -101,15 +102,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         validate.return_value = True
         self.config.registry.settings['altair_cart.expire_time'] = 15
         self.config.add_route('payment.secure3d_result', '/this-is-secure3d-callback')
-        params = {
-            'card_number': 'XXXXXXXXXXXXXXXX',
-            'exp_year': '13',
-            'exp_month': '07',
-            'client_name': u'楽天太郎',
-            'card_holder_name': u'RAKUTEN TAROU',
-            'email_1': u'ticketstar@example.com',
-            }
-
         cart_id = 500
         dummy_cart = testing.DummyModel(
             id=cart_id,
@@ -121,10 +113,23 @@ class MultiCheckoutViewTests(unittest.TestCase):
             payment_delivery_pair=testing.DummyModel(id=1),
             )
 
-        request = DummyRequest(params=params, _cart=dummy_cart)
+        request = DummyRequest(_cart=dummy_cart)
+        target = self._makeOne(request)
+        result = target.card_info_secure3d_form()
+        params = {
+            'card_number': '0000000000000000',
+            'exp_year': '%02d' % (datetime.now().year % 100),
+            'exp_month': '07',
+            'secure_code': '000',
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'email_1': u'ticketstar@example.com',
+            'csrf_token': result['form'].csrf_token._value()
+            }
+
+        request = DummyRequest(params=params, _cart=dummy_cart, session=request.session)
         request.session['order'] = {}
         target = self._makeOne(request)
-
         result = target.card_info_secure3d()
 
         self.assertEqual(result.text.strip(), """
@@ -137,10 +142,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
         """.strip())
 
         session_order = request.session['order']
-        self.assertEqual(session_order['card_number'], 'XXXXXXXXXXXXXXXX')
-        self.assertEqual(session_order['exp_year'], '13')
-        self.assertEqual(session_order['exp_month'], '07')
-        self.assertEqual(session_order['card_holder_name'], u'RAKUTEN TAROU')
+        self.assertEqual(session_order['card_number'], params['card_number'])
+        self.assertEqual(session_order['exp_year'], params['exp_year'])
+        self.assertEqual(session_order['exp_month'], params['exp_month'])
+        self.assertEqual(session_order['card_holder_name'], params['card_holder_name'])
 
     @mock.patch('wtforms.ext.csrf.SecureForm.validate')
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_auth')
@@ -169,15 +174,8 @@ class MultiCheckoutViewTests(unittest.TestCase):
         validate.return_value = True
         self.config.registry.settings['altair_cart.expire_time'] = 15
         #self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        self.config.add_route('payment.secure3d', '/this-is-secure3d')
         self.config.add_route('payment.secure3d_result', '/this-is-secure3d-callback')
-        params = {
-            'card_number': 'XXXXXXXXXXXXXXXX',
-            'exp_year': '13',
-            'exp_month': '07',
-            'client_name': u'楽天太郎',
-            'card_holder_name': u'RAKUTEN TAROU',
-            'email_1': u'ticketstar@example.com',
-        }
 
         cart_id = 500
         dummy_cart = testing.DummyModel(
@@ -191,10 +189,27 @@ class MultiCheckoutViewTests(unittest.TestCase):
             payment_delivery_pair=testing.DummyModel(id=1),
             )
 
+        request = DummyRequest(_cart=dummy_cart)
+        target = self._makeOne(request)
+        result = target.card_info_secure3d_form()
+
+        params = {
+            'card_number': '0000000000000000',
+            'exp_year': '%02d' % (datetime.now().year % 100),
+            'exp_month': '07',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'secure_code': '000',
+            'csrf_token': result['form'].csrf_token._value(),
+        }
+        from altair.app.ticketing.cart.api import new_order_session
+        new_order_session(request,
+            client_name=u'楽天太郎',
+            email_1=u'ticketstar@example.com'
+            )
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=params)
+            session=request.session
             )
         target = self._makeOne(request)
 
@@ -231,14 +246,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         # self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         self.config.add_route('payment.secure3d', 'secure3d')
         self.config.add_route('payment.secure3d_result', '/this-is-secure3d-callback')
-        params = {
-            'card_number': 'XXXXXXXXXXXXXXXX',
-            'exp_year': '13',
-            'exp_month': '07',
-            'client_name': u'楽天太郎',
-            'card_holder_name': u'RAKUTEN TAROU',
-            'email_1': u'ticketstar@example.com',
-        }
 
         cart_id = 500
         dummy_cart = testing.DummyModel(
@@ -251,14 +258,29 @@ class MultiCheckoutViewTests(unittest.TestCase):
             performance=testing.DummyModel(id=1),
             payment_delivery_pair=testing.DummyModel(id=1),
             )
+        from altair.app.ticketing.cart.api import new_order_session
+        request = DummyRequest(_cart=dummy_cart)
+        new_order_session(request, 
+            client_name=u'楽天太郎',
+            email_1=u'ticketstar@example.com'
+            )
+        target = self._makeOne(request)
+        result = target.card_info_secure3d_form()
 
+        params = {
+            'card_number': '0000000000000000',
+            'exp_year': '%02d' % (datetime.now().year % 100),
+            'secure_code': '000',
+            'exp_month': '07',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'csrf_token': result['form'].csrf_token._value(),
+        }
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=params)
+            session=request.session
             )
         target = self._makeOne(request)
-
         from multicheckout import MultiCheckoutSettlementFailure
         with self.assertRaises(MultiCheckoutSettlementFailure) as m:
             target.card_info_secure3d()

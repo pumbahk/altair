@@ -36,6 +36,9 @@ altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/data
 altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/lock
 
+; altair.nogizaka46_auth
+altair.nogizaka46_auth.key = nogizaka_test
+
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 session.data_dir = %(here)s/tmp/beaker/data

@@ -101,6 +101,8 @@ class ICartResource(Interface):
 
     booster_cart = Attribute("")
 
+    cart_setting = Attribute("")
+
     def get_total_orders_and_quantities_per_user(sales_segment):
         pass
 

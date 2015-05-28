@@ -9,18 +9,22 @@
 <div>${entry.entry_no}</div>
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
-<%self:enclose_if tag="font" color="red" condition="${entry.is_elected}">
-${h.lot_entry_status_as_string(request, entry.status)}
-</%self:enclose_if>
+%if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選待ち
+%else:
+<span style="color:red;">
+${h.lot_entry_status_as_string(entry)}
+</span>
+%endif
 <%mobile:band bgcolor="#ffffdd">
-%if entry.is_ordered:
+%if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
 払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
 <a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
 予約番号は ${entry.entry_no} です。
-%elif entry.is_rejected:
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。<br />
-%elif not entry.lot.is_elected():
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 %endif
@@ -42,15 +46,15 @@ ${entry.lot.name}<br />
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
 <div>
 抽選結果
-%if entry.is_ordered:
+%if h.lot_entry_display_status(entry, now) == u'当選表示':
   %if wish.elected_at:
     ご用意できました
   %else:
     ご用意できませんでした
   %endif
-%elif entry.rejected_at:
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
   ご用意できませんでした
-%else:
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
   抽選処理前です
 %endif
 <br/>

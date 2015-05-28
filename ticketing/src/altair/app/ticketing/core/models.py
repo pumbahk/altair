@@ -55,7 +55,7 @@ from altair.app.ticketing.models import (
 )
 
 from standardenum import StandardEnum
-from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
+from altair.app.ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime, memoize
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
@@ -608,6 +608,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if template_performance.setting:
                 setting = template_performance.setting
                 new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
+                new_setting.visible = True
                 new_setting.performance = self
 
             # create SalesSegment - Product
@@ -803,6 +804,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
+        performance.public = False
         performance.save()
         logger.info('[copy] Performance end')
         return {template.id: performance.id}
@@ -913,23 +915,26 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
     elif type == 'before':
         q = q.filter(SalesSegment.end_at < now)
 
-    if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
-        q = q \
-            .outerjoin(MemberGroup,
-                       SalesSegmentGroup.membergroups) \
-            .filter(or_(MemberGroup.is_guest != False,
-                        MemberGroup.id == None))
-    elif user and 'membership' in user:
-        q = q \
-            .outerjoin(MemberGroup,
-                       SalesSegmentGroup.membergroups) \
-            .filter(
-                or_(
-                    or_(MemberGroup.is_guest != False,
-                        MemberGroup.id == None),
-                    MemberGroup.name == user['membergroup']
+    if user:
+        membergroup = user.get('membergroup')
+        if membergroup:
+            q = q \
+                .join(SalesSegmentGroup.membergroups) \
+                .join(MemberGroup.membership) \
+                .filter(
+                    MemberGroup.is_guest == user.get('is_guest', False),
+                    MemberGroup.name == membergroup,
+                    Membership.name == user.get('membership'),
+                    Membership.organization_id == user['organization_id']
                     )
-                )
+        else:
+            q = q \
+                .outerjoin(SalesSegmentGroup.membergroups) \
+                .outerjoin(MemberGroup.membership) \
+                .filter(or_(MemberGroup.is_guest == user.get('is_guest', False),
+                            MemberGroup.id == None)) \
+                .filter(or_(Membership.organization_id == user['organization_id'],
+                            Membership.id == None)) 
     return q
 
 @implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)
@@ -970,16 +975,18 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_start_on(self):
+        product_exists = Product.query.with_entities(Product.sales_segment_id).subquery()
         return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
                 .join(SalesSegment)\
-                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .filter(SalesSegment.id.in_(product_exists))\
                 .with_entities(func.min(SalesSegment.start_at)).scalar()
 
     @property
     def sales_end_on(self):
+        product_exists = Product.query.with_entities(Product.sales_segment_id).subquery()
         return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
                 .join(SalesSegment)\
-                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .filter(SalesSegment.id.in_(product_exists))\
                 .with_entities(func.max(SalesSegment.end_at)).scalar()
 
     @property
@@ -2922,6 +2929,18 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
             ],
             else_=null())
 
+    @property
+    def tels(self):
+        retval = []
+        tel_1 = self.tel_1 and self.tel_1.strip()
+        tel_2 = self.tel_2 and self.tel_2.strip()
+        if tel_1:
+            retval.append(tel_1)
+        if tel_2:
+            retval.append(tel_2)
+        return retval
+
+
 def no_filter(value):
     return value
 
@@ -3013,7 +3032,6 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket = Ticket.clone(template)
         if 'event_id' in kwargs:
             ticket.event_id = kwargs['event_id']
-        ticket.original_ticket_id = template.id
         ticket.save()
         return {template.id:ticket.id}
 
@@ -3338,6 +3356,7 @@ class MailTypeEnum(StandardEnum):
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
+    PurchaseRefundMail = 31
 
 _mail_type_labels = {
     MailTypeEnum.PurchaseCompleteMail.v: u"購入完了メール",
@@ -3347,6 +3366,7 @@ _mail_type_labels = {
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知メール",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知メール",
     MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知メール",
+    MailTypeEnum.PurchaseRefundMail.v: u"払戻通知メール",
     }
 
 MailTypeChoices = [(str(e) , _mail_type_labels[e.v]) for e in sorted(iter(MailTypeEnum), key=lambda e: e.v)]
@@ -3806,7 +3826,6 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='settings')
 
-    auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
     performance_selector = association_proxy('cart_setting', 'performance_selector')
     margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"販売手数料率")
     refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=u"払戻手数料率")
@@ -3846,6 +3865,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
     lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
+    mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
+
+    auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -3962,6 +3984,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     entry_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'申込回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'パフォーマンスの表示/非表示'))
 
     @property
     def super(self):

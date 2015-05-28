@@ -112,9 +112,7 @@ def create_sej_request_data(
     e_ticket_num = 0
 
     for ticket in tickets:
-        if type(ticket['ticket_type']) is not SejTicketType:
-            raise ValueError('ticket_type : %s' % ticket['ticket_type'])
-        if type(ticket['performance_datetime']) is not datetime:
+        if not isinstance(ticket['performance_datetime'], datetime):
             raise ValueError('performance_datetime : %s' % ticket['performance_datetime'])
         if is_ticket(ticket['ticket_type']):
             ticket_num+=1
@@ -353,7 +351,8 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
         params['X_haraikomi_no']    = sej_order.billing_number
     if sej_order.exchange_number is not None:
         params['X_hikikae_no']      = sej_order.exchange_number
-
+    sej_order.total_ticket_count    = int(params.get('X_ticket_cnt', 0))
+    sej_order.ticket_count          = int(params.get('X_ticket_hon_cnt', 0))
     ret = payment.request(params, 0)
 
     # example response

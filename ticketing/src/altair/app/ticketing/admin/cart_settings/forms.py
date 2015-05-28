@@ -1,8 +1,10 @@
 # encoding: utf-8
 
 from pyramid.i18n import TranslationString as _
-from wtforms.validators import Length, Optional
+from wtforms.validators import Length, Optional, ValidationError
+from altair.auth.interfaces import IChallenger
 from altair.app.ticketing.helpers import label_text_for
+from altair.saannotation import get_annotations_for
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import (
     replace_ambiguous,
@@ -31,6 +33,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.events.sales_segments.forms import ExtraFormEditorWidget
+from altair.app.ticketing.security import get_plugin_names
 
 from . import cart_setting_types
 
@@ -91,6 +94,39 @@ class CartSettingForm(OurForm):
         choices=_cart_setting_types
         )
 
+    def _auth_types(field):
+        retval = [('', u'なし')]
+        retval.extend(get_plugin_names(field._form.context.request))
+        return retval
+
+    auth_type = OurSelectField(
+        label=get_annotations_for(CartSetting.auth_type)['label'],
+        coerce=lambda x: x or None,
+        encoder=lambda x: x or u'',
+        choices=_auth_types
+        )
+
+    def _secondary_auth_types(field):
+        retval = [('', u'なし')]
+        retval.extend(get_plugin_names(field._form.context.request, predicate=lambda plugin:not IChallenger.providedBy(plugin)))
+        return retval
+
+    secondary_auth_type = OurSelectField(
+        label=get_annotations_for(CartSetting.secondary_auth_type)['label'],
+        coerce=lambda x: x or None,
+        encoder=lambda x: x or u'',
+        choices=_secondary_auth_types
+        )
+    nogizaka46_auth_key = OurTextField(
+        label=_(u'キーワード認証のキー'),
+        filters=[
+            blank_as_none,
+            ],
+        # 抽選の認証方式はは現在の所 Lot.auth_type で決定されるので、これは常にいじれるようにしておく必要がある
+        # validators=[
+        #     DynSwitchDisabled('OR({auth_type}="nogizaka46", {secondary_auth_type}="nogizaka46")'),
+        #     ]
+        )
     title = OurTextField(
         label=_(u'カートのタイトル')
         )
@@ -101,6 +137,10 @@ class CartSettingForm(OurForm):
 
     fc_name = OurTextField(
         label=_(u'入会フォームの氏名のラベル名（デフォルト：氏名）')
+        )
+
+    lots_date_title = OurTextField(
+        label=_(u'抽選での日付と会場のラベル名（デフォルト：公演日・会場）')
         )
 
     contact_url = OurTextField(
@@ -249,6 +289,10 @@ class CartSettingForm(OurForm):
         label=_(u'埋め込みHTML文言(スマートフォン)'),
         widget=OurTextArea()
         )
+
+    def validate_secondary_auth_type(self, field):
+        if self.auth_type.data != None and self.auth_type.data == field.data:
+            raise ValidationError(u'主認証方式と同じ認証方式は設定できません')
 
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context', None)
