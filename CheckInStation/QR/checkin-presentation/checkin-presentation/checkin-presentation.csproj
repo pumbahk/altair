@@ -92,6 +92,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="presentation\gui\control\ToggleButton.cs" />
+    <Compile Include="presentation\gui\page\PageConfirmListAll.xaml.cs">
+      <DependentUpon>PageConfirmListAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmListOne.xaml.cs">
+      <DependentUpon>PageConfirmListOne.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PageOneOrPart.xaml.cs">
       <DependentUpon>PageOneOrPart.xaml</DependentUpon>
     </Compile>
@@ -272,6 +278,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmListAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmListOne.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

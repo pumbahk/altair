@@ -48,11 +48,14 @@ namespace checkin.core.flow
 
         public ICase AfterCountChoice(IResource resource, int printcount, TicketData tdata)
         {
+            //一枚発券
             if (printcount == 0)
             {
 
-                return new CaseQRConfirmForOne(resource, tdata);
+                //return new CaseQRConfirmForOne(resource, tdata);
+                return new CaseConfirmListForOne(resource, tdata);
             }
+            //複数発券
             else
             {
                 return new CasePartOrAll(resource, tdata);
@@ -62,24 +65,29 @@ namespace checkin.core.flow
 
         public ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata)
         {
+            //複数発券
             if (printcount == 0)
             {
 
                 return new CaseQRConfirmForAll(resource, tdata, 0);
             }
+            //全部発券
             else
             {
-                return new CaseQRConfirmForAll(resource, tdata, 1);
+                //return new CaseQRConfirmForAll(resource, tdata, 1);
+                return new CaseConfirmListForAll(resource, tdata);
             }
         }
 
         public ICase AfterTicketChoice(IResource resource, int printcount, VerifiedOrdernoRequestData verifieddata)
         {
+            //複数発券
             if (printcount == 0)
             {
 
                 return new CaseOrdernoConfirmForAll(resource, verifieddata);
             }
+            //全部発券
             else
             {
                 return new CaseOrdernoConfirmForAll(resource, verifieddata);

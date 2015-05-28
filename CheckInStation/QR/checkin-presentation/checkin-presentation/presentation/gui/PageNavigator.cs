@@ -46,6 +46,10 @@ namespace checkin.presentation.gui
                 return this.CreateOrReUse<PageOneOrPart>(c, previous);
             else if (c is CasePartOrAll)
                 return this.CreateOrReUse<PagePartOrAll>(c, previous);
+            else if (c is CaseConfirmListForOne)
+                return this.CreateOrReUse<PageConfirmListOne>(c, previous);
+            else if (c is CaseConfirmListForAll)
+                return this.CreateOrReUse<PageConfirmListAll>(c, previous);
 
             else if (c is CaseQRCodeInput || c is CaseQRDataFetch || c is CaseQRConfirmForAllHidden)
                 return this.CreateOrReUse<PageQRCodeInput>(c, previous);
