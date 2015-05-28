@@ -92,7 +92,7 @@ def upgrade():
         sa.Column('end_at', sa.DateTime(), nullable=True),
         sa.Column('genre_1_code', sa.Unicode(23), sa.ForeignKey('FamiPortGenre1.code')),
         sa.Column('genre_2_code', sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code')),
-        sa.Column('keywords', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000))),
+        sa.Column('keywords', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000).adapt(sa.UnicodeText))),
         sa.Column('search_code', sa.Unicode(20))
         )
     op.create_table(
