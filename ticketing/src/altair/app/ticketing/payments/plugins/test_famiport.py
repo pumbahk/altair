@@ -5,7 +5,7 @@
 注文ID: orderId(12) 下9桁を管理番号として扱う（会計実績ファイルに出力）
 払込票番号: orderTicketNo(13) 予済み場合は予約照会応答の「支払番号」
 引換票番号: exchangeTicketNo(13) 後日予済アプリで発券するための予約番号予
-約番号: reserveNumber(13) 画面入力／QRコード／番号入力GWにより入力された予約番号
+予約番号: reserveNumber(13) 画面入力／QRコード／番号入力GWにより入力された予約番号
 """
 from unittest import (
     skip,
@@ -17,7 +17,11 @@ from pyramid.testing import (
     DummyRequest,
     DummyResource,
     )
-from altair.app.ticketing.famiport.tests import FamiPortTestCase
+from altair.app.ticketing.famiport.tests.base import FamiPortTestBase
+
+
+class FamiPortTestCase(FamiPortTestBase, TestCase):
+    pass
 
 
 class FamiPortPaymentPluginTestMixin(object):
@@ -175,8 +179,32 @@ class FamiPortPaymentPluginTestMixin(object):
             'FamiPortTenant.phoneInputを使う',
             )
 
+        # 支払開始日時
+        self.assertEqual(
+            famiport_order.payment_start_at,
+            order_like.payment_start_at,
+            )
 
-class FamiPortPaymentPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixin):
+        # 支払期限
+        self.assertEqual(
+            famiport_order.payment_due_at,
+            order_like.payment_due_at,
+            )
+
+        # 発券開始日時
+        self.assertEqual(
+            famiport_order.issuing_start_at,
+            order_like.issuing_start_at,
+            )
+
+        # 発券終了日時
+        self.assertEqual(
+            famiport_order.issuing_end_at,
+            order_like.issuing_end_at,
+            )
+
+
+class FamiPortPaymentPluginTest(FamiPortTestCase):
     def _target(self):
         from .famiport import FamiPortPaymentPlugin
         return FamiPortPaymentPlugin
@@ -223,13 +251,20 @@ class FamiPortPaymentPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixin
             res = self._callFUT(plugin.finish, request, cart)
             self.assert_(res is None)
 
-    def test_finish2_success(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish2_success(self, create_famiport_order):
         """確定処理2成功"""
         request = DummyRequest()
+        exp_famiport_order = mock.Mock()
+        create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
+
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order, plugin)
+            cart = order.cart
+            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            famiport_order = plugin.finish2(request, cart)
+            self.assertEqual(famiport_order, exp_famiport_order)
+            self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
@@ -370,13 +405,26 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         res = self._callFUT(plugin.finish, request, cart)
         self.assert_(res is None)
 
-    def test_finish2_success(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish2_success(self, create_famiport_order):
         """確定処理2成功"""
         request = DummyRequest()
+        exp_famiport_order = mock.Mock()
+        create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
+
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order, plugin)
+            cart = order.cart
+            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            famiport_order = plugin.finish2(request, cart)
+            self.assertEqual(famiport_order, exp_famiport_order)
+            self.assertEqual(create_famiport_order.call_args, exp_call_args)
+
+        # request = DummyRequest()
+        # plugin = self._makeOne()
+        # for order in self.orders:
+        #     famiport_order = self._callFUT(plugin.finish2, request, order.cart)
+        #     self.assert_valid_famiport_order(famiport_order, order, plugin)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
@@ -517,13 +565,26 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         res = self._callFUT(plugin.finish, request, cart)
         self.assert_(res is None)
 
-    def test_finish2_success(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish2_success(self, create_famiport_order):
         """確定処理2成功"""
         request = DummyRequest()
+        exp_famiport_order = mock.Mock()
+        create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
+
         for order in self.orders:
-            famiport_order = self._callFUT(plugin.finish2, request, order.cart)
-            self.assert_valid_famiport_order(famiport_order, order, plugin)
+            cart = order.cart
+            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            famiport_order = plugin.finish2(request, cart)
+            self.assertEqual(famiport_order, exp_famiport_order)
+            self.assertEqual(create_famiport_order.call_args, exp_call_args)
+
+        # request = DummyRequest()
+        # plugin = self._makeOne()
+        # for order in self.orders:
+        #     famiport_order = self._callFUT(plugin.finish2, request, order.cart)
+        #     self.assert_valid_famiport_order(famiport_order, order, plugin)
 
     @skip('uninplemented')
     def test_finish2_fail(self):
@@ -635,10 +696,14 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
             description=self.description,
             )
         self.payment_delivery_pair = DummyModel(payment_method=self.payment_method)
-        self.order = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.order = DummyModel(
+            order_no='XX000001234',
+            payment_delivery_pair=self.payment_delivery_pair,
+            )
         self.cart = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
         self.context = DummyResource(
             order=self.order,
+            order_no=self.order.order_no,
             cart=self.cart,
             description=self.payment_method.description,
             mail_data=mock.Mock(return_value=self.notice),
@@ -655,11 +720,13 @@ class FamiPortPaymentConfirmViewletTest(FamiPortPaymentViewletTest):
         from .famiport import reserved_number_payment_confirm_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'payment_name': self.name,
             'description': self.description,
+            'h': cart_helper,
             })
 
 
@@ -668,11 +735,17 @@ class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
         from .famiport import reserved_number_payment_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
+    def test_it(self, get_famiport_order, cart_helper):
+        exp_famiport_order = mock.Mock()
+        get_famiport_order.return_value = exp_famiport_order
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'payment_name': self.name,
             'description': self.description,
+            'famiport_order': exp_famiport_order,
+            'h': cart_helper,
             })
 
 
@@ -681,9 +754,10 @@ class FamiPortPaymentCompletionMailViewletTest(FamiPortPaymentViewletTest):
         from .famiport import complete_mail as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {'notice': self.notice})
+        self.assertEqual(res, {'notice': self.notice, 'h': cart_helper})
 
 
 class FamiPortPaymentCancelMailViewletTest(FamiPortPaymentViewletTest):
@@ -716,10 +790,14 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
             description=self.description,
             )
         self.payment_delivery_pair = DummyModel(delivery_method=self.delivery_method)
-        self.order = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
+        self.order = DummyModel(
+            order_no='XX000001234',
+            payment_delivery_pair=self.payment_delivery_pair,
+            )
         self.cart = DummyModel(payment_delivery_pair=self.payment_delivery_pair)
         self.context = DummyResource(
             order=self.order,
+            order_no=self.order.order_no,
             cart=self.cart,
             description=self.delivery_method.description,
             mail_data=mock.Mock(return_value=self.notice),
@@ -736,11 +814,13 @@ class FamiPortDeliveryConfirmViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import deliver_confirm_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'delivery_name': self.name,
             'description': self.description,
+            'h': cart_helper,
             })
 
 
@@ -749,11 +829,17 @@ class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import deliver_completion_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
+    def test_it(self, get_famiport_order, cart_helper):
+        exp_famiport_order = mock.Mock()
+        get_famiport_order.return_value = exp_famiport_order
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'delivery_name': self.name,
             'description': self.description,
+            'famiport_order': exp_famiport_order,
+            'h': cart_helper,
             })
 
 
@@ -762,9 +848,13 @@ class FamiPortDeliveryCompletionMailViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import deliver_completion_mail_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {'notice': self.notice})
+        self.assertEqual(res, {
+            'notice': self.notice,
+            'h': cart_helper,
+            })
 
 
 class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
@@ -772,6 +862,7 @@ class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import delivery_notice_viewlet as func
         return func
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
+    def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res.text, u'ファミポート受け取り')

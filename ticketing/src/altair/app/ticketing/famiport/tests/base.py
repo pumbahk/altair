@@ -15,6 +15,7 @@ from altair.app.ticketing.testing import (
 from altair.app.ticketing.core.testing import CoreTestMixin
 from altair.app.ticketing.cart.testing import CartTestMixin
 
+
 class FamiPortTestBase(CoreTestMixin, CartTestMixin):
     now = datetime(2013, 1, 1, 0, 0, 0)
 
@@ -246,14 +247,17 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 for ii in range(5):
                     product_items = [DummyModel() for jj in range(5)]
                     ordered_product_items = [DummyModel(product_item=product_item) for product_item in product_items]
+
                     product = DummyModel(
                         num_tickets=mock.Mock(return_value=len(product_items)),
                         num_principal_tickets=mock.Mock(return_value=len(product_items)),
                         items=product_items,
+                        elements=product_items,
                         )
                     ordered_product = DummyModel(
                         product=product,
                         items=ordered_product_items,
+                        elements=product_items,
                         )
                     products.append(product)
                     ordered_products.append(ordered_product)
@@ -304,4 +308,3 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
         tearDown()
         self.session.remove()
         _teardown_db()
-

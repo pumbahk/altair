@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
-import unittest
+from unittest import TestCase
 import mock
+from pyramid.testing import DummyModel
 from .base import FamiPortTestBase
 
-class GetFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
+class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
     def _get_target(self):
         from ..api import get_famiport_order as target
         return target
@@ -24,21 +25,37 @@ class GetFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
         self.assertEqual(famiport_order, exp_famiport_order)
 
 
+
+class DoOrderTest(TestCase):
+    def _get_target(self):
+        from ..api import do_order as target
+        return target
+
+    def test_it(self):
+        target = self._get_target()
+        request = DummyModel()
+        playguide = None
+        famiport_order = None
+        now = None
+        session = None
+        target(request, playguide=playguide, famiport_order=famiport_order, now=now, session=session)
+
+
 # class CreateFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
 #     def _target(self):
 #         from ..api import create_famiport_order as target
 #         return target
-# 
+#
 #     def setUp(self):
 #         FamiPortTestBase.setUp(self)
-# 
+#
 #     def tearDown(self):
 #         FamiPortTestBase.tearDown(self)
-# 
+#
 #     def _callFUT(self, *args, **kwds):
 #         target = self._target()
 #         return target(*args, **kwds)
-# 
+#
 #     def test_in_payment(self):
 #         for order in self.orders:
 #             famiport_order = self._callFUT(self.request, order.cart, in_payment=True)
@@ -57,7 +74,7 @@ class GetFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
 #             self.assertEqual(famiport_order.kogyo_name, order.sales_segment.event.title)
 #             self.assertEqual(famiport_order.ticket_count, len([item for product in order.items for item in product.items]))
 #             self.assertEqual(famiport_order.ticket_total_count, len([item for product in order.items for item in product.items]))
-# 
+#
 #     def test_not_in_payment(self):
 #         for order in self.orders:
 #             famiport_order = self._callFUT(self.request, order.cart, in_payment=False)

@@ -21,7 +21,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType, FamiPortTicketType, FamiPortRefundType, MutableSpaceDelimitedList, SpaceDelimitedList
+    from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType, FamiPortTicketType, FamiPortRefundType, MutableSpaceDelimitedList, SpaceDelimitedList, FamiPortOrderType  # noqa
     op.create_table(
         'FamiPortBarcodeNoSequence',
         sa.Column('id', Identifier, autoincrement=True, primary_key=True),
@@ -52,6 +52,7 @@ def upgrade():
     op.create_table(
         'FamiPortPlayguide',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True, nullable=False),
+        sa.Column('name', sa.Unicode(50), nullable=False),
         sa.Column('discrimination_code', sa.Integer, nullable=False),
         )
     op.create_table(
@@ -104,7 +105,7 @@ def upgrade():
         sa.Column('searchable', sa.Boolean, nullable=False, default=True),
         sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
         sa.Column('start_at', sa.DateTime(), nullable=True),
-        sa.Column('ticket_name', sa.Unicode(20), nullable=True) # only valid if type', = Spanned
+        sa.Column('ticket_name', sa.Unicode(20), nullable=True)  # only valid if type', = Spanned
         )
     op.create_table(
         'FamiPortSalesSegment',
@@ -141,6 +142,13 @@ def upgrade():
         sa.Column('customer_name', sa.Unicode(42), nullable=False),
         sa.Column('customer_phone_input', sa.Boolean, nullable=False, default=False, server_default=text('FALSE')),
         sa.Column('customer_phone_number', sa.Unicode(12), nullable=False, server_default=text("''")),
+        sa.Column('ticketing_start_at', sa.DateTime(), nullable=True),
+        sa.Column('ticketing_end_at', sa.DateTime(), nullable=True),
+        sa.Column('payment_start_at', sa.DateTime(), nullable=True),
+        sa.Column('payment_due_at', sa.DateTime(), nullable=True),
+        sa.Column('payment_type',
+                  sa.Enum(val.name for val in FamiPortOrderType),
+                  nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
