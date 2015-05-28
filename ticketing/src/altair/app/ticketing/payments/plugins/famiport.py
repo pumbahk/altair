@@ -174,7 +174,7 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     tenant = lookup_famiport_tenant(request, order_like)
 
     return do_famiport_order(
-        order_no=order_like.order_no
+        order_no=order_like.order_no,
         client_code=tenant.client_code,
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
