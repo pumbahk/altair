@@ -57,4 +57,4 @@ class FamiPortResponseBuilderTest(TestCase):
     def check_build_response(self, response_builder, famiport_request):
         famiport_response = response_builder.build_response(famiport_request)
         print famiport_response
-        self.assertTrue(famiport_response is not None) # famiport_responseのprintを表示するためにAssertionErrorが起こるようにしておく
+        self.assertIsNotNone(famiport_response)
