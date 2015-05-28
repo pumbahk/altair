@@ -194,10 +194,10 @@ def upgrade():
     op.create_table(
         'FamiPortReservationInquiryRequest',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
-        sa.Column('reserveNumber', sa.Unicode(255), nullable=False),  # 予約番号
-        sa.Column('authNumber', sa.Unicode(255), nullable=False),  # 認証番号
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
+        sa.Column('reserveNumber', sa.Unicode(13), nullable=False),  # 予約番号
+        sa.Column('authNumber', sa.Unicode(13), nullable=False),  # 認証番号
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
         sa.PrimaryKeyConstraint('id'),
@@ -206,70 +206,70 @@ def upgrade():
     op.create_table(
         'FamiPortPaymentTicketingRequest',
         sa.Column('id', Identifier),
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
-        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
-        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
-        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
-        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
-        sa.Column('customerName', sa.Unicode(255), nullable=False),  # カナ氏名
-        sa.Column('phoneNumber', sa.Unicode(255), nullable=False),  # 電話番号
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
+        sa.Column('customerName', sa.Unicode(42), nullable=False),  # カナ氏名
+        sa.Column('phoneNumber', sa.Unicode(11), nullable=False),  # 電話番号
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortPaymentTicketingCompletionRequest',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
-        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
-        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
-        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
-        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
-        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
-        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
-        sa.Column('totalAmount', sa.Unicode(255), nullable=False),  # 入金金額
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(2), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(12), nullable=False),  # 注文ID
+        sa.Column('totalAmount', sa.Unicode(8), nullable=False),  # 入金金額
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortPaymentTicketingCancelRequest',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券ファミポート番号
-        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
-        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
-        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
-        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # 支払番号
-        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
-        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
-        sa.Column('cancelCode', sa.Unicode(255), nullable=False),  # 取消理由
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(2), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(12), nullable=False),  # 注文ID
+        sa.Column('cancelCode', sa.Unicode(2), nullable=False),  # 取消理由
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortInformationRequest',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('infoKubun', sa.Unicode(255), nullable=False),  # 案内種別
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('kogyoCode', sa.Unicode(255), nullable=False),  # 興行コード
-        sa.Column('kogyoSubCode', sa.Unicode(255), nullable=False),  # 興行サブコード
-        sa.Column('koenCode', sa.Unicode(255), nullable=False),  # 公演コード
-        sa.Column('uketsukeCode', sa.Unicode(255), nullable=False),  # 受付コード
-        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
-        sa.Column('authCode', sa.Unicode(255), nullable=False),  # 認証コード
-        sa.Column('reserveNumber', sa.Unicode(255), nullable=False),  # 予約照会番号
+        sa.Column('infoKubun', sa.Unicode(1), nullable=False),  # 案内種別
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('kogyoCode', sa.Unicode(6), nullable=False),  # 興行コード
+        sa.Column('kogyoSubCode', sa.Unicode(4), nullable=False),  # 興行サブコード
+        sa.Column('koenCode', sa.Unicode(3), nullable=False),  # 公演コード
+        sa.Column('uketsukeCode', sa.Unicode(3), nullable=False),  # 受付コード
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
+        sa.Column('authCode', sa.Unicode(100), nullable=False),  # 認証コード
+        sa.Column('reserveNumber', sa.Unicode(13), nullable=False),  # 予約照会番号
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortCustomerInformationRequest',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('storeCode', sa.Unicode(255), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(255), nullable=False),  # 発券Famiポート番号
-        sa.Column('ticketingDate', sa.Unicode(255), nullable=False),  # 利用日時
-        sa.Column('sequenceNo', sa.Unicode(255), nullable=False),  # 処理通番
-        sa.Column('requestClass', sa.Unicode(255), nullable=False),  # 要求区分 TODO Delete the field?
-        sa.Column('barCodeNo', sa.Unicode(255), nullable=False),  # バーコード情報
-        sa.Column('playGuideId', sa.Unicode(255), nullable=False),  # クライアントID
-        sa.Column('orderId', sa.Unicode(255), nullable=False),  # 注文ID
-        sa.Column('totalAmount', sa.Unicode(255), nullable=False),  # 入金金額
+        sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券Famiポート番号
+        sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
+        sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
+        sa.Column('requestClass', sa.Unicode(2), nullable=False),  # 要求区分 TODO Delete the field?
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # バーコード情報
+        sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
+        sa.Column('orderId', sa.Unicode(12), nullable=False),  # 注文ID
+        sa.Column('totalAmount', sa.Unicode(8), nullable=False),  # 入金金額
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
