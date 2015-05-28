@@ -27,6 +27,7 @@ from altair.app.ticketing.mails.interfaces import (
 from altair.app.ticketing.famiport.models import FamiPortTicketType
 from altair.app.ticketing.famiport.api import do_order as do_famiport_order
 from altair.app.ticketing.famiport.exc import FamiPortError
+from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
@@ -140,6 +141,9 @@ def build_ticket_dicts_from_order_like(request, order_like):
     return tickets
 
 
+def lookup_famiport_tenant(request, order_like):
+    return FamiPortTenant.query.filter_by(organization_id=order_like.organization_id).one()
+
 def create_famiport_order(request, order_like, in_payment, name='famiport'):
     """FamiPortOrderを作成する
 
@@ -163,8 +167,11 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
+    tenant = lookup_famiport_tenant(request, order_like)
+
     return do_famiport_order(
         order_no=order_like.order_no
+        client_code=tenant.client_code,
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
         customer_name=customer_name,

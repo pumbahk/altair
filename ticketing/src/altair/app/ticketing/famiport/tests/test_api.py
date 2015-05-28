@@ -18,7 +18,9 @@ class GetFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
         exp_famiport_order = mock.Mock()
         target = self._get_target()
         session = mock.Mock()
-        session.query().filter_by().first.return_value = exp_famiport_order
+        q = session.query.return_value
+        q.filter.return_value = q
+        q.one.return_value = exp_famiport_order
         order_no = 'XX000012345'
         famiport_order = target(order_no, session)
         self.assertEqual(famiport_order, exp_famiport_order)

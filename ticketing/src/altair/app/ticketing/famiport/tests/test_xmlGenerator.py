@@ -2,20 +2,25 @@
 
 from unittest import TestCase
 from lxml import etree
-
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 from ..api import get_xmlResponse_generator
-from ..communication import (
-    FamiPortReservationInquiryResponse,
-    FamiPortPaymentTicketingResponse,
-    FamiPortPaymentTicketingCompletionResponse,
-    FamiPortPaymentTicketingCancelResponse,
-    FamiPortInformationResponse,
-    FamiPortCustomerInformationResponse,
-    FamiPortTicketResponse,
-    )
 
 class XmlFamiPortResponseGeneratorTest(TestCase):
     def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.famiport.models',
+            'altair.app.ticketing.famiport.communication',
+            ])
+        from ..communication import (
+            FamiPortReservationInquiryResponse,
+            FamiPortPaymentTicketingResponse,
+            FamiPortPaymentTicketingCompletionResponse,
+            FamiPortPaymentTicketingCancelResponse,
+            FamiPortInformationResponse,
+            FamiPortCustomerInformationResponse,
+            FamiPortTicketResponse,
+            )
+
         # 予約照会
         # problematic_kogyoName=u'土吉サンプル興行♥♠♦♣⓪㉑㊿♫♬♩'
         regular_kogyoName=u'サンプル興行'
@@ -122,6 +127,9 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         # 顧客情報取得
         self.famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode=u'00', replyCode='00', name=u'テスト氏名', memberId='test_memberId', address1=u'テストアドレス１', address2=u'テストアドレス２', identifyNo='1234567890123456')
         self.famiport_customer_information_response._set_encryptKey(self.famiport_payment_ticketing_response.orderId)
+
+    def tearDown(self):
+        _teardown_db()
 
     def test_generate_xmlFamiPortReservationInquiryResponse(self):
         self.check_generate_xmlFamiPortResponse(self.famiport_reservation_inquiry_response)

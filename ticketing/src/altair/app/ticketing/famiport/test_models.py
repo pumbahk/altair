@@ -20,7 +20,8 @@ class TestFamiportEvent(unittest.TestCase):
             name_2=u'name_2',
             client=FamiPortClient(
                 code=u'000',
-                playguide=FamiPortPlayguide(discrimination_code=1)
+                playguide=FamiPortPlayguide(discrimination_code=1),
+                prefix=u'XXX'
                 ),
             venue=FamiPortVenue(name=u'venue', name_kana=u'ヴェニュー'),
             genre_1=FamiPortGenre1(code=u'1', name=u'genre1'),

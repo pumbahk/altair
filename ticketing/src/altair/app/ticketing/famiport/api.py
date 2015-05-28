@@ -36,10 +36,18 @@ def get_famiport_order(order_no, session=None):
     if session is None:
         session = _session
     retval = session.query(FamiPortOrder) \
-                    .filter_by(order_no=order_no) \
-                    .first()
+                    .filter(FamiPortOrder.order_no == order_no) \
+                    .filter(FamiPortOrder.invalidated_at == None) \
+                    .one()
     return retval
 
+def get_famiport_client(client_code, session=None):
+    if session is None:
+        session = _session
+    retval = session.query(FamiPortClient) \
+                    .filter_by(code=client_code) \
+                    .one()
+    return retval
 
 def create_famiport_ticket(ticket_dict, session=None):
     if session is None:
@@ -52,7 +60,7 @@ def create_famiport_ticket(ticket_dict, session=None):
         )
 
 def create_famiport_order(
-        client,
+        client_code,
         order_no,
         customer_name,
         customer_phone_number,
@@ -67,9 +75,10 @@ def create_famiport_order(
     """FamiPortOrderを作成する"""
     if session is None:
         session = _session
+    famiport_client = get_famiport_client(client_code, session=session)
     famiport_order = FamiPortOrder(
         order_no=order_no,
-        barcode_no=client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
+        barcode_no=famiport_client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
         reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
         order_ticket_no=famiport_order.barcode_no,
         famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(session),

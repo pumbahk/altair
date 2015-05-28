@@ -41,7 +41,8 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from datetime import datetime, date
         self.famiport_client = FamiPortClient(
             code=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=1)
+            playguide=FamiPortPlayguide(discrimination_code=1),
+            prefix=u'XXX'
             )
         self.famiport_event = FamiPortEvent(
             code_1=u'000000',

@@ -4020,6 +4020,13 @@ class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     organization_id         = Column(Identifier)
 
+class FamiPortTenant(BaseModel, WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'FamiPortTenant'
+    id                      = Column(Identifier, primary_key=True, autoincrement=True)
+    organization_id         = Column(Identifier, ForeignKey('Organization.id'))
+    name                    = Column(Unicode(255), nullable=False)
+    code                    = Column(Unicode(24), nullable=False)
+
 
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
