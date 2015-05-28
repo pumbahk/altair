@@ -53,24 +53,24 @@
                     <Button
                      Canvas.Left="230"
                      Canvas.Top="200"
-                     Height="400"
-                     Width="400"
+                     Height="200"
+                     Width="800"
                      Click="Button_Click_QR"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            QRコード読み込み
+                            QRコード読込
                         </TextBlock>
                     </Button>
 
                     <Button
-                     Canvas.Left="700"
-                     Canvas.Top="200"
-                     Height="400"
-                     Width="400"
+                     Canvas.Left="230"
+                     Canvas.Top="500"
+                     Height="200"
+                     Width="800"
                      Click="Button_Click_Code"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            受付番号読み込み
+                            受付番号読込
                         </TextBlock>
                     </Button>
 

@@ -53,8 +53,8 @@
                     <Button
                      Canvas.Left="230"
                      Canvas.Top="200"
-                     Height="400"
-                     Width="400"
+                     Height="200"
+                     Width="800"
                      Click="Button_Click_Single"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
@@ -63,10 +63,10 @@
                     </Button>
 
                     <Button
-                     Canvas.Left="700"
-                     Canvas.Top="200"
-                     Height="400"
-                     Width="400"
+                     Canvas.Left="230"
+                     Canvas.Top="500"
+                     Height="200"
+                     Width="800"
                      Click="Button_Click_All"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
