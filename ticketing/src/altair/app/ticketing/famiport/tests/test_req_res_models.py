@@ -320,10 +320,6 @@ class FamiPortPaymentTicketingResponseTest(FamiPortModelTestCase):
             'ticketCount': '9',  # 本券購入枚数
             'kogyoName': '10',  # 興行名
             'koenDate': '11',  # 公演日時
-            'barCodeNo': '12',  # チケットバーコード番号
-            'ticketClass': '13',  # チケット区分
-            'templateCode': '14',  # テンプレートコード
-            'ticketData': '15',  # 券面データ
             }
 
         old_obj = self._makeOne(**kwds)

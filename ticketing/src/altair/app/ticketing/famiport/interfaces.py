@@ -18,6 +18,6 @@ class IXmlFamiPortResponseGeneratorFactory(Interface):
 """
 
 class IXmlFamiPortResponseGenerator(Interface):
-    # Generate XML text from famiport_response with encrypt_fields encrypted
-    def generate_xmlResponse(famiport_response=None, encrypt_fields = []):
+    # Generate XML text from famiport_response with encrypted_fields encrypted
+    def generate_xmlResponse(famiport_response=None, encrypted_fields = []):
         pass

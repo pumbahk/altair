@@ -4,11 +4,18 @@ from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
 import sqlahelper
 
-from ..requests import FamiPortReservationInquiryRequest, FamiPortPaymentTicketingRequest, FamiPortPaymentTicketingCompletionRequest, \
-                    FamiPortPaymentTicketingCancelRequest, FamiPortInformationRequest, FamiPortCustomerInformationRequest
 from ..api import get_response_builder
 from ..builders import FamiPortRequestFactory
-from ..communication import FamiPortRequestType, InformationResultCodeEnum
+from ..communication import (
+    FamiPortRequestType,
+    InformationResultCodeEnum,
+    FamiPortReservationInquiryRequest,
+    FamiPortPaymentTicketingRequest,
+    FamiPortPaymentTicketingCompletionRequest,
+    FamiPortPaymentTicketingCancelRequest,
+    FamiPortInformationRequest,
+    FamiPortCustomerInformationRequest,
+    )
 from ..models import FamiPortInformationMessage
 
 class FamiPortResponseBuilderTest(TestCase):
@@ -41,9 +48,16 @@ class FamiPortResponseBuilderTest(TestCase):
         self.famiport_information_request = FamiPortRequestFactory.create_request(famiport_information_request_dict, FamiPortRequestType.Information)
 
         # 顧客情報取得
-        famiport_customer_information_request_dict = {'storeCode':'000009', 'mmkNo':'1', 'ticketingDate':'20150331182222', 'sequenceNo':'15033100004', 'barCodeNo':'4119000000005', 'playGuideId':'', \
-                                                      'orderId':'410900000005', 'totalAmount':'2200'}
-        self.famiport_customer_information_request = FamiPortCustomerInformationRequest(famiport_customer_information_request_dict, FamiPortRequestType.CustomerInformation)
+        self.famiport_customer_information_request = FamiPortCustomerInformationRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150331182222',
+            sequenceNo=u'15033100004',
+            barCodeNo=u'4119000000005',
+            playGuideId=u'',
+            orderId=u'410900000005',
+            totalAmount=u'2200'
+            )
 
     def test_build_ReservationInquiryResponseBuilder(self):
         # 予約照会
