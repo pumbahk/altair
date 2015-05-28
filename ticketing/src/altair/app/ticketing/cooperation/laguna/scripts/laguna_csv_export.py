@@ -535,7 +535,7 @@ def verify_record(rec):
 
 
 def send_error_mail(results, mailer, recipients, sender):
-    subject = u'ラグーナカスタムデータ連携エラー'
+    subject = u'ラグーナカスタムデータ連携通知'
     template_path = 'altair.app.ticketing:templates/cooperation/laguna/error_mail.txt'
 
     error_results = [result for result in results if not result.is_success]

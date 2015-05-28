@@ -140,6 +140,16 @@ class SalesReports(BaseView):
         ]
         return Response(r.text.encode('cp932'), headers=headers)
 
+    @view_config(route_name='sales_reports.export_xml')
+    def get_exported_xml(self):
+        event_id = long(self.request.params.get('event_id') or 0)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        if event is None:
+            raise HTTPNotFound('event id %d is not found' % event_id)
+        
+        reporter = ExportableReporter(self.request, event)
+        return Response(reporter.get_xml(), headers=[ ('Content-Type', 'text/xml') ])
+
     @view_config(route_name='sales_reports.mail_body')
     def mail_body(self):
         event_id = long(self.request.params.get('event_id') or 0)
