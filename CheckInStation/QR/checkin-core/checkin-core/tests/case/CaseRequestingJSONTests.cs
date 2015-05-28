@@ -77,6 +77,7 @@ namespace checkin.core
             public ConfirmAllStatus Status { get; set; }
             public TicketData ReadTicketData { get; set; }
             public TicketDataCollection TicketDataCollection { get; set; }
+            public int PartOrAll { get; set; }
         }
 
         [Test, Description ("orderno confirm all verified order dataからticketdata collectionを取ってくる")]

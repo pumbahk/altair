@@ -65,11 +65,11 @@ namespace checkin.core.flow
             if (printcount == 0)
             {
 
-                return new CaseQRConfirmForAll(resource, tdata);
+                return new CaseQRConfirmForAll(resource, tdata, 0);
             }
             else
             {
-                return new CaseQRConfirmForAll(resource, tdata);
+                return new CaseQRConfirmForAll(resource, tdata, 1);
             }
         }
 

@@ -20,6 +20,7 @@ namespace checkin.core.events
         ConfirmAllStatus Status { get; set; }
         TicketData ReadTicketData { get; set; }
         TicketDataCollection TicketDataCollection { get; set; }
+        int PartOrAll { get; set; }
     }
     
     public class ConfirmAllEvent : AbstractEvent, IInternalEvent       
@@ -39,6 +40,11 @@ namespace checkin.core.events
         public void SetInfo(TicketData readTicketData)
         {
             this.StatusInfo.ReadTicketData = readTicketData;
+        }
+
+        public void SetPartOrAll(int partorall)
+        {
+            this.StatusInfo.PartOrAll = partorall;
         }
     }
 }
