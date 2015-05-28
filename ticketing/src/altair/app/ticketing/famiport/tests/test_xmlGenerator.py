@@ -146,17 +146,12 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         result = xml_response_generator.generate_xmlResponse(famiport_response)
         root = etree.fromstring(result)
         encrypted_fields = famiport_response.encrypted_fields
-        for element in root.iter():
-            print 'element.tag: ' + element.tag
+        for element in root:
             if element.tag != 'FMIF' and not any(element.tag == element_name for _, element_name in famiport_response._serialized_collection_attrs): # Skip the root element and tickets
                 response_value = getattr(famiport_response, element.tag)
                 if isinstance(response_value, (str, unicode)) and response_value != '': # fromstring() removes empty text element
                     if element.tag not in encrypted_fields:
-                        if element.text != response_value:
-                            print "(tag, text): (%s, %s), response_value: %s" % (element.tag, element.text, response_value)
-                        self.assertTrue(element.text == response_value)
+                        self.assertEqual(element.text, response_value, '<%s> %r (got) != %r (expected)' % (element.tag, element.text, response_value))
                     else:
                         decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text).decode('shift_jis')
-                        if decrypted_text_value != response_value:
-                            print "(tag, decrypted_text): (%s, %s), response_value: %s" % (element.tag, decrypted_text_value, response_value)
-                        self.assertTrue(decrypted_text_value == response_value)
+                        self.assertEqual(decrypted_text_value, response_value, '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
