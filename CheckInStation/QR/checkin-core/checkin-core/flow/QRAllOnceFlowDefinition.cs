@@ -73,9 +73,23 @@ namespace checkin.core.flow
             }
         }
 
+        public ICase AfterTicketChoice(IResource resource, int printcount, VerifiedOrdernoRequestData verifieddata)
+        {
+            if (printcount == 0)
+            {
+
+                return new CaseOrdernoConfirmForAll(resource, verifieddata);
+            }
+            else
+            {
+                return new CaseOrdernoConfirmForAll(resource, verifieddata);
+            }
+        }
+
         public ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata)
         {
-            return new CaseOrdernoConfirmForAll(resource, verifieddata);
+            //return new CaseOrdernoConfirmForAll(resource, verifieddata);
+            return new CasePartOrAll(resource, verifieddata);
         }
 
         public ICase AfterSelectInputStrategy(IResource resource, InputUnit Selected)

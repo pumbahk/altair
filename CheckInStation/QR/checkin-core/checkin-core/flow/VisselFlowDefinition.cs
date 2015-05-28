@@ -48,6 +48,12 @@ namespace checkin.core.flow
             return new CaseQRCodeInput(resource);
         }
 
+        public ICase AfterTicketChoice(IResource resource, int printcount, VerifiedOrdernoRequestData verifieddata)
+        {
+            this.CurrentInputUnit = InputUnit.order_no;
+            return new CaseQRCodeInput(resource);
+        }
+
         public ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata)
         {
             return new CaseOrdernoConfirmForAll(resource, verifieddata);

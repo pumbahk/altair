@@ -17,6 +17,8 @@ namespace checkin.core.flow
     {
         public int PrintCount { set; get; }
         public TicketData Tdata { set; get; }
+        public VerifiedOrdernoRequestData VerifiedData { set; get; }
+        private int RouteType;
         public CasePartOrAll(IResource resource)
             : base(resource)
         {
@@ -29,7 +31,14 @@ namespace checkin.core.flow
         public CasePartOrAll(IResource resource, TicketData tdata)
             : base(resource)
         {
+            this.RouteType = 0;
             this.Tdata = tdata;
+        }
+        public CasePartOrAll(IResource resource, VerifiedOrdernoRequestData verifieddata)
+            : base(resource)
+        {
+            this.RouteType = 1;
+            this.VerifiedData = verifieddata;
         }
         public override async Task<bool> VerifyAsync()
         {
@@ -38,8 +47,15 @@ namespace checkin.core.flow
         public override ICase OnSuccess(IFlow flow)
         {
             flow.Finish();
-            return flow.GetFlowDefinition().AfterTicketChoice(Resource, (this.PresentationChanel as PartOrAllEvent).PrintCount, this.Tdata);
-
+            if (this.RouteType == 0)
+            {
+                return flow.GetFlowDefinition().AfterTicketChoice(Resource, (this.PresentationChanel as PartOrAllEvent).PrintCount, this.Tdata);
+            }
+            else 
+            {
+                return flow.GetFlowDefinition().AfterTicketChoice(Resource, (this.PresentationChanel as PartOrAllEvent).PrintCount, this.VerifiedData);
+            }
+           
         }
 
         public override ICase OnFailure(IFlow flow)

@@ -17,6 +17,7 @@ namespace checkin.core.flow
         ICase AfterCountChoice(IResource resource, int printcount, TicketData tdata);
         ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata);
         ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata);
+        ICase AfterTicketChoice(IResource resource, int printcount, VerifiedOrdernoRequestData verifieddata);
         ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected);
         ICase AfterQRDataFetch(IResource resource, TicketData tdata);
 
