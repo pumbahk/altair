@@ -147,7 +147,7 @@ def upgrade():
         sa.Column('payment_start_at', sa.DateTime(), nullable=True),
         sa.Column('payment_due_at', sa.DateTime(), nullable=True),
         sa.Column('payment_type',
-                  sa.Enum(val.name for val in FamiPortOrderType),
+                  sa.Enum(*[val.name for val in FamiPortOrderType]),
                   nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
