@@ -1,0 +1,112 @@
+<%inherit file="../layout.html" />
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>購入履歴照会</%mobile:header>
+% if orders:
+  ${render_orders(orders)}
+% else:
+  購入履歴がありません。
+% endif
+
+<%mobile:header>抽選申込み照会</%mobile:header>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
+
+<%include file="../../../__commons__/trouble_message.html" />
+
+${render_mailmagazine(request)}
+
+<%def name="render_shipping_address(shipping)">
+氏名（漢字）：
+${shipping.first_name}<br/>
+氏名（カナ）：
+${shipping.first_name_kana}<br/>
+電話番号：
+${shipping.tel_1}<br/>
+住所：
+${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+</%def>
+
+<%def name="render_lot_entries(lot_entries)">
+</%def>
+
+<%def name="render_pager(result)">
+${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
+</%def>
+
+<%def name="render_orders(orders)">
+  % for order in orders:
+<form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
+受付番号：
+${order.order_no}<br/>
+予約日時：
+${h.japanese_datetime(order.created_at)}<br/>
+ステータス：
+${h.get_order_status(order)}<br/>
+支払状況：
+${h.get_payment_status(order)}<br/>
+<input type="hidden" name="order_no" value="${order.order_no}"/>
+公演名：
+${order.performance.name}<br/>
+公演開始時間：
+% if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+    ${period}<br/>
+% else:
+    ${h.japanese_datetime(order.performance.start_on)}<br/>
+% endif
+会場名：
+${order.performance.venue.name}
+<br/>
+<input type="submit" value="チケット詳細">
+</form>
+<hr/>
+  % endfor
+${render_pager(orders)}
+</%def>
+
+<%def name="render_lot_entries(lot_entries)">
+  % for entry in lot_entries:
+受付番号：
+${entry.entry_no}<br/>
+申込日時：
+${h.japanese_datetime(entry.created_at)}<br/>
+ステータス：
+${h.get_entry_status(request, entry)}<br/>
+抽選名称：
+${entry.lot.name}<br/>
+<form name="" action="/lots/review" method="POST">
+  <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+  <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+  % if not h.is_disabled_order(entry):
+  <input type="submit" value="抽選申込み内容詳細">
+  % endif
+</form>
+<hr/>
+  % endfor
+${render_pager(lot_entries)}
+</%def>
+
+<%def name="render_mailmagazine(request)">
+% if mailmagazines_to_subscribe:
+<%mobile:header>メールマガジン</%mobile:header>
+<form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+  楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
+% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+ <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+ <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label><br/><br/>
+ ${mailmagazine.description|n}
+ <br/><br/>
+% endfor
+  <input type="submit" value="次へ">
+</form>
+% endif
+</%def>

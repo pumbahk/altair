@@ -1,0 +1,18 @@
+<h3>クレジットカードでお支払い</h3>
+<table id="confirmCard" summary="クレジットカード情報">
+<tr>
+<th scope="row">カード番号</th>
+<td>${card_number_mask(order['card_number'])}</td>
+</tr>
+<tr>
+<th scope="row">有効期限</th>
+<td>${order['exp_month']} / ${order['exp_year']}</td>
+</tr>
+<tr>
+<th scope="row">名義人</th>
+<td>${order['card_holder_name']}</td>
+</tr>
+</table>
+<div style="font-size:18px; font-weight:bold; color: #f00; margin: 10px 0 0 10px"><font color="#f00" size="big">
+予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。<br />
+お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。</font></div>

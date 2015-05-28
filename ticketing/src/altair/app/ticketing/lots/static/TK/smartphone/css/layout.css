@@ -1,0 +1,62 @@
+@charset "utf-8";
+
+/*
+	File Name   : layout.css
+	Description : 各ブロックのレイアウト
+*/
+
+
+/* Container
+----------------------------------------------------------- */
+#container {
+	width: auto;
+	margin:10px 10px 0;
+}
+
+
+/* Header
+----------------------------------------------------------- */
+
+#header h1{
+	text-align:center;
+}
+
+#header h2{
+	background-color:#0A50AA;
+	font-size:17px;
+	color:#fff;
+	padding:5px;
+	margin-top:10px;
+}
+
+#globalNav li {
+	float: left;
+}
+
+#globalNav li a {
+	display: block;
+	float: left;
+}
+
+#globalNav li a:hover {
+	background-color: transparent;
+}
+
+#globalNav li a:hover img {
+	visibility: hidden;
+}
+
+
+/* Main
+----------------------------------------------------------- */
+#main {
+	line-height: 1.5;
+	font-size: 14px;
+}
+
+
+/* Footer
+----------------------------------------------------------- */
+#footer {
+	clear: both;
+}
