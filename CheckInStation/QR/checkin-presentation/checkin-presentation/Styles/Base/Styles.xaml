@@ -516,7 +516,7 @@
 
 
   <Style TargetType="Button" x:Key="SubmitButtonStyle">
-    <Setter Property="Width" Value="232"/>
+    <Setter Property="Width" Value="400"/>
     <Setter Property="Height" Value="96"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
   </Style>

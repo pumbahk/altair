@@ -190,15 +190,6 @@
                         Visibility="{Binding RefreshModeVisibility}"/>
 
                     <Button
-                        Canvas.Right="300"
-                        Canvas.Top="655"
-                        Visibility="{Binding MultiPrintModeVisibility}"
-                        Style="{StaticResource SubmitButton}"
-                        Click="OnSubmitAllPrint"
-                        >
-                        <TextBlock FontSize="20">他のチケットも発券</TextBlock>
-                    </Button>
-                    <Button
                         Canvas.Right="60"
                         Canvas.Top="655"
                         Visibility="{Binding NextButtonVisibility}"

@@ -220,9 +220,5 @@ namespace checkin.presentation.gui.page
             OnCommonSubmit(PrintUnit.one.ToString());
         }
 
-        private void OnSubmitAllPrint(object sender, RoutedEventArgs e)
-        {
-            OnCommonSubmit(PrintUnit.all.ToString());
-        }
     }
 }
