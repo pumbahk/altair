@@ -242,14 +242,22 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
-    @skip('unimpl')
-    def test_finish(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.order_models.Order.create_from_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish(self, create_famiport_order, create_from_cart):
         """確定処理成功"""
+        exp_order = create_from_cart.return_value = mock.Mock()
+        create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
+        cart = self.orders[0].cart
         plugin = self._makeOne()
-        for cart in self.carts:
-            res = self._callFUT(plugin.finish, request, cart)
-            self.assert_(res is None)
+
+        order = plugin.finish(request, cart)
+        exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=False)
+
+        self.assertEqual(order, exp_order)
+        self.assertTrue(create_famiport_order.called)
+        self.assertEqual(create_famiport_order.call_args, exp_call_args_create_famiport_order)
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
     def test_finish2_success(self, create_famiport_order):
@@ -396,14 +404,30 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
-    @skip('uninplemented')
-    def test_finish(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.order_models.Order.create_from_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish(self, create_famiport_order, create_from_cart):
         """確定処理成功"""
+        exp_order = create_from_cart.return_value = mock.Mock()
+        create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
-        cart = DummyModel()
+        cart = self.orders[0].cart
         plugin = self._makeOne()
-        res = self._callFUT(plugin.finish, request, cart)
-        self.assert_(res is None)
+
+        res = plugin.finish(request, cart)
+        self.assertEqual(res, None)
+
+        # exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=False)
+
+        # self.assertEqual(order, exp_order)
+        # self.assertTrue(create_famiport_order.called)
+        # self.assertEqual(create_famiport_order.call_args, exp_call_args_create_famiport_order)
+
+        # request = DummyRequest()
+        # cart = DummyModel()
+        # plugin = self._makeOne()
+        # res = self._callFUT(plugin.finish, request, cart)
+        # self.assert_(res is None)
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
     def test_finish2_success(self, create_famiport_order):
@@ -556,14 +580,22 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
-    @skip('uninplemented')
-    def test_finish(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.order_models.Order.create_from_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
+    def test_finish(self, create_famiport_order, create_from_cart):
         """確定処理成功"""
+        exp_order = create_from_cart.return_value = mock.Mock()
+        create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
-        cart = DummyModel()
+        cart = self.orders[0].cart
         plugin = self._makeOne()
-        res = self._callFUT(plugin.finish, request, cart)
-        self.assert_(res is None)
+
+        order = plugin.finish(request, cart)
+        exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=True)
+
+        self.assertEqual(order, exp_order)
+        self.assertTrue(create_famiport_order.called)
+        self.assertEqual(create_famiport_order.call_args, exp_call_args_create_famiport_order)
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
     def test_finish2_success(self, create_famiport_order):

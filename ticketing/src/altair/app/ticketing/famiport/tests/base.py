@@ -281,6 +281,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                     organization=self.organization,
                     created_at=self.now,
                     items=ordered_products,
+                    finish=lambda *args, **kwds: mock.Mock()(*args, **kwds),
                     )
                 order = DummyModel(
                     order_no=order_no,

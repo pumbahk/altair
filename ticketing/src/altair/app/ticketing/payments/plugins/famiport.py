@@ -290,7 +290,7 @@ class FamiPortPaymentPlugin(object):
         """確定処理"""
         order = order_models.Order.create_from_cart(cart)
         cart.finish()
-        self.finish2(request, cart)
+        self.finish2(request, order)
         return order
 
     def finish2(self, request, cart):
@@ -405,7 +405,7 @@ class FamiPortPaymentDeliveryPlugin(object):
         """ 確定時処理 """
         order = order_models.Order.create_from_cart(cart)
         cart.finish()
-        self.finish2(request, cart)
+        self.finish2(request, order)
         return order
 
     def finish2(self, request, order_like):
