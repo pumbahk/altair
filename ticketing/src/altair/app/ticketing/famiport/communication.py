@@ -3,7 +3,7 @@ from enum import Enum, IntEnum
 import sqlalchemy as sa
 from sqlalchemy import orm
 import sqlahelper
-from altair.models import Identifier, WithTimestamp
+from altair.models import Identifier, WithCreatedAt
 
 Base = sqlahelper.get_base()
 
@@ -74,7 +74,7 @@ class FamiPortRequest(object):
     def encrypted_fields(self):
         return self._encryptedFields
 
-class FamiPortReservationInquiryRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortReservationInquiryRequest(Base, WithCreatedAt, FamiPortRequest):
     """予約済み予約照会
     """
     __tablename__ = 'FamiPortReservationInquiryRequest'
@@ -89,7 +89,7 @@ class FamiPortReservationInquiryRequest(Base, WithTimestamp, FamiPortRequest):
     _encryptedFields = ()
 
 
-class FamiPortPaymentTicketingRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingRequest(Base, WithCreatedAt, FamiPortRequest):
     """予約済み入金発券
     """
     __tablename__ = 'FamiPortPaymentTicketingRequest'
@@ -108,7 +108,7 @@ class FamiPortPaymentTicketingRequest(Base, WithTimestamp, FamiPortRequest):
     _encryptedFields = ['customerName', 'phoneNumber']
 
 
-class FamiPortPaymentTicketingCompletionRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingCompletionRequest(Base, WithCreatedAt, FamiPortRequest):
     """予約済み入金発券完了
     """
     __tablename__ = 'FamiPortPaymentTicketingCompletionRequest'
@@ -127,7 +127,7 @@ class FamiPortPaymentTicketingCompletionRequest(Base, WithTimestamp, FamiPortReq
     _encryptedFields = []
 
 
-class FamiPortPaymentTicketingCancelRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortPaymentTicketingCancelRequest(Base, WithCreatedAt, FamiPortRequest):
     """予約済み入金発券取消
     """
     __tablename__ = 'FamiPortPaymentTicketingCancelRequest'
@@ -146,7 +146,7 @@ class FamiPortPaymentTicketingCancelRequest(Base, WithTimestamp, FamiPortRequest
     _encryptedFields = []
 
 
-class FamiPortInformationRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortInformationRequest(Base, WithCreatedAt, FamiPortRequest):
     """予約済み案内
     """
     __tablename__ = 'FamiPortInformationRequest'
@@ -166,7 +166,7 @@ class FamiPortInformationRequest(Base, WithTimestamp, FamiPortRequest):
     _encryptedFields = []
 
 
-class FamiPortCustomerInformationRequest(Base, WithTimestamp, FamiPortRequest):
+class FamiPortCustomerInformationRequest(Base, WithCreatedAt, FamiPortRequest):
     """顧客情報取得
     """
     __tablename__ = 'FamiPortCustomerInformationRequest'
@@ -212,7 +212,7 @@ class FamiPortResponse(object):
     def encrypt_key(self):
         return self._encrypt_key
 
-class FamiPortTicketResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortTicketResponse(Base, WithCreatedAt, FamiPortResponse):
     """チケット情報
 
     FamiPortPaymentTicketingResponseに含まれる情報です。
@@ -237,7 +237,7 @@ class FamiPortTicketResponse(Base, WithTimestamp, FamiPortResponse):
 
     famiport_payment_ticketing_response = orm.relationship('FamiPortPaymentTicketingResponse', backref='tickets')
 
-class FamiPortReservationInquiryResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortReservationInquiryResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み予約照会
     """
     __tablename__ = 'FamiPortReservationInquiryResponse'
@@ -285,7 +285,7 @@ class FamiPortReservationInquiryResponse(Base, WithTimestamp, FamiPortResponse):
         return self.barCodeNo
 
 
-class FamiPortPaymentTicketingResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortPaymentTicketingResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み入金発券
     """
     __tablename__ = 'FamiPortPaymentTicketingResponse'
@@ -343,7 +343,7 @@ class FamiPortPaymentTicketingResponse(Base, WithTimestamp, FamiPortResponse):
     koenDate = sa.Column(sa.Unicode(12), nullable=False, default=u'')  # 公演日時
 
 
-class FamiPortPaymentTicketingCompletionResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortPaymentTicketingCompletionResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み入金発券完了
     """
     __tablename__ = 'FamiPortPaymentTicketingCompletionResponse'
@@ -370,7 +370,7 @@ class FamiPortPaymentTicketingCompletionResponse(Base, WithTimestamp, FamiPortRe
     _encrypt_key = None
 
 
-class FamiPortPaymentTicketingCancelResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortPaymentTicketingCancelResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み入金発券取消
     """
     __tablename__ = 'FamiPortPaymentTicketingCancelResponse'
@@ -395,7 +395,7 @@ class FamiPortPaymentTicketingCancelResponse(Base, WithTimestamp, FamiPortRespon
     orderId = sa.Column(sa.Unicode(12), nullable=False, default=u'')  # 注文ID
     replyCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 応答結果
 
-class FamiPortInformationResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortInformationResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み案内
     """
     __tablename__ = 'FamiPortInformationResponse'
@@ -415,7 +415,7 @@ class FamiPortInformationResponse(Base, WithTimestamp, FamiPortResponse):
     infoMessage = sa.Column(sa.Unicode(500), nullable=False, default=u'')  # 案内文言
 
 
-class FamiPortCustomerInformationResponse(Base, WithTimestamp, FamiPortResponse):
+class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse):
     """顧客情報取得
     """
     __tablename__ = 'FamiPortCustomerInformationResponse'

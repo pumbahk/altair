@@ -4,6 +4,7 @@
 from markupsafe import Markup
 from zope.interface import implementer
 from pyramid.response import Response
+from lxml import etree
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.cart.interfaces import (
@@ -24,12 +25,14 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailResource,
     )
 
-from altair.app.ticketing.famiport.models import FamiPortTicketType
+from altair.app.ticketing.famiport.models import FamiPortOrderType, FamiPortTicketType
 import altair.app.ticketing.famiport.api as famiport_api
-from altair.app.ticketing.famiport.api import do_order as do_famiport_order
+from altair.app.ticketing.famiport.api import create_famiport_order as do_famiport_order
 from altair.app.ticketing.famiport.exc import FamiPortError
 from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
+from altair.app.ticketing.orders.models import OrderedProductItem
+from altair.app.ticketing.cart.models import CartedProductItem
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
     build_dicts_from_ordered_product_item,
@@ -68,7 +71,7 @@ def build_ticket_dict(type_, data, template_code):
         )
 
 DICT_XML_ELEMENT_NAME_MAP = {
-    u'TTEVEN00001': [
+    u'TTEVEN0001': [
         (u'TitleOver', u'{{{イベント名}}}'),
         (u'TitleMain', u'{{{パフォーマンス名}}}'),
         (u'TitleSub', u'{{{公演名副題}}}'),
@@ -122,14 +125,20 @@ def build_ticket_dicts_from_order_like(request, order_like):
     issuer = NumberIssuer()
     for ordered_product in order_like.items:
         for ordered_product_item in ordered_product.elements:
-            dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
+            # XXX: OrderedProductLike is not reachable from OrderedProductItemLike
+            if isinstance(ordered_product_item, OrderedProductItem):
+                dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
+            elif isinstance(ordered_product_item, CartedProductItem):
+                dicts = build_dicts_from_carted_product_item(ordered_product_item, ticket_number_issuer=issuer)
+            else:
+                raise TypeError('!')
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     if ticket.principal:
-                        ticket_type = FamiPortTicketType.TicketWithBarcode
+                        ticket_type = FamiPortTicketType.TicketWithBarcode.value
                     else:
-                        ticket_type = FamiPortTicketType.ExtraTicket
+                        ticket_type = FamiPortTicketType.ExtraTicket.value
                     ticket_format = ticket.ticket_format
                     template_code = get_ticket_template_code_from_ticket_format(ticket_format)
                     xml = etree.tostring(
@@ -174,8 +183,10 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     tenant = lookup_famiport_tenant(request, order_like)
 
     return do_famiport_order(
+        client_code=tenant.code,
+        type_=FamiPortOrderType.Ticketing.value,
         order_no=order_like.order_no,
-        client_code=tenant.client_code,
+        userside_sales_segment_id=order_like.sales_segment.id,
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
         customer_name=customer_name,

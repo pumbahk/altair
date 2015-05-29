@@ -4,6 +4,8 @@ from .models import (
     _session,
     FamiPortOrder,
     FamiPortTicket,
+    FamiPortClient,
+    FamiPortSalesSegment,
     FamiPortBarcodeNoSequence,
     FamiPortReserveNumberSequence,
     FamiPortOrderTicketNoSequence,
@@ -49,6 +51,14 @@ def get_famiport_client(client_code, session=None):
                     .one()
     return retval
 
+def get_famiport_sales_segment_by_userside_id(userside_id, session=None):
+    if session is None:
+        session = _session
+    retval = session.query(FamiPortSalesSegment) \
+                    .filter_by(userside_id=userside_id) \
+                    .one()
+    return retval
+
 def create_famiport_ticket(ticket_dict, session=None):
     if session is None:
         session = _session
@@ -61,13 +71,15 @@ def create_famiport_ticket(ticket_dict, session=None):
 
 def create_famiport_order(
         client_code,
+        type_,
+        userside_sales_segment_id,
         order_no,
         customer_name,
         customer_phone_number,
         customer_address_1,
         customer_address_2,
         total_amount,
-        sytem_fee,
+        system_fee,
         ticketing_fee,
         ticket_payment,
         tickets,
@@ -76,13 +88,17 @@ def create_famiport_order(
     if session is None:
         session = _session
     famiport_client = get_famiport_client(client_code, session=session)
+    barcode_no = famiport_client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
+    famiport_sales_segment = get_famiport_sales_segment_by_userside_id(userside_sales_segment_id, session=session)
     famiport_order = FamiPortOrder(
+        client_code=client_code,
+        type=type_,
         order_no=order_no,
-        barcode_no=famiport_client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
-        reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
-        order_ticket_no=famiport_order.barcode_no,
+        famiport_sales_segment=famiport_sales_segment,
         famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(session),
-        exchange_ticket_no=FamiPortExchangeTicketNoSequence.get_next_value(session),
+        barcode_no=barcode_no,
+        reserve_number=barcode_no,
+        exchange_number=FamiPortExchangeTicketNoSequence.get_next_value(session),
         customer_name=customer_name,
         customer_phone_number=customer_phone_number,
         customer_address_1=customer_address_1,

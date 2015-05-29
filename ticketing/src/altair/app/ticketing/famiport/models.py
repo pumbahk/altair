@@ -198,6 +198,7 @@ class FamiPortEvent(Base, WithTimestamp):
     __tablename__ = 'FamiPortEvent'
    
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    userside_id             = sa.Column(Identifier, nullable=True, index=True)
     code_1                  = sa.Column(sa.Unicode(6), nullable=False) 
     code_2                  = sa.Column(sa.Unicode(4), nullable=False) 
     name_1                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
@@ -228,6 +229,7 @@ class FamiPortPerformance(Base, WithTimestamp):
     __tablename__ = 'FamiPortPerformance'
 
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    userside_id             = sa.Column(Identifier, nullable=True, index=True)
     famiport_event_id       = sa.Column(Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False)
     code                    = sa.Column(sa.Unicode(3))
     name                    = sa.Column(sa.Unicode(60))
@@ -244,6 +246,7 @@ class FamiPortSalesSegment(Base, WithTimestamp):
     __tablename__ = 'FamiPortSalesSegment'
 
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    userside_id             = sa.Column(Identifier, nullable=True, index=True)
     famiport_performance_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False)
     code                    = sa.Column(sa.Unicode(3), nullable=False)
     name                    = sa.Column(sa.Unicode(40), nullable=False)
@@ -389,7 +392,7 @@ class FamiPortOrderIdentifierSequence(Base):
         seq = cls()
         session.add(seq)
         session.flush()
-        return digit_encoder(screw(seq.id, 0x23456789012L))[:9] # math.log(0x7ffffffffff) / math.log(35) = 8.3832...
+        return digit_encoder.encode(screw(seq.id, 0x23456789012L))[:9] # math.log(0x7ffffffffff) / math.log(35) = 8.3832...
 
 
 class FamiPortOrderTicketNoSequence(Base):
@@ -445,19 +448,19 @@ class FamiPortReserveNumberSequence(Base):
     value = sa.Column(sa.String(12), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls):
+    def get_next_value(cls, session):
         for ii in range(15):  # retry count
             try:
-                return cls._get_next_value(*args, **kwds)
+                return cls._get_next_value(session)
             except InvalidRequestError:
                 pass
         raise FamiPortNumberingError()
 
     @classmethod
-    def _get_next_value(cls, name=''):
-        seq = cls(value=create_random_sequence_number(13, name))
-        _session.add(seq)
-        _session.flush()
+    def _get_next_value(cls, session):
+        seq = cls(value=create_random_sequence_number(13))
+        session.add(seq)
+        session.flush()
         return seq.value
 
 
@@ -468,7 +471,7 @@ class FamiPortOrder(Base, WithTimestamp):
     type                      = sa.Column(sa.Integer, nullable=False)
     order_no                  = sa.Column(sa.Unicode(12), nullable=False)
     famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
-    shop_code                 = sa.Column(sa.Unicode(6), nullable=False)
+    shop_code                 = sa.Column(sa.Unicode(6), nullable=True)
     famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
     client_code               = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     generation                = sa.Column(sa.Integer, nullable=False, default=0)
@@ -489,7 +492,7 @@ class FamiPortOrder(Base, WithTimestamp):
     customer_phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
     customer_address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
     customer_address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
-    costomer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
+    customer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
 
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
@@ -531,7 +534,7 @@ class FamiPortTicket(Base, WithTimestamp):
     barcode_number            = sa.Column(sa.Unicode(13), nullable=False)
     template_code             = sa.Column(sa.Unicode(10), nullable=False)
     data                      = sa.Column(sa.Unicode(4000), nullable=False)
-    issued_at                 = sa.Column(sa.DateTime(), nullable=False)
+    issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_tickets')
 

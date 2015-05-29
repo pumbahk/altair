@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sys
 import logging
 import transaction
 from zope.interface import implementer
@@ -88,10 +89,11 @@ class Payment(object):
                 try:
                     delivery_plugin.finish(self.request, self.cart)
                 except Exception as e:
+                    exc_info = sys.exc_info()
                     order.deleted_at = self.now
                     if self.cancel_payment_on_failure:
                         payment_plugin.cancel(self.request, order)
-                    raise e
+                    raise exc_info[1], None, exc_info[2]
             else:
                 logger.info('cart is not a IPaymentCart')
                 payment_plugin.finish2(self.request, self.cart)
@@ -107,11 +109,12 @@ class Payment(object):
             payment_plugin.finish2(self.request, order)
             try:
                 delivery_plugin.finish2(self.request, self.cart)
-            except Exception as e:
+            except Exception:
+                exc_info = sys.exc_info()
                 order.deleted_at = self.now
                 if self.cancel_payment_on_failure:
                     payment_plugin.cancel(self.request, order)
-                raise e
+                raise exc_info[1], None, exc_info[2]
         return order
 
     def call_delivery(self, order):
