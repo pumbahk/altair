@@ -88,8 +88,8 @@ def create_famiport_order(
     if session is None:
         session = _session
     famiport_client = get_famiport_client(client_code, session=session)
-    barcode_no = FamiPortOrderIdentifierSequence.get_next_value(session)
-    famiport_order_identifier = famiport_client.prefix + FamiPortOrderIdentifierSequence.get_next_value(session),
+    barcode_no = FamiPortOrderTicketNoSequence.get_next_value(session)
+    famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
     famiport_sales_segment = get_famiport_sales_segment_by_userside_id(userside_sales_segment_id, session=session)
     famiport_order = FamiPortOrder(
         client_code=client_code,

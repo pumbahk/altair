@@ -29,7 +29,7 @@ def upgrade():
     op.create_table(
         'FamiPortOrderIdentifierSequence',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('value', sa.String(13), nullable=False),
+        sa.Column('prefix', sa.Unicode(3), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
