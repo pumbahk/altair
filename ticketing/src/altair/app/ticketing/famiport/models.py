@@ -383,30 +383,21 @@ class FamiPortBarcodeNoSequence(Base):
         return u'%013ld' % screw(seq.id, 0x12345678901L)
 
 
-# FamiPortReservationInquryResponse.barCodeNo に相当するもの (これは実際にはバーコード番号ではない!)
 class FamiPortOrderIdentifierSequence(Base):
     __tablename__ = 'FamiPortOrderIdentifierSequence'
 
     id = sa.Column(Identifier, primary_key=True)
-    value = sa.Column(sa.String(13), nullable=False, unique=True)
+    prefix = sa.Column(sa.Unicode(3), nullable=False)
 
     @classmethod
-    def get_next_value(cls, session=_session):
-        for ii in range(15):  # retry count
-            try:
-                return cls._get_next_value(session)
-            except InvalidRequestError:
-                pass
-        raise FamiPortNumberingError()
-
-    @classmethod
-    def _get_next_value(cls, session):
-        seq = cls(value=create_random_sequence_number(13))
+    def get_next_value(cls, prefix, session=_session):
+        assert len(prefix) == 3
+        seq = cls(prefix=prefix)
         session.add(seq)
         session.flush()
-        return seq.value
+        return prefix + digit_encoder.encode(screw(seq.id, 0x23456789012L))
 
-# 未使用 (orderTicketNo は barCodeNo と同じになるため)
+
 class FamiPortOrderTicketNoSequence(Base):
     __tablename__ = 'FamiPortOrderTicketNoSequence'
 
@@ -457,7 +448,7 @@ class FamiPortReserveNumberSequence(Base):
     __tablename__ = 'FamiPortReserveNumberSequence'
 
     id = sa.Column(Identifier, primary_key=True)
-    value = sa.Column(sa.String(12), nullable=False, unique=True)
+    value = sa.Column(sa.String(13), nullable=False, unique=True)
 
     @classmethod
     def get_next_value(cls, session):
