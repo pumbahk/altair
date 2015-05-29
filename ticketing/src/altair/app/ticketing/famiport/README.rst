@@ -6,7 +6,7 @@
     mysql> INSERT INTO FamiPortPlayguide (name, discrimination_code) VALUES ('test', 1);
     Query OK, 1 row affected (0.01 sec)
     
-    mysql> INSERT INTO FamiPortClient (famiport_playguide_id, code) VALUES (1, '000000000000000000000000');
+    mysql> INSERT INTO FamiPortClient (famiport_playguide_id, code, name, prefix) VALUES (1, '000000000000000000000000', '楽天チケット', 'RT0');
     Query OK, 1 row affected, 1 warning (0.01 sec)
     
     mysql> INSERT INTO FamiPortTenant (organization_id, code) VALUES (15, '000000000000000000000000');
