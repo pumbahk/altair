@@ -61,6 +61,7 @@ def upgrade():
         'FamiPortClient',
         sa.Column('famiport_playguide_id', Identifier, sa.ForeignKey('FamiPortPlayguide.id'), nullable=False),
         sa.Column('code', sa.Unicode(24), nullable=False, primary_key=True),
+        sa.Column('name', sa.Unicode(50), nullable=False),
         sa.Column('prefix', sa.Unicode(3), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
