@@ -275,6 +275,11 @@ class CartSettingForm(OurForm):
         label=_(u'ヘッダ画像のURL (モバイル)')
         )
 
+    hidden_venue_html = OurTextField(
+        label=_(u'座席選択がない場合、会場図を表示しているところに表示したいHTML'),
+        widget=OurTextArea()
+        )
+
     embedded_html_complete_page = OurTextField(
         label=_(u'埋め込みHTML文言(PC)'),
         widget=OurTextArea()
