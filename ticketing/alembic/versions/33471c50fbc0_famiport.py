@@ -177,6 +177,8 @@ def upgrade():
         sa.Column('customer_phone_number', sa.Unicode(12), nullable=False),  # 電話番号
         sa.Column('paid_at', sa.DateTime(), nullable=True),
         sa.Column('issued_at', sa.DateTime(), nullable=True),
+        sa.Column('canceled_at', sa.DateTime(), nullable=True),
+        sa.Column('cancel_reason', sa.Integer, nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('invalidated_at', sa.DateTime, nullable=True),

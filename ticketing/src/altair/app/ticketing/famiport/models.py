@@ -485,6 +485,8 @@ class FamiPortOrder(Base, WithTimestamp):
     system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # システム利用料
     paid_at                   = sa.Column(sa.DateTime(), nullable=True)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
+    canceled_at               = sa.Column(sa.DateTime(), nullable=True)
+    cancel_reason             = sa.Column(sa.Integer, nullable=True)
 
     ticketing_start_at = sa.Column(sa.DateTime(), nullable=True)
     ticketing_end_at = sa.Column(sa.DateTime(), nullable=True)
