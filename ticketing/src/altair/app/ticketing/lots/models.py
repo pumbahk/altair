@@ -440,6 +440,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         traverser.begin_lot(self)
         traverser.end_lot(self)
 
+    def delete(self):
+        self.deleted_at = datetime.now()
+        if self.lot_entry_report_settings:
+            for setting in self.lot_entry_report_settings:
+                setting.deleted_at = datetime.now()
+
 
 lot_entry_user_point_account_table = sa.Table(
     "LotEntry_UserPointAccount", Base.metadata,
