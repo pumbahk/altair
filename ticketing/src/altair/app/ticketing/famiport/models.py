@@ -295,11 +295,11 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 
 
-class FamiPortOrderType(Enum):
-    CashOnDelivery       = 1
-    Payment              = 2
-    Ticketing            = 3
-    PaymentOnly          = 4
+class FamiPortOrderType(Enum): # ReplyClassEnumと意味的には同じ
+    CashOnDelivery       = 1 # 代引き
+    Payment              = 2 # 前払い（後日渡し）の前払い時
+    Ticketing            = 3 # 代済発券と前払い(後日渡し)の後日渡し時
+    PaymentOnly          = 4 # 前払いのみ
 
 
 def create_random_sequence_number(length):
