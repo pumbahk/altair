@@ -898,6 +898,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         return self.type == 'fc'
 
     @property
+    def hidden_venue_html(self):
+        return self.data.get('hidden_venue_html')
+
+    @hidden_venue_html.setter
+    def hidden_venue_html(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['hidden_venue_html'] = value
+
+    @property
     def embedded_html_complete_page(self):
         return self.data.get('embedded_html_complete_page')
 
