@@ -4022,6 +4022,9 @@ class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
 class FamiPortTenant(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'FamiPortTenant'
+    __table_args__          = (
+        UniqueConstraint('organization_id', 'code'),
+        )
     id                      = Column(Identifier, primary_key=True, autoincrement=True)
     organization_id         = Column(Identifier, ForeignKey('Organization.id'))
     name                    = Column(Unicode(255), nullable=False)

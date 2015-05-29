@@ -371,9 +371,18 @@ def upgrade():
         sa.Column('famiport_payment_ticketing_response_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingResponse.id')),
         sa.PrimaryKeyConstraint('id'),
         )
+    op.create_table(
+        'FamiPortTenant',
+        sa.Column('id', Identifier, autoincrement=True, primary_key=True),
+        sa.Column('organization_id', Identifier, sa.ForeignKey('Organization.id')),
+        sa.Column('name', sa.Unicode(255), nullable=False),
+        sa.Column('code', sa.Unicode(24), nullable=False),
+        sa.UniqueConstraint('organization_id', 'code')
+        )
 
 
 def downgrade():
+    op.drop_table('FamiPortTenant')
     op.drop_table('FamiPortTicketResponse')
     op.drop_table('FamiPortCustomerInformationResponse')
     op.drop_table('FamiPortInformationResponse')
