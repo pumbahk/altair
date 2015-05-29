@@ -29,24 +29,25 @@ def upgrade():
     op.create_table(
         'FamiPortOrderIdentifierSequence',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('value', sa.String(13), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortOrderTicketNoSequence',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('value', sa.String(12), nullable=False),
+        sa.Column('value', sa.String(13), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortExchangeTicketNoSequence',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('value', sa.String(12), nullable=False),
+        sa.Column('value', sa.String(13), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortReserveNumberSequence',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('value', sa.String(12), nullable=False),
+        sa.Column('value', sa.String(13), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
