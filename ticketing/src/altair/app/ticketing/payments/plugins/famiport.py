@@ -49,6 +49,7 @@ import pystache
 
 
 def includeme(config):
+    config.include('altair.app.ticketing.famiport')
     config.add_payment_plugin(FamiPortPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.add_delivery_plugin(FamiPortDeliveryPlugin(), DELIVERY_PLUGIN_ID)
     config.add_payment_delivery_plugin(FamiPortPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)

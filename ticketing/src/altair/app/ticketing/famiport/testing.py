@@ -1,7 +1,29 @@
 # -*- coding: utf-8 -*-
 import os.path
-import lxml
+import lxml.etree
 
+from .communication import (
+    FamiPortReservationInquiryRequest,
+    FamiPortPaymentTicketingRequest,
+    FamiPortPaymentTicketingCompletionRequest,
+    FamiPortPaymentTicketingCancelRequest,
+    FamiPortInformationRequest,
+    FamiPortCustomerInformationRequest,
+    FamiPortReservationInquiryResponse,
+    FamiPortPaymentTicketingResponse,
+    FamiPortPaymentTicketingCompletionResponse,
+    FamiPortPaymentTicketingCancelResponse,
+    FamiPortInformationResponse,
+    FamiPortCustomerInformationResponse,
+    )
+
+class DummyBuilderFactory(object):
+    def __init__(self, *args, **kwds):
+        pass
+
+    def __call__(self, *args, **kwds):
+        from unittest import mock
+        return mock.Mock()
 
 class FamiPortFakeFactory(object):
     xml = ''
@@ -47,7 +69,7 @@ class FamiPortPaymentTicketingResponseFakeFactory(FamiPortFakeFactory):
     @classmethod
     def create(cls, *args, **kwds):
         here = os.path.abspath(os.path.dirname(__file__))
-        xml_path = os.path.join(here, 'data/payment_ticketing_response.xml')
+        xml_path = os.path.join(here, 'tests/data/payment_ticketing_response.xml')
         with open(xml_path, 'rb') as fp:
             buf = fp.read()
             text = buf.decode('cp932')
@@ -177,3 +199,43 @@ class FamiPortCustomerResponseFakeFactory(FamiPortFakeFactory):
 <identifyNo>1234567890123456</identifyNo>
 </FMIF>
 """
+
+request_response = {
+    FamiPortReservationInquiryRequest: FamiPortReservationInquiryResponse,
+    FamiPortPaymentTicketingRequest: FamiPortPaymentTicketingResponse,
+    FamiPortPaymentTicketingCompletionRequest: FamiPortPaymentTicketingCompletionResponse,
+    FamiPortPaymentTicketingCancelRequest: FamiPortPaymentTicketingCancelResponse,
+    FamiPortInformationRequest: FamiPortInformationResponse,
+    FamiPortCustomerInformationRequest: FamiPortCustomerInformationResponse,
+    }
+
+response_faker = {
+    FamiPortReservationInquiryResponse: FamiPortReservationInquiryResponseFakeFactory,
+    FamiPortPaymentTicketingResponse: FamiPortPaymentTicketingResponseFakeFactory,
+    FamiPortPaymentTicketingCompletionResponse: FamiPortPaymentTicketingCompletionResponseFakeFactory,
+    FamiPortPaymentTicketingCancelResponse: FamiPortPaymentTicketingCancelResponseFakeFactory,
+    FamiPortInformationResponse: FamiPortInformationResponseFakeFactory,
+    FamiPortCustomerInformationResponse: FamiPortCustomerResponseFakeFactory,
+    }
+
+
+def get_response_builder(*args, **kwds):
+    import mock
+    builder = mock.Mock()
+    builder.build_response = lambda request, *_args, **_kwds: request_response.get(type(request))()
+    return builder
+
+
+def get_payload_builder(*args, **kwds):
+    import mock
+    builder = mock.Mock()
+
+    def _build_payload_str(response, *args, **kwds):
+        typ = type(response)
+        fake = response_faker.get(typ)
+        assert fake, 'no fake...: {}'.format(typ)
+        tree = fake.create(*args, **kwds)
+        bstr = lxml.etree.tostring(tree, pretty_print=True)
+        return bstr
+    builder.build_payload = _build_payload_str
+    return builder

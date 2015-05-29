@@ -6,7 +6,7 @@ from pyramid.view import (
     view_defaults,
     )
 
-from .communication import (
+from ..communication import (
     FamiPortReservationInquiryRequest,
     FamiPortPaymentTicketingRequest,
     FamiPortPaymentTicketingCompletionRequest,
@@ -14,7 +14,7 @@ from .communication import (
     FamiPortInformationRequest,
     FamiPortCustomerInformationRequest,
     )
-from .fakers import (
+from ..testing import (
     get_response_builder,
     get_payload_builder,
     )

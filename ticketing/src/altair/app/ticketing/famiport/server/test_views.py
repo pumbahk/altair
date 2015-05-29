@@ -19,7 +19,7 @@ class FamiPortAPIViewTest(TestCase):
             'altair.app.ticketing.famiport.models'
             ])
         config = Configurator()
-        config.include('altair.app.ticketing.famiport', '/famiport/')
+        config.include('altair.app.ticketing.famiport.server', '/famiport/')
 
         extra_environ = {'HTTP_HOST': 'localhost:8063'}
         self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)
@@ -66,7 +66,7 @@ class InquiryTest(FamiPortAPIViewTest):
     url = '/famiport/reservation/inquiry'
 
     def test_it(self):
-        from .fakers import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'authNumber': '',
             'reserveNumber': '5300000000001',
@@ -142,7 +142,7 @@ class PaymentTest(FamiPortAPIViewTest):
     url = '/famiport/reservation/payment'
 
     def test_it(self):
-        from .fakers import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'ticketingDate': '20150331172554',
             'playGuideId': '',
@@ -181,7 +181,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
     url = '/famiport/reservation/completion'
 
     def test_it(self):
-        from .fakers import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'ticketingDate': '20150331184114',
             'orderId': '123456789012',
@@ -219,7 +219,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
     url = '/famiport/reservation/cancel'
 
     def test_it(self):
-        from .fakers import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'playGuideId': '',
             'storeCode': '000009',
@@ -276,7 +276,7 @@ class InformationViewTest(FamiPortAPIViewTest):
     url = '/famiport/reservation/information'
 
     def test_it(self):
-        from .fakers import FamiPortInformationResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortInformationResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'uketsukeCode': '',
             'kogyoSubCode': '',
@@ -315,7 +315,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
     url = '/famiport/reservation/customer'
 
     def test_it(self):
-        from .fakers import FamiPortCustomerResponseFakeFactory as FakeFactory
+        from ..testing import FamiPortCustomerResponseFakeFactory as FakeFactory
         res = self._callFUT({
             'storeCode': '000009',
             'mmkNo': '01',

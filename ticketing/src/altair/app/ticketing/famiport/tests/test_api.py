@@ -28,21 +28,6 @@ class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
 
 
 
-class DoOrderTest(TestCase):
-    def _get_target(self):
-        from ..api import do_order as target
-        return target
-
-    def test_it(self):
-        target = self._get_target()
-        request = DummyModel()
-        playguide = None
-        famiport_order = None
-        now = None
-        session = None
-        target(request, playguide=playguide, famiport_order=famiport_order, now=now, session=session)
-
-
 # class CreateFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
 #     def _target(self):
 #         from ..api import create_famiport_order as target

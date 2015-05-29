@@ -113,8 +113,5 @@ def create_famiport_order(
             ]
         )
     session.add(famiport_order)
+    session.commit()
     return famiport_order
-
-
-def do_order(request, playguide, famiport_order, now=None, session=None):
-    pass

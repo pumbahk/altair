@@ -483,6 +483,11 @@ class FamiPortOrder(Base, WithTimestamp):
     paid_at                   = sa.Column(sa.DateTime(), nullable=True)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
+    ticketing_start_at = sa.Column(sa.DateTime(), nullable=True)
+    ticketing_end_at = sa.Column(sa.DateTime(), nullable=True)
+    payment_start_at = sa.Column(sa.DateTime(), nullable=True)
+    payment_due_at = sa.Column(sa.DateTime(), nullable=True)
+
     barcode_no                = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
     reserve_number            = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
     exchange_number           = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
