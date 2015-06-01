@@ -24,7 +24,7 @@ ${h.japanese_datetime(start_at)}
 <p>とさせていただいております。</p>
 % endif
 % if available_sales_segments:
-<p>なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。</p>
+<p>なお、他の日時のチケットは、下記からお買い求めいただけます。</p>
 <ul>
 %   for _sales_segment in available_sales_segments:
 <li><a href="${h.cart_url(request, sales_segment=_sales_segment)}">${h.format_name(request, sales_segment=_sales_segment)}</a></li>
