@@ -898,3 +898,75 @@ class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res.text, u'ファミポート受け取り')
+
+
+class CreateFamiPortOrderTest(TestCase):
+    def _get_target(self):
+        from altair.app.ticketing.payments.plugins.famiport import create_famiport_order as target
+        return target
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.do_famiport_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    def test_it(self, build_ticket_dicts_from_order_like, do_famiport_order, lookup_famiport_tenant):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+
+        tenant = mock.Mock(code='XX')
+        lookup_famiport_tenant.return_value = tenant
+
+        famiport_tickets = mock.Mock()
+        build_ticket_dicts_from_order_like.return_value = famiport_tickets
+        request = DummyRequest()
+        cart = DummyModel(
+            organization_id=1,
+            total_amount=100,
+            transaction_fee=1,
+            delivery_fee=1,
+            system_fee=1,
+            special_fee=1,
+            order_no=u'XX000001234',
+            shipping_address=DummyModel(
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田',
+                address_2=u'aaa',
+                tel_1='07011112222',
+                email_1='dev@ticketstar.jp',
+                last_name=u'楽天',
+                first_name=u'太郎',
+                ),
+            sales_segment=DummyModel(
+                id=1,
+                ),
+            )
+        in_payment = True
+        target = self._get_target()
+        famiport_order = target(request, cart, in_payment)
+        order_like = cart
+        customer_address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
+        customer_address_2 = order_like.shipping_address.address_2
+        customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
+
+        total_amount = cart.total_amount
+        system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
+        ticketing_fee = cart.delivery_fee
+        ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
+        customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
+
+        exp_call_args = mock.call(
+            client_code=tenant.code,
+            type_=FamiPortOrderType.Ticketing.value,
+            order_no=order_like.order_no,
+            userside_sales_segment_id=order_like.sales_segment.id,
+            customer_address_1=customer_address_1,
+            customer_address_2=customer_address_2,
+            customer_name=customer_name,
+            customer_phone_number=customer_phone_number,
+            total_amount=total_amount,
+            system_fee=system_fee,
+            ticketing_fee=ticketing_fee,
+            ticket_payment=ticket_payment,
+            tickets=famiport_tickets,
+            )
+        self.assertEqual(list(do_famiport_order.call_args), list(exp_call_args)[1:])
+        self.assertTrue(famiport_order)

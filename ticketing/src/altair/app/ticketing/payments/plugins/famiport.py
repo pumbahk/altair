@@ -156,7 +156,8 @@ def build_ticket_dicts_from_order_like(request, order_like):
 
 
 def lookup_famiport_tenant(request, order_like):
-    return FamiPortTenant.query.filter_by(organization_id=order_like.organization_id).one()
+    return FamiPortTenant.query.filter_by(organization_id=order_like.organization_id).first()
+
 
 def create_famiport_order(request, order_like, in_payment, name='famiport'):
     """FamiPortOrderを作成する
@@ -182,6 +183,9 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
     tenant = lookup_famiport_tenant(request, order_like)
+    tenant = lookup_famiport_tenant(request, order_like)
+    if tenant is None:
+        raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
 
     return do_famiport_order(
         client_code=tenant.code,

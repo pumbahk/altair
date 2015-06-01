@@ -116,3 +116,9 @@ def create_famiport_order(
     session.add(famiport_order)
     session.commit()
     return famiport_order
+
+
+def do_order(*args, **kwds):
+    import mock
+    client = mock.Mock()
+    return create_famiport_order(*args, **kwds)
