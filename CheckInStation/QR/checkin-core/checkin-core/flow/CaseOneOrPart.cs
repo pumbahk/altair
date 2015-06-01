@@ -37,7 +37,7 @@ namespace checkin.core.flow
         }
         public override ICase OnSuccess(IFlow flow)
         {
-            flow.Finish();
+            //flow.Finish();
             return flow.GetFlowDefinition().AfterCountChoice(Resource, (this.PresentationChanel as OneOrPartEvent).PrintCount, this.Tdata);
 
         }
