@@ -32,6 +32,7 @@ import logging
 import hashlib
 import base64
 import datetime
+from exceptions import ValueError
 
 logger = logging.getLogger(__name__)
 
@@ -100,8 +101,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         reserveNumber = famiport_reservation_inquiry_request.reserveNumber
         authNumber = famiport_reservation_inquiry_request.authNumber
 
-        logger.info("Processing famiport reservation inquiry request. " + \
-                    "店舗コード: " + storeCode +  ", 利用日時: " + ticketingDate + ", 予約番号: " + reserveNumber)
+        logger.info(u"Processing famiport reservation inquiry request. " + \
+                    u"店舗コード: " + storeCode +  u", 利用日時: " + ticketingDate + u", 予約番号: " + reserveNumber)
 
         resultCode, replyClass, replyCode = None, None, None
         famiport_order = None
@@ -109,8 +110,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber, authNumber)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError
-            logger.error("DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). " + \
-                         "店舗コード: " + storeCode +  ", 利用日時: " + ticketingDate + ", 予約番号: " + reserveNumber)
+            logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). " + \
+                         u"店舗コード: " + storeCode +  u", 利用日時: " + ticketingDate + u", 予約番号: " + reserveNumber)
 
         if famiport_order is not None:
             resultCode = ResultCodeEnum.Normal
@@ -150,19 +151,23 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
         storeCode = famiport_payment_ticketing_request.storeCode
         mmkNo = famiport_payment_ticketing_request.mmkNo
-        ticketingDate = famiport_payment_ticketing_request.ticketingDate # TODO Make datetime from 'YYYYMMDDhhmmss'
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
+        ticketingDate = None
+        try:
+            ticketingDate = datetime.strptime(famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
+        except ValueError:
+            logger.error(u"不正な利用日時です。")
 
-        logger.info("Processing famiport payment ticketing request. " + \
-                    "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo)
+        logger.info(u"Processing famiport payment ticketing request. " + \
+                    u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo)
 
         famiport_order, replyCode = None, None
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError
-            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). " + \
-                         "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo)
+            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). " + \
+                         u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo)
 
         orderId, replyClass, playGuideId, playGuideName, orderTicketNo, exchangeTicketNo, ticketingStart, ticketingEnd = None, None, None, None, None, None, None, None
         totalAmount, ticketPayment, systemFee, ticketingFee, ticketingCountTotal, ticketCount, kogyoName, koenDate, ticket = None, None, None, None, None, None, None, None, None
@@ -234,8 +239,8 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError
-            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
-                         "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo + ", 注文ID: " + orderId)
+            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
+                         u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo + u", 注文ID: " + orderId)
 
         if famiport_order is not None:
             replyCode = ReplyCodeEnum.Normal
@@ -261,8 +266,8 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
-            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
-                         "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo)
+            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
+                         u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo)
 
         orderId, replyCode = None, None
         if famiport_order is not None:
@@ -314,7 +319,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         try:
             infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.ServiceUnavailable)
         except DBAPIError:
-            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). 店舗コード: " + storeCode)
+            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). 店舗コード: " + storeCode)
             resultCode == InformationResultCodeEnum.OtherError
             infoMessage = u'エラーが起こりました。'
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
@@ -347,8 +352,8 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
-            logger.error("DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
-                         "店舗コード: " + storeCode + ", 発券Famiポート番号: " +  mmkNo + ", 利用日時: ", ticketingDate + ", 処理通番: " + sequenceNo + ", 支払番号: " + barCodeNo + ", 注文ID: " + orderId)
+            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
+                         u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo + u", 注文ID: " + orderId)
 
         resultCode, replyCode = None, None
         if famiport_order is not None:
