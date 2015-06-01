@@ -118,11 +118,13 @@ ${active_page.name}
        message="新しいページを追加します。アップロードされているファイルもまとめてコピーします。よろしいですか？">
 		  <i class="icon-plus"> </i> 選択したページのコピーを追加
     </a>
+      %if len(static_pageset.pages) >= 2:
       <a class="btn btn-success do-post"
        message="本当に登録されたデータを削除しますか?"
 	   href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
           <i class="icon-trash"></i> 選択したページを削除
     </a>
+      %endif
   </div>
 </div>
 
