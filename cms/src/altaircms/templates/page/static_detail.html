@@ -119,17 +119,18 @@ ${active_page.name}
 		  <i class="icon-plus"> </i> 選択したページのコピーを追加
     </a>
       %if len(static_pageset.pages) >= 2:
-      <a class="btn btn-success do-post"
+      <% endpoint_url = request.route_path("static_pageset", pagetype=static_pageset.pagetype.name, static_page_id=static_pageset.id, action="detail") %>
+      <a class="btn btn-success action do-post"
        message="本当に登録されたデータを削除しますか?"
-	   href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
+	   href="${request.route_path("static_page",action="delete",static_page_id=static_pageset.id, child_id="__id__" ,_query=dict(endpoint=endpoint_url))}">
           <i class="icon-trash"></i> 選択したページを削除
-    </a>
+      </a>
       %endif
   </div>
 </div>
 
-<hr/>
 
+<hr/>
 
 
 <ul class="nav nav-tabs">
