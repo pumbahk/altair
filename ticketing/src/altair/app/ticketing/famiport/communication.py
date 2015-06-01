@@ -51,7 +51,7 @@ class ReplyCodeEnum(Enum):
     SearchKeyError = '01' # 検索キーエラー
     PaymentDueError = '02' # 支払期限エラー
     AlreadyPaidError = '03' # 支払済みエラー
-    PaymentAlreadyCanceledError = '04' # 支払取消済み
+    PaymentAlreadyCanceledError = '04' # 支払取消済みエラー
     TicketAlreadyIssuedError = '07' # 発券済みエラー
     TicketingDueError = '08' # 発券期限エラー
     TicketingAlreadyCanceledError = '09' # 発券取消済みエラー
