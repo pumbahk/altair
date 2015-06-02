@@ -19,6 +19,7 @@ def hook(event):
     if user.user_profile is None:
         user.user_profile = UserProfile()
     user.user_profile.email_1 = metadata['email_1']
+    user.user_profile.email_2 = None
     user.user_profile.nick_name = metadata['nick_name']
     user.user_profile.first_name = metadata['first_name']
     user.user_profile.last_name = metadata['last_name']
@@ -27,10 +28,14 @@ def hook(event):
     user.user_profile.birthday = metadata['birthday']
     user.user_profile.sex = metadata['sex']
     user.user_profile.zip = metadata['zip']
+    user.user_profile.country = None
     user.user_profile.prefecture = metadata['prefecture']
     user.user_profile.city = metadata['city']
     user.user_profile.address_1 = metadata['street']
+    user.user_profile.address_2 = None
     user.user_profile.tel_1 = metadata['tel_1']
+    user.user_profile.tel_2 = None
+    user.user_profile.fax = None
     rakuten_point_account = metadata.get('rakuten_point_account')
     if rakuten_point_account:
         user_point_account = user.user_point_accounts.get(UserPointAccountTypeEnum.Rakuten.v)
