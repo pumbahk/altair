@@ -152,7 +152,8 @@ class Events(BaseView):
         performances = slave_session.query(Performance) \
             .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id == event_id) \
-            .order_by(Performance.display_order)
+            .order_by(Performance.display_order) \
+            .order_by("Performance.start_on asc")
 
         from altair.app.ticketing.events.performances import VISIBLE_PERFORMANCE_SESSION_KEY
         if not self.request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY, None):
