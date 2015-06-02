@@ -2,6 +2,7 @@
 import unittest
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
+
 class TestFamiportEvent(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db([
@@ -111,6 +112,3 @@ class FamiPortInformationMessageTest(unittest.TestCase):
 
         msg = target.get_message(**kwds)
         self.assertEqual(msg, None)
-
-
-
