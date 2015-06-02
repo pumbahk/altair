@@ -2,6 +2,7 @@
 import unittest
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
+
 class SalesReportTest(unittest.TestCase):
     def test_basic(self):
         from .sales_report import make_marshaller
@@ -32,14 +33,19 @@ class SalesReportTest(unittest.TestCase):
             })
         self.assertEqual(len(out.getvalue()), 236)
 
+
 class GenRecordsFromOrderModelTest(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
             ])
-        from ..models import FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment
-        from datetime import datetime, date
+        from ..models import (
+            FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue,
+            FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment,
+            )
+        from datetime import datetime
         self.famiport_client = FamiPortClient(
+            name=u'チケットスター',
             code=u'000',
             playguide=FamiPortPlayguide(discrimination_code=1),
             prefix=u'XXX'
@@ -174,4 +180,3 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from .sales_report import gen_records_from_order_model
         records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
         self.assertEqual(len(records), 2)
-

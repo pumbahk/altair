@@ -2,6 +2,7 @@
 import unittest
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
+
 class RefundReportMarshallerTest(unittest.TestCase):
     def test_basic(self):
         from .refund_report import make_marshaller
@@ -41,9 +42,14 @@ class RefundReportGenRecordTest(unittest.TestCase):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
             ])
-        from ..models import FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment
+        from ..models import (
+            FamiPortEvent, FamiPortClient, FamiPortPlayguide,
+            FamiPortVenue, FamiPortGenre1, FamiPortGenre2,
+            FamiPortPerformance, FamiPortSalesSegment,
+            )
         from datetime import datetime
         self.famiport_client = FamiPortClient(
+            name=u'チケットスター',
             code=u'000',
             playguide=FamiPortPlayguide(discrimination_code=1),
             prefix=u'XXX'
@@ -79,7 +85,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
         _teardown_db()
 
     def test_gen(self):
-        from datetime import datetime, date
+        from datetime import datetime
         from .refund_report import gen_record_from_refund_model
         from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
         refund = FamiPortRefund(
@@ -112,9 +118,14 @@ class BuildRefundReportFileTest(unittest.TestCase):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
             ])
-        from ..models import FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment
-        from datetime import datetime, date
+        from ..models import (
+            FamiPortEvent, FamiPortClient, FamiPortPlayguide,
+            FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance,
+            FamiPortSalesSegment,
+            )
+        from datetime import datetime
         self.famiport_client = FamiPortClient(
+            name=u'チケットスター',
             code=u'000',
             playguide=FamiPortPlayguide(discrimination_code=1),
             prefix=u'XXX'
@@ -192,4 +203,3 @@ class BuildRefundReportFileTest(unittest.TestCase):
         eor = '\n'
         build_refund_file(f, refund_entries, eor=eor)
         self.assertEqual(f.getvalue().count(eor), 100)
-

@@ -20,6 +20,7 @@ class TestFamiportEvent(TestCase):
             name_1=u'name_1',
             name_2=u'name_2',
             client=FamiPortClient(
+                name=u'チケットスター',
                 code=u'000',
                 playguide=FamiPortPlayguide(discrimination_code=1),
                 prefix=u'XXX'
