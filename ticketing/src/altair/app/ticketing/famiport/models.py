@@ -192,16 +192,16 @@ class MutableSpaceDelimitedList(Mutable, NervousList):
             return value
 
     def _changed(self, modified):
-        self.changed() 
+        self.changed()
 
 
 class FamiPortEvent(Base, WithTimestamp):
     __tablename__ = 'FamiPortEvent'
-   
+
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
     userside_id             = sa.Column(Identifier, nullable=True, index=True)
-    code_1                  = sa.Column(sa.Unicode(6), nullable=False) 
-    code_2                  = sa.Column(sa.Unicode(4), nullable=False) 
+    code_1                  = sa.Column(sa.Unicode(6), nullable=False)
+    code_2                  = sa.Column(sa.Unicode(4), nullable=False)
     name_1                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
     name_2                  = sa.Column(sa.Unicode(80), nullable=False, default=u'')
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
@@ -223,7 +223,7 @@ class FamiPortEvent(Base, WithTimestamp):
 
 class FamiPortPerformanceType(Enum):
     Normal  = 1
-    Spanned = 2 
+    Spanned = 2
 
 
 class FamiPortPerformance(Base, WithTimestamp):
@@ -305,7 +305,9 @@ class FamiPortOrderType(Enum): # ReplyClassEnumと意味的には同じ
 def create_random_sequence_number(length):
     seq = ''
     while len(seq) < length:
-        seq += hashlib.md5((str(time.time()) + str(random.random())).encode()).hexdigest()
+        seq += hashlib.md5(
+            (str(time.time()) + str(random.random())).encode()).hexdigest()
+    seq = seq.upper()
     return seq[:length]
 
 
@@ -342,7 +344,7 @@ class DigitCodec(object):
         return retval
 
 digit_encoder = DigitCodec("0123456789ACFGHJKLPRSUWXY")
-       
+
 def screw(x, s):
     x = long(x)
     return (((x & 0x3000) >> 12) \
@@ -506,7 +508,7 @@ class FamiPortOrder(Base, WithTimestamp):
 
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
-    
+
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
         _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()

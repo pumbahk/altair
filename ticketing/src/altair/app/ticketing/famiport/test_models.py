@@ -1,9 +1,9 @@
 # encoding:utf-8
-import unittest
+from unittest import TestCase
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 
-class TestFamiportEvent(unittest.TestCase):
+class TestFamiportEvent(TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
@@ -38,7 +38,7 @@ class TestFamiportEvent(unittest.TestCase):
         self.assertEqual(stored_value, u'a b c')
 
 
-class TestScrew(unittest.TestCase):
+class TestScrew(TestCase):
     def test_it(self):
         from .models import screw
         v = screw(0x555555555555, 0x12345678901)
@@ -47,7 +47,7 @@ class TestScrew(unittest.TestCase):
         self.assertEqual(v, 0x32ab4a5b528e ^ 0x12345678901)
 
 
-class FamiPortInformationMessageTest(unittest.TestCase):
+class FamiPortInformationMessageTest(TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
@@ -112,3 +112,32 @@ class FamiPortInformationMessageTest(unittest.TestCase):
 
         msg = target.get_message(**kwds)
         self.assertEqual(msg, None)
+
+
+class CreateRandomSequenceNumberTest(TestCase):
+    def _get_target(self):
+        from .models import create_random_sequence_number as target
+        return target
+
+    def _get_valid_chars(self):
+        import string
+        valid_cahrs = string.digits + string.ascii_uppercase
+        return valid_cahrs
+
+    def test_it_length_13(self):
+        length = 13
+        func = self._get_target()
+        valid_chars = self._get_valid_chars()
+        value = func(length)
+        self.assertEqual(length, len(value))
+        for ch in value:
+            self.assertIn(ch, valid_chars)
+
+    def test_it_length_14(self):
+        length = 14
+        func = self._get_target()
+        valid_chars = self._get_valid_chars()
+        value = func(length)
+        self.assertEqual(length, len(value))
+        for ch in value:
+            self.assertIn(ch, valid_chars)
