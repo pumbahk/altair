@@ -1,11 +1,15 @@
 # encoding: utf-8
 from __future__ import absolute_import
 import re
-from decimal import Decimal, InvalidOperation
-from zope.interface import implementer
-from datetime import date, datetime
-from .interfaces import ITabularDataColumn, ITabularDataColumnSpecification, ITabularDataMarshaller, ITabularDataUnmarshaller
+import io
+import csv
+import decimal
 from collections import namedtuple
+from datetime import date, time, datetime, timedelta
+import six
+from zope.interface import implementer
+from altair.timeparse import parse_duration, build_duration
+from .interfaces import ITabularDataColumn, ITabularDataColumnSpecification, ITabularDataMarshaller, ITabularDataUnmarshaller
 
 Column = implementer(ITabularDataColumn)(namedtuple('Column', ('name', 'spec')))
 
@@ -27,17 +31,21 @@ def sjis_iterator(v):
 def multibyte_in_sjis(v):
     return all(c >= 0x100 for c in sjis_iterator(v.encode('cp932')))
 
+def len_in_sjis(v):
+    return sum(2 if c >= 0x100 else 1 for c in sjis_iterator(v.encode('cp932')))
+
 @implementer(ITabularDataColumnSpecification)
 class Integer(object):
     rpad = u' '
 
-    def __init__(self, length, constraints=[]):
+    def __init__(self, length, pytype=int, constraints=[]):
         self.length = length
+        self.pytype = pytype
         self.constraints = []
 
     def marshal(self, context, pyval):
-        if not isinstance(pyval, (int, long, Decimal)):
-            raise TypeError('int, long or Decimal type expected, got %r (%s)' % (pyval, pyval.__class__.__name__))
+        if not isinstance(pyval, self.pytype):
+            raise TypeError('%s expected, got %r (%s)' % (self.pytype.__name__, pyval, pyval.__class__.__name__))
         retval = u'{0:n}'.format(pyval)
         if self.length is not None and len(retval) > self.length:
             raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))
@@ -49,8 +57,8 @@ class Integer(object):
         if self.length is not None and len(val) > self.length:
             raise ValueError('len(%r) > %d' % (val, self.length))
         try:
-            return Decimal(val)
-        except InvalidOperation as e:
+            return self.pytype(val)
+        except decimal.InvalidOperation as e:
             raise ValueError(e.message)
 
 
@@ -58,13 +66,14 @@ class Integer(object):
 class ZeroPaddedInteger(object):
     rpad = u' '
 
-    def __init__(self, length, constraints=[]):
+    def __init__(self, length, pytype=int, constraints=[]):
         self.length = length
+        self.pytype = pytype
         self.constraints = []
 
     def marshal(self, context, pyval):
-        if not isinstance(pyval, (int, long, Decimal)):
-            raise TypeError('int, long or Decimal type expected')
+        if not isinstance(pyval, self.pytype):
+            raise TypeError('%s expected, got %r (%s)' % (self.pytype.__name__, pyval, pyval.__class__.__name__))
         retval = (u'{0:0%dn}' % self.length).format(pyval)
         if self.length is not None and len(retval) > self.length:
             raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))
@@ -76,8 +85,8 @@ class ZeroPaddedInteger(object):
         if len(val) != self.length:
             raise ValueError('len(%r) != %d' % (val, self.length))
         try:
-            return Decimal(val)
-        except InvalidOperation as e:
+            return self.pytype(val)
+        except decimal.InvalidOperation as e:
             raise ValueError(e.message)
 
 
@@ -136,6 +145,44 @@ class ZeroPaddedNumericString(object):
 
 
 @implementer(ITabularDataColumnSpecification)
+class Decimal(object):
+    rpad = u' '
+
+    def __init__(self, length=None, precision=11, scale=0, rounding=decimal.ROUND_HALF_UP, constraints=[]):
+        if length is None:
+            length = precision + 2
+        self.length = length
+        self.constraints = []
+        self.precision = precision
+        self.scale = scale
+        self._context = decimal.Context(prec=self.precision, Emin=0, Emax=(self.precision - 1), rounding=rounding)
+
+    def marshal(self, context, pyval):
+        if not isinstance(pyval, (int, long, float, decimal.Decimal)):
+            raise TypeError('int, long, float or Decimal type expected, got %r (%s)' % (pyval, pyval.__class__.__name__))
+        pyval = self._context.create_decimal(pyval)
+        if pyval.adjusted() >= self.precision - self.scale:
+            pyval = self._context.create_decimal((pyval.is_signed(), (9, ) * self.precision, -self.scale))
+        retval = u'{0:n}'.format(pyval)
+        if self.length is not None and len(retval) > self.length:
+            raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))
+        return retval
+
+    def unmarshal(self, context, val):
+        if not isinstance(val, unicode):
+            raise TypeError('unicode type expected, got %r' % val)
+        if self.length is not None and len(val) > self.length:
+            raise ValueError('len(%r) > %d' % (val, self.length))
+        try:
+            pyval = self._context.create_decimal(val)
+            if pyval.adjusted() >= self.precision - self.scale:
+                pyval = self._context.create_decimal((pyval.is_signed(), (9, ) * self.precision, -self.scale))
+            return pyval
+        except decimal.InvalidOperation as e:
+            raise ValueError(e.message)
+
+
+@implementer(ITabularDataColumnSpecification)
 class Boolean(object):
     rpad = u' '
 
@@ -188,16 +235,43 @@ class WideWidthString(object):
 
 
 @implementer(ITabularDataColumnSpecification)
-class DateTime(object):
+class SJISString(object):
     rpad = u' '
 
-    def __init__(self, length, pytype=datetime, format=u'', constraints=[]):
+    def __init__(self, length, constraints=[]):
         self.length = length
-        self.format = format
-        self.pytype = pytype
         self.constraints = []
 
     def marshal(self, context, pyval):
+        if not isinstance(pyval, unicode):
+            raise TypeError('unicode type expected')
+        if len_in_sjis(pyval) > self.length:
+            raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (pyval, self.length))
+        return pyval
+
+    def unmarshal(self, context, val):
+        if not isinstance(val, unicode):
+            raise TypeError('unicode type expected')
+        if len_in_sjis(val) > self.length:
+            raise ValueError('len(%r) > %d' % (val, self.length))
+        return val
+
+
+@implementer(ITabularDataColumnSpecification)
+class DateTime(object):
+    rpad = u' '
+
+    def __init__(self, length, pytype=datetime, format=u'', nullable=False, null_value=u'', constraints=[]):
+        self.length = length
+        self.pytype = pytype
+        self.format = format
+        self.nullable = nullable
+        self.null_value = null_value
+        self.constraints = []
+
+    def marshal(self, context, pyval):
+        if self.nullable and pyval is None:
+            return self.null_value
         if not isinstance(pyval, self.pytype):
             raise TypeError('%s expected, got %r' % (self.pytype.__name__, pyval))
         retval = unicode(pyval.strftime(self.format))
@@ -208,7 +282,76 @@ class DateTime(object):
     def unmarshal(self, context, val):
         if not isinstance(val, unicode):
             raise TypeError('unicode type expected')
-        return self.pytype.strptime(val, self.format)
+        if self.nullable and val == self.null_value:
+            return None
+        else:
+            v = datetime.strptime(val, self.format)
+            if self.pytype == datetime:
+                return v
+            elif self.pytype == date:
+                return v.date()
+            else:
+                raise TypeError('unsupported type: %s' % self.pytype.__name__)
+
+
+@implementer(ITabularDataColumnSpecification)
+class Time(object):
+    rpad = u' '
+
+    def __init__(self, length, format=u'', nullable=False, null_value=u'', constraints=[]):
+        self.length = length
+        self.format = format
+        self.nullable = nullable
+        self.null_value = null_value
+        self.constraints = []
+
+    def marshal(self, context, pyval):
+        if self.nullable and pyval is None:
+            return self.null_value
+        if not isinstance(pyval, time):
+            raise TypeError('%s expected, got %r' % (time.__name__, pyval))
+        retval = unicode(pyval.strftime(self.format))
+        if len(retval) > self.length:
+            raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))
+        return retval
+
+    def unmarshal(self, context, val):
+        if not isinstance(val, unicode):
+            raise TypeError('unicode type expected')
+        if self.nullable and val == self.null_value:
+            return None
+        else:
+            return datetime.strptime(val, self.format).time()
+
+
+@implementer(ITabularDataColumnSpecification)
+class Duration(object):
+    rpad = u' '
+
+    def __init__(self, length, format=u'', nullable=False, null_value=u'', constraints=[]):
+        self.length = length
+        self.format = format
+        self.nullable = nullable
+        self.null_value = null_value
+        self.constraints = []
+
+    def marshal(self, context, pyval):
+        if self.nullable and pyval is None:
+            return self.null_value
+        if not isinstance(pyval, timedelta):
+            raise TypeError('%s expected, got %r' % (int.__name__, pyval))
+        retval = build_duration(pyval, self.format)
+        if len(retval) > self.length:
+            raise ValueError('resulting string (%r) exceeds the specified length (%d)' % (retval, self.length))
+        return retval
+
+    def unmarshal(self, context, val):
+        if not isinstance(val, unicode):
+            raise TypeError('unicode type expected')
+        if self.nullable and val == self.null_value:
+            return None
+        else:
+            return parse_duration(val, self.format)
 
 
 class MarshalError(Exception):
@@ -219,7 +362,7 @@ class FixedRecordMarshaller(object):
     def __init__(self, schema):
         self.schema = schema
 
-    def __call__(self, row):
+    def __call__(self, row, out):
         rendered = []
         for name, spec in self.schema:
             pyval = row[name]
@@ -229,5 +372,32 @@ class FixedRecordMarshaller(object):
                 raise MarshalError('%s for column "%s"' % (e.message, name))
             rv = v.ljust(spec.length, spec.rpad)
             rendered.append(rv)
-        return u''.join(rendered)
+        out(u''.join(rendered))
 
+@implementer(ITabularDataMarshaller)
+class CSVRecordMarshaller(object):
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __call__(self, row, out):
+        encoded_row = []
+        for name, spec in self.schema:
+            pyval = row[name]
+            try:
+                v = spec.marshal(self, pyval)
+            except Exception as e:
+                raise MarshalError('%s for column "%s"' % (e.message, name))
+            encoded_row.append(v.encode('utf-8'))
+        x = io.BytesIO()
+        w = csv.writer(x)
+        w.writerow(encoded_row)
+        out(six.text_type(x.getvalue(), 'utf-8'))
+
+@implementer(ITabularDataUnmarshaller)
+class RecordUnmarshaller(object):
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __call__(self, in_):
+        for row in in_:
+            yield dict((name, spec.unmarshal(self, v)) for (name, spec), v in zip(self.schema, row))

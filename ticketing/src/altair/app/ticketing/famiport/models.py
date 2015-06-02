@@ -3,7 +3,11 @@ import types
 import time
 import random
 import hashlib
-
+from datetime import (
+    date,
+    time as _time,
+    datetime,
+    )
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy import orm
@@ -581,3 +585,51 @@ class FamiPortInformationMessage(Base, WithTimestamp):
             return famiport_information_message.message
         else:
             return default_message
+
+
+class FamiPortShop(Base, WithTimestamp):
+    __tablename__ = 'FamiPortShop'
+
+    id = sa.Column(Identifier, primary_key=True)
+    code = sa.Column(sa.Unicode(5), nullable=False)
+    company_code = sa.Column(sa.Unicode(4), nullable=False)
+    company_name = sa.Column(sa.Unicode(40), nullable=False)
+    district_code = sa.Column(sa.Unicode(1), nullable=False)
+    district_name = sa.Column(sa.Unicode(40), nullable=False)
+    district_valid_from = sa.Column(sa.Date(), nullable=False)
+    branch_code = sa.Column(sa.Unicode(3), nullable=False)
+    branch_name = sa.Column(sa.Unicode(40), nullable=False)
+    branch_valid_from = sa.Column(sa.Date(), nullable=False)
+    name = sa.Column(sa.Unicode(30), nullable=False)
+    name_kana = sa.Column(sa.Unicode(60), nullable=False)
+    tel = sa.Column(sa.Unicode(12), nullable=False)
+    prefecture = sa.Column(sa.Integer(), nullable=False)
+    prefecture_name = sa.Column(sa.Unicode(20), nullable=False)
+    address = sa.Column(sa.Unicode(80), nullable=False)
+    open_from = sa.Column(sa.Date(), nullable=True)
+    zip = sa.Column(sa.Unicode(8), nullable=False)
+    business_run_from = sa.Column(sa.Date(), nullable=True)
+    open_at = sa.Column(sa.Time(), nullable=False, default=_time(0, 0, 0))
+    close_at = sa.Column(sa.Time(), nullable=False, default=_time(0, 0, 0))
+    business_hours = sa.Column(sa.Integer(), nullable=False, default=1440)
+    opens_24hours = sa.Column(sa.Boolean(), nullable=False, default=True)
+    closest_station = sa.Column(sa.Unicode(41), nullable=False, default=u'')
+    liquor_available = sa.Column(sa.Boolean(), nullable=False, default=False)
+    cigarettes_available = sa.Column(sa.Boolean(), nullable=False, default=False)
+    business_run_until = sa.Column(sa.Date(), nullable=True)
+    open_until = sa.Column(sa.Date(), nullable=True)
+    business_paused_at = sa.Column(sa.Date(), nullable=True)
+    business_continued_at = sa.Column(sa.Date(), nullable=True)
+    latitude = sa.Column(sa.Numeric(precision=8, scale=6), nullable=True)
+    longitude = sa.Column(sa.Numeric(precision=9, scale=6), nullable=True)
+    atm_available = sa.Column(sa.Boolean(), nullable=False, default=False)
+    atm_available_from = sa.Column(sa.Date(), nullable=True)
+    atm_available_until = sa.Column(sa.Date(), nullable=True)
+    mmk_available = sa.Column(sa.Boolean(), nullable=False, default=False)
+    mmk_available_from = sa.Column(sa.Date(), nullable=True)
+    mmk_available_until = sa.Column(sa.Date(), nullable=True)
+    renewal_start_at = sa.Column(sa.Date(), nullable=True)
+    renewal_end_at = sa.Column(sa.Date(), nullable=True)
+    business_status = sa.Column(sa.Integer, nullable=False, default=0)
+    paused = sa.Column(sa.Boolean(), nullable=False, default=False)
+    deleted = sa.Column(sa.Boolean(), nullable=False, default=False)

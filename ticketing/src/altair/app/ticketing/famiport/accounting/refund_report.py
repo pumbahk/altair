@@ -40,8 +40,10 @@ refund_report_schema = [
 def make_marshaller(f, encoding='cp932', eor='\n'):
     encoder = getencoder(encoding)
     marshaller = FixedRecordMarshaller(refund_report_schema)
+    def out(rendered):
+        f.write(encoder(rendered)[0] + eor)
     def _(row):
-        f.write(encoder(marshaller(row))[0] + eor)
+        marshaller(row, out)
     return _
 
 def gen_record_from_refund_model(refund_entry):

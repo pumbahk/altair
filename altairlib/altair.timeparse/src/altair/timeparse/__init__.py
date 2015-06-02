@@ -1,10 +1,13 @@
 import parsedatetime
 from dateutil.parser import parse as parsedate
 from datetime import datetime, date, time, timedelta
+from .duration import parse_duration, build_duration
 
 __all__ = (
     'parse_time_spec',
     'parse_date_or_time',
+    'parse_duration',
+    'build_duration',
     'LazyDateTime',
     )
 
