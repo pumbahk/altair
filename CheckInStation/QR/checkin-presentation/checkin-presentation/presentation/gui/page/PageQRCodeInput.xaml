@@ -75,6 +75,15 @@
 
 
                     <Button
+                        Canvas.Left="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource BackwardButton}"
+                        Click="OnBackwardWithBoundContext">
+                        <TextBlock FontSize="20">戻る</TextBlock>
+                    </Button>
+
+                    
+                    <Button
                      Canvas.Right="60"
                      Canvas.Top="655"
                      Click="OnSubmitWithBoundContext"
@@ -92,7 +101,7 @@
 
 
                     <!-- change mode-->
-                    <Button Click="OnGotoAnotherMode"
+                    <Button Click="OnGotoWelcome"
                             Canvas.Top="17"
                             RenderTransformOrigin="10.794,2.52"
                             Canvas.Left="1060"

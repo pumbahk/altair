@@ -51,27 +51,25 @@
 
 
                     <Button
-                     Canvas.Left="230"
-                     Canvas.Top="200"
-                     Height="200"
-                     Width="800"
-                     Click="Button_Click_QR"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            QRコード読込
-                        </TextBlock>
+                        Canvas.Left="230"
+                        Canvas.Top="200"
+                        Click="Button_Click_QR"
+                        Content="QR読込"
+                        Style="{StaticResource BigButton}">
+                        <Button.Tag>
+                            <ImageSource>/Resource/play.png</ImageSource>
+                        </Button.Tag>
                     </Button>
 
                     <Button
-                     Canvas.Left="230"
-                     Canvas.Top="500"
-                     Height="200"
-                     Width="800"
+                     Canvas.Left="730"
+                     Canvas.Top="200"
                      Click="Button_Click_Code"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            受付番号読込
-                        </TextBlock>
+                     Content="受付番号読込"
+                     Style="{StaticResource BigButton}">
+                        <Button.Tag>
+                            <ImageSource>/Resource/play.png</ImageSource>
+                        </Button.Tag>
                     </Button>
 
                 </Canvas>

@@ -584,7 +584,37 @@
   </Style>
 
 
-  <!-- <ResourceDictionary Source="./Controls.Checkbox.xaml" /> -->
+    <Style TargetType="Button" x:Key="BigButton">
+        <Setter Property="Height" Value="450" />
+        <Setter Property="Width" Value="450" />
+        <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SubmitButtonBackGroundBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Style="{StaticResource SubmitButtonContainer}">
+                        <StackPanel>
+                            <Image Source="{TemplateBinding Tag}" 
+                                VerticalAlignment="Top"
+                                HorizontalAlignment="Center"
+                                Height="300"
+                                Margin="30" />
+                            <ContentPresenter x:Name="ButtonContentPresenter"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                            </ContentPresenter>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource MouseBackwardButtonBackGroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!-- <ResourceDictionary Source="./Controls.Checkbox.xaml" /> -->
   <SolidColorBrush x:Key="CheckBoxFillNormal"
                    Color="#F4F4F4"/>
   <SolidColorBrush x:Key="CheckBoxStroke"

@@ -49,6 +49,23 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    <Button Click="OnGotoWelcome"
+                            Canvas.Top="17"
+                            RenderTransformOrigin="10.794,2.52"
+                            Canvas.Left="1060"
+                            Height="64" Width="240">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource HeaderMenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EnableAnotherMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </Style>
+                        </Button.Style>
+                        受付番号で認証
+                    </Button>
 
                     <Button
                      Canvas.Left="230"
@@ -72,6 +89,14 @@
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
                             全部発券
                         </TextBlock>
+                    </Button>
+
+                    <Button
+                        Canvas.Left="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource BackwardButton}"
+                        Click="OnBackwardWithBoundContext">
+                        <TextBlock FontSize="20">戻る</TextBlock>
                     </Button>
 
                 </Canvas>

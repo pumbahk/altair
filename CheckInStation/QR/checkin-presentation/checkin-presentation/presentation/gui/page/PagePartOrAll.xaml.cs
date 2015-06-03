@@ -65,6 +65,23 @@ namespace checkin.presentation.gui.page
             this.OnSubmitWithBoundContext(sender, e);
         }
 
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.BackwardAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
+        }
+
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
+        }
+
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;

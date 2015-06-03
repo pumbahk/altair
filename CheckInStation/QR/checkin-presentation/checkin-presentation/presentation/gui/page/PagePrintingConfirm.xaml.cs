@@ -42,7 +42,7 @@ namespace checkin.presentation.gui.page
         private InputDataContext CreateDataContext()
         {
             var broker = AppUtil.GetCurrentBroker();
-            var ev = broker.GetInternalEvent() as ConfirmAllEvent;
+            var ev = broker.GetInternalEvent() as ConfirmListAllEvent;
             var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected).Count();
             return new PagePrintingConfirmDataContext(this) { 
                 Broker = AppUtil.GetCurrentBroker(),

@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.support;
 using checkin.core.events;
+using checkin.core.flow;
 
 namespace checkin.presentation.gui.page
 {
@@ -142,18 +143,13 @@ namespace checkin.presentation.gui.page
 
         private void OnGotoAnotherMode(object sender, RoutedEventArgs e)
         {
-            var ctx = this.DataContext as InputDataContext;
-            try
-            {
-                var broker = AppUtil.GetCurrentBroker();
-                var current = broker.FlowManager.Peek().Case;
-                var another = broker.RedirectAlternativeCase(current);
-                AppUtil.GetNavigator().NavigateToMatchedPage(another, this);
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("goto another mode".WithMachineName(), ex);
-            }
+            AppUtil.GotoWelcome(this);
+        }
+
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
         }
 
         private void ErrorDialog_MessageDialogComplete(object sender, RoutedEventArgs e)
