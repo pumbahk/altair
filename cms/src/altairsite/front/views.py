@@ -1,12 +1,15 @@
 # coding: utf-8
-from pyramid.httpexceptions import HTTPNotFound
-from altaircms.lib.fanstatic_decorator import with_jquery
-from ..separation import enable_smartphone, enable_mobile
-from altaircms.page.staticupload.api import as_static_page_response, StaticPageNotFound
 import logging
 import os.path
+
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from ..separation import enable_smartphone, enable_mobile
+from altaircms.page.staticupload.api import as_static_page_response, StaticPageNotFound
 from altairsite.config import usersite_view_config
 from altairsite.preview.api import set_rendered_page
+from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
+from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
+from altaircms.front.helpers import get_mobile_route_path, get_smartphone_route_path, check_pc_page
 logger = logging.getLogger(__name__)
 
 ## todo refactoring
@@ -61,10 +64,6 @@ def rendering_page(context, request):
         logger.info(control.error_message)
         raise HTTPNotFound(control.error_message)
     return _rendering_page(context, request, control, page)
-
-from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
-from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
-from pyramid.httpexceptions import HTTPFound
 
 """
 ここから下はstatic pageを見ていない？
@@ -153,35 +152,3 @@ def _render_static_page(request, control, url, dt):
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
-
-def get_mobile_route_path(request, pcurl):
-    urls = dict({
-        'faq':request.route_path('help'),
-        'change':request.route_path('information'),
-    })
-    ret = None
-    if pcurl in urls:
-        ret = urls[pcurl]
-    return ret
-
-
-def get_smartphone_route_path(request, pcurl):
-    urls = dict({
-        'faq': request.route_path('smartphone.page', kind='help'),
-        'purchase': request.route_path('smartphone.page', kind='purchase'),
-        'change': request.route_path('smartphone.page', kind='canceled'),
-        'smartphone/inquiry': request.route_path('smartphone.page', kind='inquiry'),
-        'privacy': "http://privacy.rakuten.co.jp/",
-        'legal': request.route_path('smartphone.page', kind='legal'),
-        })
-    ret = None
-    if pcurl in urls:
-        ret = urls[pcurl]
-    return ret
-
-def check_pc_page(url):
-    urls = []
-    urls.append("howto")
-    urls.append("terms")
-    urls.append("sitemap")
-    return url in urls
