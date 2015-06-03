@@ -444,7 +444,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.deleted_at = datetime.now()
         if self.lot_entry_report_settings:
             for setting in self.lot_entry_report_settings:
-                setting.deleted_at = datetime.now()
+                setting.deleted_at = self.deleted_at
 
 
 lot_entry_user_point_account_table = sa.Table(
