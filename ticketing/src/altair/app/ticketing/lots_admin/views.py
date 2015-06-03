@@ -17,6 +17,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     SalesSegment,
     Event,
+    EventSetting,
     Organization,
 )
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
@@ -149,7 +150,12 @@ class SearchLotsEntryView(object):
                              Event.organization_id==organization_id
                          ).filter(Event.id==self.request.params['event'])
         form.lot.choices = [('', '')] + [(str(l.id), l.name) for l in lots]
-        events = Event.query.filter(Event.organization_id==organization_id).order_by(Event.display_order)
+
+        events = Event.query.join(Event.setting) \
+                            .filter(Event.organization_id==organization_id) \
+                            .filter(EventSetting.visible==True) \
+                            .order_by(Event.display_order)
+
         form.event.choices = [('', '')] + [(str(e.id), e.title) for e in events]
         return form
 
