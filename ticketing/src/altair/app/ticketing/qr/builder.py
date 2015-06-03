@@ -13,7 +13,6 @@ tag2int = {
     "date": 12,
     "type": 13,
     "seat": 14,
-    "delivery_plugin_id": 15,
     }
 int2tag = dict([(tag2int[t], t) for t in tag2int])
 
@@ -131,7 +130,6 @@ class qr:
         buf.append(self.__pair("performance", data["performance"]))
         buf.append(self.__pair("order", data["order"]))
         buf.append(self.__pair("date", self.encdate(data["date"])))
-        buf.append(self.__pair("delivery_plugin_id", data["delivery_plugin_id"]))
         if data.has_key("type"):
             buf.append(self.__pair("type", self.enc32m(data["type"])))
 #       buf.append(self.__pair("seat", data["seat"]))

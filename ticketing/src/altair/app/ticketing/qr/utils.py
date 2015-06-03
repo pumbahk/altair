@@ -88,13 +88,11 @@ def make_data_for_qr(ticket):
     ticket.product = ticket.ordered_product_item.ordered_product.product
     ticket.order = ticket.ordered_product_item.ordered_product.order
     ticket.item_token = ticket.item_token
-    logger.info('aaaaaaaaaaaa  %s bbbbbbbbbbbbbbbbbbbb' % (ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id))
 
     params = dict(serial=str(ticket.id),
                   performance=ticket.performance.code,
                   order=ticket.order.order_no,
                   date=ticket.performance.start_on.strftime("%Y%m%d"),
-                  delivery_plugin_id=str(ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id),
                   type=ticket.product.id)
     if ticket.seat:
         params["seat"] = ticket.seat.l0_id
@@ -109,7 +107,6 @@ def make_data_for_orion(ticket, serial):
                   performance=ticket.performance.code,
                   order=ticket.order.order_no,
                   date=ticket.performance.start_on.strftime("%Y%m%d"),
-                  delivery_plugin_id=str(ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id),
                   type=ticket.ordered_product_item.ordered_product.product.id)
     if ticket.seat:
         params["seat"] = ticket.seat.l0_id

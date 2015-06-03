@@ -40,7 +40,6 @@ class UnmatchEventException(Exception):
     pass
 
 def order_and_history_from_qrdata(qrdata):
-    logger.info("ccccccccccccc %s dddddddddddddddd" %(qrdata["delivery_plugin_id"]))
     qs =  DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
