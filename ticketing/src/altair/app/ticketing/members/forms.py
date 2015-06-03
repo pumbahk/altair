@@ -45,6 +45,10 @@ class MemberCSVImportForm(Form):
 
     def validate(self):
         super(MemberCSVImportForm, self).validate()
+        if not self.data["csvfile"]:
+            self.csvfile.errors = self.errors["csvfile"] = [u"csvファイルを指定してください。"]
+            return not bool(self.errors)
+
         io = self.data["csvfile"].file
         try:
             reader = csv.reader(io, quotechar="'", encoding=self.data["encoding"])
