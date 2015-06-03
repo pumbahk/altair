@@ -27,6 +27,16 @@ class ResevationView(object):
         self.request = request
 
     def _build_payload(self, famiport_request):
+
+        def decrypt(x):
+            return x
+
+        if famiport_request.encrypt_key is not None:  # 複合化する
+            for name in famiport_request.encrypted_fields:
+                encrypted_value = getattr(famiport_request, name)
+                decrypted_value = decrypt(encrypted_value)
+                setattr(famiport_request, name, decrypted_value)
+
         response_builder = get_response_builder(self.request)
         payload_builder = get_payload_builder(self.request)
         famiport_response = response_builder.build_response(famiport_request)

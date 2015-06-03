@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- encoding: utf-8 -*-
 from enum import Enum, IntEnum
 import sqlalchemy as sa
 from sqlalchemy import orm
