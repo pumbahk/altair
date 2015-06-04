@@ -7,7 +7,8 @@
     
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
-	Title="PageWelcome">
+	Title="PageWelcome"
+      Loaded="OnLoaded">
     <Page.Resources>
         <Style x:Key="MainBorder" TargetType="Border">
             <Setter Property="CornerRadius" Value="24.5"/>
@@ -72,6 +73,20 @@
                         </Button.Tag>
                     </Button>
 
+
+                    <TextBlock
+                        Text="※再発券モード※"
+                        Canvas.Top="655"
+                        Canvas.Left="520"
+                        Style="{StaticResource RefreshModeText}" Visibility="{Binding RefreshModeVisibility}"/>
+
+
+                    <!-- 終了ボタン-->
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
+                    
                 </Canvas>
             </Grid>
         </Viewbox>

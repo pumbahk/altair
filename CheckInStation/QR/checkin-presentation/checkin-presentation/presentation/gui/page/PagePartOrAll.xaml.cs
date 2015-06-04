@@ -21,6 +21,12 @@ namespace checkin.presentation.gui.page
     class PartOrAllDataContext : InputDataContext
     {
         public int PrintCount { get; set; }
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
         public override void OnSubmit()
         {
             var ev = this.Event as PartOrAllEvent;
@@ -48,6 +54,14 @@ namespace checkin.presentation.gui.page
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new PartOrAllEvent(),
             };
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                (this.DataContext as PartOrAllDataContext).RefreshModeVisibility = Visibility.Hidden;
+            }
         }
 
         private void Button_Click_Part(object sender, RoutedEventArgs e)

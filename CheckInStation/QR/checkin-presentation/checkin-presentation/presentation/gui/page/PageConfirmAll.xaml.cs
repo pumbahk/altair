@@ -255,8 +255,8 @@ namespace checkin.presentation.gui.page
                     pageCtx.Description = "î≠åîçœÇ›Ç≈Ç∑";
                     return;
                 }
-                this.NavigationService.Navigate(new PagePrintingConfirm());
-                // AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                //this.NavigationService.Navigate(new PagePrintingConfirm());
+                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 
@@ -280,6 +280,12 @@ namespace checkin.presentation.gui.page
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
+        }
+
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
         }
     }
 }

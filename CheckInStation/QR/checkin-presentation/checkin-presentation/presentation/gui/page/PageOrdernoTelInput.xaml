@@ -90,6 +90,14 @@
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
+
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            RenderTransformOrigin="10.794,2.52"
+                            Style="{StaticResource HomeButton}">
+                        <TextBlock>TOP画面へ戻る</TextBlock>
+                    </Button>
+                    
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"

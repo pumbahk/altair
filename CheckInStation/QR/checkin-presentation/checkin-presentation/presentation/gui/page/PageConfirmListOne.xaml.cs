@@ -220,5 +220,11 @@ namespace checkin.presentation.gui.page
             OnCommonSubmit(PrintUnit.one.ToString());
         }
 
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
+        }
+
     }
 }

@@ -69,6 +69,13 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            RenderTransformOrigin="10.794,2.52"
+                            Style="{StaticResource HomeButton}">
+                        <TextBlock>TOP画面へ戻る</TextBlock>
+                    </Button>
+
                     <TextBlock
                         Text="※再発券モード※"
                         Canvas.Top="655"

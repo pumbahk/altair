@@ -263,6 +263,12 @@ namespace checkin.presentation.gui.page
             });
         }
 
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
+        }
+
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
             if (!this.loadingLock)

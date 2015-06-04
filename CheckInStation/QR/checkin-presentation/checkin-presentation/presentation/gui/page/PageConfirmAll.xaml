@@ -134,6 +134,13 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            RenderTransformOrigin="10.794,2.52"
+                            Style="{StaticResource HomeButton}">
+                        <TextBlock>TOP画面へ戻る</TextBlock>
+                    </Button>
+
                     <!-- ボタン -->
                     <TextBlock
                         Text="※再発券モード※"

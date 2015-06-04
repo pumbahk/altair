@@ -146,5 +146,11 @@ namespace checkin.presentation.gui.page
         {
             (this.KeyPad as VirtualKeyboard).RaiseVirtualkeyboardFinishEvent();
         }
+
+        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            AppUtil.GotoWelcome(this);
+        }
     }
 }

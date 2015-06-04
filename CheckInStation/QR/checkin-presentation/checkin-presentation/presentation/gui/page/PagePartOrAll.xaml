@@ -7,7 +7,8 @@
     
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
-	Title="PagePartOrAll">
+	Title="PagePartOrAll"
+      Loaded="OnLoaded">
     <Page.Resources>
         <Style x:Key="MainBorder" TargetType="Border">
             <Setter Property="CornerRadius" Value="24.5"/>
@@ -49,22 +50,11 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
-                            Canvas.Top="17"
                             RenderTransformOrigin="10.794,2.52"
-                            Canvas.Left="1060"
-                            Height="64" Width="240">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource HeaderMenuButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EnableAnotherMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                                <Setter Property="Visibility" Value="Hidden"/>
-                            </Style>
-                        </Button.Style>
-                        受付番号で認証
+                            Style="{StaticResource HomeButton}">
+                        <TextBlock>TOP画面へ戻る</TextBlock>
                     </Button>
 
                     <Button
@@ -98,6 +88,12 @@
                         Click="OnBackwardWithBoundContext">
                         <TextBlock FontSize="20">戻る</TextBlock>
                     </Button>
+
+                    <TextBlock
+                        Text="※再発券モード※"
+                        Canvas.Top="655"
+                        Canvas.Left="520"
+                        Style="{StaticResource RefreshModeText}" Visibility="{Binding RefreshModeVisibility}"/>
 
                 </Canvas>
             </Grid>

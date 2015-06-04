@@ -20,7 +20,15 @@ namespace checkin.presentation.gui.page
 {
     class WelcomeDataContext: InputDataContext
     {
+        public WelcomeDataContext(Page page) : base(page) { }
+
         public int PrintType { get; set; }
+        private Visibility _refreshModeVisibility;
+        public Visibility RefreshModeVisibility
+        {
+            get { return this._refreshModeVisibility; }
+            set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
         public override void OnSubmit()
         {
             var ev = this.Event as WelcomeEvent;
@@ -43,11 +51,19 @@ namespace checkin.presentation.gui.page
 
         private object CreateDataContext()
         {
-            return new WelcomeDataContext()
+            return new WelcomeDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new WelcomeEvent(),
             };
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                (this.DataContext as WelcomeDataContext).RefreshModeVisibility = Visibility.Hidden;
+            }
         }
 
         private void Button_Click_QR(object sender, RoutedEventArgs e)
