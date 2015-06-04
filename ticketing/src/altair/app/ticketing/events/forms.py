@@ -13,6 +13,8 @@ from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event, EventSetting, Account
 from altair.app.ticketing.cart.models import CartSetting
+from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 
 class EventSearchForm(OurForm):
     def _get_translations(self):
@@ -217,3 +219,43 @@ class EventForm(OurForm):
     def validate_display_order(form, field):
         if -2147483648 > field.data or field.data > 2147483647:
             raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
+
+
+class EventPublicForm(Form):
+
+    event_id = HiddenField(
+        label='',
+        validators=[Optional()],
+    )
+    public = HiddenField(
+        label='',
+        validators=[Required()],
+    )
+
+    def validate_public(form, field):
+        # 公開する場合のみチェック
+        if field.data == 1:
+            # 配下の全てのProductItemに券種が紐づいていること
+            event = Event.get(form.event_id.data)
+            for performance in event.performances:
+
+                no_ticket_bundles = ''
+
+                has_sej = performance.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
+
+                for sales_segment in performance.sales_segments:
+                    for product in sales_segment.products:
+                        for product_item in product.items:
+                            if not product_item.ticket_bundle:
+                                p = product_item.product
+                                if p.sales_segment is not None:
+                                    no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
+                            elif has_sej:
+                                producer = ApplicableTicketsProducer.from_bundle(product_item.ticket_bundle)
+                                if not producer.any_exist(producer.sej_only_tickets()):
+                                    p = product_item.product
+                                    if p.sales_segment is not None:
+                                        no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
+
+                if no_ticket_bundles:
+                    raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)

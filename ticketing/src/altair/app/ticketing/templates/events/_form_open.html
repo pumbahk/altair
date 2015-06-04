@@ -1,7 +1,7 @@
-<%page args="form, performance" />
+<%page args="form, event" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<div id="modal-performance-open" class="modal hide">
+<div id="modal-event-open" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>確認</h3>
@@ -15,17 +15,18 @@
 
     % if not form.errors:
     <p id="message">
-      % if performance.public:
-        選択したパフォーマンスを非公開にします。よろしいですか？
+      % if form.public.data:
+        全てのパフォーマンスを公開します。よろしいですか？
+        <br/>
       % else:
-        選択したパフォーマンスを公開します。よろしいですか？
+        全てのパフォーマンスを非公開します。よろしいですか？
+        <br/>
       % endif
-      <br/>
       <font color="red">※CMSへの反映は、「CMSへ送信」を行わない限り自動的には行われません。</font>
     </p>
 
     <form action="" method="POST">
-      ${ch.form_item(form.id)}
+      ${ch.form_item(form.event_id)}
       ${ch.form_item(form.public)}
     </form>
     % endif
@@ -34,13 +35,14 @@
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
     % if not form.errors:
-      % if performance.public:
-        <a href="javascript:open_performance(${performance.id});" class="btn btn-warning">
-        非公開にする
-      % else:
-        <a href="javascript:open_performance(${performance.id});" class="btn btn-info">
-        公開する
-      % endif
+    % if form.public.data:
+      <a href="javascript:open_event(${event.id}, ${form.public.data});" class="btn btn-info">
+      全てのパフォーマンスを公開にする
+    % else:
+      <a href="javascript:open_event(${event.id}, ${form.public.data});" class="btn btn-warning">
+      全てのパフォーマンスを非公開にする
+    % endif
+      　
     </a>
     % endif
   </div>

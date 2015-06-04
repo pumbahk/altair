@@ -42,6 +42,18 @@
     var url = '/events/performances/open/' + id;
     post_modal_form(modal, form, url);
   }
+  function confirm_open_event(id, public){
+    var modal = '#modal-event-open';
+    var form = '#event-open-form';
+    var url = '/events/open/' + id + '/' + public;
+    get_modal_form(modal, form, url);
+  }
+  function open_event(id, public){
+    var modal = '#modal-event-open';
+    var form = '#event-open-form';
+    var url = '/events/open/' + id + '/' + public;
+    post_modal_form(modal, form, url);
+  }
 </script>
 
 <%
@@ -84,3 +96,5 @@ ${HH.action_button(actions, order)}
 ${delete_modal()}
 
 <div id="performance-open-form"></div>
+<div id="event-open-form"></div>
+<div id="event-close-form"></div>
