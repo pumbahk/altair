@@ -67,21 +67,28 @@ class StaticPageSetView(BaseView):
         static_pageset.pages.sort(key=lambda page: page.created_at, reverse=True)
         static_directory = get_static_page_utility(self.request)
         current_page = static_pageset.current(dt=get_now(self.request))
+
         if self.request.GET.get("child_id"):
             active_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
         # 表示中のページをactiveにする
         elif current_page:
             active_page = current_page
         # 非公開ページしかもっていない場合は、最も新しいページをactiveにする
+        elif len(static_pageset.pages):
+            active_page = static_pageset.pages[0]
         else:
-            if len(static_pageset.pages):
-                active_page = static_pageset.pages[0]
+            active_page = None
+
+        if active_page:
+            tree_renderer = static_page_directory_renderer(self.request, active_page, static_directory, self.request.GET.get("management"))
+        else:
+            tree_renderer = None
 
         return {"static_pageset": static_pageset,
                 "pagetype": static_pageset.pagetype,
                 "static_directory": static_directory,
                 "current_page": current_page,
-                "tree_renderer": static_page_directory_renderer(self.request, active_page, static_directory, self.request.GET.get("management")),
+                "tree_renderer": tree_renderer,
                 "now": get_now(self.request),
                 "active_page": active_page}
 

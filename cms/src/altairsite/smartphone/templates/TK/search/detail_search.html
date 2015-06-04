@@ -1,0 +1,162 @@
+<%namespace file="../common/tags_smartphone.html" name="m" />
+
+<script type="text/javascript">
+$(function () {
+  $('*[data-toggle]').each(function (_, n) {
+    $(n).on('click', function () {
+      var target = $(document.getElementById(n.getAttribute('data-toggle')));
+      if (target.hasClass('activated')) {
+        target.removeClass('activated');
+        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
+          duration: 100
+        });
+      } else {
+        var h = 0;
+        var targetOffset = target.offset().top;
+        target.children().each(function (_, n) {
+          h += $(n).height();
+        });
+        target.attr('data-prev-height', target.height());
+        target.animate({ height: h + 'px' }, {
+          duration: 100,
+          step: function (h) {
+            var dest = targetOffset + h - $(window).height();
+            if ($(window).scrollTop() < dest) {
+              $(window).scrollTop(dest);
+            }
+          }
+        });
+        target.addClass('activated');
+      }
+      return false;
+    });
+  });
+
+  function checkAll(checkbox_value, checkbox_name) {
+    $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").click(function(event){
+      var checked = $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").is(":checked");
+      $("input[type='checkbox'][name=" + checkbox_name + "]").prop('checked', checked);
+    });
+  };
+  checkAll('0', 'genre_music');
+  checkAll('0', 'genre_sports');
+  checkAll('0', 'genre_stage');
+  checkAll('0', 'genre_event');
+  checkAll('all', 'pref_hokkaido');
+  checkAll('all', 'pref_syutoken');
+  checkAll('all', 'pref_koshinetsu');
+  checkAll('all', 'pref_kinki');
+  checkAll('all', 'pref_chugoku');
+  checkAll('all', 'pref_kyusyu');
+});
+</script>
+
+<h2 class="glitter red">詳細検索</h2>
+
+<div id="search" class="sectionbox inverted">
+
+    <form action="${request.route_path('smartphone.search_detail')}" class="sectionbox-inner" method='GET'>
+        % if helper.disp_error(form):
+            <font color="yellow">${helper.disp_error(form)}</font><br/>
+        % endif
+
+        % if helper.disp_date_error(form):
+            <font color="yellow">${helper.disp_date_error(form)}</font><br/>
+        % endif
+
+        <fieldset>
+            ${form.word(placeholder=u"アーティスト名、公演名など")}
+            ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/><br/>
+        </fieldset>
+
+        <fieldset>
+            <ul class="panellist fullwidth expandable" style="color: #000000">
+              <li class="panelgroup" id="genre">
+                <span class="panelgroup-label"><a href="#" data-toggle="genre">ジャンルで検索</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.genre_music}</li>
+                  <li class="panel">${form.genre_sports}</li>
+                  <li class="panel">${form.genre_stage}</li>
+                  <li class="panel">${form.genre_event}</li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="area">
+                <span class="panelgroup-label"><a href="#" data-toggle="area">開催地で検索</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.pref_hokkaido}</li>
+                  <li class="panel">${form.pref_syutoken}</li>
+                  <li class="panel">${form.pref_koshinetsu}</li>
+                  <li class="panel">${form.pref_kinki}</li>
+                  <li class="panel">${form.pref_chugoku}</li>
+                  <li class="panel">${form.pref_kyusyu}</li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="sales_segment">
+                <span class="panelgroup-label"><a href="#" data-toggle="sales_segment">販売条件で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.sales_segment}</li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="start_on">
+                <span class="panelgroup-label"><a href="#" data-toggle="start_on">公演日で検索</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">
+                    ${form.since_year}年<br/>
+                    ${form.since_month}月${form.since_day}日〜<br/>
+                    ${form.year}年<br/>
+                    ${form.month}月${form.day}日
+                  </li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="sales">
+                <span class="panelgroup-label"><a href="#" data-toggle="sales">販売日で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">
+                    ${form.sale_start}日以内に受付・販売開始<br/>
+                    販売終了まで${form.sale_end}日<br/><br/>
+                    ${form.closed_perf.label}${form.closed_perf}
+                    ${form.canceled_perf.label}${form.canceled_perf}
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <div class="buttonbox">
+                <button type="submit" class="btn btn-secondary btn-large"><span class="btn-inner">検索</span></button>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+
+<style>
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+#search input[type="submit"] {
+  height: 28px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+}
+</style>

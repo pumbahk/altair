@@ -54,7 +54,7 @@ def url_not_conflict(form, field):
         pk = request.matchdict.get("page_id") or request.matchdict.get("id")
         page = Page.query.filter_by(id=pk).first()
         qs = qs.filter(PageSet.id!=page.pageset_id)
-
+ 
     if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
@@ -167,7 +167,7 @@ class PageInfoSetupWithEventForm(Form):
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[validators.Required(), url_field_validator,  url_not_conflict],label=u"URL", )
+    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
     short_url_keyword = fields.TextField(validators=[validators.Optional()],label=u"短縮URL", )
     genre = LazySelectField(
         label=u"ジャンル",

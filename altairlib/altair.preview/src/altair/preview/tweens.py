@@ -37,6 +37,9 @@ def preview_tween(handler, registry):
 
         response = handler(request)
 
+        if response.content_type is None or response.content_type != 'text/html':
+            return response
+
         permission = checking.has_permission(request)
         redirect = request.registry.queryUtility(IPreviewRedirect)
         if permission:
