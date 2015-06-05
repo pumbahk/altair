@@ -163,7 +163,7 @@
                         Style="{StaticResource BackwardButton}"
                         Click="OnBackwardWithBoundContext"
             >
-                        <TextBlock FontSize="20">戻る</TextBlock>
+                        <TextBlock FontSize="20">戻allる</TextBlock>
                     </Button>
 
                     <!-- 終了ボタン-->

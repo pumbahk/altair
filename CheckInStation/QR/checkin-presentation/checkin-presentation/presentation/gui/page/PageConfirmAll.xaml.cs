@@ -33,18 +33,18 @@ namespace checkin.presentation.gui.page
             set { this._Status = value; this.OnPropertyChanged("Status"); }
         }
 
-        private int _PartOrAll;
-        public int PartOrAll
-        {
-            get { return this._PartOrAll; }
-            set { this._PartOrAll = value; this.OnPropertyChanged("PartOrAll");}
-        }
-
         private TicketDataCollection _TicketDataCollection;
         public TicketDataCollection TicketDataCollection
         {
             get { return this._TicketDataCollection; }
             set { this._TicketDataCollection = value; this.OnPropertyChanged("TicketDataCollection"); }
+        }
+
+        private int _PartOrAll;
+        public int PartOrAll
+        {
+            get { return this._PartOrAll; }
+            set { this._PartOrAll = value; this.OnPropertyChanged("PartOrAll"); }
         }
 
         private TicketData _readTicketData;
@@ -177,14 +177,14 @@ namespace checkin.presentation.gui.page
                 if (ctx.ReadTicketData != null)
                 {
                     // QRÇì«Ç›çûÇÒÇæÇ‡ÇÃÇæÇØèâä˙î≠åîó\íËÇ∆Ç∑ÇÈÅB
-                    if (ctx.PartOrAll == 1)
-                    {
-                        dtdata.IsSelected = true;
-                    }
-                    else if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
+                    if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
                     {
                         dtdata.IsSelected = false;
                         ctx.NumberOfPrintableTicket--;
+                    }
+                    else
+                    {
+                        dtdata.IsSelected = true;
                     }
                 }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;

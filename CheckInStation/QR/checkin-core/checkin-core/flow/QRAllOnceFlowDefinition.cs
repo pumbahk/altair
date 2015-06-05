@@ -85,12 +85,12 @@ namespace checkin.core.flow
             if (printcount == 0)
             {
 
-                return new CaseOrdernoConfirmForAll(resource, verifieddata);
+                return new CaseOrdernoConfirmForAll(resource, verifieddata, 0);
             }
             //全部発券
             else
             {
-                return new CaseOrdernoConfirmForAll(resource, verifieddata);
+                return new CaseOrdernoConfirmForAll(resource, verifieddata, 1);
             }
         }
 

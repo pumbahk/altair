@@ -48,16 +48,25 @@ namespace checkin.presentation.gui
                 return this.CreateOrReUse<PagePartOrAll>(c, previous);
             else if (c is CaseConfirmListForOne)
                 return this.CreateOrReUse<PageConfirmListOne>(c, previous);
-            else if (c is CaseConfirmListForAll)
-                return this.CreateOrReUse<PageConfirmListAll>(c, previous);
+            else if (c is CaseConfirmListForPart)
+                return this.CreateOrReUse<PageConfirmListPart>(c, previous);
 
             else if (c is CaseQRCodeInput || c is CaseQRDataFetch || c is CaseQRConfirmForAllHidden)
                 return this.CreateOrReUse<PageQRCodeInput>(c, previous);
             else if (c is CaseQRConfirmForOne)
                 return this.CreateOrReUse<PageConfirmOne>(c, previous);
             else if (c is CaseQRConfirmForAll)
-                return this.CreateOrReUse<PageConfirmAll>(c, previous);
-
+            {
+                if ((c as CaseQRConfirmForAll).PartOrAll == 0)
+                {
+                    return this.CreateOrReUse<PageConfirmAll>(c, previous);
+                }
+                else
+                {
+                    return this.CreateOrReUse<PageConfirmListAll>(c, previous);
+                }
+                
+            }
             else if (c is CaseOrdernoOrdernoInput)
                 return this.CreateOrReUse<PageOrdernoOrdernoInput>(c, previous);
             else if (c is CaseOrdernoTelInput)
@@ -65,8 +74,17 @@ namespace checkin.presentation.gui
             else if (c is CaseOrdernoVerifyRequestData)
                 return this.CreateOrReUse<PageOrdernoTelInput>(c, previous); //xxx:
             else if (c is CaseOrdernoConfirmForAll)
-                return this.CreateOrReUse<PageConfirmAll>(c, previous);
-
+            {
+                if ((c as CaseOrdernoConfirmForAll).PartOrAll == 0)
+                {
+                    return this.CreateOrReUse<PageConfirmAll>(c, previous);
+                }
+                else
+                {
+                    return this.CreateOrReUse<PageConfirmListAll>(c, previous);
+                }
+                
+            }
             else if (c is CasePrintForOne || c is CasePrintForAll)
                 return this.CreateOrReUse<PagePrinting>(c, previous);
             else if (c is CasePrintFinish)

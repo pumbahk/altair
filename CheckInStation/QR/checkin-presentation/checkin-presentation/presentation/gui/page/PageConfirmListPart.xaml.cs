@@ -23,9 +23,10 @@ using checkin.core.models;
 namespace checkin.presentation.gui.page
 {
 
-    class PageConfirmListAllDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged
+    class PageConfirmListPartDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged
     {
-        public PageConfirmListAllDataContext(Page page) : base(page) { }
+        public PageConfirmListPartDataContext(Page page) : base(page) { }
+
         private ConfirmAllStatus _Status;
         public ConfirmAllStatus Status
         {
@@ -114,57 +115,40 @@ namespace checkin.presentation.gui.page
     /// <summary>
     /// Interaction logic for PageConfirmAll.xaml
     /// </summary>
-    public partial class PageConfirmListAll : Page//, IDataContextHasCase
+    public partial class PageConfirmListPart : Page//, IDataContextHasCase
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
         private bool loadingLock;
 
-        public PageConfirmListAll()
+        public PageConfirmListPart()
         {
             InitializeComponent();
-            this.loadingLock = false;
             this.DataContext = this.CreateDataContext();
+            this.BuildDisplayItems();
+            this.loadingLock = false;
         }
 
         private InputDataContext CreateDataContext()
         {
-            var ctx = new PageConfirmListAllDataContext(this)
-            {
+            var broker = AppUtil.GetCurrentBroker();
+            var ev = broker.GetInternalEvent() as ConfirmAllEvent;
+            var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected).Count();
+            var collection = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected);
+            ev.StatusInfo.TicketDataCollection.collection = collection.Cast<TicketDataMinumum>().ToArray();
+            var ctx = new PageConfirmListPartDataContext(this)
+            { 
                 Broker = AppUtil.GetCurrentBroker(),
-                Status = ConfirmAllStatus.starting,
+                NumberOfPrintableTicket = numOfPrintableTicket,
+                TicketDataCollection = ev.StatusInfo.TicketDataCollection,
                 DisplayTicketDataCollection = new DisplayTicketDataCollection()
             };
-            ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
-            ctx.PropertyChanged += Status_OnPrepared;
+            ctx.Event = ev;
             return ctx;
-        }
-
-        private void Status_OnPrepared(object sender, PropertyChangedEventArgs e)
-        {
-            var ctx = sender as PageConfirmListAllDataContext;
-            if (e.PropertyName == "Status" && ctx.Status == ConfirmAllStatus.prepared)
-            {
-                ctx.Status = ConfirmAllStatus.requesting;
-                //後の継続を同期的に待つ必要ないのでawaitしない
-                if (ctx.TicketDataCollection != null)
-                {
-                    this.Dispatcher.InvokeAsync(this.BuildDisplayItems);
-                }
-                else
-                {
-                    this.Dispatcher.InvokeAsync(async () =>
-                    {
-                        var case_ = await ctx.SubmitAsync();
-                        ctx.TreatErrorMessage();
-                        AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
-                    });
-                }
-            }
         }
 
         private void BuildDisplayItems()
         {
-            var ctx = this.DataContext as PageConfirmListAllDataContext;
+            var ctx = this.DataContext as PageConfirmListPartDataContext;
             var displayColl = ctx.DisplayTicketDataCollection;
             var source = ctx.TicketDataCollection;
             var performance = source.additional.performance;
@@ -175,14 +159,20 @@ namespace checkin.presentation.gui.page
             foreach (var tdata in source.collection)
             {
                 var dtdata = new DisplayTicketData(ctx, tdata);
-                if (ctx.ReadTicketData != null)
-                {
-                    dtdata.IsSelected = true;
-                }
-                dtdata.PropertyChanged += OnCountChangePrintableTicket;
+                dtdata.IsSelected = true;
                 displayColl.Add(dtdata);
             }
-            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
+        }
+
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as PageConfirmListPartDataContext;
+            if (!AppUtil.GetCurrentResource().RefreshMode)
+            {
+                ctx.RefreshModeVisibility = Visibility.Hidden;
+            }
+            this.loadingLock = true;
         }
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)
@@ -199,23 +189,26 @@ namespace checkin.presentation.gui.page
             }
         }
 
-        private async void OnLoaded(object sender, RoutedEventArgs e)
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
-            var ctx = this.DataContext as PageConfirmListAllDataContext;
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (!this.loadingLock)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                logger.Warn("too early.");
+                return;
             }
-            ctx.Description = "データを取得しています。少々お待ちください";
-            await ctx.PrepareAsync();
-            ctx.Description = ctx.Case.Description;
-            var s = await ctx.VerifyAsync();
-            this.loadingLock = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.BackwardAsync();
+                ctx.TreatErrorMessage();
 
-            if (!s)
-            {
-                this.OnSubmitWithBoundContext(sender, e); //xxx:
-            }
+                //unregister event
+                foreach (var dc in (ctx as PageConfirmListPartDataContext).DisplayTicketDataCollection)
+                {
+                    dc.PropertyChanged -= OnCountChangePrintableTicket;
+                }
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -233,7 +226,7 @@ namespace checkin.presentation.gui.page
 
                 //unregister event
                 int notPrintedCount = 0;
-                var pageCtx = ctx as PageConfirmListAllDataContext;
+                var pageCtx = ctx as PageConfirmListPartDataContext;
                 foreach (var dc in pageCtx.DisplayTicketDataCollection)
                 {
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
@@ -253,33 +246,13 @@ namespace checkin.presentation.gui.page
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
-
-        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
-        {
-            if (!this.loadingLock)
-            {
-                logger.Warn("too early.");
-                return;
-            }
-            var ctx = this.DataContext as InputDataContext;
-            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
-            {
-                var case_ = await ctx.BackwardAsync();
-                ctx.TreatErrorMessage();
-
-                //unregister event
-                foreach (var dc in (ctx as PageConfirmListAllDataContext).DisplayTicketDataCollection)
-                {
-                    dc.PropertyChanged -= OnCountChangePrintableTicket;
-                }
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
-            });
-        }
+ 
 
         private void OnGotoWelcome(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
             AppUtil.GotoWelcome(this);
         }
+
     }
 }

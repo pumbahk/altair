@@ -12,7 +12,7 @@ namespace checkin.core.flow
     /// Case QR confirm for all. QR表示(all)
     /// </summary>
     // 
-    public class CaseConfirmListForAll : AbstractCase, ICase
+    public class CaseConfirmListForPart : AbstractCase, ICase
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -25,7 +25,7 @@ namespace checkin.core.flow
         public int PartOrAll { get; set; }
 
 
-        public CaseConfirmListForAll(IResource resource)
+        public CaseConfirmListForPart(IResource resource)
             : base(resource)
         {
             this.tokenStatus = TokenStatus.valid;

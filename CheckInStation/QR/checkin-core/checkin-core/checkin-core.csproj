@@ -79,7 +79,7 @@
     <Compile Include="events\PartOrAllEvent.cs" />
     <Compile Include="events\WelcomeEvent.cs" />
     <Compile Include="FlowDefinitionType.cs" />
-    <Compile Include="flow\CaseConfirmListForAll.cs" />
+    <Compile Include="flow\CaseConfirmListForPart.cs" />
     <Compile Include="flow\CaseConfirmListForOne.cs" />
     <Compile Include="flow\CaseOneOrPart.cs" />
     <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />

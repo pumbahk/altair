@@ -23,10 +23,21 @@ namespace checkin.core.flow
 
         protected TokenStatus tokenStatus;
 
+        public int PartOrAll { get; set; }
+
         public CaseOrdernoConfirmForAll (IResource resource, VerifiedOrdernoRequestData requestData) : base (resource)
         {
             this.RequestData = requestData;
             this.tokenStatus = TokenStatus.valid;
+            this.PartOrAll = 1;
+        }
+
+        public CaseOrdernoConfirmForAll(IResource resource, VerifiedOrdernoRequestData requestData, int partorall)
+            : base(resource)
+        {
+            this.RequestData = requestData;
+            this.tokenStatus = TokenStatus.valid;
+            this.PartOrAll = partorall;
         }
 
         public override async Task PrepareAsync(IInternalEvent ev)
@@ -66,7 +77,7 @@ namespace checkin.core.flow
         public override ICase OnSuccess (IFlow flow)
         {
             //return new CasePrintForAll (Resource, this.Collection);
-            return new CaseConfirmListForAll(Resource);
+            return new CaseConfirmListForPart(Resource);
         }
 
         public override ICase OnFailure (IFlow flow)
