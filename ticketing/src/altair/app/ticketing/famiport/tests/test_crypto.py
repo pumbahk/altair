@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 import urllib
+import base64
 
 
 class CryptoTest(TestCase):
@@ -15,9 +16,7 @@ class CryptoTest(TestCase):
 
 class DecryptTest(CryptoTest):
     def _callFUT(self, key, value):
-        import base64
         import six
-        import urllib
         from cryptography.hazmat.backends import default_backend
         from ..utils import Crypto
         c = Crypto(default_backend())
@@ -62,9 +61,6 @@ class EncryptTest(CryptoTest):
         return klass(*args, **kwds)
 
     def _callFUT(self, key, value):
-        import base64
-        import six
-        import urllib
         from cryptography.hazmat.backends import default_backend
         c = self._make_one(default_backend())
         key = c.gen_key_from_special_field_value(key)
