@@ -65,32 +65,9 @@
                             </WrapPanel>
                         </Grid>
 
-                        <!-- 説明(description)-->
-                        <!--
-                    <StackPanel
-                        Canvas.Top="90"
-                        Orientation="Horizontal"
-                        >
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Style.Triggers>
-                                    <Trigger Property="Orientation" Value="Horizontal">
-                                        <Setter Property="Canvas.Left" 
-                                                Value="{Binding RelativeSource={RelativeSource Self}, 
-                                                Path=ActualWidth,
-                                                Converter={StaticResource MathConverter}, 
-                                                ConverterParameter=(1366-@VALUE)*0.5}" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock 
-                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
-                    </StackPanel>
-                    -->
 
                         <!-- メインコンテンツ -->
+                        
                         <TextBlock 
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
@@ -99,7 +76,7 @@
                                 FontSize="25"
                                 Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
                     </ListView>
-
+                    
                     <Border 
                         Canvas.Left="50"
                         Canvas.Top="120"
@@ -163,7 +140,7 @@
                         Style="{StaticResource BackwardButton}"
                         Click="OnBackwardWithBoundContext"
             >
-                        <TextBlock FontSize="20">戻る</TextBlock>
+                        <TextBlock FontSize="20">戻allる</TextBlock>
                     </Button>
 
                     <!-- 終了ボタン-->

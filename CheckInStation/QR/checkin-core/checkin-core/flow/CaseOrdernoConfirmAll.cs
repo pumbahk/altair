@@ -65,7 +65,8 @@ namespace checkin.core.flow
 
         public override ICase OnSuccess (IFlow flow)
         {
-            return new CasePrintForAll (Resource, this.Collection);
+            //return new CasePrintForAll (Resource, this.Collection);
+            return new CaseConfirmListForAll(Resource);
         }
 
         public override ICase OnFailure (IFlow flow)

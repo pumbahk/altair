@@ -74,8 +74,8 @@ namespace checkin.core.flow
             //全部発券
             else
             {
-                //return new CaseQRConfirmForAll(resource, tdata, 1);
-                return new CaseConfirmListForAll(resource, tdata);
+                return new CaseQRConfirmForAll(resource, tdata, 1);
+                //return new CaseConfirmListForAll(resource, tdata);
             }
         }
 

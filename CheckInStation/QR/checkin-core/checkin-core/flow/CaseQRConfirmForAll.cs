@@ -80,7 +80,8 @@ namespace checkin.core.flow
 
         public override ICase OnSuccess (IFlow flow)
         {
-            return new CasePrintForAll (Resource, TicketDataCollection);
+            //return new CasePrintForAll (Resource, TicketDataCollection);
+            return new CaseConfirmListForAll(Resource);
         }
     }
 }

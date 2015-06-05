@@ -152,7 +152,7 @@
                         Canvas.Top="655"
                         Style="{StaticResource BackwardButton}"
                         Click="OnBackwardWithBoundContext">
-                        <TextBlock FontSize="20">戻る</TextBlock>
+                        <TextBlock FontSize="20">戻oneる</TextBlock>
                     </Button>
 
 

@@ -24,46 +24,25 @@ namespace checkin.core.flow
 
         public int PartOrAll { get; set; }
 
-        public CaseConfirmListForAll(IResource resource, TicketData ticketdata)
-            : base(resource)
-        {
-            TicketData = ticketdata;
-            this.tokenStatus = TokenStatus.valid;
-            this.Resource = resource;
-            this.PartOrAll = 1;
-        }
 
-        public CaseConfirmListForAll(IResource resource, TicketData ticketdata, int partorall)
+        public CaseConfirmListForAll(IResource resource)
             : base(resource)
         {
-            TicketData = ticketdata;
             this.tokenStatus = TokenStatus.valid;
             this.Resource = resource;
-            this.PartOrAll = partorall;
         }
 
         public override async Task PrepareAsync(IInternalEvent ev)
         {
             await base.PrepareAsync(ev).ConfigureAwait(false);
 
-            var subject = ev as ConfirmListAllEvent;
-            var data = new TicketDataCollectionRequestData() { order_no = TicketData.additional.order.order_no, secret = TicketData.secret, refreshMode = this.Resource.RefreshMode };
-            subject.SetInfo(TicketData);
+            var subject = ev as ConfirmAllEvent;
+            //var data = new TicketDataCollectionRequestData() { order_no = TicketData.additional.order.order_no, secret = TicketData.secret, refreshMode = this.Resource.RefreshMode };
+            //subject.SetInfo(TicketData);
 
-            ResultTuple<string, TicketDataCollection> result = await new DispatchResponse<TicketDataCollection>(Resource).Dispatch(() => Resource.TicketDataCollectionFetcher.FetchAsync(data)).ConfigureAwait(false);
-            if (result.Status)
-            {
-                this.TicketDataCollection = result.Right;
-                this.tokenStatus = this.TicketDataCollection.status;
-                subject.SetCollection(result.Right);
-                subject.SetPartOrAll(this.PartOrAll);
-            }
-            else
-            {
-                //modelからpresentation層へのメッセージ
-                PresentationChanel.NotifyFlushMessage((result as Failure<string, TicketDataCollection>).Result);
-                this.tokenStatus = TokenStatus.unknown;
-            }
+            this.TicketDataCollection = subject.StatusInfo.TicketDataCollection;
+            this.tokenStatus = this.TicketDataCollection.status;
+            //subject.SetCollection(this.TicketDataCollection);
         }
 
         public override Task<bool> VerifyAsync()
