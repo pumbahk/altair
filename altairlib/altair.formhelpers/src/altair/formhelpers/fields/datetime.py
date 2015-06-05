@@ -144,7 +144,7 @@ class OurDateTimeFieldBase(OurField):
                 self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
         self.data = self._create_data(values)
 
-    def process(self, formdata, data=fields._unset_value):
+    def process(self, formdata=None, data=fields._unset_value):
         self.process_errors = []
         if data is fields._unset_value:
             try:
