@@ -51,7 +51,7 @@ class Crypto(object):
         self.backend = backend if backend is not None else default_backend()
 
 
-class YAFamiPortCrypt(object):
+class FamiPortCrypt(object):
     def __init__(self, special_field_value, encoding='utf8'):
         self._core = Crypto()
         self.key = self._core.gen_key_from_special_field_value(special_field_value)
@@ -84,9 +84,6 @@ class YAFamiPortCrypt(object):
         value = base64.b64decode(value)
         value = self._core.decrypt(value, self.key, self.iv)
         return value
-
-
-FamiPortCrypt = YAFamiPortCrypt
 
 
 def prettify(elem):

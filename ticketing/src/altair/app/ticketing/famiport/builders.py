@@ -78,8 +78,6 @@ class FamiPortRequestFactory(object):
             raise FamiPortRequestTypeError(request_type)
         famiport_request.request_type = request_type
 
-        from .utils import YAFamiPortCrypt as FamiPortCrypt  # noqa
-
         barcode_no = famiport_request_dict.get('barCodeNo')
         crypto = FamiPortCrypt(barcode_no) if barcode_no is not None else None
         encrypt_fields = famiport_request.encrypted_fields

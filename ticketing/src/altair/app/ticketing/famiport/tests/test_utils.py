@@ -93,9 +93,9 @@ class EncryptTest(CryptoTest):
         self.assertEqual(val, 'YUkUeJbHVa7zt0X3v1KnYAyuX+DBKbV8CDgOqeVElcMDY6hoGhqdhi6dp9gcLLWSlfXEY4bftl+8M0O59QPJsxJnGzQwUxIMexe5WpvrBRs=')
 
 
-class YAFamiPortCryptTest(TestCase):
+class FamiPortCryptTest(TestCase):
     def _get_target_class(self):
-        from ..utils import YAFamiPortCrypt as klass
+        from ..utils import FamiPortCrypt as klass
         return klass
 
     def _get_target(self, *args, **kwds):
