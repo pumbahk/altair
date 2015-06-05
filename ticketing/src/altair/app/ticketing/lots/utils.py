@@ -69,6 +69,6 @@ def create_form(request, context, formdata=None, **kwds):
         d = form.birthday.data
         _value_defaults = {'year':d.year, 'month':d.month, 'day':d.day}
         form.birthday.value_defaults = _value_defaults
-        form.birthday.process()
+        form.birthday.process(formdata=formdata)
 
     return form
