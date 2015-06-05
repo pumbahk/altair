@@ -54,33 +54,17 @@ class YAFamiPortCrypt(object):
     def iv(self):
         return self.key
 
-    def decrypt(self, value):
-        value = urllib.unquote(value)
-        value = base64.b64decode(value)
-        value = self._core.decrypt(value, self.key, self.iv)
-        value = six.text_type(value, self.encoding)
-        return value
-
-    def encrypt(self, value):
-        value = self._core.encrypt(value, self.key, self.iv)
-        value = base64.b64encode(value)
-        value = urllib.quote(value)
-        value = value.encode('utf8')
-        return value
-
-
-class FamiPortCrypt(object):
-    def __init__(self, key):
-        self.fernet = Fernet(key)
-
     def encrypt(self, plain_data):
         """
         Encrypt plain_data with the given key in init
         :param plain_data:
         :return: encrypted data
         """
-
-        return self.fernet.encrypt(plain_data)
+        value = plain_data
+        value = self._core.encrypt(value, self.key, self.iv)
+        value = base64.b64encode(value)
+        value = value.encode('utf8')
+        return value
 
     def decrypt(self, encrypted_data):
         """
@@ -88,8 +72,14 @@ class FamiPortCrypt(object):
         :param encrypted data:
         :return: decrypted data
         """
+        value = encrypted_data
+        value = urllib.unquote(value)
+        value = base64.b64decode(value)
+        value = self._core.decrypt(value, self.key, self.iv)
+        return value
 
-        return self.fernet.decrypt(encrypted_data)
+
+FamiPortCrypt = YAFamiPortCrypt
 
 
 def prettify(elem):
