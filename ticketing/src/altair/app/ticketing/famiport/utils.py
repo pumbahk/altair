@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
-
-from cryptography.fernet import Fernet
-from xml.etree import ElementTree
-from xml.dom import minidom
-
 import urllib
-from cryptography.hazmat.backends import default_backend
+import base64
 
 import six
-import base64
-from cryptography.hazmat.primitives import hashes, ciphers, padding
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+
+from xml.dom import minidom
+from xml.etree import ElementTree
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import (
+    hashes,
+    ciphers,
+    padding,
+    )
+from cryptography.hazmat.primitives.ciphers import (
+    algorithms,
+    modes,
+    )
 
 
 class Crypto(object):
+
     def md5_hash(self, data):
         hasher = hashes.Hash(hashes.MD5(), backend=self.backend)
         hasher.update(data)
