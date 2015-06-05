@@ -5,15 +5,8 @@ from pyramid.view import (
     view_config,
     view_defaults,
     )
-
-from ..communication import (
-    FamiPortReservationInquiryRequest,
-    FamiPortPaymentTicketingRequest,
-    FamiPortPaymentTicketingCompletionRequest,
-    FamiPortPaymentTicketingCancelRequest,
-    FamiPortInformationRequest,
-    FamiPortCustomerInformationRequest,
-    )
+from ..communication import FamiPortRequestType
+from ..builders import FamiPortRequestFactory
 from ..testing import (
     get_response_builder,
     get_payload_builder,
@@ -26,17 +19,10 @@ class ResevationView(object):
         self.context = context
         self.request = request
 
-    def _build_payload(self, famiport_request):
-
-        def decrypt(x):
-            return x
-
-        if famiport_request.encrypt_key is not None:  # 複合化する
-            for name in famiport_request.encrypted_fields:
-                encrypted_value = getattr(famiport_request, name)
-                decrypted_value = decrypt(encrypted_value)
-                setattr(famiport_request, name, decrypted_value)
-
+    def _build_payload(self, params, request_type):
+        """responseのpayloadを生成する
+        """
+        famiport_request = FamiPortRequestFactory.create_request(params, request_type)
         response_builder = get_response_builder(self.request)
         payload_builder = get_payload_builder(self.request)
         famiport_response = response_builder.build_response(famiport_request)
@@ -44,143 +30,117 @@ class ResevationView(object):
 
     @view_config(route_name='famiport.api.reservation.inquiry', request_method='POST')
     def inquiry(self):
-        klass = FamiPortReservationInquiryRequest
-        famiport_request = klass()
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
-        famiport_request.reserveNumber = self.request.POST.get('reserveNumber', '')
-        famiport_request.authNumber = self.request.POST.get('authNumber', '')
-
-        if not (famiport_request.storeCode and
-                famiport_request.ticketingDate and
-                famiport_request.reserveNumber):
+        type_ = FamiPortRequestType.ReservationInquiry
+        params = {}
+        try:
+            params = {
+                'storeCode': self.request.POST['storeCode'],
+                'ticketingDate': self.request.POST['ticketingDate'],
+                'reserveNumber': self.request.POST['reserveNumber'],
+                'authNumber': self.request.POST.get('authNumber', ''),
+                }
+        except KeyError:
             return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
     def payment(self):
-        klass = FamiPortPaymentTicketingRequest
-        famiport_request = klass()
-
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
-        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
-        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
-        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
-        famiport_request.customerName = self.request.POST.get('customerName', '')
-        famiport_request.phoneNumber = self.request.POST.get('phoneNumber', '')
-
-        if not (famiport_request.storeCode and
-                famiport_request.mmkNo and
-                famiport_request.ticketingDate and
-                famiport_request.sequenceNo and
-                famiport_request.barCodeNo):
+        type_ = FamiPortRequestType.PaymentTicketing
+        params = {}
+        try:
+            params = {
+                'storeCode': self.request.POST['storeCode'],
+                'mmkNo': self.request.POST['mmkNo'],
+                'ticketingDate': self.request.POST['ticketingDate'],
+                'sequenceNo': self.request.POST['sequenceNo'],
+                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
+                'barCodeNo': self.request.POST['barCodeNo'],
+                'customerName': self.request.POST.get('customerName', ''),  # optional
+                'phoneNumber': self.request.POST.get('phoneNumber', ''),  # optional
+                }
+        except KeyError:
             return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
     def completion(self):
-        klass = FamiPortPaymentTicketingCompletionRequest
-        famiport_request = klass()
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
-        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
-        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
-        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
-        famiport_request.orderId = self.request.POST.get('orderId', '')
-        famiport_request.totalAmount = self.request.POST.get('totalAmount', '')
-
-        if not (famiport_request.storeCode and
-                famiport_request.mmkNo and
-                famiport_request.ticketingDate and
-                famiport_request.sequenceNo and
-                famiport_request.barCodeNo and
-                famiport_request.orderId and
-                famiport_request.totalAmount):
+        type_ = FamiPortRequestType.PaymentTicketingCompletion
+        params = {}
+        try:
+            params = {
+                'storeCode': self.request.POST['storeCode'],
+                'mmkNo': self.request.POST['mmkNo'],
+                'ticketingDate': self.request.POST['ticketingDate'],
+                'sequenceNo': self.request.POST['sequenceNo'],
+                'barCodeNo': self.request.POST['barCodeNo'],
+                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
+                'orderId': self.request.POST['orderId'],
+                'totalAmount': self.request.POST['totalAmount'],
+                }
+        except KeyError:
             return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
     def cancel(self):
-        klass = FamiPortPaymentTicketingCancelRequest
-        famiport_request = klass()
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
-        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
-        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
-        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
-        famiport_request.orderId = self.request.POST.get('orderId', '')
-        famiport_request.cancelCode = self.request.POST.get('cancelCode', '')
-
-        if not (famiport_request.storeCode and
-                famiport_request.mmkNo and
-                famiport_request.ticketingDate and
-                famiport_request.sequenceNo and
-                famiport_request.barCodeNo and
-                famiport_request.orderId and
-                famiport_request.cancelCode):
+        type_ = FamiPortRequestType.PaymentTicketingCancel
+        params = {}
+        try:
+            params = {
+                'storeCode': self.request.POST['storeCode'],
+                'mmkNo': self.request.POST['mmkNo'],
+                'ticketingDate': self.request.POST['ticketingDate'],
+                'sequenceNo': self.request.POST['sequenceNo'],
+                'barCodeNo': self.request.POST['barCodeNo'],
+                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
+                'orderId': self.request.POST['orderId'],
+                'cancelCode': self.request.POST['cancelCode'],
+                }
+        except KeyError:
             return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.information', request_method='POST')
     def information(self):
-        klass = FamiPortInformationRequest
-        famiport_request = klass()
-        famiport_request.infoKubun = self.request.POST.get('infoKubun', '')
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.kogyoCode = self.request.POST.get('kogyoCode', '')
-        famiport_request.kogyoSubCode = self.request.POST.get('kogyoSubCode', '')
-        famiport_request.koenCode = self.request.POST.get('koenCode', '')
-        famiport_request.uketsukeCode = self.request.POST.get('uketsukeCode', '')
-        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
-        famiport_request.authCode = self.request.POST.get('authCode', '')
-        famiport_request.reserveNumber = self.request.POST.get('reserveNumber', '')
-        if not (famiport_request.infoKubun and
-                famiport_request.storeCode):
-                # famiport_request.kogyoCode and
-                # famiport_request.kogyoSubCode and
-                # famiport_request.koenCode and
-                # famiport_request.uketsukeCode and
-                # famiport_request.playGuideId and
-                # famiport_request.reserveNumber):
-            return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        type_ = FamiPortRequestType.Information
+        params = {}
+        try:
+            params = {
+                'infoKubun': self.request.POST['infoKubun'],
+                'storeCode': self.request.POST['storeCode'],
+                'kogyoCode': self.request.POST['kogyoCode'],
+                'kogyoSubCode': self.request.POST['kogyoSubCode'],
+                'koenCode': self.request.POST['koenCode'],
+                'uketsukeCode': self.request.POST['uketsukeCode'],
+                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
+                'authCode': self.request.POST.get('authCode', ''),  # optional
+                'reserveNumber': self.request.POST['reserveNumber'],
+                }
+        except KeyError as err:
+            return HTTPBadRequest(err)
+        buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):
-        klass = FamiPortCustomerInformationRequest
-        famiport_request = klass()
-        famiport_request.storeCode = self.request.POST.get('storeCode', '')
-        famiport_request.mmkNo = self.request.POST.get('mmkNo', '')
-        famiport_request.ticketingDate = self.request.POST.get('ticketingDate', '')
-        famiport_request.sequenceNo = self.request.POST.get('sequenceNo', '')
-        famiport_request.barCodeNo = self.request.POST.get('barCodeNo', '')
-        famiport_request.playGuideId = self.request.POST.get('playGuideId', '')
-        famiport_request.orderId = self.request.POST.get('orderId', '')
-        famiport_request.totalAmount = self.request.POST.get('totalAmount', '')
-
-        if not (famiport_request.storeCode and
-                famiport_request.mmkNo and
-                famiport_request.ticketingDate and
-                famiport_request.sequenceNo and
-                famiport_request.barCodeNo and
-                famiport_request.playGuideId and
-                famiport_request.orderId and
-                famiport_request.totalAmount):
+        type_ = FamiPortRequestType.CustomerInformation
+        params = {}
+        try:
+            params = {
+                'storeCode': self.request.POST['storeCode'],
+                'mmkNo': self.request.POST['mmkNo'],
+                'ticketingDate': self.request.POST['ticketingDate'],
+                'sequenceNo': self.request.POST['sequenceNo'],
+                'barCodeNo': self.request.POST['barCodeNo'],
+                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
+                'orderId': self.request.POST['orderId'],
+                'totalAmount': self.request.POST['totalAmount'],
+                }
+        except KeyError:
             return HTTPBadRequest()
-
-        buf = self._build_payload(famiport_request)
+        buf = self._build_payload(params, type_)
         return Response(buf)

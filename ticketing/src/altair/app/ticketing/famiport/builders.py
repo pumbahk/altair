@@ -6,9 +6,17 @@ import datetime
 from lxml import etree
 from sqlalchemy.exc import DBAPIError
 from zope.interface import implementer
-from .interfaces import IFamiPortResponseBuilderFactory, IFamiPortResponseBuilder, IXmlFamiPortResponseGenerator
-from .models import FamiPortOrder, FamiPortInformationMessage
+from .exc import FamiPortRequestTypeError
 from .utils import FamiPortCrypt
+from .models import (
+    FamiPortOrder,
+    FamiPortInformationMessage,
+    )
+from .interfaces import (
+    IFamiPortResponseBuilderFactory,
+    IFamiPortResponseBuilder,
+    IXmlFamiPortResponseGenerator,
+    )
 from .communication import (
     FamiPortRequestType,
     ResultCodeEnum,
@@ -34,6 +42,19 @@ from .communication import (
 logger = logging.getLogger(__name__)
 
 
+def create_encrypt_key(value):
+    if value is None:
+        return None
+
+
+def create_decrypt_key(value):
+    if value is None:
+        return None
+    md = hashlib.md5(value)
+    hash_value = md.hexdigest()[:32]  # 文字数 32文字の文字列
+    return base64.urlsafe_b64encode(hash_value)
+
+
 class FamiPortRequestFactory(object):
     @classmethod
     def create_request(self, famiport_request_dict, request_type):
@@ -54,12 +75,21 @@ class FamiPortRequestFactory(object):
         elif request_type == FamiPortRequestType.CustomerInformation:
             famiport_request = FamiPortCustomerInformationRequest()
         else:
-            pass
+            raise FamiPortRequestTypeError(request_type)
         famiport_request.request_type = request_type
 
-        for key, value in famiport_request_dict.items():
-            setattr(famiport_request, key, value)
+        from .utils import YAFamiPortCrypt as FamiPortCrypt  # noqa
 
+        barcode_no = famiport_request_dict.get('barCodeNo')
+        crypto = FamiPortCrypt(barcode_no) if barcode_no is not None else None
+        encrypt_fields = famiport_request.encrypted_fields
+        for key, value in famiport_request_dict.items():
+            if crypto and key in encrypt_fields:
+                try:
+                    value = crypto.decrypt(value)
+                except Exception as err:
+                    raise err.__class__('decrypt error: {}: {}'.format(err.message, value))
+            setattr(famiport_request, key, value)
         return famiport_request
 
 

@@ -7,3 +7,7 @@ class FamiPortError(Exception):
 
 class FamiPortNumberingError(FamiPortError):
     pass
+
+
+class FamiPortRequestTypeError(FamiPortError):
+    pass
