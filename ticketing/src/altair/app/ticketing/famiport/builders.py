@@ -188,8 +188,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         except ValueError:
             logger.error(u"不正な利用日時です。")
 
-        logger.info(u"Processing famiport payment ticketing request. " + \
-                    u"店舗コード: " + storeCode + u", 発券Famiポート番号: " + mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo)
+        logger.info(u'Processing famiport payment ticketing request. '  +
+                    u'店舗コード: {}, 発券Famiポート番号: {}, 利用日時: {}, 処理通番: {}, 支払番号: {}'.format(
+                        storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo))
 
         famiport_order, replyCode = None, None
         try:
