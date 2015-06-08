@@ -126,9 +126,10 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
-                            RenderTransformOrigin="10.794,2.52"
-                            Style="{StaticResource HomeButton}">
-                        <TextBlock>TOP画面へ戻る</TextBlock>
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <TextBlock>TOP</TextBlock>
                     </Button>
 
                     <TextBlock
@@ -139,20 +140,25 @@
                         Visibility="{Binding RefreshModeVisibility}"/>
 
                     <Button
-                        Canvas.Right="60"
+                        Canvas.Right="140"
                         Canvas.Top="655"
                         Visibility="{Binding NextButtonVisibility}"
                         Style="{StaticResource SubmitButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         Click="OnSubmitPrint">
-                        <TextBlock FontSize="20">このチケットを発券</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">このチケットを発券</TextBlock>
                     </Button>
 
                     <Button
-                        Canvas.Left="60"
-                        Canvas.Top="655"
-                        Style="{StaticResource BackwardButton}"
-                        Click="OnBackwardWithBoundContext">
-                        <TextBlock FontSize="20">戻oneる</TextBlock>
+                    Canvas.Left="140"
+                    Canvas.Top="655"
+                    Click="OnBackwardWithBoundContext"
+                    Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻oneる</TextBlock>
                     </Button>
 
 

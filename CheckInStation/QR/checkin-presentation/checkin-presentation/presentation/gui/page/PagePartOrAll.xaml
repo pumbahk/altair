@@ -52,9 +52,10 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
-                            RenderTransformOrigin="10.794,2.52"
-                            Style="{StaticResource HomeButton}">
-                        <TextBlock>TOP画面へ戻る</TextBlock>
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <TextBlock>TOP</TextBlock>
                     </Button>
 
                     <Button
@@ -82,11 +83,14 @@
                     </Button>
 
                     <Button
-                        Canvas.Left="60"
-                        Canvas.Top="655"
-                        Style="{StaticResource BackwardButton}"
-                        Click="OnBackwardWithBoundContext">
-                        <TextBlock FontSize="20">戻る</TextBlock>
+                    Canvas.Left="140"
+                    Canvas.Top="655"
+                    Click="OnBackwardWithBoundContext"
+                    Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
 
                     <TextBlock

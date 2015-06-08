@@ -468,16 +468,30 @@
   
   <Style x:Key="SubmitButtonTextStyle" TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
-    <Setter Property="FontSize" Value="30"/>
+    <Setter Property="FontSize" Value="20"/>
   </Style>
 
   <Style x:Key="SubmitButtonLongTextStyle" TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
-    <Setter Property="FontSize" Value="22"/>
+    <Setter Property="FontSize" Value="20"/>
+  </Style>
+
+  <Style x:Key="SubmitBigButtonBigTextStyle" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
+    <Setter Property="FontSize" Value="70"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <Style x:Key="SubmitBigButtonSmallTextStyle" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
+    <Setter Property="FontSize" Value="40"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
   </Style>
 
 
-  <LinearGradientBrush x:Key="SubmitButtonBackGroundBrush"
+    <LinearGradientBrush x:Key="SubmitButtonBackGroundBrush"
                        StartPoint="0.5,0"
                        EndPoint="0.5,1">
     <GradientStop Color="#FFD87D" Offset="0.05"/>
@@ -516,17 +530,23 @@
 
 
   <Style TargetType="Button" x:Key="SubmitButtonStyle">
-    <Setter Property="Width" Value="400"/>
-    <Setter Property="Height" Value="96"/>
+    <Setter Property="Width" Value="300"/>
+    <Setter Property="Height" Value="80"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
   </Style>
 
-  <Style TargetType="Border" x:Key="SubmitButtonContainer">
+  <Style TargetType="Button" x:Key="GoHomeButtonStyle">
+    <Setter Property="Width" Value="150"/>
+    <Setter Property="Height" Value="60"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+    <Style TargetType="Border" x:Key="SubmitButtonContainer">
     <Setter Property="Background" Value="{Binding Path=Background, RelativeSource={RelativeSource FindAncestor,AncestorLevel=1,AncestorType={x:Type Button}}}"/>
-    <Setter Property="CornerRadius" Value="10"/>
-    <Setter Property="BorderThickness" Value="3"/>
-    <Setter Property="Padding" Value="27,37,27,3"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource SubmitButtonBorderBrush}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SubmitButtonBorderBrush}"/>
   </Style>
 
   <Style TargetType="Button" x:Key="SubmitButton" BasedOn="{StaticResource SubmitButtonStyle}">
@@ -552,11 +572,11 @@
     </Setter>
   </Style>
 
-    <Style TargetType="Button" x:Key="HomeButton" BasedOn="{StaticResource SubmitButtonStyle}">
+    <Style TargetType="Button" x:Key="HomeButton" BasedOn="{StaticResource GoHomeButtonStyle}">
         <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
         <Setter Property="Background" Value="{DynamicResource SubmitButtonBackGroundBrush}"/>
-        <Setter Property="Canvas.Top" Value="17"/>
-        <Setter Property="Canvas.Left" Value="1060"/>
+        <Setter Property="Canvas.Top" Value="80"/>
+        <Setter Property="Canvas.Left" Value="1080"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -580,15 +600,14 @@
     <Style TargetType="Border" x:Key="BackwardButtonContainer">
     <Setter Property="Background" Value="{Binding Path=Background, RelativeSource={RelativeSource FindAncestor,AncestorLevel=1,AncestorType={x:Type Button}}}"/>
     <Setter Property="CornerRadius" Value="10"/>
-    <Setter Property="BorderThickness" Value="3"/>
-    <Setter Property="Padding" Value="27,37,27,3"/>
-    <Setter Property="BorderBrush" Value="{StaticResource BackwardButtonBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BackwardButtonBorderBrush}"/>
   </Style>
 
   <Style TargetType="Button" x:Key="BackwardButton" BasedOn="{StaticResource SubmitButtonStyle}">
     <Setter Property="Foreground" Value="{StaticResource BackwardButtonForegroundBrush}"/>
-    <Setter Property="Background" Value="{StaticResource BackwardButtonBackGroundBrush}"/>
-    <Setter Property="Template">
+        <Setter Property="Background" Value="{StaticResource BackwardButtonBackGroundBrush}"/>
+        <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Style="{StaticResource BackwardButtonContainer}">

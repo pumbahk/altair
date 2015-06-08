@@ -136,9 +136,10 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
-                            RenderTransformOrigin="10.794,2.52"
-                            Style="{StaticResource HomeButton}">
-                        <TextBlock>TOP画面へ戻る</TextBlock>
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <TextBlock>TOP</TextBlock>
                     </Button>
 
                     <!-- ボタン -->
@@ -149,21 +150,23 @@
                         Style="{StaticResource RefreshModeText}"
                         Visibility="{Binding RefreshModeVisibility}"/>
                     <Button
-                        Canvas.Right="60"
+                        Canvas.Right="140"
                         Canvas.Top="655"
                         Visibility="{Binding NotPrintVisibility}"
                         Style="{StaticResource SubmitButton}"
-                        Click="OnSubmitWithBoundContext"
-            >
-                        <TextBlock FontSize="20">発券する</TextBlock>
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Click="OnSubmitWithBoundContext">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する</TextBlock>
                     </Button>
                     <Button
-                        Canvas.Left="60"
+                        Canvas.Left="140"
                         Canvas.Top="655"
                         Style="{StaticResource BackwardButton}"
                         Click="OnBackwardWithBoundContext"
-            >
-                        <TextBlock FontSize="20">戻listallる</TextBlock>
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻listallる</TextBlock>
                     </Button>
 
                     <!-- 終了ボタン-->
