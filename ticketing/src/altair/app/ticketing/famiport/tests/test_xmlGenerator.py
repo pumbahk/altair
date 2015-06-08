@@ -126,7 +126,7 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
 
         # 顧客情報取得
         self.famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode=u'00', replyCode='00', name=u'テスト氏名', memberId='test_memberId', address1=u'テストアドレス１', address2=u'テストアドレス２', identifyNo='1234567890123456')
-        self.famiport_customer_information_response._set_encryptKey(self.famiport_payment_ticketing_response.orderId)
+        self.famiport_customer_information_response.set_encryptKey(self.famiport_payment_ticketing_response.orderId)
 
     def tearDown(self):
         _teardown_db()

@@ -458,7 +458,7 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
     address2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     identifyNo = sa.Column(sa.Unicode(16), nullable=False, default=u'')  # 半券個人識別番号
 
-    def _set_encryptKey(self, encrypt_key):
+    def set_encryptKey(self, encrypt_key):
         self._encrypt_key = encrypt_key
 
     @property
