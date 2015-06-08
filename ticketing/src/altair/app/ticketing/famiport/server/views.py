@@ -7,9 +7,9 @@ from pyramid.view import (
     )
 from ..communication import FamiPortRequestType
 from ..builders import FamiPortRequestFactory
-from ..testing import (
+from ..api import (
     get_response_builder,
-    get_payload_builder,
+    get_xmlResponse_generator,
     )
 
 
@@ -23,10 +23,10 @@ class ResevationView(object):
         """responseのpayloadを生成する
         """
         famiport_request = FamiPortRequestFactory.create_request(params, request_type)
-        response_builder = get_response_builder(self.request)
-        payload_builder = get_payload_builder(self.request)
+        response_builder = get_response_builder(famiport_request)
         famiport_response = response_builder.build_response(famiport_request)
-        return payload_builder.build_payload(famiport_response)
+        payload_builder = get_xmlResponse_generator(famiport_response)
+        return payload_builder.generate_xmlResponse(famiport_response)
 
     @view_config(route_name='famiport.api.reservation.inquiry', request_method='POST')
     def inquiry(self):
