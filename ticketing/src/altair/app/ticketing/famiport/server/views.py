@@ -31,33 +31,35 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.inquiry', request_method='POST')
     def inquiry(self):
         type_ = FamiPortRequestType.ReservationInquiry
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'storeCode': self.request.POST['storeCode'],
-                'ticketingDate': self.request.POST['ticketingDate'],
-                'reserveNumber': self.request.POST['reserveNumber'],
-                'authNumber': self.request.POST.get('authNumber', ''),
+                'storeCode': request_params['storeCode'],
+                'ticketingDate': request_params['ticketingDate'],
+                'reserveNumber': request_params['reserveNumber'],
+                'authNumber': request_params.get('authNumber', ''),
                 }
-        except KeyError:
-            return HTTPBadRequest()
+        except KeyError as err:
+            return HTTPBadRequest(err)
         buf = self._build_payload(params, type_)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
     def payment(self):
         type_ = FamiPortRequestType.PaymentTicketing
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'storeCode': self.request.POST['storeCode'],
-                'mmkNo': self.request.POST['mmkNo'],
-                'ticketingDate': self.request.POST['ticketingDate'],
-                'sequenceNo': self.request.POST['sequenceNo'],
-                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
-                'barCodeNo': self.request.POST['barCodeNo'],
-                'customerName': self.request.POST.get('customerName', ''),  # optional
-                'phoneNumber': self.request.POST.get('phoneNumber', ''),  # optional
+                'storeCode': request_params['storeCode'],
+                'mmkNo': request_params['mmkNo'],
+                'ticketingDate': request_params['ticketingDate'],
+                'sequenceNo': request_params['sequenceNo'],
+                'playGuideId': request_params.get('playGuideId', ''),  # optional
+                'barCodeNo': request_params['barCodeNo'],
+                'customerName': request_params.get('customerName', ''),  # optional
+                'phoneNumber': request_params.get('phoneNumber', ''),  # optional
                 }
         except KeyError:
             return HTTPBadRequest()
@@ -67,17 +69,18 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
     def completion(self):
         type_ = FamiPortRequestType.PaymentTicketingCompletion
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'storeCode': self.request.POST['storeCode'],
-                'mmkNo': self.request.POST['mmkNo'],
-                'ticketingDate': self.request.POST['ticketingDate'],
-                'sequenceNo': self.request.POST['sequenceNo'],
-                'barCodeNo': self.request.POST['barCodeNo'],
-                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
-                'orderId': self.request.POST['orderId'],
-                'totalAmount': self.request.POST['totalAmount'],
+                'storeCode': request_params['storeCode'],
+                'mmkNo': request_params['mmkNo'],
+                'ticketingDate': request_params['ticketingDate'],
+                'sequenceNo': request_params['sequenceNo'],
+                'barCodeNo': request_params['barCodeNo'],
+                'playGuideId': request_params.get('playGuideId', ''),  # optional
+                'orderId': request_params['orderId'],
+                'totalAmount': request_params['totalAmount'],
                 }
         except KeyError:
             return HTTPBadRequest()
@@ -87,17 +90,18 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
     def cancel(self):
         type_ = FamiPortRequestType.PaymentTicketingCancel
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'storeCode': self.request.POST['storeCode'],
-                'mmkNo': self.request.POST['mmkNo'],
-                'ticketingDate': self.request.POST['ticketingDate'],
-                'sequenceNo': self.request.POST['sequenceNo'],
-                'barCodeNo': self.request.POST['barCodeNo'],
-                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
-                'orderId': self.request.POST['orderId'],
-                'cancelCode': self.request.POST['cancelCode'],
+                'storeCode': request_params['storeCode'],
+                'mmkNo': request_params['mmkNo'],
+                'ticketingDate': request_params['ticketingDate'],
+                'sequenceNo': request_params['sequenceNo'],
+                'barCodeNo': request_params['barCodeNo'],
+                'playGuideId': request_params.get('playGuideId', ''),  # optional
+                'orderId': request_params['orderId'],
+                'cancelCode': request_params['cancelCode'],
                 }
         except KeyError:
             return HTTPBadRequest()
@@ -107,18 +111,19 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.information', request_method='POST')
     def information(self):
         type_ = FamiPortRequestType.Information
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'infoKubun': self.request.POST['infoKubun'],
-                'storeCode': self.request.POST['storeCode'],
-                'kogyoCode': self.request.POST['kogyoCode'],
-                'kogyoSubCode': self.request.POST['kogyoSubCode'],
-                'koenCode': self.request.POST['koenCode'],
-                'uketsukeCode': self.request.POST['uketsukeCode'],
-                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
-                'authCode': self.request.POST.get('authCode', ''),  # optional
-                'reserveNumber': self.request.POST['reserveNumber'],
+                'infoKubun': request_params['infoKubun'],
+                'storeCode': request_params['storeCode'],
+                'kogyoCode': request_params['kogyoCode'],
+                'kogyoSubCode': request_params['kogyoSubCode'],
+                'koenCode': request_params['koenCode'],
+                'uketsukeCode': request_params['uketsukeCode'],
+                'playGuideId': request_params.get('playGuideId', ''),  # optional
+                'authCode': request_params.get('authCode', ''),  # optional
+                'reserveNumber': request_params['reserveNumber'],
                 }
         except KeyError as err:
             return HTTPBadRequest(err)
@@ -128,17 +133,18 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):
         type_ = FamiPortRequestType.CustomerInformation
-        params = dict(self.request.params)
+        request_params = dict(self.request.params)
+        params = {}
         try:
             params = {
-                'storeCode': self.request.POST['storeCode'],
-                'mmkNo': self.request.POST['mmkNo'],
-                'ticketingDate': self.request.POST['ticketingDate'],
-                'sequenceNo': self.request.POST['sequenceNo'],
-                'barCodeNo': self.request.POST['barCodeNo'],
-                'playGuideId': self.request.POST.get('playGuideId', ''),  # optional
-                'orderId': self.request.POST['orderId'],
-                'totalAmount': self.request.POST['totalAmount'],
+                'storeCode': request_params['storeCode'],
+                'mmkNo': request_params['mmkNo'],
+                'ticketingDate': request_params['ticketingDate'],
+                'sequenceNo': request_params['sequenceNo'],
+                'barCodeNo': request_params['barCodeNo'],
+                'playGuideId': request_params.get('playGuideId', ''),  # optional
+                'orderId': request_params['orderId'],
+                'totalAmount': request_params['totalAmount'],
                 }
         except KeyError:
             return HTTPBadRequest()
