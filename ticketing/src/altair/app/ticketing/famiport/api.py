@@ -122,6 +122,4 @@ def create_famiport_order(
 
 
 def do_order(*args, **kwds):
-    import mock
-    client = mock.Mock()
     return create_famiport_order(*args, **kwds)
