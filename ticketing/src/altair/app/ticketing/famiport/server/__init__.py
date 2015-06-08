@@ -6,6 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.pool as sa_pool
 import sqlahelper
 
+
 def main(global_config, **local_config):
     """ファミポートAPIサーバのエントリーポイント"""
     settings = dict(global_config)
@@ -16,7 +17,7 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = pyramid.config.Configurator(
-        settings=settings, root_factory='.resources.famiport_resource_factory')
+        settings=settings, root_factory='..resources.famiport_resource_factory')
 
     config.include(includeme, '/famiport/')
     config.include('altair.app.ticketing.famiport.scripts')
