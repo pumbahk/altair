@@ -184,7 +184,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
         ticketingDate = None
         try:
-            ticketingDate = datetime.strptime(famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
+            ticketingDate = datetime.datetime.strptime(famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
         except ValueError:
             logger.error(u"不正な利用日時です。")
 
