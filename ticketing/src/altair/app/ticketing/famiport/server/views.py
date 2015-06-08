@@ -31,7 +31,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.inquiry', request_method='POST')
     def inquiry(self):
         type_ = FamiPortRequestType.ReservationInquiry
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'storeCode': self.request.POST['storeCode'],
@@ -47,7 +47,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
     def payment(self):
         type_ = FamiPortRequestType.PaymentTicketing
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'storeCode': self.request.POST['storeCode'],
@@ -67,7 +67,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
     def completion(self):
         type_ = FamiPortRequestType.PaymentTicketingCompletion
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'storeCode': self.request.POST['storeCode'],
@@ -87,7 +87,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
     def cancel(self):
         type_ = FamiPortRequestType.PaymentTicketingCancel
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'storeCode': self.request.POST['storeCode'],
@@ -107,7 +107,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.information', request_method='POST')
     def information(self):
         type_ = FamiPortRequestType.Information
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'infoKubun': self.request.POST['infoKubun'],
@@ -128,7 +128,7 @@ class ResevationView(object):
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):
         type_ = FamiPortRequestType.CustomerInformation
-        params = {}
+        params = dict(self.request.params)
         try:
             params = {
                 'storeCode': self.request.POST['storeCode'],
