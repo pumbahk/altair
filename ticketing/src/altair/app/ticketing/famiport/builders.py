@@ -449,7 +449,7 @@ class XmlFamiPortResponseGenerator(object):
                 ),
             ))
 
-    def _build_xmlTree(self, root, object):
+    def _build_xmlTree(self, root, obj):
         """
         Build XML tree from object.
         :param root: root of XML tree
@@ -457,23 +457,23 @@ class XmlFamiPortResponseGenerator(object):
         :return: root of the XML tree built
         """
 
-        if object is None:
+        if obj is None:
             return root
 
         # Create an element for each attribute_name with element.text=attribute_value and put under root.
-        for attribute_name in object._serialized_attrs:
-            attribute_value = getattr(object, attribute_name)
+        for attribute_name in obj._serialized_attrs:
+            attribute_value = getattr(obj, attribute_name)
             element_name = attribute_name  # XXX: assuming the element name is identical to the corresponding attribute name
             if attribute_value is not None:
                 element = etree.SubElement(root, element_name)
                 # TODO Take care of problematic chars in UTF-8 to SJIS conversion
-                if attribute_name not in object.encrypted_fields:
+                if attribute_name not in obj.encrypted_fields:
                     element.text = attribute_value
                 else:
                     element.text = self.famiport_crypt.encrypt(attribute_value.encode(self.encoding))
 
-        for attribute_name, element_name in object._serialized_collection_attrs:
-            attribute_value = getattr(object, attribute_name)
+        for attribute_name, element_name in obj._serialized_collection_attrs:
+            attribute_value = getattr(obj, attribute_name)
             for value in attribute_value:
                 element = etree.SubElement(root, element_name)
                 self._build_xmlTree(element, value)
