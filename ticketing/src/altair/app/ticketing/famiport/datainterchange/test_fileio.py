@@ -87,6 +87,24 @@ class ZeroPaddedNumericStringColumnSpecificationTest(unittest.TestCase):
             target.marshal(None, u'100')
 
 
+class DecimalColumnSpecificationTest(unittest.TestCase):
+    def test_marshal_basic(self):
+        from .fileio import Decimal
+        import decimal
+        target = Decimal(precision=5, scale=3)
+        result = target.marshal(None, decimal.Decimal('10000'))
+        self.assertEqual(result, u'99.999')
+        target = Decimal(precision=5, scale=2)
+        result = target.marshal(None, decimal.Decimal('10000'))
+        self.assertEqual(result, u'999.99')
+        target = Decimal(precision=5, scale=1)
+        result = target.marshal(None, decimal.Decimal('10000'))
+        self.assertEqual(result, u'9999.9')
+        target = Decimal(precision=5, scale=0)
+        result = target.marshal(None, decimal.Decimal('10000'))
+        self.assertEqual(result, u'10000')
+
+
 class BooleanColumnSpecificationTest(unittest.TestCase):
     def test_marshal_basic(self):
         from .fileio import Boolean
@@ -95,6 +113,17 @@ class BooleanColumnSpecificationTest(unittest.TestCase):
         self.assertEqual(result, u'y')
         result = target.marshal(None, False)
         self.assertEqual(result, u'n')
+
+
+class SJISStringColumnSpecificationTest(unittest.TestCase):
+    def test_marshal_basic(self):
+        from .fileio import SJISString
+        target = SJISString(5)
+        with self.assertRaises(ValueError):
+            target.marshal(None, u'テスト')
+        target = SJISString(6)
+        result = target.marshal(None, u'テスト')
+        self.assertEqual(result, u'テスト')
 
 
 class WideWidthStringColumnSpecificationTest(unittest.TestCase):
@@ -112,5 +141,31 @@ class DateTimeColumnSpecificationTest(unittest.TestCase):
         target = DateTime(12, pytype=datetime, format=u'%Y-%m-%d')
         result = target.marshal(None, datetime(2015, 1, 1))
         self.assertEqual(result, u'2015-01-01')
+
+
+class TimeColumnSpecificationTest(unittest.TestCase):
+    def test_marshal_basic(self):
+        from .fileio import Time
+        from datetime import time
+        target = Time(5, format=u'%H:%M')
+        result = target.marshal(None, time(12, 34, 56))
+        self.assertEqual(result, u'12:34')
+
+    def test_unmarshal_basic(self):
+        from .fileio import Time
+        from datetime import time 
+        target = Time(5, format=u'%H:%M')
+        result = target.unmarshal(None, u'12:34')
+        self.assertEqual(result, time(12, 34, 0))
+
+
+class DurationColumnSpecificationTest(unittest.TestCase):
+    def test_marshal_basic(self):
+        from .fileio import Duration
+        from datetime import timedelta
+        target = Duration(4, format=u'%H%M')
+        result = target.marshal(None, timedelta(days=2, seconds=3660))
+        self.assertEqual(result, u'4901')
+
 
 

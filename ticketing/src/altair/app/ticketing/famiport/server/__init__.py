@@ -13,7 +13,7 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     engine = sa.engine_from_config(
-        settings, poolclass=sa_pool.NullPool, isolation_level='READ COMMITED')
+        settings, poolclass=sa_pool.NullPool, isolation_level='READ COMMITTED')
     sqlahelper.add_engine(engine)
 
     config = pyramid.config.Configurator(

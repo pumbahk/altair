@@ -16,6 +16,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
+from datetime import date, time
 
 Identifier = sa.BigInteger
 
@@ -86,7 +87,7 @@ def upgrade():
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('name', sa.Unicode(50), nullable=False),
         sa.Column('name_kana', sa.Unicode(200), nullable=False),
-        sa.Column('prefecture', sa.Integer, nullable=False, default=0),
+        sa.Column('prefecture', sa.Integer, nullable=False, server_default=text(u"0")),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
@@ -96,9 +97,9 @@ def upgrade():
         sa.Column('userside_id', Identifier, nullable=True, index=True),
         sa.Column('code_1', sa.Unicode(6), nullable=False),
         sa.Column('code_2', sa.Unicode(4), nullable=False),
-        sa.Column('name_1', sa.Unicode(80), nullable=False, default=u''),
-        sa.Column('name_2', sa.Unicode(80), nullable=False, default=u''),
-        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('name_1', sa.Unicode(80), nullable=False, server_default=text(u'""')),
+        sa.Column('name_2', sa.Unicode(80), nullable=False, server_default=text(u'""')),
+        sa.Column('sales_channel', sa.Integer, nullable=False, server_default=text(unicode(FamiPortSalesChannel.FamiPortOnly.value))),
         sa.Column('client_code', sa.Unicode(24), sa.ForeignKey('FamiPortClient.code')),
         sa.Column('venue_id', Identifier, sa.ForeignKey('FamiPortVenue.id')),
         sa.Column('purchasable_prefectures', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137))),
@@ -118,9 +119,9 @@ def upgrade():
         sa.Column('famiport_event_id', Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False),
         sa.Column('code', sa.Unicode(3)),
         sa.Column('name', sa.Unicode(60)),
-        sa.Column('type', sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value),
-        sa.Column('searchable', sa.Boolean, nullable=False, default=True),
-        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortPerformanceType.Normal.value))),
+        sa.Column('searchable', sa.Boolean, nullable=False, server_default=text(u"TRUE")),
+        sa.Column('sales_channel', sa.Integer, nullable=False, server_default=text(unicode(FamiPortSalesChannel.FamiPortOnly.value))),
         sa.Column('start_at', sa.DateTime(), nullable=True),
         sa.Column('ticket_name', sa.Unicode(20), nullable=True),  # only valid if type = Spanned
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
@@ -133,12 +134,12 @@ def upgrade():
         sa.Column('famiport_performance_id',  Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False),
         sa.Column('code', sa.Unicode(3), nullable=False),
         sa.Column('name', sa.Unicode(40), nullable=False),
-        sa.Column('sales_channel', sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value),
+        sa.Column('sales_channel', sa.Integer, nullable=False, server_default=text(unicode(FamiPortSalesChannel.FamiPortOnly.value))),
         sa.Column('published_at', sa.DateTime(), nullable=True),
         sa.Column('start_at', sa.DateTime(), nullable=False),
         sa.Column('end_at', sa.DateTime(), nullable=True),
-        sa.Column('auth_required', sa.Boolean, nullable=False, default=False),
-        sa.Column('auth_message', sa.Unicode(320), nullable=False, default=u''),
+        sa.Column('auth_required', sa.Boolean, nullable=False, server_default=text(u"FALSE")),
+        sa.Column('auth_message', sa.Unicode(320), nullable=False, server_default=text(u"''")),
         sa.Column('seat_selection_start_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
@@ -161,19 +162,19 @@ def upgrade():
         sa.Column('famiport_order_identifier', sa.String(12), nullable=False),
         sa.Column('exchange_number', sa.String(13), nullable=False),
         sa.Column('reserve_number', sa.String(13), nullable=False),
-        sa.Column('customer_name_input', sa.Boolean, nullable=False, default=False, server_default=text('FALSE')),
+        sa.Column('customer_name_input', sa.Boolean, nullable=False, server_default=text('FALSE')),
         sa.Column('customer_name', sa.Unicode(42), nullable=False),
-        sa.Column('customer_phone_input', sa.Boolean, nullable=False, default=False, server_default=text('FALSE')),
+        sa.Column('customer_phone_input', sa.Boolean, nullable=False, server_default=text('FALSE')),
         sa.Column('customer_phone_number', sa.Unicode(12), nullable=False, server_default=text("''")),
         sa.Column('ticketing_start_at', sa.DateTime(), nullable=True),
         sa.Column('ticketing_end_at', sa.DateTime(), nullable=True),
         sa.Column('payment_start_at', sa.DateTime(), nullable=True),
         sa.Column('payment_due_at', sa.DateTime(), nullable=True),
         sa.Column('customer_name', sa.Unicode(42), nullable=False),  # 氏名
-        sa.Column('customer_name_input', sa.Boolean, nullable=False, default=0),  # 氏名要求フラグ
-        sa.Column('customer_phone_input', sa.Boolean, nullable=False, default=0),  # 電話番号要求フラグ
-        sa.Column('customer_address_1', sa.Unicode(200), nullable=False, default=u''),  # 住所1
-        sa.Column('customer_address_2', sa.Unicode(200), nullable=False, default=u''),  # 住所2
+        sa.Column('customer_name_input', sa.Boolean, nullable=False, server_default=text(u"FALSE")),  # 氏名要求フラグ
+        sa.Column('customer_phone_input', sa.Boolean, nullable=False, server_default=text(u"FALSE")),  # 電話番号要求フラグ
+        sa.Column('customer_address_1', sa.Unicode(200), nullable=False, server_default=text(u"''")),  # 住所1
+        sa.Column('customer_address_2', sa.Unicode(200), nullable=False, server_default=text(u"''")),  # 住所2
         sa.Column('customer_phone_number', sa.Unicode(12), nullable=False),  # 電話番号
         sa.Column('paid_at', sa.DateTime(), nullable=True),
         sa.Column('issued_at', sa.DateTime(), nullable=True),
@@ -182,14 +183,14 @@ def upgrade():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('invalidated_at', sa.DateTime, nullable=True),
-        sa.Column('generation', sa.Integer, nullable=False, default=0),
+        sa.Column('generation', sa.Integer, nullable=False, server_default=text(u"0")),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
         'FamiPortTicket',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
-        sa.Column('type', sa.Integer, nullable=False, default=FamiPortTicketType.TicketWithBarcode.value),
+        sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortTicketType.TicketWithBarcode.value))),
         sa.Column('barcode_number', sa.Unicode(13), nullable=False),
         sa.Column('template_code', sa.Unicode(10), nullable=False),
         sa.Column('data', sa.Unicode(4000), nullable=False),
@@ -200,11 +201,11 @@ def upgrade():
     op.create_table(
         'FamiPortRefund',
         sa.Column('id', Identifier, nullable=False, primary_key=True, autoincrement=True),
-        sa.Column('type', sa.Integer, nullable=False, default=FamiPortRefundType.Type1.value),
+        sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortRefundType.Type1.value))),
         sa.Column('send_back_due_at', sa.Date(), nullable=False),
         sa.Column('start_at', sa.DateTime(), nullable=False),
         sa.Column('end_at', sa.DateTime(), nullable=False),
-        sa.Column('last_serial', sa.Integer, nullable=False, default=0),
+        sa.Column('last_serial', sa.Integer, nullable=False, server_default=text(u"FALSE")),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
@@ -212,7 +213,7 @@ def upgrade():
         'FamiPortRefundEntry',
         sa.Column('id',                    Identifier, primary_key=True, autoincrement=True),
         sa.Column('famiport_refund_id',    Identifier, sa.ForeignKey('FamiPortRefund.id'), nullable=False),
-        sa.Column('serial',                sa.Integer, nullable=False, default=0),
+        sa.Column('serial',                sa.Integer, nullable=False, server_default=text(u"0")),
         sa.Column('famiport_ticket_id',    Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False),
         sa.Column('ticket_payment',        sa.Numeric(precision=9, scale=0)),
         sa.Column('ticketing_fee',         sa.Numeric(precision=8, scale=0)),
@@ -433,9 +434,57 @@ def upgrade():
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.UniqueConstraint('organization_id', 'code')
         )
-
+    op.create_table(
+        'FamiPortShop',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('code', sa.Unicode(5), nullable=False),
+        sa.Column('company_code', sa.Unicode(4), nullable=False),
+        sa.Column('company_name', sa.Unicode(40), nullable=False),
+        sa.Column('district_code', sa.Unicode(1), nullable=False),
+        sa.Column('district_name', sa.Unicode(40), nullable=False),
+        sa.Column('district_valid_from', sa.Date(), nullable=False),
+        sa.Column('branch_code', sa.Unicode(3), nullable=False),
+        sa.Column('branch_name', sa.Unicode(40), nullable=False),
+        sa.Column('branch_valid_from', sa.Date(), nullable=False),
+        sa.Column('name', sa.Unicode(30), nullable=False),
+        sa.Column('name_kana', sa.Unicode(60), nullable=False),
+        sa.Column('tel', sa.Unicode(12), nullable=False),
+        sa.Column('prefecture', sa.Integer(), nullable=False),
+        sa.Column('prefecture_name', sa.Unicode(20), nullable=False),
+        sa.Column('address', sa.Unicode(80), nullable=False),
+        sa.Column('open_from', sa.Date(), nullable=True),
+        sa.Column('zip', sa.Unicode(8), nullable=False),
+        sa.Column('business_run_from', sa.Date(), nullable=True),
+        sa.Column('open_at', sa.Time(), nullable=False, server_default=text(u"'00:00:00'")),
+        sa.Column('close_at', sa.Time(), nullable=False, server_default=text(u"'00:00:00'")),
+        sa.Column('business_hours', sa.Integer(), nullable=False, server_default=text(u"1440")),
+        sa.Column('opens_24hours', sa.Boolean(), nullable=False, server_default=text(u"TRUE")),
+        sa.Column('closest_station', sa.Unicode(41), nullable=False, server_default=text(u"''")),
+        sa.Column('liquor_available', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('cigarettes_available', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('business_run_until', sa.Date(), nullable=True),
+        sa.Column('open_until', sa.Date(), nullable=True),
+        sa.Column('business_paused_at', sa.Date(), nullable=True),
+        sa.Column('business_continued_at', sa.Date(), nullable=True),
+        sa.Column('latitude', sa.Numeric(precision=8, scale=6), nullable=True),
+        sa.Column('longitude', sa.Numeric(precision=9, scale=6), nullable=True),
+        sa.Column('atm_available', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('atm_available_from', sa.Date(), nullable=True),
+        sa.Column('atm_available_until', sa.Date(), nullable=True),
+        sa.Column('mmk_available', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('mmk_available_from', sa.Date(), nullable=True),
+        sa.Column('mmk_available_until', sa.Date(), nullable=True),
+        sa.Column('renewal_start_at', sa.Date(), nullable=True),
+        sa.Column('renewal_end_at', sa.Date(), nullable=True),
+        sa.Column('business_status', sa.Integer, nullable=False, server_default=text(u"0")),
+        sa.Column('paused', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('deleted', sa.Boolean(), nullable=False, server_default=text(u"FALSE"))
+        sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
+        )
 
 def downgrade():
+    op.drop_table('FamiPortShop')
     op.drop_table('FamiPortTenant')
     op.drop_table('FamiPortTicketResponse')
     op.drop_table('FamiPortCustomerInformationResponse')

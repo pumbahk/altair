@@ -15,11 +15,11 @@ class ITabularDataColumnSpecification(Interface):
         pass
 
 class ITabularDataMarshaller(Interface):
-    def __call__(row):
+    def __call__(row, out):
         pass
 
 class ITabularDataUnmarshaller(Interface):
-    def __call__(row):
+    def __call__(in_):
         pass
 
 class IFileSender(Interface):
