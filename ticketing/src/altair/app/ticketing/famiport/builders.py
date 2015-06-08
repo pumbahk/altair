@@ -165,8 +165,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             kogyoName = famiport_order.kogyo_name
             name = famiport_order.name
 
-        nameInput = 0  # 不要（画面表示なし）
-        phoneInput = 0  # 不要（画面表示なし）
+        nameInput = '0'  # 不要（画面表示なし）
+        phoneInput = '0'  # 不要（画面表示なし）
 
         famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
             resultCode=resultCode, replyClass=replyClass, replyCode=replyCode,
