@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from ..utils import sensible_alnum_encode
 from .models import (
     _session,
     FamiPortOrder,
@@ -43,6 +42,7 @@ def get_famiport_order(order_no, session=None):
                     .one()
     return retval
 
+
 def get_famiport_client(client_code, session=None):
     if session is None:
         session = _session
@@ -51,6 +51,7 @@ def get_famiport_client(client_code, session=None):
                     .one()
     return retval
 
+
 def get_famiport_sales_segment_by_userside_id(userside_id, session=None):
     if session is None:
         session = _session
@@ -58,6 +59,7 @@ def get_famiport_sales_segment_by_userside_id(userside_id, session=None):
                     .filter_by(userside_id=userside_id) \
                     .one()
     return retval
+
 
 def create_famiport_ticket(ticket_dict, session=None):
     if session is None:
@@ -68,6 +70,7 @@ def create_famiport_ticket(ticket_dict, session=None):
         template_code=ticket_dict['template'],
         data=ticket_dict['data']
         )
+
 
 def create_famiport_order(
         client_code,

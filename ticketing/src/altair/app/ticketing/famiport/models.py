@@ -3,12 +3,12 @@ import types
 import time
 import random
 import hashlib
+
 from enum import Enum
 import sqlalchemy as sa
-from sqlalchemy.types import TypeDecorator
 from sqlalchemy import orm
 from sqlalchemy.exc import InvalidRequestError
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
 import sqlahelper
 from altair.models.nervous import NervousList
