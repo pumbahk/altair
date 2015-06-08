@@ -138,22 +138,22 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         try:
             famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber, authNumber)
         except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). " + \
                          u"店舗コード: " + storeCode + u", 利用日時: " + ticketingDate + u", 予約番号: " + reserveNumber)
 
         if famiport_order is not None:
-            resultCode = ResultCodeEnum.Normal
+            resultCode = ResultCodeEnum.Normal.value
             replyClass = famiport_order.type
-            replyCode = ReplyCodeEnum.Normal
+            replyCode = ReplyCodeEnum.Normal.value
         else:
-            resultCode = ResultCodeEnum.OtherError
+            resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:
-                replyCode = ReplyCodeEnum.SearchKeyError
+                replyCode = ReplyCodeEnum.SearchKeyError.value
 
         playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
             None, None, None, None, None, None, None, None, None, None, None, None, None
-        if replyCode == ReplyCodeEnum.Normal:
+        if replyCode == ReplyCodeEnum.Normal.value:
             playGuideId = famiport_order.playguide_id
             barCodeNo = famiport_order.barcode_no
             totalAmount = str(famiport_order.total_amount)
@@ -181,7 +181,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_request=None):
-        resultCode = ResultCodeEnum.Normal
+        resultCode = ResultCodeEnum.Normal.value
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
         storeCode = famiport_payment_ticketing_request.storeCode
         mmkNo = famiport_payment_ticketing_request.mmkNo
@@ -200,7 +200,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). " + \
                          u"店舗コード: " + storeCode + u", 発券Famiポート番号: " + mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo)
 
@@ -210,19 +210,19 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             orderId = famiport_order.famiport_order_identifier
             replyClass = famiport_order.type
             if famiport_order.payment_due_at < ticketingDate:
-                replyCode = ReplyCodeEnum.PaymentDueError
+                replyCode = ReplyCodeEnum.PaymentDueError.value
             if famiport_order.paid_at:
-                replyCode = ReplyCodeEnum.AlreadyPaidError
+                replyCode = ReplyCodeEnum.AlreadyPaidError.value
             if famiport_order.issued_at:
-                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError
+                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
             if famiport_order.ticketing_end_at > ticketingDate:
-                replyCode = ReplyCodeEnum.TicketingDueError
+                replyCode = ReplyCodeEnum.TicketingDueError.value
             # TODO PaymentCancelError
             if famiport_order.ticketing_start_at < ticketingDate:
-                replyCode = ReplyCodeEnum.TicketingBeforeStartError
+                replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
             # TODO TicketingCancelError
             else:
-                replyCode = ReplyCodeEnum.Normal
+                replyCode = ReplyCodeEnum.Normal.value
             playGuideId = famiport_order.playguide_id
             playGuideName = famiport_order.playguide_name
             if replyClass == ReplyClassEnum.CashOnDelivery:
@@ -248,9 +248,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             koenDate = famiport_order.koen_date.strftime("%Y%m%d%H%M")
             ticket = famiport_order.famiport_tickets
         else:
-            resultCode = ResultCodeEnum.OtherError
+            resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:
-                replyCode = ReplyCodeEnum.SearchKeyError
+                replyCode = ReplyCodeEnum.SearchKeyError.value
 
         famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyClass=replyClass, \
                                                                                replyCode=replyCode, playGuideId=playGuideId, playGuideName=playGuideName, orderTicketNo=orderTicketNo, exchangeTicketNo=exchangeTicketNo,\
@@ -262,7 +262,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_completion_request=None):
-        resultCode = ResultCodeEnum.Normal
+        resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_completion_request.storeCode
         mmkNo = famiport_payment_ticketing_completion_request.mmkNo
         ticketingDate = famiport_payment_ticketing_completion_request.ticketingDate
@@ -274,16 +274,16 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError
+            replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). " + \
                          u"店舗コード: " + storeCode + u", 発券Famiポート番号: " +  mmkNo + u", 利用日時: ", ticketingDate + u", 処理通番: " + sequenceNo + u", 支払番号: " + barCodeNo + u", 注文ID: " + orderId)
 
         if famiport_order is not None:
-            replyCode = ReplyCodeEnum.Normal
+            replyCode = ReplyCodeEnum.Normal.value
         else:
-            resultCode = ResultCodeEnum.OtherError
+            resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:
-                replyCode = ReplyCodeEnum.SearchKeyError
+                replyCode = ReplyCodeEnum.SearchKeyError.value
 
         famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, \
                                                                                                     orderId=orderId, replyCode=replyCode)
@@ -292,7 +292,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_cancel_request=None):
-        resultCode = ResultCodeEnum.Normal
+        resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_cancel_request.storeCode
         mmkNo = famiport_payment_ticketing_cancel_request.mmkNo
         ticketingDate = famiport_payment_ticketing_cancel_request.ticketingDate
@@ -310,18 +310,18 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
         if famiport_order is not None:
             orderId = famiport_order.famiport_order_identifier
             if famiport_order.paid_at:
-                replyCode = ReplyCodeEnum.AlreadyPaidError
+                replyCode = ReplyCodeEnum.AlreadyPaidError.value
             if famiport_order.canceled_at:
-                replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError
+                replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value
             if famiport_order.issued_at:
-                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError
+                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
             # TODO PaymentCancelError
             # TODO TicketingCancelError
             else:
-                replyCode = ReplyCodeEnum.Normal
+                replyCode = ReplyCodeEnum.Normal.value
         else:
-            resultCode = ResultCodeEnum.OtherError
-            replyCode = ReplyCodeEnum.OtherError
+            resultCode = ResultCodeEnum.OtherError.value
+            replyCode = ReplyCodeEnum.OtherError.value
 
         famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyCode=replyCode)
         return famiport_payment_ticketing_cancel_response
@@ -396,14 +396,14 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
         resultCode, replyCode = None, None
         if famiport_order is not None:
-            resultCode = ResultCodeEnum.Normal
-            replyCode = ReplyCodeEnum.Normal
+            resultCode = ResultCodeEnum.Normal.value
+            replyCode = ReplyCodeEnum.Normal.value
         else:
-            resultCode = ResultCodeEnum.OtherError
-            replyCode = ReplyCodeEnum.CustomerNamePrintInformationError
+            resultCode = ResultCodeEnum.OtherError.value
+            replyCode = ReplyCodeEnum.CustomerNamePrintInformationError.value
 
         name, memberId, address1, address2, identifyNo = None, None, None, None, None
-        if replyCode == ReplyCodeEnum.Normal:
+        if replyCode == ReplyCodeEnum.Normal.value:
             name = famiport_order.name
             memberId = famiport_order.memberId
             address1 = famiport_order.address1
