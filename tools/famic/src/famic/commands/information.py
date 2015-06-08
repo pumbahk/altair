@@ -32,7 +32,7 @@ def main(argv=sys.argv[1:]):
     host = args.host
     url = '{}://{}/{}'.format(DEFAULT_PROTOCOL, host, uri)
     res = requests.post(url, params=params)
-    print(res.body)
+    print(res.content)
 
 
 if __name__ == '__main__':
