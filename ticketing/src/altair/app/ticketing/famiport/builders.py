@@ -339,7 +339,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         :return: FamiPortInformationResponse
         """
 
-        resultCode = InformationResultCodeEnum.NoInformation  # デフォルトは案内なし(正常)
+        resultCode = InformationResultCodeEnum.NoInformation.value  # デフォルトは案内なし(正常)
         infoKubun = famiport_information_request.infoKubun
         storeCode = famiport_information_request.storeCode
         if infoKubun == InfoKubunEnum.Reserved:
@@ -358,21 +358,21 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.ServiceUnavailable)
         except DBAPIError:
             logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). 店舗コード: " + storeCode)
-            resultCode == InformationResultCodeEnum.OtherError
+            resultCode == InformationResultCodeEnum.OtherError.value
             infoMessage = u'エラーが起こりました。'
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
         if infoMessage != None:  # サービス不可時案内
-            resultCode = InformationResultCodeEnum.ServiceUnavailable
+            resultCode = InformationResultCodeEnum.ServiceUnavailable.value
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
 
         try:
             infoMessage = FamiPortInformationMessage.get_message(InformationResultCodeEnum.WithInformation)
         except DBAPIError:
-            resultCode == InformationResultCodeEnum.OtherError
+            resultCode == InformationResultCodeEnum.OtherError.value
             infoMessage = u'エラーが起こりました。'
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
         if infoMessage != None: # 文言の設定あり
-            resultCode = InformationResultCodeEnum.WithInformation
+            resultCode = InformationResultCodeEnum.WithInformation.value
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
 
         return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=None)  # 案内なし(正常)
