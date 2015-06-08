@@ -524,11 +524,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @property
     def ticket_count(self):
-        return sum(0 if famiport_ticket.is_subticket else 1 for famiport_ticket in famiport_order.famiport_tickets)
+        return sum(0 if famiport_ticket.is_subticket else 1 for famiport_ticket in self.famiport_tickets)
 
     @property
     def subticket_count(self):
-        return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in famiport_order.famiport_tickets)
+        return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in self.famiport_tickets)
 
 
 class FamiPortTicketType(Enum):
