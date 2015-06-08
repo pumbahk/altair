@@ -8,9 +8,9 @@ DEFAULT_PROTOCOL = 'http'
 
 
 class FamiPortReserveAPIURL(enum.Enum):
-    INQUIRY = '/reservation/inquiry'
-    PAYMENT = '/reservation/payment'
-    COMPLETION = '/reservation/completion'
-    CANCEL = '/reservation/cancel'
-    INFORMATION = '/reservation/information'
-    CUSTOMER = '/reservation/customer'
+    INQUIRY = '/famiport/reservation/inquiry'
+    PAYMENT = '/famiport/reservation/payment'
+    COMPLETION = '/famiport/reservation/completion'
+    CANCEL = '/famiport/reservation/cancel'
+    INFORMATION = '/famiport/reservation/information'
+    CUSTOMER = '/famiport/reservation/customer'
