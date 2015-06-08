@@ -18,7 +18,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm, OrionPerformanceForm
+from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformanceManycopyForm, PerformancePublicForm, OrionPerformanceForm
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -31,6 +31,7 @@ from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, Quer
 from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders import helpers as order_helpers
+from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
@@ -543,6 +544,107 @@ class Performances(BaseView):
                 'route_name': route_name,
                 'route_path': self.request.path,
             }
+
+    @view_config(route_name='performances.manycopy', request_method='GET', renderer='altair.app.ticketing:templates/performances/copy.html')
+    def manycopy_get(self):
+        origin_performance = self.context.performance
+        f = PerformanceManycopyForm()
+        f.id.data = origin_performance.id
+        f.name.data = origin_performance.name
+        f.start_on.data = origin_performance.start_on
+        f.end_on.data = origin_performance.end_on
+        f.display_order.data = origin_performance.display_order
+
+        return {
+            'event':origin_performance.event,
+            'origin_performance':origin_performance,
+            'form': f,
+            'cart_helper': cart_helper,
+            'route_path': self.request.path,
+        }
+
+    @view_config(route_name='performances.manycopy', request_method='POST', renderer='altair.app.ticketing:templates/performances/copy.html')
+    def manycopy_post(self):
+        # original_perf_id, 1_name, 1_start_on, 1_end_on, 1_display_order, 2_name, 2_start_on, 2_end_on, 2_display_order
+        params = self.request.params.items()
+        if len(params) == 0:
+            self.request.session.flash(u'コピーするものがありません')
+            return HTTPFound(location=route_path('events.index', self.request))
+
+        target_total = len(params) / 4
+
+        error_exist = False
+        for cnt in range(0, target_total):
+            if not params[cnt * 4 + 1][1]:
+                self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt+1))
+                error_exist = True
+
+            import datetime
+            try:
+                datetime.datetime.strptime(params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                self.request.session.flash(u'{}行目の公演開始時刻が不正です。'.format(cnt+1))
+                error_exist = True
+
+            if params[cnt * 4 + 3][1]:
+                try:
+                    datetime.datetime.strptime(params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    self.request.session.flash(u'{}行目の公演終了時刻が不正です。'.format(cnt+1))
+                    error_exist = True
+
+            try:
+                display_order = long(params[cnt * 4 + 4][1])
+                if -2147483648 > display_order or display_order > 2147483647:
+                    self.request.session.flash(u'{}行目の表示順は、-2147483648から、2147483647の間で指定できます。'.format(cnt))
+                    error_exist = True
+            except ValueError:
+                self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt+1))
+                error_exist = True
+
+        origin_performance = Performance.get(params[0][1], self.context.organization.id)
+        if error_exist:
+            return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+
+        for cnt in range(0, target_total):
+
+            new_performance = Performance()
+
+            # POST data
+            new_performance.event_id = origin_performance.event_id
+            new_performance.name = params[cnt * 4 + 1][1]
+            new_performance.start_on = params[cnt * 4 + 2][1]
+            if params[cnt * 4 + 3][1]:
+                new_performance.end_on = params[cnt * 4 + 3][1]
+            new_performance.display_order = params[cnt * 4 + 4][1]
+
+            # Copy data
+            new_performance.code = origin_performance.code
+            new_performance.open_on = origin_performance.open_on
+            new_performance.venue_id = origin_performance.venue.id
+            new_performance.create_venue_id = origin_performance.venue.id
+            new_performance.original_id = origin_performance.id
+            new_performance.redirect_url_pc = origin_performance.redirect_url_pc
+            new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
+            new_performance.abbreviated_title = origin_performance.abbreviated_title
+            new_performance.subtitle = origin_performance.subtitle
+            new_performance.note = origin_performance.note
+
+            if new_performance.setting is None:
+                new_performance.setting = PerformanceSetting()
+
+            new_performance.setting.order_limit = origin_performance.setting.order_limit
+            new_performance.setting.entry_limit = origin_performance.setting.entry_limit
+            new_performance.setting.max_quantity_per_user = origin_performance.setting.max_quantity_per_user
+            new_performance.setting.visible = origin_performance.setting.visible
+
+            if origin_performance.orion is not None:
+                new_performance.orion = OrionPerformance.clone(origin_performance.orion, False, ['performance_id'])
+
+            new_performance.save()
+
+        self.request.session.flash(u'パフォーマンスをコピーしました')
+        return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
 
     @view_config(route_name='performances.delete')
     def delete(self):

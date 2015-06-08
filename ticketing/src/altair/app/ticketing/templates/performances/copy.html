@@ -1,0 +1,53 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+
+<div class="page-header">
+  <h1>複数公演コピー</h1>
+</div>
+
+<div class="well">
+  <h2>元にする公演</h2>
+  公演ID:${origin_performance.id}<br/>
+  公演名:${origin_performance.name}<br/>
+  会場:${origin_performance.venue.name}<br/>
+  公演日:${cart_helper.performance_datetime(origin_performance)}<br/>
+  表示順:${origin_performance.display_order}<br/>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    ${form.id}
+    <table>
+      <thead>
+        <tr>
+          <td>公演名</td>
+          <td>開演</td>
+          <td>終演</td>
+          <td>表示順</td>
+        </tr>
+      </thead>
+      <tr>
+        <td>${form.name}</td>
+        <td>${form.start_on}</td>
+        <td>${form.end_on}</td>
+        <td>${form.display_order}</td>
+      </tr>
+      <tr>
+        <td>${form.name}</td>
+        <td>${form.start_on}</td>
+        <td>${form.end_on}</td>
+        <td>${form.display_order}</td>
+      </tr>
+      <tr>
+        <td>${form.name}</td>
+        <td>${form.start_on}</td>
+        <td>${form.end_on}</td>
+        <td>${form.display_order}</td>
+      </tr>
+    </table>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="コピーを実行する">
+    </div>
+  </form>
+</div>

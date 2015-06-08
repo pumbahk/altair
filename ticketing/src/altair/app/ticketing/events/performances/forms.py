@@ -259,6 +259,37 @@ class PerformanceForm(OurForm):
                     raise ValidationError(u'この会場で既に配席されている為、会場を変更できません')
 
 
+class PerformanceManycopyForm(OurForm):
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+    name = TextField(
+        label=u'公演名',
+        filters=[
+            replace_ambiguous,
+            ],
+        validators=[
+            Required(),
+            JISX0208,
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+    start_on = TextField(
+        label=u'開演',
+        validators=[Required(), after1900],
+    )
+    end_on = TextField(
+        label=u'終演',
+        validators=[Optional(), after1900],
+    )
+    display_order = OurIntegerField(
+        label=label_text_for(Performance.display_order),
+        default=1,
+        hide_on_new=True,
+        )
+
+
 class PerformancePublicForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

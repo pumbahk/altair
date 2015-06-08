@@ -25,6 +25,11 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/copy/' + id);
   }
+  function many_copy_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/manycopy/' + id);
+  }
   function mail_info(){
     var id = get_id('performance_id');
     if (!id) return;
@@ -83,13 +88,18 @@
       url='javascript:copy_performance();',
       icon='icon-plus',
     ),
+    'manycopy':dict(
+      label=u'公演を複数コピー',
+      url='javascript:many_copy_performance();',
+      icon='icon-plus',
+    ),
     'mail': dict(
       label=u"メール付加情報",
       url="javascript:mail_info()",
       icon="icon-envelope",
     )
   }
-  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
+  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy', 'manycopy'])
 %>
 ${HH.action_button(actions, order)}
 
