@@ -238,7 +238,7 @@ class FamiPortPerformance(Base, WithTimestamp):
     searchable              = sa.Column(sa.Boolean, nullable=False, default=True)
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
     start_at                = sa.Column(sa.DateTime(), nullable=True)
-    ticket_name             = sa.Column(sa.Unicode(20), nullable=True) # only valid if type == Spanned
+    ticket_name             = sa.Column(sa.Unicode(20), nullable=True)  # only valid if type == Spanned
 
     famiport_event = orm.relationship('FamiPortEvent')
 
@@ -295,11 +295,11 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 
 
-class FamiPortOrderType(Enum): # ReplyClassEnumと意味的には同じ
-    CashOnDelivery       = 1 # 代引き
-    Payment              = 2 # 前払い（後日渡し）の前払い時
-    Ticketing            = 3 # 代済発券と前払い(後日渡し)の後日渡し時
-    PaymentOnly          = 4 # 前払いのみ
+class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
+    CashOnDelivery       = 1  # 代引き
+    Payment              = 2  # 前払い（後日渡し）の前払い時
+    Ticketing            = 3  # 代済発券と前払い(後日渡し)の後日渡し時
+    PaymentOnly          = 4  # 前払いのみ
 
 
 def create_random_sequence_number(length):
@@ -344,6 +344,7 @@ class DigitCodec(object):
         return retval
 
 digit_encoder = DigitCodec("0123456789ACFGHJKLPRSUWXY")
+
 
 def screw(x, s):
     x = long(x)
@@ -483,8 +484,8 @@ class FamiPortOrder(Base, WithTimestamp):
     invalidated_at            = sa.Column(sa.DateTime(), nullable=True)
     total_amount              = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)  # 入金金額
     ticket_payment            = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
-    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # 店頭発券手数料
-    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False) # システム利用料
+    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # 店頭発券手数料
+    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # システム利用料
     paid_at                   = sa.Column(sa.DateTime(), nullable=True)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
     canceled_at               = sa.Column(sa.DateTime(), nullable=True)
