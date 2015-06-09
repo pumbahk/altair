@@ -47,7 +47,7 @@
   </dl>
 </div>
 
-<h4>警告</h4>
+<h4>警告・エラー</h4>
 <table class="table">
   <thead>
     <tr>
@@ -59,27 +59,42 @@
     </tr>
   </thead>
   <tbody>
-% for order, messages in warnings:
-  % for i, message in enumerate(messages):
+% if errors_and_warnings:
+% for order, errors in errors_and_warnings:
+  % for i, error in enumerate(errors):
     % if i == 0:
     <tr>
-      <td rowspan="${len(messages)}">${order.order_no}</td>
+      <td rowspan="${len(errors)}">${order.order_no}</td>
     % else:
     <tr>
     % endif
       <td>${order.sales_segment.sales_segment_group.name}</td>
       <td>${order.payment_delivery_pair.payment_method.name}</td>
       <td>${order.payment_delivery_pair.delivery_method.name}</td>
-      <td>${message}</td>
+      <td>
+        ${oh.render_error_label(request, error['type'])}
+        ${error['message']}
+      </td>
     </tr>
   % endfor
 % endfor
+% else:
+    <tr>
+      <td colspan="5">警告・エラーはありません</td>
+    </tr>
+% endif
   </tbody>
 </table>
 
 <form class="form-horizontal well cleardix" action="${request.route_path('orders.refund.confirm')}" method="POST">
   <div class="pull-right">
     <a href="${request.route_path('orders.refund.settings')}" class="btn">戻る</a>
-    <button type="submit" class="btn btn-danger">払戻予約を実行する</button>
+    % if error_count > 0:
+        <button type="submit" class="btn btn-danger" disabled="disabled">払戻できません</button>
+    % elif warning_count > 0:
+        <button type="submit" class="btn btn-danger">警告に注意しつつ払戻予約を実行する</button>
+    % else:
+        <button type="submit" class="btn btn-primary">払戻予約を実行する</button>
+    % endif
   </div>
 </form>
