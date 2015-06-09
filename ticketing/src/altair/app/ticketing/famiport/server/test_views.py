@@ -424,7 +424,7 @@ class InformationViewTest(FamiPortAPIViewTest):
     @mock.patch('altair.app.ticketing.famiport.models.FamiPortInformationMessage.get_message')
     def test_it(self, get_message):
         from ..testing import FamiPortInformationResponseFakeFactory as FakeFactory
-        get_message.return_value = DummyModel()
+        get_message.return_value = u'テスト'
         res = self._callFUT({
             'uketsukeCode': '',
             'kogyoSubCode': '',
@@ -438,7 +438,7 @@ class InformationViewTest(FamiPortAPIViewTest):
         self.assertEqual(200, res.status_code)
 
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
             )
 

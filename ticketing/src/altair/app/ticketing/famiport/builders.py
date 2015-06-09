@@ -424,7 +424,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             resultCode == InformationResultCodeEnum.OtherError.value
             infoMessage = u'エラーが起こりました。'
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
-        if infoMessage != None:  # サービス不可時案内
+        if infoMessage is not None:  # サービス不可時案内
             resultCode = InformationResultCodeEnum.ServiceUnavailable.value
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
 
@@ -435,7 +435,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             resultCode == InformationResultCodeEnum.OtherError.value
             infoMessage = u'エラーが起こりました。'
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
-        if infoMessage != None:  # 文言の設定あり
+        if infoMessage is not None:  # 文言の設定あり
             resultCode = InformationResultCodeEnum.WithInformation.value
             return FamiPortInformationResponse(resultCode=resultCode, infoKubun=infoKubun, infoMessage=infoMessage)
 
