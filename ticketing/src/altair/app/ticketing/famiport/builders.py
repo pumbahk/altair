@@ -135,8 +135,19 @@ class FamiPortResponseBuilder(object):
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_reservation_inquiry_request=None):
-        playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
-            None, None, None, None, None, None, None, None, None, None, None, None, None
+        playGuideId = ''
+        barCodeNo = ''
+        totalAmount = ''
+        ticketPayment = ''
+        systemFee = ''
+        ticketingFee = ''
+        ticketCountTotal = ''
+        ticketCount = ''
+        kogyoName = ''
+        koenDate = ''
+        name = ''
+        nameInput = NameRequestInputEnum.Unnecessary.value
+        phoneInput = PhoneRequestInputEnum.Unnecessary.value
 
         storeCode = famiport_reservation_inquiry_request.storeCode
         ticketingDate = famiport_reservation_inquiry_request.ticketingDate
@@ -156,14 +167,23 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). 店舗コード: %s , 利用日時: %s , 予約番号: %s "
                          % (storeCode, ticketingDate, reserveNumber))
 
-        nameInput = NameRequestInputEnum.Unnecessary.value
-        phoneInput = PhoneRequestInputEnum.Unnecessary.value
         if famiport_order is not None:
             resultCode = ResultCodeEnum.Normal.value
             replyClass = famiport_order.type
             replyCode = ReplyCodeEnum.Normal.value
             nameInput = NameRequestInputEnum.Necessary.value if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary.value
             phoneInput = PhoneRequestInputEnum.Necessary.value if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary.value
+            if famiport_order.performance_start_at:
+                koenDate = famiport_order.performance_start_at.strftime('%Y%m%d%H%M')
+            else:
+                # 値が設定されていない場合は画面に表示しない
+                # ”888888888888”  (オール8)の場合
+                # チケット料金の注意事項(下記参照)を表示する
+                # （「2：前払い（後日渡し）の前払い時」または「4:前払いのみ」の場合のみ）
+                # チケット料金に表示されている金額は、有料組織の年会費などの場合もある
+                # ”999999999999 (オール9)の場合、
+                # 期間内有効券と判断して公演日時を表示しない。
+                koenDate = '99999999999999'
         else:
             resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:

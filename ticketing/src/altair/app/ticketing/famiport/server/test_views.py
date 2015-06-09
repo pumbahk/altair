@@ -36,36 +36,24 @@ class FamiPortAPIViewTest(TestCase):
         return self.app.post(self.url, *args, **kwds)
 
     def _check_payload(self, res, exp, famiport_response_class=None):
-        res_payload = lxml.etree.tostring(res, pretty_print=True)
-        exp_payload = lxml.etree.tostring(exp, pretty_print=True)
-        res_payload_list = map(lambda x: x.strip(), res_payload.split('\n'))
-        exp_payload_list = map(lambda x: x.strip(), exp_payload.split('\n'))
+        res_elms = dict((elm.tag, elm) for elm in res.xpath('*'))
+        exp_elms = dict((elm.tag, elm) for elm in exp.xpath('*'))
 
-        regx = re.compile(r'<(?P<tag>[^>]+)>')
+        def _strip(value):
+            return value.strip() if hasattr(value, 'strip') else value
 
-        for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
-            matching = regx.search(res_elm)
-            if not matching:
+        for tag, exp_elm in exp_elms.items():
+            self.assertIn(tag, res_elms)
+            res_elm = res_elms[tag]
+
+            if tag in ['ticketData']:  # orz skip
                 continue
 
-            tag_name = matching.group('tag')
-            if tag_name in ['ticketData']:  # ignore orz
-                continue
-
-            if famiport_response_class and tag_name in famiport_response_class._encryptedFields:
-                self.assertEqual(bool(res_elm), bool(exp_elm))
+            if famiport_response_class \
+               and tag in famiport_response_class._encryptedFields:
+                self.assertEqual(bool(res_elm.text), bool(exp_elm.text))
             else:
-                self.assertEqual(res_elm, exp_elm)
-            #     tag_name = lxml.etree.fromstring(res_elm).tag
-            # except:
-            #     import ipdb; ipdb.set_trace()
-            #     raise
-            # if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
-            #     # 暗号化処理のところ
-            #     # とりあえずskipする
-            #     pass
-            # else:
-            #     import ipdb; ipdb.set_trace()
+                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text))
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -112,6 +100,7 @@ class InquiryTest(FamiPortAPIViewTest):
         payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+        performance_start_at = datetime.datetime(2015, 5, 1, 10, 0)
 
         get_by_reserveNumber.return_value = DummyModel(
             customer_name=u'楽天太郎',
@@ -137,9 +126,10 @@ class InquiryTest(FamiPortAPIViewTest):
             kogyo_name=u'サンプル興行',
             customer_name_input=0,
             customer_phone_input=0,
+            performance_start_at=performance_start_at,
             famiport_sales_segment=DummyModel(
                 famiport_performance=DummyModel(
-                    start_at=None,
+                    start_at=performance_start_at,
                     ),
                 )
             )
@@ -151,7 +141,6 @@ class InquiryTest(FamiPortAPIViewTest):
             'storeCode': '000009',
             })
         self.assertEqual(200, res.status_code)
-
         self._check_payload(
             FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),

@@ -512,6 +512,10 @@ class FamiPortOrder(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
 
+    @property
+    def performance_start_at(self):
+        return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
+
     def save(self):
         _session.add(self)
         _session.flush()
