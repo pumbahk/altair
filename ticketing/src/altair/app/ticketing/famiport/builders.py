@@ -239,16 +239,16 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.Normal.value
             playGuideId = famiport_order.playguide_id
             playGuideName = famiport_order.playguide_name
-            if replyClass == ReplyClassEnum.CashOnDelivery:
+            if replyClass == ReplyClassEnum.CashOnDelivery.value:
                 orderTicketNo = barCodeNo
-            elif replyClass == ReplyClassEnum.Prepayment:
+            elif replyClass == ReplyClassEnum.Prepayment.value:
                 orderTicketNo = barCodeNo
                 exchangeTicketNo = famiport_order.exchange_number
                 ticketingStart = famiport_order.ticketing_start_at
                 ticketingEnd = famiport_order.ticketing_end_at
-            elif replyClass == ReplyClassEnum.Paid:
+            elif replyClass == ReplyClassEnum.Paid.value:
                 exchangeTicketNo = famiport_order.exchange_number
-            elif replyClass == ReplyClassEnum.PrepaymentOnly:
+            elif replyClass == ReplyClassEnum.PrepaymentOnly.value:
                 orderTicketNo = barCodeNo
             else:
                 pass

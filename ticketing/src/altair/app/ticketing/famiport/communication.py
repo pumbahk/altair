@@ -41,12 +41,12 @@ class InformationResultCodeEnum(Enum):
     OtherError         = '99'  # その他エラー
 
 
-class InfoKubunEnum(IntEnum):
+class InfoKubunEnum(Enum):
     Reserved    = '1'  # 予済み
     DirectSales = '2'  # 直販
 
 
-class ReplyClassEnum(IntEnum):
+class ReplyClassEnum(Enum):
     CashOnDelivery = '1'  # 代引き
     Prepayment     = '2'  # 前払い（後日渡し）の前払い時
     Paid           = '3'  # 代済発券と前払い(後日渡し)の後日渡し時
@@ -68,13 +68,16 @@ class ReplyCodeEnum(Enum):
     CustomerNamePrintInformationError = '70'  # 顧客名印字情報取得エラー
     OtherError                        = '99'  # その他エラー
 
+
 class NameRequestInputEnum(Enum):
     Unnecessary = '0'
     Necessary = '1'
 
+
 class PhoneRequestInputEnum(Enum):
     Unnecessary = '0'
     Necessary = '1'
+
 
 class FamiPortRequest(object):
     @property

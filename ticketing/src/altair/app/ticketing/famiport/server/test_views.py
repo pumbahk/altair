@@ -192,7 +192,7 @@ class PaymentTest(FamiPortAPIViewTest):
             ticketing_end_at=ticketing_end_at,
             playguide_id=1,
             playguide_name=u'クライアント１',
-            exchange_number='IAHOGIRHGOIRH',
+            exchange_number='4310000000002',
             barcode_number=u'1000000000000',
             total_amount=1,
             ticket_payment=1,
