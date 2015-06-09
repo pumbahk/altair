@@ -67,7 +67,7 @@ class ClientForm(_ClientForm):
     sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
     birthday = OurDateField(
         u"誕生日",
-        value_defaults={ 'year': u'1980', },
+        value_defaults={'year':u'1980'},
         missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
         widget=OurDateWidget(
             input_builder=build_date_input_select_japanese_japan
