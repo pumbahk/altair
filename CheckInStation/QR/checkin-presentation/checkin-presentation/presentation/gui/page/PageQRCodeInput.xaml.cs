@@ -133,6 +133,10 @@ namespace checkin.presentation.gui.page
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
+            if (this.QRCodeInput.Text.Length >= 60)
+            {
+                this.buttonsubmit.Visibility = Visibility.Visible;
+            }
             if (e.Key == Key.Return)
             {
                 this.Dispatcher.InvokeAsync(() => {

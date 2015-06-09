@@ -89,6 +89,8 @@
                     <Button
                      Canvas.Right="140"
                      Canvas.Top="655"
+                     x:Name="buttonsubmit"
+                     Visibility="Hidden"
                      Click="OnSubmitWithBoundContext"
                      Style="{StaticResource SubmitButton}"
                      HorizontalAlignment="Center"
