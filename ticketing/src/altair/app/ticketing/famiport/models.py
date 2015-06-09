@@ -579,7 +579,7 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
         assert isinstance(information_result_code, InformationResultCodeEnum)
-        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
+        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message
