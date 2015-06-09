@@ -514,6 +514,10 @@ class FamiPortOrder(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
 
+    def save(self):
+        _session.add(self)
+        _session.flush()
+
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
         _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
@@ -533,6 +537,14 @@ class FamiPortOrder(Base, WithTimestamp):
     @property
     def subticket_count(self):
         return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in self.famiport_tickets)
+
+    @property
+    def customer_member_id(self):
+        return '' # TODO Set customer_member_id
+
+    @property
+    def customer_identify_no(self):
+        return '' # TODO Set customer_identify_no
 
 
 class FamiPortTicketType(Enum):

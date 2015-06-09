@@ -42,8 +42,8 @@ class InformationResultCodeEnum(Enum):
 
 
 class InfoKubunEnum(IntEnum):
-    Reserved    = 1  # 予済み
-    DirectSales = 2  # 直販
+    Reserved    = '1'  # 予済み
+    DirectSales = '2'  # 直販
 
 
 class ReplyClassEnum(IntEnum):
@@ -68,6 +68,13 @@ class ReplyCodeEnum(Enum):
     CustomerNamePrintInformationError = '70'  # 顧客名印字情報取得エラー
     OtherError                        = '99'  # その他エラー
 
+class NameRequestInputEnum(Enum):
+    Unnecessary = '0'
+    Necessary = '1'
+
+class PhoneRequestInputEnum(Enum):
+    Unnecessary = '0'
+    Necessary = '1'
 
 class FamiPortRequest(object):
     @property
@@ -83,7 +90,7 @@ class FamiPortRequest(object):
         return self._encryptedFields
 
     @property
-    def encryt_key(self):
+    def encrypt_key(self):
         return None
 
 
