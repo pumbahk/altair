@@ -522,7 +522,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
-        return _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
+        return _session \
+            .query(cls) \
+            .filter(cls.reserve_number == reserveNumber) \
+            .first()
+            # .filter(amitoPortOrder.auth_number == authNumber) \
 
     @classmethod
     def get_by_barCodeNo(cls, barCodeNo):

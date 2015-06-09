@@ -176,21 +176,22 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
         if replyCode == ReplyCodeEnum.Normal.value:
-            playGuideId = famiport_order.playguide_id
-            barCodeNo = famiport_order.barcode_number
+            playGuideId = famiport_order.famiport_client.playguide.discrimination_code
+            barCodeNo = famiport_order.barcode_no
             totalAmount = famiport_order.total_amount
             ticketPayment = str_or_blank(famiport_order.ticket_payment)
             systemFee = str_or_blank(famiport_order.system_fee)
             ticketingFee = str_or_blank(famiport_order.ticketing_fee)
             ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
             ticketCount = str_or_blank(famiport_order.ticket_count)
-            kogyoName = famiport_order.kogyo_name
+            kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
             name = famiport_order.customer_name
 
         totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
         ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
         systemFee = str_or_blank(systemFee, 8, fillvalue='0')
         ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
+        replyClass = str_or_blank(replyClass)
 
         famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
             resultCode=resultCode, replyClass=replyClass, replyCode=replyCode,

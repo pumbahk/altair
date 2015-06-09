@@ -114,7 +114,7 @@ class InquiryTest(FamiPortAPIViewTest):
             playguide_id=1,
             playguide_name=u'クライアント１',
             exchange_number='4310000000002',
-            barcode_number=u'4110000000006',
+            barcode_no=u'4110000000006',
             total_amount=670,
             ticket_payment=0,
             system_fee=500,
@@ -123,15 +123,20 @@ class InquiryTest(FamiPortAPIViewTest):
             ticket_count=len(famiport_tickets),
             koen_date=None,
             famiport_tickets=famiport_tickets,
-            kogyo_name=u'サンプル興行',
             customer_name_input=0,
             customer_phone_input=0,
             performance_start_at=performance_start_at,
             famiport_sales_segment=DummyModel(
                 famiport_performance=DummyModel(
+                    name=u'サンプル興行',
                     start_at=performance_start_at,
                     ),
-                )
+                ),
+            famiport_client=DummyModel(
+                playguide=DummyModel(
+                    discrimination_code='1',
+                    ),
+                ),
             )
 
         res = self._callFUT({
