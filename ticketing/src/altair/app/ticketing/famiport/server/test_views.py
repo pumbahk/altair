@@ -2,7 +2,7 @@
 from unittest import TestCase
 import mock
 import lxml.etree
-from  pyramid.testing import (
+from pyramid.testing import (
     DummyModel,
     )
 from altair.app.ticketing.testing import (
@@ -185,6 +185,27 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
         get_by_barCodeNo.return_value = DummyModel()
+        res = self._callFUT({
+            'ticketingDate': '20150331184114',
+            'orderId': '123456789012',
+            'totalAmount': '1000',
+            'playGuideId': '',
+            'mmkNo': '01',
+            'barCodeNo': '6010000000000',
+            'sequenceNo': '12345678901',
+            'storeCode': '099999',
+            })
+        self.assertEqual(200, res.status_code)
+
+        self._check_payload(
+            FakeFactory.parse(res.unicode_body),
+            FakeFactory.create(),
+            )
+
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
+    def test_fail(self, get_by_barCodeNo):
+        from ..testing import FamiPortPaymentTicketingCompletionResponseFailFakeFactory as FakeFactory
+        get_by_barCodeNo.return_value = None
         res = self._callFUT({
             'ticketingDate': '20150331184114',
             'orderId': '123456789012',
