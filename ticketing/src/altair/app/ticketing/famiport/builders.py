@@ -187,10 +187,10 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             kogyoName = famiport_order.kogyo_name
             name = famiport_order.customer_name
 
-        totalAmount = str_or_blank(famiport_order.total_amount, 8, fillvalue='0')
-        ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
-        systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
-        ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
+        totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
+        ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
+        systemFee = str_or_blank(systemFee, 8, fillvalue='0')
+        ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
 
         famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
             resultCode=resultCode, replyClass=replyClass, replyCode=replyCode,
