@@ -172,7 +172,7 @@ class PaymentTest(FamiPortAPIViewTest):
         from ..communication import FamiPortPaymentTicketingResponse as FamiPortResponse
         famiport_tickets = [
             FamiPortTicket(
-                barcode_number=u'xxx',
+                barcode_number=u'1234567890019',
                 type=1,
                 template_code=u'TTEVEN0001',
                 data=u'test_ticketData1',
@@ -203,7 +203,13 @@ class PaymentTest(FamiPortAPIViewTest):
             koen_date=None,
             famiport_tickets=famiport_tickets,
             kogyo_name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
+            famiport_sales_segment=DummyModel(
+                famiport_performance=DummyModel(
+                    start_at=None,
+                    ),
+                )
             )
+
         res = self._callFUT({
             'ticketingDate': '20150331172554',
             'playGuideId': '',

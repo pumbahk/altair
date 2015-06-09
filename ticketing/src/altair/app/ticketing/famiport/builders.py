@@ -264,7 +264,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             ticketingCountTotal = str(famiport_order.ticket_total_count)
             ticketCount = str(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
-            koenDate = famiport_order.koen_date.strftime("%Y%m%d%H%M")
+
+            start_at = famiport_order.famiport_sales_segment.famiport_performance.start_at
+            koenDate = start_at.strftime('%Y%m%d%H%M') if start_at else '999999999999'
             tickets = famiport_order.famiport_tickets
         else:
             resultCode = ResultCodeEnum.OtherError.value
