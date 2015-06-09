@@ -179,7 +179,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             ticketCountTotal = str(famiport_order.ticket_total_count)
             ticketCount = str(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
-            name = famiport_order.name
+            name = famiport_order.customer_name
 
         famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
             resultCode=resultCode, replyClass=replyClass, replyCode=replyCode,

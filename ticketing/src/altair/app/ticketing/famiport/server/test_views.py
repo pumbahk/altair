@@ -113,8 +113,9 @@ class InquiryTest(FamiPortAPIViewTest):
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
 
         get_by_reserveNumber.return_value = DummyModel(
+            customer_name=u'楽天太郎',
             famiport_order_identifier='430000000002',
-            type='3',
+            type='1',
             payment_due_at=payment_due_at,
             paid_at=None,
             issued_at=None,
@@ -123,8 +124,8 @@ class InquiryTest(FamiPortAPIViewTest):
             playguide_id=1,
             playguide_name=u'クライアント１',
             exchange_number='4310000000002',
-            barcode_number=u'1000000000000',
-            total_amount=200,
+            barcode_number=u'4110000000006',
+            total_amount=670,
             ticket_payment=0,
             system_fee=0,
             ticketing_fee=200,
@@ -151,7 +152,7 @@ class InquiryTest(FamiPortAPIViewTest):
         self.assertEqual(200, res.status_code)
 
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
             FamiPortResponse,
             )
