@@ -3,11 +3,7 @@ import types
 import time
 import random
 import hashlib
-from datetime import (
-    date,
-    time as _time,
-    datetime,
-    )
+from datetime import time as _time
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy import orm
@@ -540,11 +536,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @property
     def customer_member_id(self):
-        return '' # TODO Set customer_member_id
+        return ''  # TODO Set customer_member_id
 
     @property
     def customer_identify_no(self):
-        return '' # TODO Set customer_identify_no
+        return ''  # TODO Set customer_identify_no
 
 
 class FamiPortTicketType(Enum):
