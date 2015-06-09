@@ -453,7 +453,7 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
         )
     _serialized_collection_attrs = ()
     _responseType = FamiPortResponseType.CustomerInformation
-    _encryptedFields = ['name', 'memberId', 'address1', 'address2', 'identifyNo']
+    _encryptedFields = ['name', 'memberId', 'address1', 'address2']
     _encrypt_key = None
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
