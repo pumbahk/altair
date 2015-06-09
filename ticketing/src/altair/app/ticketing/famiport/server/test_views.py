@@ -44,7 +44,7 @@ class FamiPortAPIViewTest(TestCase):
         for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
             matching = regx.search(res_elm)
             tag_name = res_elm[matching.start():matching.end()]
-            if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
+            if famiport_response_class and tag_name in famiport_response_class._encryptedFields:
                 self.assertEqual(bool(res_elm), bool(exp_elm))
             else:
                 self.assertEqual(res_elm, exp_elm)
@@ -170,15 +170,15 @@ class PaymentTest(FamiPortAPIViewTest):
         from ..communication import FamiPortPaymentTicketingResponse as FamiPortResponse
         famiport_tickets = [
             FamiPortTicket(
-                barcode_number=u'1234567890019',
+                barcode_number=u'xxx',
                 type=1,
                 template_code=u'TTEVEN0001',
-                data=u'test_ticketData1'
+                data=u'test_ticketData1',
             ) for ii in range(10)]
 
         get_by_barCodeNo.return_value = DummyModel(
-            famiport_order_identifier='FFFFFFFFFFFFF',
-            type='1',
+            famiport_order_identifier='430000000002',
+            type='3',
             payment_due_at=datetime.datetime.now(),
             paid_at=None,
             issued_at=None,

@@ -271,7 +271,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             from .communication import FamiPortTicketResponse
             for ticket in tickets:
                 ftr = FamiPortTicketResponse()
-                ftr.barCodeNo = barCodeNo
+                ftr.barCodeNo = ticket.barcode_number
                 ftr.ticketClass = str(ticket.type)
                 ftr.templateCode = ticket.template_code
                 ftr.ticketData = ticket.data
