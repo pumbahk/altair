@@ -12,5 +12,6 @@ class FamiPortNumberingError(FamiPortError):
 class FamiPortRequestTypeError(FamiPortError):
     pass
 
+
 class FamiPortResponseBuilderLookupError(FamiPortError):
     pass
