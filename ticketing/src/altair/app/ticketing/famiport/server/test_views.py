@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
+import re
 import itertools
 import mock
 import lxml.etree
@@ -38,16 +39,25 @@ class FamiPortAPIViewTest(TestCase):
         exp_payload = lxml.etree.tostring(exp, pretty_print=True)
         res_payload_list = map(lambda x: x.strip(), res_payload.split('\n'))
         exp_payload_list = map(lambda x: x.strip(), exp_payload.split('\n'))
-        self.assertEqual(res, exp)
-        # for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
-        #     tag_name = lxml.etree.fromstring(res_elm).tag
-        #     if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
-        #         # 暗号化処理のところ
-        #         # とりあえずskipする
-        #         pass
-        #     else:
-        #         pass
-        #     # self.assertEqual(res, exp)
+
+        regx = re.compile('<\S+>')
+        for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
+            matching = regx.search(res_elm)
+            tag_name = res_elm[matching.start():matching.end()]
+            if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
+                self.assertEqual(bool(res_elm), bool(exp_elm))
+            else:
+                self.assertEqual(res_elm, exp_elm)
+            #     tag_name = lxml.etree.fromstring(res_elm).tag
+            # except:
+            #     import ipdb; ipdb.set_trace()
+            #     raise
+            # if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
+            #     # 暗号化処理のところ
+            #     # とりあえずskipする
+            #     pass
+            # else:
+            #     import ipdb; ipdb.set_trace()
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -157,6 +167,7 @@ class PaymentTest(FamiPortAPIViewTest):
         import datetime
         from ..testing import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
         from ..models import FamiPortTicket
+        from ..communication import FamiPortPaymentTicketingResponse as FamiPortResponse
         famiport_tickets = [
             FamiPortTicket(
                 barcode_number=u'1234567890019',
@@ -176,7 +187,7 @@ class PaymentTest(FamiPortAPIViewTest):
             playguide_id=1,
             playguide_name=u'チケットスター',
             exchange_number='IAHOGIRHGOIRH',
-            barcode_number='IAHOGIRHGOIREH',
+            barcode_number=u'1000000000000',
             total_amount=1,
             ticket_payment=1,
             system_fee=1,
@@ -194,13 +205,14 @@ class PaymentTest(FamiPortAPIViewTest):
             'customerName': 'pT6fj7ULQklIfOWBKGyQ6g%3d%3d',
             'mmkNo': '01',
             'barCodeNo': '1000000000000',
-            'sequenceNo': '15033100002',
-            'storeCode': '000009',
+            'sequenceNo': '12345678901',
+            'storeCode': '099999',
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
+            FamiPortResponse,
             )
 
 
