@@ -22,7 +22,8 @@ class FamiPortAPIViewTest(TestCase):
             'altair.app.ticketing.famiport.models'
             ])
         config = Configurator()
-        config.include('altair.app.ticketing.famiport.server', '/famiport/')
+        config.include('.', '/famiport/')
+        config.include('..builders')
 
         extra_environ = {'HTTP_HOST': 'localhost:8063'}
         self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)

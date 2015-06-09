@@ -15,6 +15,7 @@ class FamiPortRequestType(IntEnum):
     PaymentTicketingCancel     = 4  # 予約済み入金発券取消
     Information                = 5  # 予約済み案内
     CustomerInformation        = 6  # 予約済み顧客情報取得
+    RefundEntry                = 7  # 払戻問い合わせ / 確定
 
 
 class FamiPortResponseType(IntEnum):
@@ -24,6 +25,7 @@ class FamiPortResponseType(IntEnum):
     PaymentTicketingCancel     = 4  # 予約済み入金発券取消
     Information                = 5  # 予約済み案内
     CustomerInformation        = 6  # 予約済み顧客情報取得
+    RefundEntry                = 7  # 払戻問い合わせ / 確定
 
 
 class ResultCodeEnum(Enum):
@@ -225,6 +227,14 @@ class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
     barCode3 = sa.Column(sa.Unicode(13)) # バーコード番号[2]
     barCode4 = sa.Column(sa.Unicode(13)) # バーコード番号[3]
 
+    @property
+    def barcode_numbers(self):
+        return [
+            famiport_refund_entry_request.barCode1,
+            famiport_refund_entry_request.barCode2,
+            famiport_refund_entry_request.barCode3,
+            famiport_refund_entry_request.barCode4,
+            ]
 
 class FamiPortResponse(object):
     def __str__(self):
@@ -547,6 +557,53 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     _encryptedFields = []
     _encrypt_key = None
 
+    _record_sets = [
+        dict(
+            barCode='barCode1',
+            resultCode='resultCode1',
+            mainTitle='mainTitle1',
+            perfDay='perfDay1',
+            repayment='repayment1',
+            refundStart='refundStart1',
+            refundEnd='refundEnd1',
+            ticketTyp='ticketTyp1',
+            charge='charge1'
+            ),
+        dict(
+            barCode='barCode2',
+            resultCode='resultCode2',
+            mainTitle='mainTitle2',
+            perfDay='perfDay2',
+            repayment='repayment2',
+            refundStart='refundStart2',
+            refundEnd='refundEnd2',
+            ticketTyp='ticketTyp2',
+            charge='charge2'
+            ),
+        dict(
+            barCode='barCode3',
+            resultCode='resultCode3',
+            mainTitle='mainTitle3',
+            perfDay='perfDay3',
+            repayment='repayment3',
+            refundStart='refundStart3',
+            refundEnd='refundEnd3',
+            ticketTyp='ticketTyp3',
+            charge='charge3'
+            ),
+        dict(
+            barCode='barCode4',
+            resultCode='resultCode4',
+            mainTitle='mainTitle4',
+            perfDay='perfDay4',
+            repayment='repayment4',
+            refundStart='refundStart4',
+            refundEnd='refundEnd4',
+            ticketTyp='ticketTyp4',
+            charge='charge4'
+            ),
+        ]
+
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
     textTyp = sa.Column(sa.Unicode(1)) # テキスト区分
@@ -590,3 +647,45 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     refundEnd4 = sa.Column(sa.Unicode(8)) # 払戻終了日[3]
     ticketTyp4 = sa.Column(sa.Unicode(1)) # チケット区分[3]
     charge4 = sa.Column(sa.Unicode(6)) # 利用料[3]
+
+    @property
+    def per_ticket_records(self):
+        return [
+            dict(
+                barCode=getattr(self, keys['barCode']),
+                resultCode=getattr(self, keys['resultCode']),
+                mainTitle=getattr(self, keys['mainTitle']),
+                perfDay=getattr(self, keys['perfDay']),
+                repayment=getattr(self, keys['repayment']),
+                refundStart=getattr(self, keys['refundStart']),
+                refundEnd=getattr(self, keys['refundEnd']),
+                ticketTyp=getattr(self, keys['ticketTyp']),
+                charge=getattr(self, keys['charge'])
+                )
+            for keys in self._record_sets
+            ]
+
+    @per_ticket_records.setter
+    def per_ticket_records(self, value):
+        for keys, value_sets in zip(self._record_sets, value):
+            if value_sets is not None:
+                setattr(keys['barCode'], value_sets['barCode'])
+                setattr(keys['resultCode'], value_sets['resultCode'])
+                setattr(keys['mainTitle'], value_sets['mainTitle'])
+                setattr(keys['perfDay'], value_sets['perfDay'])
+                setattr(keys['repayment'], value_sets['repayment'])
+                setattr(keys['refundStart'], value_sets['refundStart'])
+                setattr(keys['refundEnd'], value_sets['refundEnd'])
+                setattr(keys['ticketTyp'], value_sets['ticketTyp'])
+                setattr(keys['charge'], value_sets['charge'])
+            else:
+                setattr(keys['barCode'], u'')
+                setattr(keys['resultCode'], u'')
+                setattr(keys['mainTitle'], u'')
+                setattr(keys['perfDay'], u'')
+                setattr(keys['repayment'], u'')
+                setattr(keys['refundStart'], u'')
+                setattr(keys['refundEnd'], u'')
+                setattr(keys['ticketTyp'], u'')
+                setattr(keys['charge'], u'')
+

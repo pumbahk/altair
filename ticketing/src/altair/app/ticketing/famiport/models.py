@@ -291,6 +291,8 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
 
+    refunded_at          = sa.Column(sa.DateTime())
+
     famiport_ticket = orm.relationship('FamiPortTicket')
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 

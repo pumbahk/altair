@@ -3,10 +3,12 @@ import logging
 import hashlib
 import base64
 import datetime
+import six
 from lxml import etree
 from sqlalchemy.exc import DBAPIError
+from sqlalchemy import orm
 from zope.interface import implementer
-from .exc import FamiPortRequestTypeError
+from .exc import FamiPortRequestTypeError, FamiPortResponseBuilderLookupError
 from .utils import (
     str_or_blank,
     FamiPortCrypt,
@@ -14,9 +16,13 @@ from .utils import (
 from .models import (
     FamiPortOrder,
     FamiPortInformationMessage,
+    FamiPortRefund,
+    FamiPortRefundEntry,
+    FamiPortTicket,
+    _session,
     )
 from .interfaces import (
-    IFamiPortResponseBuilderFactory,
+    IFamiPortResponseBuilderRegistry,
     IFamiPortResponseBuilder,
     IXmlFamiPortResponseGenerator,
     )
@@ -36,12 +42,14 @@ from .communication import (
     FamiPortPaymentTicketingCancelRequest,
     FamiPortInformationRequest,
     FamiPortCustomerInformationRequest,
+    FamiPortRefundEntryRequest,
     FamiPortReservationInquiryResponse,
     FamiPortPaymentTicketingResponse,
     FamiPortPaymentTicketingCompletionResponse,
     FamiPortPaymentTicketingCancelResponse,
     FamiPortInformationResponse,
     FamiPortCustomerInformationResponse,
+    FamiPortRefundEntryResponse,
     )
 
 
@@ -62,7 +70,6 @@ def create_decrypt_key(value):
 
 
 class FamiPortRequestFactory(object):
-
     @classmethod
     def create_request(self, famiport_request_dict, request_type):
         if not famiport_request_dict or not request_type:
@@ -81,6 +88,8 @@ class FamiPortRequestFactory(object):
             famiport_request = FamiPortInformationRequest()
         elif request_type == FamiPortRequestType.CustomerInformation:
             famiport_request = FamiPortCustomerInformationRequest()
+        elif request_type == FamiPortRequestType.RefundEntry:
+            famiport_request = FamiPortRefundEntryRequest()
         else:
             raise FamiPortRequestTypeError(request_type)
         famiport_request.request_type = request_type
@@ -99,42 +108,32 @@ class FamiPortRequestFactory(object):
         return famiport_request
 
 
-@implementer(IFamiPortResponseBuilderFactory)
-class FamiPortResponseBuilderFactory(object):
+@implementer(IFamiPortResponseBuilderRegistry)
+class FamiPortResponseBuilderRegistry(object):
+    def __init__(self):
+        self.builders = {}
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def add(self, corresponding_request_type, builder):
+        self.builders[corresponding_request_type] = builder
 
-    def __call__(self, famiport_request):
-        request_type = famiport_request.request_type
-        if request_type == FamiPortRequestType.ReservationInquiry:
-            return FamiPortReservationInquiryResponseBuilder()
-        elif request_type == FamiPortRequestType.PaymentTicketing:
-            return FamiPortPaymentTicketingResponseBuilder()
-        elif request_type == FamiPortRequestType.PaymentTicketingCompletion:
-            return FamiPortPaymentTicketingCompletionResponseBuilder()
-        elif request_type == FamiPortRequestType.PaymentTicketingCancel:
-            return FamiPortPaymentTicketingCancelResponseBuilder()
-        elif request_type == FamiPortRequestType.Information:
-            return FamiPortInformationResponseBuilder()
-        elif request_type == FamiPortRequestType.CustomerInformation:
-            return FamiPortCustomerInformationResponseBuilder()
-        else:
-            pass
+    def lookup(self, famiport_request):
+        builder = self.builders.get(famiport_request.__class__)
+        if builder is None:
+            for request_type, builder in self.builders.items():
+                if isinstance(famiport_request, request_type):
+                    break
+            else:
+                raise FamiPortResponseBuilderLookupError(u'no corresponding response builder found for %r' % famiport_request)
+        return builder
 
 
 @implementer(IFamiPortResponseBuilder)
 class FamiPortResponseBuilder(object):
-
-    def __init__(self, *args, **kwargs):
-        pass
-
     def build_response(self, famiport_request=None):
         pass
 
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
-
     def build_response(self, famiport_reservation_inquiry_request=None):
         playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
             None, None, None, None, None, None, None, None, None, None, None, None, None
@@ -507,6 +506,78 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
         return famiport_customer_information_respose
 
 
+class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
+    def build_response(self, famiport_refund_entry_request):
+        famiport_refund_entry_response = FamiPortRefundEntryResponse(
+            businessFlg=famiport_refund_entry_request.businessFlg,
+            textTyp=famiport_refund_entry_request.textTyp,
+            entryTyp=famiport_refund_entry_request.entryTyp,
+            shopNo=famiport_refund_entry_request.shopNo,
+            registerNo=famiport_refund_entry_request.registerNo,
+            timeStamp=famiport_refund_entry_request.timeStamp,
+            )
+        barcode_numbers = famiport_refund_entry_request.barcode_numbers
+        session = _session
+        refund_entries = [
+            (
+                barcode_number,
+                (
+                    session.query(FamiPortRefundEntry) \
+                        .options(orm.joinedload(FamiPortRefundEntry.famiport_ticket)) \
+                        .join(FamiPortRefundEntry.famiport_ticket) \
+                        .filter_by(FamiPortTicket.barcode_number == barcode_number) \
+                        .one() \
+                    if barcode_number \
+                    else None
+                    )
+                )
+            for barcode_number in barcode_numbers
+            ]
+        def build_per_ticket_record(barcode_number, refund_entry):
+            if refund_entry is None:
+                result_code = u'01'
+                main_title = u''
+                perf_day = u''
+                repayment = u''
+                refund_start = u''
+                refund_end = u''
+                ticket_typ = u''
+                charge=u''
+            else:
+                if refund_entry.refunded_at is not None:
+                    result_code = u'02'
+                else:
+                    if refund_entry.famiport_refund.start_at > now \
+                       or refund_entry.famiport_refund.end_at < now:
+                        result_code = u'03'
+                    else:
+                        result_code = u'00'
+                famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
+                main_title = famiport_performance.name
+                perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
+                repayment = u'{0:06d}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+                refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
+                refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
+                ticket_typ = u'{0:d}'.format(refund_entry.famiport_ticket.type)
+                charge = u'{0:06d}'.format(refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+            return dict(
+                barCode=barcode_number,
+                resultCode=result_code,
+                mainTitle=main_title,
+                perfDay=perf_day,
+                repayment=repayment,
+                refundStart=refund_start,
+                refundEnd=refund_end,
+                ticketTyp=ticket_typ,
+                charge=charge
+                )
+
+        famiport_refund_entry_response.per_ticket_records = [
+            build_per_ticket_record(barcode_number, refund_entry)
+            for barcode_number, refund_entry in refund_entries
+            ]
+        return famiport_refund_entry_response
+
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
 
@@ -581,3 +652,36 @@ class XmlFamiPortResponseGenerator(object):
                 self._build_xmlTree(element, value)
 
         return root
+
+
+def includeme(config):
+    builder_registry = FamiPortResponseBuilderRegistry()
+    builder_registry.add(
+        FamiPortReservationInquiryRequest,
+        FamiPortReservationInquiryResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortPaymentTicketingRequest,
+        FamiPortPaymentTicketingResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortPaymentTicketingCompletionRequest,
+        FamiPortPaymentTicketingCompletionResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortPaymentTicketingCancelRequest,
+        FamiPortPaymentTicketingCancelResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortInformationRequest,
+        FamiPortInformationResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortCustomerInformationRequest,
+        FamiPortCustomerInformationResponseBuilder()
+        )
+    builder_registry.add(
+        FamiPortRefundEntryRequest,
+        FamiPortRefundEntryResponseBuilder()
+        )
+    config.registry.registerUtility(builder_registry, IFamiPortResponseBuilderRegistry)

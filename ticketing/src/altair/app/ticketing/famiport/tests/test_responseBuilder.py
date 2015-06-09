@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from altair.app.ticketing.testing import _setup_db
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
+from pyramid.testing import DummyRequest, setUp, tearDown
 import sqlahelper
 
 from ..api import get_response_builder
@@ -22,6 +23,9 @@ class FamiPortResponseBuilderTest(TestCase):
     def setUp(self):
         self.session = _setup_db(modules=["altair.app.ticketing.famiport.models"])
         sqlahelper.set_base(declarative_base(self.session.bind))
+
+        self.config = setUp()
+        self.config.include('..builders')
 
         # 予約照会
         # self.famiport_reservation_inquiry_request = FamiPortReservationInquiryRequest(storeCode='000009', ticketingDate='20150325151159', reserveNumber='5300000000001', authNumber='')
@@ -59,16 +63,20 @@ class FamiPortResponseBuilderTest(TestCase):
             totalAmount=u'2200'
             )
 
+    def tearDown(self):
+        tearDown()
+        _teardown_db()
+
     def test_build_ReservationInquiryResponseBuilder(self):
         # 予約照会
         # reservation_inquiry_response_builder = get_response_builder(self.famiport_reservation_inquiry_request)
         # self.check_build_response(reservation_inquiry_response_builder, self.famiport_reservation_inquiry_request)
 
         # 案内
-        famiport_information_response_builder = get_response_builder(self.famiport_information_request)
+        request = DummyRequest()
+        famiport_information_response_builder = get_response_builder(request, self.famiport_information_request)
         self.check_build_response(famiport_information_response_builder, self.famiport_information_request)
 
     def check_build_response(self, response_builder, famiport_request):
         famiport_response = response_builder.build_response(famiport_request)
-        print famiport_response
         self.assertIsNotNone(famiport_response)

@@ -17,7 +17,7 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = pyramid.config.Configurator(
-        settings=settings, root_factory='..resources.famiport_resource_factory')
+        settings=settings, root_factory='.resources.famiport_resource_factory')
 
     config.include(includeme, '/famiport/')
     config.include('altair.app.ticketing.famiport.scripts')
@@ -35,5 +35,6 @@ def includeme(config):
     config.add_route('famiport.api.reservation.customer', '/reservation/customer')  # 顧客情報取得
 
     config.scan('.views')
+    config.scan('..builders')
 
     config.add_renderer('famiport-xml', 'altair.app.ticketing.famiport.renderers.famiport_renderer_factory')
