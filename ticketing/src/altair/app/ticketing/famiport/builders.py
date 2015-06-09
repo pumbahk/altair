@@ -33,7 +33,6 @@ from .communication import (
     ReplyClassEnum,
     ReplyCodeEnum,
     InformationResultCodeEnum,
-    InfoKubunEnum,
     NameRequestInputEnum,
     PhoneRequestInputEnum,
     FamiPortReservationInquiryRequest,
@@ -220,7 +219,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
     def build_response(self, famiport_payment_ticketing_request=None):
-        replyCode = ''
+        replyCode = None
         famiport_order = None
         resultCode = ResultCodeEnum.Normal.value
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
@@ -357,7 +356,9 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
         orderId = famiport_payment_ticketing_completion_request.orderId
 
-        famiport_order, replyCode = None, None
+        famiport_order = None
+        replyCode = None
+
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
@@ -398,7 +399,8 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                          u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s'
                          % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo))
 
-        orderId, replyCode = None, None
+        orderId = None
+        replyCode = None
         if famiport_order is not None:
             orderId = famiport_order.famiport_order_identifier
             if famiport_order.paid_at:
@@ -505,7 +507,8 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                          u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
                          % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo, orderId))
 
-        resultCode, replyCode = None, None
+        resultCode = None
+        replyCode = None
         if famiport_order is not None:
             resultCode = ResultCodeEnum.Normal.value
             replyCode = ReplyCodeEnum.Normal.value
@@ -513,7 +516,12 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
             resultCode = ResultCodeEnum.OtherError.value
             replyCode = ReplyCodeEnum.CustomerNamePrintInformationError.value
 
-        name, memberId, address1, address2, identifyNo = None, None, None, None, None
+        name = ''
+        memberId = ''
+        address1 = ''
+        address2 = ''
+        identifyNo = ''
+
         if replyCode == ReplyCodeEnum.Normal.value:
             name = famiport_order.customer_name
             # TODO Make sure where to get memberId
