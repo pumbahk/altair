@@ -268,23 +268,6 @@ class OrderRefundFormTests(unittest.TestCase):
             self.assertTrue(isinstance(e, ValidationError))
             self.assertEqual(e.message, u'指定された払戻方法は、この決済引取方法では選択できません: 既にコンビニ発券済なのでコンビニ払戻を選択してください(DMY)')
 
-    def test_validate_payment_method_id_delivery_sej_not_issued_and_refund_sej(self):
-        from wtforms import ValidationError
-        orders = [self._order(
-            payment_plugin_id=1,
-            delivery_plugin_id=2,
-            issued_at=None,
-        )]
-        target = self._makeOne(orders=orders)
-
-        field = testing.DummyModel(data=3)
-        try:
-            target.validate_payment_method_id(field)
-            self.assert_(False)
-        except Exception as e:
-            self.assertTrue(isinstance(e, ValidationError))
-            self.assertEqual(e.message, u'指定された払戻方法は、この決済引取方法では選択できません: コンビニ発券していないのでコンビニ払戻は選択できません(DMY)')
-
     def test_validate_payment_method_id_delivery_sej_not_issued_and_refund_other(self):
         from wtforms import ValidationError
         orders = [self._order(
