@@ -133,7 +133,7 @@ class InquiryTest(FamiPortAPIViewTest):
             ticket_count=len(famiport_tickets),
             koen_date=None,
             famiport_tickets=famiport_tickets,
-            kogyo_name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
+            kogyo_name=u'サンプル興行',
             customer_name_input=0,
             customer_phone_input=0,
             famiport_sales_segment=DummyModel(
