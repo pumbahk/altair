@@ -229,7 +229,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.AlreadyPaidError.value
             if famiport_order.issued_at:
                 replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-            if famiport_order.ticketing_end_at > ticketingDate:
+            if famiport_order.ticketing_end_at < ticketingDate:
                 replyCode = ReplyCodeEnum.TicketingDueError.value
             # TODO PaymentCancelError
             if famiport_order.ticketing_start_at < ticketingDate:

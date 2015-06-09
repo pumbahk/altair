@@ -178,14 +178,18 @@ class PaymentTest(FamiPortAPIViewTest):
                 data=u'test_ticketData1',
             ) for ii in range(10)]
 
+        payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+        ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
+        ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+
         get_by_barCodeNo.return_value = DummyModel(
             famiport_order_identifier='430000000002',
             type='3',
-            payment_due_at=datetime.datetime.now(),
+            payment_due_at=payment_due_at,
             paid_at=None,
             issued_at=None,
-            ticketing_start_at=datetime.datetime.now(),
-            ticketing_end_at=datetime.datetime.now(),
+            ticketing_start_at=ticketing_start_at,
+            ticketing_end_at=ticketing_end_at,
             playguide_id=1,
             playguide_name=u'クライアント１',
             exchange_number='IAHOGIRHGOIRH',
