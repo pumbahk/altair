@@ -176,7 +176,7 @@ class PaymentTest(FamiPortAPIViewTest):
                 type=1,
                 template_code=u'TTEVEN0001',
                 data=u'test_ticketData1',
-            ) for ii in range(10)]
+            ) for ii in range(5)]
 
         payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
@@ -194,15 +194,15 @@ class PaymentTest(FamiPortAPIViewTest):
             playguide_name=u'クライアント１',
             exchange_number='4310000000002',
             barcode_number=u'1000000000000',
-            total_amount=1,
-            ticket_payment=1,
-            system_fee=1,
-            ticketing_fee=1,
+            total_amount=200,
+            ticket_payment=0,
+            system_fee=0,
+            ticketing_fee=200,
             ticket_total_count=len(famiport_tickets),
             ticket_count=len(famiport_tickets),
-            koen_date=datetime.datetime.now(),
+            koen_date=None,
             famiport_tickets=famiport_tickets,
-            kogyo_name=u'テスト興行',
+            kogyo_name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
             )
         res = self._callFUT({
             'ticketingDate': '20150331172554',

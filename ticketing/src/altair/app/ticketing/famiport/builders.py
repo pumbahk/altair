@@ -7,7 +7,10 @@ from lxml import etree
 from sqlalchemy.exc import DBAPIError
 from zope.interface import implementer
 from .exc import FamiPortRequestTypeError
-from .utils import FamiPortCrypt
+from .utils import (
+    str_or_blank,
+    FamiPortCrypt,
+    )
 from .models import (
     FamiPortOrder,
     FamiPortInformationMessage,
@@ -18,6 +21,7 @@ from .interfaces import (
     IXmlFamiPortResponseGenerator,
     )
 from .communication import (
+    FamiPortTicketResponse,
     FamiPortRequestType,
     ResultCodeEnum,
     ReplyClassEnum,
@@ -252,10 +256,11 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 orderTicketNo = barCodeNo
             else:
                 pass
-            totalAmount = str(famiport_order.total_amount)
-            ticketPayment = str(famiport_order.ticket_payment)
-            systemFee = str(famiport_order.system_fee)
-            ticketingFee = str(famiport_order.ticketing_fee)
+
+            totalAmount = str_or_blank(famiport_order.total_amount, 8, fillvalue='0')
+            ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
+            systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
+            ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
             ticketingCountTotal = str(famiport_order.ticket_total_count)
             ticketCount = str(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
@@ -268,7 +273,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
         famiport_ticket_responses = []
         if tickets:
-            from .communication import FamiPortTicketResponse
+
             for ticket in tickets:
                 ftr = FamiPortTicketResponse()
                 ftr.barCodeNo = ticket.barcode_number
@@ -277,21 +282,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 ftr.ticketData = ticket.data
                 famiport_ticket_responses.append(ftr)
 
-        def _str_or_blank(val, padding_count=0, fillvalue='', left=False):
-            val = '' if val is None else unicode(val)
-            if padding_count:
-                ch = '<' if left else '>'
-                fmt = '{}:{}{}{}{}'.format('{', fillvalue, ch, padding_count, '}')
-                val = fmt.format(val)
-            return val
-
-        playGuideId = _str_or_blank(playGuideId, 5, fillvalue='0')
-        totalAmount = _str_or_blank(totalAmount)
-        ticketPayment = _str_or_blank(ticketPayment)
-        systemFee = _str_or_blank(systemFee)
-        ticketingFee = _str_or_blank(ticketingFee)
-        ticketCount = _str_or_blank(ticketCount)
-        ticketingCountTotal = _str_or_blank(ticketingCountTotal)
+        playGuideId = str_or_blank(playGuideId, 5, fillvalue='0')
+        totalAmount = str_or_blank(totalAmount)
+        ticketPayment = str_or_blank(ticketPayment)
+        systemFee = str_or_blank(systemFee)
+        ticketingFee = str_or_blank(ticketingFee)
+        ticketCount = str_or_blank(ticketCount)
+        ticketingCountTotal = str_or_blank(ticketingCountTotal)
 
         famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
             resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo,

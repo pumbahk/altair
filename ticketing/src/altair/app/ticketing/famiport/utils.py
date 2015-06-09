@@ -92,3 +92,12 @@ def prettify(elem):
     rough_string = ElementTree.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
+
+
+def str_or_blank(val, padding_count=0, fillvalue='', left=False):
+    val = '' if val is None else unicode(val)
+    if padding_count:
+        ch = '<' if left else '>'
+        fmt = '{}:{}{}{}{}'.format('{', fillvalue, ch, padding_count, '}')
+        val = fmt.format(val)
+    return val
