@@ -277,10 +277,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 ftr.ticketData = ticket.data
                 famiport_ticket_responses.append(ftr)
 
-        def _str_or_blank(val):
-            return ' ' if val is None else unicode(val)
+        def _str_or_blank(val, padding_count=0, fillvalue='', left=False):
+            val = '' if val is None else unicode(val)
+            if padding_count:
+                ch = '<' if left else '>'
+                fmt = '{}:{}{}{}{}'.format('{', fillvalue, ch, padding_count, '}')
+                val = fmt.format(val)
+            return val
 
-        playGuideId = _str_or_blank(playGuideId)
+        playGuideId = _str_or_blank(playGuideId, 5, fillvalue='0')
         totalAmount = _str_or_blank(totalAmount)
         ticketPayment = _str_or_blank(ticketPayment)
         systemFee = _str_or_blank(systemFee)

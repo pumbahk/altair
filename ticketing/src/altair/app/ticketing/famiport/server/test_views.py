@@ -43,6 +43,8 @@ class FamiPortAPIViewTest(TestCase):
         regx = re.compile('<\S+>')
         for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
             matching = regx.search(res_elm)
+            if not matching:
+                continue
             tag_name = res_elm[matching.start():matching.end()]
             if famiport_response_class and tag_name in famiport_response_class._encryptedFields:
                 self.assertEqual(bool(res_elm), bool(exp_elm))
@@ -185,7 +187,7 @@ class PaymentTest(FamiPortAPIViewTest):
             ticketing_start_at=datetime.datetime.now(),
             ticketing_end_at=datetime.datetime.now(),
             playguide_id=1,
-            playguide_name=u'チケットスター',
+            playguide_name=u'クライアント１',
             exchange_number='IAHOGIRHGOIRH',
             barcode_number=u'1000000000000',
             total_amount=1,
