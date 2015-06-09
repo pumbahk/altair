@@ -17,6 +17,7 @@ from .communication import (
     FamiPortCustomerInformationResponse,
     )
 
+
 class DummyBuilderFactory(object):
     def __init__(self, *args, **kwds):
         pass
@@ -24,6 +25,7 @@ class DummyBuilderFactory(object):
     def __call__(self, *args, **kwds):
         from unittest import mock
         return mock.Mock()
+
 
 class FamiPortFakeFactory(object):
     xml = ''
@@ -138,6 +140,21 @@ class FamiPortPaymentTicketingCompletionResponseFakeFactory(FamiPortFakeFactory)
 <barCodeNo>6010000000000</barCodeNo>
 <orderId>123456789012</orderId>
 <replyCode>00</replyCode>
+</FMIF>
+"""
+
+
+class FamiPortPaymentTicketingCompletionResponseFailFakeFactory(FamiPortFakeFactory):
+    """存在しないFamiPortOrderに対するエラーレスポンス
+    """
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
+<FMIF>
+<resultCode>99</resultCode>
+<storeCode>099999</storeCode>
+<sequenceNo>12345678901</sequenceNo>
+<barCodeNo>6010000000000</barCodeNo>
+<orderId>123456789012</orderId>
+<replyCode>01</replyCode>
 </FMIF>
 """
 
