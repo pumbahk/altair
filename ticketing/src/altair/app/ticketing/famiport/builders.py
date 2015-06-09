@@ -220,12 +220,33 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
     def build_response(self, famiport_payment_ticketing_request=None):
+        replyCode = ''
+        famiport_order = None
         resultCode = ResultCodeEnum.Normal.value
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
         storeCode = famiport_payment_ticketing_request.storeCode
         mmkNo = famiport_payment_ticketing_request.mmkNo
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
         ticketingDate = datetime.datetime.now()
+
+        orderId = ''
+        replyClass = ''
+        playGuideId = ''
+        playGuideName = ''
+        orderTicketNo = ''
+        exchangeTicketNo = ''
+        ticketingStart = ''
+        ticketingEnd = ''
+        totalAmount = ''
+        ticketPayment = ''
+        systemFee = ''
+        ticketingFee = ''
+        ticketingCountTotal = ''
+        ticketCount = ''
+        kogyoName = ''
+        koenDate = ''
+        tickets = ''
+
         try:
             ticketingDate = datetime.datetime.strptime(
                 famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
@@ -236,7 +257,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s'
                     % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo))
 
-        famiport_order, replyCode = None, None
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
         except DBAPIError:
@@ -245,10 +265,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                          u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s"
                          % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo))
 
-        orderId, replyClass, playGuideId, playGuideName, orderTicketNo, exchangeTicketNo, ticketingStart, ticketingEnd = \
-            None, None, None, None, None, None, None, None
-        totalAmount, ticketPayment, systemFee, ticketingFee, ticketingCountTotal, ticketCount, kogyoName, koenDate, tickets = \
-            None, None, None, None, None, None, None, None, None
         if famiport_order is not None:
             orderId = famiport_order.famiport_order_identifier
             replyClass = famiport_order.type
