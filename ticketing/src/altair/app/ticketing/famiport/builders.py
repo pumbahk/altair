@@ -233,7 +233,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         kogyoName = ''
         koenDate = ''
         tickets = ''
-
         try:
             ticketingDate = datetime.datetime.strptime(
                 famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
@@ -255,22 +254,22 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         if famiport_order is not None:
             orderId = famiport_order.famiport_order_identifier
             replyClass = famiport_order.type
-            if famiport_order.payment_due_at < ticketingDate:
+            if famiport_order.payment_due_at and famiport_order.payment_due_at < ticketingDate:
                 replyCode = ReplyCodeEnum.PaymentDueError.value
             if famiport_order.paid_at:
                 replyCode = ReplyCodeEnum.AlreadyPaidError.value
             if famiport_order.issued_at:
                 replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-            if famiport_order.ticketing_end_at < ticketingDate:
+            if famiport_order.ticketing_end_at and famiport_order.ticketing_end_at < ticketingDate:
                 replyCode = ReplyCodeEnum.TicketingDueError.value
             # TODO PaymentCancelError
-            if famiport_order.ticketing_start_at > ticketingDate:
+            if famiport_order.ticketing_start_at and famiport_order.ticketing_start_at > ticketingDate:
                 replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
             # TODO TicketingCancelError
             else:
                 replyCode = ReplyCodeEnum.Normal.value
-            playGuideId = famiport_order.playguide_id
-            playGuideName = famiport_order.playguide_name
+            playGuideId = famiport_order.famiport_client.playguide.discrimination_code
+            playGuideName = famiport_order.famiport_client.playguide.name
             if replyClass == ReplyClassEnum.CashOnDelivery.value:
                 orderTicketNo = barCodeNo
             elif replyClass == ReplyClassEnum.Prepayment.value:
@@ -289,9 +288,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
             systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
             ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
-            ticketingCountTotal = str(famiport_order.ticket_total_count)
-            ticketCount = str(famiport_order.ticket_count)
-            kogyoName = famiport_order.kogyo_name
+            ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
+            ticketCount = str_or_blank(famiport_order.ticket_count)
+            kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
 
             start_at = famiport_order.famiport_sales_segment.famiport_performance.start_at
             koenDate = start_at.strftime('%Y%m%d%H%M') if start_at else '999999999999'
@@ -319,6 +318,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         ticketingFee = str_or_blank(ticketingFee)
         ticketCount = str_or_blank(ticketCount)
         ticketingCountTotal = str_or_blank(ticketingCountTotal)
+        replyClass = str_or_blank(replyClass)
 
         famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
             resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo,

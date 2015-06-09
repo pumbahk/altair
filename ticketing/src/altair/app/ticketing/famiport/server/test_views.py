@@ -241,8 +241,6 @@ class PaymentTest(FamiPortAPIViewTest):
             issued_at=None,
             ticketing_start_at=ticketing_start_at,
             ticketing_end_at=ticketing_end_at,
-            playguide_id=1,
-            playguide_name=u'クライアント１',
             exchange_number='4310000000002',
             barcode_number=u'1000000000000',
             total_amount=200,
@@ -251,14 +249,19 @@ class PaymentTest(FamiPortAPIViewTest):
             ticketing_fee=200,
             ticket_total_count=len(famiport_tickets),
             ticket_count=len(famiport_tickets),
-            koen_date=None,
             famiport_tickets=famiport_tickets,
-            kogyo_name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
             famiport_sales_segment=DummyModel(
                 famiport_performance=DummyModel(
+                    name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
                     start_at=None,
                     ),
-                )
+                ),
+            famiport_client=DummyModel(
+                playguide=DummyModel(
+                    name=u'クライアント１',
+                    discrimination_code='1',
+                    ),
+                ),
             )
 
         res = self._callFUT({

@@ -130,6 +130,10 @@ class FamiPortPlayguide(Base, WithTimestamp):
     id                  = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
     discrimination_code = sa.Column(sa.Integer, nullable=False)
 
+    @property
+    def name(self):
+        return 'xxxxx'
+
 
 class FamiPortClient(Base, WithTimestamp):
     __tablename__ = 'FamiPortClient'
