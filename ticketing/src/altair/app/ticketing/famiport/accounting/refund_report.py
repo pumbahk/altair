@@ -1,4 +1,7 @@
 # encoding: utf-8
+import decimal
+from codecs import getencoder
+from datetime import date
 from ..datainterchange.fileio import (
     Column,
     FixedRecordMarshaller,
@@ -10,8 +13,6 @@ from ..datainterchange.fileio import (
     DateTime,
     Boolean,
     )
-from codecs import getencoder
-from datetime import date
 
 refund_report_schema = [
     Column('unique_key', ZeroPaddedNumericString(length=17)),     # ユニークキー
@@ -23,9 +24,9 @@ refund_report_schema = [
     Column('performance_code', ZeroPaddedNumericString(length=3)),# 公演コード
     Column('event_name', WideWidthString(length=60)),             # 興行名称
     Column('performance_date', DateTime(length=12, format=u'%Y%m%d%H%M')), # 開演日時
-    Column('ticket_payment', ZeroPaddedInteger(length=9)),          # チケット料金
-    Column('ticketing_fee', ZeroPaddedInteger(length=8)),         # 発券料金
-    Column('other_fees', ZeroPaddedInteger(length=8)),            # その他手数料
+    Column('ticket_payment', ZeroPaddedInteger(length=9, pytype=decimal.Decimal)),          # チケット料金
+    Column('ticketing_fee', ZeroPaddedInteger(length=8, pytype=decimal.Decimal)),         # 発券料金
+    Column('other_fees', ZeroPaddedInteger(length=8, pytype=decimal.Decimal)),            # その他手数料
     Column('start_at', DateTime(length=12, format=u'%Y%m%d%H%M')), # 払戻開始日時
     Column('end_at', DateTime(length=12, format=u'%Y%m%d%H%M')),  # 払戻終了日時
     Column('processed_at', DateTime(length=12, format=u'%Y%m%d%H%M')), # 払戻処理日時

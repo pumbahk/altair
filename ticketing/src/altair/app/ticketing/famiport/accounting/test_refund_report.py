@@ -164,6 +164,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
     def test_it(self):
         from datetime import datetime, date
         from io import BytesIO
+        from decimal import Decimal
         from .refund_report import build_refund_file
         from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
         refunds = [
@@ -180,10 +181,10 @@ class BuildRefundReportFileTest(unittest.TestCase):
             FamiPortRefundEntry(
                 famiport_refund=refund,
                 serial=refund.last_serial + i,
-                ticket_payment=100,
-                ticketing_fee=10,
-                system_fee=20,
-                other_fees=30,
+                ticket_payment=Decimal(100),
+                ticketing_fee=Decimal(10),
+                system_fee=Decimal(20),
+                other_fees=Decimal(30),
                 shop_code=u'0000000',
                 famiport_ticket=FamiPortTicket(
                     famiport_order=FamiPortOrder(
