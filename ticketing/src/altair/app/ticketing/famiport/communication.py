@@ -208,6 +208,24 @@ class FamiPortCustomerInformationRequest(Base, WithCreatedAt, FamiPortRequest):
     _encryptedFields = []
 
 
+class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
+    """払戻レコード問い合わせ / 確定
+    """
+    __tablename__ = 'FamiPortRefundEntryRequest'
+
+    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
+    textTyp = sa.Column(sa.Unicode(1)) # テキスト区分
+    entryTyp = sa.Column(sa.Unicode(1)) # 登録/取消区分
+    shopNo = sa.Column(sa.Unicode(7)) # 店No
+    registerNo = sa.Column(sa.Unicode(2)) # レジNo
+    timeStamp = sa.Column(sa.Unicode(8)) # オペレーション開始日
+    barCode1 = sa.Column(sa.Unicode(13)) # バーコード番号[0]
+    barCode2 = sa.Column(sa.Unicode(13)) # バーコード番号[1]
+    barCode3 = sa.Column(sa.Unicode(13)) # バーコード番号[2]
+    barCode4 = sa.Column(sa.Unicode(13)) # バーコード番号[3]
+
+
 class FamiPortResponse(object):
     def __str__(self):
         value_list = []
@@ -474,3 +492,101 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
     @property
     def encrypt_key(self):
         return self._encrypt_key
+
+
+class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
+    """払戻レコード問い合わせ / 確定
+    """
+    __tablename__ = 'FamiPortRefundEntryResponse'
+    _serialized_attrs = (
+        'businessFlg',
+        'textTyp',
+        'entryTyp',
+        'shopNo',
+        'registerNo',
+        'timeStamp',
+        'barCode1',
+        'resultCode1',
+        'mainTitle1',
+        'perfDay1',
+        'repayment1',
+        'refundStart1',
+        'refundEnd1',
+        'ticketTyp1',
+        'charge1',
+        'barCode2',
+        'resultCode2',
+        'mainTitle2',
+        'perfDay2',
+        'repayment2',
+        'refundStart2',
+        'refundEnd2',
+        'ticketTyp2',
+        'charge2',
+        'barCode3',
+        'resultCode3',
+        'mainTitle3',
+        'perfDay3',
+        'repayment3',
+        'refundStart3',
+        'refundEnd3',
+        'ticketTyp3',
+        'charge3',
+        'barCode4',
+        'resultCode4',
+        'mainTitle4',
+        'perfDay4',
+        'repayment4',
+        'refundStart4',
+        'refundEnd4',
+        'ticketTyp4',
+        'charge4',
+        )
+    _responseType = None
+    _serialized_collection_attrs = ()
+    _encryptedFields = []
+    _encrypt_key = None
+
+    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
+    textTyp = sa.Column(sa.Unicode(1)) # テキスト区分
+    entryTyp = sa.Column(sa.Unicode(1)) # 登録/取消区分
+    shopNo = sa.Column(sa.Unicode(7)) # 店No
+    registerNo = sa.Column(sa.Unicode(2)) # レジNo
+    timeStamp = sa.Column(sa.Unicode(8)) # オペレーション開始日
+    barCode1 = sa.Column(sa.Unicode(13)) # バーコード番号[0]
+    resultCode1 = sa.Column(sa.Unicode(2)) # 終了コード[0]
+    mainTitle1 = sa.Column(sa.Unicode(30)) # メインタイトル(公演名)[0]
+    perfDay1 = sa.Column(sa.Unicode(8)) # 公演日[0]
+    repayment1 = sa.Column(sa.Unicode(6)) # 返金金額[0] (利用料含む)
+    refundStart1 = sa.Column(sa.Unicode(8)) # 払戻開始日[0]
+    refundEnd1 = sa.Column(sa.Unicode(8)) # 払戻終了日[0]
+    ticketTyp1 = sa.Column(sa.Unicode(1)) # チケット区分[0]
+    charge1 = sa.Column(sa.Unicode(6)) # 利用料[0]
+    barCode2 = sa.Column(sa.Unicode(13)) # バーコード番号[1]
+    resultCode2 = sa.Column(sa.Unicode(2)) # 終了コード[1]
+    mainTitle2 = sa.Column(sa.Unicode(30)) # メインタイトル(公演名)[1]
+    perfDay2 = sa.Column(sa.Unicode(8)) # 公演日[1]
+    repayment2 = sa.Column(sa.Unicode(6)) # 返金金額[1] (利用料含む)
+    refundStart2 = sa.Column(sa.Unicode(8)) # 払戻開始日[1]
+    refundEnd2 = sa.Column(sa.Unicode(8)) # 払戻終了日[1]
+    ticketTyp2 = sa.Column(sa.Unicode(1)) # チケット区分[1]
+    charge2 = sa.Column(sa.Unicode(6)) # 利用料[1]
+    barCode3 = sa.Column(sa.Unicode(13)) # バーコード番号[2]
+    resultCode3 = sa.Column(sa.Unicode(2)) # 終了コード[2]
+    mainTitle3 = sa.Column(sa.Unicode(30)) # メインタイトル(公演名)[2]
+    perfDay3 = sa.Column(sa.Unicode(8)) # 公演日[2]
+    repayment3 = sa.Column(sa.Unicode(6)) # 返金金額[2] (利用料含む)
+    refundStart3 = sa.Column(sa.Unicode(8)) # 払戻開始日[2]
+    refundEnd3 = sa.Column(sa.Unicode(8)) # 払戻終了日[2]
+    ticketTyp3 = sa.Column(sa.Unicode(1)) # チケット区分[2]
+    charge3 = sa.Column(sa.Unicode(6)) # 利用料[2]
+    barCode4 = sa.Column(sa.Unicode(13)) # バーコード番号[3]
+    resultCode4 = sa.Column(sa.Unicode(2)) # 終了コード[3]
+    mainTitle4 = sa.Column(sa.Unicode(30)) # メインタイトル(公演名)[3]
+    perfDay4 = sa.Column(sa.Unicode(8)) # 公演日[3]
+    repayment4 = sa.Column(sa.Unicode(6)) # 返金金額[3] (利用料含む)
+    refundStart4 = sa.Column(sa.Unicode(8)) # 払戻開始日[3]
+    refundEnd4 = sa.Column(sa.Unicode(8)) # 払戻終了日[3]
+    ticketTyp4 = sa.Column(sa.Unicode(1)) # チケット区分[3]
+    charge4 = sa.Column(sa.Unicode(6)) # 利用料[3]
