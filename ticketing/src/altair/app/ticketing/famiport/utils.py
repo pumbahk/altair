@@ -62,8 +62,8 @@ class FamiPortCrypt(object):
         return self.key
 
     def encrypt(self, plain_data):
-        """
-        Encrypt plain_data with the given key in init
+        """Encrypt plain_data with the given key in init
+
         :param plain_data:
         :return: encrypted data
         """
@@ -74,8 +74,8 @@ class FamiPortCrypt(object):
         return value
 
     def decrypt(self, encrypted_data):
-        """
-        Decrypt encrypted_data with the given key in init
+        """Decrypt encrypted_data with the given key in init
+
         :param encrypted data:
         :return: decrypted data
         """

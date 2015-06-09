@@ -55,19 +55,6 @@ from .communication import (
 logger = logging.getLogger(__name__)
 
 
-def create_encrypt_key(value):
-    if value is None:
-        return None
-
-
-def create_decrypt_key(value):
-    if value is None:
-        return None
-    md = hashlib.md5(value)
-    hash_value = md.hexdigest()[:32]  # 文字数 32文字の文字列
-    return base64.urlsafe_b64encode(hash_value)
-
-
 class FamiPortRequestFactory(object):
     @classmethod
     def create_request(self, famiport_request_dict, request_type):
