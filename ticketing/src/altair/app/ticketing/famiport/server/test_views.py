@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
+import itertools
 import mock
 import lxml.etree
 from pyramid.testing import (
@@ -32,12 +33,21 @@ class FamiPortAPIViewTest(TestCase):
     def _callFUT(self, *args, **kwds):
         return self.app.post(self.url, *args, **kwds)
 
-    def _check_payload(self, res, exp):
+    def _check_payload(self, res, exp, famiport_response_class=None):
         res_payload = lxml.etree.tostring(res, pretty_print=True)
         exp_payload = lxml.etree.tostring(exp, pretty_print=True)
         res_payload_list = map(lambda x: x.strip(), res_payload.split('\n'))
         exp_payload_list = map(lambda x: x.strip(), exp_payload.split('\n'))
-        self.assertEqual(res_payload_list, exp_payload_list)
+        self.assertEqual(res, exp)
+        # for res_elm, exp_elm in itertools.izip_longest(res_payload_list, exp_payload_list, fillvalue=None):
+        #     tag_name = lxml.etree.fromstring(res_elm).tag
+        #     if famiport_response_class and tag_name in famiport_response_class.encrypted_fields:
+        #         # 暗号化処理のところ
+        #         # とりあえずskipする
+        #         pass
+        #     else:
+        #         pass
+        #     # self.assertEqual(res, exp)
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -142,8 +152,41 @@ class PaymentTest(FamiPortAPIViewTest):
     """  # noqa
     url = '/famiport/reservation/payment'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
+    def test_it(self, get_by_barCodeNo):
+        import datetime
         from ..testing import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
+        from ..models import FamiPortTicket
+        famiport_tickets = [
+            FamiPortTicket(
+                barcode_number=u'1234567890019',
+                type=1,
+                template_code=u'TTEVEN0001',
+                data=u'test_ticketData1'
+            ) for ii in range(10)]
+
+        get_by_barCodeNo.return_value = DummyModel(
+            famiport_order_identifier='FFFFFFFFFFFFF',
+            type='1',
+            payment_due_at=datetime.datetime.now(),
+            paid_at=None,
+            issued_at=None,
+            ticketing_start_at=datetime.datetime.now(),
+            ticketing_end_at=datetime.datetime.now(),
+            playguide_id=1,
+            playguide_name=u'チケットスター',
+            exchange_number='IAHOGIRHGOIRH',
+            barcode_number='IAHOGIRHGOIREH',
+            total_amount=1,
+            ticket_payment=1,
+            system_fee=1,
+            ticketing_fee=1,
+            ticket_total_count=len(famiport_tickets),
+            ticket_count=len(famiport_tickets),
+            koen_date=datetime.datetime.now(),
+            famiport_tickets=famiport_tickets,
+            kogyo_name=u'テスト興行',
+            )
         res = self._callFUT({
             'ticketingDate': '20150331172554',
             'playGuideId': '',
@@ -155,7 +198,6 @@ class PaymentTest(FamiPortAPIViewTest):
             'storeCode': '000009',
             })
         self.assertEqual(200, res.status_code)
-
         self._check_payload(
             FakeFactory.parse(res.unicode_body),
             FakeFactory.create(),
@@ -338,8 +380,16 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
 
     url = '/famiport/reservation/customer'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
+    def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortCustomerResponseFakeFactory as FakeFactory
+        get_by_barCodeNo.return_value = DummyModel(
+            customer_name=u'発券　し太郎',
+            customer_member_id=u'REIOHREOIHOIERHOIERHGOIERGHOI',
+            customer_address_1=u'東京都品川区',
+            customer_address_2=u'西五反田',
+            customer_identify_no=u'1234567890123456',
+            )
         res = self._callFUT({
             'storeCode': '000009',
             'mmkNo': '01',

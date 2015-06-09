@@ -218,7 +218,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
         orderId, replyClass, playGuideId, playGuideName, orderTicketNo, exchangeTicketNo, ticketingStart, ticketingEnd = \
             None, None, None, None, None, None, None, None
-        totalAmount, ticketPayment, systemFee, ticketingFee, ticketingCountTotal, ticketCount, kogyoName, koenDate, ticket = \
+        totalAmount, ticketPayment, systemFee, ticketingFee, ticketingCountTotal, ticketCount, kogyoName, koenDate, tickets = \
             None, None, None, None, None, None, None, None, None
         if famiport_order is not None:
             orderId = famiport_order.famiport_order_identifier
@@ -260,11 +260,33 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             ticketCount = str(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
             koenDate = famiport_order.koen_date.strftime("%Y%m%d%H%M")
-            ticket = famiport_order.famiport_tickets
+            tickets = famiport_order.famiport_tickets
         else:
             resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:
                 replyCode = ReplyCodeEnum.SearchKeyError.value
+
+        famiport_ticket_responses = []
+        if tickets:
+            from .communication import FamiPortTicketResponse
+            for ticket in tickets:
+                ftr = FamiPortTicketResponse()
+                ftr.barCodeNo = barCodeNo
+                ftr.ticketClass = str(ticket.type)
+                ftr.templateCode = ticket.template_code
+                ftr.ticketData = ticket.data
+                famiport_ticket_responses.append(ftr)
+
+        def _str_or_blank(val):
+            return ' ' if val is None else str(val)
+
+        playGuideId = _str_or_blank(playGuideId)
+        totalAmount = _str_or_blank(totalAmount)
+        ticketPayment = _str_or_blank(ticketPayment)
+        systemFee = _str_or_blank(systemFee)
+        ticketingFee = _str_or_blank(ticketingFee)
+        ticketCount = _str_or_blank(ticketCount)
+        ticketingCountTotal = _str_or_blank(ticketingCountTotal)
 
         famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
             resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo,
@@ -274,7 +296,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             ticketingStart=ticketingStart, ticketingEnd=ticketingEnd,
             totalAmount=totalAmount, ticketPayment=ticketPayment, systemFee=systemFee,
             ticketingFee=ticketingFee, ticketCountTotal=ticketingCountTotal,
-            ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, ticket=ticket)
+            ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, tickets=famiport_ticket_responses)
         return famiport_payment_ticketing_response
 
 
@@ -513,7 +535,10 @@ class XmlFamiPortResponseGenerator(object):
                 # TODO Take care of problematic chars in UTF-8 to SJIS
                 # conversion
                 if attribute_name not in obj.encrypted_fields:
-                    element.text = attribute_value
+                    try:
+                        element.text = attribute_value
+                    except (TypeError, ValueError) as err:
+                        raise err.__class__('illigal type: {}: {}'.format(attribute_name, err))
                 else:
                     element.text = self.famiport_crypt.encrypt(
                         attribute_value.encode(self.encoding))
