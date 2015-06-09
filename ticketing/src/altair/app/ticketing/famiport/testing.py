@@ -165,7 +165,7 @@ class FamiPortPaymentTicketingCancelResponseFakeFactory(FamiPortFakeFactory):
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
-<barCodeNo>3300000000000</barCodeNo>
+<barCodeNo>1000000000000</barCodeNo>
 <orderId>123456789012</orderId>
 <replyCode>00</replyCode>
 </FMIF>

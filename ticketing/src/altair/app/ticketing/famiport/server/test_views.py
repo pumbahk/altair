@@ -365,14 +365,21 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
 
     url = '/famiport/reservation/cancel'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
+    def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
+        get_by_barCodeNo.return_value = DummyModel(
+            famiport_order_identifier='123456789012',
+            paid_at=None,
+            canceled_at=None,
+            issued_at=None,
+            )
         res = self._callFUT({
             'playGuideId': '',
-            'storeCode': '000009',
+            'storeCode': '099999',
             'ticketingDate': '20150401101950',
             'barCodeNo': '1000000000000',
-            'sequenceNo': '15040100009',
+            'sequenceNo': '12345678901',
             'mmkNo': '1',
             'orderId': '123456789012',
             'cancelCode': '10',
