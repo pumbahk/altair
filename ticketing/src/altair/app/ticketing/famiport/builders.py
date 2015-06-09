@@ -601,6 +601,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
 class XmlFamiPortResponseGenerator(object):
 
     def __init__(self, famiport_response, xml_encoding='Shift_JIS', encoding='CP932'):
+        self.famiport_crypt = None
         if famiport_response.encrypt_key:
             hash = hashlib.md5()
             hash.update(famiport_response.encrypt_key)
@@ -634,8 +635,8 @@ class XmlFamiPortResponseGenerator(object):
         ))
 
     def _build_xmlTree(self, root, obj):
-        """
-        Build XML tree from object.
+        """Build XML tree from object.
+
         :param root: root of XML tree
         :param object: object to build XML tree from
         :return: root of the XML tree built
@@ -660,7 +661,7 @@ class XmlFamiPortResponseGenerator(object):
                         element.text = attribute_value
                     except (TypeError, ValueError) as err:
                         raise err.__class__('illigal type: {}: {}'.format(attribute_name, err))
-                else:
+                elif self.famiport_crypt:
                     element.text = self.famiport_crypt.encrypt(
                         attribute_value.encode(self.encoding))
 
