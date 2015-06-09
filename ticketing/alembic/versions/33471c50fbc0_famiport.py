@@ -318,6 +318,21 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
+        'FamiPortRefundEntryRequest',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('businessFlg', sa.Unicode(1)),
+        sa.Column('textTyp', sa.Unicode(1)),
+        sa.Column('entryTyp', sa.Unicode(1)),
+        sa.Column('shopNo', sa.Unicode(7)),
+        sa.Column('registerNo', sa.Unicode(2)),
+        sa.Column('timeStamp', sa.Unicode(8)),
+        sa.Column('barCode1', sa.Unicode(13)),
+        sa.Column('barCode2', sa.Unicode(13)),
+        sa.Column('barCode3', sa.Unicode(13)),
+        sa.Column('barCode4', sa.Unicode(13)),
+        sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp())
+        )
+    op.create_table(
         'FamiPortReservationInquiryResponse',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
@@ -424,6 +439,52 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
+        'FamiPortRefundEntryResponse',
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('businessFlg', sa.Unicode(1)),
+        sa.Column('textTyp', sa.Unicode(1)),
+        sa.Column('entryTyp', sa.Unicode(1)),
+        sa.Column('shopNo', sa.Unicode(7)),
+        sa.Column('registerNo', sa.Unicode(2)),
+        sa.Column('timeStamp', sa.Unicode(8)),
+        sa.Column('barCode1', sa.Unicode(13)),
+        sa.Column('resultCode1', sa.Unicode(2)),
+        sa.Column('mainTitle1', sa.Unicode(30)),
+        sa.Column('perfDay1', sa.Unicode(8)),
+        sa.Column('repayment1', sa.Unicode(6)),
+        sa.Column('refundStart1', sa.Unicode(8)),
+        sa.Column('refundEnd1', sa.Unicode(8)),
+        sa.Column('ticketTyp1', sa.Unicode(1)),
+        sa.Column('charge1', sa.Unicode(6)),
+        sa.Column('barCode2', sa.Unicode(13)),
+        sa.Column('resultCode2', sa.Unicode(2)),
+        sa.Column('mainTitle2', sa.Unicode(30)),
+        sa.Column('perfDay2', sa.Unicode(8)),
+        sa.Column('repayment2', sa.Unicode(6)),
+        sa.Column('refundStart2', sa.Unicode(8)),
+        sa.Column('refundEnd2', sa.Unicode(8)),
+        sa.Column('ticketTyp2', sa.Unicode(1)),
+        sa.Column('charge2', sa.Unicode(6)),
+        sa.Column('barCode3', sa.Unicode(13)),
+        sa.Column('resultCode3', sa.Unicode(2)),
+        sa.Column('mainTitle3', sa.Unicode(30)),
+        sa.Column('perfDay3', sa.Unicode(8)),
+        sa.Column('repayment3', sa.Unicode(6)),
+        sa.Column('refundStart3', sa.Unicode(8)),
+        sa.Column('refundEnd3', sa.Unicode(8)),
+        sa.Column('ticketTyp3', sa.Unicode(1)),
+        sa.Column('charge3', sa.Unicode(6)),
+        sa.Column('barCode4', sa.Unicode(13)),
+        sa.Column('resultCode4', sa.Unicode(2)),
+        sa.Column('mainTitle4', sa.Unicode(30)),
+        sa.Column('perfDay4', sa.Unicode(8)),
+        sa.Column('repayment4', sa.Unicode(6)),
+        sa.Column('refundStart4', sa.Unicode(8)),
+        sa.Column('refundEnd4', sa.Unicode(8)),
+        sa.Column('ticketTyp4', sa.Unicode(1)),
+        sa.Column('charge4', sa.Unicode(6))
+        )
+    op.create_table(
         'FamiPortTenant',
         sa.Column('id', Identifier, autoincrement=True, primary_key=True),
         sa.Column('organization_id', Identifier, sa.ForeignKey('Organization.id')),
@@ -486,6 +547,7 @@ def upgrade():
 def downgrade():
     op.drop_table('FamiPortShop')
     op.drop_table('FamiPortTenant')
+    op.drop_table('FamiPortRefundEntryResponse')
     op.drop_table('FamiPortTicketResponse')
     op.drop_table('FamiPortCustomerInformationResponse')
     op.drop_table('FamiPortInformationResponse')
@@ -493,6 +555,7 @@ def downgrade():
     op.drop_table('FamiPortPaymentTicketingCompletionResponse')
     op.drop_table('FamiPortPaymentTicketingResponse')
     op.drop_table('FamiPortReservationInquiryResponse')
+    op.drop_table('FamiPortRefundEntryRequest')
     op.drop_table('FamiPortCustomerInformationRequest')
     op.drop_table('FamiPortInformationRequest')
     op.drop_table('FamiPortPaymentTicketingCancelRequest')
