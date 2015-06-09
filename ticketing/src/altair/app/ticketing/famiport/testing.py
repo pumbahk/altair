@@ -256,3 +256,16 @@ def get_payload_builder(*args, **kwds):
         return bstr
     builder.build_payload = _build_payload_str
     return builder
+
+
+def generate_ticket_data():
+    here = os.path.abspath(os.path.dirname(__file__))
+    xml_path = os.path.join(here, 'tests/data/payment_ticketing_response.xml')
+    tree = lxml.etree.parse(xml_path)
+    for ticket in tree.xpath('//ticket'):
+        yield {
+            'barCodeNo': ticket.xpath('barCodeNo')[0].text,
+            'ticketClass': ticket.xpath('ticketClass')[0].text,
+            'templateCode': ticket.xpath('templateCode')[0].text,
+            'ticketData': ticket.xpath('ticketData')[0].text,
+            }
