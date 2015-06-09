@@ -413,7 +413,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         else:
             pass
 
-        infoMessage = None
+        infoMessage = ''
         try:
             infoMessage = FamiPortInformationMessage.get_message(
                 InformationResultCodeEnum.ServiceUnavailable)
@@ -460,7 +460,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         return FamiPortInformationResponse(
             resultCode=resultCode,
             infoKubun=infoKubun,
-            infoMessage=None,
+            infoMessage='',
             )
 
 

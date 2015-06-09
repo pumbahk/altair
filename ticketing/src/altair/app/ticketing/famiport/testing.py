@@ -177,6 +177,16 @@ class FamiPortInformationResponseFakeFactory(FamiPortFakeFactory):
 <FMIF>
     <resultCode>00</resultCode>
     <infoKubun>0</infoKubun>
+    <infoMessage />
+</FMIF>
+"""
+
+
+class FamiPortInformationResponseExistMessageFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
+<FMIF>
+    <resultCode>01</resultCode>
+    <infoKubun>0</infoKubun>
     <infoMessage>テスト1
 テスト2
 テスト3

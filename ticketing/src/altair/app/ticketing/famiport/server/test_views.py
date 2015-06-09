@@ -429,7 +429,7 @@ class InformationViewTest(FamiPortAPIViewTest):
             'uketsukeCode': '',
             'kogyoSubCode': '',
             'reserveNumber': '4000000000001',
-            'infoKubun': 'Reserve',
+            'infoKubun': '0',
             'kogyoCode': '',
             'koenCode': '',
             'authCode': '',
