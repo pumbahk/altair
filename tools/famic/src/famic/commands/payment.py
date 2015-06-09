@@ -9,6 +9,7 @@ from famic.utils import (
     DEFAULT_PROTOCOL,
     FamiPortReserveAPIURL,
     )
+from famic.crypto import KusoCrypto
 
 
 def main(argv=sys.argv[1:]):
@@ -28,6 +29,11 @@ def main(argv=sys.argv[1:]):
     args = parser.parse_args(argv)
 
     params = dict(args._get_kwargs())
+
+    crypto = KusoCrypto(params['barCodeNo'])
+    params['customerName'] = crypto.encrypt(params['customerName'])
+    params['phoneNumber'] = crypto.encrypt(params['phoneNumber'])
+
     host = args.host
     url = '{}://{}/{}'.format(DEFAULT_PROTOCOL, host, uri)
     res = requests.post(url, params=params)
