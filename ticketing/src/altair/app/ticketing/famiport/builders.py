@@ -193,11 +193,11 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             playGuideId = famiport_order.playguide_id
             barCodeNo = famiport_order.barcode_number
             totalAmount = famiport_order.total_amount
-            ticketPayment = str(famiport_order.ticket_payment)
-            systemFee = str(famiport_order.system_fee)
-            ticketingFee = str(famiport_order.ticketing_fee)
-            ticketCountTotal = str(famiport_order.ticket_total_count)
-            ticketCount = str(famiport_order.ticket_count)
+            ticketPayment = str_or_blank(famiport_order.ticket_payment)
+            systemFee = str_or_blank(famiport_order.system_fee)
+            ticketingFee = str_or_blank(famiport_order.ticketing_fee)
+            ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
+            ticketCount = str_or_blank(famiport_order.ticket_count)
             kogyoName = famiport_order.kogyo_name
             name = famiport_order.customer_name
 
