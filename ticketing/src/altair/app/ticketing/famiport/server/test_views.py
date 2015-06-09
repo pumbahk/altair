@@ -466,6 +466,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
     @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortCustomerResponseFakeFactory as FakeFactory
+        from ..communication import FamiPortCustomerInformationResponse as FamiportResponse
         get_by_barCodeNo.return_value = DummyModel(
             customer_name=u'発券　し太郎',
             customer_member_id=u'REIOHREOIHOIERHOIERHGOIERGHOI',
@@ -485,6 +486,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
+            FamiportResponse,
             )

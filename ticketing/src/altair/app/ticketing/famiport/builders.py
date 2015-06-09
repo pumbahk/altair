@@ -400,18 +400,6 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         resultCode = InformationResultCodeEnum.NoInformation.value
         infoKubun = famiport_information_request.infoKubun
         storeCode = famiport_information_request.storeCode
-        if infoKubun == InfoKubunEnum.Reserved.value:
-            reserveNumber = famiport_information_request.reserveNumber
-            logger.info("Processing famiport information request from store: %s with reserveNumber: %s" % (
-                storeCode, reserveNumber))
-        elif infoKubun == InfoKubunEnum.DirectSales.value:
-            kogyoCode = famiport_information_request.kogyoCode
-            kogyoSubCode = famiport_information_request.kogyoSubCode
-            koenCode = famiport_information_request.koenCode
-            uketsukeCode = famiport_information_request.uketsukeCode
-        else:
-            pass
-
         infoMessage = ''
         try:
             infoMessage = FamiPortInformationMessage.get_message(
