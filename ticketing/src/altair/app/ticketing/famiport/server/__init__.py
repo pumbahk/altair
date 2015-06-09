@@ -21,11 +21,13 @@ def main(global_config, **local_config):
 
     config.include(includeme, '/famiport/')
     config.include('altair.app.ticketing.famiport.scripts')
-
+    config.include('altair.app.ticketing.famiport.builders')
     return config.make_wsgi_app()
 
 
 def includeme(config):
+    config.add_route('famiport.api.ping', '/ping')  # 予約照会
+
     # 予済
     config.add_route('famiport.api.reservation.inquiry', '/reservation/inquiry')  # 予約照会
     config.add_route('famiport.api.reservation.payment', '/reservation/payment')  # 入金発券

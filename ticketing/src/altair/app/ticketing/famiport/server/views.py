@@ -13,6 +13,11 @@ from ..api import (
     )
 
 
+@view_config(route_name='famiport.api.ping')
+def pingpong(request):
+    return Response('PONG')
+
+
 @view_defaults(renderer='famiport-xml')
 class ResevationView(object):
     def __init__(self, context, request):
