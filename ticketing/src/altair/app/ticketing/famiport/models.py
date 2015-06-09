@@ -520,11 +520,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @classmethod
     def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
-        _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
+        return _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
 
     @classmethod
     def get_by_barCodeNo(cls, barCodeNo):
-        _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+        return _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
 
     @property
     def ticket_total_count(self):

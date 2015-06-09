@@ -283,6 +283,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         famiport_order, replyCode = None, None
         try:
             famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
+
             famiport_order.paid_at = ticketingDate
             famiport_order.issued_at = ticketingDate
             famiport_order.save()
