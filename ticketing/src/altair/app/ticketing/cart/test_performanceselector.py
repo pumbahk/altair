@@ -106,20 +106,20 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                           'seat_types_url': 'http://example.com/testing/seat_types2/1/2',
                           'max_quantity': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
-                          'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
-                          'name_pc': u'2013年3月31日 - 4月1日 テスト会場 前売券',
-                          'name_smartphone': u'2013年3月31日 - 4月1日 テスト会場 前売券',
-                          'name_mobile': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
+                          'name_pc': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
+                          'name_smartphone': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
+                          'name_mobile': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
                           })
         self.assertEqual(result[0][1][1],
                          {'id': 4,
                           'seat_types_url': 'http://example.com/testing/seat_types2/3/4', 
                           'max_quantity': 10, 
                           'order_url': 'http://example.com/testing/order/4', 
-                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
-                          'name_pc': u'2013年4月1日 00:00 テスト会場 前売券', 
-                          'name_smartphone': u'2013年4月1日 00:00 テスト会場 前売券', 
-                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券', 
+                          'name': u'2013年4月1日(月) 00:00 テスト会場 前売券',
+                          'name_pc': u'2013年4月1日(月) 00:00 テスト会場 前売券', 
+                          'name_smartphone': u'2013年4月1日(月) 00:00 テスト会場 前売券', 
+                          'name_mobile': u'2013年4月1日(月) 00:00 テスト会場 前売券', 
                           })
         self.assertEqual(result[1][0], u'testing performance2')
         self.assertEqual(result[1][1][0],
@@ -127,10 +127,10 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                           'seat_types_url': 'http://example.com/testing/seat_types2/5/6',
                           'max_quantity': 10,
                           'order_url': 'http://example.com/testing/order/6',
-                          'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
-                          'name_pc': u'2013年4月1日 - 4月2日 テスト会場 前売券',
-                          'name_smartphone': u'2013年4月1日 - 4月2日 テスト会場 前売券',
-                          'name_mobile': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
+                          'name_pc': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
+                          'name_smartphone': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
                           })
 
 class DatePerformanceSelectorTests(unittest.TestCase):
@@ -251,10 +251,10 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                           'seat_types_url': 'http://example.com/testing/seat_types2/2/1',
                           'order_url': 'http://example.com/testing/order/1', 
                           'max_quantity': 3, 
-                          'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
                           'name_pc': u'テスト会場 前売券',
                           'name_smartphone': u'テスト会場 前売券',
-                          'name_mobile': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name_mobile': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
                           })
         self.assertEqual(result[1][0], u'2013年4月1日 - 4月2日')
         self.assertEqual(result[1][1][0],
@@ -262,10 +262,10 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                           'seat_types_url': 'http://example.com/testing/seat_types2/4/3', 
                           'order_url': 'http://example.com/testing/order/3',
                           'max_quantity': 10, 
-                          'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
                           'name_pc': u'テスト会場 前売券',
                           'name_smartphone': u'テスト会場 前売券',
-                          'name_mobile': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
                          })
         self.assertEqual(result[2][0], u'2013年4月1日')
         self.assertEqual(result[2][1][0],
@@ -273,20 +273,20 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                           'seat_types_url': 'http://example.com/testing/seat_types2/6/5',
                           'order_url': 'http://example.com/testing/order/5',
                           'max_quantity': 10,
-                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name': u'2013年4月1日(月) 00:00 テスト会場 前売券',
                           'name_pc': u'00:00 テスト会場 前売券',
                           'name_smartphone': u'00:00 テスト会場 前売券',
-                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日(月) 00:00 テスト会場 前売券',
                           })
         self.assertEqual(result[2][1][1],
                          {'id': 7,
                           'order_url': 'http://example.com/testing/order/7',
                           'seat_types_url': 'http://example.com/testing/seat_types2/8/7',
                           'max_quantity': 10,
-                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name': u'2013年4月1日(月) 00:00 テスト会場 前売券',
                           'name_pc': u'00:00 テスト会場 前売券',
                           'name_smartphone': u'00:00 テスト会場 前売券',
-                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日(月) 00:00 テスト会場 前売券',
                           })
         
 class DummyEvent(testing.DummyModel):
