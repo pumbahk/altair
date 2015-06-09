@@ -421,8 +421,10 @@ class InformationViewTest(FamiPortAPIViewTest):
     """
     url = '/famiport/reservation/information'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortInformationMessage.get_message')
+    def test_it(self, get_message):
         from ..testing import FamiPortInformationResponseFakeFactory as FakeFactory
+        get_message.return_value = DummyModel()
         res = self._callFUT({
             'uketsukeCode': '',
             'kogyoSubCode': '',
