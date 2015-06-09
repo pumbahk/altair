@@ -106,7 +106,7 @@ class InquiryTest(FamiPortAPIViewTest):
                 type=ticket['ticketClass'],
                 template_code=ticket['templateCode'],
                 data=ticket['ticketData'],
-            ) for ticket in generate_ticket_data()]
+            ) for ticket in list(generate_ticket_data())[:1]]
 
         payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
@@ -127,8 +127,8 @@ class InquiryTest(FamiPortAPIViewTest):
             barcode_number=u'4110000000006',
             total_amount=670,
             ticket_payment=0,
-            system_fee=0,
-            ticketing_fee=200,
+            system_fee=500,
+            ticketing_fee=170,
             ticket_total_count=len(famiport_tickets),
             ticket_count=len(famiport_tickets),
             koen_date=None,
