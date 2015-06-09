@@ -93,8 +93,55 @@ class InquiryTest(FamiPortAPIViewTest):
     """
     url = '/famiport/reservation/inquiry'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_reserveNumber')
+    def test_it(self, get_by_reserveNumber):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
+        import datetime
+        from ..testing import generate_ticket_data
+        from ..models import FamiPortTicket
+        from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
+        famiport_tickets = [
+            FamiPortTicket(
+                barcode_number=ticket['barCodeNo'],
+                type=ticket['ticketClass'],
+                template_code=ticket['templateCode'],
+                data=ticket['ticketData'],
+            ) for ticket in generate_ticket_data()]
+
+        payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+        ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
+        ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+
+        get_by_reserveNumber.return_value = DummyModel(
+            famiport_order_identifier='430000000002',
+            type='3',
+            payment_due_at=payment_due_at,
+            paid_at=None,
+            issued_at=None,
+            ticketing_start_at=ticketing_start_at,
+            ticketing_end_at=ticketing_end_at,
+            playguide_id=1,
+            playguide_name=u'クライアント１',
+            exchange_number='4310000000002',
+            barcode_number=u'1000000000000',
+            total_amount=200,
+            ticket_payment=0,
+            system_fee=0,
+            ticketing_fee=200,
+            ticket_total_count=len(famiport_tickets),
+            ticket_count=len(famiport_tickets),
+            koen_date=None,
+            famiport_tickets=famiport_tickets,
+            kogyo_name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
+            customer_name_input=0,
+            customer_phone_input=0,
+            famiport_sales_segment=DummyModel(
+                famiport_performance=DummyModel(
+                    start_at=None,
+                    ),
+                )
+            )
+
         res = self._callFUT({
             'authNumber': '',
             'reserveNumber': '5300000000001',
@@ -106,6 +153,7 @@ class InquiryTest(FamiPortAPIViewTest):
         self._check_payload(
             FakeFactory.parse(res.unicode_body),
             FakeFactory.create(),
+            FamiPortResponse,
             )
 
 

@@ -154,14 +154,14 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). 店舗コード: %s , 利用日時: %s , 予約番号: %s "
                          % (storeCode, ticketingDate, reserveNumber))
 
-        nameInput = NameRequestInputEnum.Unnecessary
-        phoneInput = PhoneRequestInputEnum.Unnecessary
+        nameInput = NameRequestInputEnum.Unnecessary.value
+        phoneInput = PhoneRequestInputEnum.Unnecessary.value
         if famiport_order is not None:
             resultCode = ResultCodeEnum.Normal.value
             replyClass = famiport_order.type
             replyCode = ReplyCodeEnum.Normal.value
-            nameInput = NameRequestInputEnum.Necessary if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary
-            phoneInput = PhoneRequestInputEnum.Necessary if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary
+            nameInput = NameRequestInputEnum.Necessary.value if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary.value
+            phoneInput = PhoneRequestInputEnum.Necessary.value if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary.value
         else:
             resultCode = ResultCodeEnum.OtherError.value
             if replyCode is None:
@@ -171,7 +171,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             None, None, None, None, None, None, None, None, None, None, None, None, None
         if replyCode == ReplyCodeEnum.Normal.value:
             playGuideId = famiport_order.playguide_id
-            barCodeNo = famiport_order.barcode_no
+            barCodeNo = famiport_order.barcode_number
             totalAmount = str(famiport_order.total_amount)
             ticketPayment = str(famiport_order.ticket_payment)
             systemFee = str(famiport_order.system_fee)

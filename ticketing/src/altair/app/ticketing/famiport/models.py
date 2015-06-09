@@ -542,6 +542,8 @@ class FamiPortOrder(Base, WithTimestamp):
     def customer_identify_no(self):
         return ''  # TODO Set customer_identify_no
 
+    auth_number = None
+
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
