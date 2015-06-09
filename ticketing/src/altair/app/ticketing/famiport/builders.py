@@ -136,6 +136,9 @@ class FamiPortResponseBuilder(object):
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
     def build_response(self, famiport_reservation_inquiry_request=None):
+        playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
+            None, None, None, None, None, None, None, None, None, None, None, None, None
+
         storeCode = famiport_reservation_inquiry_request.storeCode
         ticketingDate = famiport_reservation_inquiry_request.ticketingDate
         reserveNumber = famiport_reservation_inquiry_request.reserveNumber
@@ -167,8 +170,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             if replyCode is None:
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
-        playGuideId, barCodeNo, totalAmount, ticketPayment, systemFee, ticketingFee, ticketCountTotal, ticketCount, kogyoName, koenDate, name, nameInput, phoneInput = \
-            None, None, None, None, None, None, None, None, None, None, None, None, None
         if replyCode == ReplyCodeEnum.Normal.value:
             playGuideId = famiport_order.playguide_id
             barCodeNo = famiport_order.barcode_number
