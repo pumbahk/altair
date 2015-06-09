@@ -59,27 +59,57 @@
                     </Button>
 
                     <Button
-                     Canvas.Left="230"
-                     Canvas.Top="200"
-                     Height="200"
-                     Width="800"
-                     Click="Button_Click_Part"
+                     Canvas.Left="200"
+                     Canvas.Top="170"
+                     Height="220"
+                     Width="1000"
+                     Click="Button_Click_All"
                      Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            一部発券
-                        </TextBlock>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="70"></RowDefinition>
+                                <RowDefinition Height="150"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="800"></ColumnDefinition>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
+                                一緒に購入した他のチケットを
+                            </TextBlock>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                                すべて発券
+                            </TextBlock>
+                            <Image Grid.RowSpan="2" Grid.Column="1" Margin="40" Source="/Resource/test.png"/>
+                        </Grid>
                     </Button>
 
                     <Button
-                     Canvas.Left="230"
-                     Canvas.Top="500"
-                     Height="200"
-                     Width="800"
-                     Click="Button_Click_All"
+                     Canvas.Left="200"
+                     Canvas.Top="410"
+                     Height="220"
+                     Width="1000"
+                     Click="Button_Click_Part"
                      Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            全部発券
-                        </TextBlock>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="70"></RowDefinition>
+                                <RowDefinition Height="150"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="800"></ColumnDefinition>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
+                                発券するチケットを
+                            </TextBlock>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                                選択する
+                            </TextBlock>
+                            <Image Grid.RowSpan="2" Grid.Column="1" Margin="40" Source="/Resource/test.png"/>
+                        </Grid>
                     </Button>
 
                     <Button

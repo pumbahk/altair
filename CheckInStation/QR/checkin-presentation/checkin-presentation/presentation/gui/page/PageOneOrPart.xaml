@@ -63,7 +63,7 @@
                      Canvas.Top="170"
                      Height="220"
                      Width="1000"
-                     Click="Button_Click_Single"
+                     Click="Button_Click_All"
                      Style="{StaticResource SubmitButton}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -90,11 +90,23 @@
                      Canvas.Top="410"
                      Height="220"
                      Width="1000"
-                     Click="Button_Click_All"
+                     Click="Button_Click_Single"
                      Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            複数発券
-                        </TextBlock>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="70"></RowDefinition>
+                                <RowDefinition Height="150"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="800"></ColumnDefinition>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                                1枚のみ発券
+                            </TextBlock>
+                            <Image Grid.RowSpan="2" Grid.Column="1" Margin="40" Source="/Resource/test.png"/>
+                        </Grid>
                     </Button>
 
                     <Button

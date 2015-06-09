@@ -46,7 +46,7 @@ namespace checkin.core.flow
         }
         public override ICase OnSuccess(IFlow flow)
         {
-            flow.Finish();
+            //flow.Finish();
             if (this.RouteType == 0)
             {
                 return flow.GetFlowDefinition().AfterTicketChoice(Resource, (this.PresentationChanel as PartOrAllEvent).PrintCount, this.Tdata);

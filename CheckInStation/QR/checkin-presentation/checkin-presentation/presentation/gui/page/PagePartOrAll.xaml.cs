@@ -20,6 +20,7 @@ namespace checkin.presentation.gui.page
 {
     class PartOrAllDataContext : InputDataContext
     {
+        public PartOrAllDataContext(Page page) : base(page) { }
         public int PrintCount { get; set; }
         private Visibility _refreshModeVisibility;
         public Visibility RefreshModeVisibility
@@ -49,7 +50,7 @@ namespace checkin.presentation.gui.page
 
         private object CreateDataContext()
         {
-            return new PartOrAllDataContext()
+            return new PartOrAllDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new PartOrAllEvent(),
@@ -58,16 +59,19 @@ namespace checkin.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            var ctx = this.DataContext as PartOrAllDataContext;
             if (!AppUtil.GetCurrentResource().RefreshMode)
             {
                 (this.DataContext as PartOrAllDataContext).RefreshModeVisibility = Visibility.Hidden;
             }
+            await ctx.PrepareAsync().ConfigureAwait(true);
         }
 
         private void Button_Click_Part(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
             (this.DataContext as PartOrAllDataContext).PrintCount = 0;
+            ((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 0;
             this.OnSubmitWithBoundContext(sender, e);
 
         }
@@ -76,6 +80,7 @@ namespace checkin.presentation.gui.page
         {
             e.Handled = true;
             (this.DataContext as PartOrAllDataContext).PrintCount = 1;
+            ((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 1;
             this.OnSubmitWithBoundContext(sender, e);
         }
 

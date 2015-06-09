@@ -104,7 +104,7 @@
                     </Button>
                     -->
 
-                    <!-- change mode-->
+                    <!-- change mode
                     <Button Click="OnGotoAnotherMode"
                             Canvas.Top="17"
                             RenderTransformOrigin="10.794,2.52"
@@ -122,6 +122,7 @@
                         </Button.Style>
                          QRで認証
                     </Button>
+                    -->
 
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"

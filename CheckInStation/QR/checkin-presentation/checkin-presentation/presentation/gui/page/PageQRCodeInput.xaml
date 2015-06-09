@@ -41,9 +41,9 @@
                                 <StackPanel HorizontalAlignment="Stretch">
                                     <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
                                     <TextBox
-                                        Width="400"
+                                        Width="0"
                                         HorizontalAlignment="Center"
-                                        KeyDown="OnKeyDownHandler"                 
+                                        KeyDown="OnKeyDownHandler"
                                         x:Name="QRCodeInput"/>
                                 </StackPanel>
                             </Border>
@@ -81,6 +81,7 @@
                     Style="{StaticResource BackwardButton}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    Focusable="False"
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
@@ -91,7 +92,8 @@
                      Click="OnSubmitWithBoundContext"
                      Style="{StaticResource SubmitButton}"
                      HorizontalAlignment="Center"
-                     VerticalAlignment="Center">
+                     VerticalAlignment="Center"
+                     Focusable="False">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
                             QRコード読み込み
                         </TextBlock>
@@ -108,7 +110,8 @@
                     <Button Click="OnGotoWelcome"
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Focusable="False">
                         <TextBlock>TOP</TextBlock>
                     </Button>
 

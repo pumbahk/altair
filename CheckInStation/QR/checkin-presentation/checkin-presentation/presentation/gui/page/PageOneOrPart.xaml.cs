@@ -20,6 +20,7 @@ namespace checkin.presentation.gui.page
 {
     class OneOrPartDataContext : InputDataContext
     {
+        public OneOrPartDataContext(Page page) : base(page) { }
         public int PrintCount { get; set; }
         private Visibility _refreshModeVisibility;
         public Visibility RefreshModeVisibility
@@ -49,7 +50,7 @@ namespace checkin.presentation.gui.page
 
         private object CreateDataContext()
         {
-            return new OneOrPartDataContext() 
+            return new OneOrPartDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new OneOrPartEvent(),
@@ -58,16 +59,19 @@ namespace checkin.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            var ctx = this.DataContext as OneOrPartDataContext;
             if (!AppUtil.GetCurrentResource().RefreshMode)
             {
                 (this.DataContext as OneOrPartDataContext).RefreshModeVisibility = Visibility.Hidden;
             }
+            await ctx.PrepareAsync().ConfigureAwait(true);
         }
 
         private void Button_Click_Single(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
             (this.DataContext as OneOrPartDataContext).PrintCount = 0;
+            ((this.DataContext as OneOrPartDataContext).Case.PresentationChanel as OneOrPartEvent).PrintCount = 0;
             this.OnSubmitWithBoundContext(sender, e);
 
         }
@@ -76,6 +80,7 @@ namespace checkin.presentation.gui.page
         {
             e.Handled = true;
             (this.DataContext as OneOrPartDataContext).PrintCount = 1;
+            ((this.DataContext as OneOrPartDataContext).Case.PresentationChanel as OneOrPartEvent).PrintCount = 1;
             this.OnSubmitWithBoundContext(sender, e);
         }
 
@@ -104,6 +109,7 @@ namespace checkin.presentation.gui.page
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
                 ctx.TreatErrorMessage();
+                //(this.DataContext.Case.PresentationChanel as OneOrPartEvent).PrintCount = (this.DataContext as OneOrPartDataContext).PrintCount;
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }

@@ -35,7 +35,7 @@
 
                         <Grid
                         Height="60"
-                        Width="1250"
+                        Width="1000"
                         Background="#eeeeee"
                         >
                             <Grid.RowDefinitions>
@@ -43,8 +43,8 @@
                                 <RowDefinition Height="auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="625"/>
-                                <ColumnDefinition Width="625"/>
+                                <ColumnDefinition Width="500"/>
+                                <ColumnDefinition Width="500"/>
                             </Grid.ColumnDefinitions>
                             <!-- todo padding 23-->
                             <WrapPanel 
