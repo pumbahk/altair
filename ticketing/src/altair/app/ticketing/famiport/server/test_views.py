@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
+import mock
 import lxml.etree
+from  pyramid.testing import (
+    DummyModel,
+    )
 from altair.app.ticketing.testing import (
     _setup_db,
     _teardown_db,
@@ -177,17 +181,19 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
 
     url = '/famiport/reservation/completion'
 
-    def test_it(self):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
+    def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
+        get_by_barCodeNo.return_value = DummyModel()
         res = self._callFUT({
             'ticketingDate': '20150331184114',
             'orderId': '123456789012',
             'totalAmount': '1000',
             'playGuideId': '',
             'mmkNo': '01',
-            'barCodeNo': '1000000000000',
-            'sequenceNo': '15033100010',
-            'storeCode': '000009',
+            'barCodeNo': '6010000000000',
+            'sequenceNo': '12345678901',
+            'storeCode': '099999',
             })
         self.assertEqual(200, res.status_code)
 
