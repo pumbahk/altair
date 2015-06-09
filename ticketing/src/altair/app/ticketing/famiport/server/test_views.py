@@ -424,7 +424,7 @@ class InformationViewTest(FamiPortAPIViewTest):
     @mock.patch('altair.app.ticketing.famiport.models.FamiPortInformationMessage.get_message')
     def test_it(self, get_message):
         from ..testing import FamiPortInformationResponseFakeFactory as FakeFactory
-        get_message.return_value = u'テスト'
+        get_message.return_value = None
         res = self._callFUT({
             'uketsukeCode': '',
             'kogyoSubCode': '',
