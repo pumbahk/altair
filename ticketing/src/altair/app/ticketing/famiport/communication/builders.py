@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import hashlib
-import base64
 import datetime
 import six
 from lxml import etree
@@ -598,17 +596,14 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
             ]
         return famiport_refund_entry_response
 
+
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
 
     def __init__(self, famiport_response, xml_encoding='Shift_JIS', encoding='CP932'):
         self.famiport_crypt = None
         if famiport_response.encrypt_key:
-            hash = hashlib.md5()
-            hash.update(famiport_response.encrypt_key)
-            str_digest = hash.hexdigest()
-            self.famiport_crypt = FamiPortCrypt(
-                base64.urlsafe_b64encode(str_digest))
+            self.famiport_crypt = FamiPortCrypt(famiport_response.encrypt_key)
         self.xml_encoding = xml_encoding
         self.encoding = encoding
 

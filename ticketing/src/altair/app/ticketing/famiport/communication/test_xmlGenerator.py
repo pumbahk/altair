@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
-
 from unittest import TestCase
+import mock
 from lxml import etree
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from pyramid.testing import (
+    DummyModel,
+    )
+from altair.app.ticketing.testing import (
+    _setup_db,
+    _teardown_db,
+    )
 from ..api import get_xmlResponse_generator
 
 
@@ -170,3 +176,15 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
                         decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text).decode('shift_jis')
                         self.assertEqual(decrypted_text_value, response_value,
                                          '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
+
+    @mock.patch('altair.app.ticketing.famiport.builders.FamiPortCrypt')
+    def test_constructore(self, FamiPortCrypt):
+        from ..builders import XmlFamiPortResponseGenerator as klass
+        exp_encrypt_key = 'XXXXXXXXXXX'
+        famiport_response = DummyModel(
+            encrypt_key=exp_encrypt_key
+            )
+        target = klass(famiport_response)
+        self.assertEqual(FamiPortCrypt.call_args[0][0], exp_encrypt_key)
+        self.assertEqual(target.xml_encoding, 'Shift_JIS')
+        self.assertEqual(target.encoding, 'CP932')
