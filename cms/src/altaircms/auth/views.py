@@ -10,14 +10,16 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
 from pyramid.view import view_defaults
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
+from altaircms.helpers.viewhelpers import FlashMessage
 
 import json
 
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.auth.forms import RoleForm, NowSettingForm
-from .models import Operator, Role, DEFAULT_ROLE, Organization
+from altaircms.auth.forms import RoleForm, NowSettingForm, OrganizationForm
+from .models import Operator, Role, DEFAULT_ROLE, Organization, Host
 
 from . import api
 from . import forms
@@ -32,14 +34,14 @@ def get_after_login_redirect(request):
         return request.session.pop(_pre_login_location)
     else:
         return request.route_url('dashboard')
-        
+
 def set_after_login_redirect(request):
     request.session[_pre_login_location] = request.url
     logger.debug("@@@@@@")
     logger.debug(request.session)
     logger.debug("@@@@@@")
 
-@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.html', 
+@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.html',
              decorator=with_bootstrap)
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.html',
              decorator=with_bootstrap)
@@ -93,7 +95,7 @@ class OAuthLogin(object):
         url = oc.create_oauth_entry_url()
         logger.info("*login* oauth entry url: %s" % url)
         return HTTPFound(url)
- 
+
     @view_config(route_name='oauth_callback')
     def oauth_callback(self):
         data = None
@@ -189,7 +191,7 @@ class RoleView(object):
             role = self.get_role()
             perm = form.data.get('permission')
             role.permissions.append(perm)
-            
+
             return HTTPFound(location=self.request.route_path('role', id=role.id))
         return dict(
             form=form,
@@ -206,13 +208,86 @@ class RoleView(object):
             raise
         return HTTPFound(self.request.route_path("role_list"))
 
-@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.html', 
+@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.html',
              permission="authenticated", decorator=with_bootstrap)
 def operator_info(request):
     operator = request.user
-    return {"operator": operator, 
+    return {"operator": operator,
             "organization": operator.organization}
 
+@view_defaults(decorator=with_bootstrap)
+class OrganizationView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='organization.new', request_method='GET',
+                renderer='altaircms:templates/auth/organization/new.html',permission='organization_create')
+    def new_get(self):
+        form = OrganizationForm()
+        if len(DBSession.query(func.max(Organization.backend_id)).first()) > 0:
+            form.backend_id.data = DBSession.query(func.max(Organization.backend_id)).first()[0] + 1
+        return dict(
+            form=form,
+            display_fields=form.__display_fields__
+        )
+
+    @view_config(route_name='organization.new', request_method='POST',
+                renderer='altaircms:templates/auth/organization/new.html', permission='organization_create')
+    def new_post(self):
+        form = OrganizationForm(self.request.POST)
+        if form.validate():
+            org = Organization.from_dict(form.data)
+            if org.use_full_usersite == None:
+                org.use_full_usersite = False
+            if org.use_only_one_static_page_type == None:
+                org.use_only_one_static_page_type = False
+            ## flash messsage
+            mes = u'新しい組織を追加しました'
+            FlashMessage.success(mes, request=self.request)
+            DBSession.add(org)
+            return HTTPFound(self.request.route_path("organization.new"))
+        else:
+            mes = u'ERROR:入力内容を確認してください'
+            FlashMessage.error(mes, request=self.request)
+            return dict(
+                form=form,
+                display_fields=form.__display_fields__
+            )
+
+@view_defaults(decorator=with_bootstrap)
+class HostView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='host.new', request_method='GET',
+                renderer='altaircms:templates/auth/host/new.html', permission='host_create')
+    def new_get(self):
+        form = forms.HostForm().configure(Organization.query)
+        return dict(
+            form=form,
+            display_fields=form.__display_fields__
+        )
+
+    @view_config(route_name='host.new', request_method='POST',
+                renderer='altaircms:templates/auth/host/new.html', permission='host_create')
+    def new_post(self):
+        form = forms.HostForm(self.request.POST)
+        if form.validate():
+            host = Host.from_dict(form.data)
+            ## flash messsage
+            mes = u'Host情報を追加しました'
+            FlashMessage.success(mes, request=self.request)
+            DBSession.add(host)
+            return HTTPFound(self.request.route_path("host.new"))
+        else:
+            mes = u'ERROR:入力内容を確認してください'
+            FlashMessage.error(mes, request=self.request)
+            return dict(
+                form=form,
+                display_fields=form.__display_fields__
+            )
 
 class RolePermissionView(object):
     def __init__(self, request):
@@ -225,19 +300,19 @@ class RolePermissionView(object):
         role = Role.query.filter_by(id=role_id).one()
         if permission in role.permissions:
             role.permissions.remove(permission)
-        
+
         return HTTPFound(self.request.route_path("role", id=role_id))
 
 
 ##
 # get now settings
-@view_config(route_name="nowsetting", request_method="GET", 
+@view_config(route_name="nowsetting", request_method="GET",
              permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
 def nowsettings(context, request):
     form = NowSettingForm()
     return {"form": form}
 
-@view_config(route_name="nowsetting", request_method="POST", 
+@view_config(route_name="nowsetting", request_method="POST",
              permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
 def nowsettings_set_now(context, request):
     form = NowSettingForm(request.POST)
@@ -247,10 +322,9 @@ def nowsettings_set_now(context, request):
         return HTTPFound(get_endpoint(request))
     return {"form": form}
 
-@view_config(route_name="nowsetting.invalidate", 
+@view_config(route_name="nowsetting.invalidate",
              permission="authenticated")
 def nowsettings_invalidate(context, request):
     set_now(request, None)
     FlashMessage.success(u"時間指定を取り消しました。", request=request)
     return HTTPFound(get_endpoint(request))
-    

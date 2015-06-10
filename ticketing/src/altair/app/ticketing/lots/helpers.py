@@ -29,6 +29,7 @@ from altair.app.ticketing.cart.helpers import (
     safe_get_contact_url,
     sensible_widget,
     sensible_coerce,
+    performance_datetime,
 )
 from altair.app.ticketing.helpers.base import is_required
 
@@ -338,7 +339,7 @@ def tojson(obj):
     return json.dumps(obj) 
 
 def performance_date_label(performance):
-    return u'%s %s' % (japanese_datetime(performance.start_on), performance.venue.name)
+    return u'%s %s' % (performance_datetime(performance), performance.venue.name)
 
 def mobile_required_mark():
     return Markup('<sup><font color="#f00">*</font></sup>')

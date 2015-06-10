@@ -45,6 +45,7 @@ from altair.app.ticketing.core.models import (
     )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.cart import helpers as ch
 
 from .resources import ISalesSegmentAdminResource
 from .exceptions import IssuingStartAtOutTermException
@@ -470,7 +471,7 @@ class SalesSegmentForm(OurForm):
         label=u'コピー先の公演(複数選択可)',
         validators=[Optional()],
         choices=lambda field: [
-            (p.id, u'%s' % p.name) for p in field._form.context.event.performances
+            (p.id, u'%s\t%s' % (ch.performance_datetime(p), p.name)) for p in field._form.context.event.performances
         ] if field._form.context.event else [],
         coerce=lambda x : int(x) if x else u''
     )

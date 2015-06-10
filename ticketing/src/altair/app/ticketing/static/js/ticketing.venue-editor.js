@@ -1,105 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['t65N95MPQ96YFWC9'] = (function (exports) { (function () { 
-
-/************** translations.js **************/
-
-
-/************** en.js **************/
-exports.en = {
-  altair: {
-    venue_editor: {
-      unassigned: "Unassigned",
-      quantity_cannot_be_negative: "Quantity cannot be negative"
-    }
-  } 
-};
-
-
-/************** ja.js **************/
-exports.ja = {
-  altair: {
-    venue_editor: {
-      unassigned: "未割当",
-      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
-    }
-  } 
-};
- })(); return exports; })({});
-__LIBS__['L4XV4KQB8P8I_9GE'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  SHAPE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
-    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
-  },
-
-  TEXT_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
-    stroke: null
-  },
-
-  VENUE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
-    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
-  },
-
-  STYLES: {
-    label: {
-      fill: new Fashion.Color('#000'),
-      stroke: null
-    },
-    seat: {
-      fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
-    }
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" },
-    stroke: { color: "#000", width: 1 }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" }
-    },
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 2, pattern: 'solid' }
-    },
-    tooltip: {
-    },
-    unselectable: {
-      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
-    }
-  },
-
-  SEAT_STATUS_STYLE: {
-    0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
-    1: {},
-    2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
-    3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
-    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
-    5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
-    6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
-    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
-  },
-
-  SEAT_RENDER_UNITS: 1000
-};
- })(); return exports; })({});
-__LIBS__['lQWI1IBU8GQM2TQ_'] = (function (exports) { (function () { 
+__LIBS__['c2OXABX4QO97RY47'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +177,106 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['QFXN6XYJRW18P866'] = (function (exports) { (function () { 
+__LIBS__['JZ0RRS_JW386LAE2'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  SHAPE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
+    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
+  },
+
+  TEXT_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
+    stroke: null
+  },
+
+  VENUE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
+    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
+  },
+
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" },
+    stroke: { color: "#000", width: 1 }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" }
+    },
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 2, pattern: 'solid' }
+    },
+    tooltip: {
+    },
+    unselectable: {
+      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
+    }
+  },
+
+  SEAT_STATUS_STYLE: {
+    0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
+    1: {},
+    2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
+    3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
+    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
+    5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
+    6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
+    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
+    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
+  },
+
+  SEAT_RENDER_UNITS: 1000
+};
+ })(); return exports; })({});
+__LIBS__['SK349FOKN2B952NI'] = (function (exports) { (function () { 
+
+/************** translations.js **************/
+
+
+/************** en.js **************/
+exports.en = {
+  altair: {
+    venue_editor: {
+      unassigned: "Unassigned",
+      quantity_cannot_be_negative: "Quantity cannot be negative"
+    }
+  } 
+};
+
+
+/************** ja.js **************/
+exports.ja = {
+  altair: {
+    venue_editor: {
+      unassigned: "未割当",
+      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
+    }
+  } 
+};
+ })(); return exports; })({});
+__LIBS__['uXFF8JKLRVP96LNX'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['R3WU03WL7K0I620V'] = (function (exports) { (function () { 
+__LIBS__['mNN2Q_FDYOLF3LFO'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['lQWI1IBU8GQM2TQ_'];
-var CONF = __LIBS__['L4XV4KQB8P8I_9GE'];
-var IdentifiableSet = __LIBS__['QFXN6XYJRW18P866'].IdentifiableSet;
+var util = __LIBS__['c2OXABX4QO97RY47'];
+var CONF = __LIBS__['JZ0RRS_JW386LAE2'];
+var IdentifiableSet = __LIBS__['uXFF8JKLRVP96LNX'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['J1FEL0OC8J3LVZS3'] = (function (exports) { (function () { 
+__LIBS__['hRAHEYDH91WFD3VQ'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['lQWI1IBU8GQM2TQ_'];
-var CONF = __LIBS__['L4XV4KQB8P8I_9GE'];
-var models = __LIBS__['R3WU03WL7K0I620V'];
+var util = __LIBS__['c2OXABX4QO97RY47'];
+var CONF = __LIBS__['JZ0RRS_JW386LAE2'];
+var models = __LIBS__['mNN2Q_FDYOLF3LFO'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,17 +1216,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['L4XV4KQB8P8I_9GE'];
-  var models = __LIBS__['R3WU03WL7K0I620V'];
-  var util = __LIBS__['lQWI1IBU8GQM2TQ_'];
-  var viewobjects = __LIBS__['J1FEL0OC8J3LVZS3'];
-  var IdentifiableSet = __LIBS__['QFXN6XYJRW18P866'].IdentifiableSet;
+  var CONF = __LIBS__['JZ0RRS_JW386LAE2'];
+  var models = __LIBS__['mNN2Q_FDYOLF3LFO'];
+  var util = __LIBS__['c2OXABX4QO97RY47'];
+  var viewobjects = __LIBS__['hRAHEYDH91WFD3VQ'];
+  var IdentifiableSet = __LIBS__['uXFF8JKLRVP96LNX'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['t65N95MPQ96YFWC9'];
+    I18n.translations = __LIBS__['SK349FOKN2B952NI'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-    var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
+    var regexp_for_values = /(?:((?:[^;\\"'(]|\([^)]*\)|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
       return escaped.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g, function(_, a, b, c) {

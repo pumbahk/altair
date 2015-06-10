@@ -1,0 +1,14 @@
+<%def name="flow_widget(step)">
+<%
+step = int(step)
+steps = {
+  1: u'チケットを選択',
+  2: u'お支払い・お引取方法の選択',
+  3: u'お申込内容の確認',
+  4: u'お申込の完了'
+  }
+%> 
+<div class="flow-widget">
+  <img class="flow-widget-body" src="${request.static_url('altair.app.ticketing.cart:static/TK/pc/images/purchase_flow_%02d.jpg' % step)}" alt="${steps[step]}" />
+</div>
+</%def>

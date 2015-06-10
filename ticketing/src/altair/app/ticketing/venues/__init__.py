@@ -6,6 +6,8 @@ from altair.app.ticketing import newRootFactory
 from .interfaces import IVenueSiteDrawingProviderAdapterFactory, ITentativeVenueSite
 from .adapters import VenueSiteDrawingProviderAdapterFactory
 
+VISIBLE_VENUES_SESSION_KEY = '_visible_venues'
+
 def new_venue_site_provider_factory_factory(config):
     frontend_metadata_base_url = config.registry.settings.get(
         'altair.site_data.frontend_base_url',
@@ -46,6 +48,8 @@ def includeme(config):
     config.add_route("venues.show", "/show/{venue_id}", factory=factory)
     config.add_route("venues.show._seat_adjacency_counts", "/show/{venue_id}/_seat_adjacency_counts", factory=factory)
     config.add_route("venues.checker", "/{venue_id}/checker", factory=factory)
+    config.add_route("venues.visible", "/visible", factory=factory)
+    config.add_route("venues.invisible", "/invisible", factory=factory)
     config.add_route("api.get_site_drawing", "/api/drawing/{site_id}", factory=factory)
     config.add_route("api.seat_info", "/{venue_id}/seat_info/", factory=factory)
     config.add_route("api.seat_priority", "/{venue_id}/seat_priority/", factory=factory)

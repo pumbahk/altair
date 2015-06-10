@@ -4,9 +4,10 @@ from altairsite.pyramidlayout import MyLayout as LayoutBase
 from .datelib import get_now, get_today, has_session_key
 from .helpers.base import jdatetime
 from .api import get_backend_url_builder
-       
+
 class MyLayout(LayoutBase):
     class color:
+        organization = "#fdf"
         event = "#dfd"
         page = "#ffd"
         item = "#ddd"

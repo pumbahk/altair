@@ -8,15 +8,14 @@ ${performance.name}
 
 会場: ${performance.venue.name}
 
-日付: ${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}
-開演: ${performance.start_on.strftime(u"%H:%M-".encode('utf-8')).decode('utf-8')}
+日付: ${h.performance_datetime(performance)}
 
 席種: ${product.name}
 %if seat:
 席番号: ${seat.name}
 %endif
 
-↓こちらからQRチケットを取得してください.
+↓こちらからQRチケットを取得してください。
 ${url}
 
-このメールには返信できません.
+このメールには返信できません。

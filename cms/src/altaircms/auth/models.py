@@ -131,7 +131,7 @@ operator_role = Table(
 
 class OperatorSelfAuth(Base):
     __tablename__ = "operator_selfauth"
-    query = _session.query_property()    
+    query = _session.query_property()
 
     operator_id = Column(Integer, ForeignKey("operator.id"), primary_key=True)
     operator = relationship("Operator", uselist=False)
@@ -183,7 +183,7 @@ class Operator(WithOrganizationMixin, Base):
 
     def get_permission(self, perm):
         return RolePermission.query.filter(
-            RolePermission.id==perm.id, 
+            RolePermission.id==perm.id,
             RolePermission.role_id==Role.id,
             Role.id==operator_role.c.role_id,
             operator_role.c.operator_id==self.id,
@@ -191,7 +191,7 @@ class Operator(WithOrganizationMixin, Base):
 
     def get_permission_by_name(self, name):
         return RolePermission.query.filter(
-            RolePermission.name==name, 
+            RolePermission.name==name,
             RolePermission.role_id==Role.id,
             Role.id==operator_role.c.role_id,
             operator_role.c.operator_id==self.id,
@@ -219,13 +219,13 @@ class Role(Base):
 class RolePermission(Base):
     __tablename__ = 'role_permissions'
     query = _session.query_property()
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(Enum(*PERMISSIONS))
     role_id = Column(Integer, ForeignKey('role.id'))
 
 
-class Organization(Base):
+class Organization(BaseOriginalMixin, Base):
     """
     所属組織
     """
@@ -241,10 +241,10 @@ class Organization(Base):
     short_name = Column(String(32),index=True, nullable=False)
     code = Column(String(3))  # 2桁英字大文字のみ
 
-    use_full_usersite = Column(sa.Boolean, default=False, nullable=False, 
+    use_full_usersite = Column(sa.Boolean, default=False, nullable=False,
                                doc=u"これがtrueのときsmartphone, mobile用のviewや検索フォームなどの機能が有効になる"
     ) ## todo:細分化
-    use_only_one_static_page_type = Column(sa.Boolean, default=True, nullable=False, 
+    use_only_one_static_page_type = Column(sa.Boolean, default=True, nullable=False,
                                       doc=u"これがtrueのとき、smartphoneアクセスでもpcの静的ページを見に行く"
     ) ## todo:修正
     name = Column(Unicode(255))
@@ -277,7 +277,7 @@ class WithOrganizationMixin(object):
         if self.organization_id is None:
             return None
         return Organization.query.filter_by(id=self.organization_id)
-        
+
 
 class APIKey(Base):
     __tablename__ = 'apikey'
@@ -314,14 +314,14 @@ class PageAccesskey(Base, WithOrganizationMixin):
     event = orm.relationship("Event", backref=orm.backref("access_keys", cascade="all"))
     operator_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
     operator = orm.relationship("Operator", backref=orm.backref("access_keys", cascade="all"))
-    
+
     SCOPE_CANDIDATES = ("onepage", "onepage+cart", "usersite", "cart", "both")
     scope = sa.Column(sa.String(length=16), nullable=False, default="onepage")
 
     hashkey = sa.Column(sa.String(length=32), nullable=False)
     expiredate = sa.Column(sa.DateTime)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
+    updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     def __repr__(self):
         return "%r:%s %s" % (self.__class__, self.hashkey, self.expiredate)

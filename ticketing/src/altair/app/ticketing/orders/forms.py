@@ -45,6 +45,7 @@ from altair.app.ticketing.core.models import (
     Product,
     ProductItem,
     Event,
+    EventSetting,
     Refund
     )
 from altair.app.ticketing.orders.models import (
@@ -280,7 +281,10 @@ class SearchFormBase(Form):
             self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization.id)]
             self.delivery_method.choices = [(dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(organization.id)]
             if event is None:
-                events = Event.filter_by(organization_id=organization.id)
+                events = Event.query.join(Event.setting) \
+                                    .filter(Event.organization_id==organization.id) \
+                                    .filter(EventSetting.visible==True) \
+                                    .order_by(Event.created_at.desc())
                 self.event_id.choices = [('', u'(すべて)')]+[(e.id, e.title) for e in events]
             else:
                 self.event_id.choices = [(event.id, event.title)]
@@ -304,7 +308,11 @@ class SearchFormBase(Form):
                 self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
         else:
             if organization is not None:
-                performances = Performance.query.join(Event).filter(Event.organization_id == organization.id)
+                performances = Performance.query.join(Event) \
+                                                .join(Event.setting) \
+                                                .filter(Event.organization_id == organization.id) \
+                                                .filter(EventSetting.visible == True) \
+                                                .order_by(Event.created_at.desc())
             else:
                 performances = Performance.query
             self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
@@ -808,7 +816,7 @@ class OrderReserveForm(Form):
                     raise ValidationError(u'コンビニ引取の場合、1予約あたり発券枚数が20枚以内になるよう指定してください')
 
 
-class OrderRefundForm(Form):
+class OrderRefundForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
@@ -917,10 +925,6 @@ class OrderRefundForm(Form):
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
                         raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
-                else:
-                    # 未発券ならコンビニ払戻は不可
-                    if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                        raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ発券していないのでコンビニ払戻は選択できません', refund_order.order_no))
             elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                 # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))

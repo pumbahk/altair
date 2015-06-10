@@ -1,0 +1,54 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit();
+    var code_buf = [];
+    $('#title').keyup(function(e){
+      if ($('#code').val() || code_buf.length >= 3) return;
+      var char = String.fromCharCode(e.which);
+      if (char && char.match(/[a-z]/i) && !char.match(/[aiueo]/i)) {
+        code_buf.push(char);
+      }
+    });
+    $('#title').focusout(function(){
+      if ($('#code').val() || !code_buf) return;
+      $('#code').val('${request.context.user.organization.code}' + code_buf.join(''));
+    });
+    $('#title').focusin(function(){
+      code_buf = [];
+    });
+  });
+</script>
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+    names=[u'会場', route_name],
+    urls=[request.route_path('events.index')]
+)}
+</%block>
+
+<div class="page-header">
+  <h3>会場${route_name}</h3>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${ch.form_item(form.name, class_='span8', maxlength=200)}
+      ${ch.form_item(form.sub_name, class_='span8', maxlength=200)}
+      ${ch.form_item(form.zip)}
+      ${ch.form_item(form.prefecture)}
+      ${ch.form_item(form.city)}
+      ${ch.form_item(form.address_1)}
+      ${ch.form_item(form.address_2)}
+      ${ch.form_item(form.tel_1)}
+      ${ch.form_item(form.tel_2)}
+      ${ch.form_item(form.fax)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

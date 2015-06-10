@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import csv
+import logging
 from email import Encoders
 from email.Header import Header
 from email.Utils import formatdate
@@ -14,6 +15,9 @@ from altair.app.ticketing.core.models import (
     AugusPerformance,
     AugusStockDetail,
     )
+
+logger = logging.getLogger(__name__)
+
 
 class AugusDistributionAdapter(object):
     def __init__(self):
@@ -73,6 +77,7 @@ class AugusDistributionFactory(object):
             distributions.append(augus_distribution)
         return distributions
 
+
 class AugusDistributionMialer(object):
     def __init__(self, settings):
         self.settings = settings
@@ -119,6 +124,7 @@ class AugusDistributionMialer(object):
         )
         mailer.send(sender, recipients)
 
+
 class AugusDistributionMialer(object):
     def __init__(self, settings):
         self.settings = settings
@@ -161,6 +167,7 @@ class AugusDistributionMialer(object):
             body=body.text,
         )
         mailer.send(sender, [recipient])
+
 
 class MultipartMailer(Mailer):
     def get_message_encoding(self):
@@ -209,12 +216,13 @@ class MultipartMailer(Mailer):
         attachment.add_header('Content-Disposition', 'attachment', filename=filename)
         self.message = msg
 
+
 def send_venue_sync_request_mail(mailer, augus_account, path):
     title = ''
     filename = os.path.basename(path)
     with open(path, 'rb') as fp:
         reader = csv.reader(fp)
-        reader.next() # header
+        reader.next()  # header
         row = reader.next()
         title = row[1].decode('cp932')
 
@@ -231,12 +239,16 @@ def send_venue_sync_request_mail(mailer, augus_account, path):
 {}
 
 登録/更新の登録が完了できましたら、
-お手数ですが嶋田までご連絡ください。
+お手数ですが開発部までご連絡ください。
 
 以上です。
 '''.format(augus_account.name, title)
     encoding = mailer.get_message_encoding()
-    body = body.encode(encoding)
+    try:
+        body = body.encode(encoding)
+    except UnicodeEncodeError as err:
+        logger.warn(err)
+        body = body.encode(encoding, errors='ignore')
 
     mailer.create_message(
         sender=sender,
