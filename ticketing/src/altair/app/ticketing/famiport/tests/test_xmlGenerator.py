@@ -5,6 +5,7 @@ from lxml import etree
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from ..api import get_xmlResponse_generator
 
+
 class XmlFamiPortResponseGeneratorTest(TestCase):
     def setUp(self):
         self.session = _setup_db([
@@ -23,12 +24,12 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
 
         # 予約照会
         # problematic_kogyoName=u'土吉サンプル興行♥♠♦♣⓪㉑㊿♫♬♩'
-        regular_kogyoName=u'サンプル興行'
+        regular_kogyoName = u'サンプル興行'
         self.famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
             resultCode=u'00',
             replyClass=u'1',
             replyCode=u'00',
-            playGuideId = u'00001',
+            playGuideId=u'00001',
             barCodeNo=u'4110000000006',
             totalAmount=u'00000670',
             ticketPayment=u'00000000',
@@ -125,7 +126,11 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         self.famiport_information_response = FamiPortInformationResponse(resultCode=u'00', infoKubun='0', infoMessage=u'サンプルインフォメッセージ')
 
         # 顧客情報取得
-        self.famiport_customer_information_response = FamiPortCustomerInformationResponse(resultCode=u'00', replyCode='00', name=u'テスト氏名', memberId='test_memberId', address1=u'テストアドレス１', address2=u'テストアドレス２', identifyNo='1234567890123456')
+        self.famiport_customer_information_response = FamiPortCustomerInformationResponse(
+            resultCode=u'00', replyCode='00', name=u'テスト氏名',
+            memberId='test_memberId', address1=u'テストアドレス１',
+            address2=u'テストアドレス２', identifyNo='1234567890123456',
+            )
         self.famiport_customer_information_response.set_encryptKey(self.famiport_payment_ticketing_response.orderId)
 
     def tearDown(self):
@@ -155,11 +160,13 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
         root = etree.fromstring(result)
         encrypted_fields = famiport_response.encrypted_fields
         for element in root:
-            if element.tag != 'FMIF' and not any(element.tag == element_name for _, element_name in famiport_response._serialized_collection_attrs): # Skip the root element and tickets
+            if element.tag != 'FMIF' \
+               and not any(element.tag == element_name for _, element_name in famiport_response._serialized_collection_attrs):  # noqa Skip the root element and tickets
                 response_value = getattr(famiport_response, element.tag)
-                if isinstance(response_value, (str, unicode)) and response_value != '': # fromstring() removes empty text element
+                if isinstance(response_value, (str, unicode)) and response_value != '':  # fromstring() removes empty text element
                     if element.tag not in encrypted_fields:
                         self.assertEqual(element.text, response_value, '<%s> %r (got) != %r (expected)' % (element.tag, element.text, response_value))
                     else:
                         decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text).decode('shift_jis')
-                        self.assertEqual(decrypted_text_value, response_value, '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
+                        self.assertEqual(decrypted_text_value, response_value,
+                                         '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
