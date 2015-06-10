@@ -148,14 +148,16 @@ class OurDateTimeFieldBase(OurField):
         self.process_errors = []
         if data is fields._unset_value:
             try:
-                data = self.default()
+                _data = self.default()
             except TypeError:
-                data = self.default
+                _data = self.default
+        else:
+            _data = data
 
-        self.object_data = data
+        self.object_data = _data
 
         try:
-            self.process_data(data)
+            self.process_data(_data)
         except ValueError as e:
             self.process_errors.append(e.args[0])
 
@@ -210,13 +212,16 @@ class OurDateTimeFieldBase(OurField):
                                 )
                             ]
         else:
-            try:
-                value_defaults = self.value_defaults()
-            except TypeError:
-                value_defaults = self.value_defaults
-            if value_defaults:
-                for k in self._fields:
-                    self._values[k] = value_defaults.get(k, u'')
+            if data is fields._unset_value and _data is None:
+                # if data is not given and self.default is not given either.
+                try:
+                    value_defaults = self.value_defaults()
+                except TypeError:
+                    value_defaults = self.value_defaults
+                if value_defaults:
+                    for k in self._fields:
+                        self._values[k] = value_defaults.get(k, u'')
+                    self.process_datetime_formdata()
 
         for filter in self.filters:
             try:
