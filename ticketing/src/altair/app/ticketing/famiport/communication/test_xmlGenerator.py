@@ -10,7 +10,7 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.famiport.models',
-            'altair.app.ticketing.famiport.communication',
+            'altair.app.ticketing.famiport.communication.models',
             ])
         from ..communication import (
             FamiPortReservationInquiryResponse,

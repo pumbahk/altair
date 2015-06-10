@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import pool 
 from zope.interface import directlyProvides
 from pyramid.settings import asbool
+from pyramid.interfaces import IRequest
 
 from .interfaces import ISessionMaker
 
@@ -113,8 +114,12 @@ def includeme(config):
     register_sessionmakers(config, results)
     config.add_tween('altair.sqlahelper.CloserTween')
 
-def get_sessionmaker(request, name=""):
-    Session = request.registry.queryUtility(ISessionMaker, name=name)
+def get_sessionmaker(request_or_registry, name=""):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    Session = registry.queryUtility(ISessionMaker, name=name)
     if Session is None:
         message = "session maker named '{0}' is None".format(name)
         logger.warning(message)
@@ -131,6 +136,23 @@ def get_db_session(request, name=""):
     sessions[name] = session
     request.environ['altair.sqlahelper.sessions'] = sessions
     return session
+
+def get_global_db_session(registry, name=""):
+    global_sessions = getattr(registry, 'altair_sqlahelper_global_sessions', None)
+    if global_sessions is None:
+        global_sessions = {}
+        setattr(registry, 'altair_sqlahelper_global_sessions', global_sessions)
+    Session = get_sessionmaker(registry, name)
+    session = Session()
+    global_sessions[name] = session
+    return session
+
+def close_global_db_sessions(registry):
+    global_sessions = getattr(registry, 'altair_sqlahelper_global_sessions', None)
+    if global_sessions is not None:
+        for session in global_sessions.values():
+            session.close()
+        delattr(registry, 'altair_sqlahelper_global_sessions')
 
 class CloserTween(object):
     def __init__(self, handler, registry):

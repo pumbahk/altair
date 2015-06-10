@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from altair.app.ticketing.testing import _setup_db, _teardown_db
 from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
 from pyramid.testing import DummyRequest, setUp, tearDown
 import sqlahelper
 
 from ..api import get_response_builder
-from ..builders import FamiPortRequestFactory
-from ..communication import (
+from .builders import FamiPortRequestFactory
+from .models import (
     FamiPortRequestType,
     InformationResultCodeEnum,
     FamiPortReservationInquiryRequest,
@@ -21,11 +20,8 @@ from ..models import FamiPortInformationMessage
 
 class FamiPortResponseBuilderTest(TestCase):
     def setUp(self):
-        self.session = _setup_db(modules=["altair.app.ticketing.famiport.models"])
-        sqlahelper.set_base(declarative_base(self.session.bind))
-
         self.config = setUp()
-        self.config.include('..builders')
+        self.config.include('.')
 
         # 予約照会
         # self.famiport_reservation_inquiry_request = FamiPortReservationInquiryRequest(storeCode='000009', ticketingDate='20150325151159', reserveNumber='5300000000001', authNumber='')
@@ -65,7 +61,6 @@ class FamiPortResponseBuilderTest(TestCase):
 
     def tearDown(self):
         tearDown()
-        _teardown_db()
 
     def test_build_ReservationInquiryResponseBuilder(self):
         # 予約照会

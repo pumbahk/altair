@@ -1,17 +1,8 @@
 # -*- coding: utf-8 -*-
 
-
 class FamiPortError(Exception):
     pass
 
 
 class FamiPortNumberingError(FamiPortError):
-    pass
-
-
-class FamiPortRequestTypeError(FamiPortError):
-    pass
-
-
-class FamiPortResponseBuilderLookupError(FamiPortError):
     pass

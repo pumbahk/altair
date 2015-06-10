@@ -8,12 +8,12 @@ from lxml import etree
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy import orm
 from zope.interface import implementer
-from .exc import FamiPortRequestTypeError, FamiPortResponseBuilderLookupError
+from .exceptions import FamiPortRequestTypeError, FamiPortResponseBuilderLookupError
 from .utils import (
     str_or_blank,
     FamiPortCrypt,
     )
-from .models import (
+from ..models import (
     FamiPortOrder,
     FamiPortInformationMessage,
     FamiPortRefund,
@@ -26,7 +26,7 @@ from .interfaces import (
     IFamiPortResponseBuilder,
     IXmlFamiPortResponseGenerator,
     )
-from .communication import (
+from .models import (
     FamiPortTicketResponse,
     FamiPortRequestType,
     ResultCodeEnum,
@@ -673,36 +673,3 @@ class XmlFamiPortResponseGenerator(object):
                 self._build_xmlTree(element, value)
 
         return root
-
-
-def includeme(config):
-    builder_registry = FamiPortResponseBuilderRegistry()
-    builder_registry.add(
-        FamiPortReservationInquiryRequest,
-        FamiPortReservationInquiryResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortPaymentTicketingRequest,
-        FamiPortPaymentTicketingResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortPaymentTicketingCompletionRequest,
-        FamiPortPaymentTicketingCompletionResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortPaymentTicketingCancelRequest,
-        FamiPortPaymentTicketingCancelResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortInformationRequest,
-        FamiPortInformationResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortCustomerInformationRequest,
-        FamiPortCustomerInformationResponseBuilder()
-        )
-    builder_registry.add(
-        FamiPortRefundEntryRequest,
-        FamiPortRefundEntryResponseBuilder()
-        )
-    config.registry.registerUtility(builder_registry, IFamiPortResponseBuilderRegistry)

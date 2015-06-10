@@ -1,7 +1,8 @@
 # encoding: utf-8
 import unittest
-from altair.app.ticketing.testing import _setup_db, _teardown_db
-
+from pyramid.testing import setUp, tearDown
+from altair.sqlahelper import get_global_db_session
+from ..testing import _setup_db, _teardown_db
 
 class SalesReportTest(unittest.TestCase):
     def test_basic(self):
@@ -36,9 +37,14 @@ class SalesReportTest(unittest.TestCase):
 
 class GenRecordsFromOrderModelTest(unittest.TestCase):
     def setUp(self):
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
+        self.config = setUp()
+        self.engine = _setup_db(
+            self.config.registry, 
+            [
+                'altair.app.ticketing.famiport.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport')
         from ..models import (
             FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue,
             FamiPortGenre1, FamiPortGenre2, FamiPortPerformance, FamiPortSalesSegment,
@@ -79,7 +85,8 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.session.flush()
 
     def tearDown(self):
-        _teardown_db()
+        _teardown_db(self.config.registry)
+        tearDown()
 
     def test_cash_on_delivery_unpaid(self):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType

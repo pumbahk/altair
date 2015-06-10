@@ -20,7 +20,7 @@ def _setup_db(modules=[], echo=False, hook=None, engine=None):
     prev_base = sqlahelper.get_base()
     if prev_engine is not None:
         if prev_base is not None:
-            prev_base.metadata.drop_all()
+            prev_base.metadata.drop_all(bind=engine)
         prev_engine.dispose()
     sqlahelper.reset()
     sqlahelper._session = prev_session

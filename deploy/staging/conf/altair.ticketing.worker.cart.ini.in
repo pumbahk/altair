@@ -1,12 +1,14 @@
 [DEFAULT]
 sqlalchemy.url = ${altair:ticketing.db_url.master}
 altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 
 [app:main]
 use = config:altair.ticketing.cart.ini#payment
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/

@@ -6,7 +6,8 @@ from pyramid.testing import (
     tearDown,
     DummyRequest,
     )
-from altair.app.ticketing.testing import (
+from altair.sqlahelper import get_global_db_session
+from ..testing import (
     _setup_db,
     _teardown_db,
     )
@@ -15,20 +16,24 @@ from altair.app.ticketing.testing import (
 class FamiPortModelTestCase(TestCase):
     def setUp(self):
         self.now = datetime.datetime.now()
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
         self.request = DummyRequest()
         self.config = setUp(
             request=self.request,
             settings={},
             )
+        self.engine = _setup_db(
+            self.config.registry, 
+            [
+                'altair.app.ticketing.famiport.models',
+                'altair.app.ticketing.famiport.communication.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport_comm')
         # self.config.include('altair.app.ticketing.faimport')  # mm
 
     def tearDown(self):
+        _teardown_db(self.config.registry)
         tearDown()
-        self.session.remove()
-        _teardown_db()
 
     def _target(self):
         return None

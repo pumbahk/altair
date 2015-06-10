@@ -2,10 +2,8 @@
 from enum import Enum, IntEnum
 import sqlalchemy as sa
 from sqlalchemy import orm
-import sqlahelper
 from altair.models import Identifier, WithCreatedAt
-
-Base = sqlahelper.get_base()
+from ..models import Base
 
 
 class FamiPortRequestType(IntEnum):

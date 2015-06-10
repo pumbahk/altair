@@ -2,7 +2,7 @@
 from unittest import TestCase
 import mock
 from pyramid.testing import DummyModel
-from .base import FamiPortTestBase
+from .testing import FamiPortTestBase
 
 class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
     def _get_target(self):

@@ -6,8 +6,8 @@ from pyramid.view import (
     view_defaults,
     )
 from ..communication import FamiPortRequestType
-from ..builders import FamiPortRequestFactory
-from ..api import (
+from ..communication.builders import FamiPortRequestFactory
+from ..communication.api import (
     get_response_builder,
     get_xmlResponse_generator,
     )

@@ -1,16 +1,22 @@
 # encoding:utf-8
 from unittest import TestCase
-from altair.app.ticketing.testing import _setup_db, _teardown_db
-
+from .testing import _setup_db, _teardown_db
+from pyramid.testing import setUp, tearDown
 
 class TestFamiportEvent(TestCase):
     def setUp(self):
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
+        self.config = setUp()
+        self.engine = _setup_db(
+            self.config.registry,
+            [
+                'altair.app.ticketing.famiport.models',
+                ])
+        from altair.sqlahelper import get_global_db_session
+        self.session = get_global_db_session(self.config.registry, 'famiport')
 
     def tearDown(self):
-        _teardown_db()
+        _teardown_db(self.config.registry)
+        tearDown()
 
     def testSpaceDelimited(self):
         from .models import FamiPortEvent, FamiPortClient, FamiPortPlayguide, FamiPortVenue, FamiPortGenre1, FamiPortGenre2
@@ -50,12 +56,18 @@ class TestScrew(TestCase):
 
 class FamiPortInformationMessageTest(TestCase):
     def setUp(self):
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
+        self.config = setUp()
+        self.engine = _setup_db(
+            self.config.registry,
+            [
+                'altair.app.ticketing.famiport.models',
+                ])
+        from altair.sqlahelper import get_global_db_session
+        self.session = get_global_db_session(self.config.registry, 'famiport')
 
     def tearDown(self):
-        _teardown_db()
+        _teardown_db(self.config.registry)
+        tearDown()
 
     def _target(self):
         from .models import FamiPortInformationMessage as klass

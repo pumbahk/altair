@@ -23,7 +23,7 @@ class FamiPortAPIViewTest(TestCase):
             ])
         config = Configurator()
         config.include('.', '/famiport/')
-        config.include('..builders')
+        config.include('..communication')
 
         extra_environ = {'HTTP_HOST': 'localhost:8063'}
         self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)

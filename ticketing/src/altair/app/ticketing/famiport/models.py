@@ -10,13 +10,12 @@ from sqlalchemy import orm
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
-import sqlahelper
+from sqlalchemy.ext import declarative
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from .exc import FamiPortNumberingError
-from .communication import InformationResultCodeEnum
 
-Base = sqlahelper.get_base()
+Base = declarative.declarative_base()
 
 # 内部トランザクション用
 _session = orm.scoped_session(orm.sessionmaker())
@@ -602,6 +601,7 @@ class FamiPortInformationMessage(Base, WithTimestamp):
 
     @classmethod
     def get_message(cls, information_result_code, default_message=None):
+        from .communication import InformationResultCodeEnum
         assert isinstance(information_result_code, InformationResultCodeEnum)
         query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
         famiport_information_message = query.first()
