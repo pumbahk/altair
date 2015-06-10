@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
 from pyramid.testing import DummyRequest, setUp, tearDown
 from altair.sqlahelper import get_global_db_session
+from datetime import datetime
 
 from ..api import get_response_builder
 from .builders import FamiPortRequestFactory
@@ -81,5 +82,6 @@ class FamiPortResponseBuilderTest(TestCase):
         self.check_build_response(famiport_information_response_builder, self.famiport_information_request)
 
     def check_build_response(self, response_builder, famiport_request):
-        famiport_response = response_builder.build_response(famiport_request, self.session)
+        now = datetime(2015, 1, 1)
+        famiport_response = response_builder.build_response(famiport_request, self.session, now)
         self.assertIsNotNone(famiport_response)
