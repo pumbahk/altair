@@ -27,7 +27,6 @@ from altair.app.ticketing.mails.interfaces import (
 
 from altair.app.ticketing.famiport.models import FamiPortOrderType, FamiPortTicketType
 import altair.app.ticketing.famiport.api as famiport_api
-from altair.app.ticketing.famiport.api import create_famiport_order as do_famiport_order
 from altair.app.ticketing.famiport.exc import FamiPortError
 from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
@@ -187,7 +186,8 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     if tenant is None:
         raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
 
-    return do_famiport_order(
+    return famiport_api.create_famiport_order(
+        request,
         client_code=tenant.code,
         type_=FamiPortOrderType.Ticketing.value,
         order_no=order_like.order_no,
@@ -242,8 +242,7 @@ def _overridable_delivery(path, fallback_ua_type=None):
 def reserved_number_payment_viewlet(context, request):
     """決済方法の完了画面用のhtmlを生成"""
     payment_method = context.order.payment_delivery_pair.payment_method
-    from altair.app.ticketing.famiport.models import _session
-    famiport_order = famiport_api.get_famiport_order(context.order.order_no, _session)
+    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
     return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 
@@ -334,9 +333,8 @@ def deliver_confirm_viewlet(context, request):
                  renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
     """引取方法の完了画面のhtmlを生成"""
-    from altair.app.ticketing.famiport.models import _session
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    famiport_order = famiport_api.get_famiport_order(context.order.order_no, _session)
+    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 

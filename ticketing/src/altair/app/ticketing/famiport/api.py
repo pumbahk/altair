@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
+from altair.sqlahelper import get_db_session
 from .models import (
-    _session,
     FamiPortOrder,
     FamiPortTicket,
     FamiPortClient,
@@ -13,9 +13,9 @@ from .models import (
     )
 from .communication.api import get_response_builder, get_xmlResponse_generator # B/W compatibility
 
-def get_famiport_order(order_no, session=None):
+def get_famiport_order(request, order_no, session=None):
     if session is None:
-        session = _session
+        session = get_db_session(request, 'famiport')
     retval = session.query(FamiPortOrder) \
                     .filter(FamiPortOrder.order_no == order_no) \
                     .filter(FamiPortOrder.invalidated_at == None) \
@@ -23,27 +23,27 @@ def get_famiport_order(order_no, session=None):
     return retval
 
 
-def get_famiport_client(client_code, session=None):
+def get_famiport_client(request, client_code, session=None):
     if session is None:
-        session = _session
+        session = get_db_session(request, 'famiport')
     retval = session.query(FamiPortClient) \
                     .filter_by(code=client_code) \
                     .one()
     return retval
 
 
-def get_famiport_sales_segment_by_userside_id(userside_id, session=None):
+def get_famiport_sales_segment_by_userside_id(request, userside_id, session=None):
     if session is None:
-        session = _session
+        session = get_db_session(request, 'famiport')
     retval = session.query(FamiPortSalesSegment) \
                     .filter_by(userside_id=userside_id) \
                     .one()
     return retval
 
 
-def create_famiport_ticket(ticket_dict, session=None):
+def create_famiport_ticket(request, ticket_dict, session=None):
     if session is None:
-        session = _session
+        session = get_db_session(request, 'famiport')
     return FamiPortTicket(
         type=ticket_dict['type'],
         barcode_number=FamiPortBarcodeNoSequence.get_next_value(session),
@@ -53,6 +53,7 @@ def create_famiport_ticket(ticket_dict, session=None):
 
 
 def create_famiport_order(
+        request,
         client_code,
         type_,
         userside_sales_segment_id,
@@ -69,11 +70,11 @@ def create_famiport_order(
         session=None):
     """FamiPortOrderを作成する"""
     if session is None:
-        session = _session
-    famiport_client = get_famiport_client(client_code, session=session)
+        session = get_db_session(request, 'famiport')
+    famiport_client = get_famiport_client(request, client_code, session=session)
     barcode_no = FamiPortOrderTicketNoSequence.get_next_value(session)
     famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-    famiport_sales_segment = get_famiport_sales_segment_by_userside_id(userside_sales_segment_id, session=session)
+    famiport_sales_segment = get_famiport_sales_segment_by_userside_id(request, userside_sales_segment_id, session=session)
     famiport_order = FamiPortOrder(
         client_code=client_code,
         type=type_,
@@ -92,7 +93,7 @@ def create_famiport_order(
         ticketing_fee=ticketing_fee,
         ticket_payment=ticket_payment,
         famiport_tickets=[
-            create_famiport_ticket(ticket_dict, session)
+            create_famiport_ticket(request, ticket_dict, session)
             for ticket_dict in tickets
             ]
         )
