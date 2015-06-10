@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import (
@@ -34,6 +35,10 @@ class ResevationView(object):
     def comm_session(self):
         return get_db_session(self.request, 'famiport_comm')
 
+    @reify
+    def now(self):
+        return datetime.now()
+
     def _build_payload(self, params, request_type):
         """responseのpayloadを生成する
         """
@@ -41,7 +46,7 @@ class ResevationView(object):
         self.comm_session.add(famiport_request)
         self.comm_session.commit()
         response_builder = get_response_builder(self.request, famiport_request)
-        famiport_response = response_builder.build_response(famiport_request, self.session)
+        famiport_response = response_builder.build_response(famiport_request, self.session, self.now)
         self.comm_session.add(famiport_response)
         self.comm_session.commit()
         payload_builder = get_xmlResponse_generator(famiport_response)
@@ -169,3 +174,25 @@ class ResevationView(object):
             return HTTPBadRequest()
         buf = self._build_payload(params, type_)
         return Response(buf)
+
+    @view_config(route_name='famiport.api.reservation.refund', request_method='POST')
+    def refund(self):
+        type_ = FamiPortRequestType.RefundEntry
+        request_params = dict(self.request.params)
+        params = {}
+        try:
+            params = {
+                'businessFlg': request_params['businessFlg'],
+                'textTyp': request_params['textTyp'],
+                'entryTyp': request_params['entryTyp'],
+                'shopNo': request_params['shopNo'],
+                'registerNo': request_params['registerNo'],
+                }
+            for barcode_key in ['barCode1', 'barCode2', 'barCode3', 'barCode4']:
+                if barcode_key in request_params:
+                    params[barcode_key] = request_params[barcode_key]
+        except KeyError:
+            return HTTPBadRequest()
+        buf = self._build_payload(params, type_)
+        return Response(buf)
+

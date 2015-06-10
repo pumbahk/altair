@@ -219,6 +219,7 @@ def upgrade():
         sa.Column('system_fee',            sa.Numeric(precision=8, scale=0)),
         sa.Column('other_fees',            sa.Numeric(precision=8, scale=0)),
         sa.Column('shop_code',             sa.Unicode(7), nullable=False),
+        sa.Column('refunded_at',           sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
@@ -481,7 +482,8 @@ def upgrade():
         sa.Column('refundStart4', sa.Unicode(8)),
         sa.Column('refundEnd4', sa.Unicode(8)),
         sa.Column('ticketTyp4', sa.Unicode(1)),
-        sa.Column('charge4', sa.Unicode(6))
+        sa.Column('charge4', sa.Unicode(6)),
+        sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False)
         )
     op.create_table(
         'FamiPortShop',

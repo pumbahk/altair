@@ -33,6 +33,7 @@ def includeme(config):
     config.add_route('famiport.api.reservation.cancel', '/reservation/cancel')  # 入金発券取消
     config.add_route('famiport.api.reservation.information', '/reservation/information')  # 案内通信
     config.add_route('famiport.api.reservation.customer', '/reservation/customer')  # 顧客情報取得
+    config.add_route('famiport.api.reservation.refund', '/refund')  # 払戻
 
     config.scan('.views')
     config.include('..communication')

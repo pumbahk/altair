@@ -212,6 +212,7 @@ class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
     """払戻レコード問い合わせ / 確定
     """
     __tablename__ = 'FamiPortRefundEntryRequest'
+    _encryptedFields = []
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
@@ -228,10 +229,10 @@ class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
     @property
     def barcode_numbers(self):
         return [
-            famiport_refund_entry_request.barCode1,
-            famiport_refund_entry_request.barCode2,
-            famiport_refund_entry_request.barCode3,
-            famiport_refund_entry_request.barCode4,
+            self.barCode1,
+            self.barCode2,
+            self.barCode3,
+            self.barCode4,
             ]
 
 class FamiPortResponse(object):
@@ -667,23 +668,23 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     def per_ticket_records(self, value):
         for keys, value_sets in zip(self._record_sets, value):
             if value_sets is not None:
-                setattr(keys['barCode'], value_sets['barCode'])
-                setattr(keys['resultCode'], value_sets['resultCode'])
-                setattr(keys['mainTitle'], value_sets['mainTitle'])
-                setattr(keys['perfDay'], value_sets['perfDay'])
-                setattr(keys['repayment'], value_sets['repayment'])
-                setattr(keys['refundStart'], value_sets['refundStart'])
-                setattr(keys['refundEnd'], value_sets['refundEnd'])
-                setattr(keys['ticketTyp'], value_sets['ticketTyp'])
-                setattr(keys['charge'], value_sets['charge'])
+                setattr(self, keys['barCode'], value_sets['barCode'])
+                setattr(self, keys['resultCode'], value_sets['resultCode'])
+                setattr(self, keys['mainTitle'], value_sets['mainTitle'])
+                setattr(self, keys['perfDay'], value_sets['perfDay'])
+                setattr(self, keys['repayment'], value_sets['repayment'])
+                setattr(self, keys['refundStart'], value_sets['refundStart'])
+                setattr(self, keys['refundEnd'], value_sets['refundEnd'])
+                setattr(self, keys['ticketTyp'], value_sets['ticketTyp'])
+                setattr(self, keys['charge'], value_sets['charge'])
             else:
-                setattr(keys['barCode'], u'')
-                setattr(keys['resultCode'], u'')
-                setattr(keys['mainTitle'], u'')
-                setattr(keys['perfDay'], u'')
-                setattr(keys['repayment'], u'')
-                setattr(keys['refundStart'], u'')
-                setattr(keys['refundEnd'], u'')
-                setattr(keys['ticketTyp'], u'')
-                setattr(keys['charge'], u'')
+                setattr(self, keys['barCode'], u'')
+                setattr(self, keys['resultCode'], u'')
+                setattr(self, keys['mainTitle'], u'')
+                setattr(self, keys['perfDay'], u'')
+                setattr(self, keys['repayment'], u'')
+                setattr(self, keys['refundStart'], u'')
+                setattr(self, keys['refundEnd'], u'')
+                setattr(self, keys['ticketTyp'], u'')
+                setattr(self, keys['charge'], u'')
 

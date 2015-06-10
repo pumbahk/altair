@@ -14,3 +14,6 @@ class FamiPortReserveAPIURL(enum.Enum):
     CANCEL = '/famiport/reservation/cancel'
     INFORMATION = '/famiport/reservation/information'
     CUSTOMER = '/famiport/reservation/customer'
+
+class FamiPortRefundAPIURL(enum.Enum):
+    REFUND = '/famiport/refund'
