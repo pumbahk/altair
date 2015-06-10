@@ -59,6 +59,9 @@ graceful_timeout = 3600
 
 # Begin logging configuration
 
+[pshell]
+setup = altair.app.ticketing.famiport.scripts.pshell.setup
+
 [alembic]
 script_location = %(here)s/../../../ticketing/src/altair/app/ticketing/famiport/alembic
 get sqlalchemy.url = altair.sqlahelper.sessions.famiport.url
