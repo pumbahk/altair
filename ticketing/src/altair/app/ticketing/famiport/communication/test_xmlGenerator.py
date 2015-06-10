@@ -177,9 +177,9 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
                         self.assertEqual(decrypted_text_value, response_value,
                                          '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
 
-    @mock.patch('altair.app.ticketing.famiport.builders.FamiPortCrypt')
+    @mock.patch('altair.app.ticketing.famiport.communication.builders.FamiPortCrypt')
     def test_constructore(self, FamiPortCrypt):
-        from ..builders import XmlFamiPortResponseGenerator as klass
+        from .builders import XmlFamiPortResponseGenerator as klass
         exp_encrypt_key = 'XXXXXXXXXXX'
         famiport_response = DummyModel(
             encrypt_key=exp_encrypt_key
