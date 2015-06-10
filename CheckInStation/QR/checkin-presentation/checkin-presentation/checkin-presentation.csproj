@@ -219,6 +219,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Resource Include="Resource\QRcode.jpg" />
+    <Resource Include="Resource\keyboard.jpg" />
     <Resource Include="Resource\test.png" />
     <Resource Include="Resource\play.png" />
     <Resource Include="Resource\qr.input.new.jpg" />

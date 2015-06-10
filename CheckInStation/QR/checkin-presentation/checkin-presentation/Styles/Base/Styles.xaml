@@ -1007,6 +1007,34 @@
         -->
     </Style>
 
+    <DataTemplate x:Key="ShowTicketItemBoxData">
+        <StackPanel Orientation="Horizontal" Width="520">
+            <Border Width="108" Height="90">
+                <TextBlock/>
+            </Border>
+            <Grid>
+                <StackPanel
+                        HorizontalAlignment="Left"
+                        Height="90"
+                        Width="410"
+                        Margin="2,2,2,2">
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
+                        <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                    </WrapPanel>
+                    <WrapPanel Style="{StaticResource GrayoutHiddenWrap}">
+                        <TextBlock Style="{StaticResource GrayoutGrowdownContent}">発券済み:</TextBlock>
+                        <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutGrowdownContent}" Text="{Binding PrintedAt}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+    <Style TargetType="ListView" x:Key="ShowChosenTwoColumns">
+        <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
+        <Setter Property="ItemTemplate" Value="{StaticResource ShowTicketItemBoxData}"/>
+    </Style>
+
     <Style TargetType="ListView" x:Key="DisableListViewScrolviewer">
         <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
     </Style>

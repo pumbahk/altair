@@ -33,24 +33,26 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="500"/>
-                            <ColumnDefinition Width="500"/>
+                            <ColumnDefinition Width="330"/>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="370"/>
                         </Grid.ColumnDefinitions>
                         <!-- todo padding 23-->
-                        <WrapPanel 
+                        <WrapPanel
                             Grid.Row="0" Grid.Column="0"
+                            HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel 
+                            Grid.Row="0" Grid.Column="1"
                             HorizontalAlignment="Left" VerticalAlignment="Stretch">
                             <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
-                        <WrapPanel
-                            Grid.Row="0" Grid.Column="1"
-                            HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                                <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
                         <WrapPanel
                             Grid.Row="1" Grid.Column="0"
                             HorizontalAlignment="Left" VerticalAlignment="Stretch">
@@ -58,12 +60,15 @@
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel
-                        Grid.Row="1" Grid.Column="1"
-                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                            Grid.RowSpan="2" Grid.Column="2"
+                            HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">選択枚数:</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">/</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding TotalNumberOfTicket, Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">枚</TextBlock>
                         </WrapPanel>
-                    </Grid>
+                        </Grid>
 
                     <!-- 説明(description)-->
                     <!--

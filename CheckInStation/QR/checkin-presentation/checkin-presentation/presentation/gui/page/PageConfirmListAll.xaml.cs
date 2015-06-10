@@ -88,6 +88,13 @@ namespace checkin.presentation.gui.page
             set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
+        private int _TotalNumberOfTicket;
+        public int TotalNumberOfTicket
+        {
+            get { return this._TotalNumberOfTicket; }
+            set { this._TotalNumberOfTicket = value; this.OnPropertyChanged("TotalNumberOfTicket"); }
+        }
+
         public DisplayTicketDataCollection DisplayTicketDataCollection { get; set; }
 
         public override void OnSubmit()
