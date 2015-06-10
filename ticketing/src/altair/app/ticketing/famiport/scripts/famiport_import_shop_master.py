@@ -7,6 +7,7 @@ import logging
 from datetime import date
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.paster import bootstrap, setup_logging
+from altair.sqlahelper import get_global_db_session
 from ..mdm.shop_master import make_unmarshaller
 from ..datainterchange.importing import ImportSession, normal_file_filter
 
@@ -183,13 +184,13 @@ def main(argv=sys.argv):
     imported_dir = settings['altair.famiport.mdm.shop_master.imported_dir']
     encoding = settings.get('altair.famiport.mdm.shop_master.encoding', 'CP932')
 
-    from ..models import _session
+    session = get_global_db_session(registry, 'famiport')
 
     processor = ImportSession(
         pending_dir=pending_dir,
         imported_dir=imported_dir,
         file_filter=normal_file_filter,
-        processor=ShopMasterProcessor(session=_session, encoding=encoding),
+        processor=ShopMasterProcessor(session=session, encoding=encoding),
         logger=logger
         )
     processor()
