@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 from unittest import TestCase
 import mock
-from pyramid.testing import DummyModel
+from  pyramid.testing import DummyRequest
 from .testing import FamiPortTestBase
+
 
 class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
     def _get_target(self):
@@ -23,9 +24,9 @@ class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
         q.filter.return_value = q
         q.one.return_value = exp_famiport_order
         order_no = 'XX000012345'
-        famiport_order = target(order_no, session)
+        request = DummyRequest()
+        famiport_order = target(request, order_no, session)
         self.assertEqual(famiport_order, exp_famiport_order)
-
 
 
 # class CreateFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
@@ -45,7 +46,7 @@ class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
 #
 #     def test_in_payment(self):
 #         for order in self.orders:
-#             famiport_order = self._callFUT(self.request, order.cart, in_payment=True)
+#             famiport_order = self._callFUT(self.reques,t order.cart, in_payment=True)
 #             self.assertEqual(famiport_order.order_no, order.order_no)
 #             self.assert_(famiport_order.barcode_no)
 #             self.assertEqual(famiport_order.total_amount, order.total_amount)

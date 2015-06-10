@@ -1,6 +1,7 @@
 from .builders import XmlFamiPortResponseGenerator
 from .interfaces import IFamiPortResponseBuilderRegistry
 
+
 def get_response_builder(request, famiport_request):
     """Get appropriate FamiPortResponseBuilder for the given FamiPortRequest.
 
@@ -18,6 +19,3 @@ def get_xmlResponse_generator(famiport_response):
     :return: XmlFamiPortResponseGenerator instance to generate XML of famiport_response.
     """
     return XmlFamiPortResponseGenerator(famiport_response)
-
-
-
