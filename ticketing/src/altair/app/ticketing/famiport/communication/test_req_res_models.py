@@ -22,7 +22,7 @@ class FamiPortModelTestCase(TestCase):
             settings={},
             )
         self.engine = _setup_db(
-            self.config.registry, 
+            self.config.registry,
             [
                 'altair.app.ticketing.famiport.models',
                 'altair.app.ticketing.famiport.communication.models',
@@ -238,15 +238,15 @@ class FamiPortRefundEntryRequestTest(FamiPortModelTestCase):
         target = self._target()
         kwds = {
             'businessFlg': u'3',  # 業務フラグ
-            'textTyp': u'0', # テキスト区分
-            'entryTyp': u'1', # 登録/取消区分
-            'shopNo': u'00012345', # 店No
-            'registerNo': u'00', # レジNo
-            'timeStamp': u'20150101', # オペレーション開始日
-            'barCode1': u'1234567890123', # バーコード番号[0]
-            'barCode2': u'1234567890124', # バーコード番号[1]
-            'barCode3': u'1234567890125', # バーコード番号[2]
-            'barCode4': u'1234567890126', # バーコード番号[3]
+            'textTyp': u'0',  # テキスト区分
+            'entryTyp': u'1',  # 登録/取消区分
+            'shopNo': u'00012345',  # 店No
+            'registerNo': u'00',  # レジNo
+            'timeStamp': u'20150101',  # オペレーション開始日
+            'barCode1': u'1234567890123',  # バーコード番号[0]
+            'barCode2': u'1234567890124',  # バーコード番号[1]
+            'barCode3': u'1234567890125',  # バーコード番号[2]
+            'barCode4': u'1234567890126',  # バーコード番号[3]
             }
 
         old_obj = self._makeOne(**kwds)
@@ -499,47 +499,47 @@ class FamiPortRefundEntryResponseTest(FamiPortModelTestCase):
         target = self._target()
         kwds = {
             'businessFlg': u'3',  # 業務フラグ
-            'textTyp': u'0', # テキスト区分
-            'entryTyp': u'1', # 登録/取消区分
-            'shopNo': u'00012345', # 店No
-            'registerNo': u'00', # レジNo
-            'timeStamp': u'20150101', # オペレーション開始日
-            'barCode1': u'1234567890123', # バーコード番号[0]
-            'resultCode1': u'00', # 終了コード[0]
-            'mainTitle1': u'公演名', # メインタイトル[0] (公演名)
-            'perfDay1': u'20150101', # 公演日[0]
-            'repayment1': u'020000', # 返金金額[0]
-            'refundStart1': u'20150108', # 払戻開始日[0]
-            'refundEnd1': u'20150115', # 払戻開始日[0]
-            'ticketTyp1': u'1', # チケット区分[0]
-            'charge1': u'001000', # 利用料[0]
-            'barCode2': u'1234567890124', # バーコード番号[1]
-            'resultCode2': u'00', # 終了コード[1]
-            'mainTitle2': u'公演名', # メインタイトル[1] (公演名)
-            'perfDay2': u'20150102', # 公演日[1]
-            'repayment2': u'020000', # 返金金額[1]
-            'refundStart2': u'20150108', # 払戻開始日[1]
-            'refundEnd2': u'20150115', # 払戻開始日[1]
-            'ticketTyp2': u'2', # チケット区分[1]
-            'charge2': u'001000', # 利用料[1]
-            'barCode3': u'1234567890125', # バーコード番号[2]
-            'resultCode3': u'00', # 終了コード[2]
-            'mainTitle3': u'公演名', # メインタイトル[2] (公演名)
-            'perfDay3': u'20150103', # 公演日[2]
-            'repayment3': u'020000', # 返金金額[2]
-            'refundStart3': u'20150108', # 払戻開始日[2]
-            'refundEnd3': u'20150115', # 払戻開始日[2]
-            'ticketTyp3': u'3', # チケット区分[2]
-            'charge3': u'001000', # 利用料[2]
-            'barCode4': u'1234567890126', # バーコード番号[3]
-            'resultCode4': u'00', # 終了コード[3]
-            'mainTitle4': u'公演名', # メインタイトル[3] (公演名)
-            'perfDay4': u'20150104', # 公演日[3]
-            'repayment4': u'020000', # 返金金額[3]
-            'refundStart4': u'20150108', # 払戻開始日[3]
-            'refundEnd4': u'20150115', # 払戻開始日[3]
-            'ticketTyp4': u'4', # チケット区分[3]
-            'charge4': u'001000', # 利用料[3]
+            'textTyp': u'0',  # テキスト区分
+            'entryTyp': u'1',  # 登録/取消区分
+            'shopNo': u'00012345',  # 店No
+            'registerNo': u'00',  # レジNo
+            'timeStamp': u'20150101',  # オペレーション開始日
+            'barCode1': u'1234567890123',  # バーコード番号[0]
+            'resultCode1': u'00',  # 終了コード[0]
+            'mainTitle1': u'公演名',  # メインタイトル[0] (公演名)
+            'perfDay1': u'20150101',  # 公演日[0]
+            'repayment1': u'020000',  # 返金金額[0]
+            'refundStart1': u'20150108',  # 払戻開始日[0]
+            'refundEnd1': u'20150115',  # 払戻開始日[0]
+            'ticketTyp1': u'1',  # チケット区分[0]
+            'charge1': u'001000',  # 利用料[0]
+            'barCode2': u'1234567890124',  # バーコード番号[1]
+            'resultCode2': u'00',  # 終了コード[1]
+            'mainTitle2': u'公演名',  # メインタイトル[1] (公演名)
+            'perfDay2': u'20150102',  # 公演日[1]
+            'repayment2': u'020000',  # 返金金額[1]
+            'refundStart2': u'20150108',  # 払戻開始日[1]
+            'refundEnd2': u'20150115',  # 払戻開始日[1]
+            'ticketTyp2': u'2',  # チケット区分[1]
+            'charge2': u'001000',  # 利用料[1]
+            'barCode3': u'1234567890125',  # バーコード番号[2]
+            'resultCode3': u'00',  # 終了コード[2]
+            'mainTitle3': u'公演名',  # メインタイトル[2] (公演名)
+            'perfDay3': u'20150103',  # 公演日[2]
+            'repayment3': u'020000',  # 返金金額[2]
+            'refundStart3': u'20150108',  # 払戻開始日[2]
+            'refundEnd3': u'20150115',  # 払戻開始日[2]
+            'ticketTyp3': u'3',  # チケット区分[2]
+            'charge3': u'001000',  # 利用料[2]
+            'barCode4': u'1234567890126',  # バーコード番号[3]
+            'resultCode4': u'00',  # 終了コード[3]
+            'mainTitle4': u'公演名',  # メインタイトル[3] (公演名)
+            'perfDay4': u'20150104',  # 公演日[3]
+            'repayment4': u'020000',  # 返金金額[3]
+            'refundStart4': u'20150108',  # 払戻開始日[3]
+            'refundEnd4': u'20150115',  # 払戻開始日[3]
+            'ticketTyp4': u'4',  # チケット区分[3]
+            'charge4': u'001000',  # 利用料[3]
             }
 
         old_obj = self._makeOne(**kwds)
@@ -553,5 +553,3 @@ class FamiPortRefundEntryResponseTest(FamiPortModelTestCase):
 
         for key, value in kwds.items():
             self.assertEqual(getattr(new_obj, key), value)
-
-
