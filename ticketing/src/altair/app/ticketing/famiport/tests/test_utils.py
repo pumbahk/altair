@@ -128,3 +128,11 @@ class FamiPortCryptTest(TestCase):
         target = self._get_target(key)
         retval = target.encrypt(val)
         self.assertEqual(retval, expval)
+
+    def test_enc_dec(self):
+        key = '430000000002'
+        plain_org = u'テストテスト'.encode('utf8')
+        target = self._get_target(key)
+        chipher_res = target.encrypt(plain_org)
+        plain_res = target.decrypt(chipher_res)
+        self.assertEqual(plain_org, plain_res)
