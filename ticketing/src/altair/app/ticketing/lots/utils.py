@@ -65,10 +65,4 @@ def create_form(request, context, formdata=None, **kwds):
         formdata=formdata,
         **kwds)
 
-    if form.birthday.data:
-        d = form.birthday.data
-        _value_defaults = {'year':d.year, 'month':d.month, 'day':d.day}
-        form.birthday.value_defaults = _value_defaults
-        form.birthday.process(formdata=formdata)
-
     return form
