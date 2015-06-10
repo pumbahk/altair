@@ -2,7 +2,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
 from pyramid.testing import DummyRequest, setUp, tearDown
-import sqlahelper
+from altair.sqlahelper import get_global_db_session
 
 from ..api import get_response_builder
 from .builders import FamiPortRequestFactory
@@ -17,11 +17,20 @@ from .models import (
     FamiPortCustomerInformationRequest,
     )
 from ..models import FamiPortInformationMessage
+from ..testing import _setup_db, _teardown_db
 
 class FamiPortResponseBuilderTest(TestCase):
     def setUp(self):
         self.config = setUp()
         self.config.include('.')
+        self.engine = _setup_db(
+            self.config.registry,
+            [
+                'altair.app.ticketing.famiport.models',
+                'altair.app.ticketing.famiport.communication.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport')
 
         # 予約照会
         # self.famiport_reservation_inquiry_request = FamiPortReservationInquiryRequest(storeCode='000009', ticketingDate='20150325151159', reserveNumber='5300000000001', authNumber='')
@@ -40,9 +49,7 @@ class FamiPortResponseBuilderTest(TestCase):
 
         # 案内
         # famiport_information_service_unavailable_message = FamiPortInformationMessage.create(result_code=InformationResultCodeEnum.ServiceUnavailable.name , message=u'ServiceUnavailable メッセージ')
-        # famiport_information_service_unavailable_message.save()
         famiport_information_with_information_message = FamiPortInformationMessage.create(result_code=InformationResultCodeEnum.WithInformation.name , message=u'WithInformation メッセージ')
-        famiport_information_with_information_message.save()
 
         famiport_information_request_dict = {'infoKubun':'1', 'storeCode':'000009', 'kogyoCode':'', 'kogyoSubCode':'', 'koenCode':'', 'uketsukeCode':'', 'playGuideId':'', 'authCode':'', 'reserveNumber':'4000000000001'}
         self.famiport_information_request = FamiPortRequestFactory.create_request(famiport_information_request_dict, FamiPortRequestType.Information)
@@ -60,6 +67,7 @@ class FamiPortResponseBuilderTest(TestCase):
             )
 
     def tearDown(self):
+        _teardown_db(self.config.registry)
         tearDown()
 
     def test_build_ReservationInquiryResponseBuilder(self):
@@ -73,5 +81,5 @@ class FamiPortResponseBuilderTest(TestCase):
         self.check_build_response(famiport_information_response_builder, self.famiport_information_request)
 
     def check_build_response(self, response_builder, famiport_request):
-        famiport_response = response_builder.build_response(famiport_request)
+        famiport_response = response_builder.build_response(famiport_request, self.session)
         self.assertIsNotNone(famiport_response)

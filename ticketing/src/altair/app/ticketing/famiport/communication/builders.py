@@ -17,7 +17,6 @@ from ..models import (
     FamiPortRefund,
     FamiPortRefundEntry,
     FamiPortTicket,
-    _session,
     )
 from .interfaces import (
     IFamiPortResponseBuilderRegistry,
@@ -88,7 +87,7 @@ class FamiPortRequestFactory(object):
                 except Exception as err:
                     raise err.__class__(
                         'decrypt error: {}: {}'.format(err.message, value))
-            setattr(famiport_request, key, value)
+            setattr(famiport_request, key, value.decode('UTF-8'))
         return famiport_request
 
 
@@ -118,7 +117,7 @@ class FamiPortResponseBuilder(object):
 
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
-    def build_response(self, famiport_reservation_inquiry_request=None):
+    def build_response(self, famiport_reservation_inquiry_request, session):
         playGuideId = ''
         barCodeNo = ''
         totalAmount = ''
@@ -145,7 +144,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         famiport_order = None
         try:
             famiport_order = FamiPortOrder.get_by_reserveNumber(
-                reserveNumber, authNumber)
+                reserveNumber, authNumber, session=session)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). 店舗コード: %s , 利用日時: %s , 予約番号: %s "
@@ -204,7 +203,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_payment_ticketing_request=None):
+    def build_response(self, famiport_payment_ticketing_request, session):
         replyCode = None
         famiport_order = None
         resultCode = ResultCodeEnum.Normal.value
@@ -242,7 +241,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo))
 
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
+            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). ' + \
@@ -332,7 +331,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_payment_ticketing_completion_request=None):
+    def build_response(self, famiport_payment_ticketing_completion_request, session):
         resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_completion_request.storeCode
         mmkNo = famiport_payment_ticketing_completion_request.mmkNo
@@ -346,7 +345,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         replyCode = None
 
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
+            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
         except DBAPIError:
             replyCode = ReplyCodeEnum.OtherError.value
             logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response().' +
@@ -369,7 +368,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_payment_ticketing_cancel_request=None):
+    def build_response(self, famiport_payment_ticketing_cancel_request, session):
         resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_cancel_request.storeCode
         mmkNo = famiport_payment_ticketing_cancel_request.mmkNo
@@ -379,7 +378,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
         famiport_order = None
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
+            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
         except DBAPIError:
             logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' +
                          u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s'
@@ -410,7 +409,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_information_request=None):
+    def build_response(self, famiport_information_request, session):
         """
         デフォルトは「案内なし(正常)」
         FamiPortInformationMessageにWithInformationに対応するmessageがあれば「案内あり(正常)」としてメッセージを表示する。
@@ -427,7 +426,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         infoMessage = ''
         try:
             infoMessage = FamiPortInformationMessage.get_message(
-                InformationResultCodeEnum.ServiceUnavailable)
+                InformationResultCodeEnum.ServiceUnavailable, session=session)
         except DBAPIError:
             logger.error(
                 u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). 店舗コード: %s" % storeCode)
@@ -449,7 +448,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
         try:
             infoMessage = FamiPortInformationMessage.get_message(
-                InformationResultCodeEnum.WithInformation)
+                InformationResultCodeEnum.WithInformation, session=session)
         except DBAPIError:
             resultCode == InformationResultCodeEnum.OtherError.value
             infoMessage = u'エラーが起こりました。'
@@ -477,7 +476,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_customer_information_request=None):
+    def build_response(self, famiport_customer_information_request, session):
         storeCode = famiport_customer_information_request.storeCode
         mmkNo = famiport_customer_information_request.mmkNo
         ticketingDate = famiport_customer_information_request.ticketingDate
@@ -487,7 +486,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
         famiport_order = None
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo)
+            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
         except DBAPIError:
             logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' +
                          u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
@@ -525,7 +524,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
-    def build_response(self, famiport_refund_entry_request):
+    def build_response(self, famiport_refund_entry_request, session):
         famiport_refund_entry_response = FamiPortRefundEntryResponse(
             businessFlg=famiport_refund_entry_request.businessFlg,
             textTyp=famiport_refund_entry_request.textTyp,
@@ -535,7 +534,6 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
             timeStamp=famiport_refund_entry_request.timeStamp,
             )
         barcode_numbers = famiport_refund_entry_request.barcode_numbers
-        session = _session
         refund_entries = [
             (
                 barcode_number,

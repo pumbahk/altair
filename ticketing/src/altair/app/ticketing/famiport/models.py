@@ -519,21 +519,17 @@ class FamiPortOrder(Base, WithTimestamp):
     def performance_start_at(self):
         return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
 
-    def save(self):
-        _session.add(self)
-        _session.flush()
-
     @classmethod
-    def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
-        return _session \
+    def get_by_reserveNumber(cls, reserveNumber, authNumber=None, session=_session):
+        return session \
             .query(cls) \
             .filter(cls.reserve_number == reserveNumber) \
             .first()
             # .filter(amitoPortOrder.auth_number == authNumber) \
 
     @classmethod
-    def get_by_barCodeNo(cls, barCodeNo):
-        return _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+    def get_by_barCodeNo(cls, barCodeNo, session=_session):
+        return session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
 
     @property
     def ticket_total_count(self):
@@ -595,15 +591,11 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     def create(cls, result_code, message):
         return cls(result_code=result_code, message=message)
 
-    def save(self):
-        _session.add(self)
-        _session.flush()
-
     @classmethod
-    def get_message(cls, information_result_code, default_message=None):
+    def get_message(cls, information_result_code, default_message=None, session=_session):
         from .communication import InformationResultCodeEnum
         assert isinstance(information_result_code, InformationResultCodeEnum)
-        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
+        query = session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message

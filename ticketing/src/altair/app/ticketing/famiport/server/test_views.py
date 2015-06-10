@@ -7,10 +7,11 @@ import lxml.etree
 from pyramid.testing import (
     DummyModel,
     )
-from altair.app.ticketing.testing import (
+from ..testing import (
     _setup_db,
     _teardown_db,
     )
+from altair.sqlahelper import get_global_db_session
 
 
 class FamiPortAPIViewTest(TestCase):
@@ -18,19 +19,23 @@ class FamiPortAPIViewTest(TestCase):
 
         from webtest import TestApp
         from pyramid.config import Configurator
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models'
-            ])
-        config = Configurator()
-        config.include('.', '/famiport/')
-        config.include('..communication')
+        self.config = Configurator()
+        self.engine = _setup_db(
+            self.config.registry,
+            [
+                'altair.app.ticketing.famiport.models',
+                'altair.app.ticketing.famiport.communication.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport')
+        self.config.include('.', '/famiport/')
+        self.config.include('..communication')
 
         extra_environ = {'HTTP_HOST': 'localhost:8063'}
-        self.app = TestApp(config.make_wsgi_app(), extra_environ=extra_environ)
+        self.app = TestApp(self.config.make_wsgi_app(), extra_environ=extra_environ)
 
     def tearDown(self):
-        self.session.remove()
-        _teardown_db()
+        _teardown_db(self.config)
 
     def _callFUT(self, *args, **kwds):
         return self.app.post(self.url, *args, **kwds)
