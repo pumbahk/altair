@@ -11,7 +11,7 @@ from .models import (
     FamiPortOrderIdentifierSequence,
     FamiPortExchangeTicketNoSequence,
     )
-from .communication.api import (  # nowa
+from .communication.api import (  # noqa
     get_response_builder,  # noqa B/W compatibility
     get_xmlResponse_generator,  # noqa B/W compatibility
     )

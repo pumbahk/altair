@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
-import re
-import itertools
 import mock
-import lxml.etree
 from pyramid.testing import (
     DummyModel,
     )
