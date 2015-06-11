@@ -475,11 +475,11 @@ FROM LotEntryWish
      ON LotRejectWork.lot_id = Lot.id
      AND LotRejectWork.lot_entry_no = LotEntry.entry_no
      LEFT JOIN Membership
-     ON LotEntry.membership_id=Membership.id
+     ON LotEntry.membership_id=Membership.id AND Membership.deleted_at IS NULL
      LEFT JOIN MemberGroup
-     ON LotEntry.membergroup_id=MemberGroup.id
+     ON LotEntry.membergroup_id=MemberGroup.id AND MemberGroup.deleted_at IS NULL
      LEFT JOIN UserCredential
-     ON LotEntry.user_id=UserCredential.user_id AND LotEntry.membership_id=UserCredential.membership_id
+     ON LotEntry.user_id=UserCredential.user_id AND LotEntry.membership_id=UserCredential.membership_id AND UserCredential.deleted_at IS NULL
 WHERE Lot.id = %s
      AND LotEntryWish.deleted_at IS NULL
 
