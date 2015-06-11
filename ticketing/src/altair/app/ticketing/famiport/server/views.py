@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPBadRequest
@@ -14,6 +15,8 @@ from ..communication.api import (
     get_response_builder,
     get_xmlResponse_generator,
     )
+
+_logger = logging.getLogger(__name__)
 
 
 @view_config(route_name='famiport.api.ping')
@@ -39,12 +42,15 @@ class ResevationView(object):
     def now(self):
         return datetime.now()
 
-    def _build_payload(self, params, request_type):
-        """responseのpayloadを生成する
-        """
+    def _create_famiport_request(self, params, request_type):
         famiport_request = FamiPortRequestFactory.create_request(params, request_type)
         self.comm_session.add(famiport_request)
         self.comm_session.commit()
+        return famiport_request
+
+    def _build_payload(self, famiport_request):
+        """responseのpayloadを生成する
+        """
         response_builder = get_response_builder(self.request, famiport_request)
         famiport_response = response_builder.build_response(famiport_request, self.session, self.now)
         self.comm_session.add(famiport_response)
@@ -65,8 +71,10 @@ class ResevationView(object):
                 'authNumber': request_params.get('authNumber', ''),
                 }
         except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest(err)
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
@@ -85,9 +93,11 @@ class ResevationView(object):
                 'customerName': request_params.get('customerName', ''),  # optional
                 'phoneNumber': request_params.get('phoneNumber', ''),  # optional
                 }
-        except KeyError:
+        except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
@@ -106,9 +116,11 @@ class ResevationView(object):
                 'orderId': request_params['orderId'],
                 'totalAmount': request_params['totalAmount'],
                 }
-        except KeyError:
+        except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
@@ -127,9 +139,11 @@ class ResevationView(object):
                 'orderId': request_params['orderId'],
                 'cancelCode': request_params['cancelCode'],
                 }
-        except KeyError:
+        except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.information', request_method='POST')
@@ -150,8 +164,10 @@ class ResevationView(object):
                 'reserveNumber': request_params['reserveNumber'],
                 }
         except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest(err)
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
@@ -170,9 +186,11 @@ class ResevationView(object):
                 'orderId': request_params['orderId'],
                 'totalAmount': request_params['totalAmount'],
                 }
-        except KeyError:
-            return HTTPBadRequest()
-        buf = self._build_payload(params, type_)
+        except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
+            return HTTPBadRequest(err)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
 
     @view_config(route_name='famiport.api.reservation.refund', request_method='POST')
@@ -191,8 +209,9 @@ class ResevationView(object):
             for barcode_key in ['barCode1', 'barCode2', 'barCode3', 'barCode4']:
                 if barcode_key in request_params:
                     params[barcode_key] = request_params[barcode_key]
-        except KeyError:
+        except KeyError as err:
+            _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
-        buf = self._build_payload(params, type_)
+        famiport_request = self._create_famiport_request(params, type_)
+        buf = self._build_payload(famiport_request)
         return Response(buf)
-
