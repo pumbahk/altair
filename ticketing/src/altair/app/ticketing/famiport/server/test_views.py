@@ -135,9 +135,7 @@ class InquiryTest(FamiPortAPIViewTest):
                     ),
                 ),
             famiport_client=DummyModel(
-                playguide=DummyModel(
-                    discrimination_code='1',
-                    ),
+                code='1',
                 ),
             )
 
@@ -259,10 +257,8 @@ class PaymentTest(FamiPortAPIViewTest):
                     ),
                 ),
             famiport_client=DummyModel(
-                playguide=DummyModel(
-                    name=u'クライアント１',
-                    discrimination_code='1',
-                    ),
+                name=u'クライアント１',
+                code='1',
                 ),
             )
 
