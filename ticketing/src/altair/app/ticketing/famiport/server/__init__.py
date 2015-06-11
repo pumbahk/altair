@@ -18,7 +18,6 @@ def main(global_config, **local_config):
     config.include('altair.exclog')
     config.include(includeme, '/famiport/')
     config.include('altair.sqlahelper')
-    config.include('altair.app.ticketing.famiport.scripts')
     config.include('altair.app.ticketing.famiport.communication')
     return config.make_wsgi_app()
 
