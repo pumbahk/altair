@@ -686,7 +686,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def cart_setting(self):
-        return self.lot.event.setting.cart_setting or self.organization.setting.cart_setting
+        return self.lot.event.setting.cart_setting or self.lot.event.organization.setting.cart_setting
 
 
 class LotEntryProductSupport(object):

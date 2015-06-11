@@ -66,7 +66,8 @@ class OrderDependentsProvider(object):
             .order_by(Order.branch_no.desc()).all()
 
     def get_order_attributes(self):
-        return [(entry, False) for entry in OrderAttributeIO(include_undefined_items=True, mode='any').marshal(self.request, self.order)]
+        for_ = 'lots' if self.order.created_from_lot_entry else 'cart'
+        return [(entry, False) for entry in OrderAttributeIO(include_undefined_items=True, mode='any', for_=for_).marshal(self.request, self.order)]
 
     @property
     def mail_magazines(self):
