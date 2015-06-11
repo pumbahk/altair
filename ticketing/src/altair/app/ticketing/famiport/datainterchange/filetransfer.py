@@ -5,7 +5,7 @@ from ftplib_ import FTP_TLS_ as FTP_TLS
 from enum import IntEnum
 import logging, os
 from datetime import datetime
-from .interfaces import IFileSender, IFileSenderFactory
+from .interfaces import IFileSender, IFileSenderFactory, IFamiPortFileManagerFactory
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class FTPSFileSender(object):
             ftp.set_pasv(self.passive) # Enable PASV mode
             ftp.prot_p() # Secure data connection
 
-            ftp.storbinary("STOR %s" % remote_file, file) # STOR the file with file_name. Override if same file_name exists.
+            ftp.storbinary("STOR %s" % remote_file, file) # STOR the file with filename. Override if same filename exists.
             logger.info('file successfully sent as %s' % remote_path)
         finally:
             try:
@@ -51,61 +51,104 @@ class FTPSFileSender(object):
             except:
                 logger.exception('exception ignored')
 
-class FamiPortFileType(IntEnum):
-    SALES = 0
-    REFUND = 1
+
+@implementer(IFamiPortFileManagerFactory)
+class FamiPortFileManagerFactory(object):
+    default_file_type_mappings = {
+        'sales': dict(
+            filename='SAL_DAT.txt',
+            transfer_complete_filename='SAL_DAT_FLG.txt'
+            ),
+        'refund': dict(
+            filename='REF_DAT.txt',
+            transfer_complete_filename='REF_DAT_FLG.txt'
+            )
+        }
+
+    def __init__(self, sender, settings_prefix='altair.famiport'):
+        self.sender = sender
+        self.configurations = {}
+        self.settings_prefix = settings_prefix
+
+    def add_configuration_from_settings(self, type, settings):
+        default_file_type_mapping = self.default_file_type_mappings.get(type)
+
+        stage_dir_name = '%s.%s.stage.dir' % (self.settings_prefix, type)
+        sent_dir_name = '%s.%s.sent.dir' % (self.settings_prefix, type)
+        pending_dir_name = '%s.%s.pending.dir' % (self.settings_prefix, type)
+        upload_dir_path_name = '%s.%s.upload.dir' % (self.settings_prefix, type)
+        filename_name = '%s.%s.filename' % (self.settings_prefix, type)
+        encoding_name = '%s.%s.encoding' % (self.settings_prefix, type)
+        eor_name = '%s.%s.eor' % (self.settings_prefix, type)
+        transfer_complete_filename_name = '%s.%s.transfer_complete_filename' % (self.settings_prefix, type)
+
+        self.configurations[type] = dict( 
+            stage_dir=settings[stage_dir_name],
+            sent_dir=settings[sent_dir_name],
+            pending_dir=settings[pending_dir_name],
+            upload_dir_path=settings.get(upload_dir_path_name, None),
+            filename=settings.get(filename_name, default_file_type_mapping and default_file_type_mapping['filename']),
+            transfer_complete_filename=settings.get(transfer_complete_filename_name, default_file_type_mapping and default_file_type_mapping['transfer_complete_filename']),
+            encoding=settings.get(encoding_name),
+            eor=settings.get(eor_name)
+            )
+
+    def get_configuration(self, type):
+        return self.configurations[type]
+
+    def __call__(self, type, **overrides):
+        configuration = self.configurations[type]
+        if overrides:
+            configuration = dict(configuration)
+            configuration.update(overrides)
+        return FamiPortFileManager(sender=self.sender, **configuration)
+
+
+def create_ftps_file_sender_from_settings(settings, prefix='altair.famiport.send_file.ftp'):
+    host = settings['%s.host' % prefix]
+    username = settings['%s.username' % prefix]
+    password = settings['%s.password' % prefix]
+    certificate = settings.get('%s.certificate' % prefix, None)
+    return FTPSFileSender(host=host, username=username, password=password, ca_certs=certificate)
+
 
 class FamiPortFileManager(object):
-
-    def __init__(self, registry, file_type=FamiPortFileType.SALES):
-        self.registry = registry
-        assert(isinstance(file_type, FamiPortFileType))
-        self.file_type = file_type
+    def __init__(self, sender, filename, transfer_complete_filename, stage_dir, sent_dir, pending_dir, upload_dir_path, **kwargs):
+        self.sender = sender
+        self.filename = filename
+        self.transfer_complete_filename = transfer_complete_filename
+        self.stage_dir = stage_dir
+        self.sent_dir = sent_dir
+        self.pending_dir = pending_dir
+        self.upload_dir_path = upload_dir_path
         self.file_path = None
-        stage_dir_name = 'altair.famiport.' + self.file_type._name_.lower() + '.stage.dir'
-        sent_dir_name = 'altair.famiport.' + self.file_type._name_.lower() + '.sent.dir'
-        pending_dir_name = 'altair.famiport.' + self.file_type._name_.lower() + '.pending.dir'
-        self.stage_dir = registry.settings[stage_dir_name]
-        self.sent_dir = registry.settings[sent_dir_name]
-        self.pending_dir = registry.settings[pending_dir_name]
-        self.upload_dir_path = registry.settings['altair.famiport.send_file.ftp.upload_dir_path']
-        self.host = registry.settings['altair.famiport.send_file.ftp.host']
-        self.username = registry.settings['altair.famiport.send_file.ftp.username']
-        self.password = registry.settings['altair.famiport.send_file.ftp.password']
-        self.certificate = registry.settings['altair.famiport.send_file.ftp.certificate']
 
-    def send_staged_file(self, file_type=None):
+    def send_staged_file(self):
         latest_stage_dir = self.get_latest_stage_dir(datetime.now())
-        assert(isinstance(file_type, FamiPortFileType))
 
-        file_name = None
-        if file_type == FamiPortFileType.SALES:
-            file_name = 'SAL_DAT.txt'
-        elif file_type == FamiPortFileType.REFUND:
-            file_name = 'REF_DAT.txt'
+        filename = self.filename
+        self.file_path = os.path.join(latest_stage_dir, filename)
 
-        self.file_path = os.path.join(latest_stage_dir, file_name)
-
-        sender = FTPSFileSender(host=self.host, username=self.username, password=self.password, ca_certs=self.certificate)
+        sender = self.sender
         if not os.path.exists(self.file_path):
             raise Exception('%s does not exist' % self.file_path)
         else:
             with open(self.file_path) as file:
-                sender.send_file(os.path.join(self.upload_dir_path, file_name), file)
+                if self.upload_dir_path is not None:
+                    path = os.path.join(self.upload_dir_path, filename)
+                else:
+                    path = filename
+                sender.send_file(path, file)
 
         # 転送完了フラグファイルの送信
         transfer_complete_filename = None
-        if file_type == FamiPortFileType.SALES:
-            transfer_complete_filename = 'SAL_DAT_FLG.txt'
-        elif file_type == FamiPortFileType.REFUND:
-            transfer_complete_filename = 'REF_DAT_FLG.txt'
         with open (transfer_complete_filename, 'w+') as file: # Create one if not exist
             sender.send_file(os.path.join(self.upload_dir_path, transfer_complete_filename), file)
 
     def get_latest_stage_dir(self, now=datetime.now()):
         work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
         if not os.path.exists(work_dir):
-            return None
+            raise Exception('%s does not exist' % work_dir)
         return work_dir
 
     def mark_file_sent(self):

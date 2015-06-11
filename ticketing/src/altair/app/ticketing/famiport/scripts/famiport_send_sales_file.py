@@ -4,7 +4,7 @@ import argparse
 import sys
 import logging
 from pyramid.paster import bootstrap, setup_logging
-from ..datainterchange.filetransfer import FamiPortFileManager, FamiPortFileType
+from ..datainterchange.api import get_famiport_file_manager_factory
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +17,10 @@ def main(argv=sys.argv):
     env = bootstrap(args.config)
     registry = env['registry']
 
-    sales_file_manager = FamiPortFileManager(registry, FamiPortFileType.SALES)
+    sales_file_manager = get_famiport_file_manager_factory(registry)('sales')
     try:
         logger.info("sending sales file.")
-        sales_file_manager.send_staged_file(FamiPortFileType.SALES)
+        sales_file_manager.send_staged_file()
         sales_file_manager.mark_file_sent()
     except:
         sales_file_manager.mark_file_pending()

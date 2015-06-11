@@ -4,7 +4,7 @@ import argparse
 import sys
 import logging
 from pyramid.paster import bootstrap, setup_logging
-from ..datainterchange.filetransfer import FamiPortFileManager, FamiPortFileType
+from ..datainterchange.api import get_famiport_file_manager_factory
 
 logger = logging.getLogger(__name__)
 # TODO Test
@@ -17,12 +17,13 @@ def main(argv=sys.argv):
     env = bootstrap(args.config)
     registry = env['registry']
 
-    refund_file_manager = FamiPortFileManager(registry, FamiPortFileType.REFUND)
+    refund_file_manager = get_famiport_file_manager_factory(registry)('refund')
     try:
         logger.info("sending refund file.")
-        refund_file_manager.send_staged_file(FamiPortFileType.REFUND)
+        refund_file_manager.send_staged_file()
         refund_file_manager.mark_file_sent()
     except:
+        logger.exception(u'an error occurred during sending refund file')
         refund_file_manager.mark_file_pending()
 
 if __name__ == u"__main__":

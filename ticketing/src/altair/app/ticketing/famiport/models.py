@@ -294,7 +294,9 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
 
-    refunded_at          = sa.Column(sa.DateTime())
+    refunded_at          = sa.Column(sa.DateTime()) # 払戻が店頭で実際に行われた日痔
+
+    report_generated_at  = sa.Column(sa.DateTime()) # ファイルの生成日時
 
     famiport_ticket = orm.relationship('FamiPortTicket')
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
@@ -403,7 +405,7 @@ class FamiPortOrderIdentifierSequence(Base):
         seq = cls(prefix=prefix)
         session.add(seq)
         session.flush()
-        return prefix + digit_encoder.encode(screw(seq.id, 0x23456789012L))
+        return prefix + u'%09d' % seq.id
 
 
 class FamiPortOrderTicketNoSequence(Base):
@@ -511,6 +513,8 @@ class FamiPortOrder(Base, WithTimestamp):
     customer_address_1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
     customer_address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     customer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
+
+    report_generated_at       = sa.Column(sa.DateTime(), nullable=True)
 
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')

@@ -35,5 +35,6 @@ def includeme(config):
 
     config.scan('.views')
     config.include('..communication')
+    config.include('..datainterchange')
 
     config.add_renderer('famiport-xml', 'altair.app.ticketing.famiport.renderers.famiport_renderer_factory')

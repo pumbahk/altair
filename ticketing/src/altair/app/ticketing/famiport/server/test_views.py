@@ -15,11 +15,25 @@ from altair.sqlahelper import get_global_db_session
 
 
 class FamiPortAPIViewTest(TestCase):
+    settings = {
+        'altair.famiport.send_file.ftp.host': '',
+        'altair.famiport.send_file.ftp.port': '',
+        'altair.famiport.send_file.ftp.username': '',
+        'altair.famiport.send_file.ftp.password': '',
+        'altair.famiport.refund.stage.dir': '',
+        'altair.famiport.refund.pending.dir': '',
+        'altair.famiport.refund.sent.dir': '',
+        'altair.famiport.sales.stage.dir': '',
+        'altair.famiport.sales.pending.dir': '',
+        'altair.famiport.sales.sent.dir': '',
+        }
+
+
     def setUp(self):
 
         from webtest import TestApp
         from pyramid.config import Configurator
-        self.config = Configurator()
+        self.config = Configurator(settings=self.settings)
         self.engine = _setup_db(
             self.config.registry,
             [
