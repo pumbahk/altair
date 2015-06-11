@@ -14,12 +14,16 @@ from datetime import (
     )
 from sqlalchemy import or_
 from pyramid.paster import bootstrap, setup_logging
+from pyramid.decorator import reify
 from altair.multilock import (
     MultiStartLock,
     AlreadyStartUpError,
     )
 from altair.sqlahelper import get_global_db_session
-from altair.app.ticketing.famiport.models import FamiPortOrder
+from altair.app.ticketing.famiport.models import (
+    FamiPortOrder,
+    FamiPortReceipt,
+    )
 
 logger = logging.getLogger(__file__)
 LOCK_NAME = 'FAMIPORT_AUTO_COMPLETE'  # 多重起動防止用の名前
@@ -43,15 +47,15 @@ class FamiPortOrderAutoCompleter(object):
         self._minutes = int(minutes)
         self._no_commit = no_commit  # commitするかどうか
 
-    @property
+    @reify
     def time_point(self):
         return _get_now() - timedelta(minutes=self._minutes)
 
     def complete(self):
         try:
-            for famiport_order in self._fetch_target_famiport_orders():
-                self._do_complete(famiport_order)
-                self._session.add(famiport_order)
+            for receipt in self._fetch_target_famiport_receipts():
+                self._do_complete(receipt)
+                self._session.add(receipt)
         except Exception as err:
             logger.error(err)
             return AutoCompleterStatus.failuer.value
@@ -60,23 +64,22 @@ class FamiPortOrderAutoCompleter(object):
                 self._session.commit()
             return AutoCompleterStatus.success.value
 
-    def _do_complete(self, famiport_order):
+    def _do_complete(self, receipt):
         """FamiPortOrderを完了状態にする"""
-        pass
+        receipt.rescued_at = self.time_point
 
-    def _fetch_target_famiport_orders(self):
+    def _fetch_target_famiport_receipts(self):
         """対象のFamiPortOrderを取る"""
         return self._session \
-                   .query(FamiPortOrder) \
-                   .filter_by(paid_at=None) \
-                   .filter_by(issued_at=None) \
-                   .filter_by(viod_at=None) \
+                   .query(FamiPortReceipt) \
+                   .filter(FamiPortReceipt.viod_at.is_(None)) \
+                   .filter(FamiPortReceipt.rescued_at.is_(None)) \
                    .filter(or_(
                        FamiPortOrder.inquired_at.isnot(None),
                        FamiPortOrder.payment_request_received_at.isnot(None),
                        FamiPortOrder.customer_request_received_at.isnot(None),
                        ))  \
-                   .filter(FamiPortOrder.issued_at < self.time_point)
+                   .filter(FamiPortReceipt.payment_request_received_at < self.time_point)
 
 
 def main(argv=sys.argv[1:]):
