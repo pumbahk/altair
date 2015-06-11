@@ -174,10 +174,6 @@ def upgrade():
         sa.Column('customer_address_1', sa.Unicode(200), nullable=False, server_default=text(u"''")),  # 住所1
         sa.Column('customer_address_2', sa.Unicode(200), nullable=False, server_default=text(u"''")),  # 住所2
         sa.Column('customer_phone_number', sa.Unicode(12), nullable=False),  # 電話番号
-        sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時
-        sa.Column('payment_request_received_at', sa.DateTime(), nullable=True),  # 支払/発券要求が行われた日時
-        sa.Column('customer_request_received_at', sa.DateTime(), nullable=True),  # 顧客情報照会が行われた日時
-        sa.Column('void_at', sa.DateTime(), nullable=True),  # 30分voidによって無効化された日時
         sa.Column('paid_at', sa.DateTime(), nullable=True),  # 支払日時
         sa.Column('issued_at', sa.DateTime(), nullable=True),  # 発券日時
         sa.Column('canceled_at', sa.DateTime(), nullable=True),  # キャンセル日時
@@ -537,6 +533,21 @@ def upgrade():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
+    op.create_table(
+        'FamiPortReceipt',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
+        sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時
+        sa.Column('payment_request_received_at', sa.DateTime(), nullable=True),  # 支払/発券要求が行われた日時
+        sa.Column('customer_request_received_at', sa.DateTime(), nullable=True),  # 顧客情報照会が行われた日時
+        sa.Column('completed_at', sa.DateTime(), nullable=True),  # 完了処理が行われた日時
+        sa.Column('void_at', sa.DateTime(), nullable=True),  # 30分voidによって無効化された日時
+        sa.Column('rescued_at', sa.DateTime(), nullable=True),  # 90分救済措置にて救済された時刻
+        sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        )
+
 
 def downgrade():
     op.drop_table('FamiPortShop')
@@ -573,3 +584,4 @@ def downgrade():
     op.drop_table('FamiPortOrderTicketNoSequence')
     op.drop_table('FamiPortOrderIdentifierSequence')
     op.drop_table('FamiPortBarcodeNoSequence')
+    op.drop_table('FamiPortReceipt')

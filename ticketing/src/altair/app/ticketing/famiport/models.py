@@ -491,10 +491,6 @@ class FamiPortOrder(Base, WithTimestamp):
     ticket_payment               = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
     ticketing_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # 店頭発券手数料
     system_fee                   = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # システム利用料
-    inquired_at                  = sa.Column(sa.DateTime(), nullable=True)  # 予約照会が行われた日時
-    payment_request_received_at  = sa.Column(sa.DateTime(), nullable=True)  # 支払/発券要求が行われた日時
-    customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
-    void_at                      = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
     paid_at                      = sa.Column(sa.DateTime(), nullable=True)
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
     canceled_at                  = sa.Column(sa.DateTime(), nullable=True)
@@ -654,3 +650,19 @@ class FamiPortShop(Base, WithTimestamp):
     business_status = sa.Column(sa.Integer, nullable=False, default=0)
     paused = sa.Column(sa.Boolean(), nullable=False, default=False)
     deleted = sa.Column(sa.Boolean(), nullable=False, default=False)
+
+
+class FamiPortReceipt(Base, WithTimestamp):
+    __tablename__ = 'FamiPortReceipt'
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    inquired_at = sa.Column(sa.DateTime(), nullable=True)  # 予約照会が行われた日時
+    payment_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 支払/発券要求が行われた日時
+    customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
+    completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
+    void_at = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
+    rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
+
+    famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
+    famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')

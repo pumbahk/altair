@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 from altair.sqlahelper import get_db_session
 from .models import (
     FamiPortOrder,
@@ -76,7 +76,6 @@ def create_famiport_order(
     if session is None:
         session = get_db_session(request, 'famiport')
     famiport_client = get_famiport_client(request, client_code, session=session)
-    barcode_no = FamiPortOrderTicketNoSequence.get_next_value(session)
     famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
     famiport_sales_segment = get_famiport_sales_segment_by_userside_id(request, userside_sales_segment_id, session=session)
     famiport_order = FamiPortOrder(
@@ -85,9 +84,7 @@ def create_famiport_order(
         order_no=order_no,
         famiport_sales_segment=famiport_sales_segment,
         famiport_order_identifier=famiport_order_identifier,
-        barcode_no=barcode_no,
         reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
-        exchange_number=FamiPortExchangeTicketNoSequence.get_next_value(session),
         customer_name=customer_name,
         customer_phone_number=customer_phone_number,
         customer_address_1=customer_address_1,
