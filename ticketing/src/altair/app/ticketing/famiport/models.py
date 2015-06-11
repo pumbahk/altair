@@ -540,6 +540,15 @@ class FamiPortOrder(Base, WithTimestamp):
             .filter(cls.invalidated_at.is_(None)) \
             .one()
 
+    @classmethod
+    def get_by_barcode_no(cls, barCodeNo, session=_session):
+        return session \
+            .query(cls) \
+            .join(FamiPortReceipt) \
+            .filter(FamiPortReceipt.barcode_no == barCodeNo) \
+            .filter(cls.invalidated_at.is_(None)) \
+            .first()
+
     @property
     def ticket_total_count(self):
         return len(self.famiport_tickets)
@@ -562,17 +571,13 @@ class FamiPortOrder(Base, WithTimestamp):
 
     auth_number = None
 
-    @property
-    def current_receipt(self):
+    def get_receipt(self, barcode_no):
         for receipt in self.famiport_receipts:
-            if receipt.completed_at or receipt.rescued_at:
-                return receipt
-            elif receipt.payment_request_received_at and receipt.viod_at:
+            if barcode_no == receipt.barcode_no:
                 return receipt
 
-    def create_receipt(self, now, session=_session):
+    def create_receipt(self, session=_session):
         famiport_receipt = FamiPortReceipt(
-            inquired_at=now,
             famiport_order_id=self.id,
             barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
             )
@@ -685,8 +690,45 @@ class FamiPortReceipt(Base, WithTimestamp):
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
     void_at = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
-
     barcode_no = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
 
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
+
+    def can_payment(self, now):
+        return self.inquired_at \
+            and not self.payment_request_received_at \
+            and not self.customer_request_received_at \
+            and not self.completed_at \
+            and not self.void_at \
+            and not self.rescued_at
+
+    def can_customer(self, now):
+        return self.inquired_at \
+            and self.payment_request_received_at \
+            and not self.customer_request_received_at \
+            and not self.completed_at \
+            and not self.void_at \
+            and not self.rescued_at
+
+    def can_completion(self, now):
+        return self.inquired_at \
+            and self.payment_request_received_at \
+            and self.customer_request_received_at \
+            and not self.completed_at \
+            and not self.void_at \
+            and not self.rescued_at
+
+    def can_cancel(self, now):
+        return self.inquired_at \
+            and self.payment_request_received_at \
+            and not self.completed_at \
+            and not self.void_at \
+            and not self.rescued_at
+
+    def can_rescue(self, now):
+        return self.inquired_at \
+            and self.payment_request_received_at \
+            and not self.completed_at \
+            and not self.void_at \
+            and not self.rescued_at

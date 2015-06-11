@@ -25,9 +25,7 @@ class FamiPortAPIViewTest(TestCase):
         'altair.famiport.sales.sent.dir': '',
         }
 
-
     def setUp(self):
-
         from webtest import TestApp
         from pyramid.config import Configurator
         self.config = Configurator(settings=self.settings)
@@ -69,7 +67,7 @@ class FamiPortAPIViewTest(TestCase):
                and tag in famiport_response_class._encryptedFields:
                 self.assertEqual(bool(res_elm.text), bool(exp_elm.text))
             else:
-                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text), 'tag={}, res={}, exp={}'.format(tag, res_elm.text, exp_elm.text))
+                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text), u'tag={}, res={}, exp={}'.format(tag, _strip(res_elm.text), _strip(exp_elm.text)))
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -103,8 +101,10 @@ class InquiryTest(FamiPortAPIViewTest):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
         import datetime
         from ..testing import generate_ticket_data
-        from ..models import FamiPortTicket
+        from ..models import FamiPortTicket, FamiPortReceipt
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
+        receipt = FamiPortReceipt()
+        receipt.barcode_no = u'4110000000006'
         famiport_tickets = [
             FamiPortTicket(
                 barcode_number=ticket['barCodeNo'],
@@ -133,7 +133,6 @@ class InquiryTest(FamiPortAPIViewTest):
             playguide_id=1,
             playguide_name=u'クライアント１',
             exchange_number='4310000000002',
-            barcode_no=u'4110000000006',
             total_amount=670,
             ticket_payment=0,
             system_fee=500,
@@ -145,6 +144,7 @@ class InquiryTest(FamiPortAPIViewTest):
             customer_name_input=0,
             customer_phone_input=0,
             performance_start_at=performance_start_at,
+            create_receipt=mock.Mock(return_value=receipt),
             famiport_sales_segment=DummyModel(
                 famiport_performance=DummyModel(
                     name=u'サンプル興行',
@@ -250,6 +250,10 @@ class PaymentTest(FamiPortAPIViewTest):
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
 
+        receipt = mock.Mock()
+        receipt.can_cancel.return_value = True
+        receipt.barcode_no = u'1000000000000'
+
         get_by_barCodeNo.return_value = DummyModel(
             famiport_order_identifier='430000000002',
             type=3,
@@ -267,6 +271,7 @@ class PaymentTest(FamiPortAPIViewTest):
             ticket_total_count=len(famiport_tickets),
             ticket_count=len(famiport_tickets),
             famiport_tickets=famiport_tickets,
+            get_receipt=mock.Mock(return_value=receipt),
             famiport_sales_segment=DummyModel(
                 famiport_performance=DummyModel(
                     name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
@@ -319,7 +324,10 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
     @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
-        get_by_barCodeNo.return_value = DummyModel()
+        receipt = mock.Mock()
+        get_by_barCodeNo.return_value = DummyModel(
+            get_receipt=mock.Mock(return_value=receipt),
+            )
         res = self._callFUT({
             'ticketingDate': '20150331184114',
             'orderId': '123456789012',
@@ -380,11 +388,15 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
     @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
+        receipt = mock.Mock()
+        receipt.can_cancel.return_value = True
+        receipt.barcode_no = u'1000000000000'
         get_by_barCodeNo.return_value = DummyModel(
             famiport_order_identifier='123456789012',
             paid_at=None,
             canceled_at=None,
             issued_at=None,
+            get_receipt=mock.Mock(return_value=receipt),
             )
         res = self._callFUT({
             'playGuideId': '',
@@ -486,12 +498,18 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortCustomerResponseFakeFactory as FakeFactory
         from ..communication import FamiPortCustomerInformationResponse as FamiportResponse
+
+        receipt = mock.Mock()
+        receipt.can_cancel.return_value = True
+        receipt.barcode_no = u'1000000000000'
+
         get_by_barCodeNo.return_value = DummyModel(
             customer_name=u'発券　し太郎',
             customer_member_id=u'REIOHREOIHOIERHOIERHGOIERGHOI',
             customer_address_1=u'東京都品川区',
             customer_address_2=u'西五反田',
             customer_identify_no=u'1234567890123456',
+            get_receipt=mock.Mock(return_value=receipt),
             )
         res = self._callFUT({
             'storeCode': '000009',
