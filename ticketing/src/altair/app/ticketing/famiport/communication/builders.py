@@ -149,7 +149,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         try:
             try:
                 ticketingDate = datetime.datetime.strptime(
-                    famiport_reservation_inquiry_request.ticketingDate, 
+                    famiport_reservation_inquiry_request.ticketingDate,
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
@@ -169,6 +169,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     famiport_order = None
 
             if famiport_order is not None:
+                recepit = famiport_order.create_receipt(now, session)
                 resultCode = ResultCodeEnum.Normal.value
                 replyClass = famiport_order.type
                 replyCode = ReplyCodeEnum.Normal.value
@@ -187,7 +188,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     koenDate = '99999999999999'
 
                 playGuideId = famiport_order.famiport_client.code
-                barCodeNo = famiport_order.barcode_no
+                barCodeNo = recepit.barcode_no
                 totalAmount = famiport_order.total_amount
                 ticketPayment = str_or_blank(famiport_order.ticket_payment)
                 systemFee = str_or_blank(famiport_order.system_fee)

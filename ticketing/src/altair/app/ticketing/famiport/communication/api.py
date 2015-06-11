@@ -1,3 +1,4 @@
+# -*- coding: utf-8-*-
 from .builders import XmlFamiPortResponseGenerator
 from .interfaces import IFamiPortResponseBuilderRegistry
 

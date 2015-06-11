@@ -4,6 +4,7 @@ from .models import (
     FamiPortOrder,
     FamiPortTicket,
     FamiPortClient,
+    FamiPortReceipt,
     FamiPortSalesSegment,
     FamiPortBarcodeNoSequence,
     FamiPortReserveNumberSequence,
@@ -53,6 +54,13 @@ def create_famiport_ticket(request, ticket_dict, session=None):
         barcode_number=FamiPortBarcodeNoSequence.get_next_value(session),
         template_code=ticket_dict['template'],
         data=ticket_dict['data']
+        )
+
+
+def create_famiport_receipt(session, **kwds):
+    return FamiPortReceipt(
+        barcode_no=FamiPortBarcodeNoSequence.get_next_value(session),
+        **kwds
         )
 
 

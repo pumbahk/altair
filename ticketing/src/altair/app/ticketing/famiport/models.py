@@ -501,7 +501,6 @@ class FamiPortOrder(Base, WithTimestamp):
     payment_start_at = sa.Column(sa.DateTime(), nullable=True)
     payment_due_at = sa.Column(sa.DateTime(), nullable=True)
 
-    barcode_no                = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
     reserve_number            = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
     exchange_number           = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
 
@@ -532,8 +531,9 @@ class FamiPortOrder(Base, WithTimestamp):
     def get_by_barCodeNo(cls, barCodeNo, session=_session):
         return session \
             .query(cls) \
-            .filter_by(barcode_no=barCodeNo) \
-            .filter(cls.invalidated_at == None) \
+            .join(FamiPortReceipt) \
+            .filter(FamiPortReceipt.barcode_no == barCodeNo) \
+            .filter(cls.invalidated_at.is_(None)) \
             .one()
 
     @property
@@ -557,6 +557,24 @@ class FamiPortOrder(Base, WithTimestamp):
         return ''  # TODO Set customer_identify_no
 
     auth_number = None
+
+    @property
+    def current_receipt(self):
+        for receipt in self.famiport_receipts:
+            if receipt.completed_at or receipt.rescued_at:
+                return receipt
+            elif receipt.payment_request_received_at and receipt.viod_at:
+                return receipt
+
+    def create_receipt(self, now, session=_session):
+        famiport_receipt = FamiPortReceipt(
+            inquired_at=now,
+            famiport_order_id=self.id,
+            barcode_no=FamiPortBarcodeNoSequence.get_next_value(session),
+            )
+        session.add(famiport_receipt)
+        session.commit()
+        return famiport_receipt
 
 
 class FamiPortTicketType(Enum):
@@ -663,6 +681,8 @@ class FamiPortReceipt(Base, WithTimestamp):
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
     void_at = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
+
+    barcode_no = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
 
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
