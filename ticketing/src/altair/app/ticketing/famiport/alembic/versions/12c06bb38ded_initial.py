@@ -489,7 +489,7 @@ def upgrade():
     op.create_table(
         'FamiPortShop',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
-        sa.Column('code', sa.Unicode(5), nullable=False),
+        sa.Column('code', sa.Unicode(5), nullable=False, unique=True),
         sa.Column('company_code', sa.Unicode(4), nullable=False),
         sa.Column('company_name', sa.Unicode(40), nullable=False),
         sa.Column('district_code', sa.Unicode(1), nullable=False),
@@ -538,6 +538,7 @@ def upgrade():
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
+        sa.Column('shop_code', sa.Unicode(7), sa.ForeignKey('FamiPortShop.code'), nullable=False),
         sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時
         sa.Column('payment_request_received_at', sa.DateTime(), nullable=True),  # 支払/発券要求が行われた日時
         sa.Column('customer_request_received_at', sa.DateTime(), nullable=True),  # 顧客情報照会が行われた日時
@@ -551,6 +552,7 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_table('FamiPortReceipt')
     op.drop_table('FamiPortShop')
     op.drop_table('FamiPortRefundEntryResponse')
     op.drop_table('FamiPortTicketResponse')
@@ -585,4 +587,3 @@ def downgrade():
     op.drop_table('FamiPortOrderTicketNoSequence')
     op.drop_table('FamiPortOrderIdentifierSequence')
     op.drop_table('FamiPortBarcodeNoSequence')
-    op.drop_table('FamiPortReceipt')

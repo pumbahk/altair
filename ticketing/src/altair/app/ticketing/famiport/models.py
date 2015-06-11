@@ -577,14 +577,8 @@ class FamiPortOrder(Base, WithTimestamp):
                 return receipt
 
     def create_receipt(self, store_code, session=_session):
-        shop = session.query(FamiPortShop) \
-                      .filter_by(code=store_code) \
-                      .first()
-        if shop is None:
-            return None
-
         famiport_receipt = FamiPortReceipt(
-            famiport_shop_id=shop.id,
+            shop_code=store_code,
             famiport_order_id=self.id,
             barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
             )
@@ -642,7 +636,7 @@ class FamiPortShop(Base, WithTimestamp):
     __tablename__ = 'FamiPortShop'
 
     id = sa.Column(Identifier, primary_key=True)
-    code = sa.Column(sa.Unicode(5), nullable=False)
+    code = sa.Column(sa.Unicode(5), nullable=False, unique=True)
     company_code = sa.Column(sa.Unicode(4), nullable=False)
     company_name = sa.Column(sa.Unicode(40), nullable=False)
     district_code = sa.Column(sa.Unicode(1), nullable=False)
@@ -702,7 +696,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
 
-    famiport_shop_id = sa.Column(Identifier, sa.ForeignKey('FamiPortShop.id'), nullable=False)
+    shop_code = sa.Column(sa.Unicode(6), sa.ForeignKey('FamiPortShop.code'), nullable=False)
     famiport_shop = orm.relationship('FamiPortShop', backref='famiport_receipts')
 
     def can_payment(self, now):
