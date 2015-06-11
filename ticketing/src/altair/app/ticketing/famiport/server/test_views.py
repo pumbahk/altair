@@ -124,7 +124,7 @@ class InquiryTest(FamiPortAPIViewTest):
         get_by_reserveNumber.return_value = DummyModel(
             orderId='a',
             customer_name=u'楽天太郎',
-            famiport_order_identifier='430000000002',
+            famiport_order_identifier=u'430000000002',
             type=1,
             payment_start_at=payment_start_at,
             payment_due_at=payment_due_at,
@@ -134,7 +134,7 @@ class InquiryTest(FamiPortAPIViewTest):
             ticketing_end_at=ticketing_end_at,
             playguide_id=1,
             playguide_name=u'クライアント１',
-            exchange_number='4310000000002',
+            exchange_number=u'4310000000002',
             total_amount=670,
             ticket_payment=0,
             system_fee=500,
@@ -154,7 +154,7 @@ class InquiryTest(FamiPortAPIViewTest):
                     ),
                 ),
             famiport_client=DummyModel(
-                code='1',
+                code=u'00001',
                 ),
             )
 
@@ -283,7 +283,7 @@ class PaymentTest(FamiPortAPIViewTest):
                 ),
             famiport_client=DummyModel(
                 name=u'クライアント１',
-                code='1',
+                code=u'00001',
                 ),
             )
 
