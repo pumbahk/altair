@@ -478,23 +478,27 @@ class FamiPortReserveNumberSequence(Base):
 class FamiPortOrder(Base, WithTimestamp):
     __tablename__ = 'FamiPortOrder'
 
-    id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    type                      = sa.Column(sa.Integer, nullable=False)
-    order_no                  = sa.Column(sa.Unicode(12), nullable=False)
-    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
-    shop_code                 = sa.Column(sa.Unicode(6), nullable=True)
-    famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
-    client_code               = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
-    generation                = sa.Column(sa.Integer, nullable=False, default=0)
-    invalidated_at            = sa.Column(sa.DateTime(), nullable=True)
-    total_amount              = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)  # 入金金額
-    ticket_payment            = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
-    ticketing_fee             = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # 店頭発券手数料
-    system_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # システム利用料
-    paid_at                   = sa.Column(sa.DateTime(), nullable=True)
-    issued_at                 = sa.Column(sa.DateTime(), nullable=True)
-    canceled_at               = sa.Column(sa.DateTime(), nullable=True)
-    cancel_reason             = sa.Column(sa.Integer, nullable=True)
+    id                           = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    type                         = sa.Column(sa.Integer, nullable=False)
+    order_no                     = sa.Column(sa.Unicode(12), nullable=False)
+    famiport_order_identifier    = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
+    shop_code                    = sa.Column(sa.Unicode(6), nullable=True)
+    famiport_sales_segment_id    = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
+    client_code                  = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
+    generation                   = sa.Column(sa.Integer, nullable=False, default=0)
+    invalidated_at               = sa.Column(sa.DateTime(), nullable=True)
+    total_amount                 = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)  # 入金金額
+    ticket_payment               = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False)
+    ticketing_fee                = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # 店頭発券手数料
+    system_fee                   = sa.Column(sa.Numeric(precision=8, scale=0), nullable=False)  # システム利用料
+    inquired_at                  = sa.Column(sa.DateTime(), nullable=True)  # 予約照会が行われた日時
+    payment_request_received_at  = sa.Column(sa.DateTime(), nullable=True)  # 支払/発券要求が行われた日時
+    customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
+    void_at                      = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
+    paid_at                      = sa.Column(sa.DateTime(), nullable=True)
+    issued_at                    = sa.Column(sa.DateTime(), nullable=True)
+    canceled_at                  = sa.Column(sa.DateTime(), nullable=True)
+    cancel_reason                = sa.Column(sa.Integer, nullable=True)
 
     ticketing_start_at = sa.Column(sa.DateTime(), nullable=True)
     ticketing_end_at = sa.Column(sa.DateTime(), nullable=True)
