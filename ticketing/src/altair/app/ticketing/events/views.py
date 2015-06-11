@@ -13,6 +13,7 @@ import logging
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
 from sqlalchemy import sql
+from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
@@ -128,6 +129,9 @@ class Events(BaseView):
             url=PageURL_WebOb_Ex(self.request)
         )
 
+        if self.request.params.get('format') == 'xml':
+            return self.index_xml(query, 50)
+
         return {
             'form_search': form_search,
             'form':EventForm(context=self.context),
@@ -135,6 +139,32 @@ class Events(BaseView):
             'search_query':search_query,
             'h':EventHelper()
         }
+
+    def index_xml(self, query, limit=50):
+        import xml.etree.ElementTree as ElementTree
+        from pyramid.response import Response
+
+        query = query.add_columns(
+            func.count(Performance.id).label("count"),
+            func.min(Performance.start_on).label("start_from"),
+            func.max(Performance.start_on).label("start_to"),
+        )\
+        .join(Performance, and_(Event.id==Performance.event_id, Performance.deleted_at==None))\
+        .group_by(Event.id)
+        
+        root = ElementTree.Element('Result')
+        for r in query.limit(limit).all():
+            event = ElementTree.SubElement(root, 'Event')
+            ElementTree.SubElement(event, 'id').text = str(r.Event.id)
+            ElementTree.SubElement(event, 'Code').text = r.Event.code
+            ElementTree.SubElement(event, 'Title').text = r.Event.title
+            performance = ElementTree.SubElement(event, 'Performance')
+            ElementTree.SubElement(performance, 'count').text = str(r.count)
+            datetime = ElementTree.SubElement(performance, 'DateTime')
+            ElementTree.SubElement(datetime, 'from').text = str(r.start_from)
+            ElementTree.SubElement(datetime, 'to').text = str(r.start_to)
+
+        return Response(ElementTree.tostring(root), headers=[ ('Content-Type', 'text/xml') ])
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
