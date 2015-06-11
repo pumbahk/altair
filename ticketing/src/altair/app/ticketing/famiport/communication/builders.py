@@ -169,10 +169,16 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     famiport_order = None
 
             if famiport_order is not None:
-                receipt = famiport_order.create_receipt(session)
-                receipt.inquired_at = now
-                session.add(receipt)
+                receipt = famiport_order.create_receipt(storeCode, session=session)
+                if not receipt or receipt.famiport_shop.code != storeCode:
+                    resultCode = ResultCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_order = None
+                else:
+                    receipt.inquired_at = now
+                    session.add(receipt)
 
+            if famiport_order is not None:
                 resultCode = ResultCodeEnum.Normal.value
                 replyClass = famiport_order.type
                 replyCode = ReplyCodeEnum.Normal.value
@@ -243,7 +249,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
         return famiport_reservation_inquiry_response
 
-
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
     def __init__(self, moratorium=datetime.timedelta(seconds=1800)):
         # 入金期限を手続き中に過ぎてしまった場合に考慮される、入金期限からの猶予期間
@@ -301,11 +306,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
-                if receipt.can_payment(now):
+                if not receipt or receipt.famiport_shop.code != storeCode:
+                    resultCode = ResultCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_order = None
+                elif receipt.can_payment(now):
                     receipt.payment_request_received_at = now
                 else:
                     resultCode = ResultCodeEnum.OtherError.value
-                    replyCode = ReplyCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
 
             # validate the request
@@ -491,11 +500,15 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
-                if receipt.can_completion(now):
+                if not receipt or receipt.famiport_shop.code != storeCode:
+                    resultCode = ResultCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_order = None
+                elif receipt.can_completion(now):
                     receipt.customer_request_received_at = now
                 else:
                     resultCode = ResultCodeEnum.OtherError.value
-                    replyCode = ReplyCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
 
             if famiport_order is not None:
@@ -557,6 +570,10 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
             if receipt is None:  # バーコードなし
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
+            elif receipt.famiport_shop.code != famiport_request.storeCode:
+                famiport_response.resultCode = ResultCodeEnum.OtherError.value
+                famiport_response.replyCode = ReplyCodeEnum.OtherError.value
+                famiport_order = None
             elif not receipt.can_cancel(now):  # 入金発券取消が行えない
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
@@ -569,14 +586,14 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
             elif famiport_order.issued_at:  # 発券済みエラー
                 famiport_response.resultCode = ResultCodeEnum.TicketAlreadyIssuedError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
-            else:
+            else:  # 正常
                 famiport_response.resultCode = ResultCodeEnum.Normal.value
                 famiport_response.replyCode = ReplyCodeEnum.Normal.value
                 famiport_response.orderId = famiport_order.famiport_order_identifier
                 famiport_response.barCodeNo = receipt.barcode_no
-                receipt.void_at = now
-        except Exception as err:  # その他をセット
-            logger.error('famiport order cancel error: {}: {}'.format(
+                receipt.void_at = now  # 30分破棄処理
+        except Exception as err:  # その他の異常
+            logger.error(u'famiport order cancel error: {}: {}'.format(
                 type(err).__name__, err))
             famiport_response.resultCode = ResultCodeEnum.OtherError.value
             famiport_response.replyCode = ReplyCodeEnum.OtherError.value
@@ -753,6 +770,8 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
                 if receipt.can_customer(now):
+                    resultCode = ResultCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
                     receipt.customer_request_received_at = now
                 else:
                     famiport_order = None

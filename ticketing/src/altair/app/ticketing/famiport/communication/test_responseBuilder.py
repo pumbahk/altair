@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 from datetime import (
+    date,
     datetime,
     timedelta,
     )
@@ -29,7 +30,6 @@ class FamiPortResponseBuilderTestBase(object):
     barcode_no_payment = u'01234012340124'
     barcode_no_payment_only = u'01234012340125'
 
-
     def setUp(self):
         self.request = DummyRequest()
         self.config = setUp(request=self.request)
@@ -43,6 +43,7 @@ class FamiPortResponseBuilderTestBase(object):
             )
         self.session = get_global_db_session(self.config.registry, 'famiport')
         from ..models import (
+            FamiPortPrefecture,
             FamiPortPlayguide,
             FamiPortClient,
             FamiPortVenue,
@@ -60,7 +61,29 @@ class FamiPortResponseBuilderTestBase(object):
             FamiPortOrderType,
             FamiPortTicketType,
             FamiPortTicket,
+            FamiPortShop,
             )
+        self.famiport_shop = FamiPortShop(
+            code=u'000009',
+            company_code=u'TEST',
+            company_name=u'TEST',
+            district_code=u'TEST',
+            district_name=u'TEST',
+            district_valid_from=date(2015, 6, 1),
+            branch_code=u'TEST',
+            branch_name=u'TEST',
+            branch_valid_from=date(2015, 6, 1),
+            name=u'TEST',
+            name_kana=u'TEST',
+            tel=u'070111122222',
+            prefecture=1,
+            prefecture_name=u'東京都',
+            address=u'東京都品川区西五反田',
+            open_from=date(2015, 6, 1),
+            zip=u'1410000',
+            business_run_from=date(2015, 6, 1),
+            )
+        self.session.add(self.famiport_shop)
         self.famiport_playguide = FamiPortPlayguide(
             discrimination_code=u'5'
             )
@@ -150,6 +173,7 @@ class FamiPortResponseBuilderTestBase(object):
             famiport_receipts=[
                 FamiPortReceipt(
                     barcode_no=self.barcode_no_cash_on_delivery,
+                    famiport_shop=self.famiport_shop,
                     ),
                 ],
             famiport_tickets=[
@@ -203,6 +227,7 @@ class FamiPortResponseBuilderTestBase(object):
             famiport_receipts=[
                 FamiPortReceipt(
                     barcode_no=self.barcode_no_payment,
+                    famiport_shop=self.famiport_shop,
                     ),
                 ],
             famiport_tickets=[
@@ -256,6 +281,7 @@ class FamiPortResponseBuilderTestBase(object):
             famiport_receipts=[
                 FamiPortReceipt(
                     barcode_no=self.barcode_no_payment_only,
+                    famiport_shop=self.famiport_shop,
                     ),
                 ],
             famiport_tickets=[
@@ -431,6 +457,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         FamiPortResponseBuilderTestBase.tearDown(self)
 
     def test_ok(self):
+
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortReservationInquiryRequest(
             storeCode=u'000009',

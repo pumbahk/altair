@@ -101,9 +101,11 @@ class InquiryTest(FamiPortAPIViewTest):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
         import datetime
         from ..testing import generate_ticket_data
-        from ..models import FamiPortTicket, FamiPortReceipt
+        from ..models import FamiPortTicket, FamiPortReceipt, FamiPortShop
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
+        famiport_shop = FamiPortShop(code='099999')
         receipt = FamiPortReceipt()
+        receipt.famiport_shop = famiport_shop
         receipt.barcode_no = u'4110000000006'
         famiport_tickets = [
             FamiPortTicket(
@@ -160,7 +162,7 @@ class InquiryTest(FamiPortAPIViewTest):
             'authNumber': '',
             'reserveNumber': '5300000000001',
             'ticketingDate': '20150325151159',
-            'storeCode': '000009',
+            'storeCode': receipt.famiport_shop.code,
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
@@ -251,6 +253,7 @@ class PaymentTest(FamiPortAPIViewTest):
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
 
         receipt = mock.Mock()
+        receipt.famiport_shop.code = '099999'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
 
@@ -292,7 +295,7 @@ class PaymentTest(FamiPortAPIViewTest):
             'mmkNo': '01',
             'barCodeNo': '1000000000000',
             'sequenceNo': '12345678901',
-            'storeCode': '099999',
+            'storeCode': receipt.famiport_shop.code,
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
@@ -325,6 +328,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
         receipt = mock.Mock()
+        receipt.famiport_shop.code = '099999'
         get_by_barCodeNo.return_value = DummyModel(
             get_receipt=mock.Mock(return_value=receipt),
             )
@@ -336,12 +340,12 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             'mmkNo': '01',
             'barCodeNo': '6010000000000',
             'sequenceNo': '12345678901',
-            'storeCode': '099999',
+            'storeCode': receipt.famiport_shop.code,
             })
         self.assertEqual(200, res.status_code)
 
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
             )
 
@@ -362,7 +366,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
         self.assertEqual(200, res.status_code)
 
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
             )
 
@@ -389,6 +393,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
         receipt = mock.Mock()
+        receipt.famiport_shop.code = '099999'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
         get_by_barCodeNo.return_value = DummyModel(
@@ -400,7 +405,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             )
         res = self._callFUT({
             'playGuideId': '',
-            'storeCode': '099999',
+            'storeCode': receipt.famiport_shop.code,
             'ticketingDate': '20150401101950',
             'barCodeNo': '1000000000000',
             'sequenceNo': '12345678901',
@@ -411,7 +416,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
         self.assertEqual(200, res.status_code)
 
         self._check_payload(
-            FakeFactory.parse(res.unicode_body),
+            FakeFactory.parse(res.body.decode('cp932')),
             FakeFactory.create(),
             )
 
@@ -500,6 +505,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
         from ..communication import FamiPortCustomerInformationResponse as FamiportResponse
 
         receipt = mock.Mock()
+        receipt.fammiport_shop.code = '000009'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
 
@@ -512,7 +518,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
             get_receipt=mock.Mock(return_value=receipt),
             )
         res = self._callFUT({
-            'storeCode': '000009',
+            'storeCode': receipt.fammiport_shop.code,
             'mmkNo': '01',
             'ticketingDate': '20150331182222',
             'sequenceNo': '15033100004',
