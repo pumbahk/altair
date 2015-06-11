@@ -103,8 +103,8 @@ class FamiPortCryptTest(TestCase):
         return klass(*args, **kwds)
 
     def test_it(self):
-        key = '430000000002'
-        val = 'memberId432'
+        key = u'430000000002'
+        val = u'memberId432'
 
         target = self._get_target(key)
         cipher_text = target.encrypt(val)
@@ -112,27 +112,27 @@ class FamiPortCryptTest(TestCase):
         self.assertEqual(val, plain_text)
 
     def test_decrypt(self):
-        key = '430000000002'
-        val = 'vPdzNA1iUsC2fDTItw6C8w=='
-        expval = 'memberId432'
+        key = u'430000000002'
+        val = u'vPdzNA1iUsC2fDTItw6C8w=='
+        expval = u'memberId432'
 
         target = self._get_target(key)
         retval = target.decrypt(val)
         self.assertEqual(retval, expval)
 
     def test_encrypt(self):
-        key = '430000000002'
-        val = 'memberId432'
-        expval = 'vPdzNA1iUsC2fDTItw6C8w=='
+        key = u'430000000002'
+        val = u'memberId432'
+        expval = u'vPdzNA1iUsC2fDTItw6C8w=='
 
         target = self._get_target(key)
         retval = target.encrypt(val)
         self.assertEqual(retval, expval)
 
     def test_enc_dec(self):
-        key = '430000000002'
-        plain_org = u'テストテスト'.encode('utf8')
+        key = u'430000000002'
+        plain_org = u'テストテスト'
         target = self._get_target(key)
-        chipher_res = target.encrypt(plain_org)
-        plain_res = target.decrypt(chipher_res)
+        encrypted_res = target.encrypt(plain_org)
+        plain_res = target.decrypt(encrypted_res)
         self.assertEqual(plain_org, plain_res)

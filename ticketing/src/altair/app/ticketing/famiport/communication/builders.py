@@ -89,7 +89,7 @@ class FamiPortRequestFactory(object):
                 except Exception as err:
                     raise err.__class__(
                         'decrypt error: {}: {}'.format(err.message, value))
-            setattr(famiport_request, key, value.decode('UTF-8'))
+            setattr(famiport_request, key, value)
         return famiport_request
 
 
@@ -390,13 +390,8 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         ftr.ticketData = ticket.data
                         famiport_ticket_responses.append(ftr)
 
-                playGuideId = str_or_blank(playGuideId)
-                totalAmount = str_or_blank(totalAmount)
-                ticketPayment = str_or_blank(ticketPayment)
-                systemFee = str_or_blank(systemFee)
-                ticketingFee = str_or_blank(ticketingFee)
-                ticketCount = str_or_blank(ticketCount)
-                ticketingCountTotal = str_or_blank(ticketingCountTotal)
+                resultCode = str_or_blank(resultCode)
+                replyCode = str_or_blank(replyCode)
                 replyClass = str_or_blank(replyClass)
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
@@ -425,13 +420,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     )
             else:
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
-                    resultCode=resultCode,
+                    resultCode=str_or_blank(resultCode),
+                    replyCode=str_or_blank(replyCode),
                     storeCode=storeCode,
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
                     replyClass=replyClass,
-                    replyCode=replyCode,
                     playGuideId=playGuideId,
                     playGuideName=playGuideName
                     )
@@ -444,10 +439,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             resultCode = ResultCodeEnum.OtherError.value
             replyCode = ReplyCodeEnum.OtherError.value
             famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
-                resultCode=resultCode,
-                storeCode=storeCode,
+                resultCode=str_or_blank(resultCode),
+                replyCode=str_or_blank(replyCode),
                 sequenceNo=sequenceNo,
-                replyCode=replyCode
+                storeCode=storeCode
                 )
         return famiport_payment_ticketing_response
 
@@ -790,10 +785,10 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
 @implementer(IXmlFamiPortResponseGenerator)
 class XmlFamiPortResponseGenerator(object):
 
-    def __init__(self, famiport_response, xml_encoding='Shift_JIS', encoding='CP932'):
+    def __init__(self, famiport_response, xml_encoding='Shift_JIS', encoding='CP932', crypted_part_encoding='UTF-8'):
         self.famiport_crypt = None
         if famiport_response.encrypt_key:
-            self.famiport_crypt = FamiPortCrypt(famiport_response.encrypt_key)
+            self.famiport_crypt = FamiPortCrypt(famiport_response.encrypt_key, encoding=crypted_part_encoding)
         self.xml_encoding = xml_encoding
         self.encoding = encoding
 
@@ -848,8 +843,7 @@ class XmlFamiPortResponseGenerator(object):
                     except (TypeError, ValueError) as err:
                         raise err.__class__('illigal type: {}: {}'.format(attribute_name, err))
                 elif self.famiport_crypt:
-                    element.text = self.famiport_crypt.encrypt(
-                        attribute_value.encode(self.encoding))
+                    element.text = self.famiport_crypt.encrypt(attribute_value)
 
         for attribute_name, element_name in obj._serialized_collection_attrs:
             attribute_value = getattr(obj, attribute_name)

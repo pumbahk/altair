@@ -123,7 +123,7 @@ class InquiryTest(FamiPortAPIViewTest):
             orderId='a',
             customer_name=u'楽天太郎',
             famiport_order_identifier='430000000002',
-            type='1',
+            type=1,
             payment_start_at=payment_start_at,
             payment_due_at=payment_due_at,
             paid_at=None,
@@ -252,7 +252,7 @@ class PaymentTest(FamiPortAPIViewTest):
 
         get_by_barCodeNo.return_value = DummyModel(
             famiport_order_identifier='430000000002',
-            type='3',
+            type=3,
             payment_due_at=payment_due_at,
             paid_at=None,
             issued_at=None,

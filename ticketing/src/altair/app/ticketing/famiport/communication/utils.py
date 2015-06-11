@@ -67,10 +67,9 @@ class FamiPortCrypt(object):
         :param plain_data:
         :return: encrypted data
         """
-        value = plain_data
+        value = plain_data.encode(self.encoding)
         value = self._core.encrypt(value, self.key, self.iv)
         value = base64.b64encode(value)
-        value = value.encode('utf8')
         return value
 
     def decrypt(self, encrypted_data):
@@ -82,7 +81,7 @@ class FamiPortCrypt(object):
         value = encrypted_data
         value = urllib.unquote(value)
         value = base64.b64decode(value)
-        value = self._core.decrypt(value, self.key, self.iv)
+        value = self._core.decrypt(value, self.key, self.iv).decode(self.encoding)
         return value
 
 

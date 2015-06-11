@@ -173,7 +173,7 @@ class XmlFamiPortResponseGeneratorTest(TestCase):
                     if element.tag not in encrypted_fields:
                         self.assertEqual(element.text, response_value, '<%s> %r (got) != %r (expected)' % (element.tag, element.text, response_value))
                     else:
-                        decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text).decode('shift_jis')
+                        decrypted_text_value = xml_response_generator.famiport_crypt.decrypt(element.text)
                         self.assertEqual(decrypted_text_value, response_value,
                                          '<%s> %r (got) != %r (expected)' % (element.tag, decrypted_text_value, response_value))
 
