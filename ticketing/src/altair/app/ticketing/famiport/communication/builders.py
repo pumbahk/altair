@@ -173,7 +173,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
         if replyCode == ReplyCodeEnum.Normal.value:
-            playGuideId = famiport_order.famiport_client.playguide.discrimination_code
+            playGuideId = famiport_order.famiport_client.code
             barCodeNo = famiport_order.barcode_no
             totalAmount = famiport_order.total_amount
             ticketPayment = str_or_blank(famiport_order.ticket_payment)
@@ -265,8 +265,8 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             # TODO TicketingCancelError
             else:
                 replyCode = ReplyCodeEnum.Normal.value
-            playGuideId = famiport_order.famiport_client.playguide.discrimination_code
-            playGuideName = famiport_order.famiport_client.playguide.name
+            playGuideId = famiport_order.famiport_client.code
+            playGuideName = famiport_order.famiport_client.name
             if replyClass == ReplyClassEnum.CashOnDelivery.value:
                 orderTicketNo = barCodeNo
             elif replyClass == ReplyClassEnum.Prepayment.value:
