@@ -113,7 +113,7 @@ class InquiryTest(FamiPortAPIViewTest):
                 data=ticket['ticketData'],
             ) for ticket in list(generate_ticket_data())[:1]]
 
-        payment_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
+        payment_start_at = datetime.datetime(2015, 3, 24, 0, 0, 0)
         payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
