@@ -570,7 +570,7 @@ class FamiPortOrder(Base, WithTimestamp):
         famiport_receipt = FamiPortReceipt(
             inquired_at=now,
             famiport_order_id=self.id,
-            barcode_no=FamiPortBarcodeNoSequence.get_next_value(session),
+            barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
             )
         session.add(famiport_receipt)
         session.commit()
