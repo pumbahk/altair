@@ -1,0 +1,69 @@
+# -*- coding:utf-8 -*-
+
+import argparse
+import sys
+import os
+import logging
+from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
+from pyramid.paster import bootstrap, setup_logging
+from altair.sqlahelper import get_global_db_session
+from ..accounting.refund_report import build_refund_file
+from ..datainterchange.api import get_famiport_file_manager_factory
+
+logger = logging.getLogger(__name__)
+
+def main(argv=sys.argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
+    args = parser.parse_args(argv[1:])
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    registry = env['registry']
+    settings = registry.settings
+
+    factory = get_famiport_file_manager_factory(registry)
+    c = factory.get_configuration('refund')
+
+    pending_dir = c['stage_dir']
+    filename = c['filename']
+    encoding = c['encoding'] or 'CP932'
+    eor = c['eor'] or '\n'
+
+    session = get_global_db_session(registry, 'famiport')
+
+    now = datetime.now()
+
+    datetime_dir_name = now.strftime("%Y%m%d")
+    base_dir = os.path.join(pending_dir, datetime_dir_name)
+    from ..models import FamiPortRefundEntry
+
+    def make_room(dir_, serial=0):
+        if os.path.exists(dir_):
+            next_dir = '%s.%d' % (base_dir, serial)
+            make_room(next_dir, serial + 1)
+            os.rename(dir_, next_dir)
+    make_room(base_dir)
+    try:
+        os.mkdir(base_dir)
+    except Exception as e:
+        logger.error('failed to create directory %s (%s)' % (base_dir, e.message))
+    path = os.path.join(base_dir, filename)
+    try:
+        refund_entries = session.query(FamiPortRefundEntry).filter_by(report_generated_at=None).all()
+        with open(path, 'w') as f:
+            build_refund_file(f, refund_entries, encoding=encoding, eor=eor)
+            for refund_entry in refund_entries:
+                refund_entry.report_generated_at = now
+            session.commit()
+    except:
+        import sys
+        exc_info = sys.exc_info()
+        session.rollback()
+        raise exc_info[1], None, exc_info[2]
+
+if __name__ == u"__main__":
+    main(sys.argv)
+
+

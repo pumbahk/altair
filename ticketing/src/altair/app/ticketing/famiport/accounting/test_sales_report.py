@@ -104,7 +104,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
+        records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 0)
 
     def test_cash_on_delivery_paid(self):
@@ -125,7 +125,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
+        records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 1)
 
     def test_payment_unpaid(self):
@@ -144,7 +144,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
+        records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 0)
 
     def test_payment_paid(self):
@@ -164,7 +164,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
+        records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 1)
 
     def test_payment_paid_and_issued(self):
@@ -185,5 +185,5 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, date(2015, 1, 8))
+        records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 2)

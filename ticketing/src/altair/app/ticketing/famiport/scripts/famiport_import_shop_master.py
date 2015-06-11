@@ -11,8 +11,7 @@ from altair.sqlahelper import get_global_db_session
 from ..mdm.shop_master import make_unmarshaller
 from ..datainterchange.importing import ImportSession, normal_file_filter
 
-# logger = logging.getLogger(__name__)
-logger = logging.getLogger('altair.app.ticketing.famiport')
+logger = logging.getLogger(__name__)
 
 def timedelta_to_int(td):
     return td.days * 86400 + td.seconds

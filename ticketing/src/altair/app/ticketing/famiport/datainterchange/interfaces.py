@@ -29,3 +29,14 @@ class IFileSender(Interface):
 class IFileSenderFactory(Interface):
     def __call__(**kwargs):
         pass
+
+
+class IFamiPortFileManagerFactory(Interface):
+    def add_configuration_from_settings(type, settings):
+        pass
+
+    def get_configuration(type):
+        pass
+
+    def __call__(type, **overrides):
+        pass

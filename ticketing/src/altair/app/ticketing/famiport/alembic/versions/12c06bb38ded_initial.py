@@ -182,6 +182,7 @@ def upgrade():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('invalidated_at', sa.DateTime, nullable=True),
         sa.Column('generation', sa.Integer, nullable=False, server_default=text(u"0")),
+        sa.Column('report_generated_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         )
     op.create_table(
@@ -204,7 +205,6 @@ def upgrade():
         sa.Column('start_at', sa.DateTime(), nullable=False),
         sa.Column('end_at', sa.DateTime(), nullable=False),
         sa.Column('last_serial', sa.Integer, nullable=False, server_default=text(u"FALSE")),
-        sa.Column('refunded_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
@@ -220,6 +220,7 @@ def upgrade():
         sa.Column('other_fees',            sa.Numeric(precision=8, scale=0)),
         sa.Column('shop_code',             sa.Unicode(7), nullable=False),
         sa.Column('refunded_at',           sa.DateTime(), nullable=True),
+        sa.Column('report_generated_at',   sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )

@@ -67,7 +67,7 @@ def gen_record_from_refund_model(refund_entry):
 
     return dict(
         unique_key=unique_key,
-        type=famiport_refund.type,
+        type=int(famiport_refund.type),
         management_number=management_number,
         event_code=famiport_event.code_1,
         event_code_sub=famiport_event.code_2,
