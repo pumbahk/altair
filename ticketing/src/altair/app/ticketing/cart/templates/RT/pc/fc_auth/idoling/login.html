@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<title>楽天チケット ログインページ</title>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/RT/pc/css/import2.css')}" media="all" />
+
+<style type="text/css">
+<!-- 
+@charset "utf-8";
+#fc p { font-size: 14px; }
+#fc .fcBox { background: #f9f9f2; text-align: center; padding: 50px 0; margin: 20px 0; }
+#fc .fcno { font-size: 24px; font-weight: bold; height: 40px; margin-bottom: 20px; }
+#fc .fcbtn { width: 120px; height: 40px; }
+#fc .fcatt { font-size: 14px; }
+#fc .fcatt ul li { line-height:1.5; list-style: outside disc; margin-left: 30px; }
+
+#fc .centertable {
+ margin-left: auto;
+ margin-right: auto;
+}
+-->
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+
+
+<!-- ***** header [start] ***** -->
+<div id="header">
+<h1><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/pc/images/header_logo_03.gif')}" alt="楽天チケット" /></a></h1>
+</div>
+<!-- ***** header [end] ***** -->
+
+<h2>「アイドリング!!!10年目の明日ング!!!」特別舞台公演『見よ、飛行機の高く飛べるを』</h2>
+
+
+<div id="fc">
+
+<h3>会員情報入力</h3>
+
+<div class="fcBox">
+<form action="${request.current_route_path()}" method="post">
+<table class="centertable">
+    <tr>
+        <td>会員番号</td><td><input type="text" name="username"></td>
+    </tr>
+    <tr>
+        <td>パスワード</td><td><input type="text" name="password"></td>
+    </tr>
+</table>
+<br>
+<input type="submit" value="申込に進む"  class="fcbtn">
+%if message:
+<br/><br/><span class="red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
+%endif
+</form>
+</div>
+
+<h3>【会員番号とパスワードに関して】</h3>
+<div class="fcatt">
+会員番号：アイドリング!!!“ファン様クラブID”（FCから始まる英数8桁）を入力してください。<br/>
+パスワード：ファンクラブにご登録の生年月日を西暦から8ケタで入力してください。(例1980年7月10日生まれなら19800710)
+</div>
+<br/>
+
+<h3>【対象公演】</h3>
+<div class="fcatt">
+<p>
+
+</p>
+公演名：「アイドリング!!!10年目の明日ング!!!」特別舞台公演<br/>
+見よ、飛行機の高く飛べるを<br/>
+公演日：2015年9月19日(土)～2015年9月23日(水･祝)　≪全9公演≫<br/>
+会場：キンケロ・シアター（東京都目黒区青葉台1-15-11）<br/>
+料金：全席指定S席7,500円（最前3列目まで）、A席6,500円（4列目以降）　※税込み<br/>
+出演：アイドリング!!!（外岡えりか、河村唯、酒井瞳、朝日奈央、三宅ひとみ、倉田瑠夏、玉川来夢、関谷真由）、朝倉伸二、浦川拓海、<br/>
+鯨井康介、小島範子、四條久美子、竹匠、中野順一朗、福島まり子　(※五十音順)
+</p>
+<p>
+◆受付期間：2015年5月30日（土）10:00～6月7日（日）23:59<br/>
+◆抽選結果の確認：2015年6月9日（火）夕方以降～<br/>
+　抽選結果をメールにてお知らせ致します。<br/>
+◆入金期間：2015年6月9日（火）結果発表後～6月11日（木）23:59
+</p>
+</div>
+<br/>
+
+<h3>【お申込み時の注意事項】</h3>
+<div class="fcatt">
+<ul>
+<li>会員番号を不正に入力された場合、お申し込みを取り消す事がございます。</li>
+<li>お申し込み多数の場合は抽選となります。座席位置はお申し込み順ではありません。</li>
+<li>PC/スマートフォン/携帯にてエントリーしていただき、受付終了後、全応募者の中から抽選を行い、当選・落選を決定いたします。チケットは必ず確保できるというものではありませんので、予めご了承ください。</li>
+<li>お申し込み後に発行される受付番号は当落確認の際などにも必要となります。必ずお控えください。</li>
+<li>当先行では楽天スーパーポイントの付与はございません。</li>
+<li>当選された場合、チケットの枚数の変更、キャンセル、払戻し等は一切受付できませんので、予めご了承ください。</li>
+<li>宅配(セキュリティパック)での配送か、セブン-イレブンでの発券となります。お申し込み時にご選択いただきます。</li>
+<li>チケットのお申し込みに際し、別途システム利用料、引取り手数料が必要となります。</li>
+<li>その他お申し込み時に表示されます注意事項を必ずご確認の上、エントリーをお願いいたします。</li>
+</ul>
+</div>
+<br/>
+
+<h3>【個人情報について】</h3>
+<div class="fcatt">
+ご入力頂いたお客様の個人情報は、すべて主催者、楽天チケット(運営：株式会社チケットスター)に所属いたします。<br/>
+利用に関しましては、チケット販売または、チケットの発送、お客様の会場ご入場の際にかかわる事務作業の円滑化のために利用させていただき、上述の業務以外で特別の事情が無い限りお客様の承認なく第三者にその情報を開示、提供することはございません。
+</div>
+<br/>
+
+<h3>【お申込みに関するお問合せ】</h3>
+<div class="fcatt">
+<a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">楽天チケットお問い合わせ窓口</a><br/><br/>
+※公演内容等のご質問には回答いたしかねますので、予めご了承ください。
+</div>
+<br/>
+
+
+<!-- ***** footer [start] ***** -->
+<div class="footer">
+<ul class="footernav">
+<li class="first"><a href="http://www.ticketstar.jp/">運営会社</a></li>
+<li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+<li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+<li class="last"><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+</ul>
+<div class="copyright">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved. </div>
+</div>
+<!-- ***** footer [end] ***** -->
+
+</div>
+</body>
+</html>

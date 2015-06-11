@@ -1,4 +1,8 @@
 # encoding: utf-8
+from codecs import getencoder
+from datetime import date
+import decimal
+from enum import Enum
 from ..datainterchange.fileio import (
     Column,
     FixedRecordMarshaller,
@@ -9,9 +13,6 @@ from ..datainterchange.fileio import (
     DateTime,
     Boolean,
     )
-from codecs import getencoder
-from datetime import date
-from enum import Enum
 from ..models import FamiPortOrderType
 
 class SalesReportEntryType(Enum):
@@ -31,9 +32,9 @@ sales_report_schema = [
     Column('performance_code', ZeroPaddedNumericString(length=3)),# 公演コード
     Column('event_name', WideWidthString(length=60)),             # 興行名称
     Column('performance_date', DateTime(length=12, format=u'%Y%m%d%H%M')), # 開演日時
-    Column('ticket_payment', ZeroPaddedInteger(length=9)),        # チケット料金
-    Column('ticketing_fee', ZeroPaddedInteger(length=8)),         # 発券料金
-    Column('other_fees', ZeroPaddedInteger(length=8)),            # その他手数料
+    Column('ticket_payment', ZeroPaddedInteger(length=9, pytype=decimal.Decimal)),        # チケット料金
+    Column('ticketing_fee', ZeroPaddedInteger(length=8, pytype=decimal.Decimal)),         # 発券料金
+    Column('other_fees', ZeroPaddedInteger(length=8, pytype=decimal.Decimal)),            # その他手数料
     Column('shop', ZeroPaddedNumericString(length=7)),            # 店舗コード
     Column('settlement_date', DateTime(length=8, pytype=date, format=u'%Y%m%d')), # 売上日
     Column('processed_at', DateTime(length=14, format=u'%Y%m%d%H%M%S')), # 処理日時

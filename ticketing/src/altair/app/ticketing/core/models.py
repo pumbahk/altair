@@ -92,6 +92,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
+    visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'会場の表示/非表示'))
     _drawing_url = Column('drawing_url', String(255))
     _frontend_metadata_url = Column('metadata_url', String(255))
     _backend_metadata_url = Column('backend_metadata_url', String(255))

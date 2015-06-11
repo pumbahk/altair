@@ -5,12 +5,19 @@ from pyramid.view import (
     view_config,
     view_defaults,
     )
+from pyramid.decorator import reify
+from altair.sqlahelper import get_db_session
 from ..communication import FamiPortRequestType
-from ..builders import FamiPortRequestFactory
-from ..api import (
+from ..communication.builders import FamiPortRequestFactory
+from ..communication.api import (
     get_response_builder,
     get_xmlResponse_generator,
     )
+
+
+@view_config(route_name='famiport.api.ping')
+def pingpong(request):
+    return Response('PONG')
 
 
 @view_defaults(renderer='famiport-xml')
@@ -19,12 +26,24 @@ class ResevationView(object):
         self.context = context
         self.request = request
 
+    @reify
+    def session(self):
+        return get_db_session(self.request, 'famiport')
+
+    @reify
+    def comm_session(self):
+        return get_db_session(self.request, 'famiport_comm')
+
     def _build_payload(self, params, request_type):
         """responseのpayloadを生成する
         """
         famiport_request = FamiPortRequestFactory.create_request(params, request_type)
-        response_builder = get_response_builder(famiport_request)
-        famiport_response = response_builder.build_response(famiport_request)
+        self.comm_session.add(famiport_request)
+        self.comm_session.commit()
+        response_builder = get_response_builder(self.request, famiport_request)
+        famiport_response = response_builder.build_response(famiport_request, self.session)
+        self.comm_session.add(famiport_response)
+        self.comm_session.commit()
         payload_builder = get_xmlResponse_generator(famiport_response)
         return payload_builder.generate_xmlResponse(famiport_response)
 

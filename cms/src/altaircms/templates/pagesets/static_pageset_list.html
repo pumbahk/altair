@@ -60,7 +60,12 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
 		      <a href="${request.route_path("static_pageset", pagetype=pagetype.name, action="preview", static_page_id=page.id, _query=dict(path="index.html"))}">${page.url}/index.html</a>
         </td>
 		<td>${h.base.jdatetime(page.created_at)}</td>
-		<td>${h.base.jdatetime(page.updated_at)}</td>
+        % if page.pages:
+            <% page.pages.sort(key=lambda page: page.updated_at, reverse=True)%>
+		    <td>${h.base.jdatetime(page.pages[0].updated_at)}</td>
+        % else:
+            <td>${h.base.jdatetime(page.updated_at)}</td>
+        % endif
       </tr>
     %endfor
   </tbody>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+<script type="text/javascript" src="/fanstatic/jquery/jquery.js"></script>
+
+<title>TAUポイントカード</title>
+<meta http-equiv="Content-Language" content="ja">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="content-script-type" content="text/javascript">
+<meta http-equiv="imagetoolbar" content="no">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/HT/css/main.css')}" media="all" />
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link rel="shortcut icon" href="${request.static_url('altaircms:static/HT/img/tau-hiroshima.ico')}" />
+
+<script type="text/javascript">
+var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-44955766-4']);
+  _gaq.push(['_trackPageview']);
+
+(function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+<style type="text/css">
+
+#contents {
+	margin: 0 auto;
+	padding: 10px 0 10px 0;
+	width: 100%;
+}
+
+p {
+	padding: 10px 0;
+}
+
+#open01,
+#open02 {
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: none;
+	position: absolute;
+}
+
+.close_overlay {
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+	text-indent: -9999px;
+	position: absolute;
+	background: #000;
+	opacity: 0.5;
+	z-index: 5;
+}
+
+.modal_window {
+	top: 50%;
+	left: 30%;
+	margin: -150px 0 0 -200px;
+	width: 900px;
+	height: 400px;
+	text-align: center;
+	display: block;
+	background: #fff;
+	position: absolute;
+	z-index: 10;
+}
+
+.modal_window h2 {
+	margin-bottom: 20px;
+	width: 900x;
+	height: 30px;
+	line-height: 30px;
+	color: #fff;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: left;
+	text-indent: 15px;
+	background: #000;
+}
+.modal_window p {
+	padding: 0 15px 15px 15px;
+	font-size: 12px;
+	line-height: 160%;
+	text-align: left;
+}
+
+
+@-webkit-keyframes modalFadeIn {
+	0% {opacity:0;display:block;}
+	100% {opacity:1;}
+}
+div#modal div:target {
+	-webkit-animation-name: modalFadeIn; 
+  	-webkit-animation-duration: 1s;
+  	-webkit-animation-iteration-count: 1;
+	opacity: 1;
+	display:block;
+}
+</style>
+
+</head>
+<body>
+
+<!-- ********** Header [start] ********** -->
+<div class="header">
+<div class="header-inner">
+  <a href="#"><img src="${request.static_url('altaircms:static/HT/images/logoheader.gif')}" alt="TAUポイントカード" height="64"></a>
+</div>
+</div><!-- ********** Header [end] ********** -->
+
+
+<!-- ********** wrapper [start] ********** -->
+<div class="wrapper">
+
+<!-- ***** MainContents [start] ***** -->
+<div class="kadomaru">
+<div class="maincol">
+
+<script type="text/javascript">
+$(function(){
+  var ua = navigator.userAgent.toLowerCase();
+  if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
+    $('img[data-align="center"]:not(.align-done)').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;").addClass("align-done");
+  } else {
+    var align_image = function align_image($e, d, retry){
+      var wrapper = $e;
+      for(var i=0;i<3;i++){
+        wrapper = wrapper.parent();
+        if(wrapper[0].nodeName != "A"){
+          break;
+        }
+      }
+      var w = $e.width();
+      if(!!w && w > 0){
+        $e.css("margin-left", 0.5*(wrapper.width() - w)).addClass("align-done");
+      } else if(!retry){
+        setTimeout(function(){align_image($e, d, true)},  d);
+      }
+    };
+    $('img[data-align="center"]:not(.align-done)').each(function(i, e){
+      var $e = $(e);
+      if($e.width() <= 0){
+        e.onload(function(){return align_image($e, 300, false)});
+      } else {
+       align_image($e, 300, false);
+      }
+    });
+  }
+});
+</script>
+
+<div>
+  ページが見つかりません
+</div>
+
+<div class="pageTop"><a href="#top"><font color="#ff0000">▲TOPへ戻る</font></a></div>
+
+</div><!-- ***** MainContents [end] ***** -->
+
+</div>
+</div>
+
+
+
+
+
+<!-- ********** wrapper [start] ********** -->
+
+<!-- ********** Footer [start] ********** -->
+<div class="footer">
+<div class="footer-inner">
+<div class="footernav">
+<ul>
+<li><a class="first" href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+<li><a href="mailto:tau-hiroshima@tstar.jp">お問い合わせ</a></li>
+<li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+<li><a class="last" href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+</ul>
+</div>
+<br class="clear">
+<div class="copyright">Copyright &copy; 2015 TicketStar Inc. </div>
+</div>
+</div><!-- ********** Footer [end] ********** -->
+</body>
+</html>
+

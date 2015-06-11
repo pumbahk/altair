@@ -17,6 +17,7 @@ from .communication import (
     FamiPortCustomerInformationResponse,
     )
 
+
 class DummyBuilderFactory(object):
     def __init__(self, *args, **kwds):
         pass
@@ -24,6 +25,7 @@ class DummyBuilderFactory(object):
     def __call__(self, *args, **kwds):
         from unittest import mock
         return mock.Mock()
+
 
 class FamiPortFakeFactory(object):
     xml = ''
@@ -80,7 +82,7 @@ class FamiPortPaymentTicketingResponseFakeFactory(FamiPortFakeFactory):
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
-<barCodeNo>4310000000002</barCodeNo>
+<barCodeNo>1000000000000</barCodeNo>
 <orderId>430000000002</orderId>
 <replyClass>3</replyClass>
 <replyCode>00</replyCode>
@@ -142,13 +144,28 @@ class FamiPortPaymentTicketingCompletionResponseFakeFactory(FamiPortFakeFactory)
 """
 
 
+class FamiPortPaymentTicketingCompletionResponseFailFakeFactory(FamiPortFakeFactory):
+    """存在しないFamiPortOrderに対するエラーレスポンス
+    """
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
+<FMIF>
+<resultCode>99</resultCode>
+<storeCode>099999</storeCode>
+<sequenceNo>12345678901</sequenceNo>
+<barCodeNo>6010000000000</barCodeNo>
+<orderId>123456789012</orderId>
+<replyCode>01</replyCode>
+</FMIF>
+"""
+
+
 class FamiPortPaymentTicketingCancelResponseFakeFactory(FamiPortFakeFactory):
     xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
 <storeCode>099999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
-<barCodeNo>3300000000000</barCodeNo>
+<barCodeNo>1000000000000</barCodeNo>
 <orderId>123456789012</orderId>
 <replyCode>00</replyCode>
 </FMIF>
@@ -159,6 +176,16 @@ class FamiPortInformationResponseFakeFactory(FamiPortFakeFactory):
     xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
     <resultCode>00</resultCode>
+    <infoKubun>0</infoKubun>
+    <infoMessage />
+</FMIF>
+"""
+
+
+class FamiPortInformationResponseExistMessageFakeFactory(FamiPortFakeFactory):
+    xml = """<?xml version="1.0" encoding="Shift_JIS"?>
+<FMIF>
+    <resultCode>01</resultCode>
     <infoKubun>0</infoKubun>
     <infoMessage>テスト1
 テスト2
@@ -239,3 +266,64 @@ def get_payload_builder(*args, **kwds):
         return bstr
     builder.build_payload = _build_payload_str
     return builder
+
+
+def generate_ticket_data():
+    here = os.path.abspath(os.path.dirname(__file__))
+    xml_path = os.path.join(here, 'tests/data/payment_ticketing_response.xml')
+    tree = lxml.etree.parse(xml_path)
+    for ticket in tree.xpath('//ticket'):
+        yield {
+            'barCodeNo': ticket.xpath('barCodeNo')[0].text,
+            'ticketClass': ticket.xpath('ticketClass')[0].text,
+            'templateCode': ticket.xpath('templateCode')[0].text,
+            'ticketData': ticket.xpath('ticketData')[0].text,
+            }
+
+def _setup_db(registry, modules=[], echo=False, engine=None):
+    from sqlalchemy import create_engine
+    from altair.sqlahelper import register_sessionmaker_with_engine, close_global_db_sessions
+    from pyramid.path import DottedNameResolver
+    import sqlahelper
+    from .models import Base
+
+    # for altair.model.Identifier
+    try:
+        dummy_engine = sqlahelper.get_engine()
+    except:
+        dummy_engine = None
+    if dummy_engine is None:
+        sqlahelper.add_engine(create_engine("sqlite://"))
+
+    close_global_db_sessions(registry)
+
+    prev_engine = Base.metadata.bind
+    if prev_engine is not None:
+        Base.metadata.drop_all(bind=prev_engine)
+        prev_engine.dispose()
+
+    if engine is None:
+        engine = create_engine("sqlite://")
+        if echo:
+            warn(DeprecationWarning("_setup_db(echo=...) IS DEPRECATED!! use engine=... instead"))
+        engine.echo = echo
+    resolver = DottedNameResolver()
+    Base.metadata.bind = engine
+    for module in modules:
+        resolver.resolve(module)
+    Base.metadata.create_all(bind=engine)
+    for session_name in ['famiport', 'famiport_slave', 'famiport_comm']:
+        register_sessionmaker_with_engine(
+            registry,
+            session_name,
+            engine,
+            )
+    return engine
+
+def _teardown_db(registry):
+    import transaction
+    transaction.abort()
+    from altair.sqlahelper import close_global_db_sessions
+    close_global_db_sessions(registry)
+
+

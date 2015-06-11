@@ -16,18 +16,22 @@
 %if lots:
 <table class="table">
   <tr>
-    <th style="width: 20em">当選結果発表予定日</th>
+    <th style="width: 35em">イベント名</th>
+    <th style="width: 35em">抽選名</th>
     <th style="width: 20em">申込期間</th>
-    <th style="width: 30em">イベント名</th>
-    <th style="width: 30em">抽選名</th>
-    <th style="width: 5em">状態</th>
+    <th style="width: 15em">当選結果発表予定日</th>
+    <th style="width: 5em">申込URL</th>
+    <th style="width: 5em">レポート</th>
+    <th style="width: 7em">状態</th>
   </tr>
   %for lot in lots:
   <tr>
-    <td nowrap="">${h.announce_time_label(lot)}</td>
-    <td nowrap="">${lot.sales_segment.start_at} - ${lot.sales_segment.end_at}</td>
     <td>${lot.event.title}</td>
     <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
+    <td nowrap="">${vh.datetime(lot.sales_segment.start_at, with_weekday=True)} - ${vh.datetime(lot.sales_segment.end_at, with_weekday=True)}</td>
+    <td nowrap="">${h.announce_time_label(lot)}</td>
+    <td><a href="${eh.lots_cart_url(request, lot.event.id, lot.id)}">申込URL</a></td>
+    <td><a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">レポート</a></td>
     <td>${view.lot_status(lot)}</td>
   </tr>
   %endfor

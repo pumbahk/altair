@@ -3,24 +3,19 @@ import types
 import time
 import random
 import hashlib
-from datetime import (
-    date,
-    time as _time,
-    datetime,
-    )
+from datetime import time as _time
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
-import sqlahelper
+from sqlalchemy.ext import declarative
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from .exc import FamiPortNumberingError
-from .communication import InformationResultCodeEnum
 
-Base = sqlahelper.get_base()
+Base = declarative.declarative_base()
 
 # 内部トランザクション用
 _session = orm.scoped_session(orm.sessionmaker())
@@ -133,6 +128,10 @@ class FamiPortPlayguide(Base, WithTimestamp):
 
     id                  = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
     discrimination_code = sa.Column(sa.Integer, nullable=False)
+
+    @property
+    def name(self):
+        return 'xxxxx'
 
 
 class FamiPortClient(Base, WithTimestamp):
@@ -294,6 +293,8 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     system_fee           = sa.Column(sa.Numeric(precision=8, scale=0))
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
+
+    refunded_at          = sa.Column(sa.DateTime())
 
     famiport_ticket = orm.relationship('FamiPortTicket')
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
@@ -514,13 +515,21 @@ class FamiPortOrder(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
     famiport_client = orm.relationship('FamiPortClient')
 
-    @classmethod
-    def get_by_reserveNumber(cls, reserveNumber, authNumber=None):
-        _session.query(FamiPortOrder).filter_by(reserve_number=reserveNumber, auth_number=authNumber).first()
+    @property
+    def performance_start_at(self):
+        return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
 
     @classmethod
-    def get_by_barCodeNo(cls, barCodeNo):
-        _session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+    def get_by_reserveNumber(cls, reserveNumber, authNumber=None, session=_session):
+        return session \
+            .query(cls) \
+            .filter(cls.reserve_number == reserveNumber) \
+            .first()
+            # .filter(amitoPortOrder.auth_number == authNumber) \
+
+    @classmethod
+    def get_by_barCodeNo(cls, barCodeNo, session=_session):
+        return session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
 
     @property
     def ticket_total_count(self):
@@ -533,6 +542,16 @@ class FamiPortOrder(Base, WithTimestamp):
     @property
     def subticket_count(self):
         return sum(1 if famiport_ticket.is_subticket else 0 for famiport_ticket in self.famiport_tickets)
+
+    @property
+    def customer_member_id(self):
+        return ''  # TODO Set customer_member_id
+
+    @property
+    def customer_identify_no(self):
+        return ''  # TODO Set customer_identify_no
+
+    auth_number = None
 
 
 class FamiPortTicketType(Enum):
@@ -572,14 +591,11 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     def create(cls, result_code, message):
         return cls(result_code=result_code, message=message)
 
-    def save(self):
-        _session.add(self)
-        _session.flush()
-
     @classmethod
-    def get_message(cls, information_result_code, default_message=None):
+    def get_message(cls, information_result_code, default_message=None, session=_session):
+        from .communication import InformationResultCodeEnum
         assert isinstance(information_result_code, InformationResultCodeEnum)
-        query = _session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
+        query = session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message

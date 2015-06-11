@@ -1,4 +1,4 @@
-<%page args="form_search" />
+<%page args="form_search, extra=lambda:u''" />
 <%namespace file="/common/helpers.html" name="ch" />
 
 <% conditions = form_search.get_conditions() %>
@@ -40,5 +40,6 @@
   % else:
     <span style="color: red;">不正な条件が含まれています。</span>
   % endif
+  ${extra()}
 </div>
 % endif

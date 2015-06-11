@@ -1,6 +1,8 @@
 # encoding: utf-8
 import unittest
-from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.sqlahelper import get_global_db_session
+from pyramid.testing import setUp, tearDown
+from ..testing import _setup_db, _teardown_db
 
 
 class RefundReportMarshallerTest(unittest.TestCase):
@@ -39,9 +41,14 @@ class RefundReportMarshallerTest(unittest.TestCase):
 
 class RefundReportGenRecordTest(unittest.TestCase):
     def setUp(self):
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
+        self.config = setUp()
+        self.engine = _setup_db(
+            self.config.registry, 
+            [
+                'altair.app.ticketing.famiport.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport')
         from ..models import (
             FamiPortEvent, FamiPortClient, FamiPortPlayguide,
             FamiPortVenue, FamiPortGenre1, FamiPortGenre2,
@@ -82,7 +89,8 @@ class RefundReportGenRecordTest(unittest.TestCase):
         self.session.flush()
 
     def tearDown(self):
-        _teardown_db()
+        _teardown_db(self.config.registry)
+        tearDown()
 
     def test_gen(self):
         from datetime import datetime
@@ -115,9 +123,14 @@ class RefundReportGenRecordTest(unittest.TestCase):
 
 class BuildRefundReportFileTest(unittest.TestCase):
     def setUp(self):
-        self.session = _setup_db([
-            'altair.app.ticketing.famiport.models',
-            ])
+        self.config = setUp()
+        self.engine = _setup_db(
+            self.config.registry, 
+            [
+                'altair.app.ticketing.famiport.models',
+                ]
+            )
+        self.session = get_global_db_session(self.config.registry, 'famiport')
         from ..models import (
             FamiPortEvent, FamiPortClient, FamiPortPlayguide,
             FamiPortVenue, FamiPortGenre1, FamiPortGenre2, FamiPortPerformance,
@@ -159,11 +172,13 @@ class BuildRefundReportFileTest(unittest.TestCase):
         self.session.flush()
 
     def tearDown(self):
-        _teardown_db()
+        _teardown_db(self.config.registry)
+        tearDown()
 
     def test_it(self):
         from datetime import datetime, date
         from io import BytesIO
+        from decimal import Decimal
         from .refund_report import build_refund_file
         from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
         refunds = [
@@ -180,10 +195,10 @@ class BuildRefundReportFileTest(unittest.TestCase):
             FamiPortRefundEntry(
                 famiport_refund=refund,
                 serial=refund.last_serial + i,
-                ticket_payment=100,
-                ticketing_fee=10,
-                system_fee=20,
-                other_fees=30,
+                ticket_payment=Decimal(100),
+                ticketing_fee=Decimal(10),
+                system_fee=Decimal(20),
+                other_fees=Decimal(30),
                 shop_code=u'0000000',
                 famiport_ticket=FamiPortTicket(
                     famiport_order=FamiPortOrder(
