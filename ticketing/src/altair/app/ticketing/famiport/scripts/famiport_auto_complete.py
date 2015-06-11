@@ -19,7 +19,7 @@ from altair.multilock import (
     AlreadyStartUpError,
     )
 from altair.sqlahelper import get_global_db_session
-from altair.app.ticketing.famport.models import FamiPortOrder
+from altair.app.ticketing.famiport.models import FamiPortOrder
 
 logger = logging.getLogger(__file__)
 LOCK_NAME = 'FAMIPORT_AUTO_COMPLETE'  # 多重起動防止用の名前
@@ -31,18 +31,21 @@ class AutoCompleterStatus(enum.IntEnum):
     failure = 255  # その他エラー
 
 
+def _get_now():
+    return datetime.now()
+
+
 class FamiPortOrderAutoCompleter(object):
     """POSで入金を行わず30分VOID処理も行われないFamiPortOrderを完了状態にしていく
     """
-    def __init__(self, config, session, minutes=90, no_commit=False):
-        self._config = config
+    def __init__(self, session, minutes=90, no_commit=False):
         self._session = session
         self._minutes = int(minutes)
         self._no_commit = no_commit  # commitするかどうか
 
     @property
     def time_point(self):
-        return datetime.now() - timedelta(minutes=self._minutes)
+        return _get_now() - timedelta(minutes=self._minutes)
 
     def complete(self):
         try:
@@ -54,7 +57,7 @@ class FamiPortOrderAutoCompleter(object):
             return AutoCompleterStatus.failuer.value
         else:
             if not self._no_commit:
-                self._sesion.commit()
+                self._session.commit()
             return AutoCompleterStatus.success.value
 
     def _do_complete(self, famiport_order):
@@ -86,9 +89,8 @@ def main(argv=sys.argv[1:]):
         setup_logging(args.config)
     env = bootstrap(args.config)
     registry = env['registry']
-    settings = registry.settings
     session = get_global_db_session(registry, 'famiport')
-    completer = FamiPortOrderAutoCompleter(settings, session)
+    completer = FamiPortOrderAutoCompleter(session)
     try:
         with MultiStartLock(LOCK_NAME):
             return completer.complete()
