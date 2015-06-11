@@ -110,7 +110,7 @@ class Organizations(BaseView):
                     email=f.login.data['email'],
                     expire_at=None,
                     status=1,
-                    roles=[OperatorRole.query.filter_by(id=1).one()], # XXX
+                    roles=[OperatorRole.query.filter_by(id=2).one()], # XXX
                     auth=OperatorAuth(
                         login_id=f.login.data['login_id'],
                         password=o_api.crypt(f.login.data['password'])
