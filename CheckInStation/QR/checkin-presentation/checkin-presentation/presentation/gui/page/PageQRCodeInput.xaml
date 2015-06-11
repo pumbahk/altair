@@ -22,6 +22,7 @@
     </Page.Resources>
     <Grid>
         <Viewbox Style="{StaticResource ContentViewboxStyle}">
+            <Grid>
             <Grid Background="{StaticResource LogoBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
 
@@ -54,6 +55,7 @@
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
+                        Visibility="{Binding IsIdle}"
                         >
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -124,9 +126,28 @@
                                       ButtonText="OK"/>
 
                     
+                    
                 </Canvas>
             </Grid>
-        </Viewbox>
+            <Grid
+                Visibility="{Binding IsWaiting}"
+                Height="500"
+                Width="1200" Margin="0,380,0,0"
+                IsHitTestVisible="False"
+                >
+                <Rectangle Fill="White" Opacity="0.7"/>
+                    <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Text="{Binding Description}"
+                    />
+                </Grid>
+            </Grid>
+        </Viewbox>   
+        
     </Grid>
+
+    
 </Page>
 

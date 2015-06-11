@@ -1008,27 +1008,28 @@
     </Style>
 
     <DataTemplate x:Key="ShowTicketItemBoxData">
-        <StackPanel Orientation="Horizontal" Width="520">
-            <Border Width="108" Height="90">
-                <TextBlock/>
-            </Border>
-            <Grid>
-                <StackPanel
-                        HorizontalAlignment="Left"
-                        Height="90"
-                        Width="410"
-                        Margin="2,2,2,2">
-                    <WrapPanel>
-                        <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
-                        <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
-                    </WrapPanel>
-                    <WrapPanel Style="{StaticResource GrayoutHiddenWrap}">
-                        <TextBlock Style="{StaticResource GrayoutGrowdownContent}">発券済み:</TextBlock>
-                        <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutGrowdownContent}" Text="{Binding PrintedAt}"/>
-                    </WrapPanel>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
+        <Grid
+                Height="90"
+                Width="520"
+                Margin="2"
+                >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="500"/>
+            </Grid.ColumnDefinitions>
+            <WrapPanel
+                Grid.Row="0"
+                Grid.Column="0"
+                Height="80"
+                Width="500"
+                HorizontalAlignment="Center"
+                >
+                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName}"/>
+                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
+            </WrapPanel>
+        </Grid>
     </DataTemplate>
     <Style TargetType="ListView" x:Key="ShowChosenTwoColumns">
         <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>

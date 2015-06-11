@@ -103,9 +103,36 @@
                     <!-- メインコンテンツ -->
                     <Border 
                         Canvas.Left="50"
-                        Canvas.Top="148"
+                        Canvas.Top="120"
                         Style="{StaticResource MainBorder}">
-                        <StackPanel Margin="50,20,50,20">
+ 
+                        <Grid
+                            Height="90"
+                            Width="520"
+                            Margin="2"
+                            >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="80"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="500"/>
+                            </Grid.ColumnDefinitions>
+                            <WrapPanel
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Height="80"
+                            Width="500"
+                            HorizontalAlignment="Center"
+                            >
+                                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>
+                                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName, Mode=OneWay}"/>
+                            </WrapPanel>
+                        </Grid>
+
+                    </Border>
+
+                    <!--
+                    <StackPanel Margin="50,20,50,20">
                             <TextBlock 
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -129,8 +156,7 @@
 
 
                         </StackPanel>
-                    </Border>
-
+                    -->
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
                             Style="{StaticResource HomeButton}"

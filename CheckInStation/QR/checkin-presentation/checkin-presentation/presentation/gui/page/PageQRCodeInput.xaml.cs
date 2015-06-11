@@ -32,6 +32,20 @@ namespace checkin.presentation.gui.page
             set { this._QRCode = value; this.OnPropertyChanged("QRCode"); }
         }
 
+        private Visibility _IsWaiting;
+        public Visibility IsWaiting
+        {
+            get { return this._IsWaiting; }
+            set { this._IsWaiting = value; this.OnPropertyChanged("IsWaiting"); }
+        }
+
+        private Visibility _IsIdle;
+        public Visibility IsIdle
+        {
+            get { return this._IsIdle; }
+            set { this._IsIdle = value; this.OnPropertyChanged("IsIdle"); }
+        }
+
         public override void OnSubmit()
         {
             var ev = this.Event as QRInputEvent;
@@ -70,7 +84,9 @@ namespace checkin.presentation.gui.page
             return new PageQRCodeInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new QRInputEvent()
+                Event = new QRInputEvent(),
+                IsWaiting = Visibility.Hidden,
+                IsIdle = Visibility.Visible
             };
         }
 
@@ -133,6 +149,13 @@ namespace checkin.presentation.gui.page
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
+            var ctx = this.DataContext as PageQRCodeInputDataContext;
+            ctx.IsIdle = Visibility.Hidden;
+            if (this.QRCodeInput.Text.Length < 60)
+            {
+                ctx.Description = "Please Wait";
+                ctx.IsWaiting = Visibility.Visible;
+            }
             if (this.QRCodeInput.Text.Length >= 60)
             {
                 this.buttonsubmit.Visibility = Visibility.Visible;

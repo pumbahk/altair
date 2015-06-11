@@ -153,6 +153,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.Status = ConfirmAllStatus.requesting;
                 //後の継続を同期的に待つ必要ないのでawaitしない
+                ctx.TicketDataCollection.collection = ctx.TicketDataCollection.collection.Where(o => o.printed_at == null).Cast<TicketDataMinumum>().ToArray();
                 if (ctx.TicketDataCollection != null)
                 {
                     this.Dispatcher.InvokeAsync(this.BuildDisplayItems);
@@ -189,7 +190,7 @@ namespace checkin.presentation.gui.page
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
                 displayColl.Add(dtdata);
             }
-            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
+            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected && o.printed_at == null).Count();
         }
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)

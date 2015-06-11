@@ -222,7 +222,6 @@
     <Resource Include="Resource\QRcode.jpg" />
     <Resource Include="Resource\keyboard.jpg" />
     <Resource Include="Resource\test.png" />
-    <Resource Include="Resource\play.png" />
     <Resource Include="Resource\qr.input.new.jpg" />
     <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />

@@ -114,8 +114,7 @@
                             <ListView 
                             	Margin="0,0,0,0"
                             	ItemsSource="{Binding DisplayTicketDataCollection}"
-                            	d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                            	Style="{StaticResource ChoiceCandidatesTwoColumns}" >
+                            	Style="{StaticResource ShowChosenTwoColumns}" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Width="1070" Orientation="Horizontal"/>
