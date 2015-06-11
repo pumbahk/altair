@@ -55,7 +55,7 @@ class FamiPortAPIViewTest(TestCase):
                and tag in famiport_response_class._encryptedFields:
                 self.assertEqual(bool(res_elm.text), bool(exp_elm.text))
             else:
-                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text))
+                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text), 'tag={}, res={}, exp={}'.format(tag, res_elm.text, exp_elm.text))
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -99,15 +99,18 @@ class InquiryTest(FamiPortAPIViewTest):
                 data=ticket['ticketData'],
             ) for ticket in list(generate_ticket_data())[:1]]
 
+        payment_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
         payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
         performance_start_at = datetime.datetime(2015, 5, 1, 10, 0)
 
         get_by_reserveNumber.return_value = DummyModel(
+            orderId='a',
             customer_name=u'楽天太郎',
             famiport_order_identifier='430000000002',
             type='1',
+            payment_start_at=payment_start_at,
             payment_due_at=payment_due_at,
             paid_at=None,
             issued_at=None,
