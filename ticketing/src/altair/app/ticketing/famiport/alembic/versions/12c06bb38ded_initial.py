@@ -148,7 +148,6 @@ def upgrade():
         sa.Column('type', sa.Integer, nullable=False),
         sa.Column('shop_code', sa.Unicode(7), nullable=True),
         sa.Column('order_no', sa.Unicode(255), nullable=False),  # altair側予約番号
-        sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
         sa.Column('client_code', sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False),
@@ -158,7 +157,6 @@ def upgrade():
         sa.Column('system_fee', sa.Numeric(precision=16, scale=0), nullable=False),
         sa.Column('ticketing_fee', sa.Numeric(precision=16, scale=0), nullable=False),
         sa.Column('famiport_order_identifier', sa.String(12), nullable=False),
-        sa.Column('exchange_number', sa.String(13), nullable=False),
         sa.Column('reserve_number', sa.String(13), nullable=False),
         sa.Column('customer_name_input', sa.Boolean, nullable=False, server_default=text('FALSE')),
         sa.Column('customer_name', sa.Unicode(42), nullable=False),
@@ -537,6 +535,8 @@ def upgrade():
     op.create_table(
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
+        sa.Column('exchange_number', sa.String(13), nullable=False),
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
         sa.Column('shop_code', sa.Unicode(7), sa.ForeignKey('FamiPortShop.code'), nullable=False),
         sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時

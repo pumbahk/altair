@@ -262,7 +262,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         storeCode = famiport_payment_ticketing_request.storeCode
         mmkNo = famiport_payment_ticketing_request.mmkNo
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
-        ticketingDate = None
+        ticketingDate = ''
 
         orderId = u''
         replyClass = u''
