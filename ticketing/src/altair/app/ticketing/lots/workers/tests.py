@@ -28,7 +28,7 @@ class lot_wish_cartTests(unittest.TestCase):
             SalesSegment,
             Event,
             EventSetting,
-            Organization,
+            Organization, OrganizationSetting,
             FeeTypeEnum,
         )
         from altair.app.ticketing.cart.models import CartSetting
@@ -38,8 +38,10 @@ class lot_wish_cartTests(unittest.TestCase):
         product2 = Product(price=150,
                            items=[ProductItem(quantity=1, price=75), ProductItem(quantity=9, price=75)])
 
+        organization = Organization(short_name=u'test', name=u'test')
+        self.session.add(OrganizationSetting(organization=organization, cart_setting=CartSetting()))
         event = Event(
-            organization=Organization(short_name=u'test', name=u'test'),
+            organization=organization,
             setting=EventSetting(
                 cart_setting=CartSetting()
                 )
@@ -68,7 +70,7 @@ class lot_wish_cartTests(unittest.TestCase):
                     delivery_method=DeliveryMethod(fee_per_order=0),
                     discount=0
                     ),
-               ),
+                ),
             products=[
                 LotEntryProduct(
                     quantity=3,
@@ -162,7 +164,7 @@ class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
             self.session.bind
             )
         CoreTestMixin.setUp(self)
-        from altair.app.ticketing.core.models import OrganizationSetting, SalesSegmentGroup, SalesSegment, Product
+        from altair.app.ticketing.core.models import OrganizationSetting, SalesSegmentGroup, SalesSegment, Product, Event, EventSetting
         from altair.app.ticketing.cart.models import CartSetting
         self.sales_segment_group = SalesSegmentGroup(event=self.event)
         self.organization.settings = [OrganizationSetting(cart_setting=CartSetting())]
@@ -170,9 +172,17 @@ class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
         from ..models import Lot, LotElectWork, LotEntry, LotEntryWish, LotEntryProduct
         import transaction
         self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(self.sales_segment_group)
-        self.lot = Lot()
+        self.event = Event(organization=self.organization, setting=EventSetting(cart_setting=CartSetting()))
+        self.lot = Lot(event=self.event)
         self.session.add(self.lot)
-        self.lot_entry = LotEntry(lot=self.lot, payment_delivery_method_pair=self.payment_delivery_method_pairs[0])
+        self.lot_entry = LotEntry(
+            lot=self.lot,
+            payment_delivery_method_pair=self.payment_delivery_method_pairs[0],
+            attributes={
+                u'aaa': u'bbb',
+                u'ccc': u'ddd',
+                }
+            )
         self.session.add(self.lot_entry)
         self.lot_entry_wish = LotEntryWish(
             wish_order=1,
@@ -219,6 +229,8 @@ class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
         dummy_request = DummyRequest()
         self._callFUT(context, dummy_request)
         self.assertEqual(self.lot_entry.order, order)
+        self.assertEqual(dict(self.lot_entry.order.attributes), dict(self.lot_entry.attributes))
+        self.assertEqual(self.lot_entry.order.cart_setting, self.lot_entry.cart_setting)
 
 
 class send_election_mail_taskTest(unittest.TestCase, CoreTestMixin):

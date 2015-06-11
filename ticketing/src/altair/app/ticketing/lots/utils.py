@@ -55,7 +55,7 @@ def create_form(request, context, formdata=None, **kwds):
         if data.get('sex') is None:
             data['sex'] = SexEnum.Female.v
         if data.get('birthday') is None:
-            data['birthday'] = date(1990, 1, 1)
+            data['birthday'] = date(1980,1,1)
 
     form = schemas.ClientForm(
         context=context,
@@ -64,4 +64,5 @@ def create_form(request, context, formdata=None, **kwds):
         _data=data,
         formdata=formdata,
         **kwds)
+
     return form
