@@ -36,7 +36,7 @@ from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
-    transform_matrix_from_ticket_format
+    transform_matrix_from_ticket_format,
     )
 
 from ..interfaces import IOrderDelivery
@@ -117,8 +117,9 @@ def get_ticket_template_code_from_ticket_format(ticket_format):
     if aux is not None:
         retval = aux.get('famiport_ticket_template_code')
     if retval is None:
-        retval = u'TTEVEN0001' # XXX: デフォルト
+        retval = u'TTEVEN0001'  # XXX: デフォルト
     return retval
+
 
 def build_ticket_dicts_from_order_like(request, order_like):
     tickets = []
