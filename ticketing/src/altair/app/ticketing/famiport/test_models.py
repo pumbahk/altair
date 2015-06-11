@@ -3,7 +3,8 @@ from unittest import TestCase
 from .testing import _setup_db, _teardown_db
 from pyramid.testing import setUp, tearDown
 
-class TestFamiportEvent(TestCase):
+
+class TestFamiPortEvent(TestCase):
     def setUp(self):
         self.config = setUp()
         self.engine = _setup_db(
@@ -102,7 +103,7 @@ class FamiPortInformationMessageTest(TestCase):
             'message': u'日本語のメッセージ',
             }
 
-        old_obj = target.create(**kwds)
+        old_obj = target(**kwds)
 
         self.session.add(old_obj)
         self.session.flush()
