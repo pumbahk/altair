@@ -528,12 +528,17 @@ class FamiPortOrder(Base, WithTimestamp):
         return session \
             .query(cls) \
             .filter(cls.reserve_number == reserveNumber) \
-            .first()
+            .filter(cls.invalidated_at == None) \
+            .one()
             # .filter(amitoPortOrder.auth_number == authNumber) \
 
     @classmethod
     def get_by_barCodeNo(cls, barCodeNo, session=_session):
-        return session.query(FamiPortOrder).filter_by(barcode_no=barCodeNo).first()
+        return session \
+            .query(cls) \
+            .filter_by(barcode_no=barCodeNo) \
+            .filter(cls.invalidated_at == None) \
+            .one()
 
     @property
     def ticket_total_count(self):
@@ -592,14 +597,10 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     message = sa.Column(sa.Unicode(length=1000), nullable=True)
 
     @classmethod
-    def create(cls, result_code, message):
-        return cls(result_code=result_code, message=message)
-
-    @classmethod
     def get_message(cls, information_result_code, default_message=None, session=_session):
         from .communication import InformationResultCodeEnum
         assert isinstance(information_result_code, InformationResultCodeEnum)
-        query = session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.value)
+        query = session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
         famiport_information_message = query.first()
         if famiport_information_message:
             return famiport_information_message.message

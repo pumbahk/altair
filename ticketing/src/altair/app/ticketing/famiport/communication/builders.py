@@ -4,6 +4,7 @@ import datetime
 import six
 from lxml import etree
 from sqlalchemy.exc import DBAPIError
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import orm
 from zope.interface import implementer
 from .exceptions import FamiPortRequestTypeError, FamiPortResponseBuilderLookupError
@@ -17,6 +18,7 @@ from ..models import (
     FamiPortRefund,
     FamiPortRefundEntry,
     FamiPortTicket,
+    FamiPortOrderType,
     )
 from .interfaces import (
     IFamiPortResponseBuilderRegistry,
@@ -118,215 +120,336 @@ class FamiPortResponseBuilder(object):
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_reservation_inquiry_request, session, now):
-        playGuideId = ''
-        barCodeNo = ''
-        totalAmount = ''
-        ticketPayment = ''
-        systemFee = ''
-        ticketingFee = ''
-        ticketCountTotal = ''
-        ticketCount = ''
-        kogyoName = ''
-        koenDate = ''
-        name = ''
+        playGuideId = u''
+        barCodeNo = u''
+        totalAmount = u''
+        ticketPayment = u''
+        systemFee = u''
+        ticketingFee = u''
+        ticketCountTotal = u''
+        ticketCount = u''
+        kogyoName = u''
+        koenDate = u''
+        name = u''
         nameInput = NameRequestInputEnum.Unnecessary.value
         phoneInput = PhoneRequestInputEnum.Unnecessary.value
 
         storeCode = famiport_reservation_inquiry_request.storeCode
-        ticketingDate = famiport_reservation_inquiry_request.ticketingDate
+        ticketingDate = None
         reserveNumber = famiport_reservation_inquiry_request.reserveNumber
         authNumber = famiport_reservation_inquiry_request.authNumber
 
-        logger.info(u"Processing famiport reservation inquiry request. 店舗コード: %s , 利用日時: %s , 予約番号: %s "
-                    % (storeCode, ticketingDate, reserveNumber))
+        logger.info(
+            u"processing famiport reservation inquiry request. " \
+            u"店舗コード: %s, 利用日時: %s, 予約番号: %s " \
+            % (storeCode, famiport_reservation_inquiry_request.ticketingDate, reserveNumber)
+            )
 
         resultCode, replyClass, replyCode = None, None, None
-        famiport_order = None
         try:
-            famiport_order = FamiPortOrder.get_by_reserveNumber(
-                reserveNumber, authNumber, session=session)
-        except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError.value
-            logger.error(u"DBAPIError has occurred at FamiPortReservationInquiryResponseBuilder.build_response(). 店舗コード: %s , 利用日時: %s , 予約番号: %s "
-                         % (storeCode, ticketingDate, reserveNumber))
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_reservation_inquiry_request.ticketingDate, 
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_request.ticketingDate)
+                raise
 
-        if famiport_order is not None:
-            resultCode = ResultCodeEnum.Normal.value
-            replyClass = famiport_order.type
-            replyCode = ReplyCodeEnum.Normal.value
-            nameInput = NameRequestInputEnum.Necessary.value if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary.value
-            phoneInput = PhoneRequestInputEnum.Necessary.value if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary.value
-            if famiport_order.performance_start_at:
-                koenDate = famiport_order.performance_start_at.strftime('%Y%m%d%H%M')
+            try:
+                famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber, authNumber, session=session)
+            except NoResultFound:
+                logger.error(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
+                famiport_order = None
+
+            if famiport_order is not None:
+                if famiport_order.payment_start_at is not None and  \
+                   famiport_order.payment_start_at > ticketingDate:
+                    logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
+                    famiport_order = None
+
+            if famiport_order is not None:
+                resultCode = ResultCodeEnum.Normal.value
+                replyClass = famiport_order.type
+                replyCode = ReplyCodeEnum.Normal.value
+                nameInput = NameRequestInputEnum.Necessary.value if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary.value
+                phoneInput = PhoneRequestInputEnum.Necessary.value if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary.value
+                if famiport_order.performance_start_at:
+                    koenDate = famiport_order.performance_start_at.strftime('%Y%m%d%H%M')
+                else:
+                    # 値が設定されていない場合は画面に表示しない
+                    # ”888888888888”  (オール8)の場合
+                    # チケット料金の注意事項(下記参照)を表示する
+                    # （「2：前払い（後日渡し）の前払い時」または「4:前払いのみ」の場合のみ）
+                    # チケット料金に表示されている金額は、有料組織の年会費などの場合もある
+                    # ”999999999999 (オール9)の場合、
+                    # 期間内有効券と判断して公演日時を表示しない。
+                    koenDate = '99999999999999'
+
+                playGuideId = famiport_order.famiport_client.code
+                barCodeNo = famiport_order.barcode_no
+                totalAmount = famiport_order.total_amount
+                ticketPayment = str_or_blank(famiport_order.ticket_payment)
+                systemFee = str_or_blank(famiport_order.system_fee)
+                ticketingFee = str_or_blank(famiport_order.ticketing_fee)
+                ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
+                ticketCount = str_or_blank(famiport_order.ticket_count)
+                kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
+                name = famiport_order.customer_name
+
+                totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
+                ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
+                systemFee = str_or_blank(systemFee, 8, fillvalue='0')
+                ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
+                replyClass = str_or_blank(replyClass)
             else:
-                # 値が設定されていない場合は画面に表示しない
-                # ”888888888888”  (オール8)の場合
-                # チケット料金の注意事項(下記参照)を表示する
-                # （「2：前払い（後日渡し）の前払い時」または「4:前払いのみ」の場合のみ）
-                # チケット料金に表示されている金額は、有料組織の年会費などの場合もある
-                # ”999999999999 (オール9)の場合、
-                # 期間内有効券と判断して公演日時を表示しない。
-                koenDate = '99999999999999'
-        else:
-            resultCode = ResultCodeEnum.OtherError.value
-            if replyCode is None:
+                resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
-
-        if replyCode == ReplyCodeEnum.Normal.value:
-            playGuideId = famiport_order.famiport_client.code
-            barCodeNo = famiport_order.barcode_no
-            totalAmount = famiport_order.total_amount
-            ticketPayment = str_or_blank(famiport_order.ticket_payment)
-            systemFee = str_or_blank(famiport_order.system_fee)
-            ticketingFee = str_or_blank(famiport_order.ticketing_fee)
-            ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
-            ticketCount = str_or_blank(famiport_order.ticket_count)
-            kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
-            name = famiport_order.customer_name
-
-        totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
-        ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
-        systemFee = str_or_blank(systemFee, 8, fillvalue='0')
-        ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
-        replyClass = str_or_blank(replyClass)
-
-        famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
-            resultCode=resultCode, replyClass=replyClass, replyCode=replyCode,
-            playGuideId=playGuideId, barCodeNo=barCodeNo, totalAmount=totalAmount,
-            ticketPayment=ticketPayment, systemFee=systemFee,
-            ticketingFee=ticketingFee, ticketCountTotal=ticketCountTotal,
-            ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate,
-            name=name, nameInput=nameInput, phoneInput=phoneInput)
+            famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
+                resultCode=resultCode,
+                replyClass=replyClass,
+                replyCode=replyCode,
+                playGuideId=playGuideId,
+                barCodeNo=barCodeNo,
+                totalAmount=totalAmount,
+                ticketPayment=ticketPayment,
+                systemFee=systemFee,
+                ticketingFee=ticketingFee,
+                ticketCountTotal=ticketCountTotal,
+                ticketCount=ticketCount,
+                kogyoName=kogyoName,
+                koenDate=koenDate,
+                name=name,
+                nameInput=nameInput,
+                phoneInput=phoneInput
+                )
+        except Exception:
+            logger.exception(
+                u"an exception occurred at FamiPortReservationInquiryResponseBuilder.build_response(). " \
+                u"店舗コード: %s, 利用日時: %s, 予約番号: %s" \
+                % (storeCode, famiport_reservation_inquiry_request.ticketingDate, reserveNumber)
+                )
+            resultCode = ResultCodeEnum.OtherError.value
+            replyCode = ReplyCodeEnum.OtherError.value
+            famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
+                resultCode=resultCode,
+                replyClass=replyClass,
+                replyCode=replyCode
+                )
 
         return famiport_reservation_inquiry_response
 
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
+    def __init__(self, moratorium=datetime.timedelta(seconds=1800)):
+        # 入金期限を手続き中に過ぎてしまった場合に考慮される、入金期限からの猶予期間
+        self.moratorium = moratorium
 
     def build_response(self, famiport_payment_ticketing_request, session, now):
-        replyCode = None
         famiport_order = None
         resultCode = ResultCodeEnum.Normal.value
+        replyCode = ReplyCodeEnum.Normal.value
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
         storeCode = famiport_payment_ticketing_request.storeCode
         mmkNo = famiport_payment_ticketing_request.mmkNo
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
-        ticketingDate = now
+        ticketingDate = None
 
-        orderId = ''
-        replyClass = ''
-        playGuideId = ''
-        playGuideName = ''
-        orderTicketNo = ''
-        exchangeTicketNo = ''
-        ticketingStart = ''
-        ticketingEnd = ''
-        totalAmount = ''
-        ticketPayment = ''
-        systemFee = ''
-        ticketingFee = ''
-        ticketingCountTotal = ''
-        ticketCount = ''
-        kogyoName = ''
-        koenDate = ''
-        tickets = ''
-        try:
-            ticketingDate = datetime.datetime.strptime(
-                famiport_payment_ticketing_request.ticketingDate, '%Y%m%d%H%M%S')
-        except ValueError:
-            logger.error(u"不正な利用日時です。")
+        orderId = u''
+        replyClass = u''
+        playGuideId = u''
+        playGuideName = u''
+        orderTicketNo = u''
+        exchangeTicketNo = u''
+        ticketingStart = u''
+        ticketingEnd = u''
+        totalAmount = u''
+        ticketPayment = u''
+        systemFee = u''
+        ticketingFee = u''
+        ticketingCountTotal = u''
+        ticketCount = u''
+        kogyoName = u''
+        koenDate = u''
+        tickets = u''
 
-        logger.info(u'Processing famiport payment ticketing request. ' +
-                    u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s'
-                    % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo))
+        logger.info(u'Processing famiport payment ticketing request. ' \
+                    u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s' \
+                    % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo))
 
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
-        except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError.value
-            logger.error(u"DBAPIError has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). ' + \
-                         u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s"
-                         % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo))
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_payment_ticketing_request.ticketingDate,
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_request.ticketingDate)
+                raise
 
-        if famiport_order is not None:
-            orderId = famiport_order.famiport_order_identifier
-            replyClass = famiport_order.type
-            if famiport_order.payment_due_at and famiport_order.payment_due_at < ticketingDate:
-                replyCode = ReplyCodeEnum.PaymentDueError.value
-            if famiport_order.paid_at:
-                replyCode = ReplyCodeEnum.AlreadyPaidError.value
-            if famiport_order.issued_at:
-                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-            if famiport_order.ticketing_end_at and famiport_order.ticketing_end_at < ticketingDate:
-                replyCode = ReplyCodeEnum.TicketingDueError.value
-            # TODO PaymentCancelError
-            if famiport_order.ticketing_start_at and famiport_order.ticketing_start_at > ticketingDate:
-                replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
-            # TODO TicketingCancelError
-            else:
-                replyCode = ReplyCodeEnum.Normal.value
-            playGuideId = famiport_order.famiport_client.code
-            playGuideName = famiport_order.famiport_client.name
-            if replyClass == ReplyClassEnum.CashOnDelivery.value:
-                orderTicketNo = barCodeNo
-            elif replyClass == ReplyClassEnum.Prepayment.value:
-                orderTicketNo = barCodeNo
-                exchangeTicketNo = famiport_order.exchange_number
-                ticketingStart = famiport_order.ticketing_start_at
-                ticketingEnd = famiport_order.ticketing_end_at
-            elif replyClass == ReplyClassEnum.Paid.value:
-                exchangeTicketNo = famiport_order.exchange_number
-            elif replyClass == ReplyClassEnum.PrepaymentOnly.value:
-                orderTicketNo = barCodeNo
-            else:
-                pass
-
-            totalAmount = str_or_blank(famiport_order.total_amount, 8, fillvalue='0')
-            ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
-            systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
-            ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
-            ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
-            ticketCount = str_or_blank(famiport_order.ticket_count)
-            kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
-
-            start_at = famiport_order.famiport_sales_segment.famiport_performance.start_at
-            koenDate = start_at.strftime('%Y%m%d%H%M') if start_at else '999999999999'
-            tickets = famiport_order.famiport_tickets
-        else:
-            resultCode = ResultCodeEnum.OtherError.value
-            if replyCode is None:
+            try:
+                famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
+            except NoResultFound:
+                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                famiport_order = None
+                resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
-        famiport_ticket_responses = []
-        if tickets:
+            # validate the request
+            if famiport_order is not None:
+                orderId = famiport_order.famiport_order_identifier
+                order_type = famiport_order.type
 
-            for ticket in tickets:
-                ftr = FamiPortTicketResponse()
-                ftr.barCodeNo = ticket.barcode_number
-                ftr.ticketClass = str(ticket.type)
-                ftr.templateCode = ticket.template_code
-                ftr.ticketData = ticket.data
-                famiport_ticket_responses.append(ftr)
+                if order_type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.PaymentOnly.value) or \
+                   (order_type == FamiPortOrderType.Payment.value and famiport_order.paid_at is None):
+                    if famiport_order.paid_at:
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                        famiport_order = None
+                    elif famiport_order.payment_start_at is not None and  \
+                       famiport_order.payment_start_at > ticketingDate:
+                        logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.SearchKeyError.value
+                        famiport_order = None
+                    elif famiport_order.payment_due_at is not None and \
+                       famiport_order.payment_due_at + self.moratorium < ticketingDate:
+                        logger.error(u'ticketingDate is later than payment_due_at (%r) + moratorium (%r)' % (famiport_order.payment_due_at, self.moratorium))
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.PaymentDueError.value
+                        famiport_order = None
 
-        playGuideId = str_or_blank(playGuideId, 5, fillvalue='0')
-        totalAmount = str_or_blank(totalAmount)
-        ticketPayment = str_or_blank(ticketPayment)
-        systemFee = str_or_blank(systemFee)
-        ticketingFee = str_or_blank(ticketingFee)
-        ticketCount = str_or_blank(ticketCount)
-        ticketingCountTotal = str_or_blank(ticketingCountTotal)
-        replyClass = str_or_blank(replyClass)
+                if famiport_order is not None and \
+                   (famiport_order.paid_at is not None \
+                    if order_type == FamiPortOrderType.Payment.value \
+                    else order_type != FamiPortOrderType.PaymentOnly.value):
+                    if famiport_order.issued_at:
+                        logger.error(u'tickets for order are already issued at %s' % (famiport_order.issued_at, ))
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                        famiport_order = None
+                    elif famiport_order.ticketing_start_at is not None and \
+                       famiport_order.ticketing_start_at > ticketingDate:
+                        logger.error(u'ticketingDate is earlier than ticketing_start_at (%r)' % (famiport_order.ticketing_start_at,))
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
+                        famiport_order = None
+                    elif famiport_order.ticketing_end_at is not None and \
+                       famiport_order.ticketing_end_at + self.moratorium < ticketingDate:
+                        logger.error(u'ticketingDate is later than ticketing_end_at (%r) + moratorium (%r)' % (famiport_order.ticketing_end_at, self.moratorium))
+                        resultCode = ResultCodeEnum.OtherError.value
+                        replyCode = ReplyCodeEnum.TicketingDueError.value
+                        famiport_order = None
 
-        famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
-            resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo,
-            barCodeNo=barCodeNo, orderId=orderId, replyClass=replyClass,
-            replyCode=replyCode, playGuideId=playGuideId, playGuideName=playGuideName,
-            orderTicketNo=orderTicketNo, exchangeTicketNo=exchangeTicketNo,
-            ticketingStart=ticketingStart, ticketingEnd=ticketingEnd,
-            totalAmount=totalAmount, ticketPayment=ticketPayment, systemFee=systemFee,
-            ticketingFee=ticketingFee, ticketCountTotal=ticketingCountTotal,
-            ticketCount=ticketCount, kogyoName=kogyoName, koenDate=koenDate, tickets=famiport_ticket_responses)
+            if famiport_order is not None:
+                playGuideId = famiport_order.famiport_client.code
+                playGuideName = famiport_order.famiport_client.name
+                if order_type == FamiPortOrderType.CashOnDelivery.value:
+                    replyClass = ReplyClassEnum.CashOnDelivery.value
+                    orderTicketNo = barCodeNo
+                elif order_type == FamiPortOrderType.Payment.value:
+                    if famiport_order.paid_at is None:
+                        replyClass = ReplyClassEnum.Prepayment.value
+                    else:
+                        replyClass = ReplyClassEnum.Paid.value
+                    orderTicketNo = barCodeNo
+                    exchangeTicketNo = famiport_order.exchange_number
+                    if famiport_order.ticketing_start_at:
+                        ticketingStart = famiport_order.ticketing_start_at.strftime("%Y%m%d%H%M%S")
+                    if famiport_order.ticketing_end_at:
+                        ticketingEnd = famiport_order.ticketing_end_at.strftime("%Y%m%d%H%M%S")
+                elif order_type == FamiPortOrderType.Ticketing.value:
+                    replyClass = ReplyClassEnum.Paid.value
+                    exchangeTicketNo = famiport_order.exchange_number
+                elif order_type == FamiPortOrderType.PaymentOnly.value:
+                    replyClass = ReplyClassEnum.PrepaymentOnly.value
+                    orderTicketNo = barCodeNo
+                else:
+                    raise ValueError(u'unknown order type: %r' % order_type)
+
+                totalAmount = str_or_blank(famiport_order.total_amount, 8, fillvalue='0')
+                ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
+                systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
+                ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
+                ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
+                ticketCount = str_or_blank(famiport_order.ticket_count)
+                kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
+
+                start_at = famiport_order.famiport_sales_segment.famiport_performance.start_at
+                koenDate = start_at.strftime('%Y%m%d%H%M') if start_at else '999999999999'
+                tickets = famiport_order.famiport_tickets
+
+                famiport_ticket_responses = []
+                if tickets:
+                    for ticket in tickets:
+                        ftr = FamiPortTicketResponse()
+                        ftr.barCodeNo = ticket.barcode_number
+                        ftr.ticketClass = str(ticket.type)
+                        ftr.templateCode = ticket.template_code
+                        ftr.ticketData = ticket.data
+                        famiport_ticket_responses.append(ftr)
+
+                playGuideId = str_or_blank(playGuideId)
+                totalAmount = str_or_blank(totalAmount)
+                ticketPayment = str_or_blank(ticketPayment)
+                systemFee = str_or_blank(systemFee)
+                ticketingFee = str_or_blank(ticketingFee)
+                ticketCount = str_or_blank(ticketCount)
+                ticketingCountTotal = str_or_blank(ticketingCountTotal)
+                replyClass = str_or_blank(replyClass)
+
+                famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                    resultCode=resultCode,
+                    storeCode=storeCode,
+                    sequenceNo=sequenceNo,
+                    barCodeNo=barCodeNo,
+                    orderId=orderId,
+                    replyClass=replyClass,
+                    replyCode=replyCode,
+                    playGuideId=playGuideId,
+                    playGuideName=playGuideName,
+                    orderTicketNo=orderTicketNo,
+                    exchangeTicketNo=exchangeTicketNo,
+                    ticketingStart=ticketingStart,
+                    ticketingEnd=ticketingEnd,
+                    totalAmount=totalAmount,
+                    ticketPayment=ticketPayment,
+                    systemFee=systemFee,
+                    ticketingFee=ticketingFee,
+                    ticketCountTotal=ticketingCountTotal,
+                    ticketCount=ticketCount,
+                    kogyoName=kogyoName,
+                    koenDate=koenDate,
+                    tickets=famiport_ticket_responses
+                    )
+            else:
+                famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                    resultCode=resultCode,
+                    storeCode=storeCode,
+                    sequenceNo=sequenceNo,
+                    barCodeNo=barCodeNo,
+                    orderId=orderId,
+                    replyClass=replyClass,
+                    replyCode=replyCode,
+                    playGuideId=playGuideId,
+                    playGuideName=playGuideName
+                    )
+        except:
+            logger.exception(
+                u"an exception has occurred at FamiPortPaymentTicketingResponseBuilder.build_response(). " \
+                u"店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s" \
+                % (storeCode, mmkNo, famiport_payment_ticketing_request.ticketingDate, sequenceNo, barCodeNo)
+                )
+            resultCode = ResultCodeEnum.OtherError.value
+            replyCode = ReplyCodeEnum.OtherError.value
+            famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                resultCode=resultCode,
+                storeCode=storeCode,
+                sequenceNo=sequenceNo,
+                replyCode=replyCode
+                )
         return famiport_payment_ticketing_response
+
 
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
@@ -335,8 +458,6 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_completion_request.storeCode
         mmkNo = famiport_payment_ticketing_completion_request.mmkNo
-        ticketingDate = datetime.datetime.strptime(
-            famiport_payment_ticketing_completion_request.ticketingDate, '%Y%m%d%H%M%S')
         sequenceNo = famiport_payment_ticketing_completion_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
         orderId = famiport_payment_ticketing_completion_request.orderId
@@ -345,24 +466,53 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         replyCode = None
 
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
-        except DBAPIError:
-            replyCode = ReplyCodeEnum.OtherError.value
-            logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response().' +
-                         u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
-                         % (storeCode, mmkNo, ticketingDate.strftime('%Y%m%d%H%M%S'), sequenceNo, barCodeNo, orderId))
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_payment_ticketing_completion_request.ticketingDate,
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_completion_request.ticketingDate)
+                raise
 
-        if famiport_order is not None:
-            famiport_order.paid_at = ticketingDate
-            famiport_order.issued_at = ticketingDate
-            replyCode = ReplyCodeEnum.Normal.value
-        else:
-            resultCode = ResultCodeEnum.OtherError.value
-            if replyCode is None:
+            try:
+                famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
+            except NoResultFound:
+                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                famiport_order = None
+
+            if famiport_order is not None:
+                famiport_order.paid_at = ticketingDate
+                famiport_order.issued_at = ticketingDate
+                replyCode = ReplyCodeEnum.Normal.value
+            else:
+                resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
-        famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
-            resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyCode=replyCode)
+            famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
+                resultCode=resultCode,
+                storeCode=storeCode,
+                sequenceNo=sequenceNo,
+                barCodeNo=barCodeNo,
+                orderId=orderId,
+                replyCode=replyCode
+                )
+        except:
+            logger.exception(
+                u'An exception has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response().' \
+                u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
+                % (storeCode, mmkNo, famiport_payment_ticketing_completion_request.ticketingDate, sequenceNo, barCodeNo, orderId))
+            resultCode = ResultCodeEnum.OtherError.value
+            replyCode = ReplyCodeEnum.OtherError.value
+            famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
+                resultCode=resultCode,
+                storeCode=storeCode,
+                sequenceNo=sequenceNo,
+                barCodeNo=barCodeNo,
+                orderId=orderId,
+                replyCode=replyCode
+                )
+
         return famiport_payment_ticketing_completion_response
 
 
@@ -372,38 +522,64 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
         resultCode = ResultCodeEnum.Normal.value
         storeCode = famiport_payment_ticketing_cancel_request.storeCode
         mmkNo = famiport_payment_ticketing_cancel_request.mmkNo
-        ticketingDate = famiport_payment_ticketing_cancel_request.ticketingDate
+        ticketingDate = None
         sequenceNo = famiport_payment_ticketing_cancel_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_cancel_request.barCodeNo
 
-        famiport_order = None
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
-        except DBAPIError:
-            logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' +
-                         u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s'
-                         % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo))
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_payment_ticketing_cancel_request.ticketingDate,
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_cancel_request.ticketingDate)
+                raise
+            try:
+                famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
+            except NoResultFound:
+                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                famiport_order = None
 
-        orderId = None
-        replyCode = None
-        if famiport_order is not None:
-            orderId = famiport_order.famiport_order_identifier
-            if famiport_order.paid_at:
-                replyCode = ReplyCodeEnum.AlreadyPaidError.value
-            if famiport_order.canceled_at:
-                replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value
-            if famiport_order.issued_at:
-                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-            # TODO PaymentCancelError
-            # TODO TicketingCancelError
+            orderId = None
+            replyCode = None
+            if famiport_order is not None:
+                orderId = famiport_order.famiport_order_identifier
+                if famiport_order.paid_at:
+                    replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                if famiport_order.canceled_at:
+                    replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value
+                if famiport_order.issued_at:
+                    replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                # TODO PaymentCancelError
+                # TODO TicketingCancelError
+                else:
+                    replyCode = ReplyCodeEnum.Normal.value
             else:
-                replyCode = ReplyCodeEnum.Normal.value
-        else:
-            resultCode = ResultCodeEnum.OtherError.value
-            replyCode = ReplyCodeEnum.OtherError.value
+                resultCode = ResultCodeEnum.OtherError.value
+                replyCode = ReplyCodeEnum.OtherError.value
 
-        famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(
-            resultCode=resultCode, storeCode=storeCode, sequenceNo=sequenceNo, barCodeNo=barCodeNo, orderId=orderId, replyCode=replyCode)
+            famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(
+                resultCode=resultCode,
+                storeCode=storeCode,
+                sequenceNo=sequenceNo,
+                barCodeNo=barCodeNo,
+                orderId=orderId,
+                replyCode=replyCode
+                )
+        except Exception:
+            logger.exception(
+                u'an exception has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' \
+                u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s' \
+                % (storeCode, mmkNo, famiport_payment_ticketing_cancel_request.ticketingDate, sequenceNo, barCodeNo)
+                )
+            famiport_payment_ticketing_cancel_response = FamiPortPaymentTicketingCancelResponse(
+                resultCode=resultCode,
+                storeCode=storeCode,
+                sequenceNo=sequenceNo,
+                barCodeNo=barCodeNo,
+                replyCode=replyCode
+                )
         return famiport_payment_ticketing_cancel_response
 
 
@@ -479,47 +655,62 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_customer_information_request, session, now):
         storeCode = famiport_customer_information_request.storeCode
         mmkNo = famiport_customer_information_request.mmkNo
-        ticketingDate = famiport_customer_information_request.ticketingDate
+        ticketingDate = None
         sequenceNo = famiport_customer_information_request.sequenceNo
         barCodeNo = famiport_customer_information_request.barCodeNo
         orderId = famiport_customer_information_request.orderId
 
         famiport_order = None
         try:
-            famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
-        except DBAPIError:
-            logger.error(u'DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' +
-                         u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
-                         % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo, orderId))
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_customer_information_request.ticketingDate,
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_customer_information_request.ticketingDate)
+                raise
 
-        resultCode = None
-        replyCode = None
-        if famiport_order is not None:
-            resultCode = ResultCodeEnum.Normal.value
-            replyCode = ReplyCodeEnum.Normal.value
-        else:
-            resultCode = ResultCodeEnum.OtherError.value
-            replyCode = ReplyCodeEnum.CustomerNamePrintInformationError.value
+            try:
+                famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
+            except NoResultFound:
+                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                famiport_order = None
 
-        name = ''
-        memberId = ''
-        address1 = ''
-        address2 = ''
-        identifyNo = ''
+            if famiport_order is not None:
+                name = famiport_order.customer_name
+                # TODO Make sure where to get memberId
+                memberId = famiport_order.customer_member_id
+                address1 = famiport_order.customer_address_1
+                address2 = famiport_order.customer_address_2
+                # TODO Make sure where to get identifyNo
+                identifyNo = famiport_order.customer_identify_no
 
-        if replyCode == ReplyCodeEnum.Normal.value:
-            name = famiport_order.customer_name
-            # TODO Make sure where to get memberId
-            memberId = famiport_order.customer_member_id
-            address1 = famiport_order.customer_address_1
-            address2 = famiport_order.customer_address_2
-            # TODO Make sure where to get identifyNo
-            identifyNo = famiport_order.customer_identify_no
-
-        famiport_customer_information_respose = FamiPortCustomerInformationResponse(
-            resultCode=resultCode, replyCode=replyCode, name=name, memberId=memberId,
-            address1=address1, address2=address2, identifyNo=identifyNo)
-        famiport_customer_information_respose.set_encryptKey(orderId)
+                famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+                    resultCode=ResultCodeEnum.Normal.value,
+                    replyCode=ReplyCodeEnum.Normal.value,
+                    name=name,
+                    memberId=memberId,
+                    address1=address1,
+                    address2=address2,
+                    identifyNo=identifyNo
+                    )
+                famiport_customer_information_respose.set_encryptKey(orderId)
+            else:
+                famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+                    resultCode=ResultCodeEnum.OtherError.value,
+                    replyCode=ReplyCodeEnum.CustomerNamePrintInformationError.value
+                    )
+        except Exception:
+            logger.exception(
+                u'an exception has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). ' \
+                u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s' \
+                % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo, orderId)
+                )
+            famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+                resultCode=ResultCodeEnum.OtherError.value,
+                replyCode=ReplyCodeEnum.OtherError.value
+                )
         return famiport_customer_information_respose
 
 
