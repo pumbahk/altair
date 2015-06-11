@@ -887,3 +887,342 @@ html {  }
 .fb_iframe_widget { display: inline-block; position: relative; }
 .fb_iframe_widget span { display: inline-block; position: relative; text-align: justify; }
 .fb_iframe_widget iframe { position: absolute; }
+
+
+.condensed {
+  font-size: 13px;
+  line-height: 1.25em;
+}
+
+.h_100px {
+  height: 100px;
+}
+
+.panel.condensed img.thematic,
+.condensed .panel img.thematic {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ccc;
+  margin: 0 5px 0 0;
+  float: left;
+}
+
+.panel.condensed p:first-child,
+.condensed .panel p:first-child,
+.panel.condensed p.first,
+.condensed .panel p.firs {
+  margin: 0 0;
+}
+
+.panel.condensed p,
+.condensed .panel p {
+  margin: 8px 0 0 0;
+}
+
+.panel.condensed h4,
+.condensed .panel h4 {
+  margin: 0 0 2px 0;
+  line-height: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+ul.panellist.fullwidth {
+  list-style-type: none;
+  margin: 0 0;
+  padding: 0 0;
+  border-bottom: 1px solid #ccc;
+}
+
+ul.panellist.fullwidth > li.panel {
+  padding: 10px 10px;
+  position: relative;
+  border-top: 1px solid #ccc;
+  background-image: linear-gradient(top, #fff 0%, #eee 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+  background-image: -webkit-linear-gradient(top, #fff 0%, #f2f3e5 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, #f2f3e5 100%);
+  overflow: hidden;
+}
+
+ul.panellist.fullwidth > li.panel:active {
+  background-image: linear-gradient(top, #eee 0%, #ddd 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ddd));
+  background-image: -webkit-linear-gradient(top, #f8f8f8 0%, #eaebcc 100%);
+  background-image: -moz-linear-gradient(top, #f8f8f8 0%, #eaebcc 100%);
+}
+
+ul.panellist.fullwidth > li.panel:first-child {
+  border-top: none;
+}
+
+ul.panellist.fullwidth > li.panel > .panel-inner {
+  padding: 0 0 0 0;
+  margin: 0 0;
+  overflow: hidden;
+}
+
+ul.panellist.expandable > li.panelgroup {
+  position: relative;
+  border-top: 1px solid #ccc;
+  overflow: hidden;
+  height: 28px;
+}
+
+ul.panellist.expandable > li.panelgroup.activated {
+  height: 128px;
+}
+
+ul.panellist.expandable > li.panelgroup:first-child {
+  border-top: none;
+}
+
+ul.panellist.expandable > li.panelgroup > .panelgroup-label a:before {
+  float: right;
+  content: "▾";
+  color: #fff;
+  text-shadow: 1px 1px 3px #ccc;
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+ul.panellist.expandable > li.panelgroup.activated .panelgroup-label a:before {
+  content: "▴";
+}
+
+ul.panellist.expandable > li.panelgroup > .panelgroup-label {
+  display: block;
+  height: 28px;
+  font-weight: bold;
+  padding: 0px 10px;
+  background-image: linear-gradient(top, #ccc 0%, #888 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#888));
+  background-image: -webkit-linear-gradient(top, #ccc 0%, #888 100%);
+  background-image: -moz-linear-gradient(top, #ccc 0%, #888 100%);
+}
+
+
+a.panelgroup-label,
+.panelgroup-label > a {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+}
+
+ul.panellist.expandable > li.panelgroup > .panelgroup-inner {
+  padding: 0 0 0 0;
+  margin: 0 0;
+  overflow: hidden;
+}
+
+ul.panelgroup-inner {
+  list-style-type: none;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+ul.panelgroup-inner > li.panelgroup:first-child {
+  border-top: none;
+}
+
+ul.panelgroup-inner > li.panel {
+  padding: 10px 10px;
+  position: relative;
+  border-top: 1px solid #ccc;
+  background-image: linear-gradient(top, #fff 0%, #eee 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+  background-image: -webkit-linear-gradient(top, #fff 0%, #eee 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, #eee 100%);
+  overflow: hidden;
+}
+
+.navigable .panel-inner {
+  padding-right: 25px !important;
+}
+
+.navigable .panel-inner:before {
+  content: "";
+  display: block;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  font-family: Serif;
+  color: #888;
+  text-shadow: 1px 1px 2px #fff;
+  width: 12px;
+  margin-top: -8px;
+  vertical-align: top;
+}
+
+.navigable.with-panel-footer .panel-inner:before,
+.navigable .with-panel-footer .panel-inner:before,
+.with-panel-footer .navigable .panel-inner:before {
+  margin-top: -18px;
+}
+
+table.panellist.margined {
+  display: block;
+  border: none;
+  background-image: linear-gradient(top, #f2f3e5, #fff 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f2f3e5), to(#fff));
+  background-image: -webkit-linear-gradient(top, #abad8d 0%, #f2f3e5 100%);
+  background-image: -moz-linear-gradient(top, #abad8d 0%, #f2f3e5 100%);
+  margin: 0 0;
+  padding: 0px 10px 10px 10px;
+}
+
+table.panellist.margined > caption {
+  display: block;
+  margin: 0 0;
+  padding: 0 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0px 0px 4px rgba(0, 0, 0, .5);
+}
+
+table.panellist.margined > tbody,
+table.panellist.margined > thead,
+table.panellist.margined > tbody > tr,
+table.panellist.margined > thead > tr,
+table.panellist.margined > tbody > tr > td,
+table.panellist.margined > thead > tr > td,
+table.panellist.margined > tbody > tr > th,
+table.panellist.margined > thead > tr > th {
+  display:block
+}
+
+table.panellist.margined > tbody > tr > td.panel {
+  -webkit-box-shadow: 2px 2px 4px 0px rgb(0, 0, 0, .25);
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, .25);
+  position: relative;
+  margin-top: 10px;
+  background-image: linear-gradient(top, #f7f7f0 0%, #f2f3e5 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f7f7f0), to(#f2f3e5));
+  background-image: -webkit-linear-gradient(top, #f7f7f0 0%, #f2f3e5 100%);
+  background-image: -moz-linear-gradient(top, #f7f7f0 0%, #f2f3e5 100%);
+  overflow: hidden;
+}
+
+table.panellist.margined > tbody > tr:first-child > td.panel {
+  margin-top: 0px;
+}
+
+
+table.panellist.margined > tbody > tr > td.panel p:first-child,
+table.panellist.margined > tbody > tr > td.panel p.first {
+  margin: 0 0;
+}
+
+table.panellist.margined > tbody > tr > td.panel p {
+  margin: 8px 0 0 0;
+}
+
+table.panellist.margined > tbody > tr > td.panel > .panel-inner {
+  padding: 5px 5px;
+  margin: 0 0;
+  overflow: hidden;
+}
+
+table.panellist.margined.navigable > tbody > tr > td.panel:active,
+table.panellist.margined > tbody > tr > td.panel.navigable:active {
+  background-image: linear-gradient(top, #f7f7f0 0%, #eaebcc 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f7f7f0), to(#eaebcc));
+  background-image: -webkit-linear-gradient(top, #f7f7f0 0%, #eaebcc 100%);
+  background-image: -moz-linear-gradient(top, #f7f7f0 0%, #eaebcc 100%);
+}
+
+.panel .with-action-buttons,
+.with-action-buttons .panel {
+  display: table-row;
+}
+
+.with-action-buttons .panel-inner {
+  display: table-cell;
+  width: 100%;
+}
+
+.with-action-buttons .actions {
+  display: table-cell;
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-right: 5px;
+  height: 100%;
+}
+
+.condensed .actions > .btn {
+  font-size: 13px;
+}
+
+.panel .panel-footer {
+  width: auto;
+  padding: 4px 4px;
+  background-color: #fff;
+  background-image: linear-gradient(top, #fff 0%, #eee 98%, #fff 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), color-stop(0.98, #eee), to(#fff));
+  background-image: -webkit-linear-gradient(top, #fff 0%, #eee 98%, #fff 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, #eee 98%, #fff 100%);
+  color: #aaa;
+}
+
+.panel > label {
+  display: block;
+}
+
+
+.btn-large {
+  font-size: 20px;
+  line-height: 1.5em;
+  height: 44px;
+}
+
+.btn-primary {
+  display: inline-block;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.btn-primary {
+  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
+  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:hover {
+  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
+  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:active {
+  box-shadow: 1px 1px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary .btn-inner,
+.btn-secondary .btn-inner,
+.btn-supplementary .btn-inner,
+.btn-disabled .btn-inner {
+  font-weight: bold;
+}
+
+.with-action-buttons .actions {
+  display: table-cell;
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-right: 5px;
+  height: 100%;
+}
