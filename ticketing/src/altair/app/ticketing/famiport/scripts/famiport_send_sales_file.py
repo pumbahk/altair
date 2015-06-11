@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-C', '--config')
+    parser.add_argument('-C', '--config', required=True)
     args = parser.parse_args()
 
     setup_logging(args.config)
