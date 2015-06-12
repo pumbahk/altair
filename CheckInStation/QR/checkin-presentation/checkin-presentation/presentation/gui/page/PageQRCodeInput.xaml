@@ -131,8 +131,8 @@
             </Grid>
             <Grid
                 Visibility="{Binding IsWaiting}"
-                Height="500"
-                Width="1200" Margin="0,380,0,0"
+                Height="728"
+                Width="1366" Margin="0,0,0,0"
                 IsHitTestVisible="False"
                 >
                 <Rectangle Fill="White" Opacity="0.7"/>

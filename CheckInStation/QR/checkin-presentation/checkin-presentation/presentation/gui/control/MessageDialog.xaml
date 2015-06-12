@@ -7,20 +7,20 @@
              x:Name="Container"
              d:DesignHeight="300" d:DesignWidth="300">     
     <Canvas
-                            Width="1260"
-                            Height="768"
-                            Background="{Binding ElementName=Container, Path=Background}"
-                            >
+        Width="1260"
+        Height="768"
+        Background="{Binding ElementName=Container, Path=Background}"
+        >
         <Border
-                                Canvas.Left="255"
-                                Canvas.Top="159"
-                                CornerRadius="10"
-                                Background="{Binding ElementName=Container, Path=InnerBackground}"                                
-                                Width="750" Height="450"
-                                Padding="45">
+            Canvas.Left="255"
+            Canvas.Top="159"
+            CornerRadius="10"
+            Background="{Binding ElementName=Container, Path=InnerBackground}"                                
+            Width="750" Height="450"
+            Padding="45">
             <Grid
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
@@ -33,11 +33,13 @@
                     </ScrollViewer>
                 <Button
                     Grid.Row="1"
-                                       Click="Button_Click"
-                                       Width="357" Height="135"
-                                       Style="{StaticResource SubmitButton}">
+                    Click="Button_Click"
+                    Width="300" Height="80"
+                    Style="{StaticResource SubmitButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource SubmitButtonTextStyle}"
-                                       Text="{Binding ElementName=Container, Path=ButtonText}"/>
+                        Text="{Binding ElementName=Container, Path=ButtonText}"/>
                 </Button>
             </Grid>
         </Border>
