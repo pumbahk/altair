@@ -103,9 +103,7 @@ class InquiryTest(FamiPortAPIViewTest):
         from ..testing import generate_ticket_data
         from ..models import FamiPortTicket, FamiPortReceipt, FamiPortShop
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
-        famiport_shop = FamiPortShop(code='099999')
-        receipt = FamiPortReceipt()
-        receipt.famiport_shop = famiport_shop
+        receipt = FamiPortReceipt(shop_code='99999')
         receipt.barcode_no = u'4110000000006'
         famiport_tickets = [
             FamiPortTicket(
@@ -159,10 +157,10 @@ class InquiryTest(FamiPortAPIViewTest):
             )
 
         res = self._callFUT({
-            'authNumber': '',
-            'reserveNumber': '5300000000001',
-            'ticketingDate': '20150325151159',
-            'storeCode': receipt.famiport_shop.code,
+            'authNumber': u'',
+            'reserveNumber': u'5300000000001',
+            'ticketingDate': u'20150325151159',
+            'storeCode': u'099999',
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
@@ -181,7 +179,7 @@ class PaymentTest(FamiPortAPIViewTest):
 <?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
-<storeCode>099999</storeCode>
+<storeCode>99999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
 <barCodeNo>4310000000002</barCodeNo>
 <orderId>430000000002</orderId>
@@ -253,19 +251,20 @@ class PaymentTest(FamiPortAPIViewTest):
         ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
 
         receipt = mock.Mock()
-        receipt.famiport_shop.code = '099999'
+        receipt.shop_code = u'99999'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
+        receipt.exchange_number = u'4310000000002'
 
         get_by_barCodeNo.return_value = DummyModel(
-            famiport_order_identifier='430000000002',
+            famiport_order_identifier=u'430000000002',
             type=3,
             payment_due_at=payment_due_at,
             paid_at=None,
             issued_at=None,
             ticketing_start_at=ticketing_start_at,
             ticketing_end_at=ticketing_end_at,
-            exchange_number='4310000000002',
+            exchange_number=u'4310000000002',
             barcode_number=u'1000000000000',
             total_amount=200,
             ticket_payment=0,
@@ -288,14 +287,14 @@ class PaymentTest(FamiPortAPIViewTest):
             )
 
         res = self._callFUT({
-            'ticketingDate': '20150331172554',
-            'playGuideId': '',
-            'phoneNumber': 'rfanmRgUZFRRephCwOsgbg%3d%3d',
-            'customerName': 'pT6fj7ULQklIfOWBKGyQ6g%3d%3d',
-            'mmkNo': '01',
-            'barCodeNo': '1000000000000',
-            'sequenceNo': '12345678901',
-            'storeCode': receipt.famiport_shop.code,
+            'ticketingDate': u'20150331172554',
+            'playGuideId': u'00001',
+            'phoneNumber': u'rfanmRgUZFRRephCwOsgbg%3d%3d',
+            'customerName': u'pT6fj7ULQklIfOWBKGyQ6g%3d%3d',
+            'mmkNo': u'01',
+            'barCodeNo': u'1000000000000',
+            'sequenceNo': u'12345678901',
+            'storeCode': receipt.shop_code,
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
@@ -314,7 +313,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
 <?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
-<storeCode>099999</storeCode>
+<storeCode>99999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
 <barCodeNo>6010000000000</barCodeNo>
 <orderId>123456789012</orderId>
@@ -328,7 +327,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
         receipt = mock.Mock()
-        receipt.famiport_shop.code = '099999'
+        receipt.shop_code = '99999'
         get_by_barCodeNo.return_value = DummyModel(
             get_receipt=mock.Mock(return_value=receipt),
             )
@@ -340,7 +339,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             'mmkNo': '01',
             'barCodeNo': '6010000000000',
             'sequenceNo': '12345678901',
-            'storeCode': receipt.famiport_shop.code,
+            'storeCode': receipt.shop_code,
             })
         self.assertEqual(200, res.status_code)
 
@@ -361,7 +360,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             'mmkNo': '01',
             'barCodeNo': '6010000000000',
             'sequenceNo': '12345678901',
-            'storeCode': '099999',
+            'storeCode': '99999',
             })
         self.assertEqual(200, res.status_code)
 
@@ -379,7 +378,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
 <?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
 <resultCode>00</resultCode>
-<storeCode>099999</storeCode>
+<storeCode>99999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
 <barCodeNo>3300000000000</barCodeNo>
 <orderId>123456789012</orderId>
@@ -393,7 +392,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
     def test_it(self, get_by_barCodeNo):
         from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
         receipt = mock.Mock()
-        receipt.famiport_shop.code = '099999'
+        receipt.shop_code = '99999'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
         get_by_barCodeNo.return_value = DummyModel(
@@ -405,7 +404,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             )
         res = self._callFUT({
             'playGuideId': '',
-            'storeCode': receipt.famiport_shop.code,
+            'storeCode': receipt.shop_code,
             'ticketingDate': '20150401101950',
             'barCodeNo': '1000000000000',
             'sequenceNo': '12345678901',

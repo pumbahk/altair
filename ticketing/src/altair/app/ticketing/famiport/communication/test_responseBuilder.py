@@ -590,18 +590,18 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
 
     def test_ok(self):
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
 
     def test_illigal(self):
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
 
     def test_already_payment(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
@@ -611,7 +611,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
     def test_already_issued(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
@@ -621,7 +621,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
     def test_cannot_cancel(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
@@ -631,7 +631,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
     def test_no_receipt(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
@@ -641,7 +641,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
     def test_no_famport_order(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
-        famiport_request = self._create_famiport_request()
+        famiport_request = self._create_famiport_request(storeCode=u'099999')
         famiport_response = self._callFUT(famiport_request, self.session, now)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)

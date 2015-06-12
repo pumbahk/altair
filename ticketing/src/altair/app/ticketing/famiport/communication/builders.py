@@ -134,7 +134,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
         nameInput = NameRequestInputEnum.Unnecessary.value
         phoneInput = PhoneRequestInputEnum.Unnecessary.value
 
-        storeCode = famiport_reservation_inquiry_request.storeCode
+        storeCode = famiport_reservation_inquiry_request.storeCode.lstrip(u'0')
         ticketingDate = None
         reserveNumber = famiport_reservation_inquiry_request.reserveNumber
         authNumber = famiport_reservation_inquiry_request.authNumber
@@ -170,7 +170,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_order is not None:
                 receipt = famiport_order.create_receipt(storeCode, session=session)
-                if not receipt or receipt.famiport_shop.code != storeCode:
+                if receipt is None or receipt.shop_code.lstrip(u'0') != storeCode:
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
@@ -259,7 +259,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         resultCode = ResultCodeEnum.Normal.value
         replyCode = ReplyCodeEnum.Normal.value
         barCodeNo = famiport_payment_ticketing_request.barCodeNo
-        storeCode = famiport_payment_ticketing_request.storeCode
+        storeCode = famiport_payment_ticketing_request.storeCode.lstrip('0')
         mmkNo = famiport_payment_ticketing_request.mmkNo
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
         ticketingDate = ''
@@ -307,7 +307,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             receipt = None
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
-                if not receipt or receipt.famiport_shop.code != storeCode:
+                if receipt is None or receipt.shop_code.lstrip(u'0') != storeCode:
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
@@ -420,7 +420,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     resultCode=resultCode,
-                    storeCode=storeCode,
+                    storeCode=storeCode.zfill(6),
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
@@ -446,7 +446,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     resultCode=str_or_blank(resultCode),
                     replyCode=str_or_blank(replyCode),
-                    storeCode=storeCode,
+                    storeCode=storeCode.zfill(6),
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
@@ -466,7 +466,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 resultCode=str_or_blank(resultCode),
                 replyCode=str_or_blank(replyCode),
                 sequenceNo=sequenceNo,
-                storeCode=storeCode
+                storeCode=storeCode.zfill(6)
                 )
         return famiport_payment_ticketing_response
 
@@ -475,7 +475,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
     def build_response(self, famiport_payment_ticketing_completion_request, session, now):
         resultCode = ResultCodeEnum.Normal.value
-        storeCode = famiport_payment_ticketing_completion_request.storeCode
+        storeCode = famiport_payment_ticketing_completion_request.storeCode.lstrip(u'0')
         mmkNo = famiport_payment_ticketing_completion_request.mmkNo
         sequenceNo = famiport_payment_ticketing_completion_request.sequenceNo
         barCodeNo = famiport_payment_ticketing_completion_request.barCodeNo
@@ -502,7 +502,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
-                if not receipt or receipt.famiport_shop.code != storeCode:
+                if receipt is None or receipt.shop_code.lstrip(u'0') != storeCode:
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
@@ -523,7 +523,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
             famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
                 resultCode=resultCode,
-                storeCode=storeCode,
+                storeCode=storeCode.zfill(6),
                 sequenceNo=sequenceNo,
                 barCodeNo=barCodeNo,
                 orderId=orderId,
@@ -538,7 +538,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
             replyCode = ReplyCodeEnum.OtherError.value
             famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
                 resultCode=resultCode,
-                storeCode=storeCode,
+                storeCode=storeCode.zfill(6),
                 sequenceNo=sequenceNo,
                 barCodeNo=barCodeNo,
                 orderId=orderId,
@@ -551,10 +551,11 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_cancel_request, session, now):
         famiport_request = famiport_payment_ticketing_cancel_request
+        storeCode = famiport_request.storeCode.lstrip(u'0')
         famiport_response = FamiPortPaymentTicketingCancelResponse(
             orderId=u'',
             barCodeNo=u'',
-            storeCode=famiport_request.storeCode,
+            storeCode=storeCode.zfill(6),
             sequenceNo=famiport_request.sequenceNo,
             resultCode=ResultCodeEnum.OtherError.value,
             replyCode=ReplyCodeEnum.OtherError.value,
@@ -572,7 +573,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
             if receipt is None:  # バーコードなし
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
-            elif receipt.famiport_shop.code != famiport_request.storeCode:
+            elif receipt.shop_code.lstrip(u'0') != storeCode:
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 famiport_order = None
@@ -690,7 +691,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         # デフォルトは案内なし(正常)
         resultCode = InformationResultCodeEnum.NoInformation.value
         infoKubun = famiport_information_request.infoKubun
-        storeCode = famiport_information_request.storeCode
+        storeCode = famiport_information_request.storeCode.lstrip(u'0')
         infoMessage = ''
         try:
             infoMessage = FamiPortInformationMessage.get_message(
@@ -745,7 +746,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
     def build_response(self, famiport_customer_information_request, session, now):
-        storeCode = famiport_customer_information_request.storeCode
+        storeCode = famiport_customer_information_request.storeCode.lstrip(u'0')
         mmkNo = famiport_customer_information_request.mmkNo
         ticketingDate = None
         sequenceNo = famiport_customer_information_request.sequenceNo
