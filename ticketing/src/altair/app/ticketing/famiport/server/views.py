@@ -150,22 +150,17 @@ class ResevationView(object):
     def information(self):
         type_ = FamiPortRequestType.Information
         request_params = dict(self.request.params)
-        params = {}
-        try:
-            params = {
-                'infoKubun': request_params['infoKubun'],
-                'storeCode': request_params['storeCode'],
-                'kogyoCode': request_params['kogyoCode'],
-                'kogyoSubCode': request_params['kogyoSubCode'],
-                'koenCode': request_params['koenCode'],
-                'uketsukeCode': request_params['uketsukeCode'],
-                'playGuideId': request_params.get('playGuideId', ''),  # optional
-                'authCode': request_params.get('authCode', ''),  # optional
-                'reserveNumber': request_params['reserveNumber'],
-                }
-        except KeyError as err:
-            _logger.error('parameter error: {}'.format(err))
-            return HTTPBadRequest(err)
+        params = {
+            'infoKubun': request_params.get('infoKubun', ''),
+            'storeCode': request_params.get('storeCode', ''),
+            'kogyoCode': request_params.get('kogyoCode', ''),   # optional
+            'kogyoSubCode': request_params.get('kogyoSubCode', ''),  # optional
+            'koenCode': request_params.get('koenCode', ''),  # optional
+            'uketsukeCode': request_params.get('uketsukeCode', ''),  # optional
+            'playGuideId': request_params.get('playGuideId', ''),  # optional
+            'authCode': request_params.get('authCode', ''),  # optional
+            'reserveNumber': request_params.get('reserveNumber', ''),  # optional
+            }
         famiport_request = self._create_famiport_request(params, type_)
         buf = self._build_payload(famiport_request)
         return Response(buf)
