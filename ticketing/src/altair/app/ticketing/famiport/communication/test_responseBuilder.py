@@ -165,13 +165,13 @@ class FamiPortResponseBuilderTestBase(object):
             payment_start_at=datetime(2015, 5, 20, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 23, 23, 59, 59),
             reserve_number=u'4321043210432',
-            exchange_number=u'',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    exchange_number=u'',
                     barcode_no=self.barcode_no_cash_on_delivery,
                     famiport_shop=self.famiport_shop,
                     ),
@@ -219,13 +219,13 @@ class FamiPortResponseBuilderTestBase(object):
             payment_start_at=datetime(2015, 5, 20, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 21, 23, 59, 59),
             reserve_number=u'4321043210433',
-            exchange_number=u'',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    exchange_number=u'',
                     barcode_no=self.barcode_no_payment,
                     famiport_shop=self.famiport_shop,
                     ),
@@ -273,13 +273,13 @@ class FamiPortResponseBuilderTestBase(object):
             payment_start_at=datetime(2015, 5, 22, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 23, 23, 59, 59),
             reserve_number=u'4321043210434',
-            exchange_number=u'',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    exchange_number=u'',
                     barcode_no=self.barcode_no_payment_only,
                     famiport_shop=self.famiport_shop,
                     ),

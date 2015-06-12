@@ -304,6 +304,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
+            receipt = None
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
                 if not receipt or receipt.famiport_shop.code != storeCode:
@@ -376,14 +377,14 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     else:
                         replyClass = ReplyClassEnum.Paid.value
                     orderTicketNo = barCodeNo
-                    exchangeTicketNo = famiport_order.exchange_number
+                    exchangeTicketNo = receipt.exchange_number
                     if famiport_order.ticketing_start_at:
                         ticketingStart = famiport_order.ticketing_start_at.strftime("%Y%m%d%H%M%S")
                     if famiport_order.ticketing_end_at:
                         ticketingEnd = famiport_order.ticketing_end_at.strftime("%Y%m%d%H%M%S")
                 elif order_type == FamiPortOrderType.Ticketing.value:
                     replyClass = ReplyClassEnum.Paid.value
-                    exchangeTicketNo = famiport_order.exchange_number
+                    exchangeTicketNo = receipt.exchange_number
                 elif order_type == FamiPortOrderType.PaymentOnly.value:
                     replyClass = ReplyClassEnum.PrepaymentOnly.value
                     orderTicketNo = barCodeNo
@@ -395,6 +396,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
                 ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
                 ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
+                exchangeTicketNo = str_or_blank(exchangeTicketNo)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
                 kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
 
