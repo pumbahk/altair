@@ -225,8 +225,10 @@ def upgrade():
     op.create_table(
         'FamiPortInformationMessage',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('result_code', sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False),  # 案内処理結果コード名
-        sa.Column('message', sa.Unicode(1000), nullable=False),  # 案内文言
+        sa.Column('result_code', sa.Enum('WithInformation', 'ServiceUnavailable'), nullable=False),  # 案内処理結果コード名
+        sa.Column('message', sa.Unicode(1000), nullable=False, server_default=u''),  # 案内文言
+        sa.Column('reserve_number', sa.String(13), nullable=False),
+        sa.Column('famiport_sales_segment_id', Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
         sa.PrimaryKeyConstraint('id')

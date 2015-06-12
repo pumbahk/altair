@@ -614,11 +614,13 @@ class FamiPortTicket(Base, WithTimestamp):
 
 class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
-    __table_args__ = (sa.UniqueConstraint('result_code'),)
 
     id = sa.Column(Identifier, primary_key=True)
-    result_code = sa.Column(sa.Enum('WithInformation', 'ServiceUnavailable'), unique=True, nullable=False)
-    message = sa.Column(sa.Unicode(length=1000), nullable=True)
+    result_code = sa.Column(sa.Enum('WithInformation', 'ServiceUnavailable'), nullable=False)
+    message = sa.Column(sa.Unicode(length=1000), nullable=False, default=u'')
+    reserve_number = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
+    famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True)
+    famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
 
     @classmethod
     def get_message(cls, information_result_code, default_message=None, session=_session):
