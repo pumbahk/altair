@@ -5,30 +5,6 @@ from  pyramid.testing import DummyRequest
 from .testing import FamiPortTestBase
 
 
-class GetFamiPortOrderTest(TestCase, FamiPortTestBase):
-    def _get_target(self):
-        from ..api import get_famiport_order as target
-        return target
-
-    def setUp(self):
-        FamiPortTestBase.setUp(self)
-
-    def tearDown(self):
-        FamiPortTestBase.tearDown(self)
-
-    def test_get_famiport_order(self):
-        exp_famiport_order = mock.Mock()
-        target = self._get_target()
-        session = mock.Mock()
-        q = session.query.return_value
-        q.filter.return_value = q
-        q.one.return_value = exp_famiport_order
-        order_no = 'XX000012345'
-        request = DummyRequest()
-        famiport_order = target(request, order_no, session)
-        self.assertEqual(famiport_order, exp_famiport_order)
-
-
 # class CreateFamiPortOrderTest(unittest.TestCase, FamiPortTestBase):
 #     def _target(self):
 #         from ..api import create_famiport_order as target

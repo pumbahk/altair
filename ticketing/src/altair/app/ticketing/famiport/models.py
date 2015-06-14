@@ -50,6 +50,10 @@ class HardcodedModel(object):
     def get(cls, id):
         return cls.__map__.get(id)
 
+    @classmethod
+    def is_valid_id(cls, id):
+        return id in cls.__map__ 
+
 
 class FamiPortArea(HardcodedModel):
     Nationwide     = (1, u'全国')
@@ -161,6 +165,8 @@ class FamiPortVenue(Base, WithTimestamp):
     __tablename__ = 'FamiPortVenue'
 
     id            = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    userside_id   = sa.Column(Identifier, nullable=True, index=True)
+    client_code   = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     name          = sa.Column(sa.Unicode(50), nullable=False)
     name_kana     = sa.Column(sa.Unicode(200), nullable=False)
     prefecture    = sa.Column(sa.Integer, nullable=False, default=0)
@@ -217,6 +223,8 @@ class FamiPortEvent(Base, WithTimestamp):
     genre_2_code            = sa.Column(sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code'))
     keywords                = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000)))
     search_code             = sa.Column(sa.Unicode(20))
+    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
 
     client                  = orm.relationship(FamiPortClient)
     venue                   = orm.relationship(FamiPortVenue)
@@ -242,6 +250,8 @@ class FamiPortPerformance(Base, WithTimestamp):
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
     start_at                = sa.Column(sa.DateTime(), nullable=True)
     ticket_name             = sa.Column(sa.Unicode(20), nullable=True)  # only valid if type == Spanned
+    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
 
     famiport_event = orm.relationship('FamiPortEvent')
 
@@ -261,6 +271,8 @@ class FamiPortSalesSegment(Base, WithTimestamp):
     auth_required           = sa.Column(sa.Boolean, nullable=False, default=False)
     auth_message            = sa.Column(sa.Unicode(320), nullable=False, default=u'')
     seat_selection_start_at = sa.Column(sa.DateTime(), nullable=True)
+    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
 
     famiport_performance = orm.relationship('FamiPortPerformance')
 

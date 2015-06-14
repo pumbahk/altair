@@ -32,7 +32,7 @@ class TestFamiPortEvent(TestCase):
                 playguide=FamiPortPlayguide(discrimination_code=1),
                 prefix=u'XXX'
                 ),
-            venue=FamiPortVenue(name=u'venue', name_kana=u'ヴェニュー'),
+            venue=FamiPortVenue(name=u'venue', client_code=u'000000', name_kana=u'ヴェニュー'),
             genre_1=FamiPortGenre1(code=u'1', name=u'genre1'),
             genre_2=FamiPortGenre2(code=u'2', name=u'genre2'),
             keywords=[u'a', u'b', u'c'],

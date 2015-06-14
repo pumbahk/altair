@@ -27,7 +27,7 @@ from altair.app.ticketing.mails.interfaces import (
 
 from altair.app.ticketing.famiport.models import FamiPortOrderType, FamiPortTicketType
 import altair.app.ticketing.famiport.api as famiport_api
-from altair.app.ticketing.famiport.exc import FamiPortError
+from altair.app.ticketing.famiport.exc import FamiPortAPIError
 from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.orders.models import OrderedProductItem
@@ -187,12 +187,17 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     if tenant is None:
         raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
 
+    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, order_like.sales_segment.id)
+
     return famiport_api.create_famiport_order(
         request,
         client_code=tenant.code,
         type_=FamiPortOrderType.Ticketing.value,
         order_no=order_like.order_no,
-        userside_sales_segment_id=order_like.sales_segment.id,
+        event_code_1=famiport_sales_segment['event_code_1'],
+        event_code_2=famiport_sales_segment['event_code_2'],
+        performance_code=famiport_sales_segment['performance_code'],
+        sales_segment_code=famiport_sales_segment['sales_segment_code'],
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
         customer_name=customer_name,
@@ -201,7 +206,11 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
         system_fee=system_fee,
         ticketing_fee=ticketing_fee,
         ticket_payment=ticket_payment,
-        tickets=build_ticket_dicts_from_order_like(request, order_like)
+        tickets=build_ticket_dicts_from_order_like(request, order_like),
+        payment_start_at=order_like.payment_start_at,
+        payment_due_at=order_like.payment_due_at,
+        ticketing_start_at=order_like.issuing_start_at,
+        ticketing_end_at=order_like.issuing_end_at,
         )
 
 
@@ -300,8 +309,8 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            return create_famiport_order(request, cart, in_payment=self._in_payment)
-        except FamiPortError:
+            create_famiport_order(request, cart, in_payment=self._in_payment)
+        except FamiPortAPIError:
             raise FamiPortPluginFailure()
 
     def finished(self, requrst, order):
@@ -373,9 +382,9 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            return create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
-        except FamiPortError:
-            raise FamiPortPluginFailure()
+            create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+        except FamiPortAPIError:
+            raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
     def finished(self, request, order):
         """ tokenが存在すること """
@@ -414,9 +423,9 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            return create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
-        except FamiPortError:
-            raise FamiPortPluginFailure()
+            create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+        except FamiPortAPIError:
+            raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
     def finished(self, request, order):
         """ tokenが存在すること """

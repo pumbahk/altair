@@ -102,6 +102,7 @@ class FamiPortResponseBuilderTestBase(object):
             name=u'小ジャンル'
             )
         self.famiport_venue = FamiPortVenue(
+            client_code=u'012340123401234012340123',
             name=u'博品館劇場',
             name_kana=u'ハクヒンカンゲキジョウ',
             prefecture=FamiPortPrefecture.Tokyo.id
