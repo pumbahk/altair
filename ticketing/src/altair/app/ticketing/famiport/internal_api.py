@@ -46,6 +46,18 @@ def get_famiport_sales_segment_by_userside_id(session, userside_id):
                     .one()
     return retval
 
+def get_famiport_performance_by_userside_id(session, userside_id):
+    retval = session.query(FamiPortPerformance) \
+                    .filter_by(userside_id=userside_id) \
+                    .one()
+    return retval
+
+def get_famiport_event_by_userside_id(session, userside_id):
+    retval = session.query(FamiPortEvent) \
+                    .filter_by(userside_id=userside_id) \
+                    .one()
+    return retval
+
 def get_famiport_order(session, order_no):
     retval = session.query(FamiPortOrder) \
                     .filter(FamiPortOrder.order_no == order_no) \

@@ -45,12 +45,52 @@ def famiport_sales_segment_to_dict(famiport_sales_segment):
         event_code_1=famiport_event.code_1,
         event_code_2=famiport_event.code_2,
         performance_code=famiport_performance.code,
-        sales_segment_code=famiport_sales_segment.code
+        code=famiport_sales_segment.code,
+        name=famiport_sales_segment.name,
+        sales_channel=famiport_sales_segment.sales_channel,
+        published_at=famiport_sales_segment.published_at,
+        start_at=famiport_sales_segment.start_at,
+        end_at=famiport_sales_segment.end_at,
+        auth_required=famiport_sales_segment.auth_required,
+        auth_message=famiport_sales_segment.auth_message,
+        seat_selection_start_at=famiport_sales_segment.seat_selection_start_at
+        )
+
+def famiport_performance_dict(famiport_performance):
+    famiport_event = famiport_performance.famiport_event
+    return dict(
+        client_code=famiport_event.client_code,
+        event_code_1=famiport_event.code_1,
+        event_code_2=famiport_event.code_2,
+        code=famiport_performance.code,
+        name=famiport_performance.name,
+        type=famiport_performance.type,
+        searchable=famiport_performance.searchable,
+        sales_channel=famiport_performance.sales_channel,
+        start_at=famiport_performance.start_at,
+        ticket_name=famiport_performance.ticket_name,
+        )
+
+def famiport_event_dict(famiport_event):
+    return dict(
+        client_code=famiport_event.client_code,
+        code_1=famiport_event.code_1,
+        code_2=famiport_event.code_2,
+        name_1=famiport_event.name_1,
+        name_2=famiport_event.name_2,
+        sales_channel=famiport_event.sales_channel,
+        venue_id=famiport_event.venue_id,
+        purchasable_prefectures=famiport_event.purchasable_prefectures,
+        start_at=famiport_event.start_at,
+        end_at=famiport_event.end_at,
+        genre_1_code=famiport_event.genre_1_code,
+        genre_2_code=famiport_event.genre_2_code,
+        keywords=famiport_event.keywords,
+        search_code=famiport_event.search_code
         )
 
 def famiport_order_to_dict(famiport_order):
-    retval = famiport_sales_segment_to_dict(famiport_order.famiport_sales_segment)
-    retval.update(
+    retval = dict(
         order_no=famiport_order.order_no,
         famiport_order_identifier=famiport_order.famiport_order_identifier,
         reserve_number=famiport_order.reserve_number,
@@ -79,6 +119,13 @@ def famiport_order_to_dict(famiport_order):
             for famiport_ticket in famiport_order.famiport_tickets
             ]
         )
+    sales_segment_dict = famiport_sales_segment_to_dict(famiport_order.famiport_sales_segment)
+    retval.update(
+        event_code_1=sales_segment_dict['event_code_1'],
+        event_code_2=sales_segment_dict['event_code_2'],
+        performance_code=sales_segment_dict['performance_code'],
+        sales_segment_code=sales_segment_dict['code']
+        )
     return retval
 
 @user_api
@@ -91,6 +138,7 @@ def get_famiport_order(request, order_no):
     except NoResultFound:
         raise FamiPortAPIError('no such order: %s' % order_no)
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
 @user_api
@@ -101,8 +149,35 @@ def get_famiport_sales_segment_by_userside_id(request, userside_id):
         famiport_sales_segment = internal.get_famiport_sales_segment_by_userside_id(session, userside_id)
         return famiport_sales_segment_to_dict(famiport_sales_segment)
     except NoResultFound:
-        raise FamiPortAPIError('no such client: %s' % client_code)
+        raise FamiPortAPIError('no such sales_segment corresponds to userside_id: %d' % userside_id)
     except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_famiport_performance_by_userside_id(request, userside_id):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        famiport_performance = internal.get_famiport_performance_by_userside_id(session, userside_id)
+        return famiport_performance_to_dict(famiport_performance)
+    except NoResultFound:
+        raise FamiPortAPIError('no such performance corresponds to userside_id: %d' % userside_id)
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_famiport_event_by_userside_id(request, userside_id):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        famiport_event = internal.get_famiport_event_by_userside_id(session, userside_id)
+        return famiport_event_to_dict(famiport_event)
+    except NoResultFound:
+        raise FamiPortAPIError('no such event corresponds to userside_id: %d' % userside_id)
+    except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
 @user_api
@@ -164,6 +239,7 @@ def create_or_update_famiport_venue(
     except FamiPortAPIError:
         raise
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
 
@@ -285,6 +361,7 @@ def create_or_update_famiport_event(
     except FamiPortAPIError:
         raise
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
 
@@ -368,6 +445,7 @@ def create_or_update_famiport_performance(
     except FamiPortAPIError:
         raise
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
 
@@ -447,6 +525,7 @@ def create_or_update_famiport_sales_segment(
     except FamiPortAPIError:
         raise
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
 
@@ -506,6 +585,7 @@ def create_famiport_order(
     except FamiPortAPIError:
         raise
     except:
+        logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
 def do_order(*args, **kwds):
