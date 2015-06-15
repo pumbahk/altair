@@ -208,6 +208,9 @@ class MutableSpaceDelimitedList(Mutable, NervousList):
 
 class FamiPortEvent(Base, WithTimestamp):
     __tablename__ = 'FamiPortEvent'
+    __table_args__ = (
+        sa.UniqueConstraint('code_1', 'code_2', 'revision'),
+        )
 
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
     userside_id             = sa.Column(Identifier, nullable=True, index=True)
@@ -225,8 +228,9 @@ class FamiPortEvent(Base, WithTimestamp):
     genre_2_code            = sa.Column(sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code'))
     keywords                = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000)))
     search_code             = sa.Column(sa.Unicode(20))
-    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
+    invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
 
     client                  = orm.relationship(FamiPortClient)
     venue                   = orm.relationship(FamiPortVenue)
@@ -241,31 +245,41 @@ class FamiPortPerformanceType(Enum):
 
 class FamiPortPerformance(Base, WithTimestamp):
     __tablename__ = 'FamiPortPerformance'
-
+    __table_args__ = (
+        sa.UniqueConstraint('famiport_event_id', 'code', 'revision'),
+        )
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
     userside_id             = sa.Column(Identifier, nullable=True, index=True)
     famiport_event_id       = sa.Column(Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False)
-    code                    = sa.Column(sa.Unicode(3))
-    name                    = sa.Column(sa.Unicode(60))
+    code                    = sa.Column(sa.Unicode(3), nullable=False)
+    name                    = sa.Column(sa.Unicode(60), nullable=False, default=u'')
     type                    = sa.Column(sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value)
     searchable              = sa.Column(sa.Boolean, nullable=False, default=True)
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
     start_at                = sa.Column(sa.DateTime(), nullable=True)
     ticket_name             = sa.Column(sa.Unicode(20), nullable=True)  # only valid if type == Spanned
-    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
+    reflected_at            = sa.Column(sa.DateTime(), nullable=True)
+    invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
 
-    famiport_event = orm.relationship('FamiPortEvent')
+    famiport_event = orm.relationship(
+        'FamiPortEvent',
+        primaryjoin=lambda: FamiPortPerformance.famiport_event_id == FamiPortEvent.id
+        )
 
 
 class FamiPortSalesSegment(Base, WithTimestamp):
     __tablename__ = 'FamiPortSalesSegment'
+    __table_args__ = (
+        sa.UniqueConstraint('famiport_performance_id', 'code', 'revision'),
+        )
 
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
     userside_id             = sa.Column(Identifier, nullable=True, index=True)
     famiport_performance_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False)
     code                    = sa.Column(sa.Unicode(3), nullable=False)
-    name                    = sa.Column(sa.Unicode(40), nullable=False)
+    name                    = sa.Column(sa.Unicode(40), nullable=False, default=u'')
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
     published_at            = sa.Column(sa.DateTime(), nullable=True)
     start_at                = sa.Column(sa.DateTime(), nullable=False)
@@ -273,10 +287,15 @@ class FamiPortSalesSegment(Base, WithTimestamp):
     auth_required           = sa.Column(sa.Boolean, nullable=False, default=False)
     auth_message            = sa.Column(sa.Unicode(320), nullable=False, default=u'')
     seat_selection_start_at = sa.Column(sa.DateTime(), nullable=True)
-    need_reflection         = sa.Column(sa.Boolean(), default=False)
+    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
+    reflected_at            = sa.Column(sa.DateTime(), nullable=True)
+    invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
 
-    famiport_performance = orm.relationship('FamiPortPerformance')
+    famiport_performance = orm.relationship(
+        'FamiPortPerformance',
+        primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id
+        )
 
 
 class FamiPortRefundType(Enum):
@@ -528,7 +547,10 @@ class FamiPortOrder(Base, WithTimestamp):
 
     report_generated_at       = sa.Column(sa.DateTime(), nullable=True)
 
-    famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
+    famiport_sales_segment = orm.relationship(
+        'FamiPortSalesSegment',
+        primaryjoin=lambda: FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id
+        )
     famiport_client = orm.relationship('FamiPortClient')
 
     @property

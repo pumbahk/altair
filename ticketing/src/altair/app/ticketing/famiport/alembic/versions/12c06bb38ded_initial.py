@@ -109,33 +109,39 @@ def upgrade():
         sa.Column('genre_2_code', sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code')),
         sa.Column('keywords', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000).adapt(sa.UnicodeText))),
         sa.Column('search_code', sa.Unicode(20)),
-        sa.Column('need_reflection', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('revision', sa.Integer(), nullable=False, server_default=text(u"0")),
         sa.Column('file_generated_at', sa.DateTime(), nullable=True),
+        sa.Column('reflected_at', sa.DateTime(), nullable=True),
+        sa.Column('invalidated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
-        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.UniqueConstraint('code_1', 'code_2', 'revision')
         )
     op.create_table(
         'FamiPortPerformance',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('userside_id', Identifier, nullable=True, index=True),
         sa.Column('famiport_event_id', Identifier, sa.ForeignKey('FamiPortEvent.id'), nullable=False),
-        sa.Column('code', sa.Unicode(3)),
-        sa.Column('name', sa.Unicode(60)),
+        sa.Column('code', sa.Unicode(3), nullable=False),
+        sa.Column('name', sa.Unicode(60), nullable=False, server_default=text(u'""')),
         sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortPerformanceType.Normal.value))),
         sa.Column('searchable', sa.Boolean, nullable=False, server_default=text(u"TRUE")),
         sa.Column('sales_channel', sa.Integer, nullable=False, server_default=text(unicode(FamiPortSalesChannel.FamiPortOnly.value))),
         sa.Column('start_at', sa.DateTime(), nullable=True),
         sa.Column('ticket_name', sa.Unicode(20), nullable=True),  # only valid if type = Spanned
-        sa.Column('need_reflection', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('revision', sa.Integer(), nullable=False, server_default=text(u"0")),
         sa.Column('file_generated_at', sa.DateTime(), nullable=True),
+        sa.Column('reflected_at', sa.DateTime(), nullable=True),
+        sa.Column('invalidated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
-        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.UniqueConstraint('famiport_event_id', 'code', 'revision')
         )
     op.create_table(
         'FamiPortSalesSegment',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('userside_id', Identifier, nullable=True, index=True),
-        sa.Column('famiport_performance_id',  Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False),
+        sa.Column('famiport_performance_id', Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False),
         sa.Column('code', sa.Unicode(3), nullable=False),
         sa.Column('name', sa.Unicode(40), nullable=False),
         sa.Column('sales_channel', sa.Integer, nullable=False, server_default=text(unicode(FamiPortSalesChannel.FamiPortOnly.value))),
@@ -145,10 +151,13 @@ def upgrade():
         sa.Column('auth_required', sa.Boolean, nullable=False, server_default=text(u"FALSE")),
         sa.Column('auth_message', sa.Unicode(320), nullable=False, server_default=text(u"''")),
         sa.Column('seat_selection_start_at', sa.DateTime(), nullable=True),
-        sa.Column('need_reflection', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
+        sa.Column('revision', sa.Integer(), nullable=False, server_default=text(u"0")),
         sa.Column('file_generated_at', sa.DateTime(), nullable=True),
+        sa.Column('reflected_at', sa.DateTime(), nullable=True),
+        sa.Column('invalidated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
-        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.UniqueConstraint('famiport_performance_id', 'code', 'revision')
         )
     op.create_table(
         'FamiPortOrder',
@@ -189,7 +198,7 @@ def upgrade():
         sa.Column('invalidated_at', sa.DateTime, nullable=True),
         sa.Column('generation', sa.Integer, nullable=False, server_default=text(u"0")),
         sa.Column('report_generated_at', sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint('id'),
+        sa.PrimaryKeyConstraint('id')
         )
     op.create_table(
         'FamiPortTicket',

@@ -37,6 +37,9 @@ def get_famiport_sales_segment_by_code(session, event_code_1, event_code_2, perf
                     .filter(FamiPortEvent.code_1 == event_code_1, FamiPortEvent.code_2 == event_code_2) \
                     .filter(FamiPortPerformance.code == performance_code) \
                     .filter(FamiPortSalesSegment.code == code) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
                     .one()
     return retval
 
@@ -52,6 +55,9 @@ def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id)
                     .join(FamiPortPerformance.famiport_event) \
                     .filter(FamiPortEvent.client_code == client_code,
                             FamiPortSalesSegment.userside_id == userside_id) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
                     .one()
     return retval
 
@@ -60,12 +66,16 @@ def get_famiport_performance_by_userside_id(session, client_code, userside_id):
                     .join(FamiPortPerformance.famiport_event) \
                     .filter(FamiPortEvent.client_code == client_code,
                             FamiPortPerformance.userside_id == userside_id) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
                     .one()
     return retval
 
 def get_famiport_event_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortEvent) \
-                    .filter_by(client_code=client_code, userside_id=userside_id) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortEvent.userside_id == userside_id) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
                     .one()
     return retval
 
