@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from .performances.api import get_no_ticket_bundles
+
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, NumberRange, Optional, ValidationError
@@ -239,23 +241,7 @@ class EventPublicForm(Form):
             event = Event.get(form.event_id.data)
             for performance in event.performances:
 
-                no_ticket_bundles = ''
-
-                has_sej = performance.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
-
-                for sales_segment in performance.sales_segments:
-                    for product in sales_segment.products:
-                        for product_item in product.items:
-                            if not product_item.ticket_bundle:
-                                p = product_item.product
-                                if p.sales_segment is not None:
-                                    no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
-                            elif has_sej:
-                                producer = ApplicableTicketsProducer.from_bundle(product_item.ticket_bundle)
-                                if not producer.any_exist(producer.sej_only_tickets()):
-                                    p = product_item.product
-                                    if p.sales_segment is not None:
-                                        no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
+                no_ticket_bundles = get_no_ticket_bundles(performance)
 
                 if no_ticket_bundles:
                     raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
