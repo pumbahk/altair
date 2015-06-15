@@ -2,6 +2,7 @@
 import sys
 import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from datetime import datetime
 from altair.sqlahelper import get_db_session
 import functools
 from .models import (
@@ -287,10 +288,12 @@ def create_or_update_famiport_event(
         genre_2_code,
         keywords,
         search_code,
-        update_existing=False):
+        update_existing=False,
+        now=None):
     sys.exc_clear()
-    new = False
     try:
+        if now is None:
+            now = datetime.now()
         session = get_db_session(request, 'famiport')
     
         # validate
@@ -322,12 +325,14 @@ def create_or_update_famiport_event(
             except NoResultFound:
                 raise FamiPortAPINotFoundError('no corresponding subgenre found for code=%s' % genre_2_code)
 
-        event = None
+        old_event = None
         try:
-            event = session.query(FamiPortEvent) \
+            old_event = session.query(FamiPortEvent) \
+                .with_lockmode('update') \
                 .filter(FamiPortEvent.client_code == client_code) \
                 .filter(FamiPortEvent.code_1 == code_1) \
                 .filter(FamiPortEvent.code_2 == code_2) \
+                .filter(FamiPortEvent.invalidated_at == None) \
                 .one()
         except NoResultFound:
             pass
@@ -335,28 +340,24 @@ def create_or_update_famiport_event(
 
         internal.validate_sales_channel(sales_channel)
 
-        if not update_existing and event is not None:
+        if not update_existing and old_event is not None:
             raise FamiPortAPIError(u'event already exists')
 
-        if event is None:
-            event = FamiPortEvent(
-                client_code=client_code,
-                code_1=code_1,
-                code_2=code_2
-                )
-            session.add(event)
-            new = True
+        event = FamiPortEvent(
+            client_code=client_code,
+            code_1=code_1,
+            code_2=code_2,
+            name_1=name_1,
+            name_2=name_2,
+            sales_channel=sales_channel,
+            venue_id=venue_id,
+            userside_id=userside_id,
+            genre_1_code=genre_1.code if genre_1 is not None else None,
+            genre_2_code=genre_2.code if genre_2 is not None else None,
+            keywords=keywords,
+            search_code=search_code
+            )
 
-        event.name_1 = name_1
-        event.name_2 = name_2
-        event.sales_channel = sales_channel
-        event.venue_id = venue_id
-        event.userside_id = userside_id
-        event.genre_1_code = genre_1.code if genre_1 is not None else None
-        event.genre_2_code = genre_2.code if genre_2 is not None else None
-        event.keywords = keywords
-        event.search_code = search_code
-        event.need_reflection = True
         if purchasable_prefectures is not None:
             _purchasable_prefectures = [] 
             for prefecture_id in purchasable_prefectures:
@@ -380,9 +381,14 @@ def create_or_update_famiport_event(
         if keywords is not None:
             event.keywords = keywords
 
+        if old_event is not None:
+            event.revision = old_event.revision + 1
+            old_event.invalidated_at = now
+
+        session.add(event)
         session.commit()
         return dict(
-            new=new
+            new=old_event is None
             )
     except FamiPortAPIError:
         raise
@@ -405,10 +411,12 @@ def create_or_update_famiport_performance(
         sales_channel,
         start_at,
         ticket_name,
-        update_existing=False):
+        update_existing=False,
+        now=None):
     sys.exc_clear()
-    new = False
     try:
+        if now is None:
+            now = datetime.now()
         session = get_db_session(request, 'famiport')
      
         internal.get_famiport_client(session, client_code)
@@ -418,15 +426,18 @@ def create_or_update_famiport_performance(
                 .filter(FamiPortEvent.client_code == client_code) \
                 .filter(FamiPortEvent.code_1 == event_code_1) \
                 .filter(FamiPortEvent.code_2 == event_code_2) \
+                .filter(FamiPortEvent.invalidated_at == None) \
                 .one()
         except NoResultFound:
             raise FamiPortAPINotFoundError('no corresponding event found for client_code=%s, event_code_1=%s, event_code_2=%s' % (client_code, event_code_1, event_code_2))
 
-        performance = None
+        old_performance = None
         try:
-            performance = session.query(FamiPortPerformance) \
+            old_performance = session.query(FamiPortPerformance) \
+                .with_lockmode('update') \
                 .filter(FamiPortPerformance.code == code) \
                 .filter(FamiPortPerformance.famiport_event_id == event.id) \
+                .filter(FamiPortPerformance.invalidated_at == None) \
                 .one()
         except NoResultFound:
             pass
@@ -443,30 +454,28 @@ def create_or_update_famiport_performance(
 
         internal.validate_sales_channel(sales_channel)
 
-        if not update_existing and performance is not None:
+        if not update_existing and old_performance is not None:
             raise FamiPortAPIError(u'performance already exists')
 
-        if performance is None:
-            performance = FamiPortPerformance(
-                code=code,
-                famiport_event_id=event.id
-                )
-            session.add(performance)
-            new = True
+        performance = FamiPortPerformance(
+            code=code,
+            famiport_event_id=event.id,
+            name=name,
+            type=type_,
+            searchable=searchable,
+            sales_channel=sales_channel,
+            ticket_name=ticket_name,
+            userside_id=userside_id,
+            start_at=start_at
+            )
+        if old_performance is not None:
+            performance.revision = old_performance.revision + 1
+            old_performance.invalidated_at = now
 
-        performance.code = code
-        performance.name = name
-        performance.type = type_
-        performance.searchable = searchable
-        performance.sales_channel = sales_channel
-        performance.ticket_name = ticket_name
-        performance.userside_id = userside_id
-        performance.start_at = start_at
-        performance.need_reflection = True
-
+        session.add(performance)
         session.commit()
         return dict(
-            new=new
+            new=old_performance is None
             )
     except FamiPortAPIError:
         raise
@@ -492,10 +501,13 @@ def create_or_update_famiport_sales_segment(
         auth_required,
         auth_message,
         seat_selection_start_at,
-        update_existing=False):
+        update_existing=False,
+        now=None):
     sys.exc_clear()
     new = False
     try:
+        if now is None:
+            now = datetime.now()
         session = get_db_session(request, 'famiport')
      
         internal.get_famiport_client(session, client_code)
@@ -511,9 +523,10 @@ def create_or_update_famiport_sales_segment(
         except NoResultFound:
             raise FamiPortAPINotFoundError('no corresponding performance found for client_code=%s, event_code_1=%s, event_code_2=%s, performance_code=%s' % (client_code, event_code_1, event_code_2, performance_code))
 
-        sales_segment = None
+        old_sales_segment = None
         try:
-            sales_segment = session.query(FamiPortSalesSegment) \
+            old_sales_segment = session.query(FamiPortSalesSegment) \
+                .with_lockmode('update') \
                 .filter(FamiPortSalesSegment.code == code) \
                 .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
                 .one()
@@ -523,30 +536,29 @@ def create_or_update_famiport_sales_segment(
 
         internal.validate_sales_channel(sales_channel)
 
-        if not update_existing and sales_segment is not None:
+        if not update_existing and old_sales_segment is not None:
             raise FamiPortAPIError(u'sales_segment already exists')
 
-        if sales_segment is None:
-            sales_segment = FamiPortSalesSegment(
-                code=code,
-                famiport_performance_id=performance.id
-                )
-            session.add(sales_segment)
-            new = True
+        sales_segment = FamiPortSalesSegment(
+            code=code,
+            famiport_performance_id=performance.id,
+            name=name,
+            sales_channel=sales_channel,
+            published_at=published_at,
+            start_at=start_at,
+            end_at=end_at,
+            auth_required=auth_required,
+            auth_message=auth_message,
+            seat_selection_start_at=seat_selection_start_at
+            )
+        if old_sales_segment is not None:
+            sales_segment.revision = old_sales_segment.revision + 1
+            old_sales_segment.invalidated_at = now
 
-        sales_segment.name = name
-        sales_segment.sales_channel = sales_channel
-        sales_segment.published_at = published_at
-        sales_segment.start_at = start_at
-        sales_segment.end_at = end_at
-        sales_segment.auth_required = auth_required
-        sales_segment.auth_message = auth_message
-        sales_segment.seat_selection_start_at = seat_selection_start_at
-        sales_segment.need_reflection = True
-
+        session.add(sales_segment)
         session.commit()
         return dict(
-            new=new
+            new=old_sales_segment is None
             )
     except FamiPortAPIError:
         raise
