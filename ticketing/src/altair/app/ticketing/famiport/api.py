@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
 import functools
@@ -30,12 +31,24 @@ from .communication.api import (  # noqa
     )
 from . import internal_api as internal
 
+logger = logging.getLogger(__name__)
+
 def user_api(fn):
     def _(*args, **kwargs):
         return fn(*args, **kwargs)
     functools.update_wrapper(_, fn)
     return _
 
+
+def famiport_venue_to_dict(famiport_venue):
+    return dict(
+        venue_id=famiport_venue.id,
+        userside_id=famiport_venue.userside_id,
+        client_code=famiport_venue.client_code,
+        name=famiport_venue.name,
+        name_kana=famiport_venue.name_kana,
+        prefecture=famiport_venue.prefecture
+        )
 
 def famiport_sales_segment_to_dict(famiport_sales_segment):
     famiport_performance = famiport_sales_segment.famiport_performance
@@ -136,46 +149,59 @@ def get_famiport_order(request, order_no):
         famiport_order = internal.get_famiport_order(session, order_no)
         return famiport_order_to_dict(famiport_order)
     except NoResultFound:
-        raise FamiPortAPIError('no such order: %s' % order_no)
+        raise FamiPortAPINotFoundError('no such order: %s' % order_no)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
 @user_api
-def get_famiport_sales_segment_by_userside_id(request, userside_id):
+def get_famiport_venue_by_userside_id(request, client_code, userside_id):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        famiport_sales_segment = internal.get_famiport_sales_segment_by_userside_id(session, userside_id)
+        famiport_venue = internal.get_famiport_venue_by_userside_id(session, client_code, userside_id)
+        return famiport_venue_to_dict(famiport_venue)
+    except NoResultFound:
+        raise FamiPortAPINotFoundError('no such venue corresponds to userside_id: %d' % userside_id)
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_famiport_sales_segment_by_userside_id(request, client_code, userside_id):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        famiport_sales_segment = internal.get_famiport_sales_segment_by_userside_id(session, client_code, userside_id)
         return famiport_sales_segment_to_dict(famiport_sales_segment)
     except NoResultFound:
-        raise FamiPortAPIError('no such sales_segment corresponds to userside_id: %d' % userside_id)
+        raise FamiPortAPINotFoundError('no such sales_segment corresponds to userside_id: %d' % userside_id)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
 @user_api
-def get_famiport_performance_by_userside_id(request, userside_id):
+def get_famiport_performance_by_userside_id(request, client_code, userside_id):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        famiport_performance = internal.get_famiport_performance_by_userside_id(session, userside_id)
+        famiport_performance = internal.get_famiport_performance_by_userside_id(session, client_code, userside_id)
         return famiport_performance_to_dict(famiport_performance)
     except NoResultFound:
-        raise FamiPortAPIError('no such performance corresponds to userside_id: %d' % userside_id)
+        raise FamiPortAPINotFoundError('no such performance corresponds to userside_id: %d' % userside_id)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
 @user_api
-def get_famiport_event_by_userside_id(request, userside_id):
+def get_famiport_event_by_userside_id(request, client_code, userside_id):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        famiport_event = internal.get_famiport_event_by_userside_id(session, userside_id)
+        famiport_event = internal.get_famiport_event_by_userside_id(session, client_code, userside_id)
         return famiport_event_to_dict(famiport_event)
     except NoResultFound:
-        raise FamiPortAPIError('no such event corresponds to userside_id: %d' % userside_id)
+        raise FamiPortAPINotFoundError('no such event corresponds to userside_id: %d' % userside_id)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
@@ -590,3 +616,47 @@ def create_famiport_order(
 
 def do_order(*args, **kwds):
     return create_famiport_order(*args, **kwds)
+
+@user_api
+def get_genre_1_list(request):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        return [
+            dict(
+                code=genre_1.code,
+                name=genre_1.name
+                )
+            for genre_1 in session.query(FamiPortGenre1)
+            ]
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_genre_2_list(request):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        return [
+            dict(
+                code=genre_2.code,
+                name=genre_2.name
+                )
+            for genre_2 in session.query(FamiPortGenre2)
+            ]
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+name_to_prefecture_map = dict(
+    (prefecture.name, prefecture)
+    for prefecture in FamiPortPrefecture
+    )
+
+@user_api
+def resolve_famiport_prefecture_by_name(request, name):
+    try:
+        return name_to_prefecture_map[name].id
+    except KeyError:
+        raise FamiPortAPINotFoundError(u'no such prefecture: %s' % name)

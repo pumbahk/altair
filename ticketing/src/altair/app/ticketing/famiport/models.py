@@ -46,6 +46,9 @@ class HardcodedModel(object):
             setattr(retval, '__map__', map_)
             return retval
 
+        def __iter__(cls):
+            return iter(getattr(cls, '__map__').values())
+
     @classmethod
     def get(cls, id):
         return cls.__map__.get(id)
@@ -53,7 +56,6 @@ class HardcodedModel(object):
     @classmethod
     def is_valid_id(cls, id):
         return id in cls.__map__ 
-
 
 class FamiPortArea(HardcodedModel):
     Nationwide     = (1, u'全国')

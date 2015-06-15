@@ -253,6 +253,7 @@ class OrganizationSettings(BaseView):
         organization_setting.asid_mobile = f.asid_mobile.data
         organization_setting.asid_smartphone = f.asid_smartphone.data
         organization_setting.lot_asid = f.lot_asid.data
+        organization_setting.famiport_enabled = f.famiport_enabled.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

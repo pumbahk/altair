@@ -38,6 +38,8 @@ function build_form_params(form) {
       value = v.checked ? v.value: null;
     } else if (v.type == 'select-multiple') {
       value = get_selected_options(v);
+    } else if (v.type == 'submit') {
+      return;
     } else {
       value = $(v).val();
     }

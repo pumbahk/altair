@@ -40,21 +40,32 @@ def get_famiport_sales_segment_by_code(session, event_code_1, event_code_2, perf
                     .one()
     return retval
 
-def get_famiport_sales_segment_by_userside_id(session, userside_id):
+def get_famiport_venue_by_userside_id(session, client_code, userside_id):
+    retval = session.query(FamiPortVenue) \
+                    .filter_by(client_code=client_code, userside_id=userside_id) \
+                    .one()
+    return retval
+
+def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortSalesSegment) \
-                    .filter_by(userside_id=userside_id) \
+                    .join(FamiPortSalesSegment.famiport_performance) \
+                    .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortSalesSegment.userside_id == userside_id) \
                     .one()
     return retval
 
-def get_famiport_performance_by_userside_id(session, userside_id):
+def get_famiport_performance_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortPerformance) \
-                    .filter_by(userside_id=userside_id) \
+                    .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortPerformance.userside_id == userside_id) \
                     .one()
     return retval
 
-def get_famiport_event_by_userside_id(session, userside_id):
+def get_famiport_event_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortEvent) \
-                    .filter_by(userside_id=userside_id) \
+                    .filter_by(client_code=client_code, userside_id=userside_id) \
                     .one()
     return retval
 

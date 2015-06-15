@@ -1,0 +1,141 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/modal.html" name="common_modal" />
+<%namespace file="/common/helpers.html" name="ch" />
+<style type="text/css">
+.attached-action {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgb(230, 230, 230);
+  background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+  padding: 4px 4px;
+  line-height: 1em;
+}
+
+.attached-action-inner {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.attached-action input,
+.attached-action textarea,
+.attached-action select,
+.attached-action .uneditable-input,
+.attached-action .input-append {
+  margin: 0 0;
+}
+
+</style>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'ファミポート連携'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</%block>
+<div class="page-header">
+  <h1>ファミポート連携</h1>
+</div>
+
+<form method="POST" action="${request.route_path('events.famiport.performance_groups.action', event_id=event.id, traverse='action_dispatch')}">
+  <h2>公演グループ</h2>
+  <div class="attached-action">
+    <div class="attached-action-inner">
+      <div class="attached-action-form pull-left">
+        チェックされた公演グループを
+        <select name="reflection_status" class="span4">
+          <option value="Editing">編集中</option>
+          <option value="AwaitingReflection">反映待ち</option>
+        </select>
+        にする
+        <button name="do_mark_checked" class="btn">設定</button>
+      </div>
+      <div class="attached-action-form pull-right">
+        <button name="do_auto_add" class="btn btn-success">既存の登録内容から自動追加</button>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+    (function (endpoints) {
+      (function ($form) {
+        function show_confirmation_modal(message, disable_execution_button, name) {
+          var $modal = $('#modal-confirm');
+          var execution_button = $modal.find('input[type="submit"]');
+          execution_button.attr('name', name);
+          if (disable_execution_button)
+            execution_button.attr('disabled', 'disabled')
+          else
+            execution_button.removeAttr('disabled');
+          $modal.find('.modal-body .message').text(message);
+          $modal.modal('show');
+        }
+        (function ($btn) {
+          $btn.on('click', function (e) {
+            e.preventDefault();
+            var data = build_form_params($form.get(0));
+            $.ajax({
+              type: 'post',
+              url: endpoints['try_mark_checked'],
+              data: data,
+              traditional: true,
+              success: function (data) {
+                if (data['message']) {
+                  show_confirmation_modal(data['message'], data['count'] == 0, $btn.attr('name'));
+                }
+              }
+            });
+          });
+        })($($form.get(0).elements['do_mark_checked']));
+      })($('script:last').closest('form'))
+    })(${HH.json(dict(try_mark_checked=request.route_path('events.famiport.performance_groups.action', event_id=event.id, traverse='try_mark_checked')))|n});
+  </script>
+  <br style="clear:both" />
+  
+  <table class="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>FM興行名称</th>
+        <th>FM会場名 [Altair会場名]</th>
+        <th>FM興行コード</th>
+        <th>FM公演コード</th>
+        <th>FM公演名 / Altair公演名</th>
+        <th>日時</th>
+      </tr>
+    </thead>
+    <tbody>
+    % for altair_famiport_performance_group in altair_famiport_performance_groups:
+      <tr>
+        <%
+        altair_famiport_performances = altair_famiport_performance_group.altair_famiport_performances
+        rows = len(altair_famiport_performances) * 2
+        %>
+        <td rowspan="${rows}">
+          <input type="checkbox" name="altair_famiport_performance_group_id[]" value="${altair_famiport_performance_group.id}" />
+        </td>
+        <td rowspan="${rows}">
+          ${view.status_label(altair_famiport_performance_group.status)}
+          ${view.sales_channel_label(altair_famiport_performance_group.sales_channel)}
+          <a href="${request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}">${altair_famiport_performance_group.name_1}</a> (${altair_famiport_performance_group.name_2})
+        </td>
+        <td rowspan="${rows}">
+          ${altair_famiport_performance_group.altair_famiport_venue.name}<br />
+          [${altair_famiport_performance_group.altair_famiport_venue.site.name}]
+        </td>
+        <td rowspan="${rows}">${altair_famiport_performance_group.code_1}-${altair_famiport_performance_group.code_2}</td>
+        % for i, (performance, altair_famiport_performance) in enumerate(sorted(altair_famiport_performance_group.altair_famiport_performances.items(), key=lambda pair: pair[1].code)):
+          % if i > 0:
+      </tr>
+      <tr>
+          % endif
+        <td rowspan="2">${altair_famiport_performance.code}</td>
+        <td>${altair_famiport_performance.name}</td>
+        <td rowspan="2">${vh.datetime(altair_famiport_performance.start_at, with_weekday=True)}</td>
+      </tr>
+      <tr>
+        <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
+      % endfor
+      </tr>
+    % endfor
+    </tbody>
+  </table>
+  ${common_modal.confirm_modal(no_outer_form_element=True)}
+</form>

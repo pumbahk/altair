@@ -421,6 +421,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     sitecatalyst_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.sitecatalyst_use)['label']
         )
+    famiport_enabled = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.famiport_enabled)['label']
+        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

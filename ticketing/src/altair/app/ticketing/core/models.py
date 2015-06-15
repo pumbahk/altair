@@ -3870,6 +3870,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
+    famiport_enabled = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ファミポートでの入金p 発券機能を利用", _a_label=u"ファミポートでの入金・発券機能を利用")
+
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
 

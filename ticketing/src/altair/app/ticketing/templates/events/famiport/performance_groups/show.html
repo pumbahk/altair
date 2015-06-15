@@ -1,0 +1,102 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/modal.html" name="common_modal" />
+<%namespace file="/common/helpers.html" name="ch" />
+<style type="text/css">
+.attached-action {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgb(230, 230, 230);
+  background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+  padding: 4px 4px;
+  line-height: 1em;
+}
+
+.attached-action-inner {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.attached-action input,
+.attached-action textarea,
+.attached-action select,
+.attached-action .uneditable-input,
+.attached-action .input-append {
+  margin: 0 0;
+}
+
+</style>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'ファミポート連携', u'公演グループ「%s」' % altair_famiport_performance_group.name_1],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id), request.route_path('events.famiport.performance_groups.index', event_id=event.id)]
+  )}
+</%block>
+<div class="page-header">
+  <h1>公演グループ「${altair_famiport_performance_group.name_1}」</h1>
+</div>
+
+<table class="table">
+  <tbody>
+    <tr>
+      <th>ステータス</th>
+      <td>${view.status_label(altair_famiport_performance_group.status)}</td>
+    </tr>
+    <tr>
+      <th>Altairイベント名</th>
+      <td>${altair_famiport_performance_group.event.title}</td>
+    </tr>
+    <tr>
+      <th>公演コード</th>
+      <td>${altair_famiport_performance_group.code_1}-${altair_famiport_performance_group.code_2}</td>
+    </tr>
+    <tr>
+      <th>公演名1</th>
+      <td>${altair_famiport_performance_group.name_1}</td>
+    </tr>
+    <tr>
+      <th>公演名2</th>
+      <td>${altair_famiport_performance_group.name_2}</td>
+    </tr>
+    <tr>
+      <th>会場</th>
+      <td><a href="#">${altair_famiport_performance_group.altair_famiport_venue.name}</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>公演</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ステータス</th>
+      <th>FM公演コード</th>
+      <th>FM公演名</th>
+      <th>Altair公演名</th>
+      <th>FM受付コード</th>
+      <th>FM受付名称</th>
+      <th>受付期間</th>
+      <th>座席選択可期間</th>
+    </tr>
+  </thead>
+  <tbody>
+% for altair_famiport_performance in altair_famiport_performance_group.altair_famiport_performances.values():
+    <% rows = len(altair_famiport_performance.altair_famiport_sales_segment_pairs) %>
+    <tr>
+      <td rowspan="${rows}">${view.status_label(altair_famiport_performance.status)}</td>
+      <td rowspan="${rows}">${altair_famiport_performance.code}</td>
+      <td rowspan="${rows}">${altair_famiport_performance.name}</td>
+      <td rowspan="${rows}">${altair_famiport_performance.performance.name}</td>
+  % for i, altair_famiport_sales_segment_pair in enumerate(altair_famiport_performance.altair_famiport_sales_segment_pairs):
+    % if i > 0:
+    </tr>
+    <tr>
+    % endif
+      <td>${altair_famiport_sales_segment_pair.code}</td>
+      <td>${altair_famiport_sales_segment_pair.name}</td>
+      <td>${vh.term(altair_famiport_sales_segment_pair.start_at, altair_famiport_sales_segment_pair.end_at)}</td>
+      <td>${vh.term(altair_famiport_sales_segment_pair.seat_selection_start_at, altair_famiport_sales_segment_pair.end_at)}</td>
+    </tr>
+  % endfor
+% endfor
+  </tbody>
+</table>
