@@ -376,6 +376,8 @@ class FamiPortCreateOrUpdateFamiPortEventTest(unittest.TestCase):
             update_existing=True
             )
         self.assertEqual(result, dict(new=True))
+        self.assertEqual(self.session.query(FamiPortEvent).count(), 2)
+        self.assertEqual(self.session.query(FamiPortEvent).filter(FamiPortEvent.invalidated_at != None).count(), 0)
 
     def test_update_existing(self):
         from .models import FamiPortSalesChannel, FamiPortPrefecture, FamiPortEvent
@@ -419,6 +421,8 @@ class FamiPortCreateOrUpdateFamiPortEventTest(unittest.TestCase):
             update_existing=True
             )
         self.assertEqual(result, dict(new=False))
+        self.assertEqual(self.session.query(FamiPortEvent).count(), 2)
+        self.assertEqual(self.session.query(FamiPortEvent).filter(FamiPortEvent.invalidated_at != None).count(), 1)
 
 
 class FamiPortCreateOrUpdateFamiPortPerformanceTest(unittest.TestCase):
