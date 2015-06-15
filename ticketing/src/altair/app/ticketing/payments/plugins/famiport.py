@@ -5,6 +5,7 @@ from markupsafe import Markup
 from zope.interface import implementer
 from pyramid.response import Response
 from lxml import etree
+from sqlalchemy import sql
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.cart.interfaces import (
@@ -26,8 +27,10 @@ from altair.app.ticketing.mails.interfaces import (
     )
 
 from altair.app.ticketing.famiport.models import FamiPortOrderType, FamiPortTicketType
+from altair.app.ticketing.famiport.userside_models import AltairFamiPortSalesSegmentPair
 import altair.app.ticketing.famiport.api as famiport_api
 from altair.app.ticketing.famiport.exc import FamiPortAPIError
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.orders.models import OrderedProductItem
@@ -183,11 +186,18 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
     tenant = lookup_famiport_tenant(request, order_like)
-    tenant = lookup_famiport_tenant(request, order_like)
     if tenant is None:
         raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
 
-    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, order_like.sales_segment.id)
+    altair_famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
+        .filter(
+            sql.or_(
+                AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
+                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
+                )
+            ) \
+        .one()
+    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, tenant.code, altair_famiport_sales_segment_pair.id)
 
     return famiport_api.create_famiport_order(
         request,
@@ -197,7 +207,7 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
         event_code_1=famiport_sales_segment['event_code_1'],
         event_code_2=famiport_sales_segment['event_code_2'],
         performance_code=famiport_sales_segment['performance_code'],
-        sales_segment_code=famiport_sales_segment['sales_segment_code'],
+        sales_segment_code=famiport_sales_segment['code'],
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
         customer_name=customer_name,

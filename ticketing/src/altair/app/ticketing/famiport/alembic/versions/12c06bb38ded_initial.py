@@ -19,7 +19,7 @@ from sqlalchemy.sql import functions as sqlf
 Identifier = sa.BigInteger
 
 
-def upgrade():
+def create_schemas():
     from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType, FamiPortTicketType, FamiPortRefundType, MutableSpaceDelimitedList, SpaceDelimitedList, FamiPortOrderType  # noqa
     op.create_table(
         'FamiPortBarcodeNoSequence',
@@ -68,17 +68,19 @@ def upgrade():
         )
     op.create_table(
         'FamiPortGenre1',
-        sa.Column('code', sa.Unicode(23), primary_key=True),
+        sa.Column('code', sa.Integer, primary_key=True),
         sa.Column('name', sa.Unicode(255), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
     op.create_table(
         'FamiPortGenre2',
-        sa.Column('code', sa.Unicode(35), primary_key=True),
+        sa.Column('genre_1_code', sa.Integer, sa.ForeignKey('FamiPortGenre1.code')),
+        sa.Column('code', sa.Integer, autoincrement=False),
         sa.Column('name', sa.Unicode(255), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
-        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.PrimaryKeyConstraint('genre_1_code', 'code')
         )
     op.create_table(
         'FamiPortVenue',
@@ -105,8 +107,8 @@ def upgrade():
         sa.Column('purchasable_prefectures', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137))),
         sa.Column('start_at', sa.DateTime(), nullable=True),
         sa.Column('end_at', sa.DateTime(), nullable=True),
-        sa.Column('genre_1_code', sa.Unicode(23), sa.ForeignKey('FamiPortGenre1.code')),
-        sa.Column('genre_2_code', sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code')),
+        sa.Column('genre_1_code', sa.Integer, sa.ForeignKey('FamiPortGenre1.code')),
+        sa.Column('genre_2_code', sa.Integer),
         sa.Column('keywords', MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000).adapt(sa.UnicodeText))),
         sa.Column('search_code', sa.Unicode(20)),
         sa.Column('revision', sa.Integer(), nullable=False, server_default=text(u"0")),
@@ -115,6 +117,7 @@ def upgrade():
         sa.Column('invalidated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.ForeignKeyConstraint(['genre_1_code', 'genre_2_code'], ['FamiPortGenre2.genre_1_code', 'FamiPortGenre2.code']),
         sa.UniqueConstraint('code_1', 'code_2', 'revision')
         )
     op.create_table(
@@ -569,6 +572,43 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         )
 
+def seeding():
+    genre_1 = [
+        (1, u'音楽'),
+        (2, u'演劇/お笑い/ダンス'),
+        (3, u'スポーツ'),
+        (4, u'イベント/ライブビューイング'),
+        (5, u'アート/ミュージアム'),
+        (6, u'アミューズメント/レジャー'),
+        (7, u'映画'),
+        ]
+    genre_2 = [
+        (3, 1, u'野球'),
+        (3, 2, u'サッカー'),
+        (3, 3, u'格闘技/相撲'),
+        (3, 4, u'モータースポーツ'),
+        (3, 5, u'フィギュア/ウィンター'),
+        (3, 6, u'バスケットボール'),
+        (3, 7, u'ラグビー'),
+        (3, 8, u'バレーボール'),
+        (3, 9, u'テニス'),
+        (3, 10, u'ゴルフ'),
+        (3, 11, u'その他'),
+        ]
+    from altair.app.ticketing.famiport.models import FamiPortGenre1, FamiPortGenre2, FamiPortPlayguide
+    op.bulk_insert(FamiPortGenre1.__table__, [
+        dict(code=code, name=name)
+        for code, name in genre_1
+        ])
+    op.bulk_insert(FamiPortGenre2.__table__, [
+        dict(genre_1_code=genre_1_code, code=code, name=name)
+        for genre_1_code, code, name in genre_2
+        ])
+    op.execute(FamiPortPlayguide.__table__.insert().values(code=u'000000000000000000000000', name=u'楽天チケット', prefix=u'000'))
+
+def upgrade():
+    create_schemas()
+    seeding()
 
 def downgrade():
     op.drop_table('FamiPortReceipt')

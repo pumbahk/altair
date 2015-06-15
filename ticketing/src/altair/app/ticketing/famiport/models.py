@@ -153,13 +153,17 @@ class FamiPortClient(Base, WithTimestamp):
 
 class FamiPortGenre1(Base, WithTimestamp):
     __tablename__ = 'FamiPortGenre1'
-    code = sa.Column(sa.Unicode(23), primary_key=True)
+    code = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.Unicode(255), nullable=False)
 
 
 class FamiPortGenre2(Base, WithTimestamp):
     __tablename__ = 'FamiPortGenre2'
-    code = sa.Column(sa.Unicode(35), primary_key=True)
+    __table_args__ = (
+        sa.PrimaryKeyConstraint('genre_1_code', 'code'),
+        )
+    genre_1_code = sa.Column(sa.Integer, sa.ForeignKey('FamiPortGenre1.code'), nullable=False)
+    code = sa.Column(sa.Integer, autoincrement=False)
     name = sa.Column(sa.Unicode(255), nullable=False)
 
 
@@ -209,6 +213,7 @@ class MutableSpaceDelimitedList(Mutable, NervousList):
 class FamiPortEvent(Base, WithTimestamp):
     __tablename__ = 'FamiPortEvent'
     __table_args__ = (
+        sa.ForeignKeyConstraint(['genre_1_code', 'genre_2_code'], ['FamiPortGenre2.genre_1_code', 'FamiPortGenre2.code']),
         sa.UniqueConstraint('code_1', 'code_2', 'revision'),
         )
 
@@ -224,8 +229,8 @@ class FamiPortEvent(Base, WithTimestamp):
     purchasable_prefectures = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(137)))
     start_at                = sa.Column(sa.DateTime(), nullable=True)
     end_at                  = sa.Column(sa.DateTime(), nullable=True)
-    genre_1_code            = sa.Column(sa.Unicode(23), sa.ForeignKey('FamiPortGenre1.code'))
-    genre_2_code            = sa.Column(sa.Unicode(35), sa.ForeignKey('FamiPortGenre2.code'))
+    genre_1_code            = sa.Column(sa.Integer, sa.ForeignKey('FamiPortGenre1.code'))
+    genre_2_code            = sa.Column(sa.Integer)
     keywords                = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000)))
     search_code             = sa.Column(sa.Unicode(20))
     revision                = sa.Column(sa.Integer, nullable=False, default=0) 

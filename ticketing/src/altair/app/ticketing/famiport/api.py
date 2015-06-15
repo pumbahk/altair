@@ -308,7 +308,7 @@ def create_or_update_famiport_event(
             raise FamiPortAPINotFoundError('no corresponding venue found for id=%ld' % venue_id)
     
         genre_1 = None
-        if genre_1_code is not None:
+        if genre_1_code is not None and genre_1_code != u'':
             try:
                 genre_1 = session.query(FamiPortGenre1) \
                     .filter_by(code=genre_1_code) \
@@ -317,7 +317,7 @@ def create_or_update_famiport_event(
                 raise FamiPortAPINotFoundError('no corresponding genre found for code=%s' % genre_1_code)
 
         genre_2 = None
-        if genre_2_code is not None:
+        if genre_2_code is not None and genre_2_code != u'':
             try:
                 genre_2 = session.query(FamiPortGenre2) \
                     .filter_by(code=genre_2_code) \
@@ -519,6 +519,8 @@ def create_or_update_famiport_sales_segment(
                 .filter(FamiPortEvent.code_1 == event_code_1) \
                 .filter(FamiPortEvent.code_2 == event_code_2) \
                 .filter(FamiPortPerformance.code == performance_code) \
+                .filter(FamiPortEvent.invalidated_at == None) \
+                .filter(FamiPortPerformance.invalidated_at == None) \
                 .one()
         except NoResultFound:
             raise FamiPortAPINotFoundError('no corresponding performance found for client_code=%s, event_code_1=%s, event_code_2=%s, performance_code=%s' % (client_code, event_code_1, event_code_2, performance_code))
@@ -529,6 +531,7 @@ def create_or_update_famiport_sales_segment(
                 .with_lockmode('update') \
                 .filter(FamiPortSalesSegment.code == code) \
                 .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
+                .filter(FamiPortSalesSegment.invalidated_at == None) \
                 .one()
         except NoResultFound:
             pass
@@ -542,6 +545,7 @@ def create_or_update_famiport_sales_segment(
         sales_segment = FamiPortSalesSegment(
             code=code,
             famiport_performance_id=performance.id,
+            userside_id=userside_id,
             name=name,
             sales_channel=sales_channel,
             published_at=published_at,

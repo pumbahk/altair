@@ -56,8 +56,8 @@ class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
     @property
     def start_at(self):
         start_at = 0
-        for altair_famiport_performance in self.altair_famiport_performances:
-            _start_at = altair_famiport_performance.performance.start_at
+        for altair_famiport_performance in self.altair_famiport_performances.values():
+            _start_at = altair_famiport_performance.performance.start_on
             if start_at is 0 or _start_at is None or start_at > _start_at:
                 start_at = _start_at
         if start_at is 0:
@@ -69,8 +69,8 @@ class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
     @property
     def end_at(self):
         end_at = 0
-        for altair_famiport_performance in self.altair_famiport_performances:
-            _end_at = altair_famiport_performance.performance.end_at
+        for altair_famiport_performance in self.altair_famiport_performances.values():
+            _end_at = altair_famiport_performance.performance.end_on
             if end_at is 0 or _end_at is None or end_at > _end_at:
                 end_at = _end_at
         if end_at is 0:

@@ -48,6 +48,10 @@ altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
 altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
+altair.ticketing.userside_famiport.mq = altair.mq.consumer.pika_client_factory
+                                        altair.mq.publisher.pika_publisher_factory
+altair.ticketing.userside_famiport.mq.url = ${altair:ticketing.mq_url}
+
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.lots.mq.routes =
@@ -55,6 +59,9 @@ altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 ;    lots.rejection:lots.rejection
 ;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.cart.mq.routes = cart:cart
+;altair.ticketing.userside_famiport.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.userside_famiport.mq.routes =
+;    userside_famiport.submit_to_downstream:userside_famiport.submit_to_downstream
 
 altair.ticketing.cooperation.augus.bucket = tstar
 altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
