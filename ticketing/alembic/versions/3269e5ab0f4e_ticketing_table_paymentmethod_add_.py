@@ -21,6 +21,7 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column('PaymentMethod', sa.Column('display_order', sa.Integer(), default=0, nullable=False))
     op.add_column('PaymentMethod', sa.Column('selectable', sa.Boolean(), default=True, nullable=False))
+    op.execute(u"update PaymentMethod set selectable=True;")
 
 def downgrade():
     op.drop_column('PaymentMethod', 'display_order')
