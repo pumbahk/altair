@@ -17,7 +17,7 @@
 
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
-    ${form.id}
+    ${forms[0].id}
     <table>
       <thead>
         <tr>
@@ -27,24 +27,14 @@
           <td>表示順</td>
         </tr>
       </thead>
+      % for form in forms:
       <tr>
         <td>${form.name}</td>
         <td>${form.start_on}</td>
         <td>${form.end_on}</td>
         <td>${form.display_order}</td>
       </tr>
-      <tr>
-        <td>${form.name}</td>
-        <td>${form.start_on}</td>
-        <td>${form.end_on}</td>
-        <td>${form.display_order}</td>
-      </tr>
-      <tr>
-        <td>${form.name}</td>
-        <td>${form.start_on}</td>
-        <td>${form.end_on}</td>
-        <td>${form.display_order}</td>
-      </tr>
+      % endfor
     </table>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="コピーを実行する">

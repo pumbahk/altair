@@ -554,11 +554,12 @@ class Performances(BaseView):
         f.start_on.data = origin_performance.start_on
         f.end_on.data = origin_performance.end_on
         f.display_order.data = origin_performance.display_order
+        forms = [f]
 
         return {
             'event':origin_performance.event,
             'origin_performance':origin_performance,
-            'form': f,
+            'forms': forms,
             'cart_helper': cart_helper,
             'route_path': self.request.path,
         }
@@ -573,38 +574,27 @@ class Performances(BaseView):
 
         target_total = len(params) / 4
 
-        error_exist = False
-        for cnt in range(0, target_total):
-            if not params[cnt * 4 + 1][1]:
-                self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt+1))
-                error_exist = True
-
-            import datetime
-            try:
-                datetime.datetime.strptime(params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                self.request.session.flash(u'{}行目の公演開始時刻が不正です。'.format(cnt+1))
-                error_exist = True
-
-            if params[cnt * 4 + 3][1]:
-                try:
-                    datetime.datetime.strptime(params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
-                except ValueError:
-                    self.request.session.flash(u'{}行目の公演終了時刻が不正です。'.format(cnt+1))
-                    error_exist = True
-
-            try:
-                display_order = long(params[cnt * 4 + 4][1])
-                if -2147483648 > display_order or display_order > 2147483647:
-                    self.request.session.flash(u'{}行目の表示順は、-2147483648から、2147483647の間で指定できます。'.format(cnt))
-                    error_exist = True
-            except ValueError:
-                self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt+1))
-                error_exist = True
-
         origin_performance = Performance.get(params[0][1], self.context.organization.id)
+        error_exist = self.validate_manycopy(params, target_total)
         if error_exist:
-            return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+            forms = []
+            for cnt in range(0, target_total):
+                f = PerformanceManycopyForm()
+                f.id.data = origin_performance.id
+                f.name.data = params[cnt * 4 + 1][1]
+                f.start_on.data = params[cnt * 4 + 2][1]
+                if params[cnt * 4 + 3][1]:
+                    f.end_on.data = params[cnt * 4 + 3][1]
+                f.display_order.data = params[cnt * 4 + 4][1]
+                forms.append(f)
+
+            return {
+                'event':origin_performance.event,
+                'origin_performance':origin_performance,
+                'forms': forms,
+                'cart_helper': cart_helper,
+                'route_path': self.request.path,
+            }
 
         for cnt in range(0, target_total):
 
@@ -660,6 +650,38 @@ class Performances(BaseView):
                     return created_code
 
         return code
+
+    def validate_manycopy(self, params, target_total):
+        error_exist = False
+
+        for cnt in range(0, target_total):
+            if not params[cnt * 4 + 1][1]:
+                self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt+1))
+                error_exist = True
+
+            import datetime
+            try:
+                datetime.datetime.strptime(params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                self.request.session.flash(u'{}行目の公演開始時刻が不正です。'.format(cnt+1))
+                error_exist = True
+
+            if params[cnt * 4 + 3][1]:
+                try:
+                    datetime.datetime.strptime(params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    self.request.session.flash(u'{}行目の公演終了時刻が不正です。'.format(cnt+1))
+                    error_exist = True
+
+            try:
+                display_order = long(params[cnt * 4 + 4][1])
+                if -2147483648 > display_order or display_order > 2147483647:
+                    self.request.session.flash(u'{}行目の表示順は、-2147483648から、2147483647の間で指定できます。'.format(cnt))
+                    error_exist = True
+            except ValueError:
+                self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt+1))
+                error_exist = True
+        return error_exist
 
 
     @view_config(route_name='performances.delete')
