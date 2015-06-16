@@ -22,6 +22,14 @@ body {
     <div class="navbar-inner">
       <div class="container">
         <a class="brand" href="/">ファミポートシミュレータ</a>
+        <ul class="nav pull-right">
+          % if hasattr(_context, 'store_code') and _context.store_code:
+          <li>店舗コード: ${_context.store_code}</li>
+          % endif
+          % if hasattr(_context, 'client_code') and _context.client_code:
+          <li>クライアント: ${_context.client_code}</li>
+          % endif
+        </ul>
       </div>
     </div>
   </div>

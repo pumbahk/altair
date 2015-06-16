@@ -1,11 +1,14 @@
 # encoding: utf-8
 
 import urllib
+import logging
 from urlparse import urljoin
 from lxml import etree
 from email.message import Message
 from zope.interface import implementer
 from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator
+
+logger = logging.getLogger(__name__)
 
 def parse_content_type(header_value):
     m = Message()
@@ -36,8 +39,8 @@ class Communicator(object):
         self.encoding = encoding
 
     def _parse_response(self, n):
-        if n.tag != 'FFIF':
-            raise CommunicationError('outermost tag is not FFIF')
+        if n.tag != 'FMIF':
+            raise CommunicationError('outermost tag is not FMIF (got %s)' % n.tag)
         retval = {}
         for cn in n:
             retval[cn.tag] = cn.text
@@ -45,6 +48,7 @@ class Communicator(object):
 
     def _do_request(self, endpoint, data):
         try:
+            logger.debug('making request to %s with %r' % (endpoint, data))
             resp = self.opener.open(
                 endpoint,
                 data=urllib.urlencode([
@@ -55,8 +59,9 @@ class Communicator(object):
             mime_type, charset = parse_content_type(resp.info()['content-type'])
             if mime_type != 'text/xml':
                 raise CommunicationError("content_type is not 'text/xml' (got %s)" % mime_type)
-            payload = resp.read()
-            return self._parse_response(etree.fromstring(payload, encoding=charset))
+            retval = self._parse_response(etree.parse(resp).getroot())
+            logger.debug('result=%r' % retval)
+            return retval
         except Exception as e:
             raise CommunicationError('error occurred during accessing to %s (data=%r): %s' % (endpoint, data, e))
 
