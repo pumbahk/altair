@@ -2564,3 +2564,30 @@
 /*
  * vim: sts=2 sw=2 ts=2 noet
  */
+
+/** カートのヘッダーリンク **/
+a:link.headerLink {
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:visited.headerLink {
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:hover.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:focus.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+}
+a:active.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+}
