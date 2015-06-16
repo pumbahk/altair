@@ -774,7 +774,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             else:
                 raise FamiPortError('unknown infoKubun: {}'.format(famiport_request.infoKubun))
         except Exception as err:  # その他エラー
-            logger.error('FamiPort Information Error: {}: {}'.format(type(err).__name__, err))
+            logger.exception('FamiPort Information Error: {}: {}'.format(type(err).__name__, err))
             famiport_response.resultCode = InformationResultCodeEnum.OtherError.value
             famiport_response.infoMessage = u'異常が発生しました'
             return famiport_response
