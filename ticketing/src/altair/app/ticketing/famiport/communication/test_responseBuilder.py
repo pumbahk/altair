@@ -96,11 +96,12 @@ class FamiPortResponseBuilderTestBase(object):
             prefix=u'TTT'
             )
         self.famiport_genre_1 = FamiPortGenre1(
-            code=u'00000000000000000000111',
+            code=1,
             name=u'大ジャンル'
             )
         self.famiport_genre_2 = FamiPortGenre2(
-            code=u'00000000000000000000000000000022222',
+            genre_1=self.famiport_genre_1,
+            code=2,
             name=u'小ジャンル'
             )
         self.famiport_venue = FamiPortVenue(

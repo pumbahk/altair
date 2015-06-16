@@ -63,8 +63,8 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             name_2=u'イベント副題',
             client=self.famiport_client,
             venue=FamiPortVenue(name=u'venue', name_kana=u'ヴェニュー', client_code=u'00000000000000000000123'),
-            genre_1=FamiPortGenre1(code=u'1', name=u'genre1'),
-            genre_2=FamiPortGenre2(code=u'2', name=u'genre2'),
+            genre_1=FamiPortGenre1(code=1, name=u'genre1'),
+            genre_2=FamiPortGenre2(genre_1_code=1, code=2, name=u'genre2'),
             keywords=[u'a', u'b', u'c'],
             search_code=u'search'
             )

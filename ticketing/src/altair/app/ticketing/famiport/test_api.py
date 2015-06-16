@@ -48,7 +48,7 @@ class GetFamiPortOrderTest(unittest.TestCase):
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
         self.session.add(self.genre_1)
-        self.genre_2 = FamiPortGenre2(code=u'00000', name=u'小ジャンル')
+        self.genre_2 = FamiPortGenre2(genre_1=self.genre_1, code=u'00000', name=u'小ジャンル')
         self.session.add(self.genre_2)
         self.session.flush()
         self.event = FamiPortEvent(
@@ -302,7 +302,7 @@ class FamiPortCreateOrUpdateFamiPortEventTest(unittest.TestCase):
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
         self.session.add(self.genre_1)
-        self.genre_2 = FamiPortGenre2(code=u'00000', name=u'小ジャンル')
+        self.genre_2 = FamiPortGenre2(genre_1=self.genre_1, code=u'00000', name=u'小ジャンル')
         self.session.add(self.genre_2)
         self.session.flush()
 
@@ -463,7 +463,7 @@ class FamiPortCreateOrUpdateFamiPortPerformanceTest(unittest.TestCase):
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
         self.session.add(self.genre_1)
-        self.genre_2 = FamiPortGenre2(code=u'00000', name=u'小ジャンル')
+        self.genre_2 = FamiPortGenre2(genre_1=self.genre_1, code=u'00000', name=u'小ジャンル')
         self.session.add(self.genre_2)
         self.session.flush()
         self.event = FamiPortEvent(
@@ -646,7 +646,7 @@ class FamiPortCreateOrUpdateFamiPortSalesSegmentTest(unittest.TestCase):
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
         self.session.add(self.genre_1)
-        self.genre_2 = FamiPortGenre2(code=u'00000', name=u'小ジャンル')
+        self.genre_2 = FamiPortGenre2(genre_1=self.genre_1, code=u'00000', name=u'小ジャンル')
         self.session.add(self.genre_2)
         self.session.flush()
         self.event = FamiPortEvent(

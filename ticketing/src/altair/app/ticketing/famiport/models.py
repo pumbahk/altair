@@ -163,6 +163,7 @@ class FamiPortGenre2(Base, WithTimestamp):
     code = sa.Column(sa.Integer, autoincrement=False)
     name = sa.Column(sa.Unicode(255), nullable=False)
 
+    genre_1 = orm.relationship('FamiPortGenre1')
 
 class FamiPortVenue(Base, WithTimestamp):
     __tablename__ = 'FamiPortVenue'
