@@ -753,8 +753,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
 
-    shop_code = sa.Column(sa.Unicode(6), sa.ForeignKey('FamiPortShop.code'), nullable=False)
-    famiport_shop = orm.relationship('FamiPortShop', backref='famiport_receipts')
+    shop_code = sa.Column(sa.Unicode(6), nullable=False, default=u'')
 
     def can_payment(self, now):
         return self.inquired_at \
