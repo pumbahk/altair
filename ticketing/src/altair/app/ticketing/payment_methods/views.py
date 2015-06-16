@@ -21,13 +21,15 @@ class PaymentMethods(BaseView):
 
     @view_config(route_name='payment_methods.index', renderer='altair.app.ticketing:templates/payment_methods/index.html')
     def index(self):
-        sort = self.request.GET.get('sort', 'PaymentMethod.id')
+        sort = self.request.GET.get('sort', 'PaymentMethod.display_order')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         query = PaymentMethod.filter_by(organization_id=self.context.user.organization_id)
-        query = query.order_by(sort + ' ' + direction)
+        query = query.order_by('PaymentMethod.selectable desc') \
+                     .order_by(sort + ' ' + direction)
+
         payment_methods = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),

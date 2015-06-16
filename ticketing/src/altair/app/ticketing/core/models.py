@@ -1887,6 +1887,10 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # 払込票を表示しないオプション（SEJ専用）
     hide_voucher = Column(Boolean, default=False)
 
+    # Backend内の表示制御項目
+    display_order = Column(Integer, default=0, nullable=False)
+    selectable = Column(Boolean, default=True, nullable=False)
+
     _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
     @hybrid_property
     def payment_plugin(self):
@@ -1908,7 +1912,12 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def filter_by_organization_id(id):
-        return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
+        payment_method = PaymentMethod.filter(PaymentMethod.organization_id == id) \
+                                      .filter('PaymentMethod.selectable is True') \
+                                      .order_by('PaymentMethod.selectable desc') \
+                                      .order_by('PaymentMethod.display_order asc') \
+                                      .all()
+        return payment_method
 
     def pay_at_store(self):
         """
