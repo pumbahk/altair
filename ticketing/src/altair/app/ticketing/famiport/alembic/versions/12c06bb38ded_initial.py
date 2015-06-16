@@ -468,6 +468,10 @@ def create_schemas():
         'FamiPortTicketResponse',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('famiport_payment_ticketing_response_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingResponse.id')),
+        sa.Column('barCodeNo', sa.Unicode(13), nullable=False, default=u''),  # チケットバーコード番号
+        sa.Column('ticketClass', sa.Unicode(1), nullable=False, default=u''),  # チケット区分
+        sa.Column('templateCode', sa.Unicode(10), nullable=False, default=u''),  # テンプレートコード
+        sa.Column('ticketData', sa.Unicode(4000), nullable=False, default=u''),  # 券面データ
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.PrimaryKeyConstraint('id'),
         )

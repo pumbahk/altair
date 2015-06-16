@@ -22,18 +22,31 @@ body {
     <div class="navbar-inner">
       <div class="container">
         <a class="brand" href="/">ファミポートシミュレータ</a>
+        <div class="nav-collapse">
         <ul class="nav pull-right">
-          % if hasattr(_context, 'store_code') and _context.store_code:
-          <li>店舗コード: ${_context.store_code}</li>
-          % endif
           % if hasattr(_context, 'client_code') and _context.client_code:
-          <li>クライアント: ${_context.client_code}</li>
+          <li><a href="#">クライアント: ${_context.client_code}</a></li>
+          % endif
+          % if hasattr(_context, 'store_code') and _context.store_code:
+          <li class="dropdown">
+            <a href="#" data-toggle="dropdown">店舗コード: ${_context.store_code} (端末 ${_context.mmk_no})</a>
+            <ul class="dropdown-menu">
+              <li><a href="${request.route_path('logout')}">ログアウト</a></li>
+            </ul>
+          </li>
           % endif
         </ul>
+        </div>
       </div>
     </div>
   </div>
   <div class="container">
+    <% flash = request.session.pop_flash() %>
+    % for message in flash:
+    <div class="alert">
+     <strong>エラー</strong> ${message}
+    </div>
+    % endfor
     ${next.body()}
   </div>
 </body>

@@ -24,3 +24,7 @@ class IFamiPortClientConfigurationRegistry(Interface):
 
     def __iter__():
         pass
+
+class IMmkSequence(Interface):
+    def next_serial(now, store_code):
+        pass

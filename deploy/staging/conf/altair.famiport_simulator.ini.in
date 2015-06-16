@@ -2,6 +2,7 @@
 pyramid.reload_templates = true
 paste.app_factory = altair.app.ticketing.famiport.simulator:main
 altair.sqlahelper.sessions.famiport.url = mysql+pymysql://famiport:famiport@127.0.0.1/famiport?use_unicode=true&charset=utf8
+altair.sqlahelper.sessions.famiport_mmk.url = sqlite:///%(here)s/../var/altair/famiport/simulator.db
 
 altair.famiport.simulator.endpoint_url = http://localhost:${altair:famiport.port}/famiport
 

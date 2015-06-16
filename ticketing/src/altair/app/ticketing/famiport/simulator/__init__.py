@@ -11,6 +11,18 @@ def auth_callback(user_id, request):
     else:
         return ['client_code_provided']
 
+def setup_mmk_db(config):
+    from sqlalchemy import MetaData
+    from altair.sqlahelper import get_global_db_session
+    from .mmk import MmkSequence
+    from .interfaces import IMmkSequence
+    metadata = MetaData()
+    session = get_global_db_session(config.registry, 'famiport_mmk')
+    config.registry.registerUtility(
+        MmkSequence(metadata, session.bind),
+        IMmkSequence
+        )
+
 def main(global_conf, **local_conf):
     settings = dict(global_conf)
     settings.update(local_conf)
@@ -25,10 +37,12 @@ def main(global_conf, **local_conf):
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
+    config.include(setup_mmk_db)
     config.include('.configuration')
     config.include('.comm')
     config.add_static_view('static', 'altair.app.ticketing.famiport.simulator:static', cache_max_age=3600)
     config.add_forbidden_view(lambda context, request: HTTPFound(request.route_path('select_shop', _query=dict(return_url=request.path))))
+    config.add_route('logout',  '/logout')
     config.add_route('select_shop',  '/select_shop')
     config.add_route('top',  '/', factory='.resources.FamiPortResource')
     config.add_route('service.index', '/services', factory='.resources.FamiPortResource')
@@ -39,6 +53,7 @@ def main(global_conf, **local_conf):
     config.add_route('service.reserved.entry', '/services/reserved/entry', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.auth_number_entry', '/services/reserved/auth_number', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.info2', '/services/reserved/info2', factory='.resources.FamiPortServiceResource')
+    config.add_route('service.reserved.inquiry', '/services/reserved/inquiry', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.privacy_policy_agreement', '/services/reserved/ppa', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.name_entry', '/services/reserved/name', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.tel_entry', '/services/reserved/tel', factory='.resources.FamiPortServiceResource')
