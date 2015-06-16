@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """ファミポート決済/引取プラグイン
 """
+import pystache
+from lxml import etree
+from sqlalchemy import sql
 from markupsafe import Markup
 from zope.interface import implementer
 from pyramid.response import Response
-from lxml import etree
-from sqlalchemy import sql
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.cart.interfaces import (
@@ -25,21 +26,23 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsAcceptedMailResource,
     ILotsRejectedMailResource,
     )
-
-from altair.app.ticketing.famiport.models import FamiPortOrderType, FamiPortTicketType
-from altair.app.ticketing.famiport.userside_models import AltairFamiPortSalesSegmentPair
-import altair.app.ticketing.famiport.api as famiport_api
-from altair.app.ticketing.famiport.exc import FamiPortAPIError
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import FamiPortTenant
-from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
-from altair.app.ticketing.orders.models import OrderedProductItem
+from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.cart.models import CartedProductItem
+from altair.app.ticketing.core.models import FamiPortTenant
+from altair.app.ticketing.famiport.exc import FamiPortAPIError
+from altair.app.ticketing.orders.models import OrderedProductItem
+from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
+from altair.app.ticketing.famiport.userside_models import AltairFamiPortSalesSegmentPair
+
+from altair.app.ticketing.famiport.models import (
+    FamiPortOrderType,
+    FamiPortTicketType,
+    )
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
-    transform_matrix_from_ticket_format,
     )
 
 from ..interfaces import IOrderDelivery
@@ -47,7 +50,6 @@ from ..exceptions import PaymentPluginException
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-import pystache
 
 
 def includeme(config):
