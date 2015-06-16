@@ -186,7 +186,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     famiport_order = None
                 else:
                     receipt.inquired_at = now
-                    session.add(receipt)
+                    session.commit()
 
             if famiport_order is not None:
                 resultCode = ResultCodeEnum.Normal.value
@@ -319,6 +319,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
                 if receipt is None or _strip_zfill(receipt.shop_code) != storeCode:
+                    logger.error(u'shop_code differs (%s != %s)' % (receipt.shop_code, storeCode))
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
