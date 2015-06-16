@@ -52,7 +52,7 @@ class ResevationView(object):
         self.comm_session.commit()
         return famiport_request
 
-    def _build_payload(self, famiport_request):
+    def _build_response(self, famiport_request):
         """responseのpayloadを生成する
         """
         response_builder = get_response_builder(self.request, famiport_request)
@@ -60,7 +60,11 @@ class ResevationView(object):
         self.comm_session.add(famiport_response)
         self.comm_session.commit()
         payload_builder = get_xmlResponse_generator(famiport_response)
-        return payload_builder.generate_xmlResponse(famiport_response)
+        return Response(
+            body=payload_builder.generate_xmlResponse(famiport_response),
+            content_type='text/xml',
+            charset=payload_builder.encoding
+            )
 
     def _create_payload(self, famiport_response):
         payload_builder = get_xmlResponse_generator(famiport_response)
@@ -82,8 +86,7 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest(err)
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.payment', request_method='POST')
     def payment(self):
@@ -105,8 +108,7 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.completion', request_method='POST')
     def completion(self):
@@ -128,8 +130,7 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.cancel', request_method='POST')
     def cancel(self):
@@ -151,8 +152,7 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.information', request_method='POST')
     def information(self):
@@ -170,8 +170,7 @@ class ResevationView(object):
             'reserveNumber': request_params.get('reserveNumber', ''),  # optional
             }
         famiport_request = self._create_famiport_request(params, type_)
-        payload = self._build_payload(famiport_request)
-        return Response(payload)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):
@@ -193,8 +192,7 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest(err)
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
 
     @view_config(route_name='famiport.api.reservation.refund', request_method='POST')
     def refund(self):
@@ -216,5 +214,4 @@ class ResevationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        return self._build_response(famiport_request)
