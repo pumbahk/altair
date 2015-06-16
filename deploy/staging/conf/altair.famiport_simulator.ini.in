@@ -1,0 +1,85 @@
+[app:main]
+paste.app_factory = altair.app.ticketing.famiport.simulator:main
+altair.sqlahelper.sessions.famiport.url = mysql+pymysql://famiport:famiport@127.0.0.1/famiport?use_unicode=true&charset=utf8
+
+altair.famiport.simulator.endpoint_url = http://localhost:${altair:famiport.port}/famiport
+
+altair.httpsession.persistence = altair.httpsession.beaker.factory
+altair.httpsession.persistence.type = file
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
+
+altair.httpsession.http_backend = altair.httpsession.pyramid.cookies
+altair.httpsession.http_backend.key = famiport
+altair.httpsession.http_backend.secret = famiport
+altair.httpsession.http_backend.cookie_on_exception = true
+
+[server:main]
+use  = egg:gunicorn#main
+host = 0.0.0.0
+port = %(http_port)s
+workers = 1
+timeout = 3600
+graceful_timeout = 300
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altair, ticketing, sqlalchemy, alembic
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altair]
+level = DEBUG
+handlers = console, fluent
+qualname = altair
+propagate = 0
+
+[logger_ticketing]
+level = DEBUG
+handlers = console, fluent
+qualname = altair.app.ticketing
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[logger_alembic]
+level = INFO
+handlers = console, sqlalchemy
+qualname = alembic
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = DEBUG
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.famiport_simulator.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.famiport_simulator', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

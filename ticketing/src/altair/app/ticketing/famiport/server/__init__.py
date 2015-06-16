@@ -16,9 +16,9 @@ def main(global_config, **local_config):
         settings=settings, root_factory='.resources.famiport_resource_factory')
 
     config.include('altair.exclog')
-    config.include(includeme, '/famiport/')
     config.include('altair.sqlahelper')
     config.include('altair.app.ticketing.famiport.communication')
+    config.include('.')
     return config.make_wsgi_app()
 
 

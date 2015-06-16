@@ -1,0 +1,31 @@
+from pyramid.config import Configurator
+from altair.sqlahelper import from_settings
+
+def main(global_conf, **local_conf):
+    settings = dict(global_conf)
+    settings.update(local_conf)
+    settings['mako.directories'] = 'altair.app.ticketing.famiport.simulator:templates'
+    config = Configurator(settings=settings)
+    config.include('pyramid_mako')
+    config.include('pyramid_fanstatic')
+    config.include('altair.httpsession.pyramid')
+    config.include('altair.browserid')
+    config.include('altair.exclog')
+    config.include('altair.sqlahelper')
+    config.include('.comm')
+    config.add_static_view('static', 'altair.app.ticketing.famiport.simulator:static', cache_max_age=3600)
+    config.add_route('top',  '/')
+    config.add_route('service.index', '/services')
+    config.add_route('service.reserved', '/services/reserved')
+    config.add_route('service.reserved.description', '/services/reserved/description')
+    config.add_route('service.reserved.info1', '/services/reserved/info1')
+    config.add_route('service.reserved.entry', '/services/reserved/entry')
+    config.add_route('service.reserved.auth_code_entry', '/services/reserved/auth_code')
+    config.add_route('service.reserved.info2', '/services/reserved/info2')
+    config.add_route('service.reserved.privacy_policy_agreement', '/services/reserved/ppa')
+    config.add_route('service.reserved.name_entry', '/services/reserved/name')
+    config.add_route('service.reserved.tel_entry', '/services/reserved/tel')
+    config.add_route('service.reserved.confirmation', '/services/reserved/confirm')
+    config.add_route('service.reserved.completion', '/services/reserved/complete')
+    config.scan('.views')
+    return config.make_wsgi_app()
