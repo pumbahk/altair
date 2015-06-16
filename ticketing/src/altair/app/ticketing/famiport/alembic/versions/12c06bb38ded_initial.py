@@ -524,7 +524,7 @@ def create_schemas():
         sa.Column('code', sa.Unicode(5), nullable=False, unique=True),
         sa.Column('company_code', sa.Unicode(4), nullable=False),
         sa.Column('company_name', sa.Unicode(40), nullable=False),
-        sa.Column('district_code', sa.Unicode(1), nullable=False),
+        sa.Column('district_code', sa.Unicode(2), nullable=False),
         sa.Column('district_name', sa.Unicode(40), nullable=False),
         sa.Column('district_valid_from', sa.Date(), nullable=False),
         sa.Column('branch_code', sa.Unicode(3), nullable=False),
