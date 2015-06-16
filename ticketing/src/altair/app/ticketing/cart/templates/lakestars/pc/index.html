@@ -190,6 +190,11 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                   <div class="slider"></div>
                   <div class="venueViewer"></div>
                   <div class="guidance without-venue" style="display: none;">
+                    % if view_context.hidden_venue_html:
+                      <div class="guidanceInner" style="text-align: center;">
+                        ${view_context.hidden_venue_html |n}
+                      </div>
+                    % endif
                   </div>
                 </div>
                 <div>
