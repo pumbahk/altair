@@ -52,9 +52,9 @@ class Communicator(object):
                     for k, v in data.items()
                     ])
                 )
-            mime_type, charset = parse_content_type(resp.content_type)
+            mime_type, charset = parse_content_type(resp.info()['content-type'])
             if mime_type != 'text/xml':
-                raise CommunicationError("content_type is not 'text/xml'")
+                raise CommunicationError("content_type is not 'text/xml' (got %s)" % mime_type)
             payload = resp.read()
             return self._parse_response(etree.fromstring(payload, encoding=charset))
         except Exception as e:
