@@ -57,6 +57,7 @@ class HardcodedModel(object):
     def is_valid_id(cls, id):
         return id in cls.__map__
 
+
 class FamiPortArea(HardcodedModel):
     Nationwide     = (1, u'全国')
     Hokkaido       = (2, u'北海道')
@@ -232,7 +233,7 @@ class FamiPortEvent(Base, WithTimestamp):
     genre_2_code            = sa.Column(sa.Integer)
     keywords                = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(30000)))
     search_code             = sa.Column(sa.Unicode(20))
-    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
+    revision                = sa.Column(sa.Integer, nullable=False, default=0)
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
     invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
 
@@ -262,7 +263,7 @@ class FamiPortPerformance(Base, WithTimestamp):
     sales_channel           = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
     start_at                = sa.Column(sa.DateTime(), nullable=True)
     ticket_name             = sa.Column(sa.Unicode(20), nullable=True)  # only valid if type == Spanned
-    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
+    revision                = sa.Column(sa.Integer, nullable=False, default=0)
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
     reflected_at            = sa.Column(sa.DateTime(), nullable=True)
     invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
@@ -291,7 +292,7 @@ class FamiPortSalesSegment(Base, WithTimestamp):
     auth_required           = sa.Column(sa.Boolean, nullable=False, default=False)
     auth_message            = sa.Column(sa.Unicode(320), nullable=False, default=u'')
     seat_selection_start_at = sa.Column(sa.DateTime(), nullable=True)
-    revision                = sa.Column(sa.Integer, nullable=False, default=0) 
+    revision                = sa.Column(sa.Integer, nullable=False, default=0)
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
     reflected_at            = sa.Column(sa.DateTime(), nullable=True)
     invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
@@ -748,7 +749,6 @@ class FamiPortReceipt(Base, WithTimestamp):
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
     barcode_no = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
     exchange_number = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
-
 
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
