@@ -19,13 +19,13 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('host', default=default_host_port, nargs='?')
     parser.add_argument('--uketsukeCode', default='')
     parser.add_argument('--kogyoSubCode', default='')
-    parser.add_argument('--reserveNumber', default='4000000000001')
+    parser.add_argument('--reserveNumber', default='F93BF85534AE0')
     parser.add_argument('--infoKubun', default='1')
     parser.add_argument('--kogyoCode', default='')
     parser.add_argument('--koenCode', default='')
     parser.add_argument('--authCode', default='')
     parser.add_argument('--storeCode', default='000009')
-    parser.add_argument('--playGuideId', default='1')
+    parser.add_argument('--playGuideId', default='000000000000000000000000')
 
     args = parser.parse_args(argv)
 
