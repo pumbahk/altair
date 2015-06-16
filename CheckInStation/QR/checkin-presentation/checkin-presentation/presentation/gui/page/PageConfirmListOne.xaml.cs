@@ -183,27 +183,6 @@ namespace checkin.presentation.gui.page
 
         }
 
-        /*
-        private async void OnSubmitWithBoundContext(object sender, SelectionChangedEventArgs e)
-        {
-            var box = sender as ListBox;
-            if (box.SelectedItem != null)
-            {
-                var pair = box.SelectedItem as UnitStringPair;
-                var ctx = this.DataContext as PageConfirmListOneDataContext;
-                await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
-                {
-                    ctx.InputString = pair.Value;
-
-                    //submit
-                    var case_ = await ctx.SubmitAsync();
-                    ctx.TreatErrorMessage();
-                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
-                });
-            }
-        }
-        */
-
         private async void OnCommonSubmit(string value)
         {
             var ctx = this.DataContext as PageConfirmListOneDataContext;

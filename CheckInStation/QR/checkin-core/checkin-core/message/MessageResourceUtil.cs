@@ -76,6 +76,8 @@ namespace checkin.core.message
                 return resource.SettingValue ("message.token.status.after_end.format.0");
             case TokenStatus.not_supported:
                 return resource.SettingValue ("message.token.status.not_supported.format.0");
+            case TokenStatus.over_print_limit:
+                return resource.SettingValue("message.token.status.over_print_limit.format.0");
             default:
                 return resource.SettingValue ("message.token.status.unknown.format.0");
             }

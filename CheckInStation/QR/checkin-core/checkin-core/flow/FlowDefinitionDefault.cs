@@ -99,7 +99,7 @@ namespace checkin.core.flow
                 return new CaseAuthInput (resource);
             default:
                 logger.Info("InputUnit: {0} is unknown value. default={1} is selected".WithMachineName(), Selected.ToString (), default(InputUnit));
-                return new CaseQRCodeInput (resource);
+                return new CaseWelcome (resource);
             }
         }
     }

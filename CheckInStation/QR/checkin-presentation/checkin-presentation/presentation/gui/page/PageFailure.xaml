@@ -75,7 +75,7 @@
                     Click="OnSubmitWithBoundContext"
                     Style="{StaticResource BackwardButton}"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">トップに戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" Margin="15">トップに戻る</TextBlock>
                     </Button>
                 </Canvas>
             </Grid>

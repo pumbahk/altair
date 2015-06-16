@@ -12,6 +12,7 @@ namespace checkin.core.models
         before_start,
         after_end,
         not_supported,
+        over_print_limit,
         unknown
     }
 
