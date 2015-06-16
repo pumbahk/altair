@@ -249,18 +249,18 @@ def create_schemas():
         sa.Column('result_code', sa.Integer, nullable=False),  # 案内処理結果コード名
         sa.Column('reserve_number', sa.String(13), nullable=False),
         sa.Column('famiport_sales_segment_id', Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True),
-        sa.Column('famiport_event_code_1', sa.Unicode(6), nullable=True),
-        sa.Column('famiport_event_code_2', sa.Unicode(4), nullable=True),
-        sa.Column('famiport_performance_code', sa.Unicode(3), nullable=True),
-        sa.Column('uketsuke_code', sa.Unicode(3), nullable=True),  # 受付コード
-        sa.Column('famiport_client_code', sa.Unicode(24), nullable=True),
+        sa.Column('event_code_1', sa.Unicode(6), nullable=True),
+        sa.Column('event_code_2', sa.Unicode(4), nullable=True),
+        sa.Column('performance_code', sa.Unicode(3), nullable=True),
+        sa.Column('sales_segment_code', sa.Unicode(3), nullable=True),  # 受付コード
+        sa.Column('client_code', sa.Unicode(24), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint(
             'result_code', 'reserve_number', 'famiport_sales_segment_id',
-            'famiport_event_code_1', 'famiport_event_code_2',
-            'famiport_performance_code', 'uketsuke_code', 'famiport_client_code',
+            'event_code_1', 'event_code_2',
+            'performance_code', 'sales_segment_code', 'client_code',
             name='ix_unique_famiport_information_message',
             ),
         )

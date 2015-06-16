@@ -711,7 +711,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
             elif famiport_request.infoKubun == InfoKubunEnum.Reserved.value:  # 予済
                 info_messages = session \
                     .query(FamiPortInformationMessage) \
-                    .filter(FamiPortInformationMessage.famiport_client_code == famiport_request.playGuideId) \
+                    .filter(FamiPortInformationMessage.client_code == famiport_request.playGuideId) \
                     .all()
 
                 famiport_order = None
@@ -745,7 +745,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                     elif _info_msg.famiport_sales_segment.famiport_performance.famiport_eventid \
                             == famiport_order.famiport_sales_segment.famiport_performance.famiport_event.id:
                         for_event = _or(_info_msg, for_event)
-                    elif _info_msg.famiport_client_code == famiport_order.famiport_client.code:
+                    elif _info_msg.client_code == famiport_order.famiport_client.code:
                         for_client = _or(_info_msg, for_client)
 
                 info_message = for_order or for_performance or for_event or for_client

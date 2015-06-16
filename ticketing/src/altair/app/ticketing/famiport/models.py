@@ -655,8 +655,8 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     __table_args__ = (
         sa.UniqueConstraint(
             'result_code', 'reserve_number', 'famiport_sales_segment_id',
-            'famiport_event_code_1', 'famiport_event_code_2',
-            'famiport_performance_code', 'uketsuke_code', 'famiport_client_code',
+            'event_code_1', 'event_code_2',
+            'performance_code', 'sales_segment_code', 'client_code',
             name='ix_unique_famiport_information_message',
             ),
         )
@@ -665,11 +665,11 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     result_code = sa.Column(sa.Integer, nullable=False)
     message = sa.Column(sa.Unicode(length=1000), nullable=False, default=u'')
     reserve_number = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
-    famiport_event_code_1 = sa.Column(sa.Unicode(6), nullable=True)
-    famiport_event_code_2 = sa.Column(sa.Unicode(4), nullable=True)
-    famiport_performance_code = sa.Column(sa.Unicode(3), nullable=True)
-    uketsuke_code = sa.Column(sa.Unicode(3), nullable=True)  # 受付コード
-    famiport_client_code = sa.Column(sa.Unicode(24), nullable=True)
+    event_code_1 = sa.Column(sa.Unicode(6), nullable=True)
+    event_code_2 = sa.Column(sa.Unicode(4), nullable=True)
+    performance_code = sa.Column(sa.Unicode(3), nullable=True)
+    sales_segment_code = sa.Column(sa.Unicode(3), nullable=True)  # 受付コード
+    client_code = sa.Column(sa.Unicode(24), nullable=True)
     famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True)
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
 

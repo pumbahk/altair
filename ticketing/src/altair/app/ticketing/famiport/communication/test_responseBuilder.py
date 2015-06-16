@@ -406,29 +406,29 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
     - result_code: 1  # 案内あり
       message: 'この予約は払い戻しになりました。'
       reserve_number: 'RSV00001'
-      famiport_event_code_1: 'EVENT1'
-      famiport_event_code_2: 'ESB1'
-      famiport_performance_code: 'PF1'
-      uketsuke_code: 'UK1'
-      famiport_client_code: 'FAMIPORT_CLIENT_CODE_001'
+      event_code_1: 'EVENT1'
+      event_code_2: 'ESB1'
+      performance_code: 'PF1'
+      sales_segment_code: 'UK1'
+      client_code: 'FAMIPORT_CLIENT_CODE_001'
       famiport_sales_segment_id: 1
     - result_code: 90  # サービス不可時案内
       message: 'メンテナンス中です。ご迷惑をおかけします。'
       reserve_number: 'RSV00001'
-      famiport_event_code_1: 'EVENT1'
-      famiport_event_code_2: 'ESB1'
-      famiport_performance_code: 'PF1'
-      uketsuke_code: 'UK1'
-      famiport_client_code: 'FAMIPORT_CLIENT_CODE_001'
+      event_code_1: 'EVENT1'
+      event_code_2: 'ESB1'
+      performance_code: 'PF1'
+      sales_segment_code: 'UK1'
+      client_code: 'FAMIPORT_CLIENT_CODE_001'
       famiport_sales_segment_id: 1
     - result_code: 90  # サービス不可時案内
       message: 'メンテナンス中です。ご迷惑をおかけします。'
       reserve_number: 'RSV00001'
-      famiport_event_code_1: 'EVENT1'
-      famiport_event_code_2: 'ESB1'
-      famiport_performance_code: 'PF1'
-      uketsuke_code: 'UK1'
-      famiport_client_code: 'FAMIPORT_CLIENT_CODE_001'
+      event_code_1: 'EVENT1'
+      event_code_2: 'ESB1'
+      performance_code: 'PF1'
+      sales_segment_code: 'UK1'
+      client_code: 'FAMIPORT_CLIENT_CODE_001'
       famiport_sales_segment_id: 1
     """
 
