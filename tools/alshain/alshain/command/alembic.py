@@ -14,7 +14,7 @@ TARGET_CURRENTDIR = {
 CONFIG_NAME = {
     'ticketing': 'altair.ticketing.admin.ini',
     'cms': 'altair.cms.admin.ini',
-    'famiport': 'altair.ticketing.famiport.ini',
+    'famiport': 'altair.famiport.ini',
     }
 
 
