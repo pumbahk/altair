@@ -74,17 +74,12 @@ class ResevationView(object):
     def inquiry(self):
         type_ = FamiPortRequestType.ReservationInquiry
         request_params = dict(self.request.params)
-        params = {}
-        try:
-            params = {
-                'storeCode': request_params['storeCode'],
-                'ticketingDate': request_params['ticketingDate'],
-                'reserveNumber': request_params['reserveNumber'],
-                'authNumber': request_params.get('authNumber', ''),
-                }
-        except KeyError as err:
-            _logger.error('parameter error: {}'.format(err))
-            return HTTPBadRequest(err)
+        params = {
+            'storeCode': request_params.get('storeCode', ''),
+            'ticketingDate': request_params.get('ticketingDate', ''),
+            'reserveNumber': request_params.get('reserveNumber', ''),
+            'authNumber': request_params.get('authNumber', ''),
+             }
         famiport_request = self._create_famiport_request(params, type_)
         return self._build_response(famiport_request)
 
