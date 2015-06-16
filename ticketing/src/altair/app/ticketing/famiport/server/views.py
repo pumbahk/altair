@@ -15,6 +15,10 @@ from ..communication.api import (
     get_response_builder,
     get_xmlResponse_generator,
     )
+from ..communication.models import (
+    ResultCodeEnum,
+    FamiPortInformationResponse,
+    )
 
 _logger = logging.getLogger(__name__)
 
@@ -55,6 +59,10 @@ class ResevationView(object):
         famiport_response = response_builder.build_response(famiport_request, self.session, self.now)
         self.comm_session.add(famiport_response)
         self.comm_session.commit()
+        payload_builder = get_xmlResponse_generator(famiport_response)
+        return payload_builder.generate_xmlResponse(famiport_response)
+
+    def _create_payload(self, famiport_response):
         payload_builder = get_xmlResponse_generator(famiport_response)
         return payload_builder.generate_xmlResponse(famiport_response)
 
@@ -162,8 +170,8 @@ class ResevationView(object):
             'reserveNumber': request_params.get('reserveNumber', ''),  # optional
             }
         famiport_request = self._create_famiport_request(params, type_)
-        buf = self._build_payload(famiport_request)
-        return Response(buf)
+        payload = self._build_payload(famiport_request)
+        return Response(payload)
 
     @view_config(route_name='famiport.api.reservation.customer', request_method='POST')
     def customer(self):

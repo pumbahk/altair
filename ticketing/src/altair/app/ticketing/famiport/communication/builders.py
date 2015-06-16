@@ -3,11 +3,16 @@ import logging
 import datetime
 import six
 from lxml import etree
+from sqlalchemy import or_
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import orm
 from zope.interface import implementer
-from .exceptions import FamiPortRequestTypeError, FamiPortResponseBuilderLookupError
+from ..exc import FamiPortError
+from .exceptions import (
+    FamiPortRequestTypeError,
+    FamiPortResponseBuilderLookupError,
+    )
 from .utils import (
     str_or_blank,
     FamiPortCrypt,
@@ -16,6 +21,7 @@ from ..models import (
     FamiPortOrder,
     FamiPortInformationMessage,
     FamiPortRefundEntry,
+    FamiPortClient,
     FamiPortTicket,
     FamiPortOrderType,
     )
@@ -25,6 +31,7 @@ from .interfaces import (
     IXmlFamiPortResponseGenerator,
     )
 from .models import (
+    InfoKubunEnum,
     FamiPortTicketResponse,
     FamiPortRequestType,
     ResultCodeEnum,
@@ -76,6 +83,7 @@ class FamiPortRequestFactory(object):
             famiport_request = FamiPortRefundEntryRequest()
         else:
             raise FamiPortRequestTypeError(request_type)
+
         famiport_request.request_type = request_type
 
         barcode_no = famiport_request_dict.get('barCodeNo')
@@ -680,7 +688,8 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
     def build_response(self, famiport_information_request, session, now):
-        """
+        """案内通信
+
         デフォルトは「案内なし(正常)」
         FamiPortInformationMessageにWithInformationに対応するmessageがあれば「案内あり(正常)」としてメッセージを表示する。
         FamiPortInformationMessageにServiceUnavailableに対応するmessageがあれば「サービス不可時案内」としてメッセージを表示する。
@@ -689,59 +698,74 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         :param famiport_information_request:
         :return: FamiPortInformationResponse
         """
-        # デフォルトは案内なし(正常)
-        resultCode = InformationResultCodeEnum.NoInformation.value
-        infoKubun = famiport_information_request.infoKubun
-        storeCode = famiport_information_request.storeCode.lstrip(u'0')
-        infoMessage = ''
+
+        famiport_request = famiport_information_request
+        famiport_response = FamiPortInformationResponse()
+        famiport_response.infoKubun = famiport_request.infoKubun
         try:
-            infoMessage = FamiPortInformationMessage.get_message(
-                InformationResultCodeEnum.ServiceUnavailable, session=session)
-        except DBAPIError:
-            logger.error(
-                u"DBAPIError has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). 店舗コード: %s" % storeCode)
-            resultCode == InformationResultCodeEnum.OtherError.value
-            infoMessage = u'エラーが起こりました。'
-            return FamiPortInformationResponse(
-                resultCode=resultCode,
-                infoKubun=infoKubun,
-                infoMessage=infoMessage,
-                )
+            if famiport_request.infoKubun == InfoKubunEnum.DirectSales.value:  # 直販
+                famiport_response.resultCode = InformationResultCodeEnum.ServiceUnavailable.value
+                famiport_response.infoMessage = u'現在お取り扱いしておりません。'
+                return famiport_response
 
-        if infoMessage is not None:  # サービス不可時案内
-            resultCode = InformationResultCodeEnum.ServiceUnavailable.value
-            return FamiPortInformationResponse(
-                resultCode=resultCode,
-                infoKubun=infoKubun,
-                infoMessage=infoMessage,
-                )
+            elif famiport_request.infoKubun == InfoKubunEnum.Reserved.value:  # 予済
+                info_messages = session \
+                    .query(FamiPortInformationMessage) \
+                    .filter(FamiPortInformationMessage.famiport_client_code == famiport_request.playGuideId) \
+                    .all()
 
-        try:
-            infoMessage = FamiPortInformationMessage.get_message(
-                InformationResultCodeEnum.WithInformation, session=session)
-        except DBAPIError:
-            resultCode == InformationResultCodeEnum.OtherError.value
-            infoMessage = u'エラーが起こりました。'
-            return FamiPortInformationResponse(
-                resultCode=resultCode,
-                infoKubun=infoKubun,
-                infoMessage=infoMessage,
-                )
+                famiport_order = None
+                if famiport_request.reserveNumber:
+                    famiport_order = session \
+                        .query(FamiPortOrder) \
+                        .filter(FamiPortOrder.reserve_number == famiport_request.reserveNumber) \
+                        .order_by(FamiPortOrder.id.desc()) \
+                        .first()
 
-        if infoMessage is not None:  # 文言の設定あり
-            resultCode = InformationResultCodeEnum.WithInformation.value
-            return FamiPortInformationResponse(
-                resultCode=resultCode,
-                infoKubun=infoKubun,
-                infoMessage=infoMessage,
-                )
+                for_order = None
+                for_performance = None
+                for_event = None
+                for_client = None
 
-        # 案内なし(正常)
-        return FamiPortInformationResponse(
-            resultCode=resultCode,
-            infoKubun=infoKubun,
-            infoMessage='',
-            )
+                def _or(info_message1, info_message2):
+                    if info_message1 and info_message2:
+                        return info_message1 if info_message1.result_code < info_message2 else info_message2
+                    else:
+                        return info_message1 or info_message2
+
+                info_message = None
+                for _info_msg in info_messages:
+                    if _info_msg.result_code == InformationResultCodeEnum.ServiceUnavailable.value:
+                        info_message = _info_msg
+                        break
+                    elif famiport_order.reserve_number and famiport_order.reserve_number == _info_msg.reserve_number:
+                        for_order = _or(_info_msg, for_order)
+                    elif _info_msg.famiport_sales_segment.famiport_performance.id == famiport_order.famiport_sales_segment.famiport_performance.id:
+                        for_performance = _or(_info_msg, for_performance)
+                    elif _info_msg.famiport_sales_segment.famiport_performance.famiport_eventid \
+                            == famiport_order.famiport_sales_segment.famiport_performance.famiport_event.id:
+                        for_event = _or(_info_msg, for_event)
+                    elif _info_msg.famiport_client_code == famiport_order.famiport_client.code:
+                        for_client = _or(_info_msg, for_client)
+
+                info_message = for_order or for_performance or for_event or for_client
+
+                if info_message is not None:  # メッセージあり
+                    famiport_response.resultCode = str_or_blank(
+                        info_message.result_code, padding_count=2, fillvalue='0')
+                    famiport_response.infoMessage = info_message.message
+                    return famiport_response
+                else:  # メッセージなし
+                    famiport_response.resultCode = InformationResultCodeEnum.NoInformation.value
+                    famiport_response.infoMessage = u''
+                    return famiport_response
+            else:
+                raise FamiPortError('unknown infoKubun: {}'.format(famiport_request.infoKubun))
+        except Exception as err:  # その他エラー
+            logger.error('FamiPort Information Error: {}: {}'.format(type(err).__name__, err))
+            famiport_response.resultCode = InformationResultCodeEnum.OtherError.value
+            famiport_response.infoMessage = u'異常が発生しました'
+            return famiport_response
 
 
 class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):

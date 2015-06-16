@@ -55,7 +55,7 @@ class HardcodedModel(object):
 
     @classmethod
     def is_valid_id(cls, id):
-        return id in cls.__map__ 
+        return id in cls.__map__
 
 class FamiPortArea(HardcodedModel):
     Nationwide     = (1, u'全国')
@@ -133,11 +133,8 @@ class FamiPortPlayguide(Base, WithTimestamp):
     __tablename__ = 'FamiPortPlayguide'
 
     id                  = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
+    name                = sa.Column(sa.Unicode(50), nullable=False, default=u'')
     discrimination_code = sa.Column(sa.Integer, nullable=False)
-
-    @property
-    def name(self):
-        return 'xxxxx'
 
 
 class FamiPortClient(Base, WithTimestamp):
@@ -655,11 +652,24 @@ class FamiPortTicket(Base, WithTimestamp):
 
 class FamiPortInformationMessage(Base, WithTimestamp):
     __tablename__ = 'FamiPortInformationMessage'
+    __table_args__ = (
+        sa.UniqueConstraint(
+            'result_code', 'reserve_number', 'famiport_sales_segment_id',
+            'famiport_event_code_1', 'famiport_event_code_2',
+            'famiport_performance_code', 'uketsuke_code', 'famiport_client_code',
+            name='ix_unique_famiport_information_message',
+            ),
+        )
 
     id = sa.Column(Identifier, primary_key=True)
-    result_code = sa.Column(sa.Enum('WithInformation', 'ServiceUnavailable'), nullable=False)
+    result_code = sa.Column(sa.Integer, nullable=False)
     message = sa.Column(sa.Unicode(length=1000), nullable=False, default=u'')
     reserve_number = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
+    famiport_event_code_1 = sa.Column(sa.Unicode(6), nullable=True)
+    famiport_event_code_2 = sa.Column(sa.Unicode(4), nullable=True)
+    famiport_performance_code = sa.Column(sa.Unicode(3), nullable=True)
+    uketsuke_code = sa.Column(sa.Unicode(3), nullable=True)  # 受付コード
+    famiport_client_code = sa.Column(sa.Unicode(24), nullable=True)
     famiport_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True)
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
 

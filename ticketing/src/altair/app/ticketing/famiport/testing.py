@@ -166,7 +166,7 @@ class FamiPortInformationResponseFakeFactory(FamiPortFakeFactory):
     xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
     <resultCode>00</resultCode>
-    <infoKubun>0</infoKubun>
+    <infoKubun>1</infoKubun>
     <infoMessage />
 </FMIF>
 """
@@ -339,5 +339,3 @@ def _teardown_db(registry):
     transaction.abort()
     from altair.sqlahelper import close_global_db_sessions
     close_global_db_sessions(registry)
-
-

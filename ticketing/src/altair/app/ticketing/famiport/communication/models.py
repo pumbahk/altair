@@ -688,4 +688,3 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
                 setattr(self, keys['refundEnd'], u'')
                 setattr(self, keys['ticketTyp'], u'')
                 setattr(self, keys['charge'], u'')
-
