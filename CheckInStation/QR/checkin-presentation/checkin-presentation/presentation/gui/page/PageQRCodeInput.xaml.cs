@@ -99,6 +99,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.RefreshModeVisibility = Visibility.Hidden;
             }
+            
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -149,6 +150,7 @@ namespace checkin.presentation.gui.page
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
+            this.LoadingAdorner.IsAdornerVisible = true;
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             ctx.IsIdle = Visibility.Hidden;
             if (this.QRCodeInput.Text.Length < 60)

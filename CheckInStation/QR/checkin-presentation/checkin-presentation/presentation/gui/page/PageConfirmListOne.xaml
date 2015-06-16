@@ -59,10 +59,10 @@
                                 Grid.Row="0" Grid.Column="1"
                                 HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                 <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding OrderNo, Mode=OneWay}"></TextBlock>
                             </WrapPanel>
                             <WrapPanel
-                                Grid.Row="1" Grid.Column="0"
+                                Grid.Row="1" Grid.ColumnSpan="2"
                                 HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                 <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
                                 <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
@@ -70,33 +70,18 @@
                             <WrapPanel
                                 Grid.RowSpan="2" Grid.Column="2"
                                 HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="40" FontWeight="ExtraBlack">発券予定枚数:1枚</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">発券予定枚数:</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" Text="{Binding NumberOfPrintableTicket,Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">枚</TextBlock>
                             </WrapPanel>
                         </Grid>
 
-                        <!-- 説明(description)-->
-                        <StackPanel
-                        Visibility="{Binding NextButtonVisibility}"
-                        Canvas.Top="90"
-                        Orientation="Horizontal"
-                        >
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Style.Triggers>
-                                        <Trigger Property="Orientation" Value="Horizontal">
-                                            <Setter Property="Canvas.Left" 
-                                                Value="{Binding RelativeSource={RelativeSource Self}, 
-                                                Path=ActualWidth,
-                                                Converter={StaticResource MathConverter}, 
-                                                ConverterParameter=(1366-@VALUE)*0.5}" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBlock 
-                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
-                        </StackPanel>
+                        <!-- 説明(FV)-->
+                        <TextBlock
+                            d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                            Text="{Binding Description}"
+                            FontSize="25"
+                            Style="{StaticResource MainText}"/>
 
                     </ListView>
 
@@ -191,7 +176,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻oneる</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
 
 

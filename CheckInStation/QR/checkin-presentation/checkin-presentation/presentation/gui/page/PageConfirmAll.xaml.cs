@@ -88,6 +88,13 @@ namespace checkin.presentation.gui.page
             set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
+        private int _NumberOfSelectableTicket;
+        public int NumberOfSelectableTicket
+        {
+            get { return this._NumberOfSelectableTicket; }
+            set { this._NumberOfSelectableTicket = value; }
+        }
+
         private int _TotalNumberOfTicket;
         public int TotalNumberOfTicket
         {
@@ -139,7 +146,8 @@ namespace checkin.presentation.gui.page
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = ConfirmAllStatus.starting,
-                DisplayTicketDataCollection = new DisplayTicketDataCollection()
+                DisplayTicketDataCollection = new DisplayTicketDataCollection(),
+                NotPrintVisibility = Visibility.Hidden
             };
             ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
             ctx.PropertyChanged += Status_OnPrepared;
@@ -197,8 +205,13 @@ namespace checkin.presentation.gui.page
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
                 displayColl.Add(dtdata);
             }
-            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
+            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected && o.printed_at == null).Count();
+            ctx.NumberOfSelectableTicket = source.collection.Where(o => o.printed_at == null).Count();
             ctx.TotalNumberOfTicket = source.collection.Count();
+            if (ctx.NumberOfSelectableTicket > 0)
+            {
+                ctx.NotPrintVisibility = Visibility.Visible;
+            }
         }
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)
@@ -230,6 +243,7 @@ namespace checkin.presentation.gui.page
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
             }
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -240,6 +254,12 @@ namespace checkin.presentation.gui.page
                 return;
             }
             var ctx = this.DataContext as InputDataContext;
+            var pageCtx = ctx as PageConfirmAllDataContext;
+            if (pageCtx.NumberOfPrintableTicket == 0 && pageCtx.NumberOfSelectableTicket > 0)
+            {
+                pageCtx.ErrorMessage = "発券したいチケットを選択してください";
+                return;
+            }
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync();
@@ -247,7 +267,6 @@ namespace checkin.presentation.gui.page
 
                 //unregister event
                 int notPrintedCount = 0;
-                var pageCtx = ctx as PageConfirmAllDataContext;
                 foreach (var dc in pageCtx.DisplayTicketDataCollection)
                 {
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
@@ -259,8 +278,7 @@ namespace checkin.presentation.gui.page
 
                 if (notPrintedCount == 0)
                 {
-                    pageCtx.NotPrintVisibility = Visibility.Hidden;
-                    pageCtx.Description = "発券済みです";
+                    pageCtx.Description = "このＱＲコードのチケットは発券済みです";
                     return;
                 }
                 //this.NavigationService.Navigate(new PagePrintingConfirm());

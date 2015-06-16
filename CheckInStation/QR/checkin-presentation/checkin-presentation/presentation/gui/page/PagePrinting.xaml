@@ -48,6 +48,8 @@
                             </Style>
                         </StackPanel.Style>
                         <TextBlock 
+                            FontSize="30"
+                            TextAlignment="Center"
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>

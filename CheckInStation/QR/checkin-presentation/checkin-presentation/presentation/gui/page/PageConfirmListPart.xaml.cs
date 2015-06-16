@@ -132,8 +132,8 @@ namespace checkin.presentation.gui.page
         {
             var broker = AppUtil.GetCurrentBroker();
             var ev = broker.GetInternalEvent() as ConfirmAllEvent;
-            var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected).Count();
-            var collection = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected);
+            var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected && o.printed_at == null).Count();
+            var collection = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected && o.printed_at == null);
             ev.StatusInfo.TicketDataCollection.collection = collection.Cast<TicketDataMinumum>().ToArray();
             var ctx = new PageConfirmListPartDataContext(this)
             { 

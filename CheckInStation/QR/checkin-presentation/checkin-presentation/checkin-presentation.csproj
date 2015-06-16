@@ -91,6 +91,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="presentation\gui\control\Loading.xaml.cs">
+      <DependentUpon>Loading.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\control\ToggleButton.cs" />
     <Compile Include="presentation\gui\page\PageConfirmListAll.xaml.cs">
       <DependentUpon>PageConfirmListAll.xaml</DependentUpon>
@@ -264,6 +267,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="presentation\gui\control\InspectCase.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\Loading.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -450,6 +457,10 @@
     <ProjectReference Include="..\..\WpfKb\WpfKb.csproj">
       <Project>{0784cdc9-0f52-4b8b-9488-6589c11e94e2}</Project>
       <Name>WpfKb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AdornedControl\AdornedControl.csproj">
+      <Project>{94b81cb7-f8a6-44bc-bd71-e927f701e0d8}</Project>
+      <Name>AdornedControl</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

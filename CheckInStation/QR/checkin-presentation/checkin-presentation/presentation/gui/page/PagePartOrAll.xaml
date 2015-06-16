@@ -72,16 +72,17 @@
                             </Grid.RowDefinitions>
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="800"></ColumnDefinition>
-                                <ColumnDefinition Width="200"></ColumnDefinition>
+                                <ColumnDefinition Width="150"></ColumnDefinition>
+                                <ColumnDefinition Width="700"></ColumnDefinition>
+                                <ColumnDefinition Width="150"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
+                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
                                 一緒に購入した他のチケットを
                             </TextBlock>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 すべて発券
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="1" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
                         </Grid>
                     </Button>
 
@@ -99,16 +100,17 @@
                             </Grid.RowDefinitions>
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="800"></ColumnDefinition>
-                                <ColumnDefinition Width="200"></ColumnDefinition>
+                                <ColumnDefinition Width="150"></ColumnDefinition>
+                                <ColumnDefinition Width="700"></ColumnDefinition>
+                                <ColumnDefinition Width="150"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
+                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
                                 発券するチケットを
                             </TextBlock>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 選択する
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="1" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
                         </Grid>
                     </Button>
 

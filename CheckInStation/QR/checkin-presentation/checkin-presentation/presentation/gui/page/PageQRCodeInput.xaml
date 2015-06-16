@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:c="clr-namespace:checkin.presentation.gui.control"
+      xmlns:ac="clr-namespace:AdornedControl;assembly=AdornedControl"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:checkin.presentation.gui.control"
       mc:Ignorable="d" 
@@ -40,13 +41,35 @@
                             Canvas.Left="327" 
                             Canvas.Top="169">
                                 <StackPanel HorizontalAlignment="Stretch">
-                                    <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
+                                    <Image Visibility="{Binding IsIdle}" Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
                                     <TextBox
                                         Width="0"
                                         HorizontalAlignment="Center"
                                         KeyDown="OnKeyDownHandler"
                                         x:Name="QRCodeInput"/>
-                                </StackPanel>
+
+                                        <ac:AdornedControl
+                                        Margin="0,-350,0,0"
+                                        x:Name="LoadingAdorner"
+                                        Visibility="{Binding IsWaiting}"
+                                            Background="Transparent">
+                                            <ac:AdornedControl.AdornerContent>
+                                                <c:Loading Background="Transparent"></c:Loading>
+                                            </ac:AdornedControl.AdornerContent>
+                                            <Border
+                                                           
+                                                Height="200"
+                                                Width="600">
+                                                <TextBlock
+                                                    Background="Transparent"
+                                                    HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                    FontSize="20"
+                                                    Text="{Binding Description}"
+                                                />
+                                            </Border>
+                                        </ac:AdornedControl>
+                                    </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
@@ -74,7 +97,6 @@
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
-
 
                     <Button
                     Canvas.Left="140"
@@ -129,20 +151,23 @@
                     
                 </Canvas>
             </Grid>
-            <Grid
-                Visibility="{Binding IsWaiting}"
-                Height="728"
-                Width="1366" Margin="0,0,0,0"
-                IsHitTestVisible="False"
-                >
-                <Rectangle Fill="White" Opacity="0.7"/>
-                    <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="20"
-                    Text="{Binding Description}"
-                    />
+                <!--
+                <Grid
+                    Visibility="{Binding IsWaiting}"
+                    Height="728"
+                    Width="1366" Margin="0,0,0,0"
+                    IsHitTestVisible="False"
+                    >
+                    <Rectangle Fill="White" Opacity="0.7"/>
+                    <StackPanel
+                        Canvas.Top="250"
+                        Orientation="Horizontal"
+                        >
+                        
+                    </StackPanel>             
+                    
                 </Grid>
+                -->
             </Grid>
         </Viewbox>   
         

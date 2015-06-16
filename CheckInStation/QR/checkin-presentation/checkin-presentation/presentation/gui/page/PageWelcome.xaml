@@ -50,12 +50,12 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
-
+<!--
                     <Button
                         Canvas.Left="230"
                         Canvas.Top="200"
                         Click="Button_Click_QR"
-                        Content="QR読込"
+                        Content="QRコード"
                         Style="{StaticResource BigButton}">
                         <Button.Tag>
                             <ImageSource>/Resource/QRcode.jpg</ImageSource>
@@ -66,11 +66,59 @@
                      Canvas.Left="730"
                      Canvas.Top="200"
                      Click="Button_Click_Code"
-                     Content="受付番号読込"
+                     Content="受付番号"
                      Style="{StaticResource BigButton}">
                         <Button.Tag>
                             <ImageSource>/Resource/keyboard.jpg</ImageSource>
                         </Button.Tag>
+                    </Button>
+-->
+                    <Button
+                     Canvas.Left="230"
+                     Canvas.Top="200"
+                     Height="450"
+                     Width="450"
+                     Click="Button_Click_QR"
+                     Style="{StaticResource SubmitButton}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="250"></RowDefinition>
+                                <RowDefinition Height="200"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="30"
+                                       FontSize="80">
+                                QRコード
+                            </TextBlock>
+                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/QRcode.jpg"/>
+                        </Grid>
+                    </Button>
+
+                    <Button
+                     Canvas.Left="730"
+                     Canvas.Top="200"
+                     Height="450"
+                     Width="450"
+                     Click="Button_Click_Code"
+                     Style="{StaticResource SubmitButton}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="250"></RowDefinition>
+                                <RowDefinition Height="200"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="30"
+                                       FontSize="80">
+                                受付番号
+                            </TextBlock>
+                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/keyboard.jpg"/>
+                        </Grid>
                     </Button>
 
 

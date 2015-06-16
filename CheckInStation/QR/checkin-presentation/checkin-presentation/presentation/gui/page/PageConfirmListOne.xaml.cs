@@ -110,6 +110,12 @@ namespace checkin.presentation.gui.page
             get { return this._refreshModeVisibility; }
             set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
         }
+        private int _NumberOfPrintableTicket;
+        public int NumberOfPrintableTicket
+        {
+            get { return this._NumberOfPrintableTicket; }
+            set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
+        }
     }
 
 
@@ -145,6 +151,20 @@ namespace checkin.presentation.gui.page
             ctx.NextButtonVisibility = Visibility.Visible;
             ctx.AllPrintedVisibility = Visibility.Hidden;
 
+            if(ctx.PrintedAt == null)
+            {
+                ctx.NumberOfPrintableTicket = 1;
+            }
+            else
+            {
+                ctx.NumberOfPrintableTicket = 0;
+                ctx.Description = "このＱＲコードのチケットは発券済みです";
+                ctx.NextEnable = false;
+                ctx.AllPrintedVisibility = Visibility.Visible;
+                ctx.MultiPrintModeVisibility = Visibility.Hidden;
+                ctx.NextButtonVisibility = Visibility.Hidden;
+            }
+
             if (!AppUtil.GetCurrentResource().RefreshMode)
             {
                 ctx.RefreshModeVisibility = Visibility.Hidden;
@@ -161,13 +181,6 @@ namespace checkin.presentation.gui.page
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
             }
 
-            if (ctx.PrintedAt != null)
-            {
-                ctx.NextEnable = false;
-                ctx.NextButtonVisibility = Visibility.Hidden;
-                ctx.AllPrintedVisibility = Visibility.Visible;
-                ctx.MultiPrintModeVisibility = Visibility.Hidden;
-            }
         }
 
         /*

@@ -54,7 +54,7 @@
                                 <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
                             </WrapPanel>
                             <WrapPanel
-                                Grid.Row="1" Grid.Column="0"
+                                Grid.Row="1" Grid.ColumnSpan="2"
                                 HorizontalAlignment="Left" VerticalAlignment="Stretch">
                                 <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
                                 <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
@@ -102,7 +102,7 @@
                                 Canvas.Left="0"
                                 LineHeight="25"
                                 FontSize="25"
-                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券したいチケットを選択してください"/></TextBlock>
+                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="{Binding Description}"/></TextBlock>
                     </ListView>
 
                     <Border 
@@ -170,7 +170,7 @@
                         Click="OnBackwardWithBoundContext"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻listallる</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
 
                     <!-- 終了ボタン-->
