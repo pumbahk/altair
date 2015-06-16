@@ -177,7 +177,7 @@ class FamiPortResponseBuilderTestBase(object):
                 FamiPortReceipt(
                     exchange_number=u'',
                     barcode_no=self.barcode_no_cash_on_delivery,
-                    famiport_shop=self.famiport_shop,
+                    shop_code=self.famiport_shop.code,
                     ),
                 ],
             famiport_tickets=[
@@ -231,7 +231,7 @@ class FamiPortResponseBuilderTestBase(object):
                 FamiPortReceipt(
                     exchange_number=u'',
                     barcode_no=self.barcode_no_payment,
-                    famiport_shop=self.famiport_shop,
+                    shop_code=self.famiport_shop.code,
                     ),
                 ],
             famiport_tickets=[
@@ -285,7 +285,7 @@ class FamiPortResponseBuilderTestBase(object):
                 FamiPortReceipt(
                     exchange_number=u'',
                     barcode_no=self.barcode_no_payment_only,
-                    famiport_shop=self.famiport_shop,
+                    shop_code=self.famiport_shop.code,
                     ),
                 ],
             famiport_tickets=[
