@@ -78,7 +78,7 @@
 % endif
 
 <% shipping_address = order.shipping_address %>
-% if order.status == 'canceled' or order.payment_status == 'refunded':
+% if order.status == 'canceled' and order.payment_status == 'refunded':
 <div class="kadomaru">
   <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
   <p>
@@ -88,6 +88,7 @@
     ・二重注文により、ひとつをキャンセル処理したため<br />
   </p>
 </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
 <div class="kadomaru">
   <h3>お支払</h3>
