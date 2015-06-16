@@ -503,8 +503,8 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
 
         famiport_request = self._create_famiport_request(*args, **kwds)
         res = self._callFUT(famiport_request, session, now)
-        self.assertEqual(res.infoMessage, u'該当の予約はありません。')
-        self.assertEqual(res.resultCode, u'99')
+        self.assertEqual(res.infoMessage, u'')
+        self.assertEqual(res.resultCode, u'00')
 
     def test_direct_sales(self):
         args = []

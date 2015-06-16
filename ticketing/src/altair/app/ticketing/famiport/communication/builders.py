@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import datetime
+import itertools
 import six
 from lxml import etree
 from sqlalchemy import or_
@@ -710,58 +711,112 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                 return famiport_response
 
             elif famiport_request.infoKubun == InfoKubunEnum.Reserved.value:  # 予済
-                info_messages = session \
-                    .query(FamiPortInformationMessage) \
-                    .filter(FamiPortInformationMessage.client_code == famiport_request.playGuideId) \
-                    .all()
-
                 famiport_order = None
                 if famiport_request.reserveNumber:
-                    famiport_order = session \
-                        .query(FamiPortOrder) \
-                        .filter(FamiPortOrder.reserve_number == famiport_request.reserveNumber) \
-                        .order_by(FamiPortOrder.id.desc()) \
-                        .first()
-                    if famiport_order is None:  # 予約なし
-                        famiport_response.resultCode = InformationResultCodeEnum.OtherError.value
-                        famiport_response.infoMessage = u'該当の予約はありません。'
-                        return famiport_response
+                    famiport_order = None
+                    try:
+                        famiport_order = session \
+                            .query(FamiPortOrder) \
+                            .filter(FamiPortOrder.reserve_number == famiport_request.reserveNumber) \
+                            .filter(FamiPortOrder.invalidated_at == None) \
+                            .one()
+                    except NoResultFound:
+                        pass
 
-                for_order = None
-                for_sales_segment = None
-                for_performance = None
-                for_event = None
-                for_client = None
-
-                def _or(info_message1, info_message2):
-                    if info_message1 and info_message2:
-                        return info_message1 if info_message1.result_code < info_message2.result_code else info_message2
-                    else:
-                        return info_message1 or info_message2
+                # 条件を作る.
+                # 仮に famiport_order がなかったとしてもクライアントコードで引いて来れるメッセージは表示しなければならない
+                if famiport_order is None:
+                    criteria = [
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == None,
+                                FamiPortInformationMessage.event_code_2 == None,
+                                FamiPortInformationMessage.performance_code == None,
+                                FamiPortInformationMessage.sales_segment_code == None,
+                                FamiPortInformationMessage.reserve_number == None
+                                )
+                            ]
+                    if famiport_request.kogyoCode:
+                        criteria += [
+                            lambda q: \
+                                q.filter(
+                                    FamiPortInformationMessage.event_code_1 == famiport_request.kogyoCode,
+                                    FamiPortInformationMessage.event_code_2 == famiport_request.kogyoSubCode,
+                                    FamiPortInformationMessage.performance_code == None,
+                                    FamiPortInformationMessage.sales_segment_code == None,
+                                    FamiPortInformationMessage.reserve_number == None
+                                    ),
+                            lambda q: \
+                                q.filter(
+                                    FamiPortInformationMessage.event_code_1 == famiport_request.kogyoCode,
+                                    FamiPortInformationMessage.event_code_2 == famiport_request.kogyoSubCode,
+                                    FamiPortInformationMessage.performance_code == famiport_request.koenCode,
+                                    FamiPortInformationMessage.sales_segment_code == None,
+                                    FamiPortInformationMessage.reserve_number == None
+                                    ),
+                            lambda q: \
+                                q.filter(
+                                    FamiPortInformationMessage.event_code_1 == famiport_request.kogyoCode,
+                                    FamiPortInformationMessage.event_code_2 == famiport_request.kogyoSubCode,
+                                    FamiPortInformationMessage.performance_code == famiport_request.koenCode,
+                                    FamiPortInformationMessage.sales_segment_code == famiport_request.uketsukeCode,
+                                    FamiPortInformationMessage.reserve_number == None
+                                    ),
+                            ]
+                else:
+                    criteria = [
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == None,
+                                FamiPortInformationMessage.event_code_2 == None,
+                                FamiPortInformationMessage.performance_code == None,
+                                FamiPortInformationMessage.sales_segment_code == None,
+                                FamiPortInformationMessage.reserve_number == None
+                                ),
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
+                                FamiPortInformationMessage.performance_code == None,
+                                FamiPortInformationMessage.sales_segment_code == None,
+                                FamiPortInformationMessage.reserve_number == None
+                                ),
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
+                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
+                                FamiPortInformationMessage.sales_segment_code == None,
+                                FamiPortInformationMessage.reserve_number == None
+                                ),
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
+                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_order.sales_segment_code,
+                                FamiPortInformationMessage.reserve_number == None
+                                ),
+                        lambda q: \
+                            q.filter(
+                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
+                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_order.sales_segment_code,
+                                FamiPortInformationMessage.reserve_number == famiport_order.reserve_number
+                                ),
+                        ]
 
                 info_message = None
-                for _info_msg in info_messages:
-                    if _info_msg.result_code == InformationResultCodeEnum.ServiceUnavailable.value:
-                        info_message = _info_msg
+                for c in criteria:
+                    info_messages = sorted(
+                        c(session.query(FamiPortInformationMessage)),
+                        key=lambda r: r.result_code != InformationResultCodeEnum.ServiceUnavailable.value
+                        )
+                    if len(info_messages) > 0:
+                        info_message = info_messages[0]
                         break
-                    elif famiport_order:
-                        famiport_ss = famiport_order.famiport_sales_segment
-                        famiport_performance = famiport_ss.famiport_performance
-                        famiport_event = famiport_performance.famiport_event
 
-                        if _info_msg.reserve_number == famiport_order.reserve_number:
-                            for_order = _or(_info_msg, for_order)
-                        elif _info_msg.sales_segment_code == famiport_ss.code:
-                            for_sales_segment = _or(_info_msg, for_sales_segment)
-                        elif _info_msg.performance_code == famiport_performance.code:
-                            for_performance = _or(_info_msg, for_performance)
-                        elif _info_msg.event_code_1 == famiport_event.code_1 \
-                                and _info_msg.event_code_2 == famiport_event.code_2:
-                            for_event = _or(_info_msg, for_event)
-                    elif _info_msg.client_code == famiport_request.playGuideId:
-                        for_client = _or(_info_msg, for_client)
-
-                info_message = info_message or for_order or for_sales_segment or for_performance or for_event or for_client
                 if info_message is not None:  # メッセージあり
                     famiport_response.resultCode = str_or_blank(
                         info_message.result_code, padding_count=2, fillvalue='0')
