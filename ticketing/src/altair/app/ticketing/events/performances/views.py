@@ -619,7 +619,7 @@ class Performances(BaseView):
             new_performance.display_order = params[cnt * 4 + 4][1]
 
             # Copy data
-            new_performance.code = origin_performance.code
+            new_performance.code = self.create_performance_code(origin_performance.code)
             new_performance.open_on = origin_performance.open_on
             new_performance.venue_id = origin_performance.venue.id
             new_performance.create_venue_id = origin_performance.venue.id
@@ -645,6 +645,26 @@ class Performances(BaseView):
 
         self.request.session.flash(u'パフォーマンスをコピーしました')
         return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+
+    def create_performance_code(self, code):
+        # 末尾から順にカット(Z-Aを繰り返し、使用していないコードを見つける）
+        exist = False
+        for cut_num in range(1, 11):
+            # Z-A
+            for moji_code in reversed(range(65, 91)):
+                created_code = code[0:11] + chr(moji_code)
+                if cut_num > 12:
+                    created_code = code[0:-cut_num] + chr(moji_code) + code[-cut_num: 12]
+
+                perf = Performance.query.filter_by(code=created_code).all()
+                if len(perf) == 0:
+                    exist = True
+                    break
+            if exist:
+                break
+
+        return created_code
+
 
     @view_config(route_name='performances.delete')
     def delete(self):
