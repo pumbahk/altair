@@ -5,7 +5,7 @@ from datetime import (
     date,
     datetime,
     timedelta,
-    )
+)
 from decimal import Decimal
 import mock
 from pyramid.testing import DummyRequest, setUp, tearDown
@@ -474,7 +474,37 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
 
         famiport_request = self._create_famiport_request(*args, **kwds)
         res = self._callFUT(famiport_request, session, now)
-        self.assertEqual(res.infoMessage, u'予約がありませんでした。')
+        self.assertEqual(res.infoMessage, u'')
+        self.assertEqual(res.resultCode, u'00')
+
+    def test_reserve_number_no_famiport_order(self):
+        """reserveNumberは指定されていたがその予約はない"""
+        args = []
+        kwds = {
+            'infoKubun': '1',
+            'storeCode': '000001',  # (存在する)
+            'kogyoCode': '000001',  # (存在しない)
+            'kogyoSubCode': '000a',  # (存在しない)
+            'koenCode': '00a',  # (存在しない)
+            'uketsukeCode': '',  # (存在しない)
+            'playGuideId': '00000000000000000000000a',  # (存在する),
+            'authCode': '',
+            'reserveNumber': 'IHGREOHGOREIGHOE',  # (存在しない)
+            }
+
+        session = self.session
+        now = None
+
+        from ..models import FamiPortInformationMessage
+        info_msg = FamiPortInformationMessage(
+            result_code=1, message='test', reserve_number='', event_code_1='1', )
+        self.session.add(info_msg)
+        self.session.commit()
+
+        famiport_request = self._create_famiport_request(*args, **kwds)
+        res = self._callFUT(famiport_request, session, now)
+        self.assertEqual(res.infoMessage, u'該当の予約はありません。')
+        self.assertEqual(res.resultCode, u'99')
 
     def test_direct_sales(self):
         args = []

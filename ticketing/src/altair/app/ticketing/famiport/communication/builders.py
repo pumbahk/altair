@@ -721,6 +721,10 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                         .filter(FamiPortOrder.reserve_number == famiport_request.reserveNumber) \
                         .order_by(FamiPortOrder.id.desc()) \
                         .first()
+                    if famiport_order is None:  # 予約なし
+                        famiport_response.resultCode = InformationResultCodeEnum.OtherError.value
+                        famiport_response.infoMessage = u'該当の予約はありません。'
+                        return famiport_response
 
                 for_order = None
                 for_performance = None
