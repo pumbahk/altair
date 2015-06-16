@@ -584,6 +584,7 @@ def create_schemas():
         sa.PrimaryKeyConstraint('id'),
         )
 
+
 def seeding():
     genre_1 = [
         (1, u'音楽'),
@@ -616,11 +617,13 @@ def seeding():
         dict(genre_1_code=genre_1_code, code=code, name=name)
         for genre_1_code, code, name in genre_2
         ])
-    op.execute(FamiPortPlayguide.__table__.insert().values(code=u'000000000000000000000000', name=u'楽天チケット', prefix=u'000'))
+    op.execute(FamiPortPlayguide.__table__.insert().values(code=u'000000000000000000000000', discrimination_code=1, name=u'楽天チケット', prefix=u'000'))
+
 
 def upgrade():
     create_schemas()
     seeding()
+
 
 def downgrade():
     op.drop_table('FamiPortReceipt')
