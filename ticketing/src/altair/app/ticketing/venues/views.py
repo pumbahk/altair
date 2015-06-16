@@ -544,7 +544,7 @@ def index(request):
                      .outerjoin(Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)) \
                      .filter(Venue.organization_id==request.context.user.organization_id) \
                      .group_by(Venue.id) \
-                     .order_by(desc(Venue.site_id), asc(-Venue.performance_id))
+                     .order_by(desc(Venue.site_id), asc(Performance.display_order))
 
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
 
