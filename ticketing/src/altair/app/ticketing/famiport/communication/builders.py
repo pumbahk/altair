@@ -728,13 +728,14 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                         return famiport_response
 
                 for_order = None
+                for_sales_segment = None
                 for_performance = None
                 for_event = None
                 for_client = None
 
                 def _or(info_message1, info_message2):
                     if info_message1 and info_message2:
-                        return info_message1 if info_message1.result_code < info_message2 else info_message2
+                        return info_message1 if info_message1.result_code < info_message2.result_code else info_message2
                     else:
                         return info_message1 or info_message2
 
@@ -743,18 +744,24 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                     if _info_msg.result_code == InformationResultCodeEnum.ServiceUnavailable.value:
                         info_message = _info_msg
                         break
-                    elif famiport_order.reserve_number and famiport_order.reserve_number == _info_msg.reserve_number:
-                        for_order = _or(_info_msg, for_order)
-                    elif _info_msg.famiport_sales_segment.famiport_performance.id == famiport_order.famiport_sales_segment.famiport_performance.id:
-                        for_performance = _or(_info_msg, for_performance)
-                    elif _info_msg.famiport_sales_segment.famiport_performance.famiport_eventid \
-                            == famiport_order.famiport_sales_segment.famiport_performance.famiport_event.id:
-                        for_event = _or(_info_msg, for_event)
-                    elif _info_msg.client_code == famiport_order.famiport_client.code:
+                    elif famiport_order:
+                        famiport_ss = famiport_order.famiport_sales_segment
+                        famiport_performance = famiport_ss.famiport_performance
+                        famiport_event = famiport_performance.famiport_event
+
+                        if _info_msg.reserve_number == famiport_order.reserve_number:
+                            for_order = _or(_info_msg, for_order)
+                        elif _info_msg.sales_segment_code == famiport_ss.code:
+                            for_sales_segment = _or(_info_msg, for_sales_segment)
+                        elif _info_msg.performance_code == famiport_performance.code:
+                            for_performance = _or(_info_msg, for_performance)
+                        elif _info_msg.event_code_1 == famiport_event.code_1 \
+                                and _info_msg.event_code_2 == famiport_event.code_2:
+                            for_event = _or(_info_msg, for_event)
+                    elif _info_msg.client_code == famiport_request.playGuideId:
                         for_client = _or(_info_msg, for_client)
 
-                info_message = for_order or for_performance or for_event or for_client
-
+                info_message = info_message or for_order or for_sales_segment or for_performance or for_event or for_client
                 if info_message is not None:  # メッセージあり
                     famiport_response.resultCode = str_or_blank(
                         info_message.result_code, padding_count=2, fillvalue='0')
