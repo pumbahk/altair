@@ -18,10 +18,10 @@ $(document).ready(function() {
     ++rowCount;
     $('#addList').append('\
         <tr>\
-          <td>${forms[0].name}</td>\
-          <td>${forms[0].start_on}</td>\
-          <td>${forms[0].end_on}</td>\
-          <td>${forms[0].display_order}</td>\
+          <td>${origin_performance_form.name}</td>\
+          <td>${origin_performance_form.start_on}</td>\
+          <td>${origin_performance_form.end_on}</td>\
+          <td>${origin_performance_form.display_order}</td>\
           <td><input deleteTarget="' + rowCount + '" class="deleteButton btn btn-primary" type="button" value="削除"></td>\
         </tr>');
     $('[deleteTarget = ' + rowCount+ ']').click(deleteRow);

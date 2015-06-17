@@ -548,17 +548,12 @@ class Performances(BaseView):
     @view_config(route_name='performances.manycopy', request_method='GET', renderer='altair.app.ticketing:templates/performances/copy.html')
     def manycopy_get(self):
         origin_performance = self.context.performance
-        f = PerformanceManycopyForm()
-        f.id.data = origin_performance.id
-        f.name.data = origin_performance.name
-        f.start_on.data = origin_performance.start_on
-        f.end_on.data = origin_performance.end_on
-        f.display_order.data = origin_performance.display_order
-        forms = [f]
+        forms = [self.create_origin_performance_form(origin_performance)]
 
         return {
-            'event':origin_performance.event,
-            'origin_performance':origin_performance,
+            'event': origin_performance.event,
+            'origin_performance': origin_performance,
+            'origin_performance_form': forms[0],
             'forms': forms,
             'cart_helper': cart_helper,
             'route_path': self.request.path,
@@ -575,6 +570,8 @@ class Performances(BaseView):
         target_total = len(params) / 4
 
         origin_performance = Performance.get(params[0][1], self.context.organization.id)
+
+
         error_exist = self.validate_manycopy(params, target_total)
         if error_exist:
             forms = []
@@ -591,6 +588,7 @@ class Performances(BaseView):
             return {
                 'event':origin_performance.event,
                 'origin_performance':origin_performance,
+                'origin_performance_form': self.create_origin_performance_form(origin_performance),
                 'forms': forms,
                 'cart_helper': cart_helper,
                 'route_path': self.request.path,
@@ -635,6 +633,15 @@ class Performances(BaseView):
 
         self.request.session.flash(u'パフォーマンスをコピーしました')
         return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+
+    def create_origin_performance_form(self, origin_performance):
+        f = PerformanceManycopyForm()
+        f.id.data = origin_performance.id
+        f.name.data = origin_performance.name
+        f.start_on.data = origin_performance.start_on
+        f.end_on.data = origin_performance.end_on
+        f.display_order.data = origin_performance.display_order
+        return f
 
     def create_performance_code(self, code):
         # 末尾から順にカット(Z-Aを繰り返し、使用していないコードを見つける）
