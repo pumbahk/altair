@@ -114,7 +114,7 @@ class Communicator(object):
         result = self._do_request(self.endpoints.inquiry, data)
         if result['koenDate']:
             result['koenDate'] = datetime.strptime(result['koenDate'], '%Y%m%d%H%M')
-        for c in ['totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'phoneInput', 'nameInput', 'ticketCountTotal', 'ticketCount']:
+        for c in ['replyClass', 'totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'phoneInput', 'nameInput', 'ticketCountTotal', 'ticketCount']:
             if result[c]:
                 result[c] = int(result[c])
 
@@ -140,7 +140,7 @@ class Communicator(object):
         for c in ['koenDate', 'ticketingStart', 'ticketingEnd']:
             if result[c]:
                 result[c] = datetime.strptime(result[c], '%Y%m%d%H%M')
-        for c in ['totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount']:
+        for c in ['replyClass', 'totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount']:
             if result[c]:
                 result[c] = int(result[c])
         return result

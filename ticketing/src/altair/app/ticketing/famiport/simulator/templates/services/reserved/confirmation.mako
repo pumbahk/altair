@@ -4,6 +4,10 @@
   <table class="table">
     <tbody>
       <tr>
+        <th>type</th>
+        <td>${h.order_type_as_string(type)}</td>
+      </tr>
+      <tr>
         <th>total_amount</th>
         <td>${total_amount}</td>
       </tr>

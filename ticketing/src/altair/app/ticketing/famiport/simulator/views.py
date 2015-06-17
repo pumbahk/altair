@@ -7,6 +7,7 @@ from pyramid.security import remember, forget
 from altair.app.ticketing.fanstatic import with_bootstrap
 from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result, save_payment_result, get_ticket_preview_pictures
 from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
+from ..communication.models import ReplyClassEnum
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +210,7 @@ class FamiPortReservedView(object):
     def confirmation(self):
         inquiry_result = self.request.session['inquiry_result']
         return dict(
+            type=inquiry_result['replyClass'],
             total_amount=inquiry_result['totalAmount'],
             system_fee=inquiry_result['systemFee'],
             ticket_payment=inquiry_result['ticketPayment'],
@@ -263,6 +265,7 @@ class FamiPortReservedView(object):
             return dict(
                 error=False,
                 message=u'正常に入金発券を受け付けました',
+                type=result['replyClass'],
                 total_amount=result['totalAmount'],
                 system_fee=result['systemFee'],
                 ticket_payment=result['ticketPayment'],
@@ -274,7 +277,8 @@ class FamiPortReservedView(object):
                 exchange_no=result['exchangeTicketNo'],
                 ticket_count=result['ticketCount'],
                 ticket_count_total=result['ticketCountTotal'],
-                tickets=tickets
+                tickets=tickets,
+                payment_only=result['replyClass'] == int(ReplyClassEnum.PrepaymentOnly.value)
                 )
         else:
             message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
@@ -316,7 +320,11 @@ class FamimaPosView(object):
 
     @view_config(route_name='pos.ticketing.confirmation', renderer='pos/ticketing/confirmation.mako')
     def ticketing_confirmation(self):
-        return self.request.session['payment_result']
+        payment_result_dict = self.request.session['payment_result']
+        payment_result_dict.update(
+            payment_only=payment_result_dict['type'] == int(ReplyClassEnum.PrepaymentOnly.value)
+            )
+        return payment_result_dict
 
     @view_config(route_name='pos.ticketing.completion', renderer='pos/ticketing/completion.mako')
     def ticketing_completion(self):
