@@ -66,8 +66,8 @@ def select_famiport_order_type(order_like, plugin):
       - FamiPortDeliveryPlugin -> (代済)
         - 発券開始日時/払い期限関係なし               -> 代済         -> Ticketing
       - FamiPortPaymentDeliveryPlugin (代引/前払後日前払/前払後日発券)
-         - 発券開始日時が支払期限以前(通常)           -> 代引         -> CashOnDelivery
-         - 発券開始日時が支払期限よりもあと(前払後日) -> 前払後日前払 -> Payment
+         - 発券開始日時が支払開始日時と同じ           -> 代引         -> CashOnDelivery
+         - 発券開始日時が支払開始日時よりもあと(前払後日) -> 前払後日前払 -> Payment
 
     - pluginは3種類
       - FamiPortPaymentPlugin -> (前払)
@@ -102,8 +102,8 @@ def select_famiport_order_type(order_like, plugin):
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
-        if order_like.payment_due_at and order_like.issuing_start_at and \
-           order_like.issuing_start_at > order_like.payment_due_at:
+        if order_like.payment_start_at and order_like.issuing_start_at and \
+           order_like.issuing_start_at > order_like.payment_start_at:
             return FamiPortOrderType.Payment.value  # 前払後日前払
         else:
             return FamiPortOrderType.CashOnDelivery.value
