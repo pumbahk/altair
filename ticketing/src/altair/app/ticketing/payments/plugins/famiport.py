@@ -98,7 +98,7 @@ def select_famiport_order_type(order_like, plugin):
       - PaymentOnly  # 前払いのみ
     """
     if isinstance(plugin, FamiPortPaymentPlugin):
-        return FamiPortOrderType.Payment.value
+        return FamiPortOrderType.PaymentOnly.value
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
