@@ -245,7 +245,7 @@ def create_or_update_famiport_venue(
         except MultipleResultsFound:
             raise FamiPortAPIError('internel error')
         sys.exc_clear()
-        
+
         if not update_existing and venue is not None:
             raise FamiPortAPIError('venue already exists')
         if venue is None:
@@ -295,7 +295,7 @@ def create_or_update_famiport_event(
         if now is None:
             now = datetime.now()
         session = get_db_session(request, 'famiport')
-    
+
         # validate
         internal.get_famiport_client(session, client_code)
 
@@ -306,7 +306,7 @@ def create_or_update_famiport_event(
                 .one()
         except NoResultFound:
             raise FamiPortAPINotFoundError('no corresponding venue found for id=%ld' % venue_id)
-    
+
         genre_1 = None
         if genre_1_code is not None and genre_1_code != u'':
             try:
@@ -359,7 +359,7 @@ def create_or_update_famiport_event(
             )
 
         if purchasable_prefectures is not None:
-            _purchasable_prefectures = [] 
+            _purchasable_prefectures = []
             for prefecture_id in purchasable_prefectures:
                 if isinstance(prefecture_id, int):
                     pass
@@ -418,7 +418,7 @@ def create_or_update_famiport_performance(
         if now is None:
             now = datetime.now()
         session = get_db_session(request, 'famiport')
-     
+
         internal.get_famiport_client(session, client_code)
 
         try:
@@ -509,7 +509,7 @@ def create_or_update_famiport_sales_segment(
         if now is None:
             now = datetime.now()
         session = get_db_session(request, 'famiport')
-     
+
         internal.get_famiport_client(session, client_code)
 
         try:
@@ -607,7 +607,7 @@ def create_famiport_order(
         internal.create_famiport_order(
             session,
             client_code=client_code,
-            type_=type_, 
+            type_=type_,
             famiport_sales_segment=famiport_sales_segment,
             order_no=order_no,
             customer_name=customer_name,
