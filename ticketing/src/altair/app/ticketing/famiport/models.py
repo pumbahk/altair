@@ -332,7 +332,7 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
 
-    refunded_at          = sa.Column(sa.DateTime()) # 払戻が店頭で実際に行われた日痔
+    refunded_at          = sa.Column(sa.DateTime()) # 払戻が店頭で実際に行われた日時
 
     report_generated_at  = sa.Column(sa.DateTime()) # ファイルの生成日時
 
