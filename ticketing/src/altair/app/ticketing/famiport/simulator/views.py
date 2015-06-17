@@ -202,7 +202,8 @@ class FamiPortReservedView(object):
             else: 
                 return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
         else:
-            return dict(message=u'エラーが発生しました (%s)' % result['resultCode'])
+            message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
+            return dict(message=message)
 
     @view_config(route_name='service.reserved.confirmation', renderer='services/reserved/confirmation.mako')
     def confirmation(self):
@@ -238,40 +239,46 @@ class FamiPortReservedView(object):
         if tickets is not None and not isinstance(tickets, list):
             tickets = [tickets]
 
-        store_payment_result(
-            self.request,
-            store_code=self.context.store_code,
-            mmk_no=self.context.mmk_no,
-            client_code=self.context.client_code,
-            type=result['replyClass'],
-            total_amount=result['totalAmount'],
-            system_fee=result['systemFee'],
-            ticket_payment=result['ticketPayment'],
-            ticketing_fee=result['ticketingFee'],
-            order_id=result['orderId'],
-            barcode_no=result['barCodeNo'],
-            exchange_no=result['exchangeTicketNo'],
-            ticketing_start_at=result['ticketingStart'],
-            ticketing_end_at=result['ticketingEnd'],
-            kogyo_name=result['kogyoName'],
-            koen_date=result['koenDate'],
-            tickets=tickets
-            )
+        if result['resultCode'] == u'00':
+            store_payment_result(
+                self.request,
+                store_code=self.context.store_code,
+                mmk_no=self.context.mmk_no,
+                client_code=self.context.client_code,
+                type=result['replyClass'],
+                total_amount=result['totalAmount'],
+                system_fee=result['systemFee'],
+                ticket_payment=result['ticketPayment'],
+                ticketing_fee=result['ticketingFee'],
+                order_id=result['orderId'],
+                barcode_no=result['barCodeNo'],
+                exchange_no=result['exchangeTicketNo'],
+                ticketing_start_at=result['ticketingStart'],
+                ticketing_end_at=result['ticketingEnd'],
+                kogyo_name=result['kogyoName'],
+                koen_date=result['koenDate'],
+                tickets=tickets
+                )
 
-        return dict(
-            total_amount=result['totalAmount'],
-            system_fee=result['systemFee'],
-            ticket_payment=result['ticketPayment'],
-            ticketing_fee=result['ticketingFee'],
-            performance_name=result['kogyoName'],
-            performance_date=result['koenDate'],
-            order_id=result['orderId'],
-            barcode_no=result['barCodeNo'],
-            exchange_no=result['exchangeTicketNo'],
-            ticket_count=result['ticketCount'],
-            ticket_count_total=result['ticketCountTotal'],
-            tickets=tickets
-            )
+            return dict(
+                error=False,
+                message=u'正常に入金発券を受け付けました',
+                total_amount=result['totalAmount'],
+                system_fee=result['systemFee'],
+                ticket_payment=result['ticketPayment'],
+                ticketing_fee=result['ticketingFee'],
+                performance_name=result['kogyoName'],
+                performance_date=result['koenDate'],
+                order_id=result['orderId'],
+                barcode_no=result['barCodeNo'],
+                exchange_no=result['exchangeTicketNo'],
+                ticket_count=result['ticketCount'],
+                ticket_count_total=result['ticketCountTotal'],
+                tickets=tickets
+                )
+        else:
+            message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
+            return dict(message=message, error=True)
 
 @view_defaults(decorator=with_bootstrap, permission='authenticated')
 class FamimaPosView(object):
@@ -364,5 +371,5 @@ class FamimaPosView(object):
                     )
                 message = u'正常に入金・発券できました'
         else:
-            message = u'エラーが発生しました (%s)' % result['resultCode']
+            message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
         return dict(message=message, images=images)

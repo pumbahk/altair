@@ -1,5 +1,7 @@
 <%inherit file="/_base.mako" />
 <h1>完了画面</h1>
+<p>${message}</p>
+% if not error:
 <div>
   <p><a href="${request.route_path('pos.index')}" target="_blank">レシートをレジにお持ちください。</a></p>
   <table class="table">
@@ -58,24 +60,25 @@
     チケットが1枚もない予約です！！
   </div>
   % else:
-    <table class="table">
-      <tbody>
+  <table class="table">
+    <tbody>
     % for i, ticket in enumerate(tickets):
-        <tr>
-          <th rowspan="3">${i}</th>
-          <th>barCodeNo</th>
-          <td>${ticket['barCodeNo']}</td>
-        </tr>
-        <tr>
-          <th>templateCode</th>
-          <td>${ticket['templateCode']}</td>
-        </tr>
-        <tr>
-          <th>ticketData</th>
-          <td>${ticket['ticketData']}</td>
-        </tr>
+      <tr>
+        <th rowspan="3">${i}</th>
+        <th>barCodeNo</th>
+        <td>${ticket['barCodeNo']}</td>
+      </tr>
+      <tr>
+        <th>templateCode</th>
+        <td>${ticket['templateCode']}</td>
+      </tr>
+      <tr>
+        <th>ticketData</th>
+        <td>${ticket['ticketData']}</td>
+      </tr>
     % endfor
-      </tbody>
-    </table>
+    </tbody>
+  </table>
   % endif
-
+</div>
+% endif
