@@ -270,8 +270,7 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         for order in self.orders:
             cart = order.cart
             exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
-            famiport_order = plugin.finish2(request, cart)
-            self.assertEqual(famiport_order, exp_famiport_order)
+            plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
     @skip('uninplemented')
@@ -440,8 +439,7 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         for order in self.orders:
             cart = order.cart
             exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
-            famiport_order = plugin.finish2(request, cart)
-            self.assertEqual(famiport_order, exp_famiport_order)
+            plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
         # request = DummyRequest()
@@ -608,8 +606,7 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         for order in self.orders:
             cart = order.cart
             exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
-            famiport_order = plugin.finish2(request, cart)
-            self.assertEqual(famiport_order, exp_famiport_order)
+            plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
         # request = DummyRequest()
