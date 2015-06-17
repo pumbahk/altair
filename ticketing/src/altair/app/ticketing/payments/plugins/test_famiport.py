@@ -407,7 +407,6 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
     def test_finish(self, create_famiport_order, create_from_cart):
         """確定処理成功"""
-        exp_order = create_from_cart.return_value = mock.Mock()
         create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
         cart = self.orders[0].cart
@@ -415,18 +414,6 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
 
         res = plugin.finish(request, cart)
         self.assertEqual(res, None)
-
-        # exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=False)
-
-        # self.assertEqual(order, exp_order)
-        # self.assertTrue(create_famiport_order.called)
-        # self.assertEqual(create_famiport_order.call_args, exp_call_args_create_famiport_order)
-
-        # request = DummyRequest()
-        # cart = DummyModel()
-        # plugin = self._makeOne()
-        # res = self._callFUT(plugin.finish, request, cart)
-        # self.assert_(res is None)
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
     def test_finish2_success(self, create_famiport_order):
@@ -903,13 +890,23 @@ class CreateFamiPortOrderTest(TestCase):
         return target
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
-    @mock.patch('altair.app.ticketing.payments.plugins.famiport.do_famiport_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.famiport_api.create_famiport_order')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
-    def test_it(self, build_ticket_dicts_from_order_like, do_famiport_order, lookup_famiport_tenant):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_sales_segment_pair')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.famiport_api.get_famiport_sales_segment_by_userside_id')
+    def test_it(self, get_famiport_sales_segment_by_userside_id, get_altair_famiport_sales_segment_pair,
+                build_ticket_dicts_from_order_like, create_famiport_order, lookup_famiport_tenant):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
 
         tenant = mock.Mock(code='XX')
         lookup_famiport_tenant.return_value = tenant
+        famiport_sales_segment = mock.MagicMock(
+            event_code_1='EVENT_CODE_1',
+            EVENT_code_2='EVENT_CODE_2',
+            performance_code='PERFORMANCE_CODE',
+            sales_segment_code='CODE',
+            )
+        get_famiport_sales_segment_by_userside_id.return_value = famiport_sales_segment
 
         famiport_tickets = mock.Mock()
         build_ticket_dicts_from_order_like.return_value = famiport_tickets
@@ -922,6 +919,10 @@ class CreateFamiPortOrderTest(TestCase):
             system_fee=1,
             special_fee=1,
             order_no=u'XX000001234',
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
             shipping_address=DummyModel(
                 prefecture=u'東京都',
                 city=u'品川区',
@@ -965,5 +966,29 @@ class CreateFamiPortOrderTest(TestCase):
             ticket_payment=ticket_payment,
             tickets=famiport_tickets,
             )
-        self.assertEqual(list(do_famiport_order.call_args), list(exp_call_args)[1:])
+
+        exp_call_args = mock.call(
+            request,
+            client_code=tenant.code,
+            type_=FamiPortOrderType.Ticketing.value,
+            order_no=order_like.order_no,
+            event_code_1=famiport_sales_segment['event_code_1'],
+            event_code_2=famiport_sales_segment['event_code_2'],
+            performance_code=famiport_sales_segment['performance_code'],
+            sales_segment_code=famiport_sales_segment['code'],
+            customer_address_1=customer_address_1,
+            customer_address_2=customer_address_2,
+            customer_name=customer_name,
+            customer_phone_number=customer_phone_number,
+            total_amount=total_amount,
+            system_fee=system_fee,
+            ticketing_fee=ticketing_fee,
+            ticket_payment=ticket_payment,
+            tickets=build_ticket_dicts_from_order_like(request, order_like),
+            payment_start_at=order_like.payment_start_at,
+            payment_due_at=order_like.payment_due_at,
+            ticketing_start_at=order_like.issuing_start_at,
+            ticketing_end_at=order_like.issuing_end_at,
+            )
+        self.assertEqual(create_famiport_order.call_args, exp_call_args)
         self.assertTrue(famiport_order)

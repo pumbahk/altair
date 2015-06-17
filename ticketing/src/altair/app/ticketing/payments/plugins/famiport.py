@@ -164,6 +164,17 @@ def lookup_famiport_tenant(request, order_like):
     return FamiPortTenant.query.filter_by(organization_id=order_like.organization_id).first()
 
 
+def get_altair_famiport_sales_segment_pair(order_like):
+    return DBSession.query(AltairFamiPortSalesSegmentPair) \
+        .filter(
+            sql.or_(
+                AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
+                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
+                )
+            ) \
+        .one()
+
+
 def create_famiport_order(request, order_like, in_payment, name='famiport'):
     """FamiPortOrderを作成する
 
@@ -190,15 +201,15 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     tenant = lookup_famiport_tenant(request, order_like)
     if tenant is None:
         raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
-
-    altair_famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
-        .filter(
-            sql.or_(
-                AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
-                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
-                )
-            ) \
-        .one()
+    altair_famiport_sales_segment_pair = get_altair_famiport_sales_segment_pair(order_like)
+    # altair_famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
+    #     .filter(
+    #         sql.or_(
+    #             AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
+    #             AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
+    #             )
+    #         ) \
+    #     .one()
     famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, tenant.code, altair_famiport_sales_segment_pair.id)
 
     return famiport_api.create_famiport_order(
