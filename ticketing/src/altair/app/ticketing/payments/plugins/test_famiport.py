@@ -253,7 +253,7 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         plugin = self._makeOne()
 
         order = plugin.finish(request, cart)
-        exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=False)
+        exp_call_args_create_famiport_order = mock.call(request, exp_order, plugin=plugin, in_payment=False)
 
         self.assertEqual(order, exp_order)
         self.assertTrue(create_famiport_order.called)
@@ -269,7 +269,7 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
 
         for order in self.orders:
             cart = order.cart
-            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            exp_call_args = mock.call(request, cart, plugin=plugin, in_payment=plugin._in_payment)
             plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
@@ -425,7 +425,7 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
 
         for order in self.orders:
             cart = order.cart
-            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            exp_call_args = mock.call(request, cart, plugin=plugin, in_payment=plugin._in_payment)
             plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
@@ -576,7 +576,7 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         plugin = self._makeOne()
 
         order = plugin.finish(request, cart)
-        exp_call_args_create_famiport_order = mock.call(request, exp_order, in_payment=True)
+        exp_call_args_create_famiport_order = mock.call(request, exp_order, plugin=plugin, in_payment=True)
 
         self.assertEqual(order, exp_order)
         self.assertTrue(create_famiport_order.called)
@@ -592,7 +592,7 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
 
         for order in self.orders:
             cart = order.cart
-            exp_call_args = mock.call(request, cart, in_payment=plugin._in_payment)
+            exp_call_args = mock.call(request, cart, plugin=plugin, in_payment=plugin._in_payment)
             plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
@@ -889,15 +889,17 @@ class CreateFamiPortOrderTest(TestCase):
         from altair.app.ticketing.payments.plugins.famiport import create_famiport_order as target
         return target
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.select_famiport_order_type')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.famiport_api.create_famiport_order')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_sales_segment_pair')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.famiport_api.get_famiport_sales_segment_by_userside_id')
     def test_it(self, get_famiport_sales_segment_by_userside_id, get_altair_famiport_sales_segment_pair,
-                build_ticket_dicts_from_order_like, create_famiport_order, lookup_famiport_tenant):
+                build_ticket_dicts_from_order_like, create_famiport_order, lookup_famiport_tenant,
+                select_famiport_order_type):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
-
+        select_famiport_order_type.return_value = FamiPortOrderType.Ticketing.value
         tenant = mock.Mock(code='XX')
         lookup_famiport_tenant.return_value = tenant
         famiport_sales_segment = mock.MagicMock(
@@ -938,8 +940,9 @@ class CreateFamiPortOrderTest(TestCase):
                 ),
             )
         in_payment = True
+        plugin = mock.Mock()
         target = self._get_target()
-        famiport_order = target(request, cart, in_payment)
+        famiport_order = target(request, cart, plugin, in_payment)
         order_like = cart
         customer_address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
         customer_address_2 = order_like.shipping_address.address_2
@@ -950,22 +953,6 @@ class CreateFamiPortOrderTest(TestCase):
         ticketing_fee = cart.delivery_fee
         ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
         customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
-
-        exp_call_args = mock.call(
-            client_code=tenant.code,
-            type_=FamiPortOrderType.Ticketing.value,
-            order_no=order_like.order_no,
-            userside_sales_segment_id=order_like.sales_segment.id,
-            customer_address_1=customer_address_1,
-            customer_address_2=customer_address_2,
-            customer_name=customer_name,
-            customer_phone_number=customer_phone_number,
-            total_amount=total_amount,
-            system_fee=system_fee,
-            ticketing_fee=ticketing_fee,
-            ticket_payment=ticket_payment,
-            tickets=famiport_tickets,
-            )
 
         exp_call_args = mock.call(
             request,
@@ -990,5 +977,6 @@ class CreateFamiPortOrderTest(TestCase):
             ticketing_start_at=order_like.issuing_start_at,
             ticketing_end_at=order_like.issuing_end_at,
             )
+
         self.assertEqual(create_famiport_order.call_args, exp_call_args)
         self.assertTrue(famiport_order)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ファミポート決済/引取プラグイン
 """
+import logging
 import pystache
 from lxml import etree
 from sqlalchemy import sql
@@ -50,6 +51,62 @@ from ..exceptions import PaymentPluginException
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+
+
+logger = logging.getLogger(__name__)
+
+
+def select_famiport_order_type(order_like, plugin):
+    """FamiPortOrderのどの値を使えば良いか判断する
+
+    - 組み合わせと返す値
+
+      - FamiPortPaymentPlugin -> (前払)
+        - 発券開始日時/払い期限関係なし               -> 前払         -> PaymentOnly
+      - FamiPortDeliveryPlugin -> (代済)
+        - 発券開始日時/払い期限関係なし               -> 代済         -> Ticketing
+      - FamiPortPaymentDeliveryPlugin (代引/前払後日前払/前払後日発券)
+         - 発券開始日時が支払期限以前(通常)           -> 代引         -> CashOnDelivery
+         - 発券開始日時が支払期限よりもあと(前払後日) -> 前払後日前払 -> Payment
+
+    - pluginは3種類
+      - FamiPortPaymentPlugin -> (前払)
+      - FamiPortDeliveryPlugin -> (代済)
+      - FamiPortPaymentDeliveryPlugin -> (代引/前払後日前払/前払後日発券)
+
+    - 発券開始日時と支払期限などの状況
+
+      - 発券開始日時/払い期限関係なし
+      - 発券開始日時/払い期限関係あり
+
+        - 発券開始日時が支払期限以前(通常)
+        - 発券開始日時が支払日時よりもあと(前払後日)
+
+    .. note::
+
+       - 前払後日が発生するのはpayment delivery pluginのみ。
+       - FamiPortOrder.type_の値は変更しない。
+       - 前払後日発券の値を返すケースでは以下の条件をAPI側で判断して返す。(その際FamiPortOrder.typeの値更新はしない)
+
+         - FamiPortOrder.type が Payment
+         - 支払日時がNoneではない
+
+    - 返す事の出来る値
+      - CashOnDelivery  # 代引き
+      - Payment  # 前払い（後日渡し）の前払い時
+      - Ticketing  # 代済発券と前払い(後日渡し)の後日渡し時 (ただしこの値はこの関数から返されることはない)
+      - PaymentOnly  # 前払いのみ
+    """
+    if isinstance(plugin, FamiPortPaymentPlugin):
+        return FamiPortOrderType.Payment.value
+    elif isinstance(plugin, FamiPortDeliveryPlugin):
+        return FamiPortOrderType.Ticketing.value
+    elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
+        if order_like.payment_due_at is None and order_like.issuing_start_at is None and order_like.issuing_start_at <= order_like.payment_due_at is None:
+            return FamiPortOrderType.CashOnDelivery.value
+        elif order_like.issuing_start_at > order_like.payment_due_at:  # 前払後日発券
+            return FamiPortOrderType.Payment.value
+    raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin))
 
 
 def includeme(config):
@@ -175,7 +232,7 @@ def get_altair_famiport_sales_segment_pair(order_like):
         .one()
 
 
-def create_famiport_order(request, order_like, in_payment, name='famiport'):
+def create_famiport_order(request, order_like, in_payment, plugin, name='famiport'):
     """FamiPortOrderを作成する
 
     クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
@@ -186,6 +243,7 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     system_fee = 0
     ticketing_fee = 0
     ticket_payment = 0
+    type_ = select_famiport_order_type(order_like, plugin)
 
     if in_payment:
         total_amount = order_like.total_amount
@@ -215,7 +273,7 @@ def create_famiport_order(request, order_like, in_payment, name='famiport'):
     return famiport_api.create_famiport_order(
         request,
         client_code=tenant.code,
-        type_=FamiPortOrderType.Ticketing.value,
+        type_=type_,
         order_no=order_like.order_no,
         event_code_1=famiport_sales_segment['event_code_1'],
         event_code_2=famiport_sales_segment['event_code_2'],
@@ -332,7 +390,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            create_famiport_order(request, cart, in_payment=self._in_payment)
+            create_famiport_order(request, cart, in_payment=self._in_payment, plugin=self)
         except FamiPortAPIError:
             raise FamiPortPluginFailure()
 
@@ -405,7 +463,7 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+            create_famiport_order(request, order_like, in_payment=self._in_payment, plugin=self)  # noqa
         except FamiPortAPIError:
             raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
@@ -446,7 +504,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            create_famiport_order(request, order_like, in_payment=self._in_payment)  # noqa
+            create_famiport_order(request, order_like, in_payment=self._in_payment, plugin=self)  # noqa
         except FamiPortAPIError:
             raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
