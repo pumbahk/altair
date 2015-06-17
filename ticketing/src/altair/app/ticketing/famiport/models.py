@@ -574,21 +574,19 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @classmethod
     def get_by_barCodeNo(cls, barCodeNo, session=_session):
-        return session \
-            .query(cls) \
-            .join(FamiPortReceipt) \
-            .filter(FamiPortReceipt.barcode_no == barCodeNo) \
-            .filter(cls.invalidated_at.is_(None)) \
-            .one()
+        return cls.get_by_barcode_no(barCodeNo, session)
 
     @classmethod
     def get_by_barcode_no(cls, barCodeNo, session=_session):
         return session \
             .query(cls) \
             .join(FamiPortReceipt) \
-            .filter(FamiPortReceipt.barcode_no == barCodeNo) \
+            .filter(
+                (FamiPortReceipt.barcode_no == barCodeNo) |
+                (FamiPortReceipt.exchange_number == barCodeNo)
+                ) \
             .filter(cls.invalidated_at.is_(None)) \
-            .first()
+            .one()
 
     @property
     def ticket_total_count(self):
