@@ -153,7 +153,9 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             % (storeCode, famiport_reservation_inquiry_request.ticketingDate, reserveNumber)
             )
 
-        resultCode, replyClass, replyCode = None, None, None
+        resultCode = ResultCodeEnum.Normal.value
+        replyCode = ReplyCodeEnum.Normal.value
+        replyClass = None
         try:
             try:
                 ticketingDate = datetime.datetime.strptime(
@@ -168,13 +170,43 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber, authNumber, session=session)
             except NoResultFound:
                 logger.error(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
+                replyCode = ReplyCodeEnum.SearchKeyError.value
                 famiport_order = None
 
             if famiport_order is not None:
                 if famiport_order.payment_start_at is not None and  \
                    famiport_order.payment_start_at > ticketingDate:
                     logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
+
+            if famiport_order is not None:
+                if famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
+                    if famiport_order.paid_at is None:
+                        replyClass = ReplyClassEnum.CashOnDelivery.value
+                    else:
+                        replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                        famiport_order = None
+                elif famiport_order.type == FamiPortOrderType.Payment.value:
+                    if famiport_order.paid_at is None:
+                        replyClass = ReplyClassEnum.Prepayment.value
+                    elif famiport_order.issued_at is None:
+                        replyClass = ReplyClassEnum.Paid.value
+                    else:
+                        replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                        famiport_order = None
+                elif famiport_order.type == FamiPortOrderType.Ticketing.value:
+                    if famiport_order.issued_at is None:
+                        replyClass = ReplyClassEnum.Paid.value
+                    else:
+                        replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                        famiport_order = None
+                elif famiport_order.type == FamiPortOrderType.PaymentOnly.value:
+                    if famiport_order.paid_at is None:
+                        replyClass = ReplyClassEnum.PrepaymentOnly.value
+                    else:
+                        replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                        famiport_order = None
 
             if famiport_order is not None:
                 receipt = famiport_order.create_receipt(storeCode)
@@ -185,10 +217,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 else:
                     receipt.inquired_at = now
                     session.commit()
-
+        
             if famiport_order is not None:
-                resultCode = ResultCodeEnum.Normal.value
-                replyClass = famiport_order.type
                 replyCode = ReplyCodeEnum.Normal.value
                 nameInput = NameRequestInputEnum.Necessary.value if famiport_order.customer_name_input else NameRequestInputEnum.Unnecessary.value
                 phoneInput = PhoneRequestInputEnum.Necessary.value if famiport_order.customer_phone_input else PhoneRequestInputEnum.Unnecessary.value
@@ -220,9 +250,10 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 systemFee = str_or_blank(systemFee, 8, fillvalue='0')
                 ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
                 replyClass = str_or_blank(replyClass)
+                replyCode = ReplyCodeEnum.Normal.value
             else:
                 resultCode = ResultCodeEnum.OtherError.value
-                replyCode = ReplyCodeEnum.SearchKeyError.value
+
             famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
                 resultCode=resultCode,
                 replyClass=replyClass,
