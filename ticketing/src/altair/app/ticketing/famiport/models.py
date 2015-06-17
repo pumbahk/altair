@@ -613,9 +613,20 @@ class FamiPortOrder(Base, WithTimestamp):
     auth_number = None
 
     def get_receipt(self, barcode_no):
-        for receipt in self.famiport_receipts:
-            if barcode_no == receipt.barcode_no:
-                return receipt
+        if self.type == FamiPortOrderType.Payment.value:
+            if self.paid_at is None:
+                for receipt in self.famiport_receipts:
+                    if receipt.completed_at is None and barcode_no == receipt.barcode_no:
+                        return receipt
+            else:
+                for receipt in self.famiport_receipts:
+                    if receipt.completed_at is None and barcode_no == receipt.exchange_number:
+                        return receipt
+        else:
+            for receipt in self.famiport_receipts:
+                if receipt.completed_at is None and barcode_no == receipt.barcode_no:
+                    return receipt
+        return None
 
     def create_receipt(self, store_code):
         session = object_session(self)
