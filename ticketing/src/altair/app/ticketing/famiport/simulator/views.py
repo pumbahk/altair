@@ -338,7 +338,7 @@ class FamimaPosView(object):
             sequence_no=self.context.gen_serial(),
             client_code=payment_result_dict['client_code'],
             order_id=payment_result_dict['order_id'],
-            barcode_no=payment_result_dict['barcode_no'],
+            barcode_no=payment_result_dict['valid_barcode_no'],
             total_amount=payment_result_dict['total_amount']
             )
         if result['resultCode'] == u'00':
