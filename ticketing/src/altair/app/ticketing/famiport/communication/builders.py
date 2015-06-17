@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
+import six
 import logging
 import datetime
-import itertools
-import six
 from lxml import etree
-from sqlalchemy import or_
-from sqlalchemy.exc import DBAPIError
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import orm
+from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
+
 from ..exc import FamiPortError
 from .exceptions import (
     FamiPortRequestTypeError,
@@ -266,6 +264,8 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         self.moratorium = moratorium
 
     def build_response(self, famiport_payment_ticketing_request, session, now):
+        """入金発券要求からバーコードを印字するための情報を返す
+        """
         famiport_order = None
         resultCode = ResultCodeEnum.Normal.value
         replyCode = ReplyCodeEnum.Normal.value
@@ -601,7 +601,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                 )
         except:
             logger.exception(
-                u'An exception has occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response().'
+                u'An exception has occurred at FamiPortPaymentTicketingCompletionResponseBuilder.build_response().'
                 u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
                 % (storeCode, mmkNo, famiport_payment_ticketing_completion_request.ticketingDate, sequenceNo, barCodeNo, orderId))
             resultCode = ResultCodeEnum.OtherError.value
@@ -665,6 +665,8 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 famiport_response.orderId = famiport_order.famiport_order_identifier
                 famiport_response.barCodeNo = receipt.barcode_no
                 receipt.void_at = now  # 30分破棄処理
+                session.add(receipt)
+                session.commit()
         except Exception as err:  # その他の異常
             logger.error(u'famiport order cancel error: {}: {}'.format(
                 type(err).__name__, err))
