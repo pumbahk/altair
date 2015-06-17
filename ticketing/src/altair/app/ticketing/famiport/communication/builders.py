@@ -356,6 +356,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     famiport_order = None
                 elif receipt.can_payment(now):
                     receipt.payment_request_received_at = now
+                    session.commit()
                 else:
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
