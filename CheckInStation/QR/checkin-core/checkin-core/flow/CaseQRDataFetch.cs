@@ -58,7 +58,7 @@ namespace checkin.core.flow
 
         public override ICase OnFailure (IFlow flow)
         {
-            flow.Finish ();
+            //flow.Finish ();
             if (this.tokenStatus == TokenStatus.valid)
             {
                 if (this.TreatShorthandError != null)

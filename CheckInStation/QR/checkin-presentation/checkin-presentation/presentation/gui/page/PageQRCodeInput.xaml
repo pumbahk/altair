@@ -49,9 +49,9 @@
                                         x:Name="QRCodeInput"/>
 
                                         <ac:AdornedControl
-                                        Margin="0,-350,0,0"
-                                        x:Name="LoadingAdorner"
-                                        Visibility="{Binding IsWaiting}"
+                                            Margin="0,-350,0,0"
+                                            x:Name="LoadingAdorner"
+                                            Visibility="{Binding IsWaiting}"
                                             Background="Transparent">
                                             <ac:AdornedControl.AdornerContent>
                                                 <c:Loading Background="Transparent"></c:Loading>
@@ -63,7 +63,7 @@
                                                 <TextBlock
                                                     Background="Transparent"
                                                     HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
+                                                    VerticalAlignment="Center"
                                                     FontSize="20"
                                                     Text="{Binding Description}"
                                                 />

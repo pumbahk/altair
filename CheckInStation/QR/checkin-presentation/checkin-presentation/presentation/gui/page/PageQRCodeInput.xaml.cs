@@ -99,6 +99,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.RefreshModeVisibility = Visibility.Hidden;
             }
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             
         }
 
@@ -118,9 +119,12 @@ namespace checkin.presentation.gui.page
                     case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
 
-                    /*
-                    if (ctx.Event.Status == InternalEventStaus.success)
+                    if (ctx.Event.Status == InternalEventStaus.failure)
                     {
+                        ctx.IsIdle = Visibility.Visible;
+                        ctx.IsWaiting = Visibility.Hidden;
+                        this.LoadingAdorner.HideAdorner();
+                        /*
                         var ctx_ = new PageConfirmAllDataContext(this)
                         {
                             Broker = AppUtil.GetCurrentBroker(),
@@ -129,8 +133,8 @@ namespace checkin.presentation.gui.page
                         ctx_.Event = new ConfirmAllEvent() { StatusInfo = ctx_ };
                         case_ = await ctx_.SubmitAsync();
                         ctx_.TreatErrorMessage();
+                         * */
                     }
-                     * */
                      
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
