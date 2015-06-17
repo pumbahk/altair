@@ -1,10 +1,11 @@
-[app:main]
+[app:simulator]
 pyramid.reload_templates = true
 paste.app_factory = altair.app.ticketing.famiport.simulator:main
 altair.sqlahelper.sessions.famiport.url = mysql+pymysql://famiport:famiport@127.0.0.1/famiport?use_unicode=true&charset=utf8
-altair.sqlahelper.sessions.famiport_mmk.url = sqlite:///%(here)s/../var/altair/famiport/simulator.db
+altair.sqlahelper.sessions.famiport_mmk.url = sqlite:///%(here)s/../var/altair/famiport/simulator/simulator.db
 
 altair.famiport.simulator.endpoint_url = http://localhost:${altair:famiport.port}/famiport
+altair.famiport.ticket_preview_api.endpoint_url = http://localhost:${altair:famiport_simulator.port}/.dummy_preview_server/
 
 altair.httpsession.persistence = altair.httpsession.beaker.factory
 altair.httpsession.persistence.type = file
@@ -16,11 +17,28 @@ altair.httpsession.http_backend.key = famiport
 altair.httpsession.http_backend.secret = famiport
 altair.httpsession.http_backend.cookie_on_exception = true
 
+[app:dummy_preview_server_app]
+paste.app_factory = altair.app.ticketing.famiport.simulator.dummy_preview_server:main
+
+[filter:dummy_preview_server_prefix]
+use = egg:PasteDeploy#prefix
+prefix = /.dummy_preview_server
+
+[pipeline:dummy_preview_server]
+pipeline = 
+    dummy_preview_server_prefix
+    dummy_preview_server_app
+
+[composite:main]
+use = egg:Paste#urlmap
+/ = simulator
+/.dummy_preview_server = dummy_preview_server
+
 [server:main]
 use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
-workers = 1
+workers = 2
 timeout = 3600
 graceful_timeout = 300
 

@@ -22,6 +22,11 @@ def setup_mmk_db(config):
         IMmkSequence
         )
 
+def register_template_globals(event):
+    from .helpers import Helpers
+    h = Helpers(event['request'])
+    event.update(h=h)
+
 def main(global_conf, **local_conf):
     settings = dict(global_conf)
     settings.update(local_conf)
@@ -30,6 +35,7 @@ def main(global_conf, **local_conf):
     config.set_root_factory('.resources.BaseResource')
     config.set_authentication_policy(SessionAuthenticationPolicy(callback=auth_callback))
     config.set_authorization_policy(ACLAuthorizationPolicy())
+    config.add_subscriber(register_template_globals, 'pyramid.events.BeforeRender')
     config.include('pyramid_mako')
     config.include('pyramid_fanstatic')
     config.include('altair.httpsession.pyramid')

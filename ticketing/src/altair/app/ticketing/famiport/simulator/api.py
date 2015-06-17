@@ -1,12 +1,8 @@
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-from lxml import etree, builder
-from urllib2 import urlopen, Request
-from base64 import b64decode
 from ..communication.utils import FamiPortCrypt
-from .interfaces import IFamiPortCommunicator, IFamiPortClientConfigurationRegistry, IMmkSequence
+from .interfaces import IFamiPortCommunicator, IFamiPortClientConfigurationRegistry, IMmkSequence, IFamiPortTicketPreviewAPI
 from .models import FDCSideOrder, FDCSideTicket
-from .exceptions import FDCAPIError
 
 def get_communicator(request):
     return request.registry.queryUtility(IFamiPortCommunicator)
@@ -52,7 +48,7 @@ def store_payment_result(request, store_code, mmk_no, type, client_code, total_a
                 data=ticket['ticketData']
                 )
             for ticket in tickets
-            ]
+            ] if tickets else []
         )
     session.add(fdc_side_order)
     session.commit()
@@ -74,42 +70,7 @@ def save_payment_result(request, payment_result):
     session.add(payment_result)
     session.commit()
 
-def get_ticket_preview_picture(request, url, discrimination_code, client_code, order_id, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
-    c = FamiPortCrypt(order_id)
-    E = builder.E
-    request_body = '<?xml version="1.0" encoding="Shift_JIS" ?>' + \
-        etree.tostring(
-            E.FMIF(
-                E.playGuideCode(discrimination_code.zfill(2)),
-                E.clientId(client_code.zfill(24)),
-                E.barCodeNo(barcode_no),
-                E.name(c.encrypt(name)),
-                E.memberId(c.encrypt(member_id)),
-                E.address1(c.encrypt(address_1)),
-                E.address2(c.encrypt(address_2)),
-                E.identifyNo(identify_no),
-                E.responseImageType(response_image_type),
-                *(
-                    E.ticket(
-                        E.barCodeNo(ticket['barcode_no']),
-                        E.templateCode(ticket['template_code']),
-                        E.ticketData(ticket['data'])
-                        )
-                    for ticket in tickets
-                    )
-                ),
-            encoding='unicode'
-            ).encode('CP932')
-    request = Request(url, request_body, headers={'Content-Type': 'text/xml; charset=Shift_JIS'})
-    response = urlopen(request)
-    xml = lxml.parse(response)
-    result_code_node = xml.find('resultCode')
-    if result_code_node is None:
-        raise FDCAPIError('invalid response')
-    if result_code_node.text != u'00':
-        raise FDCAPIError('server returned error status (%s)' % result_code_node.text)
-    return [
-        b64decode(encoded_ticket_preview_pictures)
-        for encoded_ticket_preview_pictures in xml.findall('kenmenData')
-        ]
+def get_ticket_preview_pictures(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+    preview_api = request.registry.queryUtility(IFamiPortTicketPreviewAPI)
+    return preview_api(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
 

@@ -4,11 +4,14 @@ import urllib
 import logging
 from datetime import datetime
 from urlparse import urljoin
-from lxml import etree
+from urllib2 import urlopen, Request
+from base64 import b64decode
+from lxml import etree, builder
 from email.message import Message
 from zope.interface import implementer
-from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator
+from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator, IFamiPortTicketPreviewAPI
 from ..communication.utils import FamiPortCrypt
+from .exceptions import FDCAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,29 @@ def parse_content_type(header_value):
     m = Message()
     m['Content-Type'] = header_value
     return m.get_content_type(), m.get_charsets()[0]
+
+def parse_response(n):
+    if n.tag != 'FMIF':
+        raise CommunicationError('outermost tag is not FMIF (got %s)' % n.tag)
+    def _(d, n):
+        for cn in n:
+            ev = d.get(cn.tag)
+            if len(cn) == 0:
+               v = cn.text
+            else:
+                v = {}
+                _(v, cn)
+            if ev is not None:
+                if not isinstance(ev, list):
+                    d[cn.tag] = [ev, v]
+                else:
+                    d[cn.tag].append(v)
+            else:
+                d[cn.tag] = v
+
+    retval = {}
+    _(retval, n)
+    return retval
 
 @implementer(IFamiPortEndpoints)
 class Endpoints(object):
@@ -40,29 +66,6 @@ class Communicator(object):
         self.opener = opener
         self.encoding = encoding
 
-    def _parse_response(self, n):
-        if n.tag != 'FMIF':
-            raise CommunicationError('outermost tag is not FMIF (got %s)' % n.tag)
-        def _(d, n):
-            for cn in n:
-                ev = d.get(cn.tag)
-                if len(cn) == 0:
-                   v = cn.text
-                else:
-                    v = {}
-                    _(v, cn)
-                if ev is not None:
-                    if not isinstance(ev, list):
-                        d[cn.tag] = [ev, v]
-                    else:
-                        d[cn.tag].append(v)
-                else:
-                    d[cn.tag] = v
-
-        retval = {}
-        _(retval, n)
-        return retval
-
     def _do_request(self, endpoint, data):
         try:
             logger.debug('making request to %s with %r' % (endpoint, data))
@@ -76,7 +79,7 @@ class Communicator(object):
             mime_type, charset = parse_content_type(resp.info()['content-type'])
             if mime_type != 'text/xml':
                 raise CommunicationError("content_type is not 'text/xml' (got %s)" % mime_type)
-            retval = self._parse_response(etree.parse(resp).getroot())
+            retval = parse_response(etree.parse(resp).getroot())
             logger.debug('result=%r' % retval)
             return retval
         except Exception as e:
@@ -155,10 +158,62 @@ class Communicator(object):
             }
         return self._do_request(self.endpoints.completion, data)
 
+@implementer(IFamiPortTicketPreviewAPI)
+class FamiPortTicketPreviewAPI(object):
+    def __init__(self, endpoint_url):
+        self.endpoint_url = endpoint_url
+
+    def __call__(self, request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+        if response_image_type == 'pdf':
+            response_image_type = u'1'
+        elif response_image_type == 'jpeg':
+            response_image_type = u'2'
+        c = FamiPortCrypt(order_id)
+        E = builder.E
+        request_body = '<?xml version="1.0" encoding="Shift_JIS" ?>' + \
+            etree.tostring(
+                E.FMIF(
+                    E.playGuideCode(discrimination_code.zfill(2)),
+                    E.clientId(client_code.zfill(24)),
+                    E.barCodeNo(barcode_no),
+                    E.name(c.encrypt(name)),
+                    E.memberId(c.encrypt(member_id)),
+                    E.address1(c.encrypt(address_1)),
+                    E.address2(c.encrypt(address_2)),
+                    E.identifyNo(identify_no),
+                    E.responseImageType(response_image_type),
+                    *(
+                        E.ticket(
+                            E.barCodeNo(ticket['barcode_no']),
+                            E.templateCode(ticket['template_code']),
+                            E.ticketData(ticket['data'])
+                            )
+                        for ticket in tickets
+                        )
+                    ),
+                encoding='unicode'
+                ).encode('CP932')
+        logger.info('sending request to %s' % self.endpoint_url)
+        request = Request(self.endpoint_url, request_body, headers={'Content-Type': 'text/xml; charset=Shift_JIS'})
+        response = urlopen(request)
+        xml = etree.parse(response)
+        result_code_node = xml.find('resultCode')
+        if result_code_node is None:
+            raise FDCAPIError('invalid response')
+        if result_code_node.text != u'00':
+            raise FDCAPIError('server returned error status (%s)' % result_code_node.text)
+        return [
+            b64decode(encoded_ticket_preview_pictures.text)
+            for encoded_ticket_preview_pictures in xml.findall('kenmenImage')
+            ]
+
 
 def includeme(config):
     import urllib2
-    endpoints = Endpoints(config.registry.settings['altair.famiport.simulator.endpoint_url'])
+    settings = config.registry.settings
+    endpoints = Endpoints(settings['altair.famiport.simulator.endpoint_url'])
     opener = urllib2.build_opener()
     communicator = Communicator(endpoints, opener, 'Shift_JIS')
     config.registry.registerUtility(communicator, IFamiPortCommunicator)
+    ticket_preview_api = FamiPortTicketPreviewAPI(settings['altair.famiport.ticket_preview_api.endpoint_url'])
+    config.registry.registerUtility(ticket_preview_api, IFamiPortTicketPreviewAPI)

@@ -5,7 +5,7 @@ from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.app.ticketing.fanstatic import with_bootstrap
-from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result, save_payment_result
+from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result, save_payment_result, get_ticket_preview_pictures
 from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
 
 logger = logging.getLogger(__name__)
@@ -315,6 +315,7 @@ class FamimaPosView(object):
     def ticketing_completion(self):
         payment_result_dict = self.request.session['payment_result']
         comm = get_communicator(self.request)
+        images = None
         result = comm.complete(
             store_code=self.context.store_code,
             mmk_no=self.context.mmk_no,
@@ -346,8 +347,22 @@ class FamimaPosView(object):
                 elif payment_result.type == 4:
                     if payment_result.issued_at is None:
                         payment_result.issued_at = self.context.now
-                save_payment_result(payment_result)
+                save_payment_result(self.request, payment_result)
+                images = get_ticket_preview_pictures(
+                    self.request,
+                    discrimination_code='5',
+                    client_code=payment_result_dict['client_code'],
+                    order_id=payment_result_dict['order_id'],
+                    barcode_no=payment_result_dict['valid_barcode_no'],
+                    name=u'name',
+                    member_id=u'member_id',
+                    address_1=u'住所1',
+                    address_2=u'住所2',
+                    identify_no=u'XXXX',
+                    tickets=payment_result_dict['tickets'],
+                    response_image_type='jpeg'
+                    )
                 message = u'正常に入金・発券できました'
         else:
             message = u'エラーが発生しました (%s)' % result['resultCode']
-        return dict(message=message)
+        return dict(message=message, images=images)

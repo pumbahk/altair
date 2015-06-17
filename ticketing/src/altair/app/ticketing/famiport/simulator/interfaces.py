@@ -28,3 +28,7 @@ class IFamiPortClientConfigurationRegistry(Interface):
 class IMmkSequence(Interface):
     def next_serial(now, store_code):
         pass
+
+class IFamiPortTicketPreviewAPI(Interface):
+    def __call__(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+        pass
