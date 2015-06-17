@@ -532,12 +532,61 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     famiport_order = None
                 elif receipt.can_completion(now):
                     logger.error(u'settlement error (%s)' % receipt.shop_code)
-                    receipt.customer_request_received_at = now
-
-            if famiport_order is not None:
-                famiport_order.paid_at = ticketingDate
-                famiport_order.issued_at = ticketingDate
-                replyCode = ReplyCodeEnum.Normal.value
+                else:
+                    # 正常系
+                    if famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
+                        if famiport_order.issued_at is not None or \
+                           famiport_order.paid_at is not None:
+                            resultCode = ResultCodeEnum.OtherError.value
+                            replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                        else:
+                            famiport_order.issued_at = now
+                            famiport_order.paid_at = now
+                            receipt.completed_at = now
+                            session.commit()
+                    elif famiport_order.type == FamiPortOrderType.Payment.value:
+                        if famiport_order.issued_at is None:
+                            # 前払後日の発券
+                            if famiport_order.paid_at is None:
+                                logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but is not marked paid" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                                resultCode = ResultCodeEnum.OtherError.value
+                                replyCode = ReplyCodeEnum.OtherError.value
+                            else:
+                                logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                                famiport_order.issued_at = now
+                                receipt.completed_at = now
+                                session.commit()
+                        elif famiport_order.paid_at is None:
+                            # 前払後日の支払
+                            logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            famiport_order.paid_at = now
+                            session.commit()
+                        else:
+                            logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but tickets are already issued" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            resultCode = ResultCodeEnum.OtherError.value
+                            replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                    elif famiport_order.type == FamiPortOrderType.Ticketing.value:
+                        if famiport_order.issued_at is not None:
+                            logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but tickets are already issued" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            resultCode = ResultCodeEnum.OtherError.value
+                            replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                        else:
+                            logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            famiport_order.issued_at = now
+                            receipt.completed_at = now
+                            session.commit()
+                    elif famiport_order.type == FamiPortOrderType.PaymentOnly.value:
+                        if famiport_order.paid_at is not None:
+                            logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            resultCode = ResultCodeEnum.OtherError.value
+                            replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                        else:
+                            logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            famiport_order.paid_at = now
+                            receipt.completed_at = now
+                            session.commit()
+                    else:
+                        raise AssertionError('NEVER GET HERE')
             else:
                 resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
