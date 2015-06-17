@@ -311,7 +311,6 @@ def create_schemas():
         sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
         sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
-        sa.Column('requestClass', sa.Unicode(2), nullable=False),  # 要求区分 TODO Delete the field?
         sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
         sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
         sa.Column('orderId', sa.Unicode(12), nullable=False),  # 注文ID
@@ -341,7 +340,6 @@ def create_schemas():
         sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券Famiポート番号
         sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
-        sa.Column('requestClass', sa.Unicode(2), nullable=False),  # 要求区分 TODO Delete the field?
         sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # バーコード情報
         sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
         sa.Column('orderId', sa.Unicode(12), nullable=False),  # 注文ID
