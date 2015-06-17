@@ -10,7 +10,7 @@
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
 <%self:enclose_if tag="font" color="red" condition="${entry.is_elected}">
-${h.lot_entry_status_as_string(request, entry.status)}
+${h.lot_entry_status_as_string(entry)}
 </%self:enclose_if>
 <%mobile:band bgcolor="#ffffdd">
 %if entry.is_ordered:
@@ -109,3 +109,16 @@ ${h.japanese_date(birthday)}
 <div>
 ${memo|h.nl2br}
 </div>
+
+<%mobile:header>追加情報</%mobile:header>
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+% for _, (display_name, display_value) in extra_form_data:
+<div>
+<%mobile:form_header>${display_name}</%mobile:form_header>
+</div>
+<div>
+${h.sensible_coerce(request, display_value)}
+</div>
+% endfor
+% endif
