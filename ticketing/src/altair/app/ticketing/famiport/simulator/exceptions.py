@@ -1,0 +1,2 @@
+class FDCAPIError(Exception):
+    pass

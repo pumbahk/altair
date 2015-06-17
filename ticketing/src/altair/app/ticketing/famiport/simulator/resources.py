@@ -49,3 +49,7 @@ class FamiPortServiceResource(FamiPortResource):
     def client(self):
         client_configuration_registry = get_client_configuration_registry(self.request)
         return client_configuration_registry.lookup(self.client_code)
+
+
+class FamimaPosResource(FamiPortResource):
+    pass

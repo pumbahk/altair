@@ -12,11 +12,10 @@ def auth_callback(user_id, request):
         return ['client_code_provided']
 
 def setup_mmk_db(config):
-    from sqlalchemy import MetaData
     from altair.sqlahelper import get_global_db_session
+    from .models import metadata
     from .mmk import MmkSequence
     from .interfaces import IMmkSequence
-    metadata = MetaData()
     session = get_global_db_session(config.registry, 'famiport_mmk')
     config.registry.registerUtility(
         MmkSequence(metadata, session.bind),
@@ -59,5 +58,9 @@ def main(global_conf, **local_conf):
     config.add_route('service.reserved.tel_entry', '/services/reserved/tel', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.confirmation', '/services/reserved/confirm', factory='.resources.FamiPortServiceResource')
     config.add_route('service.reserved.completion', '/services/reserved/complete', factory='.resources.FamiPortServiceResource')
+    config.add_route('pos.index', '/pos', factory='.resources.FamimaPosResource')
+    config.add_route('pos.entry', '/pos/entry', factory='.resources.FamimaPosResource')
+    config.add_route('pos.ticketing.confirmation', '/pos/ticketing/confirm', factory='.resources.FamimaPosResource')
+    config.add_route('pos.ticketing.completion', '/pos/ticketing/complete', factory='.resources.FamimaPosResource')
     config.scan('.views')
     return config.make_wsgi_app()

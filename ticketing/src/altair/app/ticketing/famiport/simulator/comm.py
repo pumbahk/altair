@@ -140,6 +140,20 @@ class Communicator(object):
             if result[c]:
                 result[c] = int(result[c])
         return result
+    
+    def complete(self, store_code, mmk_no, ticketing_date, sequence_no, client_code, order_id, barcode_no, total_amount):
+        data = {
+            u'storeCode': store_code,
+            u'mmkNo': mmk_no,
+            u'sequenceNo': sequence_no,
+            u'ticketingDate': ticketing_date.strftime("%Y%m%d%H%M%S"),
+            u'playGuideId': client_code,
+            u'orderId': order_id,
+            u'barCodeNo': barcode_no,
+            u'totalAmount': total_amount,
+            }
+        return self._do_request(self.endpoints.completion, data)
+
 
 def includeme(config):
     import urllib2

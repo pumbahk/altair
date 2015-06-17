@@ -1,7 +1,7 @@
 <%inherit file="/_base.mako" />
-<h1>完了画面</h1>
+<h1>発券確認</h1>
+<a href="${request.route_path('pos.ticketing.completion')}">発券する</a>
 <div>
-  <p><a href="${request.route_path('pos.index')}" target="_blank">レシートをレジにお持ちください。</a></p>
   <table class="table">
     <tbody>
       <tr>
@@ -22,15 +22,11 @@
       </tr>
       <tr>
         <th>performance_name</th>
-        <td>${performance_name}</td>
+        <td>${kogyo_name}</td>
       </tr>
       <tr>
         <th>performance_date</th>
-        <td>${performance_date}</td>
-      </tr>
-      <tr>
-        <th>order_id</th>
-        <td>${order_id}</td>
+        <td>${koen_date}</td>
       </tr>
       <tr>
         <th>barcode_no</th>
@@ -42,11 +38,7 @@
       </tr>
       <tr>
         <th>ticket_count</th>
-        <td>${ticket_count}</td>
-      </tr>
-      <tr>
-        <th>ticket_count_total</th>
-        <td>${ticket_count_total}</td>
+        <td>${len(tickets)}</td>
       </tr>
     </tbody>
   </table>
@@ -64,18 +56,18 @@
         <tr>
           <th rowspan="3">${i}</th>
           <th>barCodeNo</th>
-          <td>${ticket['barCodeNo']}</td>
+          <td>${ticket['barcode_no']}</td>
         </tr>
         <tr>
           <th>templateCode</th>
-          <td>${ticket['templateCode']}</td>
+          <td>${ticket['template_code']}</td>
         </tr>
         <tr>
           <th>ticketData</th>
-          <td>${ticket['ticketData']}</td>
+          <td>${ticket['data']}</td>
         </tr>
     % endfor
       </tbody>
     </table>
   % endif
-
+</div>

@@ -5,7 +5,7 @@ from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.app.ticketing.fanstatic import with_bootstrap
-from .api import get_communicator, get_client_configuration_registry
+from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result
 from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
 
 logger = logging.getLogger(__name__)
@@ -231,10 +231,29 @@ class FamiPortReservedView(object):
             customer_name=self.request.session.get('customer_name'),
             customer_phone_number=self.request.session.get('customer_phone_number'),
             )
-        self.request.session['completion_result'] = result
         tickets = result.get('ticket', None)
         if tickets is not None and not isinstance(tickets, list):
             tickets = [tickets]
+
+        store_payment_result(
+            self.request,
+            store_code=self.context.store_code,
+            mmk_no=self.context.mmk_no,
+            client_code=self.context.client_code,
+            type=result['replyClass'],
+            total_amount=result['totalAmount'],
+            system_fee=result['systemFee'],
+            ticket_payment=result['ticketPayment'],
+            ticketing_fee=result['ticketingFee'],
+            order_id=result['orderId'],
+            barcode_no=result['barCodeNo'],
+            exchange_no=result['exchangeTicketNo'],
+            ticketing_start_at=result['ticketingStart'],
+            ticketing_end_at=result['ticketingEnd'],
+            kogyo_name=result['kogyoName'],
+            koen_date=result['koenDate'],
+            tickets=tickets
+            )
 
         return dict(
             total_amount=result['totalAmount'],
@@ -243,8 +262,74 @@ class FamiPortReservedView(object):
             ticketing_fee=result['ticketingFee'],
             performance_name=result['kogyoName'],
             performance_date=result['koenDate'],
+            order_id=result['orderId'],
             barcode_no=result['barCodeNo'],
+            exchange_no=result['exchangeTicketNo'],
             ticket_count=result['ticketCount'],
             ticket_count_total=result['ticketCountTotal'],
             tickets=tickets
             )
+
+@view_defaults(decorator=with_bootstrap, permission='authenticated')
+class FamimaPosView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='pos.index', renderer='pos/index.mako')
+    def top(self):
+        return dict()
+
+    @view_config(route_name='pos.entry', request_method='GET', renderer='pos/entry.mako')
+    def entry(self):
+        return dict(barcode_no=u'')
+
+    @view_config(route_name='pos.entry', request_method='POST', renderer='pos/entry.mako')
+    def entry_post(self):
+        barcode_no = self.request.params.get('barcode_no', u'')
+        if len(barcode_no) != 13:
+            self.request.session.flash(u'13文字で入力してください')
+            return dict(barcode_no=barcode_no)
+
+        payment_result = get_payment_result(
+            self.request, 
+            store_code=self.context.store_code,
+            barcode_no=barcode_no
+            )
+        if payment_result is None:
+            payment_result = get_payment_result(
+                self.request, 
+                store_code=self.context.store_code,
+                exchange_no=exchange_no
+                )
+        if payment_result is None:
+            self.request.session.flash(u'引換票番号または払込票番号に該当する予約がみつかりません')
+            return dict(barcode_no=barcode_no)
+
+        self.request.session['payment_result'] = payment_result.to_dict()
+
+        return HTTPFound(self.request.route_path('pos.ticketing.confirmation'))
+
+    @view_config(route_name='pos.ticketing.confirmation', renderer='pos/ticketing/confirmation.mako')
+    def ticketing_confirmation(self):
+        return self.request.session['payment_result']
+
+    @view_config(route_name='pos.ticketing.completion', renderer='pos/ticketing/completion.mako')
+    def ticketing_completion(self):
+        payment_result = self.request.session['payment_result']
+        comm = get_communicator(self.request)
+        result = comm.complete(
+            store_code=self.context.store_code,
+            mmk_no=self.context.mmk_no,
+            ticketing_date=self.context.now,
+            sequence_no=self.context.gen_serial(),
+            client_code=payment_result['client_code'],
+            order_id=payment_result['order_id'],
+            barcode_no=payment_result['barcode_no'],
+            total_amount=payment_result['total_amount']
+            )
+        if result['resultCode'] == u'00':
+            message = u'正常に入金・発券できました'
+        else:
+            message = u'エラーが発生しました (%s)' % result['resultCode']
+        return dict(message=message)
