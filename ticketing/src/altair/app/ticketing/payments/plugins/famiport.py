@@ -288,7 +288,11 @@ def create_famiport_order(request, order_like, in_payment, plugin, name='famipor
         system_fee=system_fee,
         ticketing_fee=ticketing_fee,
         ticket_payment=ticket_payment,
-        tickets=build_ticket_dicts_from_order_like(request, order_like),
+        tickets=(
+            build_ticket_dicts_from_order_like(request, order_like)
+            if type_ != FamiPortOrderType.PaymentOnly.value
+            else []
+            ),
         payment_start_at=order_like.payment_start_at,
         payment_due_at=order_like.payment_due_at,
         ticketing_start_at=order_like.issuing_start_at,
