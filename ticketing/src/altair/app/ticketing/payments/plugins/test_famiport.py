@@ -980,3 +980,166 @@ class CreateFamiPortOrderTest(TestCase):
 
         self.assertEqual(create_famiport_order.call_args, exp_call_args)
         self.assertTrue(famiport_order)
+
+
+class SelectFamiportOrderTypeTest(TestCase):
+    def _get_target(self):
+        from .famiport import select_famiport_order_type as func
+        return func
+
+    def _callFUT(self, *args, **kwds):
+        target = self._get_target()
+        return target(*args, **kwds)
+
+    def test_it(self):
+        """ファミポート決済の場合は前払"""
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentPlugin as PluginClass
+        exp_type = FamiPortOrderType.Payment.value
+        payment_due_at = None
+        issuing_start_at = None
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = [
+            order_like,
+            plugin,
+            ]
+        kwds = {}
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_payment_plugin(self):
+        """ファミポート決済の場合は前払"""
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentPlugin as PluginClass
+        exp_type = FamiPortOrderType.Payment.value
+        payment_due_at = None
+        issuing_start_at = None
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_delivery_plugin(self):
+        """ファミポート引き取りの場合は代済"""
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortDeliveryPlugin as PluginClass
+        exp_type = FamiPortOrderType.Ticketing.value
+        payment_due_at = None
+        issuing_start_at = None
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_payment_delivery_plugin_normal(self):
+        """ファミポート決済/ファミポート引き取で支払期限も発券開始日時も指定されていない場合は代引"""
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        exp_type = FamiPortOrderType.CashOnDelivery.value
+        payment_due_at = None
+        issuing_start_at = None
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_payment_delivery_plugin_payment_due_at(self):
+        """ファミポート決済/ファミポート引き取で支払期限のみ指定されている場合は代引"""
+        from datetime import datetime
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        exp_type = FamiPortOrderType.CashOnDelivery.value
+        _now = datetime.now()
+        payment_due_at = _now
+        issuing_start_at = None
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_payment_delivery_plugin_issuing_start_at(self):
+        """ファミポート決済/ファミポート引き取で発券開始日時のみ指定されている場合は代引"""
+        from datetime import datetime
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        exp_type = FamiPortOrderType.CashOnDelivery.value
+        _now = datetime.now()
+        payment_due_at = None
+        issuing_start_at = _now
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
+    def test_payment_delivery_plugin_later_ticketing(self):
+        """ファミポート決済/ファミポート引き取で支払期限が発券開始日時よりも前の場合は前払後日前払"""
+        from datetime import datetime, timedelta
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        exp_type = FamiPortOrderType.Payment.value
+        _now = datetime.now()
+        payment_due_at = _now
+        issuing_start_at = _now + timedelta(seconds=1)
+
+        order_like = mock.Mock(
+            payment_due_at=payment_due_at,
+            issuing_start_at=issuing_start_at,
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)

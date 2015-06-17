@@ -94,7 +94,7 @@ def select_famiport_order_type(order_like, plugin):
     - 返す事の出来る値
       - CashOnDelivery  # 代引き
       - Payment  # 前払い（後日渡し）の前払い時
-      - Ticketing  # 代済発券と前払い(後日渡し)の後日渡し時 (ただしこの値はこの関数から返されることはない)
+      - Ticketing  # 代済発券と前払い(後日渡し)の後日渡し時
       - PaymentOnly  # 前払いのみ
     """
     if isinstance(plugin, FamiPortPaymentPlugin):
@@ -102,12 +102,11 @@ def select_famiport_order_type(order_like, plugin):
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
-        if order_like.payment_due_at is None \
-           and order_like.issuing_start_at is None \
-           and order_like.issuing_start_at <= order_like.payment_due_at is None:
+        if order_like.payment_due_at and order_like.issuing_start_at and \
+           order_like.issuing_start_at > order_like.payment_due_at:
+            return FamiPortOrderType.Payment.value  # 前払後日前払
+        else:
             return FamiPortOrderType.CashOnDelivery.value
-        elif order_like.issuing_start_at > order_like.payment_due_at:  # 前払後日発券
-            return FamiPortOrderType.Payment.value
     raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin))
 
 
