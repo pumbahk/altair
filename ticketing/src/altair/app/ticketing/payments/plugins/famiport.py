@@ -102,7 +102,9 @@ def select_famiport_order_type(order_like, plugin):
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
-        if order_like.payment_due_at is None and order_like.issuing_start_at is None and order_like.issuing_start_at <= order_like.payment_due_at is None:
+        if order_like.payment_due_at is None \
+           and order_like.issuing_start_at is None \
+           and order_like.issuing_start_at <= order_like.payment_due_at is None:
             return FamiPortOrderType.CashOnDelivery.value
         elif order_like.issuing_start_at > order_like.payment_due_at:  # 前払後日発券
             return FamiPortOrderType.Payment.value
