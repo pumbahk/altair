@@ -7,6 +7,7 @@ from datetime import time as _time
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy import orm
+from sqlalchemy.orm.session import object_session
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
@@ -616,7 +617,8 @@ class FamiPortOrder(Base, WithTimestamp):
             if barcode_no == receipt.barcode_no:
                 return receipt
 
-    def create_receipt(self, store_code, session=_session):
+    def create_receipt(self, store_code):
+        session = object_session(self)
         famiport_receipt = FamiPortReceipt(
             shop_code=store_code,
             famiport_order_id=self.id,

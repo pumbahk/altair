@@ -179,7 +179,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     famiport_order = None
 
             if famiport_order is not None:
-                receipt = famiport_order.create_receipt(storeCode, session=session)
+                receipt = famiport_order.create_receipt(storeCode)
                 if receipt is None or _strip_zfill(receipt.shop_code) != storeCode:
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
@@ -295,7 +295,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
         logger.info(u'Processing famiport payment ticketing request. '
                     u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s'
-                    % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo))
+                    % (storeCode, mmkNo, famiport_payment_ticketing_request.ticketingDate, sequenceNo, barCodeNo))
 
         try:
             try:
@@ -498,6 +498,10 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
         famiport_order = None
         replyCode = None
 
+        logger.info(u'Processing famiport ticketing completion request. '
+                    u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s'
+                    % (storeCode, mmkNo, famiport_payment_ticketing_completion_request.ticketingDate, sequenceNo, barCodeNo))
+
         try:
             try:
                 ticketingDate = datetime.datetime.strptime(
@@ -516,16 +520,19 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
             if famiport_order is not None:
                 receipt = famiport_order.get_receipt(barCodeNo)
-                if receipt is None or _strip_zfill(receipt.shop_code) != storeCode:
+                if receipt is None:
+                    logger.error(u'no FamiPortReceipt record for barcode no: %s' % barCodeNo)
+                    resultCode = ResultCodeEnum.OtherError.value
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_order = None
+                elif _strip_zfill(receipt.shop_code) != storeCode:
+                    logger.error(u'shop_code differs (%s != %s)' % (receipt.shop_code, storeCode))
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_order = None
                 elif receipt.can_completion(now):
+                    logger.error(u'settlement error (%s)' % receipt.shop_code)
                     receipt.customer_request_received_at = now
-                else:
-                    resultCode = ResultCodeEnum.OtherError.value
-                    replyCode = ReplyCodeEnum.SearchKeyError.value
-                    famiport_order = None
 
             if famiport_order is not None:
                 famiport_order.paid_at = ticketingDate
