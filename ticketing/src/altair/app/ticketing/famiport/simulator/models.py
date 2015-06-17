@@ -52,6 +52,24 @@ class FDCSideOrder(Base):
     paid_at                      = sa.Column(sa.DateTime(), nullable=True)
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
 
+    @property
+    def valid_barcode_no(self):
+        if self.type == 1:
+            if self.paid_at is None and self.issued_at is None:
+                return self.barcode_no
+        elif self.type == 2:
+            if self.paid_at is None:
+                return self.barcode_no
+            elif self.issued_at is None:
+                return self.exchange_no
+        elif self.type == 3:
+            if self.issued_at is None:
+                return self.barcode_no
+        elif self.type == 4:
+            if self.paid_at is None:
+                return self.barcode_no
+        return None
+
     def to_dict(self):
         return dict( 
             id=self.id,
@@ -61,6 +79,7 @@ class FDCSideOrder(Base):
             order_id=self.order_id,
             barcode_no=self.barcode_no,
             exchange_no=self.exchange_no,
+            valid_barcode_no=self.valid_barcode_no,
             client_code=self.client_code,
             total_amount=self.total_amount,
             ticket_payment=self.ticket_payment,

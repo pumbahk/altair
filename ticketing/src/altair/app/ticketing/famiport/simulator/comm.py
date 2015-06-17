@@ -115,9 +115,10 @@ class Communicator(object):
             if result[c]:
                 result[c] = int(result[c])
 
-        cd = FamiPortCrypt(result['barCodeNo'])
-        for c in ['name']:
-            result[c] = cd.decrypt(result[c])
+        if result['resultCode'] == '00':
+            cd = FamiPortCrypt(result['barCodeNo'])
+            for c in ['name']:
+                result[c] = cd.decrypt(result[c])
         return result
 
     def payment(self, store_code, mmk_no, ticketing_date, sequence_no, client_code, barcode_no, customer_name, customer_phone_number):

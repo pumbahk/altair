@@ -5,7 +5,7 @@ from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.app.ticketing.fanstatic import with_bootstrap
-from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result
+from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result, save_payment_result
 from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
 
 logger = logging.getLogger(__name__)
@@ -184,7 +184,7 @@ class FamiPortReservedView(object):
             continuable = True
         return dict(message=message, continuable=continuable)
 
-    @view_config(route_name='service.reserved.inquiry', renderer='services/reserved/inquiry.mako')
+    @view_config(route_name='service.reserved.inquiry', renderer='error.mako')
     def inquiry(self):
         comm = get_communicator(self.request)
         result = comm.inquiry(
@@ -193,13 +193,16 @@ class FamiPortReservedView(object):
             reserve_number=self.request.session.get('reserve_number'),
             auth_number=self.request.session.get('auth_number')
             )
-        self.request.session['inquiry_result'] = result
-        if result['nameInput']:
-            return HTTPFound(self.request.route_path('service.reserved.name_entry')) 
-        elif result['phoneInput']:
-            return HTTPFound(self.request.route_path('service.reserved.phone_entry')) 
-        else: 
-            return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
+        if result['resultCode'] == '00':
+            self.request.session['inquiry_result'] = result
+            if result['nameInput']:
+                return HTTPFound(self.request.route_path('service.reserved.name_entry')) 
+            elif result['phoneInput']:
+                return HTTPFound(self.request.route_path('service.reserved.phone_entry')) 
+            else: 
+                return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
+        else:
+            return dict(message=u'エラーが発生しました (%s)' % result['resultCode'])
 
     @view_config(route_name='service.reserved.confirmation', renderer='services/reserved/confirmation.mako')
     def confirmation(self):
@@ -297,12 +300,6 @@ class FamimaPosView(object):
             barcode_no=barcode_no
             )
         if payment_result is None:
-            payment_result = get_payment_result(
-                self.request, 
-                store_code=self.context.store_code,
-                exchange_no=exchange_no
-                )
-        if payment_result is None:
             self.request.session.flash(u'引換票番号または払込票番号に該当する予約がみつかりません')
             return dict(barcode_no=barcode_no)
 
@@ -316,20 +313,41 @@ class FamimaPosView(object):
 
     @view_config(route_name='pos.ticketing.completion', renderer='pos/ticketing/completion.mako')
     def ticketing_completion(self):
-        payment_result = self.request.session['payment_result']
+        payment_result_dict = self.request.session['payment_result']
         comm = get_communicator(self.request)
         result = comm.complete(
             store_code=self.context.store_code,
             mmk_no=self.context.mmk_no,
             ticketing_date=self.context.now,
             sequence_no=self.context.gen_serial(),
-            client_code=payment_result['client_code'],
-            order_id=payment_result['order_id'],
-            barcode_no=payment_result['barcode_no'],
-            total_amount=payment_result['total_amount']
+            client_code=payment_result_dict['client_code'],
+            order_id=payment_result_dict['order_id'],
+            barcode_no=payment_result_dict['barcode_no'],
+            total_amount=payment_result_dict['total_amount']
             )
         if result['resultCode'] == u'00':
-            message = u'正常に入金・発券できました'
+            payment_result = get_payment_result(
+                self.request, 
+                store_code=payment_result_dict['store_code'],
+                barcode_no=payment_result_dict['valid_barcode_no']
+                )
+            if payment_result is None:
+                message = u'センター異常です'
+            else:
+                if payment_result.type == 1:
+                    payment_result.paid_at = payment_result.issued_at = self.context.now
+                elif payment_result.type == 2:
+                    payment_result.paid_at = self.context.now
+                elif payment_result.type == 3:
+                    if payment_result.paid_at is None:
+                        payment_result.paid_at = self.context.now
+                    elif payment_result.issued_at is None:
+                        payment_result.issued_at = self.context.now
+                elif payment_result.type == 4:
+                    if payment_result.issued_at is None:
+                        payment_result.issued_at = self.context.now
+                save_payment_result(payment_result)
+                message = u'正常に入金・発券できました'
         else:
             message = u'エラーが発生しました (%s)' % result['resultCode']
         return dict(message=message)

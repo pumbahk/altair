@@ -57,22 +57,22 @@ def store_payment_result(request, store_code, mmk_no, type, client_code, total_a
     session.add(fdc_side_order)
     session.commit()
 
-def get_payment_result(request, store_code, barcode_no=None, exchange_no=None):
+def get_payment_result(request, store_code, barcode_no):
     session = get_db_session(request, 'famiport_mmk')
 
     q = session.query(FDCSideOrder) \
         .filter(FDCSideOrder.store_code == store_code)
 
-    if barcode_no is not None:
-        q = q.filter(FDCSideOrder.barcode_no == barcode_no)
-    if exchange_no is not None:
-        q = q.filter(FDCSideOrder.exchange_no == exchange_no)
-    
-    try:
-        return q.one()
-    except NoResultFound:
-        return None
+    q = q.filter((FDCSideOrder.barcode_no == barcode_no) | (FDCSideOrder.exchange_no == barcode_no))
+    for fdc_side_order in q:
+        if fdc_side_order.valid_barcode_no == barcode_no:
+            return fdc_side_order
+    return None
 
+def save_payment_result(request, payment_result):
+    session = get_db_session(request, 'famiport_mmk')
+    session.add(payment_result)
+    session.commit()
 
 def get_ticket_preview_picture(request, url, discrimination_code, client_code, order_id, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
     c = FamiPortCrypt(order_id)
