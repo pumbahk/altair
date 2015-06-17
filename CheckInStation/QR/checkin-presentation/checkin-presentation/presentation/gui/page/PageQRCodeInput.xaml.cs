@@ -46,6 +46,12 @@ namespace checkin.presentation.gui.page
             set { this._IsIdle = value; this.OnPropertyChanged("IsIdle"); }
         }
 
+        private string _DescriptionInfo;
+        public string DescriptionInfo
+        {
+            get { return this._DescriptionInfo; }
+            set { this._DescriptionInfo = value; this.OnPropertyChanged("DescriptionInfo"); }
+        }
         public override void OnSubmit()
         {
             var ev = this.Event as QRInputEvent;
@@ -100,6 +106,7 @@ namespace checkin.presentation.gui.page
                 ctx.RefreshModeVisibility = Visibility.Hidden;
             }
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
+            ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
             
         }
 
@@ -124,6 +131,7 @@ namespace checkin.presentation.gui.page
                         ctx.IsIdle = Visibility.Visible;
                         ctx.IsWaiting = Visibility.Hidden;
                         this.LoadingAdorner.HideAdorner();
+                        ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
                         /*
                         var ctx_ = new PageConfirmAllDataContext(this)
                         {
@@ -157,9 +165,10 @@ namespace checkin.presentation.gui.page
             this.LoadingAdorner.IsAdornerVisible = true;
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             ctx.IsIdle = Visibility.Hidden;
+            ctx.DescriptionInfo = "しばらくお待ちください";
             if (this.QRCodeInput.Text.Length < 60)
             {
-                ctx.Description = "Please Wait";
+                ctx.Description = "QRコードを読込中です";
                 ctx.IsWaiting = Visibility.Visible;
             }
             if (this.QRCodeInput.Text.Length >= 60)

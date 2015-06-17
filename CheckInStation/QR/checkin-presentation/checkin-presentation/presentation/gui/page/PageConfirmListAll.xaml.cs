@@ -216,10 +216,10 @@ namespace checkin.presentation.gui.page
             }
             ctx.Description = "データを取得しています。少々お待ちください";
             await ctx.PrepareAsync();
-            ctx.Description = ctx.Case.Description;
+            //ctx.Description = ctx.Case.Description;
             var s = await ctx.VerifyAsync();
             this.loadingLock = true;
-
+            ctx.Description = "発券するチケットは以下でよろしいですか？よろしければ「発券する」ボタンを押してください";
             if (!s)
             {
                 this.OnSubmitWithBoundContext(sender, e); //xxx:

@@ -82,7 +82,7 @@
                      Style="{StaticResource SubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ</TextBlock>
                     </Button>
 
 

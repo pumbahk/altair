@@ -1012,7 +1012,7 @@
 
     <DataTemplate x:Key="ShowTicketItemBoxData">
         <Grid
-                Height="90"
+                Height="70"
                 Width="520"
                 Margin="2"
                 >
@@ -1025,12 +1025,12 @@
             <WrapPanel
                 Grid.Row="0"
                 Grid.Column="0"
-                Height="80"
+                Height="60"
                 Width="500"
                 HorizontalAlignment="Center"
                 >
-                <TextBlock FontSize="20" FontWeight="Black" Text="{Binding ProductName}"/>
-                <TextBlock FontSize="20" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                <TextBlock FontSize="30" FontWeight="Black" Text="{Binding ProductName}"/>
+                <TextBlock FontSize="30" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
             </WrapPanel>
         </Grid>
     </DataTemplate>

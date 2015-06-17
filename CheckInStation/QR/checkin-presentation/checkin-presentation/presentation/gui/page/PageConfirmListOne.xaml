@@ -32,63 +32,55 @@
                         Canvas.Left="50"
                         Style="{StaticResource DisableListViewScrolviewer}">
 
-
-                        <Grid
-                        Height="60"
-                        Width="1000"
-                        Background="#eeeeee"
-                        >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition Height="auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="330"/>
-                                <ColumnDefinition Width="300"/>
-                                <ColumnDefinition Width="370"/>
-                            </Grid.ColumnDefinitions>
-                            <!-- todo padding 23-->
-                            <WrapPanel
-                                Grid.Row="0" Grid.Column="0"
-                                HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock Style="{StaticResource MainText}">開催日時:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
-                            <WrapPanel
-                                Grid.Row="0" Grid.Column="1"
-                                HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding OrderNo, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
-                            <WrapPanel
-                                Grid.Row="1" Grid.ColumnSpan="2"
-                                HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
-                            <WrapPanel
-                                Grid.RowSpan="2" Grid.Column="2"
-                                HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="40" FontWeight="ExtraBlack">発券予定枚数:</TextBlock>
-                                <TextBlock FontSize="40" FontWeight="ExtraBlack" Text="{Binding NumberOfPrintableTicket,Mode=OneWay}"></TextBlock>
-                                <TextBlock FontSize="40" FontWeight="ExtraBlack">枚</TextBlock>
-                            </WrapPanel>
-                        </Grid>
-
                         <!-- 説明(FV)-->
                         <TextBlock
                             d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                             Text="{Binding Description}"
                             FontSize="25"
                             Style="{StaticResource MainText}"/>
+                        
+                        <Grid
+                        Height="160"
+                        Width="1100"
+                        Background="#eeeeee"
+                        >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="80"/>
+                                <RowDefinition Height="80"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="620"/>
+                                <ColumnDefinition Width="480"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- todo padding 23-->
+                            <WrapPanel
+                                Grid.Row="0" Grid.Column="0"
+                                HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">開催日時:</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                            </WrapPanel>
+                            <WrapPanel
+                                Grid.Row="1" Grid.ColumnSpan="2"
+                                HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">公演名:</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                            </WrapPanel>
+                            <WrapPanel
+                                Grid.RowSpan="2" Grid.Column="1"
+                                HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="60" FontWeight="ExtraBlack">発券枚数:</TextBlock>
+                                <TextBlock FontSize="60" FontWeight="ExtraBlack" Text="{Binding NumberOfPrintableTicket,Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="60" FontWeight="ExtraBlack">枚</TextBlock>
+                            </WrapPanel>
+                        </Grid>
 
                     </ListView>
 
                     <!-- メインコンテンツ -->
                     <Border 
                         Canvas.Left="50"
-                        Canvas.Top="120"
+                        Canvas.Top="220"
+                        Height="430"
                         Style="{StaticResource MainBorder}">
  
                         <Grid
@@ -146,6 +138,8 @@
                     <Button Click="OnGotoWelcome"
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
+                            Canvas.Left="1180"
+                            Canvas.Top="60"
                             VerticalAlignment="Center">
                         <TextBlock>TOP</TextBlock>
                     </Button>
@@ -165,7 +159,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Click="OnSubmitPrint">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">このチケットを発券</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する</TextBlock>
                     </Button>
 
                     <Button

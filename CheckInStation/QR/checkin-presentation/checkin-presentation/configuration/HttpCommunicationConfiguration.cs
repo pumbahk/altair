@@ -62,7 +62,7 @@ namespace checkin.config
         public CredentialCache CreateCacheForStaging()
         {
             var cache = new CredentialCache();
-            cache.Add(DefaultBasicAuthURI, "Basic", new NetworkCredential("kenta", "matsui"));
+            cache.Add(DefaultBasicAuthURI, "Basic", new NetworkCredential("yuanrong.zheng", "Zyr19820516"));
             return cache;
         }
 

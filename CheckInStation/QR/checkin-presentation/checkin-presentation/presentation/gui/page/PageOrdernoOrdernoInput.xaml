@@ -91,7 +91,7 @@
                      Style="{StaticResource SubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">次へ</TextBlock>
                     </Button>
                     <!--
                     <Button

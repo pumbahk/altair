@@ -35,7 +35,7 @@
                         Canvas.Top="143"
                         Style="{StaticResource MainBorder}">
                         <Grid>
-                            <Border Background="White" Width="717" Height="477"
+                            <Border Background="White" Width="1000" Height="477"
                             CornerRadius="24"
                             Padding="40,20,40,20"
                             Canvas.Left="327" 
@@ -57,16 +57,16 @@
                                                 <c:Loading Background="Transparent"></c:Loading>
                                             </ac:AdornedControl.AdornerContent>
                                             <Border
-                                                           
                                                 Height="200"
-                                                Width="600">
+                                                Width="900">
                                                 <TextBlock
+                                                    Margin="80"
                                                     Background="Transparent"
                                                     HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="20"
+                                                    FontSize="30"
                                                     Text="{Binding Description}"
                                                 />
+
                                             </Border>
                                         </ac:AdornedControl>
                                     </StackPanel>
@@ -78,7 +78,6 @@
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
-                        Visibility="{Binding IsIdle}"
                         >
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -95,7 +94,7 @@
                         </StackPanel.Style>
                         <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
+                        Text="{Binding DescriptionInfo}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
                     <Button

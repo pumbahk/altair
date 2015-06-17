@@ -81,6 +81,7 @@ namespace checkin.presentation.gui.page
                 string orderno;
                 var organization_code = AppUtil.GetCurrentResource().AuthInfo.organization_code;
                 ctx.Description = "(“ü—Í—á:" + organization_code + "0101010101)";
+                ctx.Description = "ó•t”Ô†‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢";
                 if (data != null && data.order_no != null)
                     orderno = data.order_no;
                 else
