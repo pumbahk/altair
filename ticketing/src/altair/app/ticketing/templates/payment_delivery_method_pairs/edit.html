@@ -24,10 +24,10 @@
 <script type="text/javascript">
   $(function() {
     <% from altair.app.ticketing.payments import plugins %>
-    var sej_payment_method_ids = ${HH.json([int(pm.id) for pm in payment_methods if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID])|n};
-    var sej_delivery_method_ids = ${HH.json([int(dm.id) for dm in delivery_methods if dm.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID])|n};
-    var sej_field = $('form').find('#sej_field');
-    var issuing_interval_days = sej_field.find('input[id="issuing_interval_days"]');
+    var cvs_payment_method_ids = ${HH.json([int(pm.id) for pm in payment_methods if pm.pay_at_store])|n};
+    var cvs_delivery_method_ids = ${HH.json([int(dm.id) for dm in delivery_methods if dm.deliver_at_store])|n};
+    var cvs_field = $('form').find('#cvs_field');
+    var issuing_interval_days = cvs_field.find('input[id="issuing_interval_days"]');
     var issuing_interval_days_default = issuing_interval_days.val();
     var issuing_interval_days_changed = false;
     var is_edit = ${HH.json(is_edit)|n};
@@ -40,15 +40,15 @@
       issuing_interval_days_changed = true;
     });
 
-    var display_sej_field = function(){
+    var display_cvs_field = function(){
       var pm_id = parseInt($('#payment_method_id').val());
       var dm_id = parseInt($('#delivery_method_id').val());
-      var payment_method_is_sej = $.inArray(pm_id, sej_payment_method_ids) >= 0;
-      var delivery_method_id_sej = $.inArray(dm_id, sej_delivery_method_ids) >= 0;
-      if (payment_method_is_sej || delivery_method_id_sej) {
-        sej_field.css('display', 'block');
+      var payment_method_is_cvs = $.inArray(pm_id, cvs_payment_method_ids) >= 0;
+      var delivery_method_id_cvs = $.inArray(dm_id, cvs_delivery_method_ids) >= 0;
+      if (payment_method_is_cvs || delivery_method_id_cvs) {
+        cvs_field.css('display', 'block');
         if (!is_edit) {
-          if (!payment_method_is_sej) {
+          if (!payment_method_is_cvs) {
             if (!issuing_interval_days_changed) {
               issuing_interval_days.val('1');
             }
@@ -59,7 +59,7 @@
           }
         }
       } else {
-        sej_field.css('display', 'none');
+        cvs_field.css('display', 'none');
       }
     };
 
@@ -69,7 +69,7 @@
         var pm = payment_method_data[parseInt($(this).val())];
         $('#transaction_fee').val(pm['fee']);
       }
-      display_sej_field.call();
+      display_cvs_field.call();
     }).change();
     $('#delivery_method_id').change(function() {
       if (!is_edit) {
@@ -78,7 +78,7 @@
         $('#delivery_fee_per_principal_ticket').val(dm['fee_per_principal_ticket']);
         $('#delivery_fee_per_subticket').val(dm['fee_per_subticket']);
       }
-      display_sej_field.call();
+      display_cvs_field.call();
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
@@ -105,7 +105,7 @@
     }).change();
 
     $('[rel=popover]').popover();
-    display_sej_field.call();
+    display_cvs_field.call();
   });
 </script>
 
@@ -151,7 +151,7 @@
       ${ch.form_item(form.public)}
       ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.unavailable_period_days, class_='span2', help=ch.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
-      <div id="sej_field">
+      <div id="cvs_field">
         <div class="control-group">
           <label class="control-label">
             ${form.payment_due_at.label}

@@ -1914,7 +1914,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         コンビニ支払かどうかを判定する。
         """
-        return self.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID
+        return self.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID)
 
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -2005,7 +2005,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         コンビニ受取かどうかを判定する。
         """
-        return self.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID
+        return self.delivery_plugin_id in (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
