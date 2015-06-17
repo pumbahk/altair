@@ -206,7 +206,7 @@ def build_ticket_dicts_from_order_like(request, order_like):
                     ticket_format = ticket.ticket_format
                     template_code = get_ticket_template_code_from_ticket_format(ticket_format)
                     xml = etree.tostring(
-                        build_xml_from_dicts(template_code, dicts),
+                        build_xml_from_dicts(template_code, dict_),
                         encoding='unicode'
                         )
                     ticket = build_ticket_dict(
