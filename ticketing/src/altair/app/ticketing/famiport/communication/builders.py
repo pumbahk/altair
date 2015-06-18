@@ -577,7 +577,12 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             receipt.completed_at = now
                             session.commit()
                     elif famiport_order.type == FamiPortOrderType.Payment.value:
-                        if famiport_order.issued_at is None:
+                        if famiport_order.paid_at is None:
+                            # 前払後日の支払
+                            logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
+                            famiport_order.paid_at = now
+                            session.commit()
+                        elif famiport_order.issued_at is None:
                             # 前払後日の発券
                             if famiport_order.paid_at is None:
                                 logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but is not marked paid" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
@@ -588,11 +593,6 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                                 famiport_order.issued_at = now
                                 receipt.completed_at = now
                                 session.commit()
-                        elif famiport_order.paid_at is None:
-                            # 前払後日の支払
-                            logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
-                            famiport_order.paid_at = now
-                            session.commit()
                         else:
                             logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but tickets are already issued" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
                             resultCode = ResultCodeEnum.OtherError.value
