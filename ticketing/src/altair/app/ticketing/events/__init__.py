@@ -15,6 +15,7 @@ def includeme(config):
     config.add_route('events.copy', '/copy/{event_id}', factory=factory)
     config.add_route('events.delete', '/delete/{event_id}', factory=factory)
     config.add_route('events.send', '/send/{event_id}', factory=factory)
+    config.add_route('events.open', '/open/{event_id}/{public}', factory=factory)
 
     config.include('altair.app.ticketing.events.performances', route_prefix='performances')
     config.include('altair.app.ticketing.events.sales_segment_groups', route_prefix='sales_segment_groups')

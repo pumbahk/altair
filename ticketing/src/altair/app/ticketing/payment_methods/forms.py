@@ -59,6 +59,16 @@ class PaymentMethodForm(Form):
         label=u'公開する',
     )
 
+    display_order = TextField(
+        label=u'表示順',
+        default=0,
+    )
+
+    selectable = OurBooleanField(
+        label=u'使用可否',
+        default=True,
+    )
+
     def validate_payment_plugin_id(form, field):
         if field.data == CHECKOUT_PAYMENT_PLUGIN_ID and form.fee.data > 0:
             raise ValidationError(u'楽天ID決済では、決済手数料は設定できません')
