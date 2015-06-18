@@ -49,7 +49,7 @@ class MemberCSVImportForm(Form):
 
     def validate(self):
         super(MemberCSVImportForm, self).validate()
-        if not self.data["csvfile"]:
+        if not hasattr(self.data["csvfile"], "file"):
             self.csvfile.errors = self.errors[
                 "csvfile"] = [u"csvファイルを指定してください。"]
             return not bool(self.errors)
