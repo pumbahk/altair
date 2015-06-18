@@ -578,8 +578,8 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.manycopy', request_method='POST', renderer='altair.app.ticketing:templates/performances/copy.html')
     def manycopy_post(self):
-        # original_perf_id, 1_name, 1_start_on, 1_end_on, 1_display_order,
-        # 2_name, 2_start_on, 2_end_on, 2_display_order
+        # original_perf_id, 1_name, 1_open_on, 1_start_on, 1_display_order,
+        # original_perf_id, 2_name, 2_open_on, 2_start_on, 2_display_order,
         params = self.request.params.items()
         if len(params) == 0:
             self.request.session.flash(u'コピーするものがありません')
@@ -597,9 +597,9 @@ class Performances(BaseView):
                 f = PerformanceManycopyForm()
                 f.id.data = origin_performance.id
                 f.name.data = params[cnt * 4 + 1][1]
-                f.start_on.data = params[cnt * 4 + 2][1]
-                if params[cnt * 4 + 3][1]:
-                    f.end_on.data = params[cnt * 4 + 3][1]
+                if params[cnt * 4 + 2][1]:
+                    f.open_on.data = params[cnt * 4 + 2][1]
+                f.start_on.data = params[cnt * 4 + 3][1]
                 f.display_order.data = params[cnt * 4 + 4][1]
                 forms.append(f)
 
@@ -619,15 +619,14 @@ class Performances(BaseView):
             # POST data
             new_performance.event_id = origin_performance.event_id
             new_performance.name = params[cnt * 4 + 1][1]
-            new_performance.start_on = params[cnt * 4 + 2][1]
-            if params[cnt * 4 + 3][1]:
-                new_performance.end_on = params[cnt * 4 + 3][1]
+            if params[cnt * 4 + 2][1]:
+                new_performance.open_on = params[cnt * 4 + 2][1]
+            new_performance.start_on = params[cnt * 4 + 3][1]
             new_performance.display_order = params[cnt * 4 + 4][1]
 
             # Copy data
             new_performance.code = self.create_performance_code(
                 origin_performance.code)
-            new_performance.open_on = origin_performance.open_on
             new_performance.venue_id = origin_performance.venue.id
             new_performance.create_venue_id = origin_performance.venue.id
             new_performance.original_id = origin_performance.id
@@ -658,8 +657,8 @@ class Performances(BaseView):
         f = PerformanceManycopyForm()
         f.id.data = origin_performance.id
         f.name.data = origin_performance.name
+        f.open_on.data = origin_performance.open_on
         f.start_on.data = origin_performance.start_on
-        f.end_on.data = origin_performance.end_on
         f.display_order.data = origin_performance.display_order
         return f
 
@@ -688,22 +687,29 @@ class Performances(BaseView):
                 error_exist = True
 
             import datetime
+            if params[cnt * 4 + 2][1]:
+                try:
+                    datetime.datetime.strptime(
+                        params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    self.request.session.flash(
+                        u'{}行目の開場時刻が不正です。'.format(cnt + 1))
+                    error_exist = True
+
             try:
-                datetime.datetime.strptime(
-                    params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+                start = datetime.datetime.strptime(
+                    params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
+                if params[cnt * 4 + 2][1]:
+                    open = datetime.datetime.strptime(
+                        params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+                if open > start:
+                    self.request.session.flash(
+                        u'{}行目の開場時間が、公演開始時刻より後に設定されています。'.format(cnt + 1))
+                    error_exist = True
             except ValueError:
                 self.request.session.flash(
                     u'{}行目の公演開始時刻が不正です。'.format(cnt + 1))
                 error_exist = True
-
-            if params[cnt * 4 + 3][1]:
-                try:
-                    datetime.datetime.strptime(
-                        params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
-                except ValueError:
-                    self.request.session.flash(
-                        u'{}行目の公演終了時刻が不正です。'.format(cnt + 1))
-                    error_exist = True
 
             try:
                 display_order = long(params[cnt * 4 + 4][1])
