@@ -292,11 +292,11 @@ class PerformanceManycopyForm(OurForm):
         ],
     )
     open_on = TextField(
-        label=u'終演',
+        label=u'開場時間',
         validators=[Optional(), after1900],
     )
     start_on = TextField(
-        label=u'開演',
+        label=u'開演時間',
         validators=[Required(), after1900],
     )
     display_order = OurIntegerField(
