@@ -34,7 +34,7 @@ ${h.sensible_coerce(request, display_value)}<br />
 </form>
 % endif
 % endif
-% if order.status == 'canceled' and order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <hr/>
 <font size="-2">

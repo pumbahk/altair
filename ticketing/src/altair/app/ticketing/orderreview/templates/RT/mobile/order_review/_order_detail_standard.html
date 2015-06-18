@@ -77,7 +77,7 @@ ${shipping_address.address_2}
 ${shipping_address.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping_address.email_1}<br />
-% if order.status == 'canceled' and order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">
 キャンセル処理は、下記のような理由によりおこなっております。<br />
