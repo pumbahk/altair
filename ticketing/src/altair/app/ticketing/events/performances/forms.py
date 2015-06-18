@@ -291,13 +291,13 @@ class PerformanceManycopyForm(OurForm):
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
-    start_on = TextField(
-        label=u'開演',
-        validators=[Required(), after1900],
-    )
-    end_on = TextField(
-        label=u'終演',
+    open_on = TextField(
+        label=u'開場時間',
         validators=[Optional(), after1900],
+    )
+    start_on = TextField(
+        label=u'開演時間',
+        validators=[Required(), after1900],
     )
     display_order = OurIntegerField(
         label=label_text_for(Performance.display_order),

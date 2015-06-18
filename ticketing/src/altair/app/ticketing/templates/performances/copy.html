@@ -19,8 +19,8 @@ $(document).ready(function() {
     $('#addList').append('\
         <tr>\
           <td>${origin_performance_form.name}</td>\
+          <td>${origin_performance_form.open_on}</td>\
           <td>${origin_performance_form.start_on}</td>\
-          <td>${origin_performance_form.end_on}</td>\
           <td>${origin_performance_form.display_order}</td>\
           <td><input deleteTarget="' + rowCount + '" class="deleteButton btn btn-primary" type="button" value="削除"></td>\
         </tr>');
@@ -50,8 +50,8 @@ $(document).ready(function() {
       <thead>
         <tr>
           <td>公演名</td>
-          <td>開演(例:2015-01-01 17:00:00)</td>
-          <td>終演(例:2015-01-01 19:00:00)</td>
+          <td>開場時間(例:2015-01-01 17:00:00)</td>
+          <td>開演時間(例:2015-01-01 18:00:00)</td>
           <td>表示順</td>
           <td></td>
         </tr>
@@ -60,8 +60,8 @@ $(document).ready(function() {
         % for num, form in enumerate(forms):
         <tr id="${num}">
           <td>${form.name}</td>
+          <td>${form.open_on}</td>
           <td>${form.start_on}</td>
-          <td>${form.end_on}</td>
           <td>${form.display_order}</td>
           <td><input deleteTarget="${num}" class="deleteButton btn btn-primary" type="button" value="削除"></td>
         </tr>
