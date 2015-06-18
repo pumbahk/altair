@@ -539,26 +539,27 @@ def download(request):
 @view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html',
              decorator=with_bootstrap, permission='event_editor')
 def index(request):
-    query = DBSession.query(Venue, Site, Performance)
-    query = query.filter(Venue.organization_id==request.context.user.organization_id)
-    query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
-    # 会場の表示、非表示
-    from . import VISIBLE_VENUES_SESSION_KEY
-    if not request.session.get(VISIBLE_VENUES_SESSION_KEY, None):
-        query = query.filter(Site.visible==True)
-    query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
+    query = DBSession.query(Venue, Site, Performance) \
+                     .join(Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)) \
+                     .outerjoin(Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)) \
+                     .filter(Venue.organization_id==request.context.user.organization_id) \
+                     .group_by(Venue.id) \
+                     .order_by(desc(Venue.site_id), asc(Performance.display_order))
+
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
-    query = query.group_by(Venue.id)
-    query = query.order_by(desc(Venue.site_id), asc(-Venue.performance_id))
 
     form = VenueSearchForm(request.params)
     if request.params:
         if form.validate():
             if form.venue_name.data:
                 pattern = u'%{}%'.format(form.venue_name.data)
-                query = query.filter(Venue.name.like(pattern))
+                query = query.filter(Site.name.like(pattern))
             if form.prefecture.data:
                 query = query.filter(Site.prefecture==form.prefecture.data)
+
+    # 会場の表示、非表示
+    if not request.session.get(VISIBLE_VENUES_SESSION_KEY, None):
+        query = query.filter(Site.visible==True)
 
     items = paginate.Page(
         query,

@@ -1,5 +1,36 @@
 <%inherit file="./base.html" />
 <%namespace file="./tags_mobile.html" name="mobile" />
+
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
+
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -82,6 +113,16 @@ ${shipping_address['address_2']}
 <div>
 ${memo|h.nl2br}
 </div>
+
+% if extra_form_data:
+<%mobile:header>追加情報</%mobile:header>
+% for _, (display_name, display_value) in extra_form_data:
+<%mobile:form_header>${display_name}</%mobile:form_header>
+<div>
+  ${ch.sensible_coerce(request, display_value)}
+</div>
+% endfor
+% endif
 
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
