@@ -929,11 +929,12 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now):
+        shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
         famiport_refund_entry_response = FamiPortRefundEntryResponse(
             businessFlg=famiport_refund_entry_request.businessFlg,
             textTyp=famiport_refund_entry_request.textTyp,
             entryTyp=famiport_refund_entry_request.entryTyp,
-            shopNo=famiport_refund_entry_request.shopNo,
+            shopNo=shop_code.zfill(7),
             registerNo=famiport_refund_entry_request.registerNo,
             timeStamp=famiport_refund_entry_request.timeStamp,
             )
@@ -954,32 +955,39 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
             for barcode_number in barcode_numbers
             ]
         def build_per_ticket_record(barcode_number, refund_entry):
+            main_title = u''
+            perf_day = u''
+            repayment = u''
+            refund_start = u''
+            refund_end = u''
+            ticket_typ = u''
+            charge=u''
             if refund_entry is None:
                 result_code = u'01'
-                main_title = u''
-                perf_day = u''
-                repayment = u''
-                refund_start = u''
-                refund_end = u''
-                ticket_typ = u''
-                charge=u''
             else:
                 if refund_entry.refunded_at is not None:
                     result_code = u'02'
                 else:
+                    issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
+                    assert issuing_shop_code is not None
                     if refund_entry.famiport_refund.start_at > now \
                        or refund_entry.famiport_refund.end_at < now:
                         result_code = u'03'
+                    elif _strip_zfill(issuing_shop_code) != shop_code:
+                        result_code = u'07'
                     else:
                         result_code = u'00'
-                famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
-                main_title = famiport_performance.name
-                perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
-                repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
-                refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
-                refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
-                ticket_typ = u'{0}'.format(refund_entry.famiport_ticket.type)
-                charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+                        if famiport_refund_entry_request.textTyp == u'2':
+                            refund_entry.refunded_at = now
+                        famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
+                        main_title = famiport_performance.name
+                        perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
+                        repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+                        refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
+                        refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
+                        ticket_typ = u'{0}'.format(refund_entry.famiport_ticket.type)
+                        charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+            session.commit()
             return dict(
                 barCode=barcode_number,
                 resultCode=result_code,

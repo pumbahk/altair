@@ -664,6 +664,12 @@ class FamiPortOrder(Base, WithTimestamp):
                     return receipt
         return None
 
+    @property
+    def issuing_shop_code(self):
+        for receipt in self.famiport_receipts:
+            return receipt.shop_code
+        return None
+
     def create_receipt(self, store_code):
         session = object_session(self)
         famiport_receipt = FamiPortReceipt(

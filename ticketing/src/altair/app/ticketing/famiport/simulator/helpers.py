@@ -9,6 +9,13 @@ order_type_strings = {
     int(ReplyClassEnum.PrepaymentOnly.value): u'前払のみ',
     }
 
+result_code_strings = {
+    u'00': u'払戻許可',
+    u'01': u'該当データなし',
+    u'02': u'払戻済',
+    u'03': u'払戻対象期間外',
+    u'07': u'当店販売以外',
+    }
 
 class Helpers(object):
     def __init__(self, request):
@@ -19,3 +26,6 @@ class Helpers(object):
 
     def to_data_scheme(self, data):
         return u'data:image/jpeg;base64,' + b64encode(data)
+
+    def refund_result_code_as_string(self, result_code):
+        return result_code_strings[result_code]

@@ -285,7 +285,7 @@ class FamiPortReservedView(object):
             return dict(message=message, error=True)
 
 @view_defaults(decorator=with_bootstrap, permission='authenticated')
-class FamimaPosView(object):
+class FamimaPosIndexView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -294,11 +294,18 @@ class FamimaPosView(object):
     def top(self):
         return dict()
 
-    @view_config(route_name='pos.entry', request_method='GET', renderer='pos/entry.mako')
+
+@view_defaults(decorator=with_bootstrap, permission='authenticated')
+class FamimaPosTicketingView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='pos.ticketing.entry', request_method='GET', renderer='pos/ticketing/entry.mako')
     def entry(self):
         return dict(barcode_no=u'')
 
-    @view_config(route_name='pos.entry', request_method='POST', renderer='pos/entry.mako')
+    @view_config(route_name='pos.ticketing.entry', request_method='POST', renderer='pos/ticketing/entry.mako')
     def entry_post(self):
         barcode_no = self.request.params.get('barcode_no', u'')
         if len(barcode_no) != 13:
@@ -319,7 +326,7 @@ class FamimaPosView(object):
         return HTTPFound(self.request.route_path('pos.ticketing.confirmation'))
 
     @view_config(route_name='pos.ticketing.confirmation', renderer='pos/ticketing/confirmation.mako')
-    def ticketing_confirmation(self):
+    def confirmation(self):
         payment_result_dict = self.request.session['payment_result']
         payment_result_dict.update(
             payment_only=payment_result_dict['type'] == int(ReplyClassEnum.PrepaymentOnly.value)
@@ -327,7 +334,7 @@ class FamimaPosView(object):
         return payment_result_dict
 
     @view_config(route_name='pos.ticketing.completion', renderer='pos/ticketing/completion.mako')
-    def ticketing_completion(self):
+    def completion(self):
         payment_result_dict = self.request.session['payment_result']
         comm = get_communicator(self.request)
         images = None
@@ -381,3 +388,65 @@ class FamimaPosView(object):
         else:
             message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
         return dict(message=message, images=images)
+
+
+@view_defaults(decorator=with_bootstrap, permission='authenticated')
+class FamimaPosRefundView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='pos.refund.entry', request_method='GET', renderer='pos/refund/entry.mako')
+    def entry(self):
+        return dict(barcode_no_list=[u'', u'', u'', u''])
+
+    @view_config(route_name='pos.refund.entry', request_method='POST', renderer='pos/refund/entry.mako')
+    def entry_post(self):
+        barcode_no_list = self.request.params.getall('barcode_no')
+        _barcode_no_list = [barcode_no for barcode_no in barcode_no_list if barcode_no]
+        if any(len(barcode_no) != 13 for barcode_no in _barcode_no_list):
+            self.request.session.flash(u'13文字で入力してください')
+            return dict(barcode_no_list=_barcode_no_list + [u''] * (4 - len(_barcode_no_list)))
+
+        comm = get_communicator(self.request)
+        result = comm.refund_inquiry(
+            store_code=self.context.store_code,
+            pos_no=self.context.pos_no,
+            timestamp=self.context.now,
+            barcodes=barcode_no_list
+            )
+        self.request.session['refund_inquiry_result'] = result
+        return HTTPFound(self.request.route_path('pos.refund.confirmation'))
+
+    @view_config(route_name='pos.refund.confirmation', renderer='pos/refund/confirmation.mako')
+    def confirmation(self):
+        refund_inquiry_result_dict = self.request.session['refund_inquiry_result']
+        return refund_inquiry_result_dict
+
+    @view_config(route_name='pos.refund.completion', renderer='pos/refund/completion.mako')
+    def completion(self):
+        refund_inquiry_result_dict = self.request.session['refund_inquiry_result']
+        comm = get_communicator(self.request)
+        result = comm.refund_settlement(
+            store_code=self.context.store_code,
+            pos_no=self.context.pos_no,
+            timestamp=self.context.now,
+            barcodes=[entry['barCodeNo'] for entry in refund_inquiry_result_dict['entries'] if entry['resultCode'] == u'00']
+            )
+        del self.request.session['refund_inquiry_result']
+        return {}
+
+
+@view_defaults(decorator=with_bootstrap, permission='authenticated')
+class FamimaPosIndexView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='pos.index', renderer='pos/index.mako')
+    def top(self):
+        return dict()
+
+
+
+

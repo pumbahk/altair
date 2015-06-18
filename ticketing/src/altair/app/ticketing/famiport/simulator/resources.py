@@ -52,4 +52,6 @@ class FamiPortServiceResource(FamiPortResource):
 
 
 class FamimaPosResource(FamiPortResource):
-    pass
+    @property
+    def pos_no(self):
+        return u'00'

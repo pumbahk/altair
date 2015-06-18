@@ -157,6 +157,45 @@ class Communicator(object):
             u'totalAmount': total_amount,
             }
         return self._do_request(self.endpoints.completion, data)
+    
+    def _refund(self, store_code, pos_no, text_type, timestamp, barcodes):
+        data = {
+            u'businessFlg': u'3',
+            u'textTyp': text_type,
+            u'entryTyp': u'1',
+            u'shopNo': store_code.zfill(7),
+            u'registerNo': pos_no.zfill(2),
+            u'timeStamp': timestamp.strftime('%Y%m%d'),
+            }
+        data.update(
+            (u'barCode%d' % (i + 1), barcode)
+            for i, barcode in enumerate(barcodes)
+            )
+        retval = self._do_request(self.endpoints.refund, data)
+        per_barcode_data = []
+        for i, _ in enumerate(barcodes):
+            suffix = u'%d' % (i + 1)
+            per_barcode_data.append(
+                dict(
+                    barCodeNo=retval.pop('barCode%s' % suffix),
+                    resultCode=retval.pop('resultCode%s' % suffix),
+                    mainTitle=retval.pop('mainTitle%s' % suffix),
+                    perfDay=retval.pop('perfDay%s' % suffix),
+                    repayment=retval.pop('repayment%s' % suffix),
+                    refundStart=retval.pop('refundStart%s' % suffix),
+                    refundEnd=retval.pop('refundEnd%s' % suffix),
+                    ticketTyp=retval.pop('ticketTyp%s' % suffix),
+                    charge=retval.pop('charge%s' % suffix)
+                    )
+                )
+        retval['entries'] = per_barcode_data
+        return retval
+
+    def refund_inquiry(self, store_code, pos_no, timestamp, barcodes):
+        return self._refund(store_code, pos_no, u'0', timestamp, barcodes)
+
+    def refund_settlement(self, store_code, pos_no, timestamp, barcodes):
+        return self._refund(store_code, pos_no, u'2', timestamp, barcodes)
 
 @implementer(IFamiPortTicketPreviewAPI)
 class FamiPortTicketPreviewAPI(object):
