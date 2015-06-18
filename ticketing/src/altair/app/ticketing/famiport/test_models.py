@@ -47,13 +47,27 @@ class TestFamiPortEvent(TestCase):
 
 
 class TestScrew(TestCase):
-    def test_it(self):
-        from .models import screw
-        v = screw(0x555555555555, 0x12345678901)
+    def test_screw36(self):
+        from .models import screw36
+        v = screw36(0x0, 0x123456789)
+        self.assertEqual(v, 0x123456789)
+        v = screw36(0x555555555, 0x123456789)
+        self.assertEqual(v, 0xa96156b56 ^ 0x123456789)
+        v = screw36(0xaaaaaaaaa, 0x123456789)
+        self.assertEqual(v, 0x569ea94a9 ^ 0x123456789)
+
+    def test_screw47(self):
+        from .models import screw47
+        v = screw47(0x555555555555, 0x12345678901)
         self.assertEqual(v, 0x4d54b5a4ad71 ^ 0x12345678901)
-        v = screw(0x2aaaaaaaaaaa, 0x12345678901)
+        v = screw47(0x2aaaaaaaaaaa, 0x12345678901)
         self.assertEqual(v, 0x32ab4a5b528e ^ 0x12345678901)
 
+
+def TestCalculateGtinCd(TestCase):
+    def test_it(self):
+        from .models import calculate_gtin_cd
+        self.assertEqual(calculate_gtin_cd(u'629104150021'), u'3')
 
 class FamiPortInformationMessageTest(TestCase):
     def setUp(self):

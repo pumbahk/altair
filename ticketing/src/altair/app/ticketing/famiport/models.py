@@ -392,7 +392,32 @@ class DigitCodec(object):
 digit_encoder = DigitCodec("0123456789ACFGHJKLPRSUWXY")
 
 
-def screw(x, s):
+def screw36(x, s):
+    x = long(x)
+    return (((x & 0x180000000) >> 31) \
+        | ((x & 0x1c00) >> 8) \
+        | ((x & 0x60000) >> 12) \
+        | ((x & 0x60) << 2) \
+        | ((x & 0x100) << 1) \
+        | ((x & 0x1e000) >> 3) \
+        | ((x & 0x4) << 12) \
+        | ((x & 0x80) << 8) \
+        | ((x & 0x1) << 16) \
+        | ((x & 0x780000) >> 2) \
+        | ((x & 0x8) << 18) \
+        | ((x & 0x2) << 21) \
+        | ((x & 0x800000000) >> 12) \
+        | ((x & 0x600000000) >> 9) \
+        | ((x & 0x40000000) >> 4) \
+        | (x & 0x38000000) \
+        | ((x & 0x3800000) << 7) \
+        | ((x & 0x10) << 29) \
+        | ((x & 0x200) << 25) \
+        | ((x & 0x4000000) << 9) \
+        ) \
+        ^ s
+
+def screw47(x, s):
     x = long(x)
     return (((x & 0x3000) >> 12) \
         | ((x & 0x20) >> 3) \
@@ -418,6 +443,14 @@ def screw(x, s):
         ) \
         ^ s
 
+# http://www.gs1.org/how-calculate-check-digit-manually
+def calculate_gtin_cd(barcode):
+    return u'%d' % (
+        10 - sum(
+            (3 - (i % 2) * 2) * int(barcode[-i-1])
+            for i in range(0, len(barcode))
+            ) % 10
+        )
 
 class FamiPortBarcodeNoSequence(Base):
     __tablename__ = 'FamiPortBarcodeNoSequence'
@@ -425,11 +458,16 @@ class FamiPortBarcodeNoSequence(Base):
     id = sa.Column(Identifier, primary_key=True)
 
     @classmethod
-    def get_next_value(cls, session=_session):
+    def get_next_value(cls, discrimination_code, session=_session):
         seq = cls()
         session.add(seq)
         session.flush()
-        return u'%013ld' % screw(seq.id, 0x12345678901L)
+        barcode = u'1%d%011ld' % (
+            discrimination_code,
+            screw36(seq.id, 0x123456789L),
+            )
+        cd = calculate_gtin_cd(barcode)
+        return barcode[1:] + cd
 
 
 class FamiPortOrderIdentifierSequence(Base):

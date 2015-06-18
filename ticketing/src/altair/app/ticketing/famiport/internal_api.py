@@ -20,9 +20,7 @@ from .models import (
     FamiPortSalesChannel,
     FamiPortBarcodeNoSequence,
     FamiPortReserveNumberSequence,
-    FamiPortOrderTicketNoSequence,
     FamiPortOrderIdentifierSequence,
-    FamiPortExchangeTicketNoSequence,
     )
 from .exc import FamiPortError, FamiPortAPIError, FamiPortAPINotFoundError
 from .communication.api import (  # noqa
@@ -97,18 +95,12 @@ def get_famiport_client(session, client_code):
     except:
         raise FamiPortAPIError('internal error')
 
-def create_famiport_ticket(session, ticket_dict):
+def create_famiport_ticket(session, famiport_playguide, ticket_dict):
     return FamiPortTicket(
         type=ticket_dict['type'],
-        barcode_number=FamiPortBarcodeNoSequence.get_next_value(session),
+        barcode_number=FamiPortBarcodeNoSequence.get_next_value(famiport_playguide.discrimination_code, session),
         template_code=ticket_dict['template'],
         data=ticket_dict['data']
-        )
-
-def create_famiport_receipt(session, **kwds):
-    return FamiPortReceipt(
-        barcode_no=FamiPortBarcodeNoSequence.get_next_value(session),
-        **kwds
         )
 
 def validate_sales_channel(sales_channel):
@@ -172,7 +164,7 @@ def create_famiport_order(
         ticketing_start_at=ticketing_start_at,
         ticketing_end_at=ticketing_end_at,
         famiport_tickets=[
-            create_famiport_ticket(session, ticket_dict)
+            create_famiport_ticket(session, famiport_client.playguide, ticket_dict)
             for ticket_dict in tickets
             ]
         )
