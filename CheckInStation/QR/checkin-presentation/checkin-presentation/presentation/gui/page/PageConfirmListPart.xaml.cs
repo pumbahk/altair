@@ -168,6 +168,7 @@ namespace checkin.presentation.gui.page
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as PageConfirmListPartDataContext;
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             if (!AppUtil.GetCurrentResource().RefreshMode)
             {
                 ctx.RefreshModeVisibility = Visibility.Hidden;
@@ -240,6 +241,7 @@ namespace checkin.presentation.gui.page
                 {
                     pageCtx.NotPrintVisibility = Visibility.Hidden;
                     pageCtx.Description = "発券済みです";
+                    pageCtx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
                     return;
                 }
                 //this.NavigationService.Navigate(new PagePrintingConfirm());

@@ -42,12 +42,11 @@
                             Canvas.Top="169">
                                 <StackPanel HorizontalAlignment="Stretch">
                                     <Image Visibility="{Binding IsIdle}" Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
-                                    <TextBox
+                                        <TextBox
                                         Width="0"
                                         HorizontalAlignment="Center"
                                         KeyDown="OnKeyDownHandler"
                                         x:Name="QRCodeInput"/>
-
                                         <ac:AdornedControl
                                             Margin="0,-350,0,0"
                                             x:Name="LoadingAdorner"

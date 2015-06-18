@@ -36,6 +36,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ticket.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="InputSimulator">
       <HintPath>..\..\WpfKb\References\InputSimulator\InputSimulator.dll</HintPath>
@@ -222,6 +225,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Resource Include="ticket.ico" />
     <Resource Include="Resource\QRcode.jpg" />
     <Resource Include="Resource\keyboard.jpg" />
     <Resource Include="Resource\test.png" />

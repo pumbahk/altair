@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using checkin.presentation.support;
 
 namespace checkin.presentation.gui.page
 {
@@ -21,6 +22,7 @@ namespace checkin.presentation.gui.page
     {
         public HomeWindow()
         {
+            this.Title = "CheckInStation Version" + ApplicationVersion.GetApplicationInformationalVersion();
             InitializeComponent();
             this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
         }

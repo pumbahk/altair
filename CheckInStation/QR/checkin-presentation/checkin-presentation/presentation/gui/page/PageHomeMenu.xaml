@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:c="clr-namespace:checkin.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
+      d:DesignHeight="600" d:DesignWidth="1000"
 	Title="PageHomeMenu">
     <Page.Resources>
         
@@ -16,12 +16,73 @@
         <Style TargetType="Button"  x:Key="MenuSelectButton">
             <Setter Property="Margin" Value="0,10,0,10"/>
         </Style>
+        <LinearGradientBrush x:Key="MenuButtonBackGroundBrush"
+                       StartPoint="0.5,0"
+                       EndPoint="0.5,1">
+            <GradientStop Color="#c9ee98" Offset="0.05"/>
+            <GradientStop Color="#d5f1ae" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="MenuButtonForegroundBrush" Color="#5a7931"/>
+
+        <LinearGradientBrush x:Key="MenuButtonBackGroundBrushBrush"
+                       StartPoint="0.5,0"
+                       EndPoint="0.5,1">
+            <GradientStop Color="#d5f1ae" Offset="0.05"/>
+            <GradientStop Color="#c9ee98" Offset="1.0"/>
+        </LinearGradientBrush>
         <Style TargetType="Button" x:Key="MenuSelectButtonFirst" BasedOn="{StaticResource MenuSelectButton}">
             <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Width" Value="350"/>
+            <Setter Property="Height" Value="100" />
+            <Setter Property="Foreground" Value="{DynamicResource MenuButtonForegroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource MenuButtonBackGroundBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border  Style="{StaticResource SubmitButtonContainer}">
+                            <ContentPresenter x:Name="contentPresenter"
+                              ContentTemplate="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                              Margin="{TemplateBinding Margin}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource MenuButtonBackGroundBrushBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
         <Style TargetType="Button" x:Key="MenuSelectButtonLast" BasedOn="{StaticResource MenuSelectButton}">
-            <Setter Property="Margin" Value="0,10,0,0"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Width" Value="500"/>
+            <Setter Property="Height" Value="80" />
+            <Setter Property="Foreground" Value="{DynamicResource MenuButtonForegroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource MenuButtonBackGroundBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border  Style="{StaticResource SubmitButtonContainer}">
+                            <ContentPresenter x:Name="contentPresenter"
+                              ContentTemplate="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                              Margin="{TemplateBinding Margin}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource MenuButtonBackGroundBrushBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+        
         <Style TargetType="ToggleButton"  x:Key="MenuSelectToggleButton">
             <Setter Property="Margin" Value="0,10,0,10"/>
         </Style>
@@ -70,11 +131,12 @@
             <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%*+;{"と表示されればok</TextBlock>
         </StackPanel>
     </Page.Resources>
-    
-    <Grid Background="{StaticResource BackgroundImageBrush}">
-        <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
-            <TextBlock Padding="0,0,40,0" Style="{StaticResource MainText}" Text="{Binding ApplicationVersion,Mode=OneTime,StringFormat={}チケット発券ステーション(ver {0})}"/>
 
+    <Grid Background="#f1fae4">
+        <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
+            <!--
+            <TextBlock Padding="0,0,40,0" Style="{StaticResource MainText}" Text="{Binding ApplicationVersion,Mode=OneTime,StringFormat={}チケット発券ステーション(ver {0})}"/>
+            -->
             <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
                           x:Name="MenuDialogAccessURL"
                           Title="通信先サーバー設定">
@@ -133,7 +195,7 @@
                 <StackPanel>
                     <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource MainText}">複数発券モードのON/OFFを行う</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">複数発券モードの設定</TextBlock>
                             <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedMultiPrintModeStyle.Key, Mode=OneWay}"></TextBlock>
                         </StackPanel>
                     </Border>
@@ -166,57 +228,136 @@
 
 
             <!-- main menu -->
-            <WrapPanel>
-                <TextBlock Style="{StaticResource SubText}">現在の通信先サーバー:</TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl, Mode=OneWay}"></TextBlock>
-            </WrapPanel>
-            <Button Command="{Binding ElementName=MenuDialogAccessURL, Path=OpenCommand}"
+            
+            <Grid>
+                <Canvas Width="850" Height="560">
+                    <!--
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource SubText}">現在の通信先サーバー:</TextBlock>
+                        <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                    -->
+                    <Button Command="{Binding ElementName=MenuDialogAccessURL, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogAccessURL}"
-                    Style="{StaticResource MenuSelectButtonFirst}">
-                通信先サーバー設定
-            </Button>
+                            Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Canvas.Top="20" Canvas.Left="50">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    通信先サーバー設定<LineBreak/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Button>
 
-            <WrapPanel>
-                <TextBlock Style="{StaticResource SubText}">現在のプリンター:</TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
-            </WrapPanel>
-            <Button Command="{Binding ElementName=MenuDialogPrinter, Path=OpenCommand}"
+                    <!--
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource SubText}">現在のプリンター:</TextBlock>
+                        <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                    -->
+                    <Button Command="{Binding ElementName=MenuDialogPrinter, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogPrinter}"
-                    Style="{StaticResource MenuSelectButtonFirst}">プリンター設定                           
-            </Button>
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Canvas.Top="20" Canvas.Left="450">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    プリンター設定<LineBreak/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Button>
 
-            <WrapPanel>
-                <TextBlock Style="{StaticResource SubText}">現在のウィンドウの表示:</TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"/>
-            </WrapPanel>
-            <Button Command="{Binding ElementName=MenuDialogWindow, Path=OpenCommand}"
+                    <!--
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource SubText}">現在のウィンドウの表示:</TextBlock>
+                        <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"/>
+                    </WrapPanel>
+                    -->
+                    <Button Command="{Binding ElementName=MenuDialogWindow, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogWindow}"
-                    Style="{StaticResource MenuSelectButtonFirst}">ウィンドウの表示の設定
-            </Button>
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Canvas.Top="140" Canvas.Left="50">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    ウィンドウの表示の設定<LineBreak/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Button>
 
-            <WrapPanel>
-                <TextBlock Style="{StaticResource SubText}">複数発券モードのON/OFF:</TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode}"/>
-            </WrapPanel>
-            <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
+                    <!--
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource SubText}">複数発券モードのON/OFF:</TextBlock>
+                        <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode}"/>
+                    </WrapPanel>
+                    -->
+                    <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogMultiPrint}"
-                    Style="{StaticResource MenuSelectButtonFirst}">複数発券モードのON/OFF
-            </Button>
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Canvas.Top="140" Canvas.Left="450">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    複数発券モード<LineBreak/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Button>
 
-            <TextBlock Style="{StaticResource SubText}">テスト印刷•テスト読み取り</TextBlock>
-            <Button Command="{Binding ElementName=MenuDialogQRTesting, Path=OpenCommand}"
+                    <!--
+                    <TextBlock Style="{StaticResource SubText}">テスト印刷•テスト読み取り</TextBlock>
+                    -->
+                    <Button Command="{Binding ElementName=MenuDialogQRTesting, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogQRTesting}"
                     Click="Button_Click_1"
-                    Style="{StaticResource MenuSelectButtonFirst}">テスト読み取り</Button>
-            <Button Command="{Binding ElementName=MenuDialogPrintTesting, Path=OpenCommand}"
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Canvas.Top="260" Canvas.Left="50">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    テスト読み取り<LineBreak/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ElementName=MenuDialogPrintTesting, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogPrintTesting}"
-                    Style="{StaticResource MenuSelectButtonFirst}">テスト印刷</Button>
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                           Canvas.Top="260" Canvas.Left="450">
+                        <StackPanel>
+                            <TextBlock
+                    FontSize="15">
+                    テスト印刷<LineBreak/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
 
 
-            <Button Style="{StaticResource MenuSelectButtonLast}"
+                    <Button Style="{StaticResource MenuSelectButtonLast}"
                     Margin="0,30,0,0"                        
                     Focusable="True"
+                            Canvas.Top="380"
+                            Canvas.Left="175"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
                     Click="Button_Click">受付開始</Button>
+                </Canvas>
+            </Grid>
+            
         </StackPanel>
     </Grid>
 </Page>

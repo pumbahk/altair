@@ -107,7 +107,7 @@ namespace checkin.presentation.gui.page
             }
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
-            
+            this.buttonsubmit.Visibility = Visibility.Hidden;
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -162,7 +162,7 @@ namespace checkin.presentation.gui.page
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
-            this.LoadingAdorner.IsAdornerVisible = true;
+            this.LoadingAdorner.ShowAdorner();
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             ctx.IsIdle = Visibility.Hidden;
             ctx.DescriptionInfo = "しばらくお待ちください";

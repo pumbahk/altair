@@ -279,6 +279,7 @@ namespace checkin.presentation.gui.page
                 if (notPrintedCount == 0)
                 {
                     pageCtx.Description = "このＱＲコードのチケットは発券済みです";
+                    pageCtx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
                     return;
                 }
                 //this.NavigationService.Navigate(new PagePrintingConfirm());

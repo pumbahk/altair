@@ -140,6 +140,7 @@ namespace checkin.presentation.gui.page
                 Broker = AppUtil.GetCurrentBroker(),
             };
             ctx.Event = new ConfirmListOneEvent() { StatusInfo = ctx };
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             return ctx;
         }
 
@@ -147,11 +148,17 @@ namespace checkin.presentation.gui.page
         {
             var ctx = (this.DataContext as PageConfirmListOneDataContext);
             await ctx.PrepareAsync().ConfigureAwait(false);
+            this.Dispatcher.InvokeAsync(this.BuildDisplayItems);
+        }
+
+        private void BuildDisplayItems()
+        {
+            var ctx = (this.DataContext as PageConfirmListOneDataContext);
             ctx.NextEnable = true;
             ctx.NextButtonVisibility = Visibility.Visible;
             ctx.AllPrintedVisibility = Visibility.Hidden;
 
-            if(ctx.PrintedAt == null)
+            if (ctx.PrintedAt == null)
             {
                 ctx.NumberOfPrintableTicket = 1;
             }
@@ -159,6 +166,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.NumberOfPrintableTicket = 0;
                 ctx.Description = "このＱＲコードのチケットは発券済みです";
+                ctx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
                 ctx.NextEnable = false;
                 ctx.AllPrintedVisibility = Visibility.Visible;
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
@@ -180,7 +188,6 @@ namespace checkin.presentation.gui.page
             {
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
             }
-
         }
 
         private async void OnCommonSubmit(string value)

@@ -68,13 +68,6 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
-                    <!-- Return to Home-->
-                    <Button 
-                            Style="{StaticResource HomeButton}"
-                        HorizontalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
-                    </Button>
-
                     <!-- ボタン -->
                     <Button
                      Canvas.Right="140"

@@ -11,10 +11,10 @@
 [assembly: System.Reflection.AssemblyTitle("CheckinStation")]
 [assembly: System.Reflection.AssemblyDescription("altair checkin station")]
 [assembly: System.Reflection.AssemblyProduct("CheckinStation")]
-[assembly: System.Reflection.AssemblyCopyright("Copyright @ 2014")]
+[assembly: System.Reflection.AssemblyCopyright("Copyright @ 2015")]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
-[assembly: System.Reflection.AssemblyInformationalVersion("0.0.0.4edf7e552435409f614001a57b7e00e1f033d358")]
-[assembly: System.Reflection.AssemblyVersion("0.0.0")]
-[assembly: System.Reflection.AssemblyFileVersion("0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersion("1.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0")]
+[assembly: System.Reflection.AssemblyFileVersion("1.0")]
 
 

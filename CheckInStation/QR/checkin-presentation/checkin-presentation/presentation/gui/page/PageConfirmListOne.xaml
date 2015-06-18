@@ -49,8 +49,9 @@
                                 <RowDefinition Height="80"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="620"/>
-                                <ColumnDefinition Width="480"/>
+                                <ColumnDefinition Width="800"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
                             <!-- todo padding 23-->
                             <WrapPanel
@@ -66,10 +67,14 @@
                                 <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
                             </WrapPanel>
                             <WrapPanel
-                                Grid.RowSpan="2" Grid.Column="1"
+                                Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2"
                                 HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                                <TextBlock FontSize="60" FontWeight="ExtraBlack">発券枚数:</TextBlock>
-                                <TextBlock FontSize="60" FontWeight="ExtraBlack" Text="{Binding NumberOfPrintableTicket,Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="60" FontWeight="ExtraBlack">発券枚数</TextBlock>
+                            </WrapPanel>
+                            <WrapPanel
+                                Grid.Row="2" Grid.Column="2"
+                                HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="60" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
                                 <TextBlock FontSize="60" FontWeight="ExtraBlack">枚</TextBlock>
                             </WrapPanel>
                         </Grid>
@@ -172,6 +177,12 @@
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
+
+                    <!-- エラーダイアログ -->
+                    <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
+                                      MessageText="{Binding ErrorMessage}"
+                                      ButtonText="OK"/>
+
 
 
                     <!-- 終了ボタン-->

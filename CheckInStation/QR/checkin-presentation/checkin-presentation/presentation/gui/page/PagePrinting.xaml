@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:c="clr-namespace:checkin.presentation.gui.control"
+      xmlns:ac="clr-namespace:AdornedControl;assembly=AdornedControl"
       mc:Ignorable="d" 
       d:DesignHeight="364" d:DesignWidth="683"  
     ShowsNavigationUI="False"     
@@ -22,10 +23,27 @@
                             Padding="40,20,40,20"
                             Canvas.Left="327" 
                             Canvas.Top="169">
-                        <StackPanel HorizontalAlignment="Stretch">                            
+                        <StackPanel HorizontalAlignment="Stretch">      
+                            <!--
                             <Image Stretch="Uniform" MaxHeight="350" Source="{Binding AdImage, Mode=OneTime}"/>
-                            <TextBlock HorizontalAlignment="Center" FontSize="30" Foreground="Black"
-                                Text="{Binding SubDescription}"/>
+                            -->
+                            <ac:AdornedControl
+                                Margin="0,110,0,0"
+                                x:Name="LoadingAdorner">
+                                <ac:AdornedControl.AdornerContent>
+                                    <c:Loading Background="Transparent"></c:Loading>
+                                </ac:AdornedControl.AdornerContent>
+                                <Border
+                                    Height="200"
+                                    Width="900">
+                                    <TextBlock
+                                            Margin="80"
+                                            Background="Transparent"
+                                            HorizontalAlignment="Center"
+                                            FontSize="30"
+                                            Text="{Binding SubDescription}"/>
+                                </Border>
+                            </ac:AdornedControl>
                         </StackPanel>
                     </Border>
 
