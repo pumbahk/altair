@@ -199,33 +199,69 @@ class FamiPortReservedView(object):
             if result['nameInput']:
                 return HTTPFound(self.request.route_path('service.reserved.name_entry')) 
             elif result['phoneInput']:
-                return HTTPFound(self.request.route_path('service.reserved.phone_entry')) 
+                return HTTPFound(self.request.route_path('service.reserved.tel_entry')) 
             else: 
                 return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
         else:
             message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
             return dict(message=message)
 
+    @view_config(route_name='service.reserved.name_entry', renderer='services/reserved/name_entry.mako')
+    def name_entry(self):
+        inquiry_result_dict = self.request.session['inquiry_result']
+        if not inquiry_result_dict['nameInput']:
+            return HTTPFound(self.request.route_path('service.reserved.tel_entry')) 
+        return dict(customer_name=u'')
+
+    @view_config(route_name='service.reserved.name_entry', request_method='POST', renderer='services/reserved/name_entry.mako')
+    def name_entry_post(self):
+        customer_name = self.request.params['customer_name'].strip()
+        if not customer_name:
+            self.request.session.flash(u'入力してください')
+            return dict(customer_name=customer_name)
+        self.request.session['customer_name'] = customer_name
+        inquiry_result_dict = self.request.session['inquiry_result']
+        if inquiry_result_dict['phoneInput']:
+            return HTTPFound(self.request.route_path('service.reserved.tel_entry')) 
+        else:
+            return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
+
+    @view_config(route_name='service.reserved.tel_entry', renderer='services/reserved/tel_entry.mako')
+    def tel_entry(self):
+        inquiry_result_dict = self.request.session['inquiry_result']
+        if not inquiry_result_dict['phoneInput']:
+            return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
+        return dict(customer_phone_number=u'')
+
+    @view_config(route_name='service.reserved.tel_entry', request_method='POST', renderer='services/reserved/tel_entry.mako')
+    def tel_entry_post(self):
+        customer_phone_number = self.request.params['customer_phone_number'].strip()
+        if not customer_phone_number:
+            self.request.session.flash(u'入力してください')
+            return dict(customer_phone_number=customer_phone_number)
+        self.request.session['customer_phone_number'] = customer_phone_number
+        return HTTPFound(self.request.route_path('service.reserved.confirmation')) 
+
     @view_config(route_name='service.reserved.confirmation', renderer='services/reserved/confirmation.mako')
     def confirmation(self):
-        inquiry_result = self.request.session['inquiry_result']
+        inquiry_result_dict = self.request.session['inquiry_result']
         return dict(
-            type=inquiry_result['replyClass'],
-            total_amount=inquiry_result['totalAmount'],
-            system_fee=inquiry_result['systemFee'],
-            ticket_payment=inquiry_result['ticketPayment'],
-            ticketing_fee=inquiry_result['ticketingFee'],
-            performance_name=inquiry_result['kogyoName'],
-            performance_date=inquiry_result['koenDate'],
-            barcode_no=inquiry_result['barCodeNo'],
-            ticket_count=inquiry_result['ticketCount'],
-            ticket_count_total=inquiry_result['ticketCountTotal'],
-            name=inquiry_result['name']
+            type=inquiry_result_dict['replyClass'],
+            total_amount=inquiry_result_dict['totalAmount'],
+            system_fee=inquiry_result_dict['systemFee'],
+            ticket_payment=inquiry_result_dict['ticketPayment'],
+            ticketing_fee=inquiry_result_dict['ticketingFee'],
+            performance_name=inquiry_result_dict['kogyoName'],
+            performance_date=inquiry_result_dict['koenDate'],
+            barcode_no=inquiry_result_dict['barCodeNo'],
+            ticket_count=inquiry_result_dict['ticketCount'],
+            ticket_count_total=inquiry_result_dict['ticketCountTotal'],
+            name=inquiry_result_dict['name']
             )
 
     @view_config(route_name='service.reserved.completion', renderer='services/reserved/completion.mako')
     def completion(self):
-        inquiry_result = self.request.session['inquiry_result']
+        inquiry_result_dict = self.request.session['inquiry_result']
         comm = get_communicator(self.request)
         result = comm.payment(
             store_code=self.context.store_code,
@@ -233,7 +269,7 @@ class FamiPortReservedView(object):
             client_code=self.context.client_code,
             sequence_no=self.context.gen_serial(),
             ticketing_date=self.context.now,
-            barcode_no=inquiry_result['barCodeNo'],
+            barcode_no=inquiry_result_dict['barCodeNo'],
             customer_name=self.request.session.get('customer_name'),
             customer_phone_number=self.request.session.get('customer_phone_number'),
             )
