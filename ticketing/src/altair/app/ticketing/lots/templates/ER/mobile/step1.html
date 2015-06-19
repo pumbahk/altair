@@ -4,15 +4,11 @@
 ${event.title}<br />
 ${lot.name}
 </div>
-<%mobile:header>第${option_index}希望</%mobile:header>
+<%mobile:header>旅行券</%mobile:header>
 %if performances:
-公演をお選びください
 <div>
 %for performance in performances:
-<a href="${request.route_path('lots.entry.step2', event_id=event.id, lot_id=lot.id, option_index=option_index, _query=dict(performance_id=performance.id))}">${performance.name}</a><br />
-${h.japanese_date(performance.start_on)}<br />
-開演 ${h.japanese_time(performance.start_on)} (予定)<br />
-会場 ${performance.venue.name}<br />
+<a href="${request.route_path('lots.entry.step2', event_id=event.id, lot_id=lot.id, option_index=option_index, _query=dict(performance_id=performance.id))}">旅行券の購入に進む</a><br />
 %endfor
 </div>
 %else:
