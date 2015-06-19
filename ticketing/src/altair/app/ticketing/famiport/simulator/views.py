@@ -5,7 +5,17 @@ from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.app.ticketing.fanstatic import with_bootstrap
-from .api import get_communicator, get_client_configuration_registry, store_payment_result, get_payment_result, save_payment_result, get_ticket_preview_pictures
+from .api import (
+    get_communicator,
+    get_client_configuration_registry,
+    store_payment_result,
+    get_payment_result,
+    get_payment_result_by_id,
+    save_payment_result,
+    get_ticket_preview_pictures,
+    get_payment_results,
+    gen_serial_for_store
+    )
 from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
 from ..communication.models import ReplyClassEnum
 
@@ -472,17 +482,60 @@ class FamimaPosRefundView(object):
         del self.request.session['refund_inquiry_result']
         return {}
 
-
-@view_defaults(decorator=with_bootstrap, permission='authenticated')
-class FamimaPosIndexView(object):
+@view_defaults(decorator=with_bootstrap)
+class FDCCenterView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(route_name='pos.index', renderer='pos/index.mako')
-    def top(self):
+    @view_config(route_name='fdccenter.service.index', renderer='fdc-center/index.mako')
+    def service_index(self):
         return dict()
 
+@view_defaults(decorator=with_bootstrap)
+class FDCCenterTransactionServiceView(object):
+    cancel_code_list = [
+      (u'01', u'券面XML不正'),
+      (u'02', u'仮取引ログ出力失敗'),
+      (u'03', u'アプリエラー (DBエラー)'),
+      (u'04', u'アプリエラー (ミドルウェアエラー)'),
+      (u'05', u'アプリエラー (予期しないエラー)'),
+      (u'10', u'30分VOID'),
+      ]
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='fdccenter.service.transaction.index', renderer='fdc-center/service/transaction/index.mako')
+    def index(self):
+        orders = get_payment_results(self.request)
+        return dict(orders=orders, cancel_code_list=self.cancel_code_list)
 
 
+    @view_config(route_name='fdccenter.service.transaction.cancel', request_method='POST')
+    def cancel(self):
+        cancel_code = self.request.params['cancel_code']
+        order_id_list = self.request.params.getall('order_id')
+        orders = [get_payment_result_by_id(self.request, int(order_id)) for order_id in order_id_list]
+        for order in orders:
+            assert order is not None
+            comm = get_communicator(self.request)
+            result = comm.cancel(
+                store_code=order.store_code,
+                mmk_no=order.mmk_no,
+                ticketing_date=self.context.now,
+                sequence_no=gen_serial_for_store(self.request, self.context.now, order.store_code),
+                client_code=order.client_code,
+                barcode_no=order.barcode_no,
+                order_id=order.order_id,
+                cancel_code=cancel_code
+                )
+            if result['resultCode'] != u'00':
+                self.request.session.flash(u'[%s] エラーが発生しました (%s-%s)' % (order.id, result['resultCode'], result['replyCode']))
+            else:
+                order.voided_at = self.context.now
+                save_payment_result(self.request, order)
+                self.request.session.flash(u'[%s] 取消送信しました' % order_id)
+        return HTTPFound(self.request.route_path('fdccenter.service.transaction.index'))
 

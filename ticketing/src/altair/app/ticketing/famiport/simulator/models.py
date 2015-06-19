@@ -52,6 +52,8 @@ class FDCSideOrder(Base):
     paid_at                      = sa.Column(sa.DateTime(), nullable=True)
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
 
+    voided_at                    = sa.Column(sa.DateTime(), nullable=True)
+
     @property
     def valid_barcode_no(self):
         if self.type == 1:

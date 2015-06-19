@@ -53,6 +53,14 @@ def store_payment_result(request, store_code, mmk_no, type, client_code, total_a
     session.add(fdc_side_order)
     session.commit()
 
+def get_payment_result_by_id(request, order_id):
+    session = get_db_session(request, 'famiport_mmk')
+    q = session.query(FDCSideOrder).filter(FDCSideOrder.id == order_id)
+    try:
+        return q.one()
+    except NoResultFound:
+        return None
+
 def get_payment_result(request, store_code, barcode_no):
     session = get_db_session(request, 'famiport_mmk')
 
@@ -65,6 +73,13 @@ def get_payment_result(request, store_code, barcode_no):
             return fdc_side_order
     return None
 
+def get_payment_results(request):
+    session = get_db_session(request, 'famiport_mmk')
+
+    q = session.query(FDCSideOrder)
+    return q
+
+
 def save_payment_result(request, payment_result):
     session = get_db_session(request, 'famiport_mmk')
     session.add(payment_result)
@@ -73,4 +88,14 @@ def save_payment_result(request, payment_result):
 def get_ticket_preview_pictures(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
     preview_api = request.registry.queryUtility(IFamiPortTicketPreviewAPI)
     return preview_api(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
+
+def gen_serial_for_store(request, now, store_code):
+    mmk_seq = get_mmk_sequence(request) 
+    serial = mmk_seq.next_serial(now, store_code)
+    return u'%02d%02d%02d%05d' % (
+        now.year % 100,
+        now.month,
+        now.day,
+        serial
+        )
 

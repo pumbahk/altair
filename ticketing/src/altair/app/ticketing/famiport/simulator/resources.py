@@ -1,7 +1,7 @@
 from datetime import datetime
 from pyramid.security import Allow, Deny, Authenticated, DENY_ALL
 from pyramid.decorator import reify
-from .api import get_client_configuration_registry, get_mmk_sequence
+from .api import get_client_configuration_registry, gen_serial_for_store
 
 class BaseResource(object):
     __acl__ = [
@@ -31,14 +31,8 @@ class FamiPortResource(BaseResource):
         return self.store_code_and_mmk_no[1]
 
     def gen_serial(self):
-        mmk_seq = get_mmk_sequence(self.request) 
-        serial = mmk_seq.next_serial(self.now, self.store_code)
-        return u'%02d%02d%02d%05d' % (
-            self.now.year % 100,
-            self.now.month,
-            self.now.day,
-            serial
-            )
+        return gen_serial_for_store(self.request, self.now, self.store_code) 
+
 
 class FamiPortServiceResource(FamiPortResource):
     @reify
@@ -55,3 +49,7 @@ class FamimaPosResource(FamiPortResource):
     @property
     def pos_no(self):
         return u'00'
+
+
+class FDCCenterResource(BaseResource):
+    pass

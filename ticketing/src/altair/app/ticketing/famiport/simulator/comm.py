@@ -158,6 +158,19 @@ class Communicator(object):
             }
         return self._do_request(self.endpoints.completion, data)
     
+    def cancel(self, store_code, mmk_no, ticketing_date, sequence_no, client_code, order_id, barcode_no, cancel_code):
+        data = {
+            u'storeCode': store_code,
+            u'mmkNo': mmk_no,
+            u'sequenceNo': sequence_no,
+            u'ticketingDate': ticketing_date.strftime("%Y%m%d%H%M%S"),
+            u'playGuideId': client_code,
+            u'orderId': order_id,
+            u'barCodeNo': barcode_no,
+            u'cancelCode': cancel_code,
+            }
+        return self._do_request(self.endpoints.cancel, data)
+    
     def _refund(self, store_code, pos_no, text_type, timestamp, barcodes):
         data = {
             u'businessFlg': u'3',

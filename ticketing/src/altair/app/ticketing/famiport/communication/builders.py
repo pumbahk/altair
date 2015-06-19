@@ -306,23 +306,23 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
         sequenceNo = famiport_payment_ticketing_request.sequenceNo
         ticketingDate = ''
 
-        orderId = u''
-        replyClass = u''
-        playGuideId = u''
-        playGuideName = u''
-        orderTicketNo = u''
-        exchangeTicketNo = u''
-        ticketingStart = u''
-        ticketingEnd = u''
-        totalAmount = u''
-        ticketPayment = u''
-        systemFee = u''
-        ticketingFee = u''
-        ticketingCountTotal = u''
-        ticketCount = u''
-        kogyoName = u''
-        koenDate = u''
-        tickets = u''
+        orderId = None
+        replyClass = None
+        playGuideId = None
+        playGuideName = None
+        orderTicketNo = None
+        exchangeTicketNo = None
+        ticketingStart = None
+        ticketingEnd = None
+        totalAmount = None
+        ticketPayment = None
+        systemFee = None
+        ticketingFee = None
+        ticketingCountTotal = None
+        ticketCount = None
+        kogyoName = None
+        koenDate = None
+        tickets = None
 
         logger.info(u'Processing famiport payment ticketing request. '
                     u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s'
@@ -496,9 +496,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
-                    replyClass=replyClass,
-                    playGuideId=playGuideId,
-                    playGuideName=playGuideName
+                    replyClass=replyClass
                     )
         except:
             logger.exception(
@@ -654,41 +652,68 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_payment_ticketing_cancel_request, session, now):
         famiport_request = famiport_payment_ticketing_cancel_request
         storeCode = _strip_zfill(famiport_request.storeCode)
+        logger.info(
+            u'Processing famiport ticketing cancel request. ' \
+            u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s' \
+                % (
+                    famiport_payment_ticketing_cancel_request.storeCode,
+                    famiport_payment_ticketing_cancel_request.mmkNo,
+                    famiport_payment_ticketing_cancel_request.ticketingDate,
+                    famiport_payment_ticketing_cancel_request.sequenceNo,
+                    famiport_payment_ticketing_cancel_request.barCodeNo
+                )
+            )
         famiport_response = FamiPortPaymentTicketingCancelResponse(
             orderId=u'',
             barCodeNo=u'',
             storeCode=storeCode.zfill(6),
-            sequenceNo=famiport_request.sequenceNo,
+            sequenceNo=famiport_payment_ticketing_cancel_request.sequenceNo,
             resultCode=ResultCodeEnum.OtherError.value,
             replyCode=ReplyCodeEnum.OtherError.value,
             )
         try:
+            try:
+                ticketingDate = datetime.datetime.strptime(
+                    famiport_payment_ticketing_cancel_request.ticketingDate,
+                    '%Y%m%d%H%M%S'
+                    )
+            except ValueError:
+                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_cancel_request.ticketingDate)
+                raise
+
             famiport_order = FamiPortOrder.get_by_barCodeNo(
-                famiport_request.barCodeNo, session=session)
+                famiport_payment_ticketing_cancel_request.barCodeNo, session=session)
 
             if famiport_order is None:  # 検索エラー
+                logger.info('no FamiPortOrder found that corresponds to %s' % famiport_payment_ticketing_cancel_request.barCodeNo)
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 return famiport_response
 
             receipt = famiport_order.get_receipt(famiport_request.barCodeNo)
             if receipt is None:  # バーコードなし
+                logger.info('no FamiPortReceipt found that corresponds to %s' % famiport_payment_ticketing_cancel_request.barCodeNo)
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
             elif _strip_zfill(receipt.shop_code) != storeCode:
+                logger.info('store code differs (%s != %s)' % (receipt.shop_code, storeCode))
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 famiport_order = None
             elif not receipt.can_cancel(now):  # 入金発券取消が行えない
+                logger.info('not cancellable')
                 famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
             elif famiport_order.paid_at:  # 支払済
+                logger.info('paid')
                 famiport_response.resultCode = ResultCodeEnum.AlreadyPaidError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
             elif famiport_order.canceled_at:  # 支払取消済みエラー
+                logger.info('already canceled')
                 famiport_response.resultCode = ResultCodeEnum.PaymentAlreadyCanceledError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
             elif famiport_order.issued_at:  # 発券済みエラー
+                logger.info('already issued')
                 famiport_response.resultCode = ResultCodeEnum.TicketAlreadyIssuedError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
             else:  # 正常
@@ -700,8 +725,18 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 session.add(receipt)
                 session.commit()
         except Exception as err:  # その他の異常
-            logger.error(u'famiport order cancel error: {}: {}'.format(
-                type(err).__name__, err))
+            logger.exception(u'famiport order cancel error')
+            logger.exception(
+                u"an exception occurred at FamiPortPaymentTicketingCancelResponseBuilder.build_response(). "
+                u'店舗コード: %s, 発券Famiポート番号: %s, 利用日時: %s, 処理通番: %s, 支払番号: %s' \
+                    % (
+                        famiport_payment_ticketing_cancel_request.storeCode,
+                        famiport_payment_ticketing_cancel_request.mmkNo,
+                        famiport_payment_ticketing_cancel_request.ticketingDate,
+                        famiport_payment_ticketing_cancel_request.sequenceNo,
+                        famiport_payment_ticketing_cancel_request.barCodeNo
+                    )
+                )
             famiport_response.resultCode = ResultCodeEnum.OtherError.value
             famiport_response.replyCode = ReplyCodeEnum.OtherError.value
         return famiport_response

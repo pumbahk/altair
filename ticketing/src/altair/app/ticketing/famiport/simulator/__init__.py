@@ -71,5 +71,8 @@ def main(global_conf, **local_conf):
     config.add_route('pos.refund.entry', '/pos/refund', factory='.resources.FamimaPosResource')
     config.add_route('pos.refund.confirmation', '/pos/refund/confirm', factory='.resources.FamimaPosResource')
     config.add_route('pos.refund.completion', '/pos/refund/complete', factory='.resources.FamimaPosResource')
+    config.add_route('fdccenter.service.index', '/fdc-center', factory='.resources.FDCCenterResource')
+    config.add_route('fdccenter.service.transaction.index', '/fdc-center/transaction/', factory='.resources.FDCCenterResource')
+    config.add_route('fdccenter.service.transaction.cancel', '/fdc-center/transaction/cancel', factory='.resources.FDCCenterResource')
     config.scan('.views')
     return config.make_wsgi_app()
