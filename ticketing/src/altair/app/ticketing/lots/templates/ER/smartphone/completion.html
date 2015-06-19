@@ -46,10 +46,8 @@ if label is None or label is True:
 <dd><p>${entry.entry_no}</p></dd>
 
 %for wish in wishes:
-<dt class="creditHl">第${wish.wish_order + 1}希望 ${wish.performance.name}</dt>
+<dt class="creditHl">購入内容</dt>
 <dd>
-<p>${h.performance_date_label(wish.performance)}
-</p>
 <div class="detailBox">
 <table>
 %for i, lot_product in enumerate(wish.products):

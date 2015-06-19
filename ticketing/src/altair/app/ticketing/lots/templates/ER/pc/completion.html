@@ -13,18 +13,13 @@
 </div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_hope.gif')}" alt="購入商品" width="97" height="30" /></h2>
     %for wish in wishes:
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
-        <table summary="第${wish.wish_order + 1}希望">
-          <tr>
-            <th>公演日・会場</th>
-            <td>${h.japanese_datetime(wish.performance.start_on)} ${wish.performance.venue.name}</td>
-          </tr>
+        <table>
           <tr class="settlementSelectEnd">
-            <th>希望内容と手数料</th>
+            <th>購入内容と手数料</th>
             <td>
               <dl class="cost-summary">
               %for lot_product in wish.products:
