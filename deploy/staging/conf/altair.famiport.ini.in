@@ -10,11 +10,8 @@ use = config:%(here)s/../../baseconf/common.ini#famiport
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
 
 get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
-get altair.sqlahelper.sessions.famiport.pool_class = altair.sqlahelper.sessions.famiport.pool_class
 get altair.sqlahelper.sessions.famiport_slave.url = altair.sqlahelper.sessions.famiport_slave.url
-get altair.sqlahelper.sessions.famiport_slave.pool_class = altair.sqlahelper.sessions.famiport_slave.pool_class
 get altair.sqlahelper.sessions.famiport_comm.url = altair.sqlahelper.sessions.famiport_comm.url
-get altair.sqlahelper.sessions.famiport_comm.pool_class = altair.sqlahelper.sessions.famiport_comm.pool_class
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
