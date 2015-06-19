@@ -42,10 +42,6 @@ if label is None or label is True:
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
     <table summary="イベント詳細情報">
       <tr>
-        <th scope="row">イベント名</th>
-        <td>${event.title}</td>
-      </tr>
-      <tr>
         <th scope="row">申込受付期間</th>
         <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
       </tr>
@@ -65,10 +61,6 @@ if label is None or label is True:
         <td>${u"{0} 回".format(lot.entry_limit)}</td>
       </tr>
       %endif
-      <tr>
-        <th scope="row">受付希望数</th>
-        <td>一度の申込で第${lot.limit_wishes}希望まで</td>
-      </tr>
       %if lot.description:
       <tr>
         <th scope="row">注意事項</th>
@@ -76,26 +68,6 @@ if label is None or label is True:
       </tr>
       %endif
     </table>
-  </div>
-</div>
-<div class="settlementBox2">
-  <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
-    %for performance in performances:
-    <table class="border" summary="イベント詳細情報">
-      <tr>
-        <th colspan="2" class="title" scope="row">${performance.name}</th>
-      </tr>
-      <tr class="none">
-        <th scope="row">公演日</th>
-        <td>${h.japanese_datetime(performance.start_on)}開演</td>
-      </tr>
-      <tr>
-        <th scope="row">会場</th>
-        <td>${performance.venue.name}</td>
-      </tr>
-    </table>
-    %endfor
   </div>
 </div>
 
@@ -107,7 +79,6 @@ if label is None or label is True:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <p class="header">
-            <strong>第${i + 1}希望</strong>
             %if len(performance_map) == 1:
             <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
             %else:
@@ -128,9 +99,6 @@ if label is None or label is True:
           </p>
           <table class="chooser" summary="希望する公演と券種の選択" id="wish-cell-table-${i}">
             <tr>
-              <th>
-                <label>公演日・会場</label>
-              </th>
               <td colspan="2">
                 <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                 %for performance in performances:
@@ -144,19 +112,17 @@ if label is None or label is True:
                   <option value="${performance.id}">${h.performance_date_label(performance)}</option>
                   % endif
                 %endfor
-                </select>
+                </select>※この項目は選択の必要はございません
               </td>
-            </tr>
+              </tr>
             <tr>
-              <th>
-                <label>席種</label>
-              </th>
               <td colspan="2">
                 <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
                 %for rec in stock_types:
                 <option value="${rec['id']}">${rec['name']}</option>
                 %endfor
                 </select>
+                    ※この項目は選択の必要はございません
                 <div class="stock-type-description"></div>
               </td>
             </tr>
@@ -338,6 +304,14 @@ if label is None or label is True:
                 ${self.error(form, 'sex')}
               </td>
             </tr>
+            <tr>
+              <th>旅行券の引換に関して</th>
+              <td style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
+                  ・引換場所が未定の場合は、エリア内の【指定引換施設】をご選択ください。<br/>
+                  ・エリアも未定の場合は、【特定引換施設】をご選択ください。<br/>
+                  ・なお、引換場所は、<a href="https://ehime.tstar.jp/orderreview">『購入の確認』</a>ページから編集することが可能です。
+              </td>
+            </tr>
             % for field in form['extra']._contained_form:
             % if not field.short_name in {'member_type'}:
             <tr>
@@ -350,15 +324,6 @@ if label is None or label is True:
             </tr>
             % endif
             % endfor
-            <tr class="settlementSelectEnd">
-              <th>メモ欄</th>
-              <td>
-                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
-                <div style="font-size: 90%;">
-                ※ご質問を入力されても返信はいたしかねます。<br>
-                </div>
-              </td>
-            </tr>
           </table>
         </div>
       </div>
