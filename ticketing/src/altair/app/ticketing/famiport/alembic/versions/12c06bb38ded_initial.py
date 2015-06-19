@@ -584,6 +584,13 @@ def create_schemas():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         )
+    op.create_table(
+        'FamiPortOperator',
+        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('user_name', sa.Unicode(32), nullable=False),
+        sa.Column('password', sa.Unicode(64), nullable=False),
+        sa.Column('role', sa.Unicode(32), nullable=False)
+        )
 
 
 def seeding():
@@ -627,6 +634,7 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_table('FamiPortOperator')
     op.drop_table('FamiPortReceipt')
     op.drop_table('FamiPortShop')
     op.drop_table('FamiPortRefundEntryResponse')
