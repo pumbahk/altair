@@ -12,6 +12,7 @@ from dateutil.parser import parse as parsedatetime
 from altair.sqlahelper import get_global_db_session
 from ..accounting.sales_report import build_sales_record
 from ..datainterchange.api import get_famiport_file_manager_factory
+from ..datainterchange.utils import make_room
 
 def parse_start_and_end_date(args, now):
     start_date = None
@@ -85,11 +86,6 @@ def main(argv=sys.argv):
     base_dir = os.path.join(pending_dir, datetime_dir_name)
     from ..models import FamiPortRefundEntry
 
-    def make_room(dir_, serial=0):
-        if os.path.exists(dir_):
-            next_dir = '%s.%d' % (base_dir, serial)
-            make_room(next_dir, serial + 1)
-            os.rename(dir_, next_dir)
     make_room(base_dir)
     try:
         os.mkdir(base_dir)

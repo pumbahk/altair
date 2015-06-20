@@ -1,11 +1,15 @@
 # -*- coding:utf-8 -*-
 
+import os
+import re
+import logging
+from io import BytesIO
+from datetime import datetime
 from zope.interface import implementer, provider
 from ftplib_ import FTP_TLS_ as FTP_TLS
 from enum import IntEnum
-import logging, os
-from datetime import datetime
 from .interfaces import IFileSender, IFileSenderFactory, IFamiPortFileManagerFactory
+from .utils import make_room
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +18,7 @@ logger = logging.getLogger(__name__)
 class FTPSFileSender(object):
     FTP_TLS = FTP_TLS
 
-    def __init__(self, host, port=21, timeout=600, username=None, password=None, ca_certs = None, passive=True, debuglevel=1):
+    def __init__(self, host, port=21, timeout=600, username=None, password=None, ca_certs = None, passive=True, debuglevel=0):
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -105,11 +109,17 @@ class FamiPortFileManagerFactory(object):
 
 
 def create_ftps_file_sender_from_settings(settings, prefix='altair.famiport.send_file.ftp'):
-    host = settings['%s.host' % prefix]
+    host_port_pair = settings['%s.host' % prefix]
+    m = re.match(ur'^(?:([^:]+)(?::([^:]+))?|(\[[^]]+\])(?::([^:]+))?)$', host_port_pair)
+    try:
+        host = m.group(1) or m.group(3)
+        port = int(m.group(2) or m.group(4) or 990)
+    except:
+        raise ValueError('invalid host name: %s' % host_port_pair)
     username = settings['%s.username' % prefix]
     password = settings['%s.password' % prefix]
     certificate = settings.get('%s.certificate' % prefix, None)
-    return FTPSFileSender(host=host, username=username, password=password, ca_certs=certificate)
+    return FTPSFileSender(host=host, port=port, username=username, password=password, ca_certs=certificate)
 
 
 class FamiPortFileManager(object):
@@ -121,50 +131,54 @@ class FamiPortFileManager(object):
         self.sent_dir = sent_dir
         self.pending_dir = pending_dir
         self.upload_dir_path = upload_dir_path
-        self.file_path = None
 
     def send_staged_file(self):
         latest_stage_dir = self.get_latest_stage_dir(datetime.now())
+        if latest_stage_dir is None:
+            logger.info('nothing to do') 
+            return
 
         filename = self.filename
-        self.file_path = os.path.join(latest_stage_dir, filename)
+        file_path = os.path.join(latest_stage_dir, filename)
 
         sender = self.sender
-        if not os.path.exists(self.file_path):
-            raise Exception('%s does not exist' % self.file_path)
-        else:
-            with open(self.file_path) as file:
+        if not os.path.exists(file_path):
+            raise Exception('%s does not exist' % file_path)
+        try:
+            with open(file_path) as file:
                 if self.upload_dir_path is not None:
                     path = os.path.join(self.upload_dir_path, filename)
                 else:
                     path = filename
                 sender.send_file(path, file)
 
-        # 転送完了フラグファイルの送信
-        transfer_complete_filename = None
-        with open (transfer_complete_filename, 'w+') as file: # Create one if not exist
-            sender.send_file(os.path.join(self.upload_dir_path, transfer_complete_filename), file)
+            # 転送完了フラグファイルの送信
+            f = BytesIO()
+            if self.upload_dir_path is not None:
+                sender.send_file(os.path.join(self.upload_dir_path, self.transfer_complete_filename), f)
+            else:
+                sender.send_file(self.transfer_complete_filename, f)
+            self.mark_as_sent(latest_stage_dir)
+        except:
+            self.mark_as_pending(latest_stage_dir)
+            raise
 
     def get_latest_stage_dir(self, now=datetime.now()):
         work_dir = os.path.join(self.stage_dir, now.strftime("%Y%m%d"))
         if not os.path.exists(work_dir):
-            raise Exception('%s does not exist' % work_dir)
+            logger.info('%s not found' % work_dir)
+            return None
         return work_dir
 
-    def mark_file_sent(self):
-        if not self.file_path or not self.file_path.startswith(self.stage_dir):
-            raise ValueError("specified file (%s) does not exist under %s" % (self.file_path, self.stage_dir))
-        vpart = os.path.dirname(self.file_path[len(self.stage_dir):]).lstrip('/')
+    def mark_as_sent(self, dir_):
+        vpart = os.path.basename(dir_)
         sent_dir = os.path.join(self.sent_dir, vpart)
-        if not os.path.exists(sent_dir):
-            os.makedirs(sent_dir)
-        os.rename(self.file_path, os.path.join(sent_dir, os.path.basename(self.file_path)))
+        make_room(sent_dir)
+        os.rename(dir_, sent_dir)
 
-    def mark_file_pending(self):
-        if not self.file_path or not self.file_path.startswith(self.stage_dir):
-            raise ValueError("specified file (%s) does not exist under %s" % (self.file_path, self.stage_dir))
-        vpart = os.path.dirname(self.file_path[len(self.stage_dir):]).lstrip('/')
-        pending_dir = os.path.join(self.pending_dir, vpart)
-        if not os.path.exists(pending_dir):
-            os.makedirs(pending_dir)
-        os.rename(self.file_path, os.path.join(pending_dir, os.path.basename(self.file_path)))
+    def mark_as_pending(self, dir_):
+        vpart = os.path.basename(dir_)
+        pending_dir= os.path.join(self.pending_dir, vpart)
+        make_room(pending_dir)
+        os.rename(dir_, pending_dir)
+

@@ -18,13 +18,12 @@ def main(argv=sys.argv):
     registry = env['registry']
 
     refund_file_manager = get_famiport_file_manager_factory(registry)('refund')
+    logger.info("sending refund file.")
     try:
-        logger.info("sending refund file.")
         refund_file_manager.send_staged_file()
-        refund_file_manager.mark_file_sent()
     except:
-        logger.exception(u'an error occurred during sending refund file')
-        refund_file_manager.mark_file_pending()
+        logger.exception('error occurred during sending file.')
+        raise
 
 if __name__ == u"__main__":
     main(sys.argv)

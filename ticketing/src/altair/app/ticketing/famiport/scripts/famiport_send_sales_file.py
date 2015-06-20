@@ -18,12 +18,12 @@ def main(argv=sys.argv):
     registry = env['registry']
 
     sales_file_manager = get_famiport_file_manager_factory(registry)('sales')
+    logger.info("sending sales file.")
     try:
-        logger.info("sending sales file.")
         sales_file_manager.send_staged_file()
-        sales_file_manager.mark_file_sent()
     except:
-        sales_file_manager.mark_file_pending()
+        logger.exception('error occurred during sending file.')
+        raise
 
 if __name__ == u"__main__":
     main(sys.argv)
