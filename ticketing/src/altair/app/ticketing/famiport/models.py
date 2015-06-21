@@ -12,6 +12,7 @@ from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
+from sqlalchemy.ext.associationproxy import association_proxy
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from .exc import FamiPortNumberingError
@@ -676,7 +677,6 @@ class FamiPortOrder(Base, WithTimestamp):
             shop_code=store_code,
             famiport_order_id=self.id,
             barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
-            exchange_number=FamiPortExchangeTicketNoSequence.get_next_value(session),
             )
         session.add(famiport_receipt)
         session.commit()
@@ -803,7 +803,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     void_at = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
     barcode_no = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
-    exchange_number = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
+    exchange_number = association_proxy('famiport_order', 'reserve_number')
 
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')

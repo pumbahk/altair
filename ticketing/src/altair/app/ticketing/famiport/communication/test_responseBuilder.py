@@ -175,7 +175,6 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
                     barcode_no=self.barcode_no_cash_on_delivery,
                     shop_code=self.famiport_shop.code,
                     ),
@@ -229,7 +228,6 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
                     barcode_no=self.barcode_no_payment,
                     shop_code=self.famiport_shop.code,
                     ),
@@ -283,7 +281,6 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
                     barcode_no=self.barcode_no_payment_only,
                     shop_code=self.famiport_shop.code,
                     ),
@@ -953,7 +950,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.koenDate, u'201507011900')
 
     def test_payment_earlier_date(self):
-        # 前払後日
+        """前払後日"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortPaymentTicketingRequest(
             storeCode=u'000009',
@@ -1070,7 +1067,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.koenDate, u'201507011900')
 
     def test_ticketing_for_paid_order_earlier(self):
-        # 前払後日の発券
+        u"""前払後日の発券"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
 
         self.famiport_order_payment.paid_at = datetime(2015, 5, 21, 13, 40, 1)

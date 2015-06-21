@@ -132,7 +132,6 @@ class InquiryTest(FamiPortAPIViewTest):
             ticketing_end_at=ticketing_end_at,
             playguide_id=1,
             playguide_name=u'クライアント１',
-            exchange_number=u'4310000000002',
             total_amount=670,
             ticket_payment=0,
             system_fee=500,
@@ -254,7 +253,6 @@ class PaymentTest(FamiPortAPIViewTest):
         receipt.shop_code = u'99999'
         receipt.can_cancel.return_value = True
         receipt.barcode_no = u'1000000000000'
-        receipt.exchange_number = u'4310000000002'
 
         get_by_barCodeNo.return_value = DummyModel(
             famiport_order_identifier=u'430000000002',
@@ -264,7 +262,6 @@ class PaymentTest(FamiPortAPIViewTest):
             issued_at=None,
             ticketing_start_at=ticketing_start_at,
             ticketing_end_at=ticketing_end_at,
-            exchange_number=u'4310000000002',
             barcode_number=u'1000000000000',
             total_amount=200,
             ticket_payment=0,

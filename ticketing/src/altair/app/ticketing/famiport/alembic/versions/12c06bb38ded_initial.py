@@ -571,7 +571,6 @@ def create_schemas():
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
-        sa.Column('exchange_number', sa.String(13), nullable=False),
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
         sa.Column('shop_code', sa.Unicode(7), nullable=False, server_default=u''),
         sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時
