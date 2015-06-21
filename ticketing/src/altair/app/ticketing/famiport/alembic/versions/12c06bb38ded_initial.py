@@ -570,6 +570,7 @@ def create_schemas():
     op.create_table(
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('type', sa.Integer, nullable=False),
         sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
         sa.Column('shop_code', sa.Unicode(7), nullable=False, server_default=u''),

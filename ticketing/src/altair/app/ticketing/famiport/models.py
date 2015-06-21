@@ -169,6 +169,7 @@ class FamiPortGenre2(Base, WithTimestamp):
 
     genre_1 = orm.relationship('FamiPortGenre1')
 
+
 class FamiPortVenue(Base, WithTimestamp):
     __tablename__ = 'FamiPortVenue'
 
@@ -671,9 +672,10 @@ class FamiPortOrder(Base, WithTimestamp):
             return receipt.shop_code
         return None
 
-    def create_receipt(self, store_code):
+    def create_receipt(self, store_code, type_):
         session = object_session(self)
         famiport_receipt = FamiPortReceipt(
+            type=type_,
             shop_code=store_code,
             famiport_order_id=self.id,
             barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
@@ -795,7 +797,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     __tablename__ = 'FamiPortReceipt'
 
     id = sa.Column(Identifier, primary_key=True)
-
+    type = sa.Column(sa.Integer, nullable=False)
     inquired_at = sa.Column(sa.DateTime(), nullable=True)  # 予約照会が行われた日時
     payment_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 支払/発券要求が行われた日時
     customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
