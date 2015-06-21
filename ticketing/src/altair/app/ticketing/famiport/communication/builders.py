@@ -163,13 +163,13 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
-                logger.error(u"不正な利用日時です (%s)" % famiport_reservation_inquiry_request.ticketingDate)
+                logger.exception(u"不正な利用日時です (%s)" % famiport_reservation_inquiry_request.ticketingDate)
                 raise
 
             try:
                 famiport_order = FamiPortOrder.get_by_reserveNumber(reserveNumber, authNumber, session=session)
             except NoResultFound:
-                logger.error(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
+                logger.exception(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
                 replyCode = ReplyCodeEnum.SearchKeyError.value
                 famiport_order = None
 
@@ -341,13 +341,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
-                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_request.ticketingDate)
+                logger.exception(u"不正な利用日時です (%s)" % famiport_payment_ticketing_request.ticketingDate)
                 raise
 
             try:
                 famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
             except NoResultFound:
-                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                logger.exception(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
                 famiport_order = None
                 resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
@@ -551,13 +551,13 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
-                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_completion_request.ticketingDate)
+                logger.exception(u"不正な利用日時です (%s)" % famiport_payment_ticketing_completion_request.ticketingDate)
                 raise
 
             try:
                 famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
             except NoResultFound:
-                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                logger.exception(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
                 famiport_order = None
 
             if famiport_order is not None:
@@ -576,7 +576,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     logger.error(u'settlement error (%s)' % receipt.shop_code)
                 else:
                     # 正常系
-                    if famiport_receipt.type == FamiPortOrderType.CashOnDelivery.value:
+                    if receipt.type == FamiPortOrderType.CashOnDelivery.value:
                         if famiport_order.issued_at is not None or \
                            famiport_order.paid_at is not None:
                             resultCode = ResultCodeEnum.OtherError.value
@@ -586,7 +586,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             famiport_order.paid_at = now
                             receipt.completed_at = now
                             session.commit()
-                    elif famiport_receipt.type == FamiPortOrderType.Payment.value:
+                    elif receipt.type == FamiPortOrderType.Payment.value:
                         if famiport_order.paid_at is None:
                             # 前払後日の支払
                             logger.info(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
@@ -607,7 +607,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but tickets are already issued" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
                             resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-                    elif famiport_receipt.type == FamiPortOrderType.Ticketing.value:
+                    elif receipt.type == FamiPortOrderType.Ticketing.value:
                         if famiport_order.issued_at is not None:
                             logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): ticketing requested but tickets are already issued" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
                             resultCode = ResultCodeEnum.OtherError.value
@@ -617,7 +617,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             famiport_order.issued_at = now
                             receipt.completed_at = now
                             session.commit()
-                    elif famiport_receipt.type == FamiPortOrderType.PaymentOnly.value:
+                    elif receipt.type == FamiPortOrderType.PaymentOnly.value:
                         if famiport_order.paid_at is not None:
                             logger.error(u"FamiPortOrder(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_order.type, famiport_order.id, famiport_order.reserve_number))
                             resultCode = ResultCodeEnum.OtherError.value
@@ -690,7 +690,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
-                logger.error(u"不正な利用日時です (%s)" % famiport_payment_ticketing_cancel_request.ticketingDate)
+                logger.exception(u"不正な利用日時です (%s)" % famiport_payment_ticketing_cancel_request.ticketingDate)
                 raise
 
             famiport_order = FamiPortOrder.get_by_barCodeNo(
@@ -919,13 +919,13 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                     '%Y%m%d%H%M%S'
                     )
             except ValueError:
-                logger.error(u"不正な利用日時です (%s)" % famiport_customer_information_request.ticketingDate)
+                logger.exception(u"不正な利用日時です (%s)" % famiport_customer_information_request.ticketingDate)
                 raise
 
             try:
                 famiport_order = FamiPortOrder.get_by_barCodeNo(barCodeNo, session=session)
             except NoResultFound:
-                logger.error(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                logger.exception(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
                 famiport_order = None
 
             if famiport_order is not None:
