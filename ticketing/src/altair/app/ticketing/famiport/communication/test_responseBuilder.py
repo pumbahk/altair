@@ -175,6 +175,7 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    type=FamiPortOrderType.CashOnDelivery.value,
                     barcode_no=self.barcode_no_cash_on_delivery,
                     shop_code=self.famiport_shop.code,
                     ),
@@ -228,6 +229,7 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    type=FamiPortOrderType.CashOnDelivery.value,
                     barcode_no=self.barcode_no_payment,
                     shop_code=self.famiport_shop.code,
                     ),
@@ -281,6 +283,7 @@ class FamiPortResponseBuilderTestBase(object):
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
+                    type=FamiPortOrderType.CashOnDelivery.value,
                     barcode_no=self.barcode_no_payment_only,
                     shop_code=self.famiport_shop.code,
                     ),

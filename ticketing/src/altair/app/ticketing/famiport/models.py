@@ -445,6 +445,7 @@ def screw47(x, s):
         ) \
         ^ s
 
+
 # http://www.gs1.org/how-calculate-check-digit-manually
 def calculate_gtin_cd(barcode):
     return u'%d' % (
@@ -453,6 +454,7 @@ def calculate_gtin_cd(barcode):
             for i in range(0, len(barcode))
             ) % 10
         )
+
 
 class FamiPortBarcodeNoSequence(Base):
     __tablename__ = 'FamiPortBarcodeNoSequence'
