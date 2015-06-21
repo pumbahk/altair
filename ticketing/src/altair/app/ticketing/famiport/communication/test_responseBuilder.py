@@ -940,7 +940,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210433')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -1018,7 +1018,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210433')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -1057,7 +1057,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210433')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -1097,7 +1097,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.playGuideId, u'')
         self.assertEqual(result.playGuideName, u'')
         self.assertEqual(result.orderTicketNo, None)
-        self.assertEqual(result.exchangeTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, u'4321043210433')  # reserve number
         self.assertEqual(result.ticketingStart, None)
         self.assertEqual(result.ticketingEnd, None)
         self.assertEqual(result.totalAmount, None)

@@ -469,6 +469,8 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 resultCode = str_or_blank(resultCode)
                 replyCode = str_or_blank(replyCode)
                 replyClass = str_or_blank(replyClass)
+                ticketingStart = str_or_blank(ticketingStart)
+                ticketingEnd = str_or_blank(ticketingEnd)
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     resultCode=resultCode,
