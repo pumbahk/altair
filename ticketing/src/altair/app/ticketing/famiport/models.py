@@ -776,7 +776,6 @@ class FamiPortReceipt(Base, WithTimestamp):
     def can_payment(self, now):
         return self.inquired_at \
             and not self.payment_request_received_at \
-            and not self.customer_request_received_at \
             and not self.completed_at \
             and not self.void_at
 
