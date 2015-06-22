@@ -16,5 +16,5 @@ Famiポート運用ツール
 
 ```
 >>> from altair.app.ticketing.famiport.optool.api import create_user
->>> create_user(request, 'admin', 'administrator')
+>>> create_user(request, 'admin', 'admin', 'administrator')
 ```
