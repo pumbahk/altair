@@ -87,14 +87,15 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             famiport_receipt.completed_at < end_date)
         applicable_for_invalidated_entry = False
         if famiport_receipt.canceled_at is not None:
-            if famiport_receipt.is_payment_receipt:
-                payment_famiport_receipt = famiport_receipt
-            if famiport_receipt.is_ticketing_receipt:
-                ticketing_famiport_receipt = famiport_receipt
             applicable_for_invalidated_entry = (
                 famiport_receipt.canceled_at >= start_date and \
                 famiport_receipt.canceled_at < end_date
                 )
+        if not applicable_for_invalidated_entry:
+            if famiport_receipt.is_payment_receipt:
+                payment_famiport_receipt = famiport_receipt
+            if famiport_receipt.is_ticketing_receipt:
+                ticketing_famiport_receipt = famiport_receipt
         # 同日の発券・払込とキャンセルは打消し合う
         if applicable_for_valid_entry ^ applicable_for_invalidated_entry:
             completed_or_canceled_famiport_receipts_during_the_period.append(famiport_receipt)
@@ -133,7 +134,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             assert famiport_order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value)
             if famiport_order.issued_at is None:
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=Ticketing' % (famiport_order.id, ))
-            if ticketing_famiport_receipt == famiport_receipt:
+            if not valid or (ticketing_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.Ticketing.value,
                     processed_at=processed_at,
@@ -145,27 +146,14 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                     valid=valid,
                     **basic_dict
                     )
-            else:
-                # 再発券で、発券手数料を徴収済
-                dict_ = dict(
-                    type=SalesReportEntryType.Ticketing.value,
-                    processed_at=processed_at,
-                    settlement_date=processed_at.date(),
-                    ticket_payment=decimal.Decimal(0),
-                    ticketing_fee=decimal.Decimal(0),
-                    other_fees=decimal.Decimal(0),
-                    shop=famiport_receipt.shop_code,
-                    valid=valid,
-                    **basic_dict
-                    )
-            dicts.append(dict_)
+                dicts.append(dict_)
         elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
             assert famiport_order.type == FamiPortOrderType.CashOnDelivery.value
             if famiport_order.paid_at is None:
                 logger.warning('FamiPortOrder(id=%d) paid_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
             if famiport_order.issued_at is None:
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
-            if payment_famiport_receipt == famiport_receipt:
+            if not valid or (payment_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.CashOnDelivery.value,
                     processed_at=processed_at,
@@ -177,20 +165,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                     valid=valid,
                     **basic_dict
                     )
-            else:
-                # 支払済なので 0 円決済にする
-                dict_ = dict(
-                    type=SalesReportEntryType.CashOnDelivery.value,
-                    processed_at=processed_at,
-                    settlement_date=processed_at.date(),
-                    ticket_payment=decimal.Decimal(0),
-                    ticketing_fee=decimal.Decimal(0),
-                    other_fees=decimal.Decimal(0),
-                    shop=famiport_receipt.shop_code,
-                    valid=valid,
-                    **basic_dict
-                    )
-            dicts.append(dict_)
+                dicts.append(dict_)
         else:
             raise AssertionError('invalid value for FamiPortReceipt.type: %d' % famiport_receipt.type)
     return dicts
