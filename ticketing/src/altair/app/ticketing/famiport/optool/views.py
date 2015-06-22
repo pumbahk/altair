@@ -27,7 +27,9 @@ class FamiPortOpLoginView(object):
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
         return_url = self.request.params.get('return_url', '')
-        return dict(form=LoginForm(), return_url=return_url)
+        form = LoginForm()
+        form.user_name(class_='form-control', placeholder='ID')
+        return dict(form=form, return_url=return_url)
         
     @view_config(route_name='login', request_method='POST', renderer='login.mako')
     def post(self):
