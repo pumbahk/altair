@@ -872,6 +872,8 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     shop_code = sa.Column(sa.Unicode(6), nullable=False, default=u'')
 
+    report_generated_at = sa.Column(sa.DateTime(), nullable=True)
+
     @hybrid_property
     def is_payment_receipt(self):
         return (self.type == FamiPortReceiptType.Payment.value) | \

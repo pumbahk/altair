@@ -106,6 +106,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
         )
 
     dicts = []
+    reported_famiport_receipts = []
     for famiport_receipt in completed_or_canceled_famiport_receipts_during_the_period:
         processed_at = famiport_receipt.canceled_at or famiport_receipt.completed_at
         valid = famiport_receipt.canceled_at is None or (famiport_receipt.canceled_at >= end_date)
@@ -120,6 +121,8 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 logger.warning('FamiPortOrder(id=%d) paid_at=None while FamiPortReceipt.type=Payment' % (famiport_order.id, ))
             dict_ = dict(
                 type=SalesReportEntryType.Payment.value,
+                unique_key=unique_key,
+                management_number=management_number,
                 processed_at=processed_at,
                 settlement_date=processed_at.date(),
                 ticket_payment=famiport_order.ticket_payment,
@@ -130,6 +133,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 **basic_dict
                 )
             dicts.append(dict_)
+            reported_famiport_receipts.append(famiport_receipt)
         elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
             assert famiport_order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value)
             if famiport_order.issued_at is None:
@@ -137,6 +141,8 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             if not valid or (ticketing_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.Ticketing.value,
+                    unique_key=unique_key,
+                    management_number=management_number,
                     processed_at=processed_at,
                     settlement_date=processed_at.date(),
                     ticket_payment=decimal.Decimal(0),
@@ -147,6 +153,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                     **basic_dict
                     )
                 dicts.append(dict_)
+                reported_famiport_receipts.append(famiport_receipt)
         elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
             assert famiport_order.type == FamiPortOrderType.CashOnDelivery.value
             if famiport_order.paid_at is None:
@@ -156,6 +163,8 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             if not valid or (payment_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.CashOnDelivery.value,
+                    unique_key=unique_key,
+                    management_number=management_number,
                     processed_at=processed_at,
                     settlement_date=processed_at.date(),
                     ticket_payment=famiport_order.ticket_payment,
@@ -166,14 +175,17 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                     **basic_dict
                     )
                 dicts.append(dict_)
+                reported_famiport_receipts.append(famiport_receipt)
         else:
             raise AssertionError('invalid value for FamiPortReceipt.type: %d' % famiport_receipt.type)
-    return dicts
+    return dicts, reported_famiport_receipts
 
 def build_sales_record(f, famiport_orders, start_date, end_date, **kwargs):
     marshaller = make_marshaller(f, **kwargs)
+    reported_famiport_receipts = []
     for order in famiport_orders:
-        records = gen_records_from_order_model(order, start_date, end_date)
+        records, reported_famiport_receipts_for_order = gen_records_from_order_model(order, start_date, end_date)
         for record in records:
             marshaller(record)
-
+        reported_famiport_receipts.extend(reported_famiport_receipts_for_order)
+    return reported_famiport_receipts

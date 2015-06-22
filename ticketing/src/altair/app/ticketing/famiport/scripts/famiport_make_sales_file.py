@@ -93,7 +93,7 @@ def main(argv=sys.argv):
     except Exception as e:
         logger.error('failed to create directory %s (%s)' % (base_dir, e.message))
     path = os.path.join(base_dir, filename)
-    from ..models import FamiPortOrder
+    from ..models import FamiPortOrder, FamiPortReceipt
     try:
         orders = session.query(FamiPortOrder) \
             .options(orm.joinedload(FamiPortOrder.famiport_receipts)) \
@@ -112,7 +112,9 @@ def main(argv=sys.argv):
                 ) \
             .all()
         with open(path, 'w') as f:
-            build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
+            receipts = build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
+            for receipt in receipts:
+                receipt.report_generated_at = now
             for order in orders:
                 order.report_generated_at = now
             session.commit()

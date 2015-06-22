@@ -109,7 +109,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 0)
 
     def test_cash_on_delivery_paid(self):
@@ -136,7 +136,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
 
     def test_payment_unpaid(self):
@@ -165,7 +165,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 0)
 
     def test_payment_paid(self):
@@ -196,7 +196,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
 
     def test_payment_paid_and_issued(self):
@@ -228,7 +228,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 2)
 
     def test_canceled(self):
@@ -259,7 +259,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 0)
 
     def test_canceled_reissued(self):
@@ -290,7 +290,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], True)
 
@@ -322,7 +322,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], True)
 
@@ -353,14 +353,14 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], True)
 
-        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 2))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 2))
         self.assertEqual(len(records), 0)
 
-        records = gen_records_from_order_model(famiport_order, datetime(2015, 1, 1), datetime(2015, 1, 2))
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2015, 1, 1), datetime(2015, 1, 2))
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], False)
 
