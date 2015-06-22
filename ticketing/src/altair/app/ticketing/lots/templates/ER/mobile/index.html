@@ -22,10 +22,6 @@ ${h.japanese_datetime(sales_segment.end_at)}
 ${u"{0}回".format(lot.entry_limit)}
 </div>
 % endif
-<%mobile:form_header>受付希望数</%mobile:form_header>
-<div>
-一度の申込で第${lot.limit_wishes}希望まで<br />
-</div>
 % if lot.description:
 <%mobile:form_header>注意事項</%mobile:form_header>
 <div>

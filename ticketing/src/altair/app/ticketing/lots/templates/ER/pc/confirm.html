@@ -9,18 +9,16 @@
   <input type="hidden" name="token" value="${token}" />
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_hope.gif')}" alt="選択商品" width="97" height="30" /></h2>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
-          <p class="header"><strong>第${wish.wish_order + 1}希望</strong>${wish.performance.name}</p>
+          <p class="header">
           <table summary="チケット購入の絞り込み">
             <tr>
-              <th><label>公演日・会場</label></th>
-              <td>${h.performance_date_label(wish.performance)}</td>
             </tr>
             <tr class="settlementSelectEnd">
-              <th>希望内容と手数料</th>
+              <th>購入内容と手数料</th>
               <td>
                 <dl class="cost-summary">
                 %for i, lot_product in enumerate(wish.products):
