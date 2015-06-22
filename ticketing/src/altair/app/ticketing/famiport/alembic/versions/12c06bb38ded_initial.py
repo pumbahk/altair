@@ -586,7 +586,7 @@ def create_schemas():
         )
     op.create_table(
         'FamiPortOperator',
-        sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('user_name', sa.Unicode(32), nullable=False),
         sa.Column('password', sa.Unicode(96), nullable=False),
         sa.Column('role', sa.Unicode(32), nullable=False)
