@@ -4,7 +4,6 @@ from altair.sqlahelper import get_global_db_session
 from pyramid.testing import setUp, tearDown
 from ..testing import _setup_db, _teardown_db
 
-
 class RefundReportMarshallerTest(unittest.TestCase):
     def test_basic(self):
         from .refund_report import make_marshaller
@@ -94,8 +93,18 @@ class RefundReportGenRecordTest(unittest.TestCase):
 
     def test_gen(self):
         from datetime import datetime
+        from decimal import Decimal
         from .refund_report import gen_record_from_refund_model
-        from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
+        from ..models import (
+            FamiPortRefundType,
+            FamiPortRefund,
+            FamiPortRefundEntry,
+            FamiPortOrder,
+            FamiPortReceipt,
+            FamiPortTicket,
+            FamiPortOrderType,
+            FamiPortReceiptType,
+            )
         refund = FamiPortRefund(
             type=FamiPortRefundType.Type1.value,
             start_at=datetime(2015, 1, 1, 10, 0, 0),
@@ -106,18 +115,39 @@ class RefundReportGenRecordTest(unittest.TestCase):
         refund_entry = FamiPortRefundEntry(
             famiport_refund=refund,
             serial=refund.last_serial + 1,
-            ticket_payment=100,
-            ticketing_fee=10,
-            system_fee=20,
-            other_fees=30,
+            ticket_payment=Decimal(100),
+            ticketing_fee=Decimal(10),
+            other_fees=Decimal(20),
             shop_code=u'0000000',
             famiport_ticket=FamiPortTicket(
+                template_code=u'TTXX000000',
+                barcode_number=u'0000000000000',
+                data=u'',
                 famiport_order=FamiPortOrder(
+                    type=FamiPortOrderType.CashOnDelivery.value,
+                    order_no=u'XX0000000000',
+                    client_code=u'0',
                     famiport_order_identifier=u'123000000000',
-                    famiport_sales_segment=self.famiport_sales_segment
+                    total_amount=Decimal(130),
+                    ticket_payment=Decimal(100),
+                    ticketing_fee=Decimal(10),
+                    system_fee=Decimal(20),
+                    customer_name=u'',
+                    customer_phone_number=u'',
+                    famiport_sales_segment=self.famiport_sales_segment,
+                    famiport_receipts=[
+                        FamiPortReceipt(
+                            type=FamiPortReceiptType.CashOnDelivery.value,
+                            famiport_order_identifier=u'123000000001',
+                            shop_code=u'0000000',
+                            barcode_no=u'0000000000001'
+                            )
+                        ]
                     )
                 )
             )
+        self.session.add(refund_entry)
+        self.session.flush()
         gen_record_from_refund_model(refund_entry)
 
 
@@ -180,7 +210,16 @@ class BuildRefundReportFileTest(unittest.TestCase):
         from io import BytesIO
         from decimal import Decimal
         from .refund_report import build_refund_file
-        from ..models import FamiPortRefundType, FamiPortRefund, FamiPortRefundEntry, FamiPortOrder, FamiPortTicket
+        from ..models import (
+            FamiPortRefundType,
+            FamiPortRefund,
+            FamiPortRefundEntry,
+            FamiPortOrder,
+            FamiPortReceipt,
+            FamiPortTicket,
+            FamiPortOrderType,
+            FamiPortReceiptType,
+            )
         refunds = [
             FamiPortRefund(
                 type=FamiPortRefundType.Type1.value,
@@ -197,23 +236,42 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 serial=refund.last_serial + i,
                 ticket_payment=Decimal(100),
                 ticketing_fee=Decimal(10),
-                system_fee=Decimal(20),
-                other_fees=Decimal(30),
+                other_fees=Decimal(20),
                 shop_code=u'0000000',
                 famiport_ticket=FamiPortTicket(
+                    template_code=u'TTXX000000',
+                    barcode_number=u'0000000000000',
+                    data=u'',
+                    issued_at=datetime(2014, 12, 31),
                     famiport_order=FamiPortOrder(
+                        type=FamiPortOrderType.CashOnDelivery.value,
+                        order_no=u'XX0000000000',
+                        client_code=u'0',
                         famiport_order_identifier=u'123000000000',
                         famiport_sales_segment=self.famiport_sales_segment,
+                        total_amount=Decimal(130),
+                        ticket_payment=Decimal(100),
+                        ticketing_fee=Decimal(10),
+                        system_fee=Decimal(20),
+                        customer_name=u'',
+                        customer_phone_number=u'',
                         created_at=datetime(2014, 12, 31),
-                        shop_code=u'000000'
-                        ),
-                    barcode_number=u'0000000000000',
-                    issued_at=datetime(2014, 12, 31)
+                        famiport_receipts=[
+                            FamiPortReceipt(
+                                type=FamiPortReceiptType.CashOnDelivery.value,
+                                famiport_order_identifier=u'123000000002',
+                                shop_code=u'000000',
+                                barcode_no=u'0000000000002'
+                                )
+                            ],
+                        )
                     )
                 )
             for refund in refunds
             for i in range(0, 10)
             ]
+        self.session.add_all(refund_entries)
+        self.session.flush()
         f = BytesIO()
         eor = '\n'
         build_refund_file(f, refund_entries, eor=eor)
