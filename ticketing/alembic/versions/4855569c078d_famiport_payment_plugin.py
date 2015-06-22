@@ -2,14 +2,14 @@
 """famiport_payment_plugin
 
 Revision ID: 4855569c078d
-Revises: 569b8783f4f9
+Revises: 3269e5ab0f4e
 Create Date: 2015-04-09 00:37:48.715650
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4855569c078d'
-down_revision = '569b8783f4f9'
+down_revision = '3269e5ab0f4e'
 
 from alembic import op
 import sqlalchemy as sa
