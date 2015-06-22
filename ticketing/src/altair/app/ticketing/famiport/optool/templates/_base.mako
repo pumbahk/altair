@@ -12,6 +12,7 @@
 </head>
 <body>
   <div class="container">
+      <!-- header global navigation -->
       % if request.authenticated_userid:
         <%include file="/_navigation.mako" />
       % endif
@@ -29,6 +30,10 @@
       <div>
         ${next.body()}
       </div>
+      <footer style="text-align:center;">
+          <div>&copy; 2012 TicketStar Inc.</div>
+          <div>version =</div>
+      </footer>
   </div>
 </body>
 </html>

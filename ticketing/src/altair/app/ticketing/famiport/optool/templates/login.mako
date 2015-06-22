@@ -1,5 +1,10 @@
 <%inherit file="/_base.mako" />
 <%block name="title">ログイン</%block>
+<style>
+    body {
+        background-color: #eee;
+    }
+</style>
 
 <form class="form-signin" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST">
     <h2 class="form-signin-heading">プレイガイド様名</h2>
@@ -17,7 +22,3 @@
     </div>
     <button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
 </form>
-<footer style="text-align:center;">
-    <div>&copy; 2012 TicketStar Inc.</div>
-    <div>version =</div>
-</footer>
