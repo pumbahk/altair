@@ -356,6 +356,26 @@ def submit_to_downstream_sync(request, session, tenant, event):
     assert tenant.organization_id == event.organization_id
     for altair_famiport_performance_group in session.query(AltairFamiPortPerformanceGroup).filter_by(event_id=event.id):
         now = datetime.now()
+
+        try:
+            get_famiport_venue_by_userside_id(
+                request,
+                tenant.code,
+                altair_famiport_performance_group.altair_famiport_venue.site_id
+                )
+        except FamiPortAPINotFoundError:
+            prefecture = resolve_famiport_prefecture_by_name(request, altair_famiport_performance_group.altair_famiport_venue.site.prefecture)
+            result = create_or_update_famiport_venue(
+                request,
+                client_code=tenant.code,
+                id=None,
+                userside_id=altair_famiport_performance_group.altair_famiport_venue.site_id,
+                name=altair_famiport_performance_group.altair_famiport_venue.site.name,
+                name_kana=u'',
+                prefecture=prefecture,
+                update_existing=False
+                )
+            altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id = result['venue_id']
         if altair_famiport_performance_group.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
             logger.info('AltairFamiPortPerformanceGroup(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance_group.id)
             continue
