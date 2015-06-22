@@ -588,7 +588,7 @@ def create_schemas():
         'FamiPortOperator',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('user_name', sa.Unicode(32), nullable=False),
-        sa.Column('password', sa.Unicode(64), nullable=False),
+        sa.Column('password', sa.Unicode(96), nullable=False),
         sa.Column('role', sa.Unicode(32), nullable=False)
         )
 
