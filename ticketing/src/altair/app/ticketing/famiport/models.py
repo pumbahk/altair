@@ -729,9 +729,9 @@ class FamiPortOrder(Base, WithTimestamp):
         else:
             if self.type == FamiPortOrderType.CashOnDelivery.value:
                 receipt_type = FamiPortReceiptType.CashOnDelivery.value
-            elif type_ in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
+            elif self.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
                 receipt_type = FamiPortReceiptType.Payment.value
-            elif type_ == FamiPortOrderType.Ticketing.value:
+            elif self.type == FamiPortOrderType.Ticketing.value:
                 receipt_type = FamiPortReceiptType.Ticketing.value
             else:
                 raise AssertionError('never get here')
