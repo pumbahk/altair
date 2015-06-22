@@ -1,22 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Famiport</title>
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=1.0" />
-  <meta charset="UTF-8" />
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-  <link href="signin.css" rel="stylesheet">
-  <link href="search.css" rel="stylesheet">
-  <script src="jquery-1.11.3.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-  <style media="screen">
-    body {
-      background-color: #FFF;
-    }
-  </style>
-</head>
+<%include file="header.mako"/>
 
 <body>
   <div class="container">
@@ -24,7 +9,7 @@
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#"><img src="famiport_logo.jpg" style="width:150px;"/></a>
+          <a class="navbar-brand" href="#"><img src="${request.static_url('altair.app.ticketing.famiport.optool:static/images/famiport_logo.jpg')}" style="width:150px;"/></a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
