@@ -15,6 +15,8 @@ from .models import (
     FamiPortPerformanceType,
     FamiPortPrefecture,
     FamiPortReceipt,
+    FamiPortOrderType,
+    FamiPortReceiptType,
     FamiPortSalesSegment,
     FamiPortGenre1,
     FamiPortGenre2,
@@ -104,6 +106,20 @@ def famiport_event_dict(famiport_event):
         )
 
 def famiport_order_to_dict(famiport_order):
+    reserve_number = None
+    exchange_number = None
+    for famiport_receipt in famiport_order.famiport_receipts:
+        if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
+            reserve_number = famiport_receipt.reserve_number
+        elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
+            exchange_number = famiport_receipt.reserve_number
+        else:
+            raise AssertionError('?')
+    if famiport_order.type == FamiPortOrderType.Ticketing.value:
+        reserve_number = exchange_number
+    elif famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
+        exchange_number = reserve_number
+
     retval = dict(
         order_no=famiport_order.order_no,
         famiport_order_identifier=famiport_order.famiport_order_identifier,
@@ -122,12 +138,8 @@ def famiport_order_to_dict(famiport_order):
         paid_at=famiport_order.paid_at,
         issued_at=famiport_order.issued_at,
         canceled_at=famiport_order.canceled_at,
-        famiport_receipts=[
-            dict(
-                reserve_number=famiport_receipt.reserve_number
-                )
-            for famiport_receipt in famiport_order.famiport_receipts
-            ],
+        reserve_number=reserve_number,
+        exchange_number=exchange_number,
         famiport_tickets=[
             dict(
                 type=famiport_ticket.type,
