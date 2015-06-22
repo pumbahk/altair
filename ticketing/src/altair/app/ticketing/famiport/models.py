@@ -600,10 +600,29 @@ class FamiPortOrder(Base, WithTimestamp):
         )
     famiport_client = orm.relationship('FamiPortClient')
 
+    completed_famiport_receipts = orm.relationship(
+        'FamiPortReceipt',
+        primaryjoin=lambda: (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & (FamiPortReceipt.completed_at != None)
+        )
+
+    payment_famiport_receipt = orm.relationship(
+        'FamiPortReceipt',
+        uselist=False,
+        primaryjoin=lambda: \
+            (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & \
+            FamiPortReceipt.is_payment_receipt & \
+            (FamiPortReceipt.void_at == None) & \
+            (FamiPortReceipt.canceled_at == None)
+        )
+
     ticketing_famiport_receipt = orm.relationship(
         'FamiPortReceipt',
         uselist=False,
-        primaryjoin=lambda: (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & (FamiPortReceipt.type.in_((FamiPortReceiptType.Ticketing.value, FamiPortReceiptType.CashOnDelivery.value)))
+        primaryjoin=lambda:\
+            (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & \
+            FamiPortReceipt.is_ticketing_receipt & \
+            (FamiPortReceipt.void_at == None) & \
+            (FamiPortReceipt.canceled_at == None)
         )
 
     @property
@@ -772,6 +791,16 @@ class FamiPortReceipt(Base, WithTimestamp):
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
 
     shop_code = sa.Column(sa.Unicode(6), nullable=False, default=u'')
+
+    @hybrid_property
+    def is_payment_receipt(self):
+        return (self.type == FamiPortReceiptType.Payment.value) | \
+               (self.type == FamiPortReceiptType.CashOnDelivery.value)
+
+    @hybrid_property
+    def is_ticketing_receipt(self):
+        return (self.type == FamiPortReceiptType.Ticketing.value) | \
+               (self.type == FamiPortReceiptType.CashOnDelivery.value)
 
     def can_payment(self, now):
         return self.inquired_at \

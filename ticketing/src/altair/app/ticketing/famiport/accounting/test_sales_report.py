@@ -109,7 +109,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 0)
 
     def test_cash_on_delivery_paid(self):
@@ -136,7 +136,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
 
     def test_payment_unpaid(self):
@@ -165,7 +165,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 0)
 
     def test_payment_paid(self):
@@ -196,7 +196,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
 
     def test_payment_paid_and_issued(self):
@@ -228,7 +228,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 2)
 
     def test_canceled(self):
@@ -248,7 +248,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     famiport_order_identifier=u'1%011d' % i,
                     shop_code=u'000000',
                     completed_at=datetime(2014, 12, 31),
-                    canceled_at=datetime(2014, 12, 31) if i % 2 == 1 else None
+                    canceled_at=datetime(2014, 12, 31)
                     )
                 for i in range(0, 10)
                 ],
@@ -259,9 +259,8 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
-        self.assertEqual(len(records), 1)
-        self.assertEqual(records[0]['valid'], False)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        self.assertEqual(len(records), 0)
 
     def test_canceled_reissued(self):
         from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
@@ -280,7 +279,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     famiport_order_identifier=u'1%011d' % i,
                     shop_code=u'000000',
                     completed_at=datetime(2014, 12, 31),
-                    canceled_at=datetime(2014, 12, 31) if i % 2 == 1 else None
+                    canceled_at=datetime(2014, 12, 31) if i < 10 else None
                     )
                 for i in range(0, 11)
                 ],
@@ -291,9 +290,45 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                 ]
             )
         from .sales_report import gen_records_from_order_model
-        records = gen_records_from_order_model(famiport_order)
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], True)
 
+    def test_canceled_reissued_next_accouting_day(self):
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
+        from datetime import date, datetime
+        famiport_order = FamiPortOrder(
+            famiport_order_identifier=u'123000000000',
+            type=FamiPortOrderType.CashOnDelivery.value,
+            famiport_sales_segment=self.famiport_sales_segment,
+            created_at=datetime(2014, 12, 31),
+            paid_at=datetime(2014, 12, 31),
+            issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    barcode_no=u'1000000000000',
+                    famiport_order_identifier=u'100000000000',
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31),
+                    canceled_at=datetime(2015, 1, 1)
+                    )
+                ],
+            famiport_tickets=[
+                FamiPortTicket(
+                    barcode_number=u'0000000000000'
+                    ),
+                ]
+            )
+        from .sales_report import gen_records_from_order_model
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], True)
 
+        records = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 2))
+        self.assertEqual(len(records), 0)
+
+        records = gen_records_from_order_model(famiport_order, datetime(2015, 1, 1), datetime(2015, 1, 2))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], False)
 

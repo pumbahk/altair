@@ -96,15 +96,23 @@ def main(argv=sys.argv):
     from ..models import FamiPortOrder
     try:
         orders = session.query(FamiPortOrder) \
-            .options(orm.joinedload(FamiPortReceipt)) \
+            .options(orm.joinedload(FamiPortOrder.famiport_receipts)) \
             .join(FamiPortOrder.famiport_receipts) \
             .filter(
-                FamiPortReceipt.completed_at >= start_date,
-                FamiPortReceipt.completed_at < end_date
+                sql.or_(
+                    sql.and_(
+                        FamiPortReceipt.completed_at >= start_date,
+                        FamiPortReceipt.completed_at < end_date
+                        ),
+                    sql.and_(
+                        FamiPortReceipt.canceled_at >= start_date,
+                        FamiPortReceipt.canceled_at < end_date
+                        )
+                    )
                 ) \
             .all()
         with open(path, 'w') as f:
-            build_sales_record(f, orders, encoding=encoding, eor=eor)
+            build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
             for order in orders:
                 order.report_generated_at = now
             session.commit()
