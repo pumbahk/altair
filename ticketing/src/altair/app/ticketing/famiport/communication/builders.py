@@ -605,7 +605,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
             if famiport_receipt is not None:
                 if _strip_zfill(famiport_receipt.shop_code) != storeCode:
-                    logger.error(u'shop_code differs (%s != %s)' % (receipt.shop_code, storeCode))
+                    logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
