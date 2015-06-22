@@ -12,6 +12,7 @@ from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
+from sqlalchemy.ext.associationproxy import association_proxy
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from .exc import FamiPortNumberingError
@@ -167,6 +168,7 @@ class FamiPortGenre2(Base, WithTimestamp):
     name = sa.Column(sa.Unicode(255), nullable=False)
 
     genre_1 = orm.relationship('FamiPortGenre1')
+
 
 class FamiPortVenue(Base, WithTimestamp):
     __tablename__ = 'FamiPortVenue'
@@ -329,7 +331,6 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_ticket_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False)
     ticket_payment       = sa.Column(sa.Numeric(precision=9, scale=0))
     ticketing_fee        = sa.Column(sa.Numeric(precision=8, scale=0))
-    system_fee           = sa.Column(sa.Numeric(precision=8, scale=0))
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))
     shop_code            = sa.Column(sa.Unicode(7), nullable=False)
 
@@ -344,9 +345,13 @@ class FamiPortRefundEntry(Base, WithTimestamp):
 class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
     CashOnDelivery       = 1  # 代引き
     Payment              = 2  # 前払い（後日渡し）の前払い時
-    Ticketing            = 3  # 代済発券と前払い(後日渡し)の後日渡し時
+    Ticketing            = 3  # 代済発券
     PaymentOnly          = 4  # 前払いのみ
 
+class FamiPortReceiptType(Enum):
+    Payment              = 1  # 前払い（後日渡し）の前払い時
+    Ticketing            = 2  # 代済発券と前払い(後日渡し)の後日渡し時
+    CashOnDelivery       = 3  # 代引き
 
 def create_random_sequence_number(length):
     seq = ''
@@ -443,6 +448,7 @@ def screw47(x, s):
         ) \
         ^ s
 
+
 # http://www.gs1.org/how-calculate-check-digit-manually
 def calculate_gtin_cd(barcode):
     return u'%d' % (
@@ -451,6 +457,7 @@ def calculate_gtin_cd(barcode):
             for i in range(0, len(barcode))
             ) % 10
         )
+
 
 class FamiPortBarcodeNoSequence(Base):
     __tablename__ = 'FamiPortBarcodeNoSequence'
@@ -561,7 +568,6 @@ class FamiPortOrder(Base, WithTimestamp):
     type                         = sa.Column(sa.Integer, nullable=False)
     order_no                     = sa.Column(sa.Unicode(12), nullable=False)
     famiport_order_identifier    = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
-    shop_code                    = sa.Column(sa.Unicode(6), nullable=True)
     famiport_sales_segment_id    = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
     client_code                  = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     generation                   = sa.Column(sa.Integer, nullable=False, default=0)
@@ -580,8 +586,6 @@ class FamiPortOrder(Base, WithTimestamp):
     payment_start_at = sa.Column(sa.DateTime(), nullable=True)
     payment_due_at = sa.Column(sa.DateTime(), nullable=True)
 
-    reserve_number            = sa.Column(sa.Unicode(13), nullable=True)  # 予約番号
-
     customer_name = sa.Column(sa.Unicode(42), nullable=False)  # 氏名
     customer_name_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 氏名要求フラグ
     customer_phone_input = sa.Column(sa.Boolean, nullable=False, default=0)  # 電話番号要求フラグ
@@ -597,34 +601,15 @@ class FamiPortOrder(Base, WithTimestamp):
         )
     famiport_client = orm.relationship('FamiPortClient')
 
+    ticketing_famiport_receipt = orm.relationship(
+        'FamiPortReceipt',
+        uselist=False,
+        primaryjoin=lambda: (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & (FamiPortReceipt.type.in_((FamiPortReceiptType.Ticketing.value, FamiPortReceiptType.CashOnDelivery.value)))
+        )
+
     @property
     def performance_start_at(self):
         return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
-
-    @classmethod
-    def get_by_reserveNumber(cls, reserveNumber, authNumber=None, session=_session):
-        return session \
-            .query(cls) \
-            .filter(cls.reserve_number == reserveNumber) \
-            .filter(cls.invalidated_at == None) \
-            .one()
-            # .filter(amitoPortOrder.auth_number == authNumber) \
-
-    @classmethod
-    def get_by_barCodeNo(cls, barCodeNo, session=_session):
-        return cls.get_by_barcode_no(barCodeNo, session)
-
-    @classmethod
-    def get_by_barcode_no(cls, barCodeNo, session=_session):
-        return session \
-            .query(cls) \
-            .join(FamiPortReceipt) \
-            .filter(
-                (FamiPortReceipt.barcode_no == barCodeNo) |
-                (FamiPortReceipt.exchange_number == barCodeNo)
-                ) \
-            .filter(cls.invalidated_at.is_(None)) \
-            .one()
 
     @property
     def ticket_total_count(self):
@@ -649,38 +634,15 @@ class FamiPortOrder(Base, WithTimestamp):
     auth_number = None
 
     def get_receipt(self, barcode_no):
-        if self.type == FamiPortOrderType.Payment.value:
-            if self.paid_at is None:
-                for receipt in self.famiport_receipts:
-                    if receipt.completed_at is None and barcode_no == receipt.barcode_no:
-                        return receipt
-            else:
-                for receipt in self.famiport_receipts:
-                    if receipt.completed_at is None and barcode_no == receipt.exchange_number:
-                        return receipt
-        else:
-            for receipt in self.famiport_receipts:
-                if receipt.completed_at is None and barcode_no == receipt.barcode_no:
-                    return receipt
-        return None
+        for receipt in self.famiport_receipts:
+            if receipt.completed_at is None and receipt.void_at is None and barcode_no == receipt.barcode_no:
+                return receipt
 
     @property
     def issuing_shop_code(self):
         for receipt in self.famiport_receipts:
             return receipt.shop_code
         return None
-
-    def create_receipt(self, store_code):
-        session = object_session(self)
-        famiport_receipt = FamiPortReceipt(
-            shop_code=store_code,
-            famiport_order_id=self.id,
-            barcode_no=FamiPortOrderTicketNoSequence.get_next_value(session),
-            exchange_number=FamiPortExchangeTicketNoSequence.get_next_value(session),
-            )
-        session.add(famiport_receipt)
-        session.commit()
-        return famiport_receipt
 
 
 class FamiPortTicketType(Enum):
@@ -795,15 +757,16 @@ class FamiPortReceipt(Base, WithTimestamp):
     __tablename__ = 'FamiPortReceipt'
 
     id = sa.Column(Identifier, primary_key=True)
-
+    type = sa.Column(sa.Integer, nullable=False)
+    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False, unique=True)  # 注文ID
+    reserve_number = sa.Column(sa.Unicode(13), nullable=True, unique=True)  # 予約番号
     inquired_at = sa.Column(sa.DateTime(), nullable=True)  # 予約照会が行われた日時
     payment_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 支払/発券要求が行われた日時
     customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
-    void_at = sa.Column(sa.DateTime(), nullable=True)  # 30分voidによって無効化された日時
+    void_at = sa.Column(sa.DateTime(), nullable=True)
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
-    barcode_no = sa.Column(sa.Unicode(13), nullable=False)  # 支払番号
-    exchange_number = sa.Column(sa.Unicode(13), nullable=True)  # 引換票番号(後日予済アプリで発券するための予約番号)
+    barcode_no = sa.Column(sa.Unicode(13), nullable=True, unique=True)  # 支払番号
 
     famiport_order_id = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     famiport_order = orm.relationship('FamiPortOrder', backref='famiport_receipts')
@@ -815,31 +778,19 @@ class FamiPortReceipt(Base, WithTimestamp):
             and not self.payment_request_received_at \
             and not self.customer_request_received_at \
             and not self.completed_at \
-            and not self.void_at \
-            and not self.rescued_at
-
-    def can_customer(self, now):
-        return self.inquired_at \
-            and self.payment_request_received_at \
-            and not self.customer_request_received_at \
-            and not self.completed_at \
-            and not self.void_at \
-            and not self.rescued_at
+            and not self.void_at
 
     def can_completion(self, now):
         return self.inquired_at \
             and self.payment_request_received_at \
-            and self.customer_request_received_at \
             and not self.completed_at \
-            and not self.void_at \
-            and not self.rescued_at
+            and not self.void_at
 
     def can_cancel(self, now):
         return self.inquired_at \
             and self.payment_request_received_at \
             and not self.completed_at \
-            and not self.void_at \
-            and not self.rescued_at
+            and not self.void_at
 
     def can_rescue(self, now):
         return self.inquired_at \
@@ -847,3 +798,27 @@ class FamiPortReceipt(Base, WithTimestamp):
             and not self.completed_at \
             and not self.void_at \
             and not self.rescued_at
+
+    @classmethod
+    def get_by_reserve_number(cls, reserve_number, session=_session):
+        return session \
+            .query(cls) \
+            .options(orm.joinedload(cls.famiport_order)) \
+            .join(cls.famiport_order) \
+            .filter(cls.reserve_number == reserve_number) \
+            .filter(cls.void_at == None) \
+            .filter(FamiPortOrder.invalidated_at.is_(None)) \
+            .one()
+
+    @classmethod
+    def get_by_barcode_no(cls, barcode_no, session=_session):
+        return session \
+            .query(cls) \
+            .options(orm.joinedload(cls.famiport_order)) \
+            .join(cls.famiport_order) \
+            .filter(cls.barcode_no == barcode_no) \
+            .filter(cls.void_at == None) \
+            .filter(FamiPortOrder.invalidated_at.is_(None)) \
+            .one()
+
+

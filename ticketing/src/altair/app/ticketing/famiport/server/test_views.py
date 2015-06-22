@@ -13,7 +13,7 @@ from altair.sqlahelper import get_global_db_session
 
 class FamiPortAPIViewTest(TestCase):
     settings = {
-        'altair.famiport.send_file.ftp.host': '',
+        'altair.famiport.send_file.ftp.host': 'localhost',
         'altair.famiport.send_file.ftp.port': '',
         'altair.famiport.send_file.ftp.username': '',
         'altair.famiport.send_file.ftp.password': '',
@@ -96,15 +96,14 @@ class InquiryTest(FamiPortAPIViewTest):
     """
     url = '/famiport/reservation/inquiry'
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_reserveNumber')
-    def test_it(self, get_by_reserveNumber):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrderTicketNoSequence.get_next_value')
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_reserve_number')
+    def test_it(self, get_by_reserve_number, get_next_value):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
-        import datetime
+        from datetime import datetime
         from ..testing import generate_ticket_data
-        from ..models import FamiPortTicket, FamiPortReceipt, FamiPortShop
+        from ..models import FamiPortTicket, FamiPortReceipt, FamiPortShop, FamiPortReceiptType
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
-        receipt = FamiPortReceipt(shop_code='99999')
-        receipt.barcode_no = u'4110000000006'
         famiport_tickets = [
             FamiPortTicket(
                 barcode_number=ticket['barCodeNo'],
@@ -113,47 +112,55 @@ class InquiryTest(FamiPortAPIViewTest):
                 data=ticket['ticketData'],
             ) for ticket in list(generate_ticket_data())[:1]]
 
-        payment_start_at = datetime.datetime(2015, 3, 24, 0, 0, 0)
-        payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
-        ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
-        ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
-        performance_start_at = datetime.datetime(2015, 5, 1, 10, 0)
+        get_next_value.return_value = u'4110000000006'
+        payment_start_at = datetime(2015, 3, 24, 0, 0, 0)
+        payment_due_at = datetime(2015, 3, 31, 17, 25, 55)
+        ticketing_start_at = datetime(2015, 3, 31, 17, 25, 53)
+        ticketing_end_at = datetime(2015, 3, 31, 17, 25, 55)
+        performance_start_at = datetime(2015, 5, 1, 10, 0)
 
-        get_by_reserveNumber.return_value = DummyModel(
-            orderId='a',
-            customer_name=u'楽天太郎',
+        get_by_reserve_number.return_value = DummyModel(
+            type=FamiPortReceiptType.CashOnDelivery.value,
+            shop_code='99999',
+            can_inquiry=lambda:True,
+            completed_at=None,
+            void_at=None,
+            barcode_no=u'4110000000006',
             famiport_order_identifier=u'430000000002',
-            type=1,
-            payment_start_at=payment_start_at,
-            payment_due_at=payment_due_at,
-            paid_at=None,
-            issued_at=None,
-            ticketing_start_at=ticketing_start_at,
-            ticketing_end_at=ticketing_end_at,
-            playguide_id=1,
-            playguide_name=u'クライアント１',
-            exchange_number=u'4310000000002',
-            total_amount=670,
-            ticket_payment=0,
-            system_fee=500,
-            ticketing_fee=170,
-            ticket_total_count=len(famiport_tickets),
-            ticket_count=len(famiport_tickets),
-            koen_date=None,
-            famiport_tickets=famiport_tickets,
-            customer_name_input=0,
-            customer_phone_input=0,
-            performance_start_at=performance_start_at,
-            create_receipt=mock.Mock(return_value=receipt),
-            famiport_sales_segment=DummyModel(
-                famiport_performance=DummyModel(
-                    name=u'サンプル興行',
-                    start_at=performance_start_at,
+            famiport_order=DummyModel(
+                orderId='a',
+                customer_name=u'楽天太郎',
+                type=1,
+                payment_start_at=payment_start_at,
+                payment_due_at=payment_due_at,
+                paid_at=None,
+                issued_at=None,
+                ticketing_start_at=ticketing_start_at,
+                ticketing_end_at=ticketing_end_at,
+                playguide_id=1,
+                playguide_name=u'クライアント１',
+                total_amount=670,
+                ticket_payment=0,
+                system_fee=500,
+                ticketing_fee=170,
+                ticket_total_count=len(famiport_tickets),
+                ticket_count=len(famiport_tickets),
+                koen_date=None,
+                famiport_tickets=famiport_tickets,
+                customer_name_input=0,
+                customer_phone_input=0,
+                auth_number=u'',
+                performance_start_at=performance_start_at,
+                famiport_sales_segment=DummyModel(
+                    famiport_performance=DummyModel(
+                        name=u'サンプル興行',
+                        start_at=performance_start_at,
+                        ),
                     ),
-                ),
-            famiport_client=DummyModel(
-                code=u'00001',
-                ),
+                famiport_client=DummyModel(
+                    code=u'00001',
+                    ),
+                )
             )
 
         res = self._callFUT({
@@ -230,12 +237,12 @@ class PaymentTest(FamiPortAPIViewTest):
     """  # noqa
     url = '/famiport/reservation/payment'
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
-    def test_it(self, get_by_barCodeNo):
-        import datetime
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_barcode_no')
+    def test_it(self, get_by_barcode_no):
+        from datetime import datetime
         from ..testing import generate_ticket_data
         from ..testing import FamiPortPaymentTicketingResponseFakeFactory as FakeFactory
-        from ..models import FamiPortTicket
+        from ..models import FamiPortTicket, FamiPortReceiptType
         from ..communication import FamiPortPaymentTicketingResponse as FamiPortResponse
 
         famiport_tickets = [
@@ -246,45 +253,52 @@ class PaymentTest(FamiPortAPIViewTest):
                 data=ticket['ticketData'],
             ) for ticket in generate_ticket_data()]
 
-        payment_due_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
-        ticketing_start_at = datetime.datetime(2015, 3, 31, 17, 25, 53)
-        ticketing_end_at = datetime.datetime(2015, 3, 31, 17, 25, 55)
+        payment_due_at = datetime(2015, 3, 31, 17, 25, 55)
+        ticketing_start_at = datetime(2015, 3, 31, 17, 25, 53)
+        ticketing_end_at = datetime(2015, 3, 31, 17, 25, 55)
 
-        receipt = mock.Mock()
-        receipt.shop_code = u'99999'
-        receipt.can_cancel.return_value = True
-        receipt.barcode_no = u'1000000000000'
-        receipt.exchange_number = u'4310000000002'
-
-        get_by_barCodeNo.return_value = DummyModel(
+        famiport_receipt = DummyModel(
+            type=FamiPortReceiptType.Ticketing.value,
+            shop_code=u'99999',
+            can_payment=lambda now: True,
+            completed_at=None,
+            reserve_number=u'4310000000002',
+            barcode_no=u'1000000000000',
             famiport_order_identifier=u'430000000002',
-            type=3,
-            payment_due_at=payment_due_at,
-            paid_at=None,
-            issued_at=None,
-            ticketing_start_at=ticketing_start_at,
-            ticketing_end_at=ticketing_end_at,
-            exchange_number=u'4310000000002',
-            barcode_number=u'1000000000000',
-            total_amount=200,
-            ticket_payment=0,
-            system_fee=0,
-            ticketing_fee=200,
-            ticket_total_count=len(famiport_tickets),
-            ticket_count=len(famiport_tickets),
-            famiport_tickets=famiport_tickets,
-            get_receipt=mock.Mock(return_value=receipt),
-            famiport_sales_segment=DummyModel(
-                famiport_performance=DummyModel(
-                    name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
-                    start_at=None,
+            famiport_order=DummyModel(
+                famiport_order_identifier=u'430000000001',
+                type=3,
+                payment_due_at=payment_due_at,
+                paid_at=None,
+                issued_at=None,
+                ticketing_start_at=ticketing_start_at,
+                ticketing_end_at=ticketing_end_at,
+                barcode_number=u'1000000000000',
+                total_amount=200,
+                ticket_payment=0,
+                system_fee=0,
+                ticketing_fee=200,
+                ticket_total_count=len(famiport_tickets),
+                ticket_count=len(famiport_tickets),
+                payment_start_at=ticketing_start_at,
+                payment_end_at=ticketing_end_at,
+                famiport_tickets=famiport_tickets,
+                famiport_sales_segment=DummyModel(
+                    famiport_performance=DummyModel(
+                        name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
+                        start_at=None,
+                        ),
                     ),
-                ),
-            famiport_client=DummyModel(
-                name=u'クライアント１',
-                code=u'00001',
-                ),
+                ticketing_famiport_receipt=DummyModel(
+                    reserve_number=u'4310000000002'
+                    ),
+                famiport_client=DummyModel(
+                    name=u'クライアント１',
+                    code=u'00001',
+                    )
+                )
             )
+        get_by_barcode_no.return_value = famiport_receipt
 
         res = self._callFUT({
             'ticketingDate': u'20150331172554',
@@ -294,7 +308,7 @@ class PaymentTest(FamiPortAPIViewTest):
             'mmkNo': u'01',
             'barCodeNo': u'1000000000000',
             'sequenceNo': u'12345678901',
-            'storeCode': receipt.shop_code,
+            'storeCode': famiport_receipt.shop_code,
             })
         self.assertEqual(200, res.status_code)
         self._check_payload(
@@ -323,13 +337,17 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
 
     url = '/famiport/reservation/completion'
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
-    def test_it(self, get_by_barCodeNo):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_barcode_no')
+    def test_it(self, get_by_barcode_no):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
-        receipt = mock.Mock()
-        receipt.shop_code = '99999'
-        get_by_barCodeNo.return_value = DummyModel(
-            get_receipt=mock.Mock(return_value=receipt),
+        from ..models import FamiPortReceiptType
+        get_by_barcode_no.return_value = DummyModel(
+            type=FamiPortReceiptType.CashOnDelivery.value,
+            completed_at=None,
+            shop_code=u'99999',
+            can_completion=lambda now:True,
+            famiport_order_identifier=u'000000000000',
+            famiport_order=DummyModel()
             )
         res = self._callFUT({
             'ticketingDate': '20150331184114',
@@ -339,7 +357,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             'mmkNo': '01',
             'barCodeNo': '6010000000000',
             'sequenceNo': '12345678901',
-            'storeCode': receipt.shop_code,
+            'storeCode': u'99999',
             })
         self.assertEqual(200, res.status_code)
 
@@ -348,10 +366,10 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             FakeFactory.create(),
             )
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
-    def test_fail(self, get_by_barCodeNo):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_barcode_no')
+    def test_fail(self, get_by_barcode_no):
         from ..testing import FamiPortPaymentTicketingCompletionResponseFailFakeFactory as FakeFactory
-        get_by_barCodeNo.return_value = None
+        get_by_barcode_no.return_value = None
         res = self._callFUT({
             'ticketingDate': '20150331184114',
             'orderId': '123456789012',
@@ -388,23 +406,29 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
 
     url = '/famiport/reservation/cancel'
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
-    def test_it(self, get_by_barCodeNo):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_barcode_no')
+    def test_it(self, get_by_barcode_no):
         from ..testing import FamiPortPaymentTicketingCancelResponseFakeFactory as FakeFactory
-        receipt = mock.Mock()
-        receipt.shop_code = '99999'
-        receipt.can_cancel.return_value = True
-        receipt.barcode_no = u'1000000000000'
-        get_by_barCodeNo.return_value = DummyModel(
+        from ..models import FamiPortReceiptType
+        from datetime import datetime
+        get_by_barcode_no.return_value = DummyModel(
+            type=FamiPortReceiptType.CashOnDelivery,
             famiport_order_identifier='123456789012',
-            paid_at=None,
-            canceled_at=None,
-            issued_at=None,
-            get_receipt=mock.Mock(return_value=receipt),
+            inquired_at=datetime(2015, 1, 1, 0, 0, 0),
+            shop_code='99999',
+            can_cancel=lambda now:True,
+            completed_at=None,
+            void_at=None,
+            barcode_no=u'1000000000000',
+            famiport_order=DummyModel(
+                paid_at=None,
+                canceled_at=None,
+                issued_at=None
+                )
             )
         res = self._callFUT({
             'playGuideId': '',
-            'storeCode': receipt.shop_code,
+            'storeCode': u'99999',
             'ticketingDate': '20150401101950',
             'barCodeNo': '1000000000000',
             'sequenceNo': '12345678901',
@@ -502,26 +526,29 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
 
     url = '/famiport/reservation/customer'
 
-    @mock.patch('altair.app.ticketing.famiport.models.FamiPortOrder.get_by_barCodeNo')
-    def test_it(self, get_by_barCodeNo):
+    @mock.patch('altair.app.ticketing.famiport.models.FamiPortReceipt.get_by_barcode_no')
+    def test_it(self, get_by_barcode_no):
         from ..testing import FamiPortCustomerResponseFakeFactory as FakeFactory
         from ..communication import FamiPortCustomerInformationResponse as FamiportResponse
+        from ..models import FamiPortReceiptType
 
-        receipt = mock.Mock()
-        receipt.fammiport_shop.code = '000009'
-        receipt.can_cancel.return_value = True
-        receipt.barcode_no = u'1000000000000'
-
-        get_by_barCodeNo.return_value = DummyModel(
-            customer_name=u'発券　し太郎',
-            customer_member_id=u'REIOHREOIHOIERHOIERHGOIERGHOI',
-            customer_address_1=u'東京都品川区',
-            customer_address_2=u'西五反田',
-            customer_identify_no=u'1234567890123456',
-            get_receipt=mock.Mock(return_value=receipt),
+        get_by_barcode_no.return_value = DummyModel(
+            type=FamiPortReceiptType.CashOnDelivery,
+            shop_code=u'000009',
+            barcode_no=u'1000000000000',
+            can_completion=lambda now: True,
+            completed_at=None,
+            void_at=None,
+            famiport_order=DummyModel(
+                customer_name=u'発券　し太郎',
+                customer_member_id=u'REIOHREOIHOIERHOIERHGOIERGHOI',
+                customer_address_1=u'東京都品川区',
+                customer_address_2=u'西五反田',
+                customer_identify_no=u'1234567890123456',
+                )
             )
         res = self._callFUT({
-            'storeCode': receipt.fammiport_shop.code,
+            'storeCode': u'99999', 
             'mmkNo': '01',
             'ticketingDate': '20150331182222',
             'sequenceNo': '15033100004',

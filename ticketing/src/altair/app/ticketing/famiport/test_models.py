@@ -69,6 +69,7 @@ def TestCalculateGtinCd(TestCase):
         from .models import calculate_gtin_cd
         self.assertEqual(calculate_gtin_cd(u'629104150021'), u'3')
 
+
 class FamiPortInformationMessageTest(TestCase):
     def setUp(self):
         self.config = setUp()

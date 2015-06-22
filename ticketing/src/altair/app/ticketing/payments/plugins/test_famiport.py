@@ -995,12 +995,12 @@ class SelectFamiportOrderTypeTest(TestCase):
         """ファミポート決済の場合は前払"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentPlugin as PluginClass
-        exp_type = FamiPortOrderType.Payment.value
-        payment_due_at = None
+        exp_type = FamiPortOrderType.PaymentOnly.value
+        payment_start_at = None
         issuing_start_at = None
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1016,12 +1016,12 @@ class SelectFamiportOrderTypeTest(TestCase):
         """ファミポート決済の場合は前払"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentPlugin as PluginClass
-        exp_type = FamiPortOrderType.Payment.value
-        payment_due_at = None
+        exp_type = FamiPortOrderType.PaymentOnly.value
+        payment_start_at = None
         issuing_start_at = None
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1038,11 +1038,11 @@ class SelectFamiportOrderTypeTest(TestCase):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.Ticketing.value
-        payment_due_at = None
+        payment_start_at = None
         issuing_start_at = None
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1059,11 +1059,11 @@ class SelectFamiportOrderTypeTest(TestCase):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.CashOnDelivery.value
-        payment_due_at = None
+        payment_start_at = None
         issuing_start_at = None
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1075,18 +1075,18 @@ class SelectFamiportOrderTypeTest(TestCase):
         res = self._callFUT(*args, **kwds)
         self.assertEqual(res, exp_type)
 
-    def test_payment_delivery_plugin_payment_due_at(self):
+    def test_payment_delivery_plugin_payment_start_at(self):
         """ファミポート決済/ファミポート引き取で支払期限のみ指定されている場合は代引"""
         from datetime import datetime
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.CashOnDelivery.value
         _now = datetime.now()
-        payment_due_at = _now
+        payment_start_at = _now
         issuing_start_at = None
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1105,11 +1105,11 @@ class SelectFamiportOrderTypeTest(TestCase):
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.CashOnDelivery.value
         _now = datetime.now()
-        payment_due_at = None
+        payment_start_at = None
         issuing_start_at = _now
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
@@ -1128,11 +1128,11 @@ class SelectFamiportOrderTypeTest(TestCase):
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.Payment.value
         _now = datetime.now()
-        payment_due_at = _now
+        payment_start_at = _now
         issuing_start_at = _now + timedelta(seconds=1)
 
         order_like = mock.Mock(
-            payment_due_at=payment_due_at,
+            payment_start_at=payment_start_at,
             issuing_start_at=issuing_start_at,
             )
         plugin = PluginClass()
