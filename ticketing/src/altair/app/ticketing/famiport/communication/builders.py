@@ -802,7 +802,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                 if famiport_request.reserveNumber:
                     famiport_receipt = None
                     try:
-                        famiport_receipt = FamiPortReceipt.get_by_reserve_number(famiport_request.reserveNumber)
+                        famiport_receipt = FamiPortReceipt.get_by_reserve_number(famiport_request.reserveNumber, session)
                     except NoResultFound:
                         pass
 

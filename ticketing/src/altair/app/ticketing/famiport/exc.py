@@ -10,6 +10,10 @@ class FamiPortNumberingError(FamiPortError):
     pass
 
 
+class FamiPortUnsatisifiedPreconditionError(FamiPortError):
+    pass
+
+
 class FamiPortAPIError(Exception):
     def __init__(self, message, client_code=None):
         super(FamiPortAPIError, self).__init__(message)

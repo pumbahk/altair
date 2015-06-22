@@ -136,11 +136,12 @@ class FamiPortInformationMessageTest(TestCase):
         target = self._target()
         kwds = {
             'information_result_code': InformationResultCodeEnum.WithInformation,
-            'default_message': None,
+            'default_message': '',
+            'session': self.session,
             }
 
         msg = target.get_message(**kwds)
-        self.assertEqual(msg, None)
+        self.assertEqual(msg, '')
 
 
 class CreateRandomSequenceNumberTest(TestCase):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import types
+import logging
 import time
 import random
 import hashlib
@@ -11,18 +12,17 @@ from sqlalchemy import orm
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.types import TypeDecorator
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
-from .exc import FamiPortNumberingError
+from .exc import FamiPortNumberingError, FamiPortError
 
 Base = declarative.declarative_base()
 
-# 内部トランザクション用
-_session = orm.scoped_session(orm.sessionmaker())
-
+logger = logging.getLogger(__name__)
 
 class FamiPortSalesChannel(Enum):
     FamiPortOnly    = 1
@@ -464,7 +464,7 @@ class FamiPortBarcodeNoSequence(Base):
     id = sa.Column(Identifier, primary_key=True)
 
     @classmethod
-    def get_next_value(cls, discrimination_code, session=_session):
+    def get_next_value(cls, discrimination_code, session):
         seq = cls()
         session.add(seq)
         session.flush()
@@ -483,7 +483,7 @@ class FamiPortOrderIdentifierSequence(Base):
     prefix = sa.Column(sa.Unicode(3), nullable=False)
 
     @classmethod
-    def get_next_value(cls, prefix, session=_session):
+    def get_next_value(cls, prefix, session):
         assert len(prefix) == 3
         seq = cls(prefix=prefix)
         session.add(seq)
@@ -498,7 +498,7 @@ class FamiPortOrderTicketNoSequence(Base):
     value = sa.Column(sa.String(13), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, session=_session):
+    def get_next_value(cls, session):
         for ii in range(15):  # retry count
             try:
                 return cls._get_next_value(session)
@@ -521,7 +521,7 @@ class FamiPortExchangeTicketNoSequence(Base):
     value = sa.Column(sa.String(13), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, session=_session):
+    def get_next_value(cls, session):
         for ii in range(15):  # retry count
             try:
                 return cls._get_next_value(session)
@@ -662,6 +662,86 @@ class FamiPortOrder(Base, WithTimestamp):
             return receipt.shop_code
         return None
 
+    def mark_canceled(self, now):
+        if self.invalidated_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+        if any(famiport_receipt.completed_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
+        for famiport_receipt in self.famiport_receipts:
+            if not famiport_receipt.void_at:
+                famiport_receipt.mark_canceled(now)
+        logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
+        self.canceled_at = now
+
+    def make_reissueable(self, now):
+        if self.invalidated_at is not None:
+            raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
+        if self.type == FamiPortOrderType.PaymentOnly.value:
+            raise FamiPortUnsatisfiedPreconditionError(u'order is payment-only')
+        ticketing_famiport_receipt = None
+        for famiport_receipt in self.famiport_receipts:
+            if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value):
+                if famiport_receipt.completed_at is None:
+                    if famiport_receipt.void_at is None:
+                        assert ticketing_famiport_receipt is None
+                        ticketing_famiport_receipt = famiport_receipt
+                else:
+                    if famiport_receipt.canceled_at is None:
+                        assert ticketing_famiport_receipt is None
+                        ticketing_famiport_receipt = famiport_receipt
+        session = object_session(self)
+        new_receipt = FamiPortReceipt.create(
+            session, self.famiport_client,
+            type=ticketing_famiport_receipt.type
+            )
+        self.famiport_receipts.append(new_receipt)
+
+    def make_suborder(self, now):
+        if self.invalidated_at is not None:
+            raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
+        for famiport_receipt in self.famiport_receipts:
+            if famiport_receipt.completed_at is None:
+                if famiport_receipt.void_at is None:
+                    famiport_receipt.void_at = now
+            else:
+                famiport_receipt.mark_canceled(now)
+        self.add_receipts()
+
+    def add_receipts(self):
+        session = object_session(self)
+        if self.type == FamiPortOrderType.Payment.value:
+            self.famiport_receipts.extend([
+                FamiPortReceipt.create(
+                    session, self.famiport_client,
+                    type=FamiPortReceiptType.Payment.value
+                    ),
+                FamiPortReceipt.create(
+                    session, self.famiport_client,
+                    type=FamiPortReceiptType.Ticketing.value
+                    )
+                ])
+        else:
+            if self.type == FamiPortOrderType.CashOnDelivery.value:
+                receipt_type = FamiPortReceiptType.CashOnDelivery.value
+            elif type_ in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
+                receipt_type = FamiPortReceiptType.Payment.value
+            elif type_ == FamiPortOrderType.Ticketing.value:
+                receipt_type = FamiPortReceiptType.Ticketing.value
+            else:
+                raise AssertionError('never get here')
+            self.famiport_receipts.append(
+                FamiPortReceipt.create(
+                    session, self.famiport_client,
+                    type=receipt_type
+                    )
+                )
+
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
@@ -712,7 +792,7 @@ class FamiPortInformationMessage(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship('FamiPortSalesSegment')
 
     @classmethod
-    def get_message(cls, information_result_code, default_message=None, session=_session):
+    def get_message(cls, information_result_code, default_message, session):
         from .communication import InformationResultCodeEnum
         assert isinstance(information_result_code, InformationResultCodeEnum)
         query = session.query(FamiPortInformationMessage).filter_by(result_code=information_result_code.name)
@@ -828,7 +908,7 @@ class FamiPortReceipt(Base, WithTimestamp):
             and not self.rescued_at
 
     @classmethod
-    def get_by_reserve_number(cls, reserve_number, session=_session):
+    def get_by_reserve_number(cls, reserve_number, session):
         return session \
             .query(cls) \
             .options(orm.joinedload(cls.famiport_order)) \
@@ -839,7 +919,7 @@ class FamiPortReceipt(Base, WithTimestamp):
             .one()
 
     @classmethod
-    def get_by_barcode_no(cls, barcode_no, session=_session):
+    def get_by_barcode_no(cls, barcode_no, session):
         return session \
             .query(cls) \
             .options(orm.joinedload(cls.famiport_order)) \
@@ -849,4 +929,16 @@ class FamiPortReceipt(Base, WithTimestamp):
             .filter(FamiPortOrder.invalidated_at.is_(None)) \
             .one()
 
+    def mark_canceled(self, now):
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
+        logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
+        self.canceled_at = now
 
+    @classmethod
+    def create(cls, session, famiport_client, **kwargs):
+        return FamiPortReceipt(
+            reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
+            famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+            **kwargs
+            )

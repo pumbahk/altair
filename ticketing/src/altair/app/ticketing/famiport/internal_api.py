@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
 import functools
@@ -20,7 +21,6 @@ from .models import (
     FamiPortGenre2,
     FamiPortSalesChannel,
     FamiPortBarcodeNoSequence,
-    FamiPortReserveNumberSequence,
     FamiPortOrderIdentifierSequence,
     )
 from .exc import FamiPortError, FamiPortAPIError, FamiPortAPINotFoundError
@@ -130,9 +130,12 @@ def create_famiport_order(
         payment_start_at=None,
         payment_due_at=None,
         ticketing_start_at=None,
-        ticketing_end_at=None
+        ticketing_end_at=None,
+        now=None
         ):
     """FamiPortOrderを作成する"""
+    if now is None:
+        now = datetime.now()
     famiport_client = get_famiport_client(session, client_code)
     famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
@@ -145,35 +148,6 @@ def create_famiport_order(
             raise FamiPortError('ticketing_start_at is None while type=CashOnDelivery|Payment|Ticketing')
         if ticketing_end_at is None:
             raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|Ticketing')
-    if type_ == FamiPortOrderType.Payment.value:
-        famiport_receipts = [
-            FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
-                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-                type=FamiPortReceiptType.Payment.value
-                ),
-            FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
-                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-                type=FamiPortReceiptType.Ticketing.value
-                )
-            ]
-    else:
-        if type_ == FamiPortOrderType.CashOnDelivery.value:
-            receipt_type = FamiPortReceiptType.CashOnDelivery.value
-        elif type_ in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
-            receipt_type = FamiPortReceiptType.Payment.value
-        elif type_ == FamiPortOrderType.Ticketing.value:
-            receipt_type = FamiPortReceiptType.Ticketing.value
-        else:
-            raise AssertionError('never get here')
-        famiport_receipts = [
-            FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
-                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-                type=receipt_type
-                )
-            ]
     famiport_order = FamiPortOrder(
         client_code=client_code,
         type=type_,
@@ -192,14 +166,53 @@ def create_famiport_order(
         payment_due_at=payment_due_at,
         ticketing_start_at=ticketing_start_at,
         ticketing_end_at=ticketing_end_at,
-        famiport_receipts=famiport_receipts,
         famiport_tickets=[
             create_famiport_ticket(session, famiport_client.playguide, ticket_dict)
             for ticket_dict in tickets
-            ]
+            ],
+        created_at=now,
+        updated_at=now
         )
+    famiport_order.add_receipts()
     session.add(famiport_order)
     session.commit()
     return famiport_order
 
+def cancel_famiport_order_by_order_no(
+        session, 
+        client_code,
+        order_no,
+        now=None
+        ):
+    """FamiPortOrderをキャンセルする"""
+    if now is None:
+        now = datetime.now()
+    famiport_order = get_famiport_order(session, order_no)
+    faimport_order.mark_canceled(now)
+
+
+def mark_order_reissueable_by_order_no(
+        session, 
+        client_code,
+        order_no,
+        now=None
+        ):
+    """FamiPortOrderに再発券許可"""
+    if now is None:
+        now = datetime.now()
+    famiport_order = get_famiport_order(session, order_no)
+    faimport_order.make_reissueable(now)
+
+
+def make_suborder_by_order_no(
+        session, 
+        client_code,
+        order_no,
+        now=None
+        ):
+    """FamiPortOrderを同席番再予約"""
+    if now is None:
+        now = datetime.now()
+    famiport_order = get_famiport_order(session, order_no)
+    famiport_order.make_suborder(now)
 
