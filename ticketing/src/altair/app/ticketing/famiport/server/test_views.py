@@ -54,7 +54,7 @@ class FamiPortAPIViewTest(TestCase):
         exp_elms = dict((elm.tag, elm) for elm in exp.xpath('*'))
 
         def _strip(value):
-            return value.strip() if hasattr(value, 'strip') else value
+            return (value.strip() or None) if hasattr(value, 'strip') else value
 
         for tag, exp_elm in exp_elms.items():
             self.assertIn(tag, res_elms)
@@ -67,7 +67,10 @@ class FamiPortAPIViewTest(TestCase):
                and tag in famiport_response_class._encryptedFields:
                 self.assertEqual(bool(res_elm.text), bool(exp_elm.text))
             else:
-                self.assertEqual(_strip(res_elm.text), _strip(exp_elm.text), u'tag={}, res={}, exp={}'.format(tag, _strip(res_elm.text), _strip(exp_elm.text)))
+                self.assertEqual(
+                    _strip(res_elm.text), _strip(exp_elm.text),
+                    u'tag={}, res={}, exp={}'.format(
+                        tag, res_elm.text, exp_elm.text))
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -102,7 +105,7 @@ class InquiryTest(FamiPortAPIViewTest):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
         from datetime import datetime
         from ..testing import generate_ticket_data
-        from ..models import FamiPortTicket, FamiPortReceipt, FamiPortShop, FamiPortReceiptType
+        from ..models import FamiPortTicket, FamiPortReceiptType
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
         famiport_tickets = [
             FamiPortTicket(
@@ -122,7 +125,7 @@ class InquiryTest(FamiPortAPIViewTest):
         get_by_reserve_number.return_value = DummyModel(
             type=FamiPortReceiptType.CashOnDelivery.value,
             shop_code='99999',
-            can_inquiry=lambda:True,
+            can_inquiry=lambda: True,
             completed_at=None,
             void_at=None,
             barcode_no=u'4110000000006',
@@ -345,7 +348,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             type=FamiPortReceiptType.CashOnDelivery.value,
             completed_at=None,
             shop_code=u'99999',
-            can_completion=lambda now:True,
+            can_completion=lambda now: True,
             famiport_order_identifier=u'000000000000',
             famiport_order=DummyModel()
             )
@@ -416,7 +419,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             famiport_order_identifier='123456789012',
             inquired_at=datetime(2015, 1, 1, 0, 0, 0),
             shop_code='99999',
-            can_cancel=lambda now:True,
+            can_cancel=lambda now: True,
             completed_at=None,
             void_at=None,
             barcode_no=u'1000000000000',
@@ -548,7 +551,7 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
                 )
             )
         res = self._callFUT({
-            'storeCode': u'99999', 
+            'storeCode': u'99999',
             'mmkNo': '01',
             'ticketingDate': '20150331182222',
             'sequenceNo': '15033100004',
