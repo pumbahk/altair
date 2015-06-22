@@ -64,7 +64,7 @@ class TestScrew(TestCase):
         self.assertEqual(v, 0x32ab4a5b528e ^ 0x12345678901)
 
 
-def TestCalculateGtinCd(TestCase):
+class TestCalculateGtinCd(TestCase):
     def test_it(self):
         from .models import calculate_gtin_cd
         self.assertEqual(calculate_gtin_cd(u'629104150021'), u'3')
