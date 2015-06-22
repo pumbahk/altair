@@ -14,6 +14,7 @@ from .models import (
     FamiPortPerformanceType,
     FamiPortPrefecture,
     FamiPortReceipt,
+    FamiPortReceiptType,
     FamiPortSalesSegment,
     FamiPortGenre1,
     FamiPortGenre2,
@@ -134,23 +135,51 @@ def create_famiport_order(
     """FamiPortOrderを作成する"""
     famiport_client = get_famiport_client(session, client_code)
     famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-    if type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
+    if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
         if payment_start_at is None:
             raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|PaymentOnly')
         if payment_due_at is None:
             raise FamiPortError('payment_due_at is None while type=CashOnDelivery|Payment|PaymentOnly')
-    if type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value):
+    if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value):
         if ticketing_start_at is None:
             raise FamiPortError('ticketing_start_at is None while type=CashOnDelivery|Payment|Ticketing')
         if ticketing_end_at is None:
             raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|Ticketing')
+    if type_ == FamiPortOrderType.Payment.value:
+        famiport_receipts = [
+            FamiPortReceipt(
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+                type=FamiPortReceiptType.Payment.value
+                ),
+            FamiPortReceipt(
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+                type=FamiPortReceiptType.Ticketing.value
+                )
+            ]
+    else:
+        if type_ == FamiPortOrderType.CashOnDelivery.value:
+            receipt_type = FamiPortReceiptType.CashOnDelivery.value
+        elif type_ in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
+            receipt_type = FamiPortReceiptType.Payment.value
+        elif type_ == FamiPortOrderType.Ticketing.value:
+            receipt_type = FamiPortReceiptType.Ticketing.value
+        else:
+            raise AssertionError('never get here')
+        famiport_receipts = [
+            FamiPortReceipt(
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+                type=receipt_type
+                )
+            ]
     famiport_order = FamiPortOrder(
         client_code=client_code,
         type=type_,
         order_no=order_no,
         famiport_sales_segment=famiport_sales_segment,
         famiport_order_identifier=famiport_order_identifier,
-        reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
         customer_name=customer_name,
         customer_phone_number=customer_phone_number,
         customer_address_1=customer_address_1,
@@ -163,6 +192,7 @@ def create_famiport_order(
         payment_due_at=payment_due_at,
         ticketing_start_at=ticketing_start_at,
         ticketing_end_at=ticketing_end_at,
+        famiport_receipts=famiport_receipts,
         famiport_tickets=[
             create_famiport_ticket(session, famiport_client.playguide, ticket_dict)
             for ticket_dict in tickets

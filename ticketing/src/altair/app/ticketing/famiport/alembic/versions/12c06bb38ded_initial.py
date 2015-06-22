@@ -167,7 +167,6 @@ def create_schemas():
         'FamiPortOrder',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('type', sa.Integer, nullable=False),
-        sa.Column('shop_code', sa.Unicode(7), nullable=True),
         sa.Column('order_no', sa.Unicode(255), nullable=False),  # altair側予約番号
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP, nullable=False, server_default=text('0')),
@@ -177,8 +176,7 @@ def create_schemas():
         sa.Column('ticket_payment', sa.Numeric(precision=16, scale=0), nullable=False),
         sa.Column('system_fee', sa.Numeric(precision=16, scale=0), nullable=False),
         sa.Column('ticketing_fee', sa.Numeric(precision=16, scale=0), nullable=False),
-        sa.Column('famiport_order_identifier', sa.String(12), nullable=False),
-        sa.Column('reserve_number', sa.String(13), nullable=False),
+        sa.Column('famiport_order_identifier', sa.String(12), nullable=False, unique=True),
         sa.Column('customer_name_input', sa.Boolean, nullable=False, server_default=text('FALSE')),
         sa.Column('customer_name', sa.Unicode(42), nullable=False),
         sa.Column('customer_phone_input', sa.Boolean, nullable=False, server_default=text('FALSE')),
@@ -235,7 +233,6 @@ def create_schemas():
         sa.Column('famiport_ticket_id',    Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False),
         sa.Column('ticket_payment',        sa.Numeric(precision=9, scale=0)),
         sa.Column('ticketing_fee',         sa.Numeric(precision=8, scale=0)),
-        sa.Column('system_fee',            sa.Numeric(precision=8, scale=0)),
         sa.Column('other_fees',            sa.Numeric(precision=8, scale=0)),
         sa.Column('shop_code',             sa.Unicode(7), nullable=False),
         sa.Column('refunded_at',           sa.DateTime(), nullable=True),
@@ -570,10 +567,12 @@ def create_schemas():
     op.create_table(
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
-        sa.Column('barcode_no', sa.Unicode(255), nullable=False),  # ファミポート側で使用するバーコード番号 barCodeNo
-        sa.Column('exchange_number', sa.String(13), nullable=False),
+        sa.Column('type', sa.Integer, nullable=False),
+        sa.Column('barcode_no', sa.Unicode(255), nullable=False, unique=True),  # ファミポート側で使用するバーコード番号 barCodeNo
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
-        sa.Column('shop_code', sa.Unicode(7), nullable=False, server_default=u''),
+        sa.Column('shop_code', sa.Unicode(7), nullable=True),
+        sa.Column('famiport_order_identifier', sa.String(12), nullable=False, unique=True),
+        sa.Column('reserve_number', sa.String(13), nullable=False, unique=True), # 予約番号
         sa.Column('inquired_at', sa.DateTime(), nullable=True),  # 予約照会が行われた日時
         sa.Column('payment_request_received_at', sa.DateTime(), nullable=True),  # 支払/発券要求が行われた日時
         sa.Column('customer_request_received_at', sa.DateTime(), nullable=True),  # 顧客情報照会が行われた日時

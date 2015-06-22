@@ -30,7 +30,7 @@ from ..testing import _setup_db, _teardown_db
 class FamiPortResponseBuilderTestBase(object):
     barcode_no_cash_on_delivery = u'01234012340123'
     barcode_no_payment = u'01234012340124'
-    barcode_no_payment_only = u'01234012340125'
+    barcode_no_payment_only = u'01234012340126'
 
     def setUp(self):
         self.request = DummyRequest()
@@ -61,6 +61,7 @@ class FamiPortResponseBuilderTestBase(object):
             FamiPortOrder,
             FamiPortReceipt,
             FamiPortOrderType,
+            FamiPortReceiptType,
             FamiPortTicketType,
             FamiPortTicket,
             FamiPortShop,
@@ -151,7 +152,6 @@ class FamiPortResponseBuilderTestBase(object):
             type=FamiPortOrderType.CashOnDelivery.value,
             order_no=u'RT0000000000',
             famiport_order_identifier=u'000011112222',
-            shop_code=u'00001',
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -168,16 +168,17 @@ class FamiPortResponseBuilderTestBase(object):
             ticketing_end_at=datetime(2015, 5, 23, 23, 59, 59),
             payment_start_at=datetime(2015, 5, 20, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 23, 23, 59, 59),
-            reserve_number=u'4321043210432',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
+                    type=FamiPortReceiptType.CashOnDelivery.value,
                     barcode_no=self.barcode_no_cash_on_delivery,
-                    shop_code=self.famiport_shop.code,
+                    famiport_order_identifier=u'000011112223',
+                    shop_code=u'00009',
+                    reserve_number=u'4321043210432'
                     ),
                 ],
             famiport_tickets=[
@@ -204,8 +205,7 @@ class FamiPortResponseBuilderTestBase(object):
         self.famiport_order_payment = FamiPortOrder(
             type=FamiPortOrderType.Payment.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=u'000011112223',
-            shop_code=u'00001',
+            famiport_order_identifier=u'000011112225',
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -222,17 +222,25 @@ class FamiPortResponseBuilderTestBase(object):
             ticketing_end_at=datetime(2015, 5, 23, 23, 59, 59),
             payment_start_at=datetime(2015, 5, 20, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 21, 23, 59, 59),
-            reserve_number=u'4321043210433',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
+                    type=FamiPortReceiptType.Payment.value,
                     barcode_no=self.barcode_no_payment,
-                    shop_code=self.famiport_shop.code,
+                    famiport_order_identifier=u'000011112224',
+                    shop_code=u'00009',
+                    reserve_number=u'4321043210433',
                     ),
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Ticketing.value,
+                    barcode_no=u'01234012340125',
+                    famiport_order_identifier=u'000011112225',
+                    shop_code=u'00009',
+                    reserve_number=u'4321043210434',
+                    )
                 ],
             famiport_tickets=[
                 FamiPortTicket(
@@ -258,8 +266,7 @@ class FamiPortResponseBuilderTestBase(object):
         self.famiport_order_payment_only = FamiPortOrder(
             type=FamiPortOrderType.PaymentOnly.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=u'000011112224',
-            shop_code=u'00001',
+            famiport_order_identifier=u'000011112226',
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -276,16 +283,17 @@ class FamiPortResponseBuilderTestBase(object):
             ticketing_end_at=None,
             payment_start_at=datetime(2015, 5, 22, 12, 34, 56),
             payment_due_at=datetime(2015, 5, 23, 23, 59, 59),
-            reserve_number=u'4321043210434',
             customer_name=u'チケット　太郎',
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0123456789',
             famiport_receipts=[
                 FamiPortReceipt(
-                    exchange_number=u'',
+                    type=FamiPortReceiptType.Payment.value,
+                    famiport_order_identifier=u'000011112227',
                     barcode_no=self.barcode_no_payment_only,
-                    shop_code=self.famiport_shop.code,
+                    shop_code=u'00009',
+                    reserve_number=u'4321043210435'
                     ),
                 ],
             famiport_tickets=[
@@ -612,6 +620,7 @@ class FamiPortCustomerInformationResponseBuilderTest(unittest.TestCase, FamiPort
 
     def test_ok(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = datetime(2015, 5, 21, 13, 39, 0)
         f_request = FamiPortCustomerInformationRequest(
             storeCode=u'000009',
             mmkNo=u'1',
@@ -865,19 +874,8 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
     def tearDown(self):
         FamiPortResponseBuilderTestBase.tearDown(self)
 
-    def _inquiry_receipt(self, barcode_no, minutes=15):
-        from ..models import FamiPortReceipt
-        receipt = self.session \
-                      .query(FamiPortReceipt) \
-                      .filter_by(barcode_no=barcode_no) \
-                      .one()
-
-        receipt.inquired_at = datetime.now() - timedelta(minutes=minutes)
-        self.session.add(receipt)
-        self.session.commit()
-
     def test_cash_on_delivery(self):
-        # 代引
+        """代引"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortPaymentTicketingRequest(
             storeCode=u'000009',
@@ -889,7 +887,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340123')
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -898,7 +896,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100002')
         self.assertEqual(result.barCodeNo, u'01234012340123')
-        self.assertEqual(result.orderId, u'000011112222')
+        self.assertEqual(result.orderId, u'000011112223')
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340123')
@@ -915,7 +913,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.koenDate, u'201507011900')
 
     def test_payment_valid_date(self):
-        # 前払後日
+        """前払後日"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortPaymentTicketingRequest(
             storeCode=u'000009',
@@ -927,7 +925,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -936,11 +934,11 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100003')
         self.assertEqual(result.barCodeNo, u'01234012340124')
-        self.assertEqual(result.orderId, u'000011112223')
+        self.assertEqual(result.orderId, u'000011112224')
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -953,7 +951,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.koenDate, u'201507011900')
 
     def test_payment_earlier_date(self):
-        # 前払後日
+        """前払後日"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortPaymentTicketingRequest(
             storeCode=u'000009',
@@ -965,7 +963,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
@@ -985,7 +983,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
@@ -1005,7 +1003,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -1014,11 +1012,11 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100003')
         self.assertEqual(result.barCodeNo, u'01234012340124')
-        self.assertEqual(result.orderId, u'000011112223')
+        self.assertEqual(result.orderId, u'000011112224')
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
         self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -1040,11 +1038,11 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             ticketingDate=u'20150522211234',
             sequenceNo=u'15052100003',
             playGuideId=u'012340123401234012340123',
-            barCodeNo=u'01234012340124',
+            barCodeNo=u'01234012340125',
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -1052,12 +1050,12 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100003')
-        self.assertEqual(result.barCodeNo, u'01234012340124')
-        self.assertEqual(result.orderId, u'000011112223')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, u'000011112225')
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
-        self.assertEqual(result.orderTicketNo, u'01234012340124')
-        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.orderTicketNo, u'01234012340125')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')  # reserve number
         self.assertEqual(result.ticketingStart, u'20150522000000')
         self.assertEqual(result.ticketingEnd, u'20150523235959')
         self.assertEqual(result.totalAmount, u'00010540')
@@ -1070,7 +1068,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.koenDate, u'201507011900')
 
     def test_ticketing_for_paid_order_earlier(self):
-        # 前払後日の発券
+        u"""前払後日の発券"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
 
         self.famiport_order_payment.paid_at = datetime(2015, 5, 21, 13, 40, 1)
@@ -1080,11 +1078,11 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             ticketingDate=u'20150521135001',
             sequenceNo=u'15052100003',
             playGuideId=u'012340123401234012340123',
-            barCodeNo=u'01234012340124',
+            barCodeNo=u'01234012340125',
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340124')
+        self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
@@ -1092,12 +1090,12 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.replyCode, ReplyCodeEnum.TicketingBeforeStartError.value)
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100003')
-        self.assertEqual(result.barCodeNo, u'01234012340124')
-        self.assertEqual(result.orderId, u'000011112223')
-        self.assertEqual(result.playGuideId, u'')
-        self.assertEqual(result.playGuideName, u'')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, None)
+        self.assertEqual(result.playGuideId, None)
+        self.assertEqual(result.playGuideName, None)
         self.assertEqual(result.orderTicketNo, None)
-        self.assertEqual(result.exchangeTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, None)  # reserve number
         self.assertEqual(result.ticketingStart, None)
         self.assertEqual(result.ticketingEnd, None)
         self.assertEqual(result.totalAmount, None)
@@ -1118,11 +1116,12 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             ticketingDate=u'20150522134001',
             sequenceNo=u'15052100004',
             playGuideId=u'012340123401234012340123',
-            barCodeNo=u'01234012340125',
+            barCodeNo=u'01234012340126',
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self._inquiry_receipt(u'01234012340125')
+        self.famiport_order_payment_only.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -1130,11 +1129,11 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100004')
-        self.assertEqual(result.barCodeNo, u'01234012340125')
-        self.assertEqual(result.orderId, u'000011112224')
+        self.assertEqual(result.barCodeNo, u'01234012340126')
+        self.assertEqual(result.orderId, u'000011112227')
         self.assertEqual(result.playGuideId, u'012340123401234012340123')
         self.assertEqual(result.playGuideName, u'チケットスター')
-        self.assertEqual(result.orderTicketNo, u'01234012340125')
+        self.assertEqual(result.orderTicketNo, u'01234012340126')
         self.assertEqual(result.exchangeTicketNo, u'')
         self.assertEqual(result.ticketingStart, u'')
         self.assertEqual(result.ticketingEnd, u'')

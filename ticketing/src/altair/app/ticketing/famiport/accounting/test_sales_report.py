@@ -89,14 +89,19 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         tearDown()
 
     def test_cash_on_delivery_unpaid(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
             famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.CashOnDelivery.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
-            shop_code=u'000000',
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    shop_code=u'000000'
+                    ),
+                ],
             famiport_tickets=[
                 FamiPortTicket(
                     barcode_number=u'0000000000000'
@@ -108,16 +113,22 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 0)
 
     def test_cash_on_delivery_paid(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
             famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.CashOnDelivery.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
-            shop_code=u'000000',
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31)
+                    ),
+                ],
             famiport_tickets=[
                 FamiPortTicket(
                     barcode_number=u'0000000000000'
@@ -129,14 +140,24 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 1)
 
     def test_payment_unpaid(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
             famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
-            shop_code=u'000000',
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Payment.value,
+                    shop_code=u'000000',
+                    completed_at=None
+                    ),
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Ticketing.value,
+                    completed_at=None
+                    ),
+                ],
             famiport_tickets=[
                 FamiPortTicket(
                     barcode_number=u'0000000000000'
@@ -148,15 +169,26 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 0)
 
     def test_payment_paid(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
             famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
-            shop_code=u'000000',
             paid_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Payment.value,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31)
+                    ),
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Ticketing.value,
+                    shop_code=u'',
+                    completed_at=None
+                    ),
+                ],
             famiport_tickets=[
                 FamiPortTicket(
                     barcode_number=u'0000000000000'
@@ -168,16 +200,27 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 1)
 
     def test_payment_paid_and_issued(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
         from datetime import date, datetime
         famiport_order = FamiPortOrder(
             famiport_order_identifier=u'123000000000',
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
-            shop_code=u'000000',
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Payment.value,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31)
+                    ),
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Ticketing.value,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31)
+                    ),
+                ],
             famiport_tickets=[
                 FamiPortTicket(
                     barcode_number=u'0000000000000'

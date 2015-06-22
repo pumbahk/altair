@@ -107,7 +107,6 @@ def famiport_order_to_dict(famiport_order):
     retval = dict(
         order_no=famiport_order.order_no,
         famiport_order_identifier=famiport_order.famiport_order_identifier,
-        reserve_number=famiport_order.reserve_number,
         customer_name=famiport_order.customer_name,
         customer_phone_number=famiport_order.customer_phone_number,
         customer_address_1=famiport_order.customer_address_1,
@@ -123,6 +122,12 @@ def famiport_order_to_dict(famiport_order):
         paid_at=famiport_order.paid_at,
         issued_at=famiport_order.issued_at,
         canceled_at=famiport_order.canceled_at,
+        famiport_receipts=[
+            dict(
+                reserve_number=famiport_receipt.reserve_number
+                )
+            for famiport_receipt in famiport_order.famiport_receipts
+            ],
         famiport_tickets=[
             dict(
                 type=famiport_ticket.type,
