@@ -29,7 +29,7 @@ def main(argv=sys.argv):
 
     pending_dir = c['stage_dir']
     filename = c['filename']
-    encoding = c['encoding'] or 'CP932'
+    encoding = c['encoding'] or 'EUC-JP'
     eor = c['eor'] or '\n'
 
     session = get_global_db_session(registry, 'famiport')
