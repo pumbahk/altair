@@ -173,35 +173,43 @@ class Communicator(object):
     
     def _refund(self, store_code, pos_no, text_type, timestamp, barcodes):
         data = {
-            u'businessFlg': u'3',
-            u'textTyp': text_type,
-            u'entryTyp': u'1',
-            u'shopNo': store_code.zfill(7),
-            u'registerNo': pos_no.zfill(2),
-            u'timeStamp': timestamp.strftime('%Y%m%d'),
+            u'BusinessFlg': u'3',
+            u'TextTyp': text_type,
+            u'EntryTyp': u'1',
+            u'ShopNo': store_code.zfill(7),
+            u'RegisterNo': pos_no.zfill(2),
+            u'TimeStamp': timestamp.strftime('%Y%m%d'),
             }
         data.update(
-            (u'barCode%d' % (i + 1), barcode)
+            (u'BarCode%d' % (i + 1), barcode)
             for i, barcode in enumerate(barcodes)
             )
-        retval = self._do_request(self.endpoints.refund, data)
+        result = self._do_request(self.endpoints.refund, data)
         per_barcode_data = []
         for i, _ in enumerate(barcodes):
             suffix = u'%d' % (i + 1)
             per_barcode_data.append(
                 dict(
-                    barCodeNo=retval.pop('barCode%s' % suffix),
-                    resultCode=retval.pop('resultCode%s' % suffix),
-                    mainTitle=retval.pop('mainTitle%s' % suffix),
-                    perfDay=retval.pop('perfDay%s' % suffix),
-                    repayment=retval.pop('repayment%s' % suffix),
-                    refundStart=retval.pop('refundStart%s' % suffix),
-                    refundEnd=retval.pop('refundEnd%s' % suffix),
-                    ticketTyp=retval.pop('ticketTyp%s' % suffix),
-                    charge=retval.pop('charge%s' % suffix)
+                    barCodeNo=result.pop('BarCode%s' % suffix),
+                    resultCode=result.pop('ResultCode%s' % suffix),
+                    mainTitle=result.pop('MainTitle%s' % suffix),
+                    perfDay=result.pop('PerfDay%s' % suffix),
+                    repayment=result.pop('Repayment%s' % suffix),
+                    refundStart=result.pop('RefundStart%s' % suffix),
+                    refundEnd=result.pop('RefundEnd%s' % suffix),
+                    ticketTyp=result.pop('TicketTyp%s' % suffix),
+                    charge=result.pop('Charge%s' % suffix)
                     )
                 )
-        retval['entries'] = per_barcode_data
+        retval = dict(
+            businessFlg=result['BusinessFlg'],
+            textTyp=result['TextTyp'],
+            entryTyp=result['EntryTyp'],
+            shopNo=result['ShopNo'],
+            registerNo=result['RegisterNo'],
+            timeStamp=result['TimeStamp'],
+            entries=per_barcode_data
+            )
         return retval
 
     def refund_inquiry(self, store_code, pos_no, timestamp, barcodes):

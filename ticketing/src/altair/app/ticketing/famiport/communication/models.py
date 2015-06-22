@@ -213,6 +213,18 @@ class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
     """
     __tablename__ = 'FamiPortRefundEntryRequest'
     _encryptedFields = []
+    _unserialized_attrs = (
+        ('businessFlg', 'BusinessFlg'),
+        ('textTyp', 'TextTyp'),
+        ('entryTyp', 'EntryTyp'),
+        ('shopNo', 'ShopNo'),
+        ('registerNo', 'RegisterNo'),
+        ('timeStamp', 'TimeStamp'),
+        ('barCode1', 'BarCode1'),
+        ('barCode2', 'BarCode2'),
+        ('barCode3', 'BarCode3'),
+        ('barCode4', 'BarCode4'),
+        )
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
@@ -238,7 +250,11 @@ class FamiPortRefundEntryRequest(Base, WithCreatedAt, FamiPortRequest):
 class FamiPortResponse(object):
     def __str__(self):
         value_list = []
-        for attribute_name in self._serialized_attrs:
+        for attribute_name_or_pair in self._serialized_attrs:
+            if isinstance(attribute_name_or_pair, basestring):
+                attribute_name = attribute_name_or_pair
+            else:
+                attribute_name = attribute_name_or_pair[0]
             attribute = getattr(self, attribute_name)
             if attribute:
                 if not isinstance(attribute, (str, unicode)):  # noqa
@@ -509,48 +525,48 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     """
     __tablename__ = 'FamiPortRefundEntryResponse'
     _serialized_attrs = (
-        'businessFlg',
-        'textTyp',
-        'entryTyp',
-        'shopNo',
-        'registerNo',
-        'timeStamp',
-        'barCode1',
-        'resultCode1',
-        'mainTitle1',
-        'perfDay1',
-        'repayment1',
-        'refundStart1',
-        'refundEnd1',
-        'ticketTyp1',
-        'charge1',
-        'barCode2',
-        'resultCode2',
-        'mainTitle2',
-        'perfDay2',
-        'repayment2',
-        'refundStart2',
-        'refundEnd2',
-        'ticketTyp2',
-        'charge2',
-        'barCode3',
-        'resultCode3',
-        'mainTitle3',
-        'perfDay3',
-        'repayment3',
-        'refundStart3',
-        'refundEnd3',
-        'ticketTyp3',
-        'charge3',
-        'barCode4',
-        'resultCode4',
-        'mainTitle4',
-        'perfDay4',
-        'repayment4',
-        'refundStart4',
-        'refundEnd4',
-        'ticketTyp4',
-        'charge4',
+        ('businessFlg', 'BusinessFlg'),
+        ('textTyp', 'TextTyp'),
+        ('entryTyp', 'EntryTyp'),
+        ('shopNo', 'ShopNo'),
+        ('registerNo', 'RegisterNo'),
+        ('timeStamp', 'TimeStamp'),
+        ('barCode1', 'BarCode1'),
+        ('resultCode1', 'ResultCode1'),
+        ('mainTitle1', 'MainTitle1'),
+        ('perfDay1', 'PerfDay1'),
+        ('repayment1', 'Repayment1'),
+        ('refundStart1', 'RefundStart1'),
+        ('refundEnd1', 'RefundEnd1'),
+        ('ticketTyp1', 'TicketTyp1'),
+        ('charge1', 'Charge1'),
+        ('barCode2', 'BarCode2'),
+        ('resultCode2', 'ResultCode2'),
+        ('mainTitle2', 'MainTitle2'),
+        ('perfDay2', 'PerfDay2'),
+        ('repayment2', 'Repayment2'),
+        ('refundStart2', 'RefundStart2'),
+        ('refundEnd2', 'RefundEnd2'),
+        ('ticketTyp2', 'TicketTyp2'),
+        ('charge2', 'Charge2'),
+        ('barCode3', 'BarCode3'),
+        ('resultCode3', 'ResultCode3'),
+        ('mainTitle3', 'MainTitle3'),
+        ('perfDay3', 'PerfDay3'),
+        ('repayment3', 'Repayment3'),
+        ('refundStart3', 'RefundStart3'),
+        ('refundEnd3', 'RefundEnd3'),
+        ('ticketTyp3', 'TicketTyp3'),
+        ('charge3', 'Charge3'),
+        ('barCode4', 'BarCode4'),
+        ('resultCode4', 'ResultCode4'),
+        ('mainTitle4', 'MainTitle4'),
+        ('perfDay4', 'PerfDay4'),
+        ('repayment4', 'Repayment4'),
+        ('refundStart4', 'RefundStart4'),
+        ('refundEnd4', 'RefundEnd4'),
+        ('ticketTyp4', 'TicketTyp4'),
+        ('charge4', 'Charge4'),
         )
     _responseType = None
     _serialized_collection_attrs = ()

@@ -94,14 +94,27 @@ class FamiPortRequestFactory(object):
         barcode_no = famiport_request_dict.get('barCodeNo')
         crypto = FamiPortCrypt(barcode_no) if barcode_no is not None else None
         encrypt_fields = famiport_request.encrypted_fields
-        for key, value in famiport_request_dict.items():
-            if crypto and key in encrypt_fields:
-                try:
-                    value = crypto.decrypt(value)
-                except Exception as err:
-                    raise err.__class__(
-                        'decrypt error: {}: {}'.format(err.message, value))
-            setattr(famiport_request, key, value)
+
+        unserialized_attrs = getattr(famiport_request, '_unserialized_attrs', None)
+        if unserialized_attrs is None:
+            for key, value in famiport_request_dict.items():
+                if crypto and key in encrypt_fields:
+                    try:
+                        value = crypto.decrypt(value)
+                    except Exception as err:
+                        raise err.__class__(
+                            'decrypt error: {}: {}'.format(err.message, value))
+                setattr(famiport_request, key, value)
+        else:
+            for attribute_name, key in unserialized_attrs:
+                value = famiport_request_dict.get(key)
+                if value is not None and crypto and attribute_name in encrypt_fields:
+                    try:
+                        value = crypto.decrypt(value)
+                    except Exception as err:
+                        raise err.__class__(
+                            'decrypt error: {}: {}'.format(err.message, value))
+                setattr(famiport_request, attribute_name, value)
         return famiport_request
 
 
@@ -1027,11 +1040,11 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                         famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
                         main_title = famiport_performance.name
                         perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
-                        repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+                        repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.other_fees)
                         refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
                         refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
                         ticket_typ = u'{0}'.format(refund_entry.famiport_ticket.type)
-                        charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.system_fee + refund_entry.other_fees)
+                        charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.other_fees)
             session.commit()
             return dict(
                 barCode=barcode_number,
@@ -1098,11 +1111,14 @@ class XmlFamiPortResponseGenerator(object):
 
         # Create an element for each attribute_name with
         # element.text=attribute_value and put under root.
-        for attribute_name in obj._serialized_attrs:
+        for attribute_name_or_pair in obj._serialized_attrs:
+            if isinstance(attribute_name_or_pair, basestring):
+                attribute_name = attribute_name_or_pair
+                element_name = attribute_name_or_pair
+            else:
+                attribute_name = attribute_name_or_pair[0]
+                element_name = attribute_name_or_pair[1]
             attribute_value = getattr(obj, attribute_name)
-            # XXX: assuming the element name is identical to the corresponding
-            # attribute name
-            element_name = attribute_name
             if attribute_value is not None:
                 element = etree.SubElement(root, element_name)
                 # TODO Take care of problematic chars in UTF-8 to SJIS

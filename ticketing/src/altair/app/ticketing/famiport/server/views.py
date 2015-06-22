@@ -196,13 +196,14 @@ class ResevationView(object):
         params = {}
         try:
             params = {
-                'businessFlg': request_params['businessFlg'],
-                'textTyp': request_params['textTyp'],
-                'entryTyp': request_params['entryTyp'],
-                'shopNo': request_params['shopNo'],
-                'registerNo': request_params['registerNo'],
+                'BusinessFlg': request_params['BusinessFlg'],
+                'TextTyp': request_params['TextTyp'],
+                'EntryTyp': request_params['EntryTyp'],
+                'ShopNo': request_params['ShopNo'],
+                'RegisterNo': request_params['RegisterNo'],
+                'TimeStamp': request_params['TimeStamp'],
                 }
-            for barcode_key in ['barCode1', 'barCode2', 'barCode3', 'barCode4']:
+            for barcode_key in ['BarCode1', 'BarCode2', 'BarCode3', 'BarCode4']:
                 if barcode_key in request_params:
                     params[barcode_key] = request_params[barcode_key]
         except KeyError as err:
