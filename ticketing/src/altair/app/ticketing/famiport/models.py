@@ -3,6 +3,7 @@ import types
 import time
 import random
 import hashlib
+import struct
 from datetime import time as _time
 from enum import Enum
 import sqlalchemy as sa
@@ -354,11 +355,9 @@ class FamiPortReceiptType(Enum):
     CashOnDelivery       = 3  # 代引き
 
 def create_random_sequence_number(length):
-    seq = ''
+    seq = u''
     while len(seq) < length:
-        seq += hashlib.md5(
-            (str(time.time()) + str(random.random())).encode()).hexdigest()
-    seq = seq.upper()
+        seq += u''.join(digit_encoder.encode(i) for i in struct.unpack('QQ', hashlib.md5((str(time.time()) + str(random.random())).encode()).digest()))
     return seq[:length]
 
 
@@ -545,17 +544,17 @@ class FamiPortReserveNumberSequence(Base):
     value = sa.Column(sa.String(13), nullable=False, unique=True)
 
     @classmethod
-    def get_next_value(cls, session):
+    def get_next_value(cls, famiport_client, session):
         for ii in range(15):  # retry count
             try:
-                return cls._get_next_value(session)
+                return cls._get_next_value(famiport_client, session)
             except InvalidRequestError:
                 pass
         raise FamiPortNumberingError()
 
     @classmethod
-    def _get_next_value(cls, session):
-        seq = cls(value=create_random_sequence_number(13))
+    def _get_next_value(cls, famiport_client, session):
+        seq = cls(value='%d%s' % (famiport_client.playguide.discrimination_code % 10, create_random_sequence_number(12)))
         session.add(seq)
         session.flush()
         return seq.value

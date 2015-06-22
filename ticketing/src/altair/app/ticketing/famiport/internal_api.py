@@ -148,12 +148,12 @@ def create_famiport_order(
     if type_ == FamiPortOrderType.Payment.value:
         famiport_receipts = [
             FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
                 famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
                 type=FamiPortReceiptType.Payment.value
                 ),
             FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
                 famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
                 type=FamiPortReceiptType.Ticketing.value
                 )
@@ -169,7 +169,7 @@ def create_famiport_order(
             raise AssertionError('never get here')
         famiport_receipts = [
             FamiPortReceipt(
-                reserve_number=FamiPortReserveNumberSequence.get_next_value(session),
+                reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
                 famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
                 type=receipt_type
                 )
