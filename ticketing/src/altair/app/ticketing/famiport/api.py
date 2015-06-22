@@ -700,6 +700,7 @@ def cancel_famiport_order_by_order_no(request, client_code, order_no):
     try:
         session = get_db_session(request, 'famiport')
         internel.cancel_famiport_order_by_order_no(session, order_no)
+        session.commit()
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
