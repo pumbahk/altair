@@ -189,7 +189,7 @@ def cancel_famiport_order_by_order_no(
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no)
-    faimport_order.mark_canceled(now)
+    famiport_order.mark_canceled(now)
 
 
 def mark_order_reissueable_by_order_no(
@@ -202,7 +202,7 @@ def mark_order_reissueable_by_order_no(
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no)
-    faimport_order.make_reissueable(now)
+    famiport_order.make_reissueable(now)
 
 
 def make_suborder_by_order_no(
