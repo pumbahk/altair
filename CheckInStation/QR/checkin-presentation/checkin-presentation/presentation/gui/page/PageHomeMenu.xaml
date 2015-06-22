@@ -203,7 +203,7 @@
                         IsChecked="{Binding SelectedMultiPrintModeStyle}"
                         Checked="CheckBox_Checked"
                         Unchecked="CheckBox_Unchecked"
-                        Content="複数発券のON/OFF"
+                        Content="複数発券のON"
                         />
                 </StackPanel>
             </c:MenuDialog>
@@ -230,7 +230,16 @@
             <!-- main menu -->
             
             <Grid>
-                <Canvas Width="850" Height="560">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="120"></RowDefinition>
+                    <RowDefinition Height="120"></RowDefinition>
+                    <RowDefinition Height="120"></RowDefinition>
+                    <RowDefinition Height="120"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400"></ColumnDefinition>
+                    <ColumnDefinition Width="400"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
                     <!--
                     <WrapPanel>
                         <TextBlock Style="{StaticResource SubText}">現在の通信先サーバー:</TextBlock>
@@ -242,7 +251,7 @@
                             Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Canvas.Top="20" Canvas.Left="50">
+                            Grid.Row="0" Grid.Column="0">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -263,7 +272,7 @@
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Canvas.Top="20" Canvas.Left="450">
+                            Grid.Row="0" Grid.Column="1">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -284,7 +293,7 @@
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Canvas.Top="140" Canvas.Left="50">
+                            Grid.Row="1" Grid.Column="0">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -300,13 +309,13 @@
                         <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode}"/>
                     </WrapPanel>
                     -->
-                    <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
+                <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogMultiPrint}"
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Canvas.Top="140" Canvas.Left="450">
-                        <StackPanel>
+                            Grid.Row="1" Grid.Column="1">
+                    <StackPanel>
                             <TextBlock
                     FontSize="15">
                     複数発券モード<LineBreak/>
@@ -324,7 +333,7 @@
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Canvas.Top="260" Canvas.Left="50">
+                            Grid.Row="2" Grid.Column="0">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -332,12 +341,14 @@
                             </TextBlock>
                         </StackPanel>
                     </Button>
+                
+                
                     <Button Command="{Binding ElementName=MenuDialogPrintTesting, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogPrintTesting}"
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                           Canvas.Top="260" Canvas.Left="450">
+                            Grid.Row="2" Grid.Column="1">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -347,15 +358,13 @@
                     </Button>
 
 
-                    <Button Style="{StaticResource MenuSelectButtonLast}"
+                <Button Style="{StaticResource MenuSelectButtonLast}"
                     Margin="0,30,0,0"                        
                     Focusable="True"
-                            Canvas.Top="380"
-                            Canvas.Left="175"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                        Grid.Row="3" Grid.ColumnSpan="2"
                     Click="Button_Click">受付開始</Button>
-                </Canvas>
             </Grid>
             
         </StackPanel>

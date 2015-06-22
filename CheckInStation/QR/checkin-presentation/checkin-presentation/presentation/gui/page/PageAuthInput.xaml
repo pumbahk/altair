@@ -73,10 +73,10 @@
                      Canvas.Right="140"
                      Canvas.Top="655"
                      Click="Button_Click"
-                     Style="{StaticResource SubmitButton}"
+                     Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->

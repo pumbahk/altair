@@ -35,7 +35,7 @@
                                 </ac:AdornedControl.AdornerContent>
                                 <Border
                                     Height="200"
-                                    Width="900">
+                                    Width="500">
                                     <TextBlock
                                             Margin="80"
                                             Background="Transparent"

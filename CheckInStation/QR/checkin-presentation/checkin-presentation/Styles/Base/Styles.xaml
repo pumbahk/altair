@@ -556,11 +556,12 @@
             <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Style="{StaticResource SubmitButtonContainer}">
-            <ContentPresenter x:Name="contentPresenter"
-                              ContentTemplate="{TemplateBinding Content}"
-                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                              Margin="{TemplateBinding Margin}"/>
+             <ContentPresenter
+                x:Name="contentPresenter"
+                ContentTemplate="{TemplateBinding Content}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                Margin="{TemplateBinding Margin}"/>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsPressed" Value="True">
@@ -571,6 +572,47 @@
       </Setter.Value>
     </Setter>
   </Style>
+
+    <Style TargetType="Button" x:Key="NextSubmitButton" BasedOn="{StaticResource SubmitButtonStyle}">
+        <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SubmitButtonBackGroundBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Style="{StaticResource SubmitButtonContainer}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="80"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                                <ColumnDefinition Width="100"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter
+                                x:Name="contentPresenter"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                              ContentTemplate="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                              Margin="{TemplateBinding Margin}"/>
+                            <Image
+                                Grid.Column="1"
+                                Grid.Row="0"
+                                Margin="10"
+                                Source="/Resource/next.png"/>
+                        </Grid>
+
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource MouseSubmitButtonBackGroundBrushBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style TargetType="Button" x:Key="HomeButton" BasedOn="{StaticResource GoHomeButtonStyle}">
         <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
@@ -611,11 +653,29 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Style="{StaticResource BackwardButtonContainer}">
-            <ContentPresenter x:Name="contentPresenter"
-                              ContentTemplate="{TemplateBinding Content}"
-                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                              Margin="{TemplateBinding Margin}"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="80"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="200"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="10"
+                        Source="/Resource/prev.png"
+                        />
+                    <ContentPresenter
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        x:Name="contentPresenter"
+                        ContentTemplate="{TemplateBinding Content}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        Margin="{TemplateBinding Margin}"/>
+                </Grid>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsPressed" Value="True">
@@ -852,6 +912,10 @@
         </Style.Resources>
     </Style>
 
+
+    <ImageBrush x:Key="StatusBoxCheckedBrush" ImageSource="/Resource/on_check.png"/>
+    <ImageBrush x:Key="StatusBoxUnCheckedBrush" ImageSource="/Resource/off_check.png"/>
+    
     <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsPrinted, Mode=OneTime}" Value="False">
@@ -879,11 +943,11 @@
       <Style TargetType="Border">
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="True">
-            <Setter Property="Background" Value="{DynamicResource StatusBoxSelected}"/>
+            <Setter Property="Background" Value="{DynamicResource StatusBoxCheckedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxSelected}"/>
           </DataTrigger>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
-            <Setter Property="Background" Value="{DynamicResource StatusBoxUnSelected}"/>
+            <Setter Property="Background" Value="{DynamicResource StatusBoxUnCheckedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxUnSelected}"/>
           </DataTrigger>
           <DataTrigger Binding="{Binding IsPrinted,Mode=OneTime}" Value="False">
@@ -901,10 +965,10 @@
       <Style TargetType="TextBlock">
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="True">
-            <Setter Property="Text" Value="発券予定"/>
+            <Setter Property="Text" Value=""/>
           </DataTrigger>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
-            <Setter Property="Text" Value="発券解除"/>
+            <Setter Property="Text" Value=""/>
           </DataTrigger>
           <DataTrigger Binding="{Binding IsPrinted, Mode=OneTime}" Value="False">
             <Setter Property="Text" Value="発券済み"/>

@@ -23,6 +23,7 @@ namespace checkin.presentation.gui.page
 
     class PageConfirmListOneDataContext : InputDataContext, INotifyPropertyChanged, IConfirmOneStatusInfo
     {
+        public PageConfirmListOneDataContext(Page page) : base(page) { }
         public string InputString { get; set; }
         public ObservableCollection<UnitStringPair> Candidates { get; set; }
         public override void OnSubmit()
@@ -134,7 +135,7 @@ namespace checkin.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            var ctx = new PageConfirmListOneDataContext()
+            var ctx = new PageConfirmListOneDataContext(this)
             {
                 Candidates = CandidateCreator.PrintUnitCandidates(),
                 Broker = AppUtil.GetCurrentBroker(),
@@ -171,6 +172,7 @@ namespace checkin.presentation.gui.page
                 ctx.AllPrintedVisibility = Visibility.Visible;
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;
                 ctx.NextButtonVisibility = Visibility.Hidden;
+                this.Backward.Visibility = Visibility.Hidden;
             }
 
             if (!AppUtil.GetCurrentResource().RefreshMode)

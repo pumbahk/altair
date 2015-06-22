@@ -257,6 +257,7 @@ namespace checkin.presentation.gui.page
                     pageCtx.NotPrintVisibility = Visibility.Hidden;
                     pageCtx.Description = "このＱＲコードのチケットは発券済みです";
                     pageCtx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
+                    this.Backward.Visibility = Visibility.Hidden;
                     return;
                 }
                 //this.NavigationService.Navigate(new PagePrintingConfirm());

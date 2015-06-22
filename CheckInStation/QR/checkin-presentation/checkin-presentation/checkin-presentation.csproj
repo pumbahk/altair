@@ -32,7 +32,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -94,6 +94,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="presentation\gui\command\ReturnHomeCommand.cs" />
     <Compile Include="presentation\gui\control\Loading.xaml.cs">
       <DependentUpon>Loading.xaml</DependentUpon>
     </Compile>
@@ -225,10 +226,15 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Resource Include="Resource\next.png" />
+    <Resource Include="Resource\off_check.png" />
+    <Resource Include="Resource\on_check.png" />
+    <Resource Include="Resource\orderno.png" />
+    <Resource Include="Resource\prev.png" />
+    <Resource Include="Resource\qr_read.png" />
+    <Resource Include="Resource\ticket-multi.png" />
+    <Resource Include="Resource\ticket-single.png" />
     <Resource Include="ticket.ico" />
-    <Resource Include="Resource\QRcode.jpg" />
-    <Resource Include="Resource\keyboard.jpg" />
-    <Resource Include="Resource\test.png" />
     <Resource Include="Resource\qr.input.new.jpg" />
     <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />

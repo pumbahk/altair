@@ -78,7 +78,7 @@
                      Canvas.Right="60"
                      Canvas.Top="655"
                      Click="OnSubmitWithBoundContext"
-                     Style="{StaticResource SubmitButton}">
+                     Style="{StaticResource NextSubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
                             QRコード読み込み
                         </TextBlock>

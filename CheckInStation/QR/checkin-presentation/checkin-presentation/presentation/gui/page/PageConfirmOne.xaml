@@ -187,7 +187,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <TextBlock
@@ -201,7 +201,7 @@
                         Canvas.Right="400"
                         Canvas.Top="655"
                         Visibility="{Binding MultiPrintModeVisibility}"
-                        Style="{StaticResource SubmitButton}"
+                        Style="{StaticResource NextSubmitButton}"
                         Click="OnSubmitAllPrint"
                         >
                         <TextBlock FontSize="20">他のチケットも発券</TextBlock>
@@ -210,7 +210,7 @@
                         Canvas.Right="140"
                         Canvas.Top="655"
                         Visibility="{Binding NextButtonVisibility}"
-                        Style="{StaticResource SubmitButton}"
+                        Style="{StaticResource NextSubmitButton}"
                         HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                         Click="OnSubmitPrint">

@@ -55,7 +55,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <Button
@@ -82,7 +82,7 @@
                             <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 すべて発券
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/next.png"/>
                         </Grid>
                     </Button>
 
@@ -110,7 +110,7 @@
                             <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 選択する
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/next.png"/>
                         </Grid>
                     </Button>
 

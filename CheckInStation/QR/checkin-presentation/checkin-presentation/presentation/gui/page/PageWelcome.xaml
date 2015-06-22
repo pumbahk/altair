@@ -74,7 +74,7 @@
                     </Button>
 -->
                     <Button
-                     Canvas.Left="230"
+                     Canvas.Left="200"
                      Canvas.Top="200"
                      Height="450"
                      Width="450"
@@ -93,12 +93,12 @@
                                        FontSize="80">
                                 QRコード
                             </TextBlock>
-                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/QRcode.jpg"/>
+                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/qr_read.png"/>
                         </Grid>
                     </Button>
 
                     <Button
-                     Canvas.Left="730"
+                     Canvas.Right="200"
                      Canvas.Top="200"
                      Height="450"
                      Width="450"
@@ -117,7 +117,7 @@
                                        FontSize="80">
                                 受付番号
                             </TextBlock>
-                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/keyboard.jpg"/>
+                            <Image Grid.Row="0" Grid.Column="0" Margin="40,50,40,40" Source="/Resource/orderno.png"/>
                         </Grid>
                     </Button>
 

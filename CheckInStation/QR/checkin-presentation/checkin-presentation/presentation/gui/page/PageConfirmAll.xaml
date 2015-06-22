@@ -144,7 +144,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <!-- ボタン -->
@@ -158,13 +158,14 @@
                         Canvas.Right="140"
                         Canvas.Top="655"
                         Visibility="{Binding NotPrintVisibility}"
-                        Style="{StaticResource SubmitButton}"
+                        Style="{StaticResource NextSubmitButton}"
                         Click="OnSubmitWithBoundContext"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">確認する</TextBlock>
                     </Button>
                     <Button
+                        x:Name="Backward"
                         Canvas.Left="140"
                         Canvas.Top="655"
                         Style="{StaticResource BackwardButton}"

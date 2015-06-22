@@ -43,6 +43,7 @@
 
 
                     <!-- 説明(description)-->
+                    <Viewbox StretchDirection="DownOnly" Stretch="Uniform">
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
@@ -60,21 +61,23 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock 
+                        
+                            <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
+                    </Viewbox>
 
                     <!-- ボタン -->
                     <Button
-                     Canvas.Right="60"
+                     Canvas.Right="140"
                      Canvas.Top="655"
                      Click="OnForward"
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">ログアウト</TextBlock>
                     </Button>
                     <Button
-                    Canvas.Left="60"
+                    Canvas.Left="140"
                     Canvas.Top="655"
                     Click="OnBackward"
                     Style="{StaticResource BackwardButton}"

@@ -55,7 +55,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <Button
@@ -76,14 +76,14 @@
                                 <ColumnDefinition Width="700"></ColumnDefinition>
                                 <ColumnDefinition Width="150"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <Image Grid.RowSpan="2" Grid.Column="0" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="0" Margin="20" Source="/Resource/ticket-multi.png"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource SubmitBigButtonSmallTextStyle}">
                                 一緒に購入した他のチケットも
                             </TextBlock>
                             <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 まとめて発券
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/next.png"/>
                         </Grid>
                     </Button>
 
@@ -105,11 +105,11 @@
                                 <ColumnDefinition Width="700"></ColumnDefinition>
                                 <ColumnDefinition Width="150"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <Image Grid.RowSpan="2" Grid.Column="0" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="0" Margin="20" Source="/Resource/ticket-single.png"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 1枚のみ発券
                             </TextBlock>
-                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/test.png"/>
+                            <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/next.png"/>
                         </Grid>
                     </Button>
 

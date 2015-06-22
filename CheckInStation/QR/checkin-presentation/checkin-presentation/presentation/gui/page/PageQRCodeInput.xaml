@@ -51,21 +51,32 @@
                                             Margin="0,-350,0,0"
                                             x:Name="LoadingAdorner"
                                             Visibility="{Binding IsWaiting}"
-                                            Background="Transparent">
+                                            >
                                             <ac:AdornedControl.AdornerContent>
                                                 <c:Loading Background="Transparent"></c:Loading>
                                             </ac:AdornedControl.AdornerContent>
                                             <Border
-                                                Height="200"
-                                                Width="900">
-                                                <TextBlock
+                                                Height="400"
+                                                Width="900"
+                                                HorizontalAlignment="Center">
+                                                <StackPanel>
+                                                    <TextBlock
                                                     Margin="80"
                                                     Background="Transparent"
-                                                    HorizontalAlignment="Center"
+                                                    TextAlignment="Center"
                                                     FontSize="30"
                                                     Text="{Binding Description}"
                                                 />
-
+                                                    <Viewbox StretchDirection="DownOnly" Stretch="Uniform">
+                                                    <TextBlock
+                                                    TextAlignment="Center"
+                                                    Margin="80"
+                                                    Background="Transparent"
+                                                    FontSize="30"
+                                                    Text="{Binding SubDescription}"
+                                                />
+                                                    </Viewbox>
+                                                </StackPanel>
                                             </Border>
                                         </ac:AdornedControl>
                                     </StackPanel>
@@ -114,7 +125,7 @@
                      x:Name="buttonsubmit"
                      Visibility="Hidden"
                      Click="OnSubmitWithBoundContext"
-                     Style="{StaticResource SubmitButton}"
+                     Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Focusable="False">
@@ -136,7 +147,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Focusable="False">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->

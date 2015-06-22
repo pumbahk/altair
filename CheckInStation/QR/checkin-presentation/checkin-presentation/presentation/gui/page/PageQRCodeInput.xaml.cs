@@ -65,6 +65,17 @@ namespace checkin.presentation.gui.page
             get { return this._refreshModeVisibility; }
             set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
         }
+
+        private string _subDescription;
+        public string SubDescription
+        {
+            get { return this._subDescription; }
+            set
+            {
+                this._subDescription = value;
+                this.OnPropertyChanged("SubDescription");
+            }
+        }
     }
 
 
@@ -169,6 +180,7 @@ namespace checkin.presentation.gui.page
             if (this.QRCodeInput.Text.Length < 60)
             {
                 ctx.Description = "QRコードを読込中です";
+                ctx.SubDescription = "読み込みに時間がかかる場合は\r\nもう一度最初からやり直してQRコードをしっかりかざしてください";
                 ctx.IsWaiting = Visibility.Visible;
             }
             if (this.QRCodeInput.Text.Length >= 60)
@@ -177,6 +189,7 @@ namespace checkin.presentation.gui.page
             }
             if (e.Key == Key.Return)
             {
+                ctx.SubDescription = "";
                 this.Dispatcher.InvokeAsync(() => {
                     this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
                 });

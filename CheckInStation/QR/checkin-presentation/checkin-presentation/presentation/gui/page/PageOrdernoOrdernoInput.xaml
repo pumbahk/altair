@@ -74,7 +74,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock>TOP</TextBlock>
+                        <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
                     <TextBlock
@@ -88,7 +88,7 @@
                      Canvas.Right="140"
                      Canvas.Top="655"
                      Click="Button_Click"
-                     Style="{StaticResource SubmitButton}"
+                     Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">次へ</TextBlock>
