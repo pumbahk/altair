@@ -173,8 +173,9 @@ def create_famiport_order(
         created_at=now,
         updated_at=now
         )
-    famiport_order.add_receipts()
     session.add(famiport_order)
+    session.flush()
+    famiport_order.add_receipts()
     session.commit()
     return famiport_order
 
