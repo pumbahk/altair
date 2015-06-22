@@ -1097,7 +1097,7 @@ class XmlFamiPortResponseGenerator(object):
                 doc_root,
                 encoding=self.encoding,
                 xml_declaration=False,
-                pretty_print=False,
+                pretty_print=False,  # trueにするとSerializationError: IO_ENCODERが発生するようになった
             ),
         ))
 
