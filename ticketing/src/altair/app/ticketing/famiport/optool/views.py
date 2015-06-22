@@ -14,7 +14,7 @@ class FamiPortOpToolTopView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name='top', renderer='top.mako')
+    @view_config(route_name='top', renderer='top.mako', permission='operator')
     def top(self):
         return dict()
 
@@ -59,8 +59,7 @@ class FamiPortOpLogoutView(object):
     @view_config(route_name='logout', renderer='logout.mako')
     def get(self):
         forget(self.request)
-        return HTTPFound(self.request.route_path('top'))
-
+        return HTTPFound(self.request.route_path('login'))
 
 class FamiPortOpToolExampleView(object):
     def __init__(self, context, request):
@@ -71,3 +70,72 @@ class FamiPortOpToolExampleView(object):
     def page_needs_authentication(self):
         return dict()
 
+class FamiPortSearchView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
+    @view_config(route_name='search.order', renderer='altair.app.ticketing.famiport.optool:templates/order_search.mako', permission='operator')
+    def search_order(self):
+        # TODO Search order
+        return dict()
+
+    @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
+    def search_performance(self):
+        # TODO Search performance
+        return dict()
+
+    @view_config(route_name='search.refund_performance', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako', permission='operator')
+    def search_refund_performance(self):
+        # TODO Search refund performance
+        return dict()
+
+    @view_config(route_name='search.refund_ticket', renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako', permission='operator')
+    def search_refund_performance(self):
+        # TODO Search refund ticket
+        return dict()
+
+# TODO Make sure the permission of each operation
+@view_config(permission='operator')
+class FamiPortDetailView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='order.detail', renderer='altair.app.ticketing.famiport.optool:templates/order_detail.mako')
+    def show_order_detail(self):
+        # TODO Show order detail
+        return dict()
+
+    @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako')
+    def show_performance_detail(self):
+        # TODO Show performance detail
+        return dict()
+
+    # TODO refund_performance.htmlはperformance_detail.htmlと統合できそう
+    @view_config(route_name='refund_performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_detail.mako')
+    def show_performance_detail(self):
+        # TODO Show performance detail
+        return dict()
+
+# TODO Make sure the permission of each operation
+class FamiPortRebookOrderView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='rebook_order', request_method='GET', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    def rebook_order(self):
+        # TODO rebook order
+        return dict()
+
+    @view_config(route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    def rebook_order(self):
+        # TODO rebook order
+        return dict()
+
+    @view_config(route_name='rebook_order', request_method='POST', match_param='action=reprint', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    def reprint_ticket(self):
+        # TODO reprint order
+        return dict()

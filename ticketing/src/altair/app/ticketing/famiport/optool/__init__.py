@@ -51,5 +51,17 @@ def main(global_conf, **local_conf):
     config.add_route('login',  '/login')
     config.add_route('top',  '/', factory='.resources.TopResource')
     config.add_route('example.page_needs_authentication',  '/.example/page_needs_authentication', factory='.resources.ExampleResource')
+    # Search
+    # config.add_route('index', '/', factory='.resources.SearchResource')
+    config.add_route('search.order', '/search/order', factory='.resources.SearchResource')
+    config.add_route('search.performance', '/search/performance', factory='.resources.SearchResource')
+    config.add_route('search.refund_performance', '/search/refund_performance', factory='.resources.SearchResource')
+    config.add_route('search.refund_ticket', '/search/refund_ticket', factory='.resources.SearchResource')
+    # Detail
+    config.add_route('order.detail',  '/show/order/{order_id}')
+    config.add_route('performance.detail', '/show/performance/{performance_id}')
+    config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}')
+    # Rebook or reprint
+    config.add_route('rebook_order', '/rebook_order/{action}/{order_id}') # action = (show, rebook, reprint)
     config.scan('.views')
     return config.make_wsgi_app()

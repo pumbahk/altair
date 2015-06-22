@@ -7,25 +7,28 @@
     <meta charset="UTF-8" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.famiport.optool:static/css/main.css')}" />
+    <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery-1.11.3.min.js')}"></script>
+    <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap.min.js')}"></script>
 </head>
 <body>
-  % if request.authenticated_userid:
-  <%include file="/_navigation.mako" />
-  % endif
-  <h1>${self.title()}</h1>
-  <% flash = request.session.pop_flash() %>
-  % if flash:
-  <div>
-  <ul>
-    % for message in flash:
-    <li>${message}</li>
-    % endfor
-  </ul>
-  </div>
-  % endif
+  <div class="container">
+      % if request.authenticated_userid:
+        <%include file="/_navigation.mako" />
+      % endif
+      <% flash = request.session.pop_flash() %>
+      % if flash:
+      <div>
+          <ul>
+            % for message in flash:
+            <li style="text-align:center;color:red;">${message}</li>
+            % endfor
+          </ul>
+      </div>
+      % endif
 
-  <div>
-    ${next.body()}
+      <div>
+        ${next.body()}
+      </div>
   </div>
 </body>
 </html>

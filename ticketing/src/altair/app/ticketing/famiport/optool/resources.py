@@ -20,3 +20,6 @@ class TopResource(BaseResource):
 
 class ExampleResource(BaseResource):
     pass
+
+class SearchResource(BaseResource):
+    pass
