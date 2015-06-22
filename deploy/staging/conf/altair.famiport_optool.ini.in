@@ -1,11 +1,11 @@
 [DEFAULT]
-www_check_docroot = %(here)s/../var/www-check/altair.famiport
+www_check_docroot = %(here)s/../var/www-check/altair.famiport_optool
 
 altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 altair.sqlahelper.sessions.famiport_slave.url = ${altair:famiport.db_url.slave}
 
 [app:famiport]
-use = config:%(here)s/../../baseconf/common.ini#famiport
+use = config:%(here)s/../../baseconf/common.ini#famiport_optool
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
 
 get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
