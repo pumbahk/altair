@@ -6,6 +6,7 @@ import os
 import logging
 from datetime import datetime, timedelta
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import orm
 from sqlalchemy import sql
 from pyramid.paster import bootstrap, setup_logging
 from dateutil.parser import parse as parsedatetime
@@ -95,21 +96,11 @@ def main(argv=sys.argv):
     from ..models import FamiPortOrder
     try:
         orders = session.query(FamiPortOrder) \
+            .options(orm.joinedload(FamiPortReceipt)) \
+            .join(FamiPortOrder.famiport_receipts) \
             .filter(
-                sql.or_(
-                    sql.and_(
-                        FamiPortOrder.paid_at >= start_date,
-                        FamiPortOrder.paid_at < end_date
-                        ),
-                    sql.and_(
-                        FamiPortOrder.issued_at >= start_date,
-                        FamiPortOrder.issued_at < end_date
-                        ),
-                    sql.and_(
-                        FamiPortOrder.canceled_at >= start_date,
-                        FamiPortOrder.canceled_at < end_date
-                        )
-                    )
+                FamiPortReceipt.completed_at >= start_date,
+                FamiPortReceipt.completed_at < end_date
                 ) \
             .all()
         with open(path, 'w') as f:

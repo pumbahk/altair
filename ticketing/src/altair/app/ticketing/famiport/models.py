@@ -764,6 +764,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     customer_request_received_at = sa.Column(sa.DateTime(), nullable=True)  # 顧客情報照会が行われた日時
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
     void_at = sa.Column(sa.DateTime(), nullable=True)
+    canceled_at = sa.Column(sa.DateTime(), nullable=True)
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
     barcode_no = sa.Column(sa.Unicode(13), nullable=True, unique=True)  # 支払番号
 

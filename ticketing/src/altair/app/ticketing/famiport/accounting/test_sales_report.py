@@ -230,3 +230,70 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         from .sales_report import gen_records_from_order_model
         records = gen_records_from_order_model(famiport_order)
         self.assertEqual(len(records), 2)
+
+    def test_canceled(self):
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
+        from datetime import date, datetime
+        famiport_order = FamiPortOrder(
+            famiport_order_identifier=u'123000000000',
+            type=FamiPortOrderType.CashOnDelivery.value,
+            famiport_sales_segment=self.famiport_sales_segment,
+            created_at=datetime(2014, 12, 31),
+            paid_at=datetime(2014, 12, 31),
+            issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    barcode_no=u'1%012d' % i,
+                    famiport_order_identifier=u'1%011d' % i,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31),
+                    canceled_at=datetime(2014, 12, 31) if i % 2 == 1 else None
+                    )
+                for i in range(0, 10)
+                ],
+            famiport_tickets=[
+                FamiPortTicket(
+                    barcode_number=u'0000000000000'
+                    ),
+                ]
+            )
+        from .sales_report import gen_records_from_order_model
+        records = gen_records_from_order_model(famiport_order)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], False)
+
+    def test_canceled_reissued(self):
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
+        from datetime import date, datetime
+        famiport_order = FamiPortOrder(
+            famiport_order_identifier=u'123000000000',
+            type=FamiPortOrderType.CashOnDelivery.value,
+            famiport_sales_segment=self.famiport_sales_segment,
+            created_at=datetime(2014, 12, 31),
+            paid_at=datetime(2014, 12, 31),
+            issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    barcode_no=u'1%012d' % i,
+                    famiport_order_identifier=u'1%011d' % i,
+                    shop_code=u'000000',
+                    completed_at=datetime(2014, 12, 31),
+                    canceled_at=datetime(2014, 12, 31) if i % 2 == 1 else None
+                    )
+                for i in range(0, 11)
+                ],
+            famiport_tickets=[
+                FamiPortTicket(
+                    barcode_number=u'0000000000000'
+                    ),
+                ]
+            )
+        from .sales_report import gen_records_from_order_model
+        records = gen_records_from_order_model(famiport_order)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], True)
+
+
+

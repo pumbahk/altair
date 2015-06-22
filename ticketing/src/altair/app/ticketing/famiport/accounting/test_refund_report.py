@@ -247,7 +247,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                         type=FamiPortOrderType.CashOnDelivery.value,
                         order_no=u'XX0000000000',
                         client_code=u'0',
-                        famiport_order_identifier=u'123000000000',
+                        famiport_order_identifier=u'123%09d' % i,
                         famiport_sales_segment=self.famiport_sales_segment,
                         total_amount=Decimal(130),
                         ticket_payment=Decimal(100),
@@ -259,15 +259,15 @@ class BuildRefundReportFileTest(unittest.TestCase):
                         famiport_receipts=[
                             FamiPortReceipt(
                                 type=FamiPortReceiptType.CashOnDelivery.value,
-                                famiport_order_identifier=u'123000000002',
+                                famiport_order_identifier=u'124%09d' % (j * 10 + i),
                                 shop_code=u'000000',
-                                barcode_no=u'0000000000002'
+                                barcode_no=u'1%012d' % (j * 10 + i)
                                 )
                             ],
                         )
                     )
                 )
-            for refund in refunds
+            for j, refund in enumerate(refunds)
             for i in range(0, 10)
             ]
         self.session.add_all(refund_entries)
@@ -276,3 +276,4 @@ class BuildRefundReportFileTest(unittest.TestCase):
         eor = '\n'
         build_refund_file(f, refund_entries, eor=eor)
         self.assertEqual(f.getvalue().count(eor), 100)
+
