@@ -49,12 +49,12 @@ dl.cost-detail > dd {
       <dt><p class="lineRed">抽選結果</p></dt>
       <dd>
         <div class="subInner2">
-        % if entry.is_ordered:
+        % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
 <a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
-        % elif entry.is_rejected:
+        % elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。
-        % elif not entry.lot.is_elected():
+        % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
         % endif
       </dd>
