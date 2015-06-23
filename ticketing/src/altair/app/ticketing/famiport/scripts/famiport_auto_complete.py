@@ -64,7 +64,7 @@ class InvalidReceiptStatusError(Exception):
 
 
 class FamiPortOrderAutoCompleteNotifier(object):
-    template_path = u'altair.app.ticketing:templates/famport/famport_auto_complete.txt'
+    template_path = u'altair.app.ticketing:templates/famiport/famiport_auto_complete.txt'
 
     def __init__(self, request, session, recipients=None):
         self._request = request
@@ -80,9 +80,10 @@ class FamiPortOrderAutoCompleteNotifier(object):
             sender=self.sender,
             recipient=', '.join(self.recipients),
             subject=self.subject,
-            body=self.create_body(**kwds),
+            body=self.create_body(**kwds).text,
             )
-        mailer.send(self.sender, self.mailaddrs)
+        mailer.send(self.sender, self.recipients)
+        _logger.info('send ok famiport auto complete mail')
 
     @reify
     def sender(self):
@@ -94,16 +95,16 @@ class FamiPortOrderAutoCompleteNotifier(object):
 
     @reify
     def recipients(self):
-        if isinstance(self._recipients, [list, tuple, set]):
+        if isinstance(self._recipients, (list, tuple, set)):
             return self._recipients
         elif self._recipients is None:
             try:
-                recipients = self.settings['famiport.mail.recipients']
+                recipients = self.settings['altair.famiport.mail.recipients']
                 recipients = recipients.split(',')
                 if recipients:
                     return recipients
             except KeyError as err:
-                raise InvalidMailAddressError('no stting')  # 設定なし
+                raise InvalidMailAddressError('no setting')  # 設定なし
             except Exception as err:
                 raise InvalidMailAddressError('invalid stting: {}'.format(err))  # おかしな状態
         else:
@@ -141,18 +142,22 @@ class FamiPortOrderAutoCompleter(object):
         """
         receipt = self._get_receipt(receipt_id)
         if receipt.can_auto_complete(self.time_point):
+            _logger.debug('completing: FamiPortReceipt.id={}'.format(receipt.id))
             self._do_complete(receipt)
             if not self._no_commit:
                 self._session.add(receipt)
                 self._session.commit()
+                self._notifier.notify()
         else:   # statusの状態がおかしい
+            _logger.debug('invalid status: FamiPortReceipt.id={}'.format(receipt.id))
             raise InvalidReceiptStatusError(
                 'invalid receipt status: FamiPortReceipt.id={}'.format(receipt_id))
 
     def complete_all(self):
         success_receipt_ids = []
         failed_receipt_ids = []
-        for receipt_id in self._fetch_target_famiport_receipt_ids():
+        for receipt_value in self._fetch_target_famiport_receipt_ids():
+            receipt_id = receipt_value.id
             try:
                 self.complete(receipt_id)
             except InvalidReceiptStatusError as err:
@@ -183,15 +188,16 @@ class FamiPortOrderAutoCompleter(object):
         """対象のFamiPortOrderを取る"""
         return self._session \
                    .query(FamiPortReceipt) \
-                   .filter(FamiPortReceipt.viod_at.is_(None)) \
+                   .filter(FamiPortReceipt.inquired_at.isnot(None)) \
+                   .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
+                   .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
+                   .filter(FamiPortReceipt.completed_at.is_(None)) \
+                   .filter(FamiPortReceipt.void_at.is_(None)) \
+                   .filter(FamiPortReceipt.canceled_at.is_(None)) \
                    .filter(FamiPortReceipt.rescued_at.is_(None)) \
-                   .filter(or_(
-                       FamiPortOrder.inquired_at.isnot(None),
-                       FamiPortOrder.payment_request_received_at.isnot(None),
-                       FamiPortOrder.customer_request_received_at.isnot(None),
-                       ))  \
                    .filter(FamiPortReceipt.payment_request_received_at < self.time_point) \
-                   .with_entities(FamiPortReceipt.id)
+                   .with_entities(FamiPortReceipt.id) \
+                   .all()
 
 
 def main(argv=sys.argv[1:]):
@@ -212,13 +218,15 @@ def main(argv=sys.argv[1:]):
     request = get_current_request()
     registry = env['registry']
     session = get_global_db_session(registry, 'famiport')
-    completer = FamiPortOrderAutoCompleter(request, session, recipients)
+    completer = FamiPortOrderAutoCompleter(request, session, recipients=recipients)
+    _logger.info('famiport auto complete start')
     try:
         with MultiStartLock(LOCK_NAME):
+            _logger.info('get a multiple lock')
             return completer.complete_all()
     except AlreadyStartUpError as err:
         _logger.warn('{}'.format(repr(err)))
-
+    _logger.info('famiport auto complete end')
 
 if __name__ == u"__main__":
     sys.exit(main())

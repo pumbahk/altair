@@ -935,7 +935,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
                 .filter(or_(MemberGroup.is_guest == user.get('is_guest', False),
                             MemberGroup.id == None)) \
                 .filter(or_(Membership.organization_id == user['organization_id'],
-                            Membership.id == None)) 
+                            Membership.id == None))
     return q
 
 @implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)

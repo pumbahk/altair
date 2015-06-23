@@ -912,7 +912,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     def can_auto_complete(self, now):
         return self.inquired_at is not None \
            and self.payment_request_received_at is not None \
-           and self.rescured_at is None \
+           and self.rescued_at is None \
            and self.completed_at is None \
            and self.void_at is None \
            and self.canceled_at is None \
