@@ -737,3 +737,167 @@ class FamiPortCreateOrUpdateFamiPortSalesSegmentTest(unittest.TestCase):
             update_existing=False
             )
         self.assertEqual(result, dict(new=True))
+
+class CreateFamiPortOrderTest(unittest.TestCase):
+    def setUp(self):
+        self.request = DummyRequest()
+        self.config = setUp(request=self.request)
+        self.engine = _setup_db(
+            self.config.registry,
+            [
+                'altair.app.ticketing.famiport.models',
+                ])
+        from altair.sqlahelper import get_db_session
+        self.session = get_db_session(self.request, 'famiport')
+        from .models import (
+            FamiPortClient,
+            FamiPortPlayguide,
+            FamiPortPrefecture,
+            FamiPortSalesChannel,
+            FamiPortVenue,
+            FamiPortEvent,
+            FamiPortPerformance,
+            FamiPortPerformanceType,
+            FamiPortGenre1,
+            FamiPortGenre2,
+            FamiPortSalesSegment,
+            )
+        self.client = FamiPortClient(
+            code=u'00000000000000000000001',
+            name=u'チケットスター',
+            prefix=u'000',
+            playguide=FamiPortPlayguide(discrimination_code=5)
+            )
+        self.session.add(self.client)
+        self.venue = FamiPortVenue(
+            client_code=u'00000000000000000000001',
+            userside_id=None,
+            name=u'テスト会場',
+            name_kana=u'テストカイジョウ',
+            prefecture=FamiPortPrefecture.Tokyo.id, 
+            )
+        self.session.add(self.venue)
+        self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
+        self.session.add(self.genre_1)
+        self.genre_2 = FamiPortGenre2(genre_1=self.genre_1, code=u'00000', name=u'小ジャンル')
+        self.session.add(self.genre_2)
+        self.session.flush()
+        self.event = FamiPortEvent(
+            client_code=u'00000000000000000000001',
+            name_1=u'テストイベント1',
+            name_2=u'テスト1',
+            code_1=u'000001',
+            code_2=u'0000',
+            sales_channel=FamiPortSalesChannel.FamiPortOnly.value,
+            venue_id=self.venue.id,
+            purchasable_prefectures=[FamiPortPrefecture.Nationwide.id],
+            start_at=datetime(2015, 10, 1, 0, 0, 0),
+            end_at=datetime(2015, 12, 31, 23, 59, 59),
+            genre_1=self.genre_1,
+            genre_2=self.genre_2,
+            keywords=[],
+            search_code=u'00000000'
+            )
+        self.session.add(self.event)
+        self.session.flush()
+        self.another_event = FamiPortEvent(
+            client_code=u'00000000000000000000001',
+            name_1=u'テストイベント2',
+            name_2=u'テスト2',
+            code_1=u'000002',
+            code_2=u'0000',
+            sales_channel=FamiPortSalesChannel.FamiPortOnly.value,
+            venue_id=self.venue.id,
+            purchasable_prefectures=[FamiPortPrefecture.Nationwide.id],
+            start_at=datetime(2015, 10, 1, 0, 0, 0),
+            end_at=datetime(2015, 12, 31, 23, 59, 59),
+            genre_1=self.genre_1,
+            genre_2=self.genre_2,
+            keywords=[],
+            search_code=u'00000000'
+            )
+        self.session.add(self.another_event)
+        self.session.flush()
+        self.performance = FamiPortPerformance(
+            userside_id=None,
+            famiport_event_id=self.event.id,
+            code=u'000',
+            name=u'公演1',
+            type=FamiPortPerformanceType.Normal.value,
+            searchable=False,
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            start_at=datetime(2015, 10, 1, 0, 0, 0),
+            ticket_name=None
+            )
+        self.session.add(self.performance)
+        self.another_performance = FamiPortPerformance(
+            userside_id=None,
+            famiport_event_id=self.another_event.id,
+            code=u'000',
+            name=u'公演2',
+            type=FamiPortPerformanceType.Normal.value,
+            searchable=False,
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            start_at=datetime(2015, 10, 1, 0, 0, 0),
+            ticket_name=None
+            )
+        self.session.add(self.performance)
+        self.session.flush()
+        self.sales_segment = FamiPortSalesSegment(
+            famiport_performance_id=self.performance.id,
+            code=u'000',
+            name=u'テスト',
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            published_at=datetime(2015, 5, 1),
+            start_at=datetime(2015, 7, 1),
+            end_at=datetime(2015, 9, 30),
+            auth_required=False,
+            seat_selection_start_at=datetime(2015, 8, 1)
+            )
+        self.session.add(self.sales_segment)
+        self.session.flush()
+
+    def tearDown(self):
+        _teardown_db(self.config.registry)
+        tearDown()
+
+    def test_it(self):
+        from .models import FamiPortOrderType, FamiPortTicketType
+        from decimal import Decimal
+        from datetime import datetime
+        from .api import create_famiport_order
+        create_famiport_order(
+            self.request,
+            client_code=self.client.code,
+            type_=FamiPortOrderType.CashOnDelivery.value,
+            event_code_1=self.event.code_1,
+            event_code_2=self.event.code_2,
+            performance_code=self.performance.code,
+            sales_segment_code=self.sales_segment.code,
+            order_no=u'XX0000000000',
+            customer_name=u'購入者　氏名',
+            customer_phone_number=u'0123456789',
+            customer_address_1=u'住所1',
+            customer_address_2=u'住所2',
+            total_amount=Decimal(1432),
+            ticketing_fee=Decimal(216),
+            system_fee=Decimal(216),
+            ticket_payment=Decimal(1000),
+            tickets=[
+                dict(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_no=u'0000000000001',
+                    template=u'TTEV000001',
+                    data=u'<ticket>test</ticket>'
+                    ),
+                dict(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_no=u'0000000000001',
+                    template=u'TTEV000001',
+                    data=u'<ticket>test</ticket>'
+                    )
+                ],
+            payment_start_at=datetime(2015, 6, 1, 0, 0, 0),
+            payment_due_at=datetime(2015, 6, 4, 0, 0, 0)
+            )
+
