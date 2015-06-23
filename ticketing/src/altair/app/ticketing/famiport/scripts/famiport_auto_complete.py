@@ -35,7 +35,11 @@ from altair.multilock import (
     )
 from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.core.models import Mailer
-from altair.app.ticketing.famiport.models import FamiPortReceipt
+from altair.app.ticketing.famiport.models import (
+    FamiPortShop,
+    FamiPortReceipt,
+    FamiPortReceiptType,
+    )
 
 _logger = logging.getLogger(__file__)
 LOCK_NAME = 'FAMIPORT_AUTO_COMPLETE'  # 多重起動防止用の名前
@@ -65,6 +69,10 @@ class InvalidMailAddressError(FamiPortAutoCompleteError):
 
 class InvalidReceiptStatusError(FamiPortAutoCompleteError):
     u"""FamiPortReceiptの状態がおかしい"""
+
+
+class InvalidReceiptTypeError(FamiPortAutoCompleteError):
+    u"""FamiPortReceiptのtypeがおかしい"""
 
 
 class FamiPortOrderAutoCompleteNotificationContext(object):
@@ -115,20 +123,21 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
         return self._receipt.famiport_order_identifier
 
     @reify
-    def order_ticket_no(self):
-        return u'???'
-
-    @reify
-    def exchange_ticket_no(self):
-        return u'???'
-
-    @reify
     def total_amount(self):
         return self._famiport_order.total_amount
 
     @reify
     def classifier(self):
-        return u'???'
+        type_ = self._receipt.type
+        if type_ == FamiPortReceiptType.Payment.value:
+            return u'前払'
+        elif type_ == FamiPortReceiptType.Ticketing.value:
+            return u'代済発券または前払い後日発券'
+        elif type_ == FamiPortReceiptType.CashOnDelivery.value:
+            return u'代済'
+        else:
+            raise InvalidReceiptTypeError(
+                'invalid famiport receipt type: FamiPortReceipt.type={}'.format(type_))
 
     @reify
     def issued_at(self):
@@ -143,7 +152,8 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
 
     @reify
     def shop_name(self):
-        return u'???'
+        shop = self._session.query(FamiPortShop).filter_by(code=self.shop_code).first()
+        return shop.name if shop else ''
 
     @reify
     def event_code_1(self):
@@ -283,7 +293,7 @@ class FamiPortOrderAutoCompleter(object):
             if not self._no_commit:
                 self._session.add(receipt)
                 self._session.commit()
-            self._notify(receipt)
+                self._notify(receipt)
         else:   # statusの状態がおかしい
             _logger.debug('invalid status: FamiPortReceipt.id={}'.format(receipt.id))
             raise InvalidReceiptStatusError(
