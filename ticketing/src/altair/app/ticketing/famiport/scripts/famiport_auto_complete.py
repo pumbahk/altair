@@ -27,7 +27,7 @@ from sqlalchemy.orm.exc import (
     )
 from pyramid.paster import bootstrap, setup_logging
 from pyramid.decorator import reify
-from pyramid.renderers import render_to_response
+from pyramid.renderers import render
 from pyramid.threadlocal import get_current_request
 from altair.multilock import (
     MultiStartLock,
@@ -59,6 +59,113 @@ class InvalidReceiptStatusError(Exception):
     u"""FamiPortReceiptの状態がおかしい"""
 
 
+class FamiPortOrderAutoCompleteNotificationContext(object):
+    def __init__(self, request, session, receipt, time_point):
+        self._request = request
+        self._session = session
+        self._receipt = receipt
+        self._time_point = time_point
+
+    @reify
+    def _famiport_order(self):
+        return self._receipt.famiport_order
+
+    @reify
+    def _famiport_sales_segment(self):
+        return self._famiport_order.famiport_sales_segment
+
+    @reify
+    def _famiport_performance(self):
+        return self._famiport_sales_segment.famiport_performance
+
+    @reify
+    def _famiport_event(self):
+        return self._famiport_performance.famiport_event
+
+    @reify
+    def _famiport_client(self):
+        return self._famiport_order.famiport_client
+
+    @reify
+    def _famiport_playguide(self):
+        return self._famiport_client.playguide
+
+    @reify
+    def time_point(self):
+        return self._time_point.strftime('%Y/%m/%d %H:%M:%S')
+
+    @reify
+    def reserve_number(self):
+        return self._receipt.reserve_number
+
+    @reify
+    def barcode_no(self):
+        return self._receipt.barcode_no
+
+    @reify
+    def order_identifier(self):
+        return self._receipt.famiport_order_identifier
+
+    @reify
+    def order_ticket_no(self):
+        return u'???'
+
+    @reify
+    def exchange_ticket_no(self):
+        return u'???'
+
+    @reify
+    def total_amount(self):
+        return self._famiport_order.total_amount
+
+    @reify
+    def classifier(self):
+        return u'???'
+
+    @reify
+    def issued_at(self):
+        if self._famiport_order.issued_at:
+            return unicode(self._receipt.famiport_order.issued_at.strftime('%Y/%m/%d %H:%M:%S'))
+        else:
+            return ''
+
+    @reify
+    def shop_code(self):
+        return self._receipt.shop_code
+
+    @reify
+    def shop_name(self):
+        return u'???'
+
+    @reify
+    def event_code_1(self):
+        return self._famiport_event.code_1
+
+    @reify
+    def event_code_2(self):
+        return self._famiport_event.code_2
+
+    @reify
+    def event_name_1(self):
+        return self._famiport_event.name_1
+
+    @reify
+    def event_name_2(self):
+        return self._famiport_event.name_2
+
+    @reify
+    def performance_name(self):
+        return self._famiport_performance.name
+
+    @reify
+    def performance_code(self):
+        return self._famiport_performance.code
+
+    @reify
+    def playguide_code(self):
+        return self._famiport_playguide.discrimination_code
+
+
 class FamiPortOrderAutoCompleteNotifier(object):
     template_path = u'altair.app.ticketing:templates/famiport/famiport_auto_complete.txt'
 
@@ -72,12 +179,13 @@ class FamiPortOrderAutoCompleteNotifier(object):
         return Mailer(self.settings)
 
     def notify(self, **kwds):
+        """送信処理"""
         mailer = self.get_mailer()
         mailer.create_message(
             sender=self.sender,
             recipient=', '.join(self.recipients),
             subject=self.subject,
-            body=self.create_body(**kwds).text,
+            body=self.create_body(**kwds),
             )
         mailer.send(self.sender, self.recipients)
         _logger.info('send ok famiport auto complete mail')
@@ -100,10 +208,13 @@ class FamiPortOrderAutoCompleteNotifier(object):
                 recipients = recipients.split(',')
                 if recipients:
                     return recipients
+                else:
+                    raise InvalidMailAddressError('no setting')  # 設定なし
             except KeyError as err:
                 raise InvalidMailAddressError('no setting')  # 設定なし
             except Exception as err:
                 raise InvalidMailAddressError('invalid stting: {}'.format(err))  # おかしな状態
+
         else:
             raise InvalidMailAddressError('Invalid mail address: {}'.format(repr(self._mailaddrs)))
 
@@ -113,7 +224,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
             self._time_point.strftime('%Y/%m/%d %H:%M:%S'))
 
     def create_body(self, **kwds):
-        return render_to_response(self.template_path, kwds)
+        return render(self.template_path, kwds)
 
 
 class FamiPortOrderAutoCompleter(object):
@@ -145,11 +256,20 @@ class FamiPortOrderAutoCompleter(object):
             if not self._no_commit:
                 self._session.add(receipt)
                 self._session.commit()
-                self._notifier.notify()
+            self._notify(receipt)
         else:   # statusの状態がおかしい
             _logger.debug('invalid status: FamiPortReceipt.id={}'.format(receipt.id))
             raise InvalidReceiptStatusError(
                 'invalid receipt status: FamiPortReceipt.id={}'.format(receipt_id))
+
+    def _notify(self, receipt):
+        context = FamiPortOrderAutoCompleteNotificationContext(
+            request=self._request,
+            session=self._session,
+            receipt=receipt,
+            time_point=self.time_point,
+            )
+        self._notifier.notify(data=context)
 
     def complete_all(self):
         success_receipt_ids = []
@@ -201,7 +321,7 @@ class FamiPortOrderAutoCompleter(object):
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('--stdout', default=False, action='store_true')
-    parser.add_argument('--to', default=None)
+    parser.add_argument('--recipients', default=None)
     parser.add_argument('--no-commit', default=None, action='store_true')
     parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
     args = parser.parse_args(argv)
@@ -210,8 +330,8 @@ def main(argv=sys.argv[1:]):
         setup_logging(args.config)
 
     recipients = None
-    if args.to:
-        recipients = args.split(',')
+    if args.recipients:
+        recipients = args.recipients.split(',')
 
     env = bootstrap(args.config)
     request = get_current_request()
