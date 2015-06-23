@@ -5,72 +5,20 @@ altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 altair.sqlahelper.sessions.famiport_slave.url = ${altair:famiport.db_url.slave}
 altair.sqlahelper.sessions.famiport_comm.url = ${altair:famiport.db_url.master}
 
-[app:famiport]
-use = config:%(here)s/../../baseconf/common.ini#famiport
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
+[app:main]
+use = config:%(here)s/../../baseconf/common.ini#famiport.worker
 
 get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
 get altair.sqlahelper.sessions.famiport_slave.url = altair.sqlahelper.sessions.famiport_slave.url
 get altair.sqlahelper.sessions.famiport_comm.url = altair.sqlahelper.sessions.famiport_comm.url
-
-; altair:site-data
-altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
-
-; Beaker
-session.type = ${altair:beaker_backend_type}
-session.data_dir = %(here)s/tmp/beaker/data
-session.lock_dir = %(here)s/tmp/beaker/lock
-
-cache.type = ${altair:beaker_backend_type}
-cache.data_dir = %(here)s/tmp/beaker/data
-cache.lock_dir = %(here)s/tmp/beaker/lock
-
-; altair.httpsession
-altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
-altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
 
 ; altair.mq
 altair.ticketing.famiport.mq = altair.mq.consumer.pika_client_factory
                                altair.mq.publisher.pika_publisher_factory
 altair.ticketing.famiport.mq.url = ${altair:ticketing.mq_url}
 
-[app:www-check]
-use = egg:Paste#static
-document_root = %(www_check_docroot)s
-
-[filter:prefix]
-use = egg:PasteDeploy#prefix
-prefix = /famiport
-
-[pipeline:pipeline]
-pipeline =
-    prefix
-    famiport
-
-[composite:main]
-use = egg:Paste#urlmap
-/ = pipeline
-/.www-check = www-check
-
-[server:main]
-use  = egg:gunicorn#main
-#host = 0.0.0.0
-port = %(http_port)s
-workers = 1
-timeout = 3600
-graceful_timeout = 3600
 
 # Begin logging configuration
-
-[pshell]
-setup = altair.app.ticketing.famiport.scripts.pshell.setup
-
-[alembic]
-script_location = %(here)s/../../../ticketing/src/altair/app/ticketing/famiport/alembic
-get sqlalchemy.url = altair.sqlahelper.sessions.famiport.url
-sqlalchemy.echo = true
 
 [loggers]
 keys = root, altair, ticketing, famiport, sqlalchemy
@@ -123,7 +71,7 @@ formatter = generic
 
 [handler_fluent]
 class = fluent.handler.FluentHandler
-args = ('altair.famiport', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+args = ('altair.famiport.worker', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
 level = NOTSET
 formatter = generic
 

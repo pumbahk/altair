@@ -56,7 +56,7 @@ class ResevationView(object):
         """responseのpayloadを生成する
         """
         response_builder = get_response_builder(self.request, famiport_request)
-        famiport_response = response_builder.build_response(famiport_request, self.session, self.now)
+        famiport_response = response_builder.build_response(famiport_request, self.session, self.now, self.request)
         self.comm_session.add(famiport_response)
         self.comm_session.commit()
         payload_builder = get_xmlResponse_generator(famiport_response)

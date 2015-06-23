@@ -55,21 +55,25 @@ class LocallyDispatchingPublisherConsumer(object):
         def __init__(self, connection):
             self.connection = connection
             self.queue = None
+            self.passive = None
             self.durable = None
             self.exclusive = None
             self.auto_delete = None
             self.nowait = None
             self.ack_called = False
             self.callback = None
+            self.arguments = None
             self.handler = None
 
-        def queue_declare(self, queue, durable, exclusive, auto_delete, nowait, callback):
+        def queue_declare(self, callback, queue='', passive=False, durable=False, exclusive=False, auto_delete=False, nowait=False, arguments=None):
+            self.callback = callback
             self.queue = queue
+            self.passive = passive
             self.durable = durable
             self.exclusive = exclusive
             self.auto_delete = auto_delete
             self.nowait = nowait
-            self.callback = callback
+            self.arguments = arguments
 
         def basic_qos(self, prefetch_size=0, prefetch_count=0, all_channels=False):
             pass

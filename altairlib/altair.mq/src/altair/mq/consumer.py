@@ -50,25 +50,16 @@ class TaskMapper(object):
             )
 
     def declare_queue(self, channel):
-        logger.debug("{name} declare queue {settings}".format(name=self.name,
-                                                              settings=self.queue_settings))
-
-        def on_queue_declared(frame):
+        def on_queue_declared(frame, queue):
             logger.debug('declared: {0}'.format(self.name))
             channel.basic_qos(
                 prefetch_size=self.prefetch_size,
                 prefetch_count=self.prefetch_count
                 )
-            consumer_tag = channel.basic_consume(self.handle_delivery,
-                                                      queue=self.queue_settings.queue)
+            consumer_tag = channel.basic_consume(self.handle_delivery, queue=queue)
             logger.debug('consume: {0}'.format(consumer_tag))
-        
-        channel.queue_declare(queue=self.queue_settings.queue, 
-                              durable=self.queue_settings.durable, 
-                              exclusive=self.queue_settings.exclusive,
-                              auto_delete=self.queue_settings.auto_delete,
-                              nowait=self.queue_settings.nowait,
-                              callback=on_queue_declared)
+
+        self.queue_settings.queue_declare(self, channel, on_queue_declared)
 
     def handle_delivery(self, channel, method, properties, body):
         logger.debug('handle_delivery: self=%r, channel=%s, method=%s, properties=%r, body=%s' % (self, channel, method, properties, body))
@@ -132,7 +123,7 @@ class TaskDispatcher(object):
         conn_params = channel.connection.params
         environ = {
             'REQUEST_METHOD': 'POST',
-            'SCRIPT_NAME': '/' + task_mapper.queue_settings.queue,
+            'SCRIPT_NAME': '/' + task_mapper.queue_settings.script_name,
             'PATH_INFO': task_mapper.name,
             'wsgi.url_scheme': 'amqps' if conn_params.ssl else 'amqp',
             'SERVER_NAME': conn_params.host,

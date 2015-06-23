@@ -18,14 +18,14 @@ else:
 
 class GetNowTest(TestCase):
     def test_it(self):
-        from ..famiport_auto_complete import _get_now as target
+        from ..autocomplete import _get_now as target
         _now = target()
         self.assertTrue(isinstance(_now, datetime))
 
 
 class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
     def _get_klass(self):
-        from ..famiport_auto_complete import FamiPortOrderAutoCompleteNotificationContext as klass
+        from ..autocomplete import FamiPortOrderAutoCompleteNotificationContext as klass
         return klass
 
     def _create(self, *args, **kwds):
@@ -33,7 +33,7 @@ class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
         return klass(*args, **kwds)
 
     def setUp(self):
-        from ...models import (
+        from ..models import (
             FamiPortOrder,
             FamiPortEvent,
             FamiPortClient,
@@ -135,15 +135,15 @@ class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
 
 class FamiPortOrderAutoCompleteNotificationContext_classifier_Test(TestCase):
     def _get_target_class(self):
-        from ..famiport_auto_complete import FamiPortOrderAutoCompleteNotificationContext as klass
+        from ..autocomplete import FamiPortOrderAutoCompleteNotificationContext as klass
         return klass
 
     def _get_type(self):
-        from ...models import FamiPortReceiptType as klass
+        from ..models import FamiPortReceiptType as klass
         return klass
 
     def _create(self, type_):
-        from ...models import FamiPortReceipt
+        from ..models import FamiPortReceipt
         receipt = mock.Mock(
             type=type_,
             spec=FamiPortReceipt,
@@ -171,11 +171,11 @@ class FamiPortOrderAutoCompleteNotificationContext_classifier_Test(TestCase):
     def test_cache_on_delivery(self):
         type_class = self._get_type()
         obj = self._create(type_class.CashOnDelivery.value)
-        self.assertEqual(obj.classifier, u'代済')
+        self.assertEqual(obj.classifier, u'代引')
 
 class FamiPortOrderAutoCopleterTest(TestCase):
     def _get_target_class(self):
-        from ..famiport_auto_complete import FamiPortOrderAutoCompleter as klass
+        from ..autocomplete import FamiPortOrderAutoCompleter as klass
         return klass
 
     def _get_target(self, *args, **kwds):
@@ -183,7 +183,7 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         return klass(*args, **kwds)
 
     @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
+    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete._get_now')
     def test_timepoint(self, _get_now):
         now = datetime.now()
         nine_minutes_ago = now - timedelta(minutes=90)
@@ -193,10 +193,10 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         self.assertEqual(target.time_point, nine_minutes_ago)
 
     @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._do_complete')
+    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
+    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete.FamiPortOrderAutoCompleter._do_complete')
     def test_complete(self, _do_complete, _fetch_target_famiport_receipts):
-        from ..famiport_auto_complete import AutoCompleterStatus
+        from ..autocomplete import AutoCompleterStatus
         session = mock.Mock()
         famiport_receipts = [mock.Mock() for ii in range(10)]
         _fetch_target_famiport_receipts.return_value = famiport_receipts

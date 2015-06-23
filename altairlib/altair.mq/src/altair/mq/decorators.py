@@ -1,5 +1,4 @@
 import venusian
-from . import QueueSettings
 from . import add_task
 
 class task_config(object):
@@ -10,24 +9,13 @@ class task_config(object):
                  timeout=None,
                  consumer="",
                  queue="",
-                 passive=False,
-                 durable=True, 
-                 exclusive=False, 
-                 auto_delete=False,
-                 nowait=False,
-                 arguments=None):
+                 **queue_params):
         self.name = name
         self.root_factory = root_factory
-        self.consumer = consumer
-        self.queue_settings = QueueSettings(
-                 queue=queue,
-                 passive=passive, 
-                 durable=durable, 
-                 exclusive=exclusive, 
-                 auto_delete=auto_delete, 
-                 nowait=nowait, 
-                 arguments=arguments)
         self.timeout = timeout
+        self.consumer = consumer
+        self.queue = queue
+        self.queue_params = queue_params
 
 
     def __call__(self, wrapped):
@@ -35,15 +23,13 @@ class task_config(object):
             config = scanner.config
             add_task(config,
                      ob,
+                     name=self.name,
                      root_factory=self.root_factory,
                      timeout=self.timeout,
-                     name=self.name,
+                     queue=self.queue,
                      consumer=self.consumer,
-                     queue=self.queue_settings.queue,
-                     durable=self.queue_settings.durable,
-                     exclusive=self.queue_settings.exclusive,
-                     nowait=self.queue_settings.nowait,
-                     auto_delete=self.queue_settings.auto_delete)
+                     **self.queue_params
+                     )
 
         self.venusian.attach(wrapped, callback)
         return wrapped

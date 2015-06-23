@@ -10,12 +10,11 @@ class QueueSettings(object):
     def __init__(self,
                  queue='',
                  passive=False,
-                 durable=False,
+                 durable=True,
                  exclusive=False,
                  auto_delete=False,
                  nowait=False,
                  arguments=None):
-
         self.queue = queue
         self.passive = passive
         self.durable = durable
@@ -24,14 +23,35 @@ class QueueSettings(object):
         self.nowait = nowait
         self.arguments = arguments
 
+    def queue_declare(self, task_mapper, channel, callback):
+        logger.info("task[{name}]: declaring queue {queue} ({settings})".format(name=task_mapper.name, queue=self.queue, settings=repr(self)))
+        def _(frame):
+            logger.info("task[{name}] queue {queue} declared".format(name=task_mapper.name, queue=self.queue))
+            callback(frame, self.queue)
+            
+        channel.queue_declare(
+            queue=self.queue, 
+            passive=self.passive,
+            durable=self.durable, 
+            exclusive=self.exclusive,
+            auto_delete=self.auto_delete,
+            nowait=self.nowait,
+            arguments=self.arguments,
+            callback=_
+            )
+
+    @property
+    def script_name(self):
+        return self.queue
+
     def __repr__(self):
-        return ("queue = {0.queue}; "
-                "passive = {0.passive}; "
-                "durable = {0.durable}; "
-                "exclusive = {0.exclusive}; "
-                "auto_delete = {0.auto_delete}; "
-                "nowait = {0.nowait}; "
-                "arguments = {0.arguments}; ").format(self)
+        return ("queue={0.queue}, "
+                "passive={0.passive}, "
+                "durable={0.durable}, "
+                "exclusive={0.exclusive}, "
+                "auto_delete={0.auto_delete}, "
+                "nowait={0.nowait}, "
+                "arguments={0.arguments}").format(self)
 
 
 prefetch_size_setting_name = '%s.qos.prefetch_size' % __name__
@@ -41,15 +61,16 @@ def add_task(config, task,
              name,
              root_factory=None,
              timeout=None,
-             queue="test",
              consumer="",
-             durable=True, 
-             exclusive=False, 
-             auto_delete=False,
-             nowait=False,
+             queue="test",
              prefetch_size=None,
-             prefetch_count=None):
+             prefetch_count=None,
+             **queue_params):
     from .consumer import TaskMapper
+    if callable(queue):
+        queue_settings_factory = queue
+    else:
+        queue_settings_factory = lambda **rest_of_queue_params: QueueSettings(queue=queue, **rest_of_queue_params)
 
     if root_factory is not None:
         root_factory = config.maybe_dotted(root_factory)
@@ -61,11 +82,6 @@ def add_task(config, task,
 
     def register():
         pika_consumer = get_consumer(config.registry, consumer)
-        queue_settings = QueueSettings(queue=queue,
-                                       durable=durable,
-                                       exclusive=exclusive,
-                                       auto_delete=auto_delete,
-                                       nowait=nowait)
         if pika_consumer is None:
             raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
@@ -89,6 +105,8 @@ def add_task(config, task,
 
         task_dispatcher = pika_consumer.modify_task_dispatcher(task_dispatcher)
 
+        queue_settings = queue_settings_factory(**queue_params)
+
         pika_consumer.add_task(
             TaskMapper(
                 registry=reg,
@@ -108,7 +126,7 @@ def add_task(config, task,
                                                                    timeout=timeout))
         reg.registerUtility(task, ITask, name=name)
 
-    config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),
+    config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue_settings_factory),
                   register, order=2)
 
 

@@ -19,7 +19,8 @@ class TaskMapperTests(unittest.TestCase):
         testing.tearDown()
 
     def test_declare_queue(self):
-        settings = testing.DummyResource(
+        from .. import QueueSettings
+        settings = QueueSettings(
             queue="testing",
             durable=True,
             exclusive=False,
