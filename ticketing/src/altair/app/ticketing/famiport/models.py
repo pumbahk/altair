@@ -909,6 +909,16 @@ class FamiPortReceipt(Base, WithTimestamp):
             and not self.void_at \
             and not self.rescued_at
 
+    def can_auto_complete(self, now):
+        return self.inquired_at is not None \
+           and self.payment_request_received_at is not None \
+           and self.rescured_at is None \
+           and self.completed_at is None \
+           and self.void_at is None \
+           and self.canceled_at is None \
+           and self.canceled_at is None \
+           and self.payment_request_received_at < now
+
     @classmethod
     def get_by_reserve_number(cls, reserve_number, session):
         return session \
