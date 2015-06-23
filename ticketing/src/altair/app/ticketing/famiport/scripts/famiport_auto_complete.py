@@ -66,10 +66,11 @@ class InvalidReceiptStatusError(Exception):
 class FamiPortOrderAutoCompleteNotifier(object):
     template_path = u'altair.app.ticketing:templates/famiport/famiport_auto_complete.txt'
 
-    def __init__(self, request, session, recipients=None):
+    def __init__(self, request, session, recipients=None, time_point=None):
         self._request = request
         self._session = session
         self._recipients = recipients
+        self._time_point = time_point
 
     def get_mailer(self):
         return Mailer(self.settings)
@@ -112,7 +113,8 @@ class FamiPortOrderAutoCompleteNotifier(object):
 
     @reify
     def subject(self):
-        return u'90分VOIDバッチにより確定状態になりました'
+        return u'【TicketStar　Famiポート90分確定取引】送信日時（{}）'.format(
+            self._time_point.strftime('%Y/%m/%d %H:%M:%S'))
 
     def create_body(self, **kwds):
         return render_to_response(self.template_path, kwds)
@@ -128,7 +130,7 @@ class FamiPortOrderAutoCompleter(object):
         self._no_commit = no_commit  # commitするかどうか
         self._recipients = recipients
         self._notifier = FamiPortOrderAutoCompleteNotifier(
-            self._request, self._session, self._recipients)
+            self._request, self._session, self._recipients, time_point=self.time_point)
 
     @reify
     def time_point(self):
@@ -204,6 +206,7 @@ def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('--stdout', default=False, action='store_true')
     parser.add_argument('--to', default=None)
+    parser.add_argument('--no-commit', default=None, action='store_true')
     parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
     args = parser.parse_args(argv)
 
@@ -218,7 +221,7 @@ def main(argv=sys.argv[1:]):
     request = get_current_request()
     registry = env['registry']
     session = get_global_db_session(registry, 'famiport')
-    completer = FamiPortOrderAutoCompleter(request, session, recipients=recipients)
+    completer = FamiPortOrderAutoCompleter(request, session, no_commit=args.no_commit, recipients=recipients)
     _logger.info('famiport auto complete start')
     try:
         with MultiStartLock(LOCK_NAME):
