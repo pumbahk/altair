@@ -13,12 +13,12 @@
 ${h.lot_entry_status_as_string(entry)}
 </%self:enclose_if>
 <%mobile:band bgcolor="#ffffdd">
-%if entry.is_ordered:
+%if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。<br />
 <a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。
-%elif entry.is_rejected:
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。<br />
-%elif not entry.lot.is_elected():
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 %endif
