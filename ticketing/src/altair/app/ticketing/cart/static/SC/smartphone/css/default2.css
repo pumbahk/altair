@@ -1095,6 +1095,7 @@ input[type="submit"] {
 }
 
 /** カートのヘッダーリンク **/
+/*
 a:link.headerLink {
     color: black;
     font-size: 16px;
@@ -1120,3 +1121,4 @@ a:active.headerLink {
     font-size: 16px;
     font-weight: bold;
 }
+*/
