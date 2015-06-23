@@ -51,11 +51,19 @@ def _get_now():
     return datetime.now()
 
 
-class InvalidMailAddressError(Exception):
+class FamiPortAutoCompleteError(Exception):
+    pass
+
+
+class InvalidMailSubjectError(FamiPortAutoCompleteError):
+    u"""メールのsubjectの設定がおかしい"""
+
+
+class InvalidMailAddressError(FamiPortAutoCompleteError):
     u"""メールアドレスの設定がおかしい"""
 
 
-class InvalidReceiptStatusError(Exception):
+class InvalidReceiptStatusError(FamiPortAutoCompleteError):
     u"""FamiPortReceiptの状態がおかしい"""
 
 
@@ -175,6 +183,16 @@ class FamiPortOrderAutoCompleteNotifier(object):
         self._recipients = recipients
         self._time_point = time_point
 
+    def get_setup_errors(self):
+        try:
+            self.subject
+            self.recipients
+        except FamiPortAutoCompleteError as err:
+            _logger.error('famiport notifier setup error: {}'.format(err))
+            return [err]
+        else:
+            return []
+
     def get_mailer(self):
         return Mailer(self.settings)
 
@@ -220,8 +238,12 @@ class FamiPortOrderAutoCompleteNotifier(object):
 
     @reify
     def subject(self):
-        return u'【TicketStar　Famiポート90分確定取引】送信日時（{}）'.format(
-            self._time_point.strftime('%Y/%m/%d %H:%M:%S'))
+        fmt = ''
+        try:
+            fmt = self.settings['altair.famiport.mail.subject']
+        except KeyError as err:
+            raise InvalidMailSubjectError('invalid mail subject: {}'.format(err))
+        return self._time_point.strftime(fmt).decode('utf8')
 
     def create_body(self, **kwds):
         return render(self.template_path, kwds)
@@ -230,14 +252,19 @@ class FamiPortOrderAutoCompleteNotifier(object):
 class FamiPortOrderAutoCompleter(object):
     """POSで入金を行わず30分VOID処理も行われないFamiPortOrderを完了状態にしていく
     """
-    def __init__(self, request, session, minutes=90, no_commit=False, recipients=None):
+    def __init__(self, request, session, minutes=90, no_commit=False, recipients=None, notifier=None):
         self._request = request
         self._session = session
         self._minutes = int(minutes)
         self._no_commit = no_commit  # commitするかどうか
         self._recipients = recipients
-        self._notifier = FamiPortOrderAutoCompleteNotifier(
-            self._request, self._session, self._recipients, time_point=self.time_point)
+        self._notifier = notifier
+        if self._notifier is None:
+            self._notifier = FamiPortOrderAutoCompleteNotifier(
+                self._request, self._session, self._recipients, time_point=self.time_point)
+
+    def get_setup_errors(self):
+        return self._notifier.get_setup_errors()
 
     @reify
     def time_point(self):
@@ -342,7 +369,12 @@ def main(argv=sys.argv[1:]):
     try:
         with MultiStartLock(LOCK_NAME):
             _logger.info('get a multiple lock')
-            return completer.complete_all()
+            errors = completer.get_setup_errors()
+            if not errors:
+                return completer.complete_all()
+            else:
+                print(errors[0])
+                return 255
     except AlreadyStartUpError as err:
         _logger.warn('{}'.format(repr(err)))
     _logger.info('famiport auto complete end')
