@@ -77,6 +77,18 @@
                         <TextBlock FontSize="30">TOP</TextBlock>
                     </Button>
 
+                    <Button
+                    Canvas.Left="140"
+                    Canvas.Top="655"
+                    Click="OnBackwardWithBoundContext"
+                    Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Focusable="False"
+                    >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                    </Button>
+                    
                     <TextBlock
                         Text="※再発券モード※"
                         Canvas.Top="655"
@@ -91,7 +103,7 @@
                      Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">次へ</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ</TextBlock>
                     </Button>
                     <!--
                     <Button

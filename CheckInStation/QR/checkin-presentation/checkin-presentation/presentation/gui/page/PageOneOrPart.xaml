@@ -106,7 +106,9 @@
                                 <ColumnDefinition Width="150"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
                             <Image Grid.RowSpan="2" Grid.Column="0" Margin="20" Source="/Resource/ticket-single.png"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource SubmitBigButtonBigTextStyle}">
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Margin="0,0,0,70"
+                                       Style="{StaticResource SubmitBigButtonBigTextStyle}">
                                 1枚のみ発券
                             </TextBlock>
                             <Image Grid.RowSpan="2" Grid.Column="2" Margin="40" Source="/Resource/next.png"/>

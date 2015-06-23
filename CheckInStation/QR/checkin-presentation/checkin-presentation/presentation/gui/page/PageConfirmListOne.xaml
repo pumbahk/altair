@@ -97,24 +97,25 @@
                         Canvas.Left="50"
                         Canvas.Top="220"
                         Height="430"
+                        Width="1000"
                         Style="{StaticResource MainBorder}">
  
                         <Grid
-                            Height="90"
-                            Width="520"
+                            Height="150"
+                            Width="1000"
                             Margin="2"
                             >
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="80"/>
+                                <RowDefinition Height="150"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="500"/>
+                                <ColumnDefinition Width="1000"/>
                             </Grid.ColumnDefinitions>
                             <WrapPanel
                             Grid.Row="0"
                             Grid.Column="0"
-                            Height="80"
-                            Width="500"
+                            Height="150"
+                            Width="1000"
                             HorizontalAlignment="Center"
                             >
                                 <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>

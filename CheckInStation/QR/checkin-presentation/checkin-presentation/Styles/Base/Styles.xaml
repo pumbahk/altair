@@ -1016,8 +1016,8 @@
 
     <DataTemplate x:Key="SelectingTicketItemBoxData">
         <StackPanel Orientation="Horizontal" Width="520">
-            <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,NotifyOnValidationError=True}" Loaded="X" Width="108" Height="90">
-                <Border Width="108" Height="90">
+            <ToggleButton Style="{StaticResource StatusBoxStyle}" IsChecked="{Binding IsSelected,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,NotifyOnValidationError=True}" Loaded="X" Width="110" Height="90">
+                <Border Width="110" Height="90">
                     <TextBlock/>
                 </Border>
             </ToggleButton>
@@ -1047,8 +1047,8 @@
                       HorizontalAlignment="Left"
                       Height="90"
                       Width="410"
-                      BorderThickness="2"
-                      Margin="2,2,2,2"
+                      BorderThickness="0"
+                      Margin="0"
                       >
                     <StackPanel>
                         <WrapPanel>

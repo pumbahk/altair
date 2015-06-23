@@ -480,7 +480,7 @@
   <Target Name="Version" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="setting git commit hash" />
     <PropertyGroup>
-      <Major>0</Major>
+      <Major>1</Major>
       <Minor>0</Minor>
       <Build>0</Build>
       <Revision>0</Revision>
@@ -489,7 +489,7 @@
     <GitVersion Localpath="$(MSBuildProjectDirectory)" short="false">
       <Output TaskParameter="CommitHash" PropertyName="Revision" />
     </GitVersion>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2015" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
   <Target Name="CompressOutputDirectory" BeforeTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="compressing target $(MSBuildProjectDirectory)\bin\$(Configuration)" />

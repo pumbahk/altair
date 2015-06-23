@@ -88,7 +88,7 @@
                     <!-- 再発券許可ON/OFF -->
                     <Button Click="OnGotoRefreshMode"
                     Style="{StaticResource HeaderMenuButtonStyle}"
-                            Canvas.Top="17"
+                            Canvas.Top="45"
                             RenderTransformOrigin="10.794,2.52"
                             Canvas.Left="1060"
                             Height="64" Width="240">再発券許可ON/OFF</Button>

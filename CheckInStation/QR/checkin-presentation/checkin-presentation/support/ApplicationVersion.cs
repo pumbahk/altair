@@ -15,7 +15,7 @@ namespace checkin.presentation.support
             var assembly = Assembly.GetExecutingAssembly();
             var attribute = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true).FirstOrDefault() as AssemblyInformationalVersionAttribute;
             //return "<todo fix>";
-            return attribute.InformationalVersion.Substring(0, 3);
+            return attribute.InformationalVersion.Substring(0, "1.0.".Length+7);
         }
     }
 }

@@ -35,17 +35,29 @@ namespace checkin.presentation.gui.command
         {
             if(this.Wrapper != null)
             {
+                if (this.Wrapper is PageConfirmAll)
+                {
+                    var p = this.Wrapper as PageConfirmAll;
+                    if(p != null)
+                    {
+                        var ctx = p.DataContext as PageConfirmAllDataContext;
+                        if (ctx != null && ctx.NumberOfSelectableTicket == 0)
+                        {
+                            AppUtil.GotoWelcome(this.Wrapper);
+                            return;
+                        }
+                    }
+                }
+                if (this.Wrapper is PageConfirmListOne ||
+                    this.Wrapper is PageConfirmListAll ||
+                    this.Wrapper is PageConfirmListPart)
+                {
+                    AppUtil.GotoWelcome(this.Wrapper);
+                }
                 MessageDialog e = this.Wrapper.FindName("ErrorDialog") as MessageDialog;
                 if (e != null)
                 {
                     e.Hide();
-                }
-                if (this.Wrapper is PageConfirmListOne ||
-                    this.Wrapper is PageConfirmListAll ||
-                    this.Wrapper is PageConfirmAll ||
-                    this.Wrapper is PageConfirmListPart)
-                {
-                    AppUtil.GotoWelcome(this.Wrapper);
                 }
             }
         }

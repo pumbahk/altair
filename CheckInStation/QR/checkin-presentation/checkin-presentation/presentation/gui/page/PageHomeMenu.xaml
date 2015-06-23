@@ -309,12 +309,14 @@
                         <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode}"/>
                     </WrapPanel>
                     -->
+                <!--
                 <Button Command="{Binding ElementName=MenuDialogMultiPrint, Path=OpenCommand}"
                     CommandParameter="{Binding ElementName=MenuDialogMultiPrint}"
                     Style="{StaticResource MenuSelectButtonFirst}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Grid.Row="1" Grid.Column="1">
+                    IsEnabled="False"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Grid.Row="1" Grid.Column="1">
                     <StackPanel>
                             <TextBlock
                     FontSize="15">
@@ -323,6 +325,7 @@
                             <TextBlock Style="{StaticResource SubText}" Text="{Binding MultiPrintMode, Mode=OneWay}"></TextBlock>
                         </StackPanel>
                     </Button>
+                -->
 
                     <!--
                     <TextBlock Style="{StaticResource SubText}">テスト印刷•テスト読み取り</TextBlock>
@@ -348,7 +351,7 @@
                     Style="{StaticResource MenuSelectButtonFirst}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Grid.Row="2" Grid.Column="1">
+                            Grid.Row="1" Grid.Column="1">
                         <StackPanel>
                             <TextBlock
                     FontSize="15">

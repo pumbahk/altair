@@ -240,9 +240,12 @@ namespace checkin.presentation.gui.page
             var s = await ctx.VerifyAsync();
             this.loadingLock = true;
 
+            /*
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
+                logger.Warn("before click button");
             }
+             */
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
