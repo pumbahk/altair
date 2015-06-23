@@ -21,7 +21,6 @@ from datetime import (
     datetime,
     timedelta,
     )
-from sqlalchemy import or_
 from sqlalchemy.orm.exc import (
     NoResultFound,
     MultipleResultsFound,
@@ -36,10 +35,7 @@ from altair.multilock import (
     )
 from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.core.models import Mailer
-from altair.app.ticketing.famiport.models import (
-    FamiPortOrder,
-    FamiPortReceipt,
-    )
+from altair.app.ticketing.famiport.models import FamiPortReceipt
 
 _logger = logging.getLogger(__file__)
 LOCK_NAME = 'FAMIPORT_AUTO_COMPLETE'  # 多重起動防止用の名前
