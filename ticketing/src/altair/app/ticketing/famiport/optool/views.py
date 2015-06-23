@@ -4,8 +4,13 @@ from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
+from altair.sqlahelper import get_db_session
+from altair.app.ticketing.famiport.models import FamiPortPerformance, FamiPortEvent
 from .api import lookup_user_by_credentials
-from .forms import LoginForm
+from .forms import (
+    LoginForm,
+    SearchPerformanceForm,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +32,7 @@ class FamiPortOpLoginView(object):
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
         return_url = self.request.params.get('return_url', '')
-        form = LoginForm()
-        form.user_name(class_='form-control', placeholder='ID')
-        return dict(form=form, return_url=return_url)
+        return dict(form=LoginForm(), return_url=return_url)
         
     @view_config(route_name='login', request_method='POST', renderer='login.mako')
     def post(self):
@@ -81,10 +84,36 @@ class FamiPortSearchView(object):
         # TODO Search order
         return dict()
 
-    @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
-    def search_performance(self):
+    @view_config(route_name='search.performance', request_method='GET', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
+    def get_search_performance(self):
         # TODO Search performance
-        return dict()
+        form = SearchPerformanceForm()
+        return dict(form=form,)
+
+    @view_config(route_name='search.performance', request_method='POST', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
+    def post_search_performance(self):
+        slave_session = get_db_session(self.request, name="slave")
+        postdata = self.request.POST
+        form = SearchPerformanceForm(postdata)
+
+        query = slave_session.query(FamiPortPerformance) \
+                            .join(FamiPortEvent, FamiPortPerformance.famiport_event_id == FamiPortEvent.id)
+
+        if postdata.get('event_id'):
+            query = query.filter(FamiPortEvent.id==postdata.get('event_id'))
+
+#        if postdata.get('event_code_1'):
+
+#        if postdata.get('event_name'):
+
+#        if postdata.get('performance_name'):
+
+#        if postdata.get('venue_name'):
+
+#        if postdata.get('performance_from'):
+
+
+        return dict(form=form, count=3)
 
     @view_config(route_name='search.refund_performance', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako', permission='operator')
     def search_refund_performance(self):
