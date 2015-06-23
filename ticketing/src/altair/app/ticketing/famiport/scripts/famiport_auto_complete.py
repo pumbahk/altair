@@ -215,7 +215,7 @@ def main(argv=sys.argv[1:]):
     completer = FamiPortOrderAutoCompleter(request, session, recipients)
     try:
         with MultiStartLock(LOCK_NAME):
-            return completer.complete()
+            return completer.complete_all()
     except AlreadyStartUpError as err:
         _logger.warn('{}'.format(repr(err)))
 
