@@ -1095,6 +1095,7 @@ input[type="submit"] {
 }
 
 /** カートのヘッダーリンク **/
+/*
 a:link.headerLink {
     color: black;
     font-size: 16px;
@@ -1119,4 +1120,11 @@ a:focus.headerLink {
 a:active.headerLink {
     font-size: 16px;
     font-weight: bold;
+}
+*/
+
+/** カートのフッター **/
+.footerCopy li {
+    list-style: outside none none;
+    line-height: 1.0em;
 }
