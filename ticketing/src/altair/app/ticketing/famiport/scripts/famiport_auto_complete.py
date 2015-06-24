@@ -22,7 +22,7 @@ from altair.multilock import (
     AlreadyStartUpError,
     )
 from altair.sqlahelper import get_global_db_session
-
+from altair.timeparse import parse_time_spec
 from altair.app.ticketing.famiport.interfaces import IFamiPortOrderAutoCompleter
 from altair.app.ticketing.famiport.autocomplete import (
     FamiPortOrderAutoCompleter,
@@ -55,8 +55,19 @@ def main(argv=sys.argv[1:]):
     completer = FamiPortOrderAutoCompleter(
         registry, no_commit=args.no_commit, recipients=recipients)
     registry.registerUtility(completer, IFamiPortOrderAutoCompleter)
-    completer = FamiPortOrderAutoCompleteRunner(registry)
 
+    auto_complete_delta = None
+    try:
+        auto_complete_time = registry.settings['altair.famiport.auto_complete_time']
+        auto_complete_delta = parse_time_spec(auto_complete_time)
+    except KeyError as err:
+        _logger.exception('invalid auto complete time setting: {}'.format(err))
+        return 254
+    if auto_complete_delta is None:
+        _logger.exception('auto complete time no setting')
+        return 253
+
+    completer = FamiPortOrderAutoCompleteRunner(registry, auto_complete_delta)
     _logger.info('famiport auto complete start')
     try:
         with MultiStartLock(LOCK_NAME, engine=session.bind):

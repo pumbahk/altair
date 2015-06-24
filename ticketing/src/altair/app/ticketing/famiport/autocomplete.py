@@ -320,9 +320,9 @@ class FamiPortOrderAutoCompleter(object):
 
 
 class FamiPortOrderAutoCompleteRunner(object):
-    def __init__(self, registry, minutes=90):
+    def __init__(self, registry, delta):
         self._registry = registry
-        self._minutes = int(minutes)
+        self._delta = delta
         self._completer = self._registry.queryUtility(IFamiPortOrderAutoCompleter)
         if self._completer is None:
             raise FamiPortAutoCompleteError('completer not found')
@@ -332,7 +332,7 @@ class FamiPortOrderAutoCompleteRunner(object):
 
     @reify
     def time_point(self):
-        return _get_now() - timedelta(minutes=self._minutes)
+        return _get_now() - self._delta
 
     def complete_all(self, session):
         success_receipt_ids = []

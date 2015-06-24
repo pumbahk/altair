@@ -461,28 +461,29 @@ class FamiPortOrderAutoCompleteRunnerTest(TestCase):
     @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
     def test_time_point(self, _get_now):
         now_ = datetime.now()
+        delta = timedelta(minutes=90)
         _get_now.return_value = now_
         registry = mock.Mock()
-        minutes = 30
-        target = self._create(registry, minutes=minutes)
-        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+        target = self._create(registry, delta=delta)
+        self.assertEqual(target.time_point, now_ - delta)
 
     @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
     def test_time_point_default(self, _get_now):
         now_ = datetime.now()
         _get_now.return_value = now_
-        minutes = 90
         registry = mock.Mock()
-        target = self._create(registry)
-        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+        delta = timedelta(minutes=90)
+        target = self._create(registry, delta)
+        self.assertEqual(target.time_point, now_ - delta)
 
     def test_complete_all(self):
         from collections import namedtuple
         count = 10
+        delta = timedelta(minutes=90)
         Receipt = namedtuple('Receipt', 'id')
         receipts = [Receipt(id=ii) for ii in range(count)]
         registry = mock.Mock()
-        target = self._create(registry)
+        target = self._create(registry, delta=delta)
         target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
         complete = mock.Mock()
         target._completer.complete = complete
@@ -499,10 +500,11 @@ class FamiPortOrderAutoCompleteRunnerTest(TestCase):
         from collections import namedtuple
         from ..autocomplete import InvalidReceiptStatusError
         count = 10
+        delta = timedelta(minutes=90)
         Receipt = namedtuple('Receipt', 'id')
         receipts = [Receipt(id=ii) for ii in range(count)]
         registry = mock.Mock()
-        target = self._create(registry)
+        target = self._create(registry, delta)
         target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
         complete = mock.Mock(side_effect=InvalidReceiptStatusError())
         target._completer.complete = complete
