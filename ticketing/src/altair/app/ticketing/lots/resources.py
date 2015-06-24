@@ -69,24 +69,29 @@ class LotResourceBase(object):
             if not self.lot.auth_type:
                 acl.append((Allow, Everyone, 'lots'))
             else:
-                required_principals = set()
-                guest_exists = False
-                try:
-                    for membergroup in self.lot.sales_segment.membergroups:
-                        if membergroup.is_guest:
-                            required_principals.add('membership:%s' % membergroup.membership.name)
-                        else: 
-                            required_principals.add('membergroup:%s' % membergroup.name)
-                    effective_principals = self.request.effective_principals
-                    logger.debug('required principals: %r, provided: %r' % (required_principals, effective_principals))
-                    logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
-                    if not required_principals.isdisjoint(effective_principals):
-                        logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
-                        acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
-                    else:
-                        logger.debug('no access granted')
-                except:
-                    logger.exception('WTF?')
+                if self.lot.auth_type == 'fc_auth':
+                    required_principals = set()
+                    guest_exists = False
+                    try:
+                        for membergroup in self.lot.sales_segment.membergroups:
+                            if membergroup.is_guest:
+                                required_principals.add('membership:%s' % membergroup.membership.name)
+                            else: 
+                                required_principals.add('membergroup:%s' % membergroup.name)
+                        effective_principals = self.request.effective_principals
+                        logger.debug('required principals: %r, provided: %r' % (required_principals, effective_principals))
+                        logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
+                        if not required_principals.isdisjoint(effective_principals):
+                            logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
+                            acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
+                        else:
+                            logger.debug('no access granted')
+                    except:
+                        logger.exception('WTF?')
+                else:
+                    # XXX: 他の会員ログイン方法には MemberGroup の概念がない (この分岐はいずれ直す)
+                    logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
+                    acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
         acl.append(DENY_ALL)
         return acl
 

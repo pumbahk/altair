@@ -82,6 +82,7 @@ def setup_auth(config):
 
 def forbidden_handler(context, request):
     from altair.app.ticketing.cart.view_support import render_view_to_response_with_derived_request
+    # XXX: 本当は context をこういう使い方するべきではない
     request.context.message = u'現在{membership}としてログインしています。{lot_name}にエントリーするには再ログインが必要となります。'.format(
         membership=request.altair_auth_info['membership'],
         lot_name=request.context.lot.name
