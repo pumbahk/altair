@@ -4,6 +4,8 @@
 % endif
 <p>ログアウトするには下のボタンを押してください</p>
 <form action="${request.route_path('lots.entry.logout')}" method="POST">
+  % if request.context.lot is not None:
   <input type="hidden" name="lot_id" value="${request.context.lot.id}" />
-  <button>ログアウト</button>
+  % endif
+  <input type="submit" value="ログアウト" />
 </form>
