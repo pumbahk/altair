@@ -450,7 +450,7 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
 
     @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
     def test_it(self, _get_now):
-        """89分前のものはcompleteできない"""
+        """89分59秒前のものはcompleteできない"""
         from ..autocomplete import InvalidReceiptStatusError
         now_ = datetime.now()
         ago = now_ - timedelta(minutes=89, seconds=59)  # 89分59秒前に入金発券要求
