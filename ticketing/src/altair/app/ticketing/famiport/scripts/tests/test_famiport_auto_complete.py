@@ -376,6 +376,26 @@ class FamiPortOrderAutoCopleterTest(TestCase):
     def test_fetch_target_famiport_orders(self):
         pass
 
+    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
+    def test_time_point(self, _get_now):
+        now_ = datetime.now()
+        _get_now.return_value = now_
+        minutes = 30
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session, minutes=minutes)
+        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+
+    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
+    def test_time_point_default(self, _get_now):
+        now_ = datetime.now()
+        _get_now.return_value = now_
+        minutes = 90
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+
     def test_complete_all(self):
         from collections import namedtuple
         count = 10
