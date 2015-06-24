@@ -354,7 +354,7 @@ class FamiPortOrderAutoCopleterTest(TestCase):
     @skip('')
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._do_complete')
-    def test_complete(self, _do_complete, _fetch_target_famiport_receipts):
+    def test_complete_(self, _do_complete, _fetch_target_famiport_receipts):
         from ..famiport_auto_complete import AutoCompleterStatus
         session = mock.Mock()
         famiport_receipts = [mock.Mock() for ii in range(10)]
@@ -387,6 +387,26 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
         complete = mock.Mock()
         target.complete = complete
-        target.complete_all()
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all()
         exp_call_argrs_list = [mock.call(ii) for ii in range(count)]
         self.assertEqual(complete.call_args_list, exp_call_argrs_list)
+        self.assertEqual(sucess_receipt_ids, range(count))
+        self.assertEqual(failed_receipt_ids, [])
+
+    def test_complete_all_fail_pattern(self):
+        from collections import namedtuple
+        from ..famiport_auto_complete import InvalidReceiptStatusError
+        count = 10
+        Receipt = namedtuple('Receipt', 'id')
+        receipts = [Receipt(id=ii) for ii in range(count)]
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
+        complete = mock.Mock(side_effect=InvalidReceiptStatusError())
+        target.complete = complete
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all()
+        exp_call_argrs_list = [mock.call(ii) for ii in range(count)]
+        self.assertEqual(complete.call_args_list, exp_call_argrs_list)
+        self.assertEqual(sucess_receipt_ids, [])
+        self.assertEqual(failed_receipt_ids, range(count))
