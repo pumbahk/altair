@@ -237,7 +237,3 @@ class LotLogoutResource(LotResourceBase):
         if not lot:
             return None
         return lot
-
-    @reify
-    def _event_id(self):
-        return self.lot.event_id

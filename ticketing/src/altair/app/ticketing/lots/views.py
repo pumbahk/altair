@@ -686,4 +686,4 @@ class LogoutView(object):
         if self.context.lot is not None:
             return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context.lot.event.id, lot_id=self.context.lot.id), headers=self.request.response.headers)
         else:
-            return HTTPFound(self.context.host_base_url or "/")
+            return HTTPFound(self.context.host_base_url or "/", headers=self.request.response.headers)
