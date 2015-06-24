@@ -171,7 +171,8 @@ class FamiPortOrderAutoCompleteNotificationContext_classifier_Test(TestCase):
     def test_cache_on_delivery(self):
         type_class = self._get_type()
         obj = self._create(type_class.CashOnDelivery.value)
-        self.assertEqual(obj.classifier, u'代済')
+        self.assertEqual(obj.classifier, u'代引')
+
 
 class FamiPortOrderAutoCopleterTest(TestCase):
     def _get_target_class(self):

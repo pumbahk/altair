@@ -134,7 +134,7 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
         elif type_ == FamiPortReceiptType.Ticketing.value:
             return u'代済発券または前払い後日発券'
         elif type_ == FamiPortReceiptType.CashOnDelivery.value:
-            return u'代済'
+            return u'代引'
         else:
             raise InvalidReceiptTypeError(
                 'invalid famiport receipt type: FamiPortReceipt.type={}'.format(type_))
