@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import six
-from unittest import (
-    skip,
-    TestCase,
-    )
+from unittest import TestCase
 from datetime import (
     datetime,
     timedelta,
@@ -341,31 +338,6 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         klass = self._get_target_class()
         return klass(*args, **kwds)
 
-    @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._do_complete')
-    def test_complete_(self, _do_complete, _fetch_target_famiport_receipts):
-        from ..famiport_auto_complete import AutoCompleterStatus
-        session = mock.Mock()
-        famiport_receipts = [mock.Mock() for ii in range(10)]
-        _fetch_target_famiport_receipts.return_value = famiport_receipts
-        target = self._get_target(session)
-        res = target.complete()
-        self.assertEqual(res, AutoCompleterStatus.success.value)
-
-        do_complete_call_args_list = [call_args[0][0] for call_args in _do_complete.call_args_list]
-        session_call_args_list = [call_args[0][0] for call_args in session.add.call_args_list]
-        self.assertEqual(do_complete_call_args_list, famiport_receipts)
-        self.assertEqual(session_call_args_list, famiport_receipts)
-
-    @skip('not yet implemented')
-    def test_do_complete(self):
-        pass
-
-    @skip('not yet implemented')
-    def test_fetch_target_famiport_orders(self):
-        pass
-
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
     def test_time_point(self, _get_now):
         now_ = datetime.now()
@@ -420,3 +392,64 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         self.assertEqual(complete.call_args_list, exp_call_argrs_list)
         self.assertEqual(sucess_receipt_ids, [])
         self.assertEqual(failed_receipt_ids, range(count))
+
+    def test_complete(self):
+        receipt_id = 1
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        receipt = FamiPortReceiptFakeFactory.create()
+        receipt.id = receipt_id
+        target._get_receipt = mock.Mock(return_value=receipt)
+        target._do_complete = mock.Mock()
+        target._notify = mock.Mock()
+        target.complete(receipt_id)
+        self.assertFalse(target._no_commit)
+        self.assertEqual(target._get_receipt.call_args, mock.call(receipt_id))
+        self.assertEqual(target._do_complete.call_args, mock.call(receipt))
+        self.assertEqual(session.add.call_args, mock.call(receipt))
+        self.assertTrue(session.commit.called)
+        self.assertEqual(target._notify.call_args, mock.call(receipt))
+
+    def test_complete_error(self):
+        from ..famiport_auto_complete import InvalidReceiptStatusError
+        receipt_id = 1
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        receipt = FamiPortReceiptFakeFactory.create()
+        receipt.id = receipt_id
+        receipt.can_auto_complete = mock.Mock(return_value=False)
+        target._get_receipt = mock.Mock(return_value=receipt)
+        target._notify = mock.Mock()
+        with self.assertRaises(InvalidReceiptStatusError):
+            target.complete(receipt_id)
+
+
+class FamiPortOrderAutoCopleter_complete_Test(TestCase):
+    u"""FamiPortReceiptの90分救済措置の条件をテストする
+
+    変数
+    - inquired_at
+    - payment_request_received_at
+    - rescued_at
+    - completed_at
+    - void_at
+    - canceled_at
+    - canceled_at
+
+
+    auto completeできるのは次の条件が揃っている時
+    - inquired_at is not None -> 予約照会済み
+    - payment_request_received_at is not None -> 入金発券要求済み
+    - resued_at is None -> 90分確定されていない
+    - completed_at is None ->
+    """
+
+    def _get_target_class(self):
+        from ..famiport_auto_complete import FamiPortOrderAutoCompleter as klass
+        return klass
+
+    def _create(self, *args, **kwds):
+        klass = self._get_target_class()
+        return klass(*args, **kwds)
