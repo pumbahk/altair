@@ -1048,7 +1048,7 @@
                       Height="90"
                       Width="410"
                       BorderThickness="0"
-                      Margin="0"
+                      Margin="2"
                       >
                     <StackPanel>
                         <WrapPanel>
@@ -1086,16 +1086,19 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="500"/>
             </Grid.ColumnDefinitions>
-            <WrapPanel
+            <Viewbox
+                StretchDirection="DownOnly" Stretch="Uniform">
+                <WrapPanel
                 Grid.Row="0"
                 Grid.Column="0"
                 Height="60"
                 Width="500"
                 HorizontalAlignment="Center"
                 >
-                <TextBlock FontSize="30" FontWeight="Black" Text="{Binding ProductName}"/>
-                <TextBlock FontSize="30" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
-            </WrapPanel>
+                    <TextBlock FontSize="30" FontWeight="Black" Text="{Binding ProductName}"/>
+                    <TextBlock FontSize="30" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                </WrapPanel>
+            </Viewbox>
         </Grid>
     </DataTemplate>
     <Style TargetType="ListView" x:Key="ShowChosenTwoColumns">

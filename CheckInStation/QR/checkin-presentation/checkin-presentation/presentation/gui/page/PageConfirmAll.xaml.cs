@@ -240,12 +240,10 @@ namespace checkin.presentation.gui.page
             var s = await ctx.VerifyAsync();
             this.loadingLock = true;
 
-            /*
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
-                logger.Warn("before click button");
             }
-             */
+             
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
@@ -258,10 +256,13 @@ namespace checkin.presentation.gui.page
             }
             var ctx = this.DataContext as InputDataContext;
             var pageCtx = ctx as PageConfirmAllDataContext;
-            if (pageCtx.NumberOfPrintableTicket == 0 && pageCtx.NumberOfSelectableTicket > 0)
+            if (sender is System.Windows.Controls.Button)
             {
-                pageCtx.ErrorMessage = "発券したいチケットを選択してください";
-                return;
+                if (pageCtx.NumberOfPrintableTicket == 0 && pageCtx.NumberOfSelectableTicket > 0)
+                {
+                    pageCtx.ErrorMessage = "発券したいチケットを選択してください";
+                    return;
+                }
             }
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
@@ -281,13 +282,13 @@ namespace checkin.presentation.gui.page
 
                 if (notPrintedCount == 0)
                 {
-                    pageCtx.Description = "このＱＲコードのチケットは発券済みです";
-                    pageCtx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
+                    pageCtx.Description = "このチケットは発券済みです";
+                    pageCtx.ErrorMessage = "このチケットは発券済みです";
                     this.Backward.Visibility = Visibility.Hidden;
                     return;
                 }
                 //this.NavigationService.Navigate(new PagePrintingConfirm());
-                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 

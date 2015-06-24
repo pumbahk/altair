@@ -94,16 +94,17 @@
 
                     <!-- メインコンテンツ -->
                     <Border 
-                        Canvas.Left="50"
+                        Canvas.Left="183"
                         Canvas.Top="220"
                         Height="430"
                         Width="1000"
                         Style="{StaticResource MainBorder}">
  
                         <Grid
+                            VerticalAlignment="Top"
                             Height="150"
-                            Width="1000"
-                            Margin="2"
+                            Width="960"
+                            Margin="20"
                             >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="150"/>
@@ -111,16 +112,19 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1000"/>
                             </Grid.ColumnDefinitions>
-                            <WrapPanel
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Height="150"
-                            Width="1000"
-                            HorizontalAlignment="Center"
-                            >
-                                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>
-                                <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName, Mode=OneWay}"/>
-                            </WrapPanel>
+                            <Viewbox
+                                StretchDirection="DownOnly" Stretch="Uniform">
+                                <WrapPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Height="150"
+                                Width="1000"
+                                HorizontalAlignment="Center"
+                                >
+                                        <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>
+                                    <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName, Mode=OneWay}"/>
+                                </WrapPanel>
+                            </Viewbox>
                         </Grid>
 
                     </Border>
