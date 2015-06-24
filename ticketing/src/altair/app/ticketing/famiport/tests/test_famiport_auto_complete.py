@@ -437,9 +437,81 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
     """
 
     def _get_target_class(self):
-        from ..famiport_auto_complete import FamiPortOrderAutoCompleter as klass
+        from ..autocomplete import FamiPortOrderAutoCompleter as klass
         return klass
 
     def _create(self, *args, **kwds):
         klass = self._get_target_class()
         return klass(*args, **kwds)
+
+    def _create_famiport_receipt(self, *args, **kwds):
+        from ..models import FamiPortReceipt as klass
+        return klass(*args, **kwds)
+
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
+    def test_it(self, _get_now):
+        """89分前のものはcompleteできない"""
+        from ..autocomplete import InvalidReceiptStatusError
+        now_ = datetime.now()
+        ago = now_ - timedelta(minutes=89, seconds=59)  # 89分59秒前に入金発券要求
+        _get_now.return_value = now_
+        receipt_id = 1
+        receipt = self._create_famiport_receipt(
+            id=receipt_id,
+            inquired_at=ago,
+            payment_request_received_at=ago,
+            )
+        receipt.id = receipt_id
+        registry = mock.Mock()
+        session = mock.Mock()
+        target = self._create(registry=registry)
+        target._get_receipt = mock.Mock(return_value=receipt)
+        target._notify = mock.Mock(return_value=receipt)
+        with self.assertRaises(InvalidReceiptStatusError):
+            target.complete(session, receipt_id)
+        self.assertIsNone(receipt.rescued_at)
+        self.assertIsNone(receipt.completed_at)
+
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
+    def test_90(self, _get_now):
+        """90分00秒前のものはcompleteできる"""
+        now_ = datetime.now()
+        ago = now_ - timedelta(minutes=90, seconds=00)  # 90分00秒前に入金発券要求
+        _get_now.return_value = now_
+        receipt_id = 1
+        receipt = self._create_famiport_receipt(
+            id=receipt_id,
+            inquired_at=ago,
+            payment_request_received_at=ago,
+            )
+        receipt.id = receipt_id
+        registry = mock.Mock()
+        session = mock.Mock()
+        target = self._create(registry=registry)
+        target._get_receipt = mock.Mock(return_value=receipt)
+        target._notify = mock.Mock(return_value=receipt)
+        target.complete(session, receipt_id)
+        self.assertTrue(receipt.rescued_at)
+        self.assertTrue(receipt.completed_at)
+
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
+    def _test_91(self, _get_now):
+        """90分01秒前のものはcompleteできる"""
+        now_ = datetime.now()
+        ago = now_ - timedelta(minutes=90, seconds=01)  # 90分01秒前に入金発券要求
+        _get_now.return_value = now_
+        receipt_id = 1
+        receipt = self._create_famiport_receipt(
+            id=receipt_id,
+            inquired_at=ago,
+            payment_request_received_at=ago,
+            )
+        receipt.id = receipt_id
+        registry = mock.Mock()
+        session = mock.Mock()
+        target = self._create(registry=registry)
+        target._get_receipt = mock.Mock(return_value=receipt)
+        target._notify = mock.Mock(return_value=receipt)
+        target.complete(session, receipt_id)
+        self.assertTrue(receipt.rescued_at)
+        self.assertTrue(receipt.completed_at)

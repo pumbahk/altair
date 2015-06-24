@@ -283,7 +283,7 @@ class FamiPortOrderAutoCompleter(object):
         receipt = self._get_receipt(session, receipt_id)
         if receipt is None:
             raise NoSuchReceiptError('%d' % receipt_id)
-        if receipt.can_auto_complete(_get_now()):
+        if receipt.can_auto_complete(self.time_point):
             _logger.debug('completing: FamiPortReceipt.id={}'.format(receipt.id))
             self._do_complete(session, receipt)
             if not self._no_commit:
