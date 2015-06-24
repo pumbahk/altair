@@ -137,17 +137,24 @@ def create_famiport_order(
     if now is None:
         now = datetime.now()
     famiport_client = get_famiport_client(session, client_code)
-    famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+    famiport_order_identifier = FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session)
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
         if payment_start_at is None:
             raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|PaymentOnly')
         if payment_due_at is None:
             raise FamiPortError('payment_due_at is None while type=CashOnDelivery|Payment|PaymentOnly')
+        if payment_start_at > payment_due_at:
+            raise FamiPortError('payment_due_at is later than payment_start_at')
+        if type_ == FamiPortOrderType.CashOnDelivery.value:
+            ticketing_start_at = payment_start_at
+            ticketing_end_at = payment_due_at
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value):
         if ticketing_start_at is None:
-            raise FamiPortError('ticketing_start_at is None while type=CashOnDelivery|Payment|Ticketing')
+            raise FamiPortError('ticketing_start_at is None while type=Payment|Ticketing')
         if ticketing_end_at is None:
-            raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|Ticketing')
+            raise FamiPortError('payment_start_at is None while type=Payment|Ticketing')
+        if ticketing_start_at > ticketing_end_at:
+            raise FamiPortError('ticketing_end_at is later than ticketing_start_at')
     famiport_order = FamiPortOrder(
         client_code=client_code,
         type=type_,

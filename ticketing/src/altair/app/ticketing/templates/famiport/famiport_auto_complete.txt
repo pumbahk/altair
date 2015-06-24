@@ -1,0 +1,20 @@
+送信日：${data.time_point}
+-------------------------------------------------------------
+これはシステムからの自動送信メッセージです
+
+下記取引において90分確定しました。
+区分              : ${data.classifier}
+発券日時          : ${data.issued_at}
+店番              : ${data.shop_code}
+店名              : ${data.shop_name}
+注文ID            : ${data.order_identifier}
+合計金額          : ${data.total_amount}
+興行コード1       : ${data.event_code_1}
+興行コード2       : ${data.event_code_2}
+クライアントコード: ${data.playguide_code}
+興行名1           : ${data.event_name_1}
+興行名2           : ${data.event_name_2}
+公演コード        : ${data.performance_code}
+公演名            : ${data.performance_name}
+払込票番号        : ${data.reserve_number}
+引換票番号        : ${data.barcode_no}
