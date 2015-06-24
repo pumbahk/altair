@@ -29,7 +29,7 @@ def pingpong(request):
 
 
 @view_defaults(renderer='famiport-xml')
-class ResevationView(object):
+class ReservationView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request

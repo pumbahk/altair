@@ -11,6 +11,8 @@ from .forms import (
     LoginForm,
     SearchPerformanceForm,
 )
+from webhelpers import paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 logger = logging.getLogger(__name__)
 
@@ -84,36 +86,55 @@ class FamiPortSearchView(object):
         # TODO Search order
         return dict()
 
-    @view_config(route_name='search.performance', request_method='GET', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
-    def get_search_performance(self):
-        # TODO Search performance
+    @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
+    def search_performance(self):
         form = SearchPerformanceForm()
-        return dict(form=form,)
 
-    @view_config(route_name='search.performance', request_method='POST', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
-    def post_search_performance(self):
-        slave_session = get_db_session(self.request, name="slave")
-        postdata = self.request.POST
-        form = SearchPerformanceForm(postdata)
+        if self.request.POST or self.request.params:
+            postdata = self.request.POST
+            form = SearchPerformanceForm(postdata)
+            if form.validate():
+                slave_session = get_db_session(self.request, name="famiport")
 
-        query = slave_session.query(FamiPortPerformance) \
-                            .join(FamiPortEvent, FamiPortPerformance.famiport_event_id == FamiPortEvent.id)
+                query = slave_session.query(FamiPortPerformance) \
+                                    .outerjoin(FamiPortEvent, FamiPortPerformance.famiport_event_id == FamiPortEvent.id)
 
-        if postdata.get('event_id'):
-            query = query.filter(FamiPortEvent.id==postdata.get('event_id'))
+                if postdata.get('event_id'):
+                    query = query.filter(FamiPortEvent.id==postdata.get('event_id'))
 
-#        if postdata.get('event_code_1'):
+                if postdata.get('event_code_1'):
+                    query = query.filter(FamiPortEvent.code_1==postdata.get('event_code_1'))
+                    if postdata.get('event_code_2'):
+                        query = query.filter(FamiPortEvent.code_2==postdata.get('event_code_2'))
 
-#        if postdata.get('event_name'):
+                if postdata.get('event_name'):
+                    query = query.filter(FamiPortEvent.name_1==postdata.get('event_name'))
 
-#        if postdata.get('performance_name'):
+                if postdata.get('performance_name'):
+                    query = query.filter(FamiPortPerformance.name==postdata.get('performance_name'))
 
-#        if postdata.get('venue_name'):
+                if postdata.get('venue_name'):
+                    query = query.filter(FamiPortEvent.venue==postdata.get('venue_name'))
 
-#        if postdata.get('performance_from'):
+                if postdata.get('performance_from'):
+                    query = query.filter(FamiPortPerformance.start_at>=postdata.get('performance_from'),
+                                         FamiPortPerformance.start_at<=postdata.get('performance_to'))
 
+                performances = query.all()
+                count = query.count()
+                page_url = PageURL_WebOb_Ex(self.request)
+                pages = paginate.Page(performances,
+                                     page=self.request.GET.get('page', '1'),
+                                     item_count=count,
+                                     items_per_page=20,
+                                     url=page_url)
+        else:
+            count = 0
+            pages = []
 
-        return dict(form=form, count=3)
+        return dict(form=form,
+                    count=count,
+                    entries=pages)
 
     @view_config(route_name='search.refund_performance', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako', permission='operator')
     def search_refund_performance(self):
