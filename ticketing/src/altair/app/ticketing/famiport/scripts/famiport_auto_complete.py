@@ -197,6 +197,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
         try:
             self.subject
             self.recipients
+            self.sender
         except FamiPortAutoCompleteError as err:
             _logger.error('famiport notifier setup error: {}'.format(err))
             return [err]
@@ -220,7 +221,10 @@ class FamiPortOrderAutoCompleteNotifier(object):
 
     @reify
     def sender(self):
-        return u'dev@ticketstar.jp'
+        try:
+            return self.settings['altair.famiport.mail.sender']
+        except KeyError:
+            raise InvalidMailAddressError('no setting sender')  # 設定なし
 
     @reify
     def settings(self):

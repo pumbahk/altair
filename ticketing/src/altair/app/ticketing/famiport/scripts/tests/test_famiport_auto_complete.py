@@ -205,6 +205,25 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         target = self._create(request, session)
         self.assertEqual(target.settings, request.registry.settings)
 
+    def test_sender(self):
+        exp_sender = u'SENDER'
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = {'altair.famiport.mail.sender': exp_sender}
+        session = mock.Mock()
+        target = self._create(request, session)
+        self.assertEqual(target.sender, exp_sender)
+
+    def test_sender_no_setting(self):
+        from ..famiport_auto_complete import InvalidMailAddressError
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = {}
+        session = mock.Mock()
+        target = self._create(request, session)
+        with self.assertRaises(InvalidMailAddressError):
+            target.sender
+
 
 class FamiPortOrderAutoCopleterTest(TestCase):
     def _get_target_class(self):
