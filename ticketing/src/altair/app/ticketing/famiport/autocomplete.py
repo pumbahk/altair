@@ -285,7 +285,7 @@ class FamiPortOrderAutoCompleter(object):
             if not self._no_commit:
                 session.add(receipt)
                 session.commit()
-            self._notify(session, receipt, now_)
+                self._notify(session, receipt, now_)
         else:   # statusの状態がおかしい
             _logger.debug('invalid status: FamiPortReceipt.id={}'.format(receipt.id))
             raise InvalidReceiptStatusError(
