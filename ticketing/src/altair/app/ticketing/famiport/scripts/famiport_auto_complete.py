@@ -389,9 +389,12 @@ def main(argv=sys.argv[1:]):
             _logger.info('get a multiple lock')
             errors = completer.get_setup_errors()
             if not errors:
-                return completer.complete_all()
+                successes, fails = completer.complete_all()
+                _logger.info(
+                    'famiport auto complete finished: success={}, failed={}'.format(
+                        successes, fails))
             else:
-                print(errors[0])
+                _logger.error(errors[0])
                 return 255
     except AlreadyStartUpError as err:
         _logger.warn('{}'.format(repr(err)))
