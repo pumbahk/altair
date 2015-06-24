@@ -174,6 +174,38 @@ class FamiPortOrderAutoCompleteNotificationContext_classifier_Test(TestCase):
         self.assertEqual(obj.classifier, u'代引')
 
 
+class FamiPortOrderAutoCompleteNotifierTesetMixin(object):
+    def _get_target(self):
+        from ..famiport_auto_complete import FamiPortOrderAutoCompleteNotifier as klass
+        return klass
+
+    def _create(self, *args, **kwds):
+        target = self._get_target()
+        return target(*args, **kwds)
+
+    def _callFUT(self, *args, **kwds):
+        pass
+
+
+class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoCompleteNotifierTesetMixin):
+    def test_get_mailer(self):
+        from pyramid.testing import DummyRequest
+        from altair.app.ticketing.core.models import Mailer
+        request = DummyRequest()
+        session = mock.Mock()
+        target = self._create(request, session)
+        mailer = target.get_mailer()
+        self.assertTrue(isinstance(mailer, Mailer))
+
+    def test_settings(self):
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        self.assertEqual(target.settings, request.registry.settings)
+
+
 class FamiPortOrderAutoCopleterTest(TestCase):
     def _get_target_class(self):
         from ..famiport_auto_complete import FamiPortOrderAutoCompleter as klass
