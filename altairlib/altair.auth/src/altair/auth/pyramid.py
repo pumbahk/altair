@@ -9,7 +9,7 @@ from pyramid.interfaces import IAuthenticationPolicy, IRequest, IViewClassifier,
 from pyramid.security import Everyone, Authenticated, principals_allowed_by_permission
 
 from .api import get_auth_api, get_who_api, decide, get_request_classifier
-from .interfaces import ISessionKeeper
+from .interfaces import ISessionKeeper, IForbiddenHandler
 
 
 logger = logging.getLogger(__name__)
@@ -190,6 +190,14 @@ def challenge_view(context, request):
     except Exception:
         logger.exception("OOPS!")
         raise
+    if response is None:
+        handler = request.registry.getUtility(IForbiddenHandler)
+        if handler is not None:
+            logger.debug('forbidden_handler: %r' % handler)
+            try:
+                response = handler(context, request)
+            except Exception:
+                logger.exception('OOPS!')
     if response is None:
         msg = u'authentication failed where no challenges are necessary'
         logger.error(msg)

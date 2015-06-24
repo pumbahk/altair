@@ -4,7 +4,7 @@ import os
 import logging
 from pyramid.path import AssetResolver
 from pyramid.interfaces import IRequest
-from .interfaces import IWhoAPIDecider, IRequestClassifier, IPlugin
+from .interfaces import IWhoAPIDecider, IRequestClassifier, IPlugin, IForbiddenHandler
 from .api import get_plugin_registry
 
 logger = logging.getLogger(__name__)
@@ -58,8 +58,24 @@ def add_auth_plugin(config, auth_plugin):
                                  type_name=str(IPlugin))
     config.action('altair.auth.add_auth_plugin.{0}'.format(auth_plugin.name), register,
                   introspectables=(intr,))
+    
+    
+def set_forbidden_handler(config, forbidden_handler):
+    reg = config.registry
+
+    def register():
+        _forbiden_handler = config.maybe_dotted(forbidden_handler)
+        reg.registerUtility(forbidden_handler, IForbiddenHandler)
+
+    intr = config.introspectable(category_name='altair.auth',
+                                 discriminator='forbidden handler',
+                                 title='%r' % forbidden_handler,
+                                 type_name=str(IForbiddenHandler))
+    config.action('altair.auth.set_forbidden_handler.{0}'.format(repr(forbidden_handler)), register,
+                  introspectables=(intr,))
 
 def includeme(config):
     config.add_directive('add_auth_plugin', add_auth_plugin)
     config.add_directive('set_who_api_decider', set_who_api_decider)
     config.add_directive('set_request_classifier', set_request_classifier)
+    config.add_directive('set_forbidden_handler', set_forbidden_handler)
