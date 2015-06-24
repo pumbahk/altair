@@ -342,16 +342,6 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         return klass(*args, **kwds)
 
     @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
-    def test_timepoint_(self, _get_now):
-        now = datetime.now()
-        nine_minutes_ago = now - timedelta(minutes=90)
-        _get_now.return_value = now
-        session = mock.Mock()
-        target = self._get_target(session)
-        self.assertEqual(target.time_point, nine_minutes_ago)
-
-    @skip('')
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.FamiPortOrderAutoCompleter._do_complete')
     def test_complete_(self, _do_complete, _fetch_target_famiport_receipts):
