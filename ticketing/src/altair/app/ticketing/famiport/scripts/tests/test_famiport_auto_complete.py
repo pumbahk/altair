@@ -23,6 +23,61 @@ class GetNowTest(TestCase):
         self.assertTrue(isinstance(_now, datetime))
 
 
+class FamiPortReceiptFakeFactory(object):
+    @classmethod
+    def create(cls):
+        from ...models import (
+            FamiPortOrder,
+            FamiPortEvent,
+            FamiPortClient,
+            FamiPortReceipt,
+            FamiPortPlayguide,
+            FamiPortPerformance,
+            FamiPortSalesSegment,
+            )
+        famiport_playguide = mock.Mock(
+            discrimination_code='DISCRIMINATION_CODE',
+            spec=FamiPortPlayguide,
+            )
+        famiport_client = mock.Mock(
+            playguide=famiport_playguide,
+            spec=FamiPortClient,
+            )
+        famiport_event = mock.Mock(
+            code_1='CODE_1',
+            code_2='CODE_2',
+            name_1='NAME_1',
+            name_2='NAME_2',
+            client=famiport_client,
+            spec=FamiPortEvent,
+            )
+        famiport_performance = mock.Mock(
+            name='FAMIPORT_PERORMANCE_NAME',
+            code='FAMIPORT_PERORMANCE_CODE',
+            famiport_event=famiport_event,
+            spec=FamiPortPerformance,
+            )
+        famiport_sales_segment = mock.Mock(
+            famiport_performance=famiport_performance,
+            spec=FamiPortSalesSegment,
+            )
+        famiport_order = mock.Mock(
+            total_amount=100,
+            famiport_client=famiport_client,
+            famiport_sales_segment=famiport_sales_segment,
+            spec=FamiPortOrder,
+            )
+        receipt = mock.Mock(
+            barcode_no='BARCODE_NO',
+            reserve_number='RESERVE_NUMBER',
+            famiport_order_identifier='FAMIPORT_ORDER_IDENTIFIER',
+            shop_code='SHOP_CODE',
+            famiport_order=famiport_order,
+            spec=FamiPortReceipt,
+            )
+        return receipt
+
+
 class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
     def _get_klass(self):
         from ..famiport_auto_complete import FamiPortOrderAutoCompleteNotificationContext as klass
@@ -260,6 +315,21 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         target = self._create(request, session, time_point=now_)
         with self.assertRaises(InvalidMailSubjectError):
             target.subject
+
+    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete.render')
+    def test_create_body(self, render):
+        u"""メールのbodyを生成"""
+        from ..famiport_auto_complete import FamiPortOrderAutoCompleteNotificationContext
+        request = mock.Mock()
+        session = mock.Mock()
+        receipt = FamiPortReceiptFakeFactory.create()
+        now_ = datetime.now()
+        context = FamiPortOrderAutoCompleteNotificationContext(
+            request, session, receipt, now_)
+        target = self._create(request, session)
+        target.create_body(data=context)
+        exp_call_args = mock.call(target.template_path, dict(data=context))
+        self.assertTrue(render.call_args, exp_call_args)
 
 
 class FamiPortOrderAutoCopleterTest(TestCase):
