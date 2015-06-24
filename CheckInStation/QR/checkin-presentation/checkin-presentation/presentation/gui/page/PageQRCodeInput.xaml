@@ -41,7 +41,7 @@
                             Canvas.Left="327" 
                             Canvas.Top="169">
                                 <StackPanel HorizontalAlignment="Stretch">
-                                    <Image Visibility="{Binding IsIdle}" Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
+                                    <Image Visibility="{Binding IsIdle}" Stretch="Uniform" MaxHeight="350" Source="/Resource/qr_read.png"/>
                                         <TextBox
                                         Width="0"
                                         HorizontalAlignment="Center"

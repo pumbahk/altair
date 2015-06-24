@@ -21,10 +21,10 @@
 
                     <!-- message-->
                     <StackPanel
-                            Width="682"
-                            Height="138"
+                            Width="900"
+                            Height="400"
                             Canvas.Top="215"
-                            Canvas.Left="345"
+                            Canvas.Left="233"
                         >
                         <StackPanel.Resources>
                             <Style TargetType="TextBlock">

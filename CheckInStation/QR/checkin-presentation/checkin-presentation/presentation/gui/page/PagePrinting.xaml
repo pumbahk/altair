@@ -15,65 +15,66 @@
             <Grid Background="{StaticResource LogoBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
 
-                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
-                    
                     <!-- メインコンテンツ -->
-                    <Border Background="White" Width="717" Height="477"
-                            CornerRadius="24"
-                            Padding="40,20,40,20"
-                            Canvas.Left="327" 
-                            Canvas.Top="169">
-                        <StackPanel HorizontalAlignment="Stretch">      
-                            <!--
-                            <Image Stretch="Uniform" MaxHeight="350" Source="{Binding AdImage, Mode=OneTime}"/>
-                            -->
-                            <ac:AdornedControl
-                                Margin="0,110,0,0"
-                                x:Name="LoadingAdorner">
-                                <ac:AdornedControl.AdornerContent>
-                                    <c:Loading Background="Transparent"></c:Loading>
-                                </ac:AdornedControl.AdornerContent>
-                                <Border
-                                    Height="200"
-                                    Width="500">
-                                    <TextBlock
-                                            Margin="80"
-                                            Background="Transparent"
-                                            HorizontalAlignment="Center"
-                                            FontSize="30"
-                                            Text="{Binding SubDescription}"/>
-                                </Border>
-                            </ac:AdornedControl>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- 説明(description)-->
-                    <StackPanel
-                        Canvas.Top="90"
-                        Orientation="Horizontal"
+                    <Grid
+                        Canvas.Left="183" 
+                        Canvas.Top="100"
                         >
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Style.Triggers>
-                                    <Trigger Property="Orientation" Value="Horizontal">
-                                        <Setter Property="Canvas.Left" 
-                                                Value="{Binding RelativeSource={RelativeSource Self}, 
-                                                Path=ActualWidth,
-                                                Converter={StaticResource MathConverter}, 
-                                                ConverterParameter=(1366-@VALUE)*0.5}" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock 
-                            FontSize="30"
-                            TextAlignment="Center"
-                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
-                    </StackPanel>
-
+                        <Border Background="White" Width="1000" Height="600"
+                            CornerRadius="24"
+                            Padding="40,20,40,20">
+                            <StackPanel HorizontalAlignment="Stretch">
+                                <ac:AdornedControl
+                                    Margin="0,0,0,0"
+                                    x:Name="LoadingAdorner"
+                                    Visibility="{Binding IsWaiting}"
+                                    >
+                                    <ac:AdornedControl.AdornerContent>
+                                        <c:Loading Background="Transparent"></c:Loading>
+                                    </ac:AdornedControl.AdornerContent>
+                                    <Border
+                                        Height="550"
+                                        Width="900"
+                                        HorizontalAlignment="Center">
+                                        <StackPanel>
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="Orientation" Value="Horizontal">
+                                                            <Setter Property="Canvas.Left" 
+                                                            Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                            Path=ActualWidth,
+                                                            Converter={StaticResource MathConverter}, 
+                                                            ConverterParameter=(1366-@VALUE)*0.5}" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <TextBlock
+                                                Margin="80"
+                                                Background="Transparent"
+                                                TextAlignment="Center"
+                                                FontSize="40"
+                                                Text="{Binding Description}"
+                                                />
+                                            <Viewbox StretchDirection="DownOnly" Stretch="Uniform">
+                                                <TextBlock
+                                                    TextAlignment="Center"
+                                                    Margin="80"
+                                                    Background="Transparent"
+                                                    FontSize="30"
+                                                    Text="{Binding SubDescription}"
+                                                />
+                                            </Viewbox>
+                                        </StackPanel>
+                                    </Border>
+                                </ac:AdornedControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Canvas>
             </Grid>
         </Viewbox>
+
     </Grid>
 </Page>
