@@ -217,6 +217,10 @@ class LotReviewResource(LotResourceBase):
 
 @implementer(ILotResource)
 class LotLogoutResource(LotResourceBase):
+    __acl__ = [
+        (Allow, Everyone, 'lots'),
+        ]
+
     def __init__(self, request):
         self.request = request
         self.organization = self.request.organization
