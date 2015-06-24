@@ -18,7 +18,7 @@ from .interfaces import ILotResource
 def decide_auth_types(request, classification):
     """ WHO API 選択
     """
-    if hasattr(request, "context") and ILotResource.providedBy(request.context):
+    if hasattr(request, "context") and ILotResource.providedBy(request.context) and request.context.lot is not None:
         return [request.context.lot.auth_type]
     else:
         return []
