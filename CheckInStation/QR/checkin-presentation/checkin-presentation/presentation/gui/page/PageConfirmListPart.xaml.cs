@@ -249,12 +249,16 @@ namespace checkin.presentation.gui.page
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
- 
 
-        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+
+        private async void OnGotoWelcome(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            AppUtil.GotoWelcome(this);
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
+            });
         }
 
     }

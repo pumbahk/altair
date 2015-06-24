@@ -196,15 +196,24 @@ namespace checkin.presentation.gui.page
             }
         }
 
-        private void OnGotoAnotherMode(object sender, RoutedEventArgs e)
-        {
-            AppUtil.GotoWelcome(this);
-        }
-
-        private void OnGotoWelcome(object sender, RoutedEventArgs e)
+        private async void OnGotoAnotherMode(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            AppUtil.GotoWelcome(this);
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
+            });
+        }
+
+        private async void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
+            });
         }
 
         private void ErrorDialog_MessageDialogComplete(object sender, RoutedEventArgs e)
