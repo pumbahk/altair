@@ -330,12 +330,12 @@ class FamiPortOrderAutoCompleterTest(TestCase):
         klass = self._get_target_class()
         return klass(*args, **kwds)
 
-    @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
     def test_time_point(self, _get_now):
         now_ = datetime.now()
         _get_now.return_value = now_
-        registry = 30
-        request = mock.Mock()
+        registry = mock.Mock()
+        minutes = 30
         target = self._create(registry, minutes=minutes)
         self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
 
@@ -387,33 +387,33 @@ class FamiPortOrderAutoCompleterTest(TestCase):
         receipt_id = 1
         request = mock.Mock()
         session = mock.Mock()
-        target = self._create(request, session)
+        target = self._create(request)
         receipt = FamiPortReceiptFakeFactory.create()
         receipt.id = receipt_id
         target._get_receipt = mock.Mock(return_value=receipt)
         target._do_complete = mock.Mock()
         target._notify = mock.Mock()
-        target.complete(receipt_id)
+        target.complete(session, receipt_id)
         self.assertFalse(target._no_commit)
-        self.assertEqual(target._get_receipt.call_args, mock.call(receipt_id))
-        self.assertEqual(target._do_complete.call_args, mock.call(receipt))
+        self.assertEqual(target._get_receipt.call_args, mock.call(session, receipt_id))
+        self.assertEqual(target._do_complete.call_args, mock.call(session, receipt))
         self.assertEqual(session.add.call_args, mock.call(receipt))
         self.assertTrue(session.commit.called)
-        self.assertEqual(target._notify.call_args, mock.call(receipt))
+        self.assertEqual(target._notify.call_args, mock.call(session, receipt))
 
     def test_complete_error(self):
-        from ..famiport_auto_complete import InvalidReceiptStatusError
+        from ..autocomplete import InvalidReceiptStatusError
         receipt_id = 1
         request = mock.Mock()
         session = mock.Mock()
-        target = self._create(request, session)
+        target = self._create(request)
         receipt = FamiPortReceiptFakeFactory.create()
         receipt.id = receipt_id
         receipt.can_auto_complete = mock.Mock(return_value=False)
         target._get_receipt = mock.Mock(return_value=receipt)
         target._notify = mock.Mock()
         with self.assertRaises(InvalidReceiptStatusError):
-            target.complete(receipt_id)
+            target.complete(session, receipt_id)
 
 
 class FamiPortOrderAutoCopleter_complete_Test(TestCase):
