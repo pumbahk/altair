@@ -174,14 +174,13 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
 class FamiPortOrderAutoCompleteNotifier(object):
     template_path = u'altair.app.ticketing:templates/famiport/famiport_auto_complete.txt'
 
-    def __init__(self, registry, recipients=None, time_point=None):
+    def __init__(self, registry, recipients=None):
         self._registry = registry
         self._recipients = recipients
-        self._time_point = time_point
 
     def get_setup_errors(self):
         try:
-            self.subject
+            self.create_subject(_get_now())
             self.recipients
         except FamiPortAutoCompleteError as err:
             _logger.error('famiport notifier setup error: {}'.format(err))
@@ -192,13 +191,13 @@ class FamiPortOrderAutoCompleteNotifier(object):
     def get_mailer(self):
         return Mailer(self.settings)
 
-    def notify(self, **kwds):
+    def notify(self, now_, **kwds):
         """送信処理"""
         mailer = self.get_mailer()
         mailer.create_message(
             sender=self.sender,
             recipient=', '.join(self.recipients),
-            subject=self.subject,
+            subject=self.create_subject(now_),
             body=self.create_body(**kwds),
             )
         mailer.send(self.sender, self.recipients)
@@ -235,8 +234,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
         else:
             raise InvalidMailAddressError('Invalid mail address: {}'.format(repr(self._mailaddrs)))
 
-    @reify
-    def subject(self):
+    def create_subject(self, now_):
         fmt = ''
         try:
             fmt = self.settings['altair.famiport.mail.subject']
@@ -244,7 +242,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
             raise InvalidMailSubjectError('invalid mail subject: {}'.format(err))
         fmt = fmt.strip()
         if fmt:
-            return self._time_point.strftime(fmt).decode('utf8')
+            return now_.strftime(fmt).decode('utf8')
         else:
             raise InvalidMailSubjectError('invalid mail subject(blank)')
         return self._time_point.strftime(fmt).decode('utf8')
@@ -257,72 +255,56 @@ class FamiPortOrderAutoCompleteNotifier(object):
 class FamiPortOrderAutoCompleter(object):
     """POSで入金を行わず30分VOID処理も行われないFamiPortOrderを完了状態にしていく
     """
-    def __init__(self, registry, minutes=90, no_commit=False, recipients=None, notifier=None):
+    def __init__(self, registry, no_commit=False, recipients=None, notifier=None):
         self._registry = registry
-        self._minutes = int(minutes)
         self._no_commit = no_commit  # commitするかどうか
         self._recipients = recipients
         self._notifier = notifier
         if self._notifier is None:
             self._notifier = FamiPortOrderAutoCompleteNotifier(
-                self._registry, self._recipients, time_point=self.time_point)
+                self._registry, self._recipients)
 
     def get_setup_errors(self):
         return self._notifier.get_setup_errors()
 
-    @reify
-    def time_point(self):
-        return _get_now() - timedelta(minutes=self._minutes)
-
-    def complete(self, session, receipt_id):
+    def complete(self, session, receipt_id, now_=None):
         """FamiPortReceiptを90VOID救済する
 
         no_commitが指定されていない場合はDBへのcommitをしません。
         救済できないFamiPortReceiptを指定した場合はInvalidReceiptStatusErrorを送出します。
         """
+        if now_ is None:
+            now_ = _get_now()
+
         receipt = self._get_receipt(session, receipt_id)
         if receipt is None:
             raise NoSuchReceiptError('%d' % receipt_id)
-        if receipt.can_auto_complete(self.time_point):
+        if receipt.can_auto_complete(now_):
             _logger.debug('completing: FamiPortReceipt.id={}'.format(receipt.id))
-            self._do_complete(session, receipt)
+            self._do_complete(session, receipt, now_)
             if not self._no_commit:
                 session.add(receipt)
                 session.commit()
-                self._notify(session, receipt)
+            self._notify(session, receipt, now_)
         else:   # statusの状態がおかしい
             _logger.debug('invalid status: FamiPortReceipt.id={}'.format(receipt.id))
             raise InvalidReceiptStatusError(
-                'invalid receipt status: FamiPortReceipt.id={}'.format(receipt_id))
+                'invalid receipt status: FamiPortReceipt.id={}'.format(receipt.id))
 
-    def _notify(self, session, receipt):
+    def _notify(self, session, receipt, now_):
         from pyramid.threadlocal import get_current_request
         context = FamiPortOrderAutoCompleteNotificationContext(
             request=get_current_request(),
             session=session,
             receipt=receipt,
-            time_point=self.time_point,
+            time_point=now_,
             )
-        self._notifier.notify(data=context)
+        self._notifier.notify(data=context, now_=now_)
 
-    def complete_all(self, session):
-        success_receipt_ids = []
-        failed_receipt_ids = []
-        for receipt_value in self._fetch_target_famiport_receipt_ids(session):
-            receipt_id = receipt_value.id
-            try:
-                self.complete(session, receipt_id)
-            except InvalidReceiptStatusError as err:
-                _logger.error(err)
-                failed_receipt_ids.append(receipt_id)
-            else:
-                success_receipt_ids.append(receipt_id)
-        return success_receipt_ids, failed_receipt_ids
-
-    def _do_complete(self, session, receipt):
+    def _do_complete(self, session, receipt, now_):
         """FamiPortOrderを完了状態にする"""
-        receipt.rescued_at = self.time_point
-        receipt.completed_at = self.time_point
+        receipt.rescued_at = now_
+        receipt.completed_at = now_
 
     def _get_receipt(self, session, receipt_id):
         """FamiPortReceiptを取得する"""
@@ -335,6 +317,36 @@ class FamiPortOrderAutoCompleter(object):
             return None
         except MultipleResultsFound:
             return None
+
+
+class FamiPortOrderAutoCompleteRunner(object):
+    def __init__(self, registry, minutes=90):
+        self._registry = registry
+        self._minutes = int(minutes)
+        self._completer = self._registry.queryUtility(IFamiPortOrderAutoCompleter)
+        if self._completer is None:
+            raise FamiPortAutoCompleteError('completer not found')
+
+    def get_setup_errors(self):
+        return self._completer.get_setup_errors()
+
+    @reify
+    def time_point(self):
+        return _get_now() - timedelta(minutes=self._minutes)
+
+    def complete_all(self, session):
+        success_receipt_ids = []
+        failed_receipt_ids = []
+        for receipt_value in self._fetch_target_famiport_receipt_ids(session):
+            receipt_id = receipt_value.id
+            try:
+                self._completer.complete(session, receipt_id, self.time_point)
+            except InvalidReceiptStatusError as err:
+                _logger.error(err)
+                failed_receipt_ids.append(receipt_id)
+            else:
+                success_receipt_ids.append(receipt_id)
+        return success_receipt_ids, failed_receipt_ids
 
     def _fetch_target_famiport_receipt_ids(self, session):
         """対象のFamiPortOrderを取る"""

@@ -23,7 +23,11 @@ from altair.multilock import (
     )
 from altair.sqlahelper import get_global_db_session
 
-from altair.app.ticketing.famiport.autocomplete import FamiPortOrderAutoCompleter
+from altair.app.ticketing.famiport.interfaces import IFamiPortOrderAutoCompleter
+from altair.app.ticketing.famiport.autocomplete import (
+    FamiPortOrderAutoCompleter,
+    FamiPortOrderAutoCompleteRunner,
+    )
 
 _logger = logging.getLogger(__file__)
 LOCK_NAME = 'FAMIPORT_AUTO_COMPLETE'  # 多重起動防止用の名前
@@ -47,14 +51,19 @@ def main(argv=sys.argv[1:]):
     env = bootstrap(args.config)
     registry = env['registry']
     session = get_global_db_session(registry, 'famiport')
-    completer = FamiPortOrderAutoCompleter(registry, no_commit=args.no_commit, recipients=recipients)
+
+    completer = FamiPortOrderAutoCompleter(
+        registry, no_commit=args.no_commit, recipients=recipients)
+    registry.registerUtility(completer, IFamiPortOrderAutoCompleter)
+    completer = FamiPortOrderAutoCompleteRunner(registry)
+
     _logger.info('famiport auto complete start')
     try:
         with MultiStartLock(LOCK_NAME, engine=session.bind):
             _logger.info('get a multiple lock')
             errors = completer.get_setup_errors()
             if not errors:
-                successes, fails = completer.complete_all()
+                successes, fails = completer.complete_all(session)
                 _logger.info(
                     'famiport auto complete finished: success={}, failed={}'.format(
                         successes, fails))
