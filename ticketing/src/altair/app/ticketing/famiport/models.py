@@ -916,7 +916,6 @@ class FamiPortReceipt(Base, WithTimestamp):
            and self.completed_at is None \
            and self.void_at is None \
            and self.canceled_at is None \
-           and self.canceled_at is None \
            and self.payment_request_received_at < now
 
     @classmethod
