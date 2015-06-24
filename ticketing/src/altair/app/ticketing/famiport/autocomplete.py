@@ -206,7 +206,10 @@ class FamiPortOrderAutoCompleteNotifier(object):
 
     @reify
     def sender(self):
-        return u'dev@ticketstar.jp'
+        try:
+            return self.settings['altair.famiport.mail.sender']
+        except KeyError:
+            raise InvalidMailAddressError()
 
     @reify
     def settings(self):
@@ -239,6 +242,11 @@ class FamiPortOrderAutoCompleteNotifier(object):
             fmt = self.settings['altair.famiport.mail.subject']
         except KeyError as err:
             raise InvalidMailSubjectError('invalid mail subject: {}'.format(err))
+        fmt = fmt.strip()
+        if fmt:
+            return self._time_point.strftime(fmt).decode('utf8')
+        else:
+            raise InvalidMailSubjectError('invalid mail subject(blank)')
         return self._time_point.strftime(fmt).decode('utf8')
 
     def create_body(self, **kwds):

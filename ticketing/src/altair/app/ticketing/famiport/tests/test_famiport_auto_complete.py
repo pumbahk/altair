@@ -23,6 +23,61 @@ class GetNowTest(TestCase):
         self.assertTrue(isinstance(_now, datetime))
 
 
+class FamiPortReceiptFakeFactory(object):
+    @classmethod
+    def create(cls):
+        from ..models import (
+            FamiPortOrder,
+            FamiPortEvent,
+            FamiPortClient,
+            FamiPortReceipt,
+            FamiPortPlayguide,
+            FamiPortPerformance,
+            FamiPortSalesSegment,
+            )
+        famiport_playguide = mock.Mock(
+            discrimination_code='DISCRIMINATION_CODE',
+            spec=FamiPortPlayguide,
+            )
+        famiport_client = mock.Mock(
+            playguide=famiport_playguide,
+            spec=FamiPortClient,
+            )
+        famiport_event = mock.Mock(
+            code_1='CODE_1',
+            code_2='CODE_2',
+            name_1='NAME_1',
+            name_2='NAME_2',
+            client=famiport_client,
+            spec=FamiPortEvent,
+            )
+        famiport_performance = mock.Mock(
+            name='FAMIPORT_PERORMANCE_NAME',
+            code='FAMIPORT_PERORMANCE_CODE',
+            famiport_event=famiport_event,
+            spec=FamiPortPerformance,
+            )
+        famiport_sales_segment = mock.Mock(
+            famiport_performance=famiport_performance,
+            spec=FamiPortSalesSegment,
+            )
+        famiport_order = mock.Mock(
+            total_amount=100,
+            famiport_client=famiport_client,
+            famiport_sales_segment=famiport_sales_segment,
+            spec=FamiPortOrder,
+            )
+        receipt = mock.Mock(
+            barcode_no='BARCODE_NO',
+            reserve_number='RESERVE_NUMBER',
+            famiport_order_identifier='FAMIPORT_ORDER_IDENTIFIER',
+            shop_code='SHOP_CODE',
+            famiport_order=famiport_order,
+            spec=FamiPortReceipt,
+            )
+        return receipt
+
+
 class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
     def _get_klass(self):
         from ..autocomplete import FamiPortOrderAutoCompleteNotificationContext as klass
@@ -173,29 +228,115 @@ class FamiPortOrderAutoCompleteNotificationContext_classifier_Test(TestCase):
         obj = self._create(type_class.CashOnDelivery.value)
         self.assertEqual(obj.classifier, u'代引')
 
-class FamiPortOrderAutoCopleterTest(TestCase):
+
+class FamiPortOrderAutoCompleteNotifierTesetMixin(object):
+    def _get_target(self):
+        from ..autocomplete import FamiPortOrderAutoCompleteNotifier as klass
+        return klass
+
+    def _create(self, *args, **kwds):
+        target = self._get_target()
+        return target(*args, **kwds)
+
+    def _callFUT(self, *args, **kwds):
+        pass
+
+
+class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoCompleteNotifierTesetMixin):
+    def test_get_mailer(self):
+        from altair.mailhelpers import Mailer
+        registry = mock.Mock()
+        session = mock.Mock()
+        target = self._create(registry, session)
+        mailer = target.get_mailer()
+        self.assertTrue(isinstance(mailer, Mailer))
+
+    def test_settings(self):
+        registry = mock.Mock()
+        registry.settings = mock.Mock()
+        session = mock.Mock()
+        target = self._create(registry, session)
+        self.assertEqual(target.settings, registry.settings)
+
+    def test_sender(self):
+        u"""senderは設定ファイルから取得する"""
+        exp_sender = u'SENDER'
+        registry = mock.Mock()
+        registry.settings = {'altair.famiport.mail.sender': exp_sender}
+        session = mock.Mock()
+        target = self._create(registry, session)
+        self.assertEqual(target.sender, exp_sender)
+
+    def test_sender_no_setting(self):
+        u"""senderが設定されていなければ例外を送出する"""
+        from ..autocomplete import InvalidMailAddressError
+        registry = mock.Mock()
+        registry.settings = {}
+        session = mock.Mock()
+        target = self._create(registry, session)
+        with self.assertRaises(InvalidMailAddressError):
+            target.sender
+
+    def test_subject(self):
+        u"""メールのsubjectも設定ファイルで設定する"""
+        exp_subject = u'90分確定通知メール %Y/%m/%d %H:%M:%S'.encode('utf8')
+        registry = mock.Mock()
+        registry.settings = {'altair.famiport.mail.subject': exp_subject}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(registry, session, time_point=now_)
+        self.assertEqual(target.subject, now_.strftime(exp_subject).decode('utf8'))
+
+    def test_subject_no_setting(self):
+        u"""メールのsubjectが設定されていない場合は例外を送出"""
+        from ..autocomplete import InvalidMailSubjectError
+        registry = mock.Mock()
+        registry.settings = {}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(registry, session, time_point=now_)
+        with self.assertRaises(InvalidMailSubjectError):
+            target.subject
+
+    def test_subject_blank(self):
+        u"""メールのsubjectが設定されていない場合は例外を送出(空白でもダメ)"""
+        from ..autocomplete import InvalidMailSubjectError
+        registry = mock.Mock()
+        registry.settings = {'altair.famiport.mail.subject': ''}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(registry, session, time_point=now_)
+        with self.assertRaises(InvalidMailSubjectError):
+            target.subject
+
+    @mock.patch('altair.app.ticketing.famiport.autocomplete.render')
+    def test_create_body(self, render):
+        u"""メールのbodyを生成"""
+        from ..autocomplete import FamiPortOrderAutoCompleteNotificationContext
+        registry = mock.Mock()
+        session = mock.Mock()
+        receipt = FamiPortReceiptFakeFactory.create()
+        now_ = datetime.now()
+        context = FamiPortOrderAutoCompleteNotificationContext(registry, session, receipt, now_)
+        target = self._create(registry, session)
+        target.create_body(data=context)
+        exp_call_args = mock.call(target.template_path, dict(data=context))
+        self.assertTrue(render.call_args, exp_call_args)
+
+
+class FamiPortOrderAutoCompleterTest(TestCase):
     def _get_target_class(self):
         from ..autocomplete import FamiPortOrderAutoCompleter as klass
         return klass
 
-    def _get_target(self, *args, **kwds):
+    def _create(self, *args, **kwds):
         klass = self._get_target_class()
         return klass(*args, **kwds)
 
     @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete._get_now')
-    def test_timepoint(self, _get_now):
-        now = datetime.now()
-        nine_minutes_ago = now - timedelta(minutes=90)
-        _get_now.return_value = now
-        session = mock.Mock()
-        target = self._get_target(session)
-        self.assertEqual(target.time_point, nine_minutes_ago)
-
-    @skip('')
-    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
-    @mock.patch('altair.app.ticketing.famiport.scripts.autocomplete.FamiPortOrderAutoCompleter._do_complete')
-    def test_complete(self, _do_complete, _fetch_target_famiport_receipts):
+    @mock.patch('altair.app.ticketing.famiport.autocomplete.FamiPortOrderAutoCompleter._fetch_target_famiport_receipts')
+    @mock.patch('altair.app.ticketing.famiport.autocomplete.FamiPortOrderAutoCompleter._do_complete')
+    def test_complete_(self, _do_complete, _fetch_target_famiport_receipts):
         from ..autocomplete import AutoCompleterStatus
         session = mock.Mock()
         famiport_receipts = [mock.Mock() for ii in range(10)]
@@ -216,3 +357,57 @@ class FamiPortOrderAutoCopleterTest(TestCase):
     @skip('not yet implemented')
     def test_fetch_target_famiport_orders(self):
         pass
+
+    @skip('')
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
+    def test_time_point(self, _get_now):
+        now_ = datetime.now()
+        _get_now.return_value = now_
+        registry = 30
+        request = mock.Mock()
+        target = self._create(registry, minutes=minutes)
+        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+
+    @mock.patch('altair.app.ticketing.famiport.autocomplete._get_now')
+    def test_time_point_default(self, _get_now):
+        now_ = datetime.now()
+        _get_now.return_value = now_
+        minutes = 90
+        registry = mock.Mock()
+        target = self._create(registry)
+        self.assertEqual(target.time_point, now_ - timedelta(minutes=minutes))
+
+    def test_complete_all(self):
+        from collections import namedtuple
+        count = 10
+        Receipt = namedtuple('Receipt', 'id')
+        receipts = [Receipt(id=ii) for ii in range(count)]
+        registry = mock.Mock()
+        target = self._create(registry)
+        target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
+        complete = mock.Mock()
+        target.complete = complete
+        session = mock.Mock()
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session)
+        exp_call_argrs_list = [mock.call(session, ii) for ii in range(count)]
+        self.assertEqual(complete.call_args_list, exp_call_argrs_list)
+        self.assertEqual(sucess_receipt_ids, range(count))
+        self.assertEqual(failed_receipt_ids, [])
+
+    def test_complete_all_fail_pattern(self):
+        from collections import namedtuple
+        from ..autocomplete import InvalidReceiptStatusError
+        count = 10
+        Receipt = namedtuple('Receipt', 'id')
+        receipts = [Receipt(id=ii) for ii in range(count)]
+        registry = mock.Mock()
+        target = self._create(registry)
+        target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
+        complete = mock.Mock(side_effect=InvalidReceiptStatusError())
+        target.complete = complete
+        session = mock.Mock()
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session)
+        exp_call_argrs_list = [mock.call(session, ii) for ii in range(count)]
+        self.assertEqual(complete.call_args_list, exp_call_argrs_list)
+        self.assertEqual(sucess_receipt_ids, [])
+        self.assertEqual(failed_receipt_ids, range(count))

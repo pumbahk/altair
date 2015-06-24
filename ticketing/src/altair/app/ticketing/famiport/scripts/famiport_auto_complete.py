@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 """90分自動確定処理
 
 - 申込を行いPOSで入金を行わず30分VOID処理も行われない場合はプレイガイド側で90分自動確定処理を行う
@@ -54,9 +54,12 @@ def main(argv=sys.argv[1:]):
             _logger.info('get a multiple lock')
             errors = completer.get_setup_errors()
             if not errors:
-                return completer.complete_all(session)
+                successes, fails = completer.complete_all()
+                _logger.info(
+                    'famiport auto complete finished: success={}, failed={}'.format(
+                        successes, fails))
             else:
-                print(failures[0])
+                _logger.error(errors[0])
                 return 255
     except AlreadyStartUpError as err:
         _logger.warn('{}'.format(repr(err)))
