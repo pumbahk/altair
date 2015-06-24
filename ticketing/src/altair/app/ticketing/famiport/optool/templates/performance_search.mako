@@ -58,32 +58,33 @@
     </div>
     % endif
   </div>
+  % if entries:
+  ${entries.pager()}
   <table class="table table-hover">
     <thead>
       <tr>
-        <th>id</th>
-        <th>name</th>
+        <th>興行ID</th>
+        <th>興行コード・サブコード</th>
+        <th>興行名</th>
+        <th>公演名</th>
         <th>公演日</th>
+        <th>会場名</th>
       </tr>
     </thead>
     <tbody>
+      % for performance in entries:
       <tr>
-        <td>1</td>
-        <td><a href="#">Tokyo公演</a></td>
-        <td>2015/6/14</td>
+        <td>${performance.famiport_event_id}</td>
+        <td>${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</td>
+        <td>${performance.famiport_event.name_1}</td>
+        <td><a href="${request.route_url('performance.detail', performance_id=performance.id)}">${performance.name}</a></td>
+        <td>${performance.start_at}</td>
+        <td>${performance.famiport_event.venue.name}</td>
       </tr>
-      <tr>
-        <td>2</td>
-        <td>Osaka公演</td>
-        <td>2015/7/14</td>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td>Nagoya公演</td>
-        <td>2015/8/14</td>
-      </tr>
+      % endfor
     </tbody>
   </table>
+ % endif
 </div>
 <div class="buttonBoxBottom pull-right">
   <button type="submit" class="btn btn-info">CSVダウンロード</button>
