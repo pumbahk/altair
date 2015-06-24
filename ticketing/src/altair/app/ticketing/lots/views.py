@@ -676,6 +676,10 @@ class LogoutView(object):
         self.context = context
         self.request = request
 
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("logout.html"))
+    def get(self):
+        return {}
+
     @lbr_view_config(request_method="POST")
     def post(self):
         cart_api.logout(self.request)

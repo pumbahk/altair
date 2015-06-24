@@ -1,0 +1,9 @@
+<%inherit file="base.html" />
+% if hasattr(_context, 'message'):
+<p>${_context.message}</p>
+% endif
+<p>ログアウトするには下のボタンを押してください</p>
+<form action="${request.route_path('lots.entry.logout')}" method="POST">
+  <input type="hidden" name="lot_id" value="${request.context.lot.id}" />
+  <button>ログアウト</button>
+</form>

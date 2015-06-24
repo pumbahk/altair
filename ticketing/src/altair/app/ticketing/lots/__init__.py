@@ -71,12 +71,29 @@ def setup_auth(config):
     from altair.app.ticketing.security import AuthModelCallback
     set_auth_policy(config, AuthModelCallback(config))
     config.set_authorization_policy(ACLAuthorizationPolicy())
+    config.set_forbidden_handler(forbidden_handler)
 
     # 楽天認証コールバック
     config.add_route('rakuten_auth.login', '/login', factory=".resources.lot_resource_factory")
     config.add_route('rakuten_auth.verify', '/verify', factory=".resources.lot_resource_factory")
     config.add_route('rakuten_auth.verify2', '/verify2', factory=".resources.lot_resource_factory")
     config.add_route('rakuten_auth.error', '/error', factory=".resources.lot_resource_factory")
+
+
+def forbidden_handler(context, request):
+    from altair.app.ticketing.cart.view_support import render_view_to_response_with_derived_request
+    request.context.message = u'現在{membership}としてログインしています。{lot_name}にエントリーするには再ログインが必要となります。'.format(
+        membership=request.altair_auth_info['membership'],
+        lot_name=request.context.lot.name
+        )
+    response = render_view_to_response_with_derived_request(
+        context_factory=lambda _:request.context,
+        request=request,
+        route=('lots.entry.logout', {})
+        )
+    if response is not None:
+        response.status = 403
+    return response
 
 
 class CartInterface(object):

@@ -15,9 +15,11 @@ from sqlalchemy.orm import make_transient, joinedload
 
 from altair.now import get_now
 from altair.app.ticketing.cart.api import get_auth_info
-from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
+from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress, SalesSegment, SalesSegmentGroup
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.users import models as u_models
+from altair.sqlahelper import get_db_session
 
 from .interfaces import ILotResource
 from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
@@ -61,14 +63,30 @@ class LotResourceBase(object):
 
     @reify
     def __acl__(self):
-        logger.debug('acl: lot %s' % self.lot)
+        logger.debug('acl: lot %s' % self.lot.id)
         acl = []
         if self.lot:
             if not self.lot.auth_type:
                 acl.append((Allow, Everyone, 'lots'))
             else:
-                logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
-                acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
+                required_principals = set()
+                guest_exists = False
+                try:
+                    for membergroup in self.lot.sales_segment.membergroups:
+                        if membergroup.is_guest:
+                            required_principals.add('membership:%s' % membergroup.membership.name)
+                        else: 
+                            required_principals.add('membergroup:%s' % membergroup.name)
+                    effective_principals = self.request.effective_principals
+                    logger.debug('required principals: %r, provided: %r' % (required_principals, effective_principals))
+                    logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
+                    if not required_principals.isdisjoint(effective_principals):
+                        logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
+                        acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
+                    else:
+                        logger.debug('no access granted')
+                except:
+                    logger.exception('WTF?')
         acl.append(DENY_ALL)
         return acl
 
@@ -197,8 +215,7 @@ class LotLogoutResource(LotResourceBase):
     def __init__(self, request):
         self.request = request
         self.organization = self.request.organization
-        self._lot_id = request.GET.get("lot_id", None)
-        self._event_id = request.GET.get("event_id", None)
+        self._lot_id = request.params.get("lot_id", None)
 
     @reify
     def lot(self):
@@ -210,6 +227,8 @@ class LotLogoutResource(LotResourceBase):
             .first()
         if not lot:
             return None
-        if self._event_id is not None and str(lot.event_id) != self._event_id:
-            return None
         return lot
+
+    @reify
+    def _event_id(self):
+        return self.lot.event_id
