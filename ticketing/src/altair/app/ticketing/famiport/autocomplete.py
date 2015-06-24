@@ -4,8 +4,6 @@
 - 申込を行いPOSで入金を行わず30分VOID処理も行われない場合はプレイガイド側で90分自動確定処理を行う
 - 確定したものはメールを送信する
 """
-import sys
-
 import enum
 import logging
 from zope.interface import implementer
@@ -29,6 +27,7 @@ from .interfaces import IFamiPortOrderAutoCompleter
 
 _logger = logging.getLogger(__file__)
 
+
 @enum.unique
 class AutoCompleterStatus(enum.IntEnum):
     success = 0
@@ -45,6 +44,7 @@ class FamiPortAutoCompleteError(Exception):
 
 class NoSuchReceiptError(FamiPortAutoCompleteError):
     pass
+
 
 class InvalidMailSubjectError(FamiPortAutoCompleteError):
     u"""メールのsubjectの設定がおかしい"""
@@ -129,7 +129,7 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
     @reify
     def issued_at(self):
         if self._famiport_order.issued_at:
-            return unicode(self._receipt.famiport_order.issued_at.strftime('%Y/%m/%d %H:%M:%S'))
+            return unicode(self._receipt.famiport_order.issued_at.strftime('%Y/%m/%d %H:%M:%S'))  # noqa
         else:
             return ''
 
@@ -252,6 +252,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
     def create_body(self, **kwds):
         return render(self.template_path, kwds)
 
+
 @implementer(IFamiPortOrderAutoCompleter)
 class FamiPortOrderAutoCompleter(object):
     """POSで入金を行わず30分VOID処理も行われないFamiPortOrderを完了状態にしていく
@@ -338,17 +339,14 @@ class FamiPortOrderAutoCompleter(object):
     def _fetch_target_famiport_receipt_ids(self, session):
         """対象のFamiPortOrderを取る"""
         return session \
-                   .query(FamiPortReceipt) \
-                   .filter(FamiPortReceipt.inquired_at.isnot(None)) \
-                   .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
-                   .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
-                   .filter(FamiPortReceipt.completed_at.is_(None)) \
-                   .filter(FamiPortReceipt.void_at.is_(None)) \
-                   .filter(FamiPortReceipt.canceled_at.is_(None)) \
-                   .filter(FamiPortReceipt.rescued_at.is_(None)) \
-                   .filter(FamiPortReceipt.payment_request_received_at < self.time_point) \
-                   .with_entities(FamiPortReceipt.id) \
-                   .all()
-
-
-
+            .query(FamiPortReceipt) \
+            .filter(FamiPortReceipt.inquired_at.isnot(None)) \
+            .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
+            .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
+            .filter(FamiPortReceipt.completed_at.is_(None)) \
+            .filter(FamiPortReceipt.void_at.is_(None)) \
+            .filter(FamiPortReceipt.canceled_at.is_(None)) \
+            .filter(FamiPortReceipt.rescued_at.is_(None)) \
+            .filter(FamiPortReceipt.payment_request_received_at < self.time_point) \
+            .with_entities(FamiPortReceipt.id) \
+            .all()
