@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 """90分自動確定処理
 
 - 申込を行いPOSで入金を行わず30分VOID処理も行われない場合はプレイガイド側で90分自動確定処理を行う
@@ -257,7 +257,11 @@ class FamiPortOrderAutoCompleteNotifier(object):
             fmt = self.settings['altair.famiport.mail.subject']
         except KeyError as err:
             raise InvalidMailSubjectError('invalid mail subject: {}'.format(err))
-        return self._time_point.strftime(fmt).decode('utf8')
+        fmt = fmt.strip()
+        if fmt:
+            return self._time_point.strftime(fmt).decode('utf8')
+        else:
+            raise InvalidMailSubjectError('invalid mail subject(blank)')
 
     def create_body(self, **kwds):
         return render(self.template_path, kwds)

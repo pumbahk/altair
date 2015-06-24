@@ -206,6 +206,7 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         self.assertEqual(target.settings, request.registry.settings)
 
     def test_sender(self):
+        u"""senderは設定ファイルから取得する"""
         exp_sender = u'SENDER'
         request = mock.Mock()
         request.registry = mock.Mock()
@@ -215,6 +216,7 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         self.assertEqual(target.sender, exp_sender)
 
     def test_sender_no_setting(self):
+        u"""senderが設定されていなければ例外を送出する"""
         from ..famiport_auto_complete import InvalidMailAddressError
         request = mock.Mock()
         request.registry = mock.Mock()
@@ -223,6 +225,41 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         target = self._create(request, session)
         with self.assertRaises(InvalidMailAddressError):
             target.sender
+
+    def test_subject(self):
+        u"""メールのsubjectも設定ファイルで設定する"""
+        exp_subject = u'90分確定通知メール %Y/%m/%d %H:%M:%S'.encode('utf8')
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = {'altair.famiport.mail.subject': exp_subject}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(request, session, time_point=now_)
+        self.assertEqual(target.subject, now_.strftime(exp_subject).decode('utf8'))
+
+    def test_subject_no_setting(self):
+        u"""メールのsubjectが設定されていない場合は例外を送出"""
+        from ..famiport_auto_complete import InvalidMailSubjectError
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = {}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(request, session, time_point=now_)
+        with self.assertRaises(InvalidMailSubjectError):
+            target.subject
+
+    def test_subject_blank(self):
+        u"""メールのsubjectが設定されていない場合は例外を送出(空白でもダメ)"""
+        from ..famiport_auto_complete import InvalidMailSubjectError
+        request = mock.Mock()
+        request.registry = mock.Mock()
+        request.registry.settings = {'altair.famiport.mail.subject': ''}
+        session = mock.Mock()
+        now_ = datetime.now()
+        target = self._create(request, session, time_point=now_)
+        with self.assertRaises(InvalidMailSubjectError):
+            target.subject
 
 
 class FamiPortOrderAutoCopleterTest(TestCase):
