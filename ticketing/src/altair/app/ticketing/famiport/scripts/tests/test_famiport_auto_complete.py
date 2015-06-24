@@ -337,13 +337,13 @@ class FamiPortOrderAutoCopleterTest(TestCase):
         from ..famiport_auto_complete import FamiPortOrderAutoCompleter as klass
         return klass
 
-    def _get_target(self, *args, **kwds):
+    def _create(self, *args, **kwds):
         klass = self._get_target_class()
         return klass(*args, **kwds)
 
     @skip('')
     @mock.patch('altair.app.ticketing.famiport.scripts.famiport_auto_complete._get_now')
-    def test_timepoint(self, _get_now):
+    def test_timepoint_(self, _get_now):
         now = datetime.now()
         nine_minutes_ago = now - timedelta(minutes=90)
         _get_now.return_value = now
@@ -375,3 +375,18 @@ class FamiPortOrderAutoCopleterTest(TestCase):
     @skip('not yet implemented')
     def test_fetch_target_famiport_orders(self):
         pass
+
+    def test_complete_all(self):
+        from collections import namedtuple
+        count = 10
+        Receipt = namedtuple('Receipt', 'id')
+        receipts = [Receipt(id=ii) for ii in range(count)]
+        request = mock.Mock()
+        session = mock.Mock()
+        target = self._create(request, session)
+        target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
+        complete = mock.Mock()
+        target.complete = complete
+        target.complete_all()
+        exp_call_argrs_list = [mock.call(ii) for ii in range(count)]
+        self.assertEqual(complete.call_args_list, exp_call_argrs_list)
