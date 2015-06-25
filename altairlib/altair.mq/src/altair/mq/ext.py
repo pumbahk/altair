@@ -5,25 +5,29 @@ class DelayedQueueSettings(object):
         if delay_queue is None:
             delay_queue = '%s-DELAY(%d)' % (queue, delay)
         self.queue_settings = QueueSettings(
-            delay_queue,
+            queue,
             **queue_params
             )
         delay_queue_params = dict(queue_params)
         delay_queue_params.update(
             arguments={
                 'x-dead-letter-exchange': '',
-                'x-dead-letter-routing-key': delay_queue,
+                'x-dead-letter-routing-key': queue,
                 'x-message-ttl': delay,
                 }
             )
         self.delay_queue_settings = QueueSettings(
-            queue,
+            delay_queue,
             **delay_queue_params
             )
 
     @property
     def script_name(self):
-        return self.delay_queue_settings.queue
+        return self.queue_settings.queue
+
+    @property
+    def exchange_and_direct_routing_key(self):
+        return ('', self.delay_queue_settings.queue)
 
     def queue_declare(self, task_mapper, channel, callback):
         def on_queue_declared(frame, _):

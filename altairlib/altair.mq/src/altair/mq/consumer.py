@@ -16,6 +16,7 @@ from .interfaces import (
     IPublisherConsumerFactory,
     IMessage,
     ITaskDispatcher,
+    ITaskDiscovery,
     IWorkers,
 )
 from .watchdog import Watchdog
@@ -182,22 +183,23 @@ class TaskDispatcher(object):
             self.threadlocal_manager.pop()
 
 
-@implementer(IConsumer)
+@implementer(IConsumer, ITaskDiscovery)
 class PikaClient(object):
     Connection = TornadoConnection
     def __init__(self, registry, parameters, reconnection_interval=10):
         self.registry = registry
         self.parameters = parameters
-        self.tasks = []
+        self.tasks = {}
         self.reconnection_interval = reconnection_interval
         self.close_callbacks = []
         self.closing = False
         self.available = False
         self.connection = None
+        self.companion_publisher = None
         self._timer = None
 
     def add_task(self, task):
-        self.tasks.append(task)
+        self.tasks[task.name] = task
 
     def add_close_callback(self, callback):
         self.close_callbacks.append(callback)
@@ -254,7 +256,7 @@ class PikaClient(object):
     def on_open(self, channel):
         logger.debug('opened')
 
-        for task in self.tasks:
+        for task in self.tasks.values():
             task.declare_queue(channel)
 
     def on_close(self, connection, reply_code, reply_text):
@@ -275,3 +277,6 @@ class PikaClient(object):
         task_dispatcher = WatchdogDispatcher(self.registry, task_dispatcher)
         task_dispatcher = WorkerDispatcher(self.registry, task_dispatcher)
         return task_dispatcher
+
+    def lookup_task(self, name):
+        return self.tasks[name]

@@ -95,10 +95,12 @@ class LocallyDispatchingPublisherConsumer(object):
     def __init__(self, continue_on_exception=False):
         self.routes = []
         self.tasks = {}
+        self.tasks_by_name = {}
         self.continue_on_exception = continue_on_exception
         self.virtual_conn = self.VirtualConnection(
             pika.connection.ConnectionParameters()
             )
+        self.companion_publisher = None
 
     def _compile_pattern(self, pattern):
         import re
@@ -114,6 +116,7 @@ class LocallyDispatchingPublisherConsumer(object):
         channel = self.VirtualChannel(self.virtual_conn)
         task_mapper.declare_queue(channel)
         self.tasks.setdefault(task_mapper.queue_settings.queue, []).append(channel)
+        self.tasks_by_name[task_mapper.name] = task_mapper
         channel.callback(None)
 
     def connect(self):
@@ -164,6 +167,10 @@ class LocallyDispatchingPublisherConsumer(object):
 
     def modify_task_dispatcher(self, task_dispatcher):
         return task_dispatcher
+
+    def lookup_task(self, name):
+        return self.tasks_by_name[name]
+
 
 @provider(IPublisherConsumerFactory)
 def locally_dispatching_publisher_consumer_factory(config, config_prefix):

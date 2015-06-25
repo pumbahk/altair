@@ -8,7 +8,7 @@ class task_config(object):
                  root_factory=None,
                  timeout=None,
                  consumer="",
-                 queue="",
+                 queue=None,
                  **queue_params):
         self.name = name
         self.root_factory = root_factory

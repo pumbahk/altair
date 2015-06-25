@@ -1,7 +1,9 @@
-# This package may contain traces of nuts
 import logging
-from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDispatcher
+import urllib
+import json
+import six
 from pyramid.config import ConfigurationError
+from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDiscovery, ITaskDispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,10 @@ class QueueSettings(object):
     def script_name(self):
         return self.queue
 
+    @property
+    def exchange_and_direct_routing_key(self):
+        return ('', self.queue)
+
     def __repr__(self):
         return ("queue={0.queue}, "
                 "passive={0.passive}, "
@@ -62,11 +68,19 @@ def add_task(config, task,
              root_factory=None,
              timeout=None,
              consumer="",
-             queue="test",
+             queue=None,
              prefetch_size=None,
              prefetch_count=None,
              **queue_params):
     from .consumer import TaskMapper
+    if queue is None:
+        queue = name
+    elif name == "":
+        if isinstance(queue, basestring):
+            logger.warning("specifying empty string to `name' parameter with non-empty `queue' parameter is deprecated.  the name of the task will be the same as the queue name (%s)" % queue)
+            name = queue
+        else:
+            raise ConfigurationError("`name' parameter is empty and non-string was specified to `queue' (%r)" % queue)
     if callable(queue):
         queue_settings_factory = queue
     else:
@@ -107,24 +121,24 @@ def add_task(config, task,
 
         queue_settings = queue_settings_factory(**queue_params)
 
-        pika_consumer.add_task(
-            TaskMapper(
-                registry=reg,
-                task=task,
-                name=name,
-                root_factory=root_factory,
-                queue_settings=queue_settings,
-                task_dispatcher=task_dispatcher,
-                timeout=timeout,
-                prefetch_size=_prefetch_size,
-                prefetch_count=_prefetch_count
-                )
+        task_mapper = TaskMapper(
+            registry=reg,
+            task=task,
+            name=name,
+            root_factory=root_factory,
+            queue_settings=queue_settings,
+            task_dispatcher=task_dispatcher,
+            timeout=timeout,
+            prefetch_size=_prefetch_size,
+            prefetch_count=_prefetch_count
             )
+
+        pika_consumer.add_task(task_mapper)
         logger.info("register task {name} {root_factory} {queue_settings} {timeout}".format(name=name,
                                                                    root_factory=root_factory,
                                                                    queue_settings=queue_settings,
                                                                    timeout=timeout))
-        reg.registerUtility(task, ITask, name=name)
+        reg.registerUtility(task, ITask, name='%s:%s' %(consumer, name))
 
     config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue_settings_factory),
                   register, order=2)
@@ -143,6 +157,34 @@ def get_publisher(request_or_registry, name=''):
     else:
         reg = request_or_registry
     return reg.queryUtility(IPublisher, name)
+
+def dispatch_task(request_or_registry, task_name, body={}, content_type='application/x-www-form-urlencoded', consumer_name='', properties=None, mandatory=False, immediate=False):
+    consumer = get_consumer(request_or_registry, name=consumer_name)
+    if not ITaskDiscovery.providedBy(consumer):
+        raise RuntimeError('consumer %s does not implement ITaskDiscovery' % consumer_name)
+    publisher = consumer.companion_publisher
+    if publisher is None:
+        raise RuntimeError('consumer %s does not have a companion publisher' % consumer_name)
+    task_mapper = consumer.lookup_task(task_name)
+    exchange, routing_key = task_mapper.queue_settings.exchange_and_direct_routing_key
+    if not isinstance(body, basestring):
+        if content_type == 'application/x-www-form-urlencoded':
+            body = urllib.urlencode([(six.text_type(k).encode('utf-8'), six.text_type(v).encode('utf-8')) for k, v in body.items()])
+        elif content_type == 'application/json':
+            body = json.dumps(body, ensure_ascii=False)
+    if properties is not None:
+        properties = dict(properties)
+    else:
+        properties = {}
+    properties['content_type'] = content_type
+    publisher.publish(
+        exchange=exchange,
+        routing_key=routing_key,
+        body=body,
+        mandatory=mandatory,
+        immediate=immediate,
+        properties=properties
+        )
 
 def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
     if dotted_names is None:
@@ -167,7 +209,10 @@ def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
         config.registry.registerUtility(publisher, IPublisher, name)
     if consumer is not None:
         config.registry.registerUtility(consumer, IConsumer, name)
-
+        if ITaskDiscovery.providedBy(consumer):
+            config.registry.registerUtility(consumer, ITaskDiscovery, name)
+        if publisher is not None:
+            consumer.companion_publisher = publisher
 
 def includeme(config):
     import sys

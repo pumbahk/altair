@@ -174,7 +174,7 @@ class PikaClientTests(unittest.TestCase):
     def test_on_open_with_tasks(self):
         parameters = mock.Mock()
         target = self._makeOne(self.registry, parameters)
-        target.tasks.append(mock.Mock())
+        target.tasks['test'] = mock.Mock()
         channel = mock.Mock()
 
         target.on_open(channel)

@@ -14,8 +14,9 @@ class OrderSalvageWorkerResource(object):
         self.request = request
 
 @task_config(root_factory=OrderSalvageWorkerResource,
-             consumer="famiport.salvage_order",
-             queue=delayed_queue("famiport.salvage_order", delay=5400000),
+             consumer="famiport",
+             name="famiport.salvage_order",
+             queue=delayed_queue("famiport.salvage_order", delay=86400000),
              timeout=600)
 def salvage_order(context, request):
     try:
@@ -40,7 +41,7 @@ def salvage_order(context, request):
 
 def includeme(config):
     config.include('altair.mq')
-    config.add_publisher_consumer('famiport.salvage_order', 'altair.ticketing.famiport.mq')
+    config.add_publisher_consumer('famiport', 'altair.ticketing.famiport.mq')
     config.scan(__name__)
 
 def main(global_config, **local_config):
