@@ -1164,6 +1164,7 @@ class LotEntries(BaseView):
             shipping_address.address_1 = f.address_1.data
             shipping_address.address_2 = f.address_2.data
             shipping_address.tel_1 = f.tel_1.data
+            shipping_address.tel_2 = f.tel_2.data
             shipping_address.fax = f.fax.data
             shipping_address.save()
             self.request.session.flash(u'配送情報を保存しました')
