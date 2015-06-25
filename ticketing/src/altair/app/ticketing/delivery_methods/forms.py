@@ -58,3 +58,11 @@ class DeliveryMethodForm(Form):
     hide_voucher = OurBooleanField(
         label=get_annotations_for(DeliveryMethod.hide_voucher)['label']
         )
+    display_order = TextField(
+        label=u'表示順',
+        default=0,
+    )
+    selectable = OurBooleanField(
+        label=u'使用可否',
+        default=True,
+    )

@@ -2566,6 +2566,7 @@
  */
 
 /** カートのヘッダーリンク **/
+/*
 a:link.headerLink {
     color: black;
     font-size: 16px;
@@ -2590,4 +2591,35 @@ a:focus.headerLink {
 a:active.headerLink {
     font-size: 16px;
     font-weight: bold;
+}
+*/
+
+/** カートのフッター **/
+.footerCopy {
+    text-align: center;
+    padding: 10px 0;
+    border-top: 1px solid #999999;
+    font-size: 120%;
+}
+
+.footerCopy .footernav ul li {
+    display: inline-block;
+}
+
+.footerCopy .footernav ul li {
+    border-left: 1px solid #ccc;
+    padding: 0 5px 0 8px;
+}
+
+.footerCopy .footernav ul li.first {
+    border-left: none;
+}
+
+.footerCopy .footernav {
+    height: 1em;
+    padding: 8px 36px;
+}
+
+.footerCopy .copyright {
+    color: #555;
 }
