@@ -6,7 +6,7 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li><a href="#">申込検索</a></li>
+        <li><a href="${request.route_path('search.order')}">申込検索</a></li>
         <li><a href="${request.route_path('search.performance')}">公演検索</a></li>
         <li><a href="#">払戻公演データ検索</a></li>
         <li><a href="#">払戻チケットデータ検索</a></li>

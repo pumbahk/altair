@@ -21,6 +21,27 @@ class LoginForm(OurForm):
             ]
         )
 
+class SearchReceiptForm(OurForm):
+    barcode_no = OurTextField(
+        label=u'払込票番号：',
+    )
+    exchange_number = OurTextField(
+        label=u'引換票番号：',
+    )
+    famiport_order_identifier = OurTextField(
+        label=u'管理番号：',
+    )
+    barcode_number = OurTextField(
+        label=u'バーコード番号：',
+    )
+    customer_phone_number = OurTextField(
+        label=u'電話番号：',
+    )
+    shop_code = OurTextField(
+        label=u'店番：'
+    )
+
+
 class SearchPerformanceForm(OurForm):
     event_id = OurTextField(
         label=u'興行ID：',

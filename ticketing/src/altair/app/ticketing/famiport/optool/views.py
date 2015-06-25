@@ -10,6 +10,7 @@ from .api import lookup_user_by_credentials, lookup_performance_by_searchform_da
 from .forms import (
     LoginForm,
     SearchPerformanceForm,
+    SearchReceiptForm,
 )
 from webhelpers import paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
@@ -84,8 +85,8 @@ class FamiPortSearchView(object):
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
     @view_config(route_name='search.order', renderer='altair.app.ticketing.famiport.optool:templates/order_search.mako', permission='operator')
     def search_order(self):
-        # TODO Search order
-        return dict()
+        form = SearchReceiptForm()
+        return dict(form=form)
 
     @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
     def search_performance(self):

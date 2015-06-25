@@ -8,46 +8,22 @@
         <table class="search-table">
           <tbody>
             <tr>
-              <th>
-                <label class="pull-right">払込票番号：</label>
-              </th>
-              <td>
-                <input type="text" name="payment_num" class="form-control" autofocus>
-              </td>
-              <th>
-                <label class="pull-right">引換票番号：</label>
-              </th>
-              <td>
-                <input type="text" name="hikikae_num" class="form-control">
-              </td>
+              <th class="pull-right">${form.barcode_no.label}</th>
+              <td>${form.barcode_no(class_='form-control')}</td>
+              <th class="pull-right">${form.exchange_number.label}</th>
+              <td>${form.exchange_number(class_='form-control')}</td>
             </tr>
             <tr>
-              <th>
-                <label class="pull-right">管理番号：</label>
-              </th>
-              <td>
-                <input type="text" name="control_num" class="form-control">
-              </td>
-              <th>
-                <label class="pull-right">バーコード番号：</label>
-              </th>
-              <td>
-                <input type="text" name="barcode" class="form-control">
-              </td>
+              <th class="pull-right">${form.famiport_order_identifier.label}</th>
+              <td>${form.famiport_order_identifier(class_='form-control')}</td>
+              <th class="pull-right">${form.barcode_number.label}</th>
+              <td>${form.barcode_number(class_='form-control')}</td>
             </tr>
             <tr>
-              <th>
-                <label class="pull-right">電話番号：</label>
-              </th>
-              <td>
-                <input type="text" name="tel" class="form-control">
-              </td>
-              <th>
-                <label class="pull-right">店番：</label>
-              </th>
-              <td>
-                <input type="text" name="store_num" class="form-control">
-              </td>
+              <th class="pull-right">${form.customer_phone_number.label}</th>
+              <td>${form.customer_phone_number(class_='form-control')}</td>
+              <th class="pull-right">${form.shop_code.label}</th>
+              <td>${form.shop_code(class_='form-control')}</td>
             </tr>
           </table>
       </div>
@@ -99,7 +75,6 @@
 <div class="buttonBoxBottom pull-right">
   <form id="order">
   <a href="re_order.html"><button type="button" class="btn btn-info">発券指示</button></a>
-  <button type="submit" class="btn btn-info">発券取消</button>
   <button type="submit" class="btn btn-info">CSVダウンロード</button>
   <a id="to_detail" href=""><button type="button" class="btn btn-info">申込詳細</button></a>
   </form>
