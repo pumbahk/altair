@@ -6,7 +6,11 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.famiport.models import FamiPortPerformance, FamiPortEvent
-from .api import lookup_user_by_credentials, lookup_performance_by_searchform_data
+from .api import (
+    lookup_user_by_credentials,
+    lookup_performance_by_searchform_data,
+    lookup_receipt_by_searchform_data,
+)
 from .forms import (
     LoginForm,
     SearchPerformanceForm,
@@ -86,7 +90,29 @@ class FamiPortSearchView(object):
     @view_config(route_name='search.order', renderer='altair.app.ticketing.famiport.optool:templates/order_search.mako', permission='operator')
     def search_order(self):
         form = SearchReceiptForm()
-        return dict(form=form)
+
+        if self.request.POST or self.request.params:
+            postdata = self.request.POST
+            form = SearchReceiptForm(postdata)
+            if form.validate():
+                receipts = lookup_receipt_by_searchform_data(self.request, postdata)
+                count = len(receipts)
+                page_url = PageURL_WebOb_Ex(self.request)
+                pages = paginate.Page(receipts,
+                                      page=self.request.GET.get('page', '1'),
+                                      item_count=count,
+                                      items_per_page=20,
+                                      url=page_url)
+            else:
+                return dict(form=form,count=None,entries=[])
+        else:
+            count = None
+            pages = []
+
+        return dict(form=form,
+                    count=count,
+                    entries=pages,
+                    vh=ViewHelpers(),)
 
     @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
     def search_performance(self):
