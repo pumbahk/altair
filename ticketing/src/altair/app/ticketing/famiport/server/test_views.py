@@ -570,3 +570,40 @@ ticketingDate=20150331182222&orderId=410900000005&totalAmount=2200&playGuideId=&
             FakeFactory.create(),
             FamiportResponse,
             )
+
+
+class RefundTest(FamiPortAPIViewTest):
+    u"""払戻
+
+    BusinessFlg=3&TextTyp=0&EntryTyp=1&ShopNo=0012345&RegisterNo=02&TimeStamp=20141201&BarCode1=2123456789012&BarCode2=&BarCode3=&BarCode4=
+    """
+    url = '/famiport/refund'
+
+    @mock.patch('altair.app.ticketing.famiport.server.views.get_xmlResponse_generator')
+    @mock.patch('altair.app.ticketing.famiport.server.views.get_response_builder')
+    @mock.patch('altair.app.ticketing.famiport.server.views.FamiPortRequestFactory')
+    @mock.patch('altair.app.ticketing.famiport.server.views.get_db_session')
+    def test_it(self, get_db_session, FamiPortRequestFactory,
+                get_response_builder, get_xmlResponse_generator):
+        payload_builder = mock.Mock(
+            encoding='cp932',
+            generate_xmlResponse=mock.Mock(return_value='<xml></xml>'),
+            )
+        get_xmlResponse_generator.return_value = payload_builder
+        self._callFUT({
+            'BusinessFlg': '3',
+            'TextTyp': '0',
+            'EntryTyp': '1',
+            'ShopNo': '0012345',
+            'RegisterNo': '02',
+            'TimeStamp': '20141201',
+            'BarCode1': '2123456789012',
+            'BarCode2': '',
+            'BarCode3': '',
+            'BarCode4': '',
+            })
+
+    def test_bad_request(self):
+        from webtest.app import AppError
+        with self.assertRaises(AppError):
+            self._callFUT({})
