@@ -59,7 +59,7 @@ def main(global_conf, **local_conf):
     config.add_route('search.refund_ticket', '/search/refund_ticket', factory='.resources.SearchResource')
     # Detail
     config.add_route('order.detail',  '/show/order/{order_id}')
-    config.add_route('performance.detail', '/show/performance/{performance_id}')
+    config.add_route('performance.detail', '/show/performance/{performance_id}', factory='.resources.PerformanceDetailResource')
     config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}')
     # Rebook or reprint
     config.add_route('rebook_order', '/rebook_order/{action}/{order_id}') # action = (show, rebook, reprint)

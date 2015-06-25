@@ -13,6 +13,7 @@ from .forms import (
 )
 from webhelpers import paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+from .helpers import ViewHelpers
 
 logger = logging.getLogger(__name__)
 
@@ -94,9 +95,9 @@ class FamiPortSearchView(object):
             postdata = self.request.POST
             form = SearchPerformanceForm(postdata)
             if form.validate():
-                slave_session = get_db_session(self.request, name="famiport")
+                fami_session = get_db_session(self.request, name="famiport")
 
-                query = slave_session.query(FamiPortPerformance) \
+                query = fami_session.query(FamiPortPerformance) \
                                     .outerjoin(FamiPortEvent, FamiPortPerformance.famiport_event_id == FamiPortEvent.id)
 
                 if postdata.get('event_id'):
@@ -163,25 +164,25 @@ class FamiPortSearchView(object):
         return dict()
 
 # TODO Make sure the permission of each operation
-@view_config(permission='operator')
 class FamiPortDetailView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+
 
     @view_config(route_name='order.detail', renderer='altair.app.ticketing.famiport.optool:templates/order_detail.mako')
     def show_order_detail(self):
         # TODO Show order detail
         return dict()
 
-    @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako')
+    @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako', permission='operator')
     def show_performance_detail(self):
-        # TODO Show performance detail
-        return dict()
+        performance = self.context.performance
+        return dict(performance=performance, h=ViewHelpers(),)
 
     # TODO refund_performance.htmlはperformance_detail.htmlと統合できそう
     @view_config(route_name='refund_performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_detail.mako')
-    def show_performance_detail(self):
+    def show_refund_performance_detail(self):
         # TODO Show performance detail
         return dict()
 
