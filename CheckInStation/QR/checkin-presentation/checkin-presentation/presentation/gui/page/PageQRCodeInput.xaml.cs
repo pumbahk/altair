@@ -103,7 +103,8 @@ namespace checkin.presentation.gui.page
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new QRInputEvent(),
                 IsWaiting = Visibility.Hidden,
-                IsIdle = Visibility.Visible
+                IsIdle = Visibility.Visible,
+                RefreshModeVisibility = Visibility.Hidden,
             };
         }
 
@@ -112,9 +113,9 @@ namespace checkin.presentation.gui.page
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";

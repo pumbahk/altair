@@ -50,6 +50,7 @@ namespace checkin.presentation.gui.command
                 }
                 if (this.Wrapper is PageConfirmListOne ||
                     this.Wrapper is PageConfirmListAll ||
+                    this.Wrapper is PageCloseConfirm ||
                     this.Wrapper is PageConfirmListPart)
                 {
                     AppUtil.GotoWelcome(this.Wrapper);

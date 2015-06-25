@@ -140,6 +140,7 @@ namespace checkin.presentation.gui.page
                 Broker = AppUtil.GetCurrentBroker(),
                 NumberOfPrintableTicket = numOfPrintableTicket,
                 TicketDataCollection = ev.StatusInfo.TicketDataCollection,
+                RefreshModeVisibility = Visibility.Hidden,
                 DisplayTicketDataCollection = new DisplayTicketDataCollection()
             };
             ctx.Event = ev;
@@ -169,9 +170,9 @@ namespace checkin.presentation.gui.page
         {
             var ctx = this.DataContext as PageConfirmListPartDataContext;
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
             this.loadingLock = true;
         }

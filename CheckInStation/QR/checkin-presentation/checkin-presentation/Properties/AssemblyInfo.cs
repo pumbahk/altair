@@ -13,7 +13,7 @@
 [assembly: System.Reflection.AssemblyProduct("CheckinStation")]
 [assembly: System.Reflection.AssemblyCopyright("Copyright @ 2015")]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
-[assembly: System.Reflection.AssemblyInformationalVersion("1.0.3455aeb0fc07de9990a7670123acbbe2eea3e994")]
+[assembly: System.Reflection.AssemblyInformationalVersion("1.0.b3075355ca2608c475554741631c93b3a2eeb0a0")]
 [assembly: System.Reflection.AssemblyVersion("1.0.0")]
 [assembly: System.Reflection.AssemblyFileVersion("1.0.0")]
 

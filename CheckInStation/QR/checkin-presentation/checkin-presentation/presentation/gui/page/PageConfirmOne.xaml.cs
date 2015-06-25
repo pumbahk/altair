@@ -132,6 +132,7 @@ namespace checkin.presentation.gui.page
             {
                 Candidates = CandidateCreator.PrintUnitCandidates(),
                 Broker = AppUtil.GetCurrentBroker(),
+                RefreshModeVisibility = Visibility.Hidden,
             };
             ctx.Event = new ConfirmOneEvent() { StatusInfo = ctx };
             return ctx;
@@ -145,9 +146,9 @@ namespace checkin.presentation.gui.page
             ctx.NextButtonVisibility = Visibility.Visible;
             ctx.AllPrintedVisibility = Visibility.Hidden;
 
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
 
             if (!AppUtil.GetCurrentResource().MultiPrintMode)

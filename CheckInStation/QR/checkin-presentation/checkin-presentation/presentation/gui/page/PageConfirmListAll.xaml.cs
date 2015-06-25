@@ -139,6 +139,7 @@ namespace checkin.presentation.gui.page
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = ConfirmAllStatus.starting,
+                RefreshModeVisibility = Visibility.Hidden,
                 DisplayTicketDataCollection = new DisplayTicketDataCollection()
             };
             ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
@@ -211,9 +212,9 @@ namespace checkin.presentation.gui.page
         {   
             var ctx = this.DataContext as PageConfirmListAllDataContext;
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
             ctx.Description = "データを取得しています。少々お待ちください";
             await ctx.PrepareAsync();

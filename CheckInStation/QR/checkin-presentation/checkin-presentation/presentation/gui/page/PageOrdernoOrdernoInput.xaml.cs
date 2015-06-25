@@ -68,7 +68,8 @@ namespace checkin.presentation.gui.page
             return new PageOrdernoOrdernoInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new OrdernoInputEvent()
+                Event = new OrdernoInputEvent(),
+                RefreshModeVisibility = Visibility.Hidden,
             };
         }
 
@@ -89,9 +90,9 @@ namespace checkin.presentation.gui.page
                 this.KeyPad.Text = orderno;
             }
 
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
 
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();

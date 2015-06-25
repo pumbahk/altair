@@ -55,14 +55,15 @@ namespace checkin.presentation.gui.page
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new WelcomeEvent(),
+                RefreshModeVisibility = Visibility.Hidden,
             };
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                (this.DataContext as WelcomeDataContext).RefreshModeVisibility = Visibility.Hidden;
+                (this.DataContext as WelcomeDataContext).RefreshModeVisibility = Visibility.Visible;
             }
         }
 
