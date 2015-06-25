@@ -257,10 +257,10 @@ ${self.error(form, 'sex')}
 
 <dd>
 <dt class="creditHl">旅行券の引換に関して</dt>
-<dd style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
-  ・引換場所が未定の場合は、エリア内の【指定引換施設】をご選択ください。<br/>
-  ・エリアも未定の場合は、【特定引換施設】をご選択ください。<br/>
-  ・なお、引換場所は、<a href="https://ehime.tstar.jp/orderreview">『購入の確認』</a>ページから編集することが可能です。
+    <dd style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
+  ・未定の場合は『未定』をご選択ください。<br/>
+  ・なお、引換場所は、当選後に<a href="https://ehime.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集することが可能です。<br/>
+  ・引換場所が決定した際は<a href="https://ehime.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集ください。
 </dd>
 
 % for field in form['extra']._contained_form:
@@ -273,14 +273,6 @@ ${self.error(form, 'sex')}
 </dd>
 % endif
 % endfor
-
-<p>
-
-<div style="font-size: 90%;">
-※ご質問を入力されても返信はいたしかねます。<br>
-ご質問は下記のお問い合わせ先よりお願いいたします。
-</div>
-</p>
 </dd>
 
 

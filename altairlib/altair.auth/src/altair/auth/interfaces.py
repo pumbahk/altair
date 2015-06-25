@@ -96,3 +96,8 @@ class IChallenger(IPlugin):
 class IMetadataProvider(IPlugin):
     def get_metadata(request, auth_context, identities):
         pass
+
+
+class IForbiddenHandler(Interface):
+    def __call__(context, request):
+        pass

@@ -1,14 +1,9 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 <div>${order.order_no}</div>
-<%mobile:form_header>イベント名</%mobile:form_header>
+<%mobile:form_header>商品名</%mobile:form_header>
 <div>
-${order.performance.event.title} ${order.performance.name}<br />
-<%mobile:form_header>開演日時</%mobile:form_header>
-${h.japanese_date(order.performance.start_on)}
-${h.japanese_time(order.performance.start_on)}
-<%mobile:form_header>会場</%mobile:form_header>
-${order.performance.venue.name}<br />
+${order.performance.event.title}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
 合計金額: ￥${h.format_number(order.total_amount)}<br />
 %for product in order.items:

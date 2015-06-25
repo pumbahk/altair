@@ -526,7 +526,6 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
         if not self.is_leaf.data:
             required_fields += [
                 self.name,
-                self.price,
                 self.display_order,
                 ]
         for field in required_fields:

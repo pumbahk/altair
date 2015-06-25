@@ -61,14 +61,35 @@ class LotResourceBase(object):
 
     @reify
     def __acl__(self):
-        logger.debug('acl: lot %s' % self.lot)
+        logger.debug('acl: lot %s' % self.lot.id)
         acl = []
         if self.lot:
             if not self.lot.auth_type:
                 acl.append((Allow, Everyone, 'lots'))
             else:
-                logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
-                acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
+                if self.lot.auth_type == 'fc_auth':
+                    required_principals = set()
+                    guest_exists = False
+                    try:
+                        for membergroup in self.lot.sales_segment.membergroups:
+                            if membergroup.is_guest:
+                                required_principals.add('membership:%s' % membergroup.membership.name)
+                            else: 
+                                required_principals.add('membergroup:%s' % membergroup.name)
+                        effective_principals = self.request.effective_principals
+                        logger.debug('required principals: %r, provided: %r' % (required_principals, effective_principals))
+                        logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
+                        if not required_principals.isdisjoint(effective_principals):
+                            logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
+                            acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
+                        else:
+                            logger.debug('no access granted')
+                    except:
+                        logger.exception('WTF?')
+                else:
+                    # XXX: 他の会員ログイン方法には MemberGroup の概念がない (この分岐はいずれ直す)
+                    logger.debug('granting access to auth_type:%s' % self.lot.auth_type)
+                    acl.append((Allow, "altair.auth.authenticator:%s" % self.lot.auth_type, 'lots'))
         acl.append(DENY_ALL)
         return acl
 
@@ -194,11 +215,14 @@ class LotReviewResource(LotResourceBase):
 
 @implementer(ILotResource)
 class LotLogoutResource(LotResourceBase):
+    __acl__ = [
+        (Allow, Everyone, 'lots'),
+        ]
+
     def __init__(self, request):
         self.request = request
         self.organization = self.request.organization
-        self._lot_id = request.GET.get("lot_id", None)
-        self._event_id = request.GET.get("event_id", None)
+        self._lot_id = request.params.get("lot_id", None)
 
     @reify
     def lot(self):
@@ -209,7 +233,5 @@ class LotLogoutResource(LotResourceBase):
             .filter(Lot.id == self._lot_id) \
             .first()
         if not lot:
-            return None
-        if self._event_id is not None and str(lot.event_id) != self._event_id:
             return None
         return lot
