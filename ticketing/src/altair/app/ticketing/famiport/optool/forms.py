@@ -5,6 +5,7 @@ from altair.formhelpers.fields import OurTextField, DateTimeField
 from altair.formhelpers.widgets import OurPasswordInput, OurTextInput, OurDateWidget
 from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
+from wtforms import ValidationError
 
 class LoginForm(OurForm):
     user_name = OurTextField(
@@ -36,7 +37,7 @@ class SearchPerformanceForm(OurForm):
             Length(max=4, message=u'4文字以内で入力してください')
         ]
     )
-    event_name = OurTextField(
+    event_name_1 = OurTextField(
         label=u'興行名：',
     )
     performance_name = OurTextField(
@@ -51,3 +52,7 @@ class SearchPerformanceForm(OurForm):
     performance_to = OurTextField(
         label=u'公演日：',
     )
+
+    def validate_event_code_2(form, field):
+        if not form.event_code_1.data and form.event_code_2.data:
+            raise ValidationError(u'code_1とcode_2セットで入力要')

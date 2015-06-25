@@ -57,5 +57,5 @@
   </table>
 </div>
 <div class="buttonBoxBottom pull-right">
-  <a href="search_performance.html"><button type="submit" class="btn btn-info">戻る</button></a>
+  <a href=${request.route_url('search.performance')}><button type="submit" class="btn btn-info">戻る</button></a>
 </div>

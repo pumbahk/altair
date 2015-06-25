@@ -13,8 +13,8 @@
             <td>${form.event_code_2(class_='form-control',placeholder='sub-code')}</td>
           </tr>
           <tr>
-            <th class="pull-right">${form.event_name.label}</th>
-            <td>${form.event_name(class_='form-control')}</td>
+            <th class="pull-right">${form.event_name_1.label}</th>
+            <td>${form.event_name_1(class_='form-control')}</td>
             <th class="pull-right">${form.performance_name.label}</th>
             <td>${form.performance_name(class_='form-control')}</td>
           </tr>
