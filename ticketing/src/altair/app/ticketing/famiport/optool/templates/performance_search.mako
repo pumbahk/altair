@@ -52,8 +52,8 @@
     <div class="col-md-3 text-center">
       <h4>公演検索結果</h4>
     </div>
-    % if count:
-    <div class="col-md-9 text-center">
+    % if count is not None:
+    <div class="col-md-9 text-left">
       <h4>検索結果件数${count}件</h4>
     </div>
     % endif

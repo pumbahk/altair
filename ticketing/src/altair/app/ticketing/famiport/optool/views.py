@@ -103,22 +103,38 @@ class FamiPortSearchView(object):
                     query = query.filter(FamiPortEvent.id==postdata.get('event_id'))
 
                 if postdata.get('event_code_1'):
-                    query = query.filter(FamiPortEvent.code_1==postdata.get('event_code_1'))
+                    query = query.filter(FamiPortEvent.code_1==postdata.get('event_code_1').zfill(6))
                     if postdata.get('event_code_2'):
-                        query = query.filter(FamiPortEvent.code_2==postdata.get('event_code_2'))
+                        query = query.filter(FamiPortEvent.code_2==postdata.get('event_code_2').zfill(4))
+                elif postdata.get('event_code_2'):
+                    self.request.session.flash(u'興行コードもセットでご入力下さい')
+                    return dict(form=form,count=None,entries=[])
 
                 if postdata.get('event_name'):
-                    query = query.filter(FamiPortEvent.name_1==postdata.get('event_name'))
+                    pattern = u'%{}%'.format(postdata.get('event_name'))
+                    query = query.filter(FamiPortEvent.name_1.like(pattern))
 
                 if postdata.get('performance_name'):
-                    query = query.filter(FamiPortPerformance.name==postdata.get('performance_name'))
+                    pattern = u'%{}%'.format(postdata.get('performance_name'))
+                    query = query.filter(FamiPortPerformance.name.like(pattern))
 
                 if postdata.get('venue_name'):
-                    query = query.filter(FamiPortEvent.venue==postdata.get('venue_name'))
+                    pattern = u'%{}%'.format(postdata.get('venue_name'))
+                    query = query.filter(FamiPortEvent.venue.like(pattern))
 
                 if postdata.get('performance_from'):
-                    query = query.filter(FamiPortPerformance.start_at>=postdata.get('performance_from'),
-                                         FamiPortPerformance.start_at<=postdata.get('performance_to'))
+                    req_from = postdata.get('performance_from') + ' 00:00:00'
+                    if postdata.get('performance_to'):
+                        req_to = postdata.get('performance_to') + ' 23:59:59'
+                        query = query.filter(FamiPortPerformance.start_at >= req_from,
+                                             FamiPortPerformance.start_at <= req_to)
+                    else:
+                        query = query.filter(FamiPortPerformance.start_at >= req_from)
+                elif postdata.get('performance_to'):
+                    req_from = '1900-01-01 00:00:00'
+                    req_to = postdata.get('performance_to') + ' 23:59:59'
+                    query = query.filter(FamiPortPerformance.start_at >= req_from,
+                                         FamiPortPerformance.start_at <= req_to)
 
                 performances = query.all()
                 count = query.count()
@@ -129,7 +145,7 @@ class FamiPortSearchView(object):
                                      items_per_page=20,
                                      url=page_url)
         else:
-            count = 0
+            count = None
             pages = []
 
         return dict(form=form,
