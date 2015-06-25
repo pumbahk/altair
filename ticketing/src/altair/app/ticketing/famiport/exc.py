@@ -2,6 +2,7 @@
 import sys
 import traceback
 
+
 class FamiPortError(Exception):
     pass
 
@@ -38,6 +39,7 @@ class FamiPortAPIError(Exception):
 
     def __repr__(self):
         return 'FamiPortAPIError(%r, %r)' % (self.message, self.client_code)
+
 
 class FamiPortAPINotFoundError(FamiPortAPIError):
     pass

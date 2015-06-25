@@ -16,15 +16,20 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
+from altair.sqlahelper import get_db_session
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from . import events
-from .exc import FamiPortNumberingError, FamiPortError
-from altair.sqlahelper import get_db_session
+from .exc import (
+    FamiPortError,
+    FamiPortNumberingError,
+    FamiPortUnsatisifiedPreconditionError,
+    )
 
 Base = declarative.declarative_base()
 
 logger = logging.getLogger(__name__)
+
 
 class FamiPortSalesChannel(Enum):
     FamiPortOnly    = 1
