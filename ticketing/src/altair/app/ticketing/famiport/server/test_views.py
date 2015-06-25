@@ -130,6 +130,7 @@ class InquiryTest(FamiPortAPIViewTest):
             void_at=None,
             barcode_no=u'4110000000006',
             famiport_order_identifier=u'430000000002',
+            mark_inquired=lambda *args: None,
             famiport_order=DummyModel(
                 orderId='a',
                 customer_name=u'楽天太郎',
@@ -268,6 +269,7 @@ class PaymentTest(FamiPortAPIViewTest):
             reserve_number=u'4310000000002',
             barcode_no=u'1000000000000',
             famiport_order_identifier=u'430000000002',
+            mark_payment_request_received=lambda *args: None,
             famiport_order=DummyModel(
                 famiport_order_identifier=u'430000000001',
                 type=3,
@@ -349,6 +351,7 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             completed_at=None,
             shop_code=u'99999',
             can_completion=lambda now: True,
+            mark_completed=lambda *args: None,
             famiport_order_identifier=u'000000000000',
             famiport_order=DummyModel()
             )
@@ -423,6 +426,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             completed_at=None,
             void_at=None,
             barcode_no=u'1000000000000',
+            mark_voided=lambda *args: None,
             famiport_order=DummyModel(
                 paid_at=None,
                 canceled_at=None,

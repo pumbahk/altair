@@ -20,34 +20,35 @@ def includeme(config):
         )
     from .interfaces import IFamiPortResponseBuilderRegistry
 
+    registry = config.registry
     builder_registry = FamiPortResponseBuilderRegistry()
     builder_registry.add(
         FamiPortReservationInquiryRequest,
-        FamiPortReservationInquiryResponseBuilder()
+        FamiPortReservationInquiryResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortPaymentTicketingRequest,
-        FamiPortPaymentTicketingResponseBuilder()
+        FamiPortPaymentTicketingResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortPaymentTicketingCompletionRequest,
-        FamiPortPaymentTicketingCompletionResponseBuilder()
+        FamiPortPaymentTicketingCompletionResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortPaymentTicketingCancelRequest,
-        FamiPortPaymentTicketingCancelResponseBuilder()
+        FamiPortPaymentTicketingCancelResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortInformationRequest,
-        FamiPortInformationResponseBuilder()
+        FamiPortInformationResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortCustomerInformationRequest,
-        FamiPortCustomerInformationResponseBuilder()
+        FamiPortCustomerInformationResponseBuilder(registry)
         )
     builder_registry.add(
         FamiPortRefundEntryRequest,
-        FamiPortRefundEntryResponseBuilder()
+        FamiPortRefundEntryResponseBuilder(registry)
         )
-    config.registry.registerUtility(builder_registry, IFamiPortResponseBuilderRegistry)
+    registry.registerUtility(builder_registry, IFamiPortResponseBuilderRegistry)
 

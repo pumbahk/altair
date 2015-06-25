@@ -341,7 +341,7 @@ class _FamiPortInformationMessageResponseBuilderTestBase(unittest.TestCase, Fami
         return klass(*args, **kwds)
 
     def _callFUT(self, *args, **kwds):
-        target = self._get_target()
+        target = self._get_target(self.request.registry)
         return target.build_response(*args, **kwds)
 
 
@@ -459,7 +459,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
         now = None
 
         famiport_request = self._create_famiport_request(*args, **kwds)
-        res = self._callFUT(famiport_request, session, now)
+        res = self._callFUT(famiport_request, session, now, self.request)
         from .models import FamiPortInformationResponse
         self.assertTrue(type(res), FamiPortInformationResponse)
 
@@ -481,7 +481,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
         now = None
 
         famiport_request = self._create_famiport_request(*args, **kwds)
-        res = self._callFUT(famiport_request, session, now)
+        res = self._callFUT(famiport_request, session, now, self.request)
         self.assertEqual(res.infoMessage, u'')
         self.assertEqual(res.resultCode, u'00')
 
@@ -510,7 +510,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
         self.session.commit()
 
         famiport_request = self._create_famiport_request(*args, **kwds)
-        res = self._callFUT(famiport_request, session, now)
+        res = self._callFUT(famiport_request, session, now, self.request)
         self.assertEqual(res.infoMessage, u'')
         self.assertEqual(res.resultCode, u'00')
 
@@ -532,7 +532,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
         now = None
 
         famiport_request = self._create_famiport_request(*args, **kwds)
-        res = self._callFUT(famiport_request, session, now)
+        res = self._callFUT(famiport_request, session, now, self.request)
         self.assertTrue(res.infoMessage, u'現在お取り扱いしておりません。')
 
     # 案内
@@ -561,7 +561,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
             )
 
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, InformationResultCodeEnum.WithInformation.value)
         self.assertEqual(result.infoKubun, u'1')
         self.assertEqual(result.infoMessage, u'WithInformation メッセージ')
@@ -591,7 +591,7 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
             )
 
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, InformationResultCodeEnum.ServiceUnavailable.value)
         self.assertEqual(result.infoKubun, u'1')
         self.assertEqual(result.infoMessage, u'Service Unavailableメッセージ')
@@ -633,7 +633,7 @@ class FamiPortCustomerInformationResponseBuilderTest(unittest.TestCase, FamiPort
             )
         self._payment_receipt(self.barcode_no_cash_on_delivery)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
         self.assertEqual(result.name, u'チケット　太郎')
@@ -655,7 +655,7 @@ class FamiPortCustomerInformationResponseBuilderTest(unittest.TestCase, FamiPort
             totalAmount=u'10540'
             )
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.CustomerNamePrintInformationError.value)
         self.assertEqual(result.name, None)
@@ -683,7 +683,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
             authNumber=u''
             )
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.CashOnDelivery.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
@@ -710,7 +710,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
             authNumber=u''
             )
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
         self.assertEqual(result.playGuideId, u'')
@@ -736,7 +736,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
             authNumber=u''
             )
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyClass, None)
         self.assertEqual(result.replyCode, ReplyCodeEnum.OtherError.value)
@@ -762,7 +762,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
             authNumber=u''
             )
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyClass, None)
         self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
@@ -798,7 +798,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
         return klass(*args, **kwds)
 
     def _callFUT(self, *args, **kwds):
-        target = self._get_target()
+        target = self._get_target(self.request.registry)
         return target.build_response(*args, **kwds)
 
     def _create_famiport_request(self, *args, **kwds):
@@ -808,18 +808,18 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
     def test_ok(self):
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
 
     def test_illigal(self):
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
 
     def test_already_payment(self):
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
         self.assertEqual(famiport_response.resultCode, ResultCodeEnum.OtherError.value)
@@ -829,7 +829,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
         self.assertEqual(famiport_response.resultCode, ResultCodeEnum.OtherError.value)
@@ -839,7 +839,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
         self.assertEqual(famiport_response.resultCode, ResultCodeEnum.OtherError.value)
@@ -849,7 +849,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
         self.assertEqual(famiport_response.resultCode, ResultCodeEnum.OtherError.value)
@@ -859,7 +859,7 @@ class FamiPortCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuild
         from .models import ResultCodeEnum, ReplyCodeEnum
         now = datetime.now()
         famiport_request = self._create_famiport_request(storeCode=u'099999')
-        famiport_response = self._callFUT(famiport_request, self.session, now)
+        famiport_response = self._callFUT(famiport_request, self.session, now, self.request)
         self.assertEqual(famiport_response.storeCode, famiport_request.storeCode)
         self.assertEqual(famiport_response.sequenceNo, famiport_request.sequenceNo)
         self.assertEqual(famiport_response.resultCode, ResultCodeEnum.OtherError.value)
@@ -889,7 +889,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.CashOnDelivery.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
@@ -927,7 +927,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.Prepayment.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
@@ -965,7 +965,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
@@ -985,7 +985,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.PaymentDueError.value)
@@ -1005,7 +1005,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.Prepayment.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
@@ -1044,7 +1044,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.Paid.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
@@ -1084,7 +1084,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             )
         self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.TicketingBeforeStartError.value)
@@ -1123,7 +1123,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.famiport_order_payment_only.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
 
         builder = get_response_builder(self.request, f_request)
-        result = builder.build_response(f_request, self.session, self.now)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, ReplyClassEnum.PrepaymentOnly.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)

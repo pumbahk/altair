@@ -19,7 +19,8 @@ class TaskMapperTests(unittest.TestCase):
         testing.tearDown()
 
     def test_declare_queue(self):
-        settings = testing.DummyResource(
+        from .. import QueueSettings
+        settings = QueueSettings(
             queue="testing",
             durable=True,
             exclusive=False,
@@ -173,7 +174,7 @@ class PikaClientTests(unittest.TestCase):
     def test_on_open_with_tasks(self):
         parameters = mock.Mock()
         target = self._makeOne(self.registry, parameters)
-        target.tasks.append(mock.Mock())
+        target.tasks['test'] = mock.Mock()
         channel = mock.Mock()
 
         target.on_open(channel)

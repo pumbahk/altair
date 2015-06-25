@@ -110,6 +110,7 @@ requires = [
     'altair.samarker',
     'altair.pyramid_dynamic_renderer',
     'altair.timeparse',
+    'altair.mailhelpers',
     ]
 
 tests_require = [
