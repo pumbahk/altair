@@ -1948,6 +1948,10 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # 引換票を表示しないオプション（SEJ専用）
     hide_voucher = AnnotatedColumn(Boolean, default=False, _a_label=_(u'引換票を表示しない'))
 
+    # Backend内の表示制御項目
+    display_order = Column(Integer, default=0, nullable=False)
+    selectable = Column(Boolean, default=True, nullable=False)
+
     @property
     def fee(self):
         if self.fee_per_order:
@@ -2008,7 +2012,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def filter_by_organization_id(id):
-        return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
+        delivery_method = DeliveryMethod.filter(DeliveryMethod.organization_id == id) \
+                                        .filter('DeliveryMethod.selectable is True') \
+                                        .order_by('DeliveryMethod.selectable desc') \
+                                        .order_by('DeliveryMethod.display_order asc') \
+                                        .all()
+        return delivery_method
 
     def deliver_at_store(self):
         """

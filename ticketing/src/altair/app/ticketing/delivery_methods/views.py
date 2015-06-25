@@ -18,13 +18,14 @@ class DeliveryMethods(BaseView):
 
     @view_config(route_name='delivery_methods.index', renderer='altair.app.ticketing:templates/delivery_methods/index.html')
     def index(self):
-        sort = self.request.GET.get('sort', 'DeliveryMethod.id')
+        sort = self.request.GET.get('sort', 'DeliveryMethod.display_order')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         query = DeliveryMethod.filter_by(organization_id=self.context.user.organization_id)
-        query = query.order_by(sort + ' ' + direction)
+        query = query.order_by('DeliveryMethod.selectable desc') \
+                     .order_by(sort + ' ' + direction)
 
         delivery_methods = paginate.Page(
             query,
