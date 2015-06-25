@@ -1,5 +1,6 @@
 # encoding:utf-8
 from unittest import TestCase
+import mock
 from .testing import _setup_db, _teardown_db
 from pyramid.testing import setUp, tearDown
 
@@ -171,3 +172,42 @@ class CreateRandomSequenceNumberTest(TestCase):
         self.assertEqual(length, len(value))
         for ch in value:
             self.assertIn(ch, valid_chars)
+
+
+class TestFamiPortReceipt(TestCase):
+    def _target(self):
+        from .models import FamiPortReceipt as klass
+        return klass
+
+    def _makeOne(self, *args, **kwargs):
+        return self._target()(*args, **kwargs)
+
+    def test_mark_completed(self):
+        from pyramid.testing import DummyRequest
+        from datetime import datetime
+        now_ = datetime.now()
+        request = DummyRequest()
+        request.registry = mock.Mock()
+        receipt = self._makeOne(
+            id=1,
+            reserve_number=u'111111111',
+            completed_at=None,
+            )
+        receipt.mark_completed(now_, request)
+        self.assertEqual(receipt.completed_at, now_)
+        self.assertTrue(request.registry.notify.called)
+
+    def test_mark_completed_error(self):
+        from .exc import FamiPortUnsatisifiedPreconditionError
+        from pyramid.testing import DummyRequest
+        from datetime import datetime
+        now_ = datetime.now()
+        request = DummyRequest()
+        request.registry = mock.Mock()
+        receipt = self._makeOne(
+            id=1,
+            reserve_number=u'111111111',
+            completed_at=now_,
+            )
+        with self.assertRaises(FamiPortUnsatisifiedPreconditionError):
+            receipt.mark_completed(now_, request)
