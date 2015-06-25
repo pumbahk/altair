@@ -952,7 +952,7 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptPaymentRequestReceived(self, request))
 
     def mark_completed(self, now, request):
-        if self.comleted_at is not None:
+        if self.completed_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as completed' % (self.id, self.reserve_number))
         self.completed_at = now
