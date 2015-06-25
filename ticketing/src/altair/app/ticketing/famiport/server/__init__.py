@@ -18,6 +18,7 @@ def main(global_config, **local_config):
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
     config.include('altair.app.ticketing.famiport.communication')
+    config.include('..worker')
     config.include('.')
     return config.make_wsgi_app()
 
@@ -35,6 +36,7 @@ def includeme(config):
     config.add_route('famiport.api.reservation.refund', '/refund')  # 払戻
 
     config.scan('.views')
+    config.include('.subscribers')
     config.include('..communication')
     config.include('..datainterchange')
 

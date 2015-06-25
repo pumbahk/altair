@@ -18,6 +18,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
+from . import events
 from .exc import FamiPortNumberingError, FamiPortError
 
 Base = declarative.declarative_base()
@@ -662,7 +663,7 @@ class FamiPortOrder(Base, WithTimestamp):
             return receipt.shop_code
         return None
 
-    def mark_canceled(self, now):
+    def mark_canceled(self, now, request):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
@@ -671,11 +672,11 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
             if not famiport_receipt.void_at:
-                famiport_receipt.mark_canceled(now)
+                famiport_receipt.mark_canceled(now, request)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
 
-    def make_reissueable(self, now):
+    def make_reissueable(self, now, request):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -700,7 +701,7 @@ class FamiPortOrder(Base, WithTimestamp):
             )
         self.famiport_receipts.append(new_receipt)
 
-    def make_suborder(self, now):
+    def make_suborder(self, now, request):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -916,7 +917,7 @@ class FamiPortReceipt(Base, WithTimestamp):
            and self.completed_at is None \
            and self.void_at is None \
            and self.canceled_at is None \
-           and self.payment_request_received_at < now
+           and self.payment_request_received_at <= now
 
     @classmethod
     def get_by_reserve_number(cls, reserve_number, session):
@@ -940,11 +941,36 @@ class FamiPortReceipt(Base, WithTimestamp):
             .filter(FamiPortOrder.invalidated_at.is_(None)) \
             .one()
 
-    def mark_canceled(self, now):
+    def mark_inquired(self, now, request):
+        logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as inquired' % (self.id, self.reserve_number))
+        self.inquired_at = now
+        request.registry.notify(events.ReceiptInquired(self, request))
+
+    def mark_payment_request_received(self, now, request):
+        logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as payment_request_received' % (self.id, self.reserve_number))
+        self.payment_request_received_at = now
+        request.registry.notify(events.ReceiptPaymentRequestReceived(self, request))
+
+    def mark_completed(self, now, request):
+        if self.completed_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
+        logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as completed' % (self.id, self.reserve_number))
+        self.completed_at = now
+        request.registry.notify(events.ReceiptCompleted(self, request))
+
+    def mark_voided(self, now, request):
+        if self.voided_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
+        logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
+        self.voided_at = now
+        request.registry.notify(events.ReceiptVoided(self, request))
+
+    def mark_canceled(self, now, request):
         if self.canceled_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
         self.canceled_at = now
+        request.registry.notify(events.ReceiptCanceled(self, request))
 
     @classmethod
     def create(cls, session, famiport_client, **kwargs):

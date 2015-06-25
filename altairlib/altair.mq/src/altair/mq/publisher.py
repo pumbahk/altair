@@ -55,21 +55,25 @@ class LocallyDispatchingPublisherConsumer(object):
         def __init__(self, connection):
             self.connection = connection
             self.queue = None
+            self.passive = None
             self.durable = None
             self.exclusive = None
             self.auto_delete = None
             self.nowait = None
             self.ack_called = False
             self.callback = None
+            self.arguments = None
             self.handler = None
 
-        def queue_declare(self, queue, durable, exclusive, auto_delete, nowait, callback):
+        def queue_declare(self, callback, queue='', passive=False, durable=False, exclusive=False, auto_delete=False, nowait=False, arguments=None):
+            self.callback = callback
             self.queue = queue
+            self.passive = passive
             self.durable = durable
             self.exclusive = exclusive
             self.auto_delete = auto_delete
             self.nowait = nowait
-            self.callback = callback
+            self.arguments = arguments
 
         def basic_qos(self, prefetch_size=0, prefetch_count=0, all_channels=False):
             pass
@@ -91,10 +95,12 @@ class LocallyDispatchingPublisherConsumer(object):
     def __init__(self, continue_on_exception=False):
         self.routes = []
         self.tasks = {}
+        self.tasks_by_name = {}
         self.continue_on_exception = continue_on_exception
         self.virtual_conn = self.VirtualConnection(
             pika.connection.ConnectionParameters()
             )
+        self.companion_publisher = None
 
     def _compile_pattern(self, pattern):
         import re
@@ -110,6 +116,7 @@ class LocallyDispatchingPublisherConsumer(object):
         channel = self.VirtualChannel(self.virtual_conn)
         task_mapper.declare_queue(channel)
         self.tasks.setdefault(task_mapper.queue_settings.queue, []).append(channel)
+        self.tasks_by_name[task_mapper.name] = task_mapper
         channel.callback(None)
 
     def connect(self):
@@ -160,6 +167,10 @@ class LocallyDispatchingPublisherConsumer(object):
 
     def modify_task_dispatcher(self, task_dispatcher):
         return task_dispatcher
+
+    def lookup_task(self, name):
+        return self.tasks_by_name[name]
+
 
 @provider(IPublisherConsumerFactory)
 def locally_dispatching_publisher_consumer_factory(config, config_prefix):

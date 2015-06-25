@@ -1,21 +1,7 @@
 from setuptools import setup, find_packages
+import os
 
-version = '1.0'
-
-requires = [
-    "setuptools>0.7",
-    "pika",
-    "tornado",
-    "pyramid",
-    "venusian",
-    "six",
-]
-
-points = {
-    "console_scripts": [
-        "mserve=altair.mq.scripts.mserve:main",
-    ],
-}
+version = '0.0.0'
 
 long_description = (
     open('README.txt').read()
@@ -28,7 +14,7 @@ long_description = (
     open('CHANGES.txt').read()
     + '\n')
 
-setup(name='altair.mq',
+setup(name='altair.mailhelpers',
       version=version,
       description="",
       long_description=long_description,
@@ -40,14 +26,22 @@ setup(name='altair.mq',
       keywords='',
       author='',
       author_email='',
-      url='http://svn.plone.org/svn/collective/',
-      license='gpl',
+      url='https://github.com/ticketstar/altair',
+      license='proprietary',
       packages=find_packages('src'),
       package_dir = {'': 'src'},
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
-      install_requires=requires,
-      test_suite='altair.mq',
-      entry_points=points,
+      install_requires=[
+          'setuptools',
+          # -*- Extra requirements: -*-
+          ],
+      tests_require=[
+          'pytz',
+          ],
+      test_suite='altair.mailhelpers',
+      entry_points="""
+      # -*- Entry points: -*-
+      """,
       )

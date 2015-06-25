@@ -139,12 +139,15 @@ class FamiPortResponseBuilderRegistry(object):
 
 @implementer(IFamiPortResponseBuilder)
 class FamiPortResponseBuilder(object):
+    def __init__(self, registry):
+        request = registry
+
     def build_response(self, famiport_request=None):
         pass
 
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
-    def build_response(self, famiport_reservation_inquiry_request, session, now):
+    def build_response(self, famiport_reservation_inquiry_request, session, now, request):
         playGuideId = u''
         barCodeNo = u''
         totalAmount = u''
@@ -257,7 +260,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             if famiport_receipt is not None:
                 famiport_receipt.shop_code = storeCode
                 famiport_receipt.barcode_no = FamiPortOrderTicketNoSequence.get_next_value(session)
-                famiport_receipt.inquired_at = now
+                famiport_receipt.mark_inquired(now, request)
                 session.commit()
 
             if famiport_receipt is not None:
@@ -333,11 +336,12 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
 
 class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
-    def __init__(self, moratorium=datetime.timedelta(seconds=1800)):
+    def __init__(self, registry, moratorium=datetime.timedelta(seconds=1800)):
+        super(FamiPortPaymentTicketingResponseBuilder, self).__init__(registry)
         # 入金期限を手続き中に過ぎてしまった場合に考慮される、入金期限からの猶予期間
         self.moratorium = moratorium
 
-    def build_response(self, famiport_payment_ticketing_request, session, now):
+    def build_response(self, famiport_payment_ticketing_request, session, now, request):
         """入金発券要求からバーコードを印字するための情報を返す
         """
         famiport_order = None
@@ -401,7 +405,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 else:
-                    famiport_receipt.payment_request_received_at = now
+                    famiport_receipt.mark_payment_request_received(now, request)
                     session.commit()
 
             # validate the request
@@ -572,7 +576,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_payment_ticketing_completion_request, session, now):
+    def build_response(self, famiport_payment_ticketing_completion_request, session, now, request):
         resultCode = ResultCodeEnum.Normal.value
         storeCode = _strip_zfill(famiport_payment_ticketing_completion_request.storeCode)
         mmkNo = famiport_payment_ticketing_completion_request.mmkNo
@@ -625,7 +629,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
-                            famiport_receipt.completed_at = now
+                            famiport_receipt.mark_completed(now, request)
                             famiport_order.issued_at = now
                             famiport_order.paid_at = now
                             session.commit()
@@ -637,7 +641,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
-                            famiport_receipt.completed_at = now
+                            famiport_receipt.mark_completed(now, request)
                             famiport_order.paid_at = now
                             session.commit()
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
@@ -648,7 +652,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
-                            famiport_receipt.completed_at = now
+                            famiport_receipt.mark_completed(now, request)
                             famiport_order.issued_at = now
                             session.commit()
                     else:
@@ -685,7 +689,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
 
 
 class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
-    def build_response(self, famiport_payment_ticketing_cancel_request, session, now):
+    def build_response(self, famiport_payment_ticketing_cancel_request, session, now, request):
         famiport_request = famiport_payment_ticketing_cancel_request
         storeCode = _strip_zfill(famiport_request.storeCode)
         logger.info(
@@ -755,7 +759,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 famiport_response.replyCode = ReplyCodeEnum.Normal.value
                 famiport_response.orderId = famiport_receipt.famiport_order_identifier
                 famiport_response.barCodeNo = famiport_receipt.barcode_no
-                famiport_receipt.void_at = now  # 30分破棄処理
+                famiport_receipt.mark_voided(now, request)  # 30分破棄処理
                 session.commit()
         except Exception as err:  # その他の異常
             logger.exception(u'famiport order cancel error')
@@ -777,7 +781,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_information_request, session, now):
+    def build_response(self, famiport_information_request, session, now, request):
         """案内通信
 
         デフォルトは「案内なし(正常)」
@@ -921,7 +925,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
-    def build_response(self, famiport_customer_information_request, session, now):
+    def build_response(self, famiport_customer_information_request, session, now, request):
         storeCode = _strip_zfill(famiport_customer_information_request.storeCode)
         mmkNo = famiport_customer_information_request.mmkNo
         ticketingDate = None
@@ -989,7 +993,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
-    def build_response(self, famiport_refund_entry_request, session, now):
+    def build_response(self, famiport_refund_entry_request, session, now, request):
         shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
         famiport_refund_entry_response = FamiPortRefundEntryResponse(
             businessFlg=famiport_refund_entry_request.businessFlg,
