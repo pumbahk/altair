@@ -11,3 +11,4 @@ class ViewHelpers(object):
 
     def get_time(self, datetime):
         return "{0:%H:%M}".format(datetime)
+

@@ -20,6 +20,7 @@ from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from . import events
 from .exc import FamiPortNumberingError, FamiPortError
+from altair.sqlahelper import get_db_session
 
 Base = declarative.declarative_base()
 
@@ -307,6 +308,14 @@ class FamiPortSalesSegment(Base, WithTimestamp):
         primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id
         )
 
+    @property
+    def get_sales_channel_in_str(self):
+        if self.sales_channel == 1:
+            return u'FamiPortOnly'
+        if self.sales_channel == 2:
+            return u'WebOnly'
+        if self.sales_channel == 3:
+            return u'FamiPortAndWeb'
 
 class FamiPortRefundType(Enum):
     Type1 = 1
@@ -663,6 +672,24 @@ class FamiPortOrder(Base, WithTimestamp):
             return receipt.shop_code
         return None
 
+    @property
+    def get_issued_status_in_str(self):
+        if self.issued_at and self.canceled_at is None and self.invalidated_at is None:
+            return u'発券済み'
+        elif self.issued_at is None:
+            return u'発券待ち'
+
+    @property
+    def get_type_in_str(self):
+        if self.type == 1:
+            return u'代引'
+        elif self.type == 2:
+            return u'前払い(後日渡し)'
+        elif self.type == 3:
+            return u'代済'
+        elif self.type == 4:
+            return u'前払いのみ'
+
     def mark_canceled(self, now, request):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
@@ -884,6 +911,16 @@ class FamiPortReceipt(Base, WithTimestamp):
     def is_ticketing_receipt(self):
         return (self.type == FamiPortReceiptType.Ticketing.value) | \
                (self.type == FamiPortReceiptType.CashOnDelivery.value)
+
+    def get_shop_name(self, request):
+        if self.payment_request_received_at:
+            session = get_db_session(request, name="famiport")
+            shop_name = session.query(FamiPortShop)\
+                               .filter(FamiPortShop.code == self.shop_code)\
+                               .first()
+        else:
+            shop_name = u"要求未済"
+        return shop_name
 
     def can_payment(self, now):
         return self.inquired_at \

@@ -1,7 +1,7 @@
 <%inherit file="_base.mako"/>
 
 <div class="jumbotron">
-  <form class="form" action="${request.route_path('search.order')}" method='POST'>
+  <form class="form" action="${request.route_path('search.receipt')}" method='POST'>
     <div class="row">
       <div class="col-md-10">
         <h3 class="form-heading">申込検索</h3>
@@ -80,11 +80,11 @@
     <tbody>
     % for receipt in entries:
       <tr>
-        <td><input type="radio" value="${request.route_url('order.detail', order_id=receipt.id)}" name="radio_gr" form="order"></td>
+        <td><input type="radio" value="${request.route_url('receipt.detail', receipt_id=receipt.id)}" name="radio_gr" form="order"></td>
         <td>${receipt.famiport_order.famiport_sales_segment.name}</td>
-        <td>${receipt.famiport_order.type}</td>
-        <td><span style="color:red;">あとで</span></td>
-        <td>${receipt.famiport_order.paid_at}</td>
+        <td>${receipt.famiport_order.get_type_in_str}</td>
+        <td>${receipt.famiport_order.get_issued_status_in_str}</td>
+        <td>${u'入金済み' if receipt.famiport_order.paid_at else u'入金待ち'}</td>
         <td>${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
         <td>${vh.get_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
         <td>${vh.get_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
@@ -96,10 +96,10 @@
         <td>${receipt.famiport_order.ticket_total_count}</td>
         <td>${receipt.famiport_order.paid_at}</td>
         <td>${receipt.shop_code}</td>
-        <td><span style="color:red;">店名</span></td>
+        <td>${receipt.get_shop_name(request)}</td>
         <td>${receipt.famiport_order.issued_at}</td>
         <td>${receipt.shop_code}</td>
-        <td><span style="color:red;">店名</span></td>
+        <td>${receipt.get_shop_name(request)}</td>
         <td>${receipt.famiport_order.payment_due_at}</td>
         <td>${receipt.famiport_order.ticketing_end_at}</td>
         <td>${receipt.famiport_order.created_at}</td>

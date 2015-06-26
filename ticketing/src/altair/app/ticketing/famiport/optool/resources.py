@@ -1,6 +1,6 @@
 from pyramid.security import Allow, Deny, Authenticated, DENY_ALL
 from pyramid.decorator import reify
-from ..models import FamiPortPerformance
+from ..models import FamiPortPerformance, FamiPortReceipt
 from altair.sqlahelper import get_db_session
 
 class BaseResource(object):
@@ -36,5 +36,15 @@ class PerformanceDetailResource(DetailBaseResource):
         performance_id = self.request.matchdict.get('performance_id')
         if performance_id:
             self.performance = fami_session.query(FamiPortPerformance)\
-                                .filter(FamiPortPerformance.id==performance_id)\
-                                .one()
+                                           .filter(FamiPortPerformance.id == performance_id)\
+                                           .one()
+
+class ReceiptDetailResource(DetailBaseResource):
+    def __init__(self, request):
+        self.request = request
+        fami_session = get_db_session(self.request, 'famiport')
+        receipt_id = self.request.matchdict.get('receipt_id')
+        if receipt_id:
+            self.receipt = fami_session.query(FamiPortReceipt)\
+                                       .filter(FamiPortReceipt.id == receipt_id)\
+                                       .one()

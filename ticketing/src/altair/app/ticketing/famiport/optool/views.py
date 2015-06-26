@@ -87,7 +87,7 @@ class FamiPortSearchView(object):
         self.request = request
 
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
-    @view_config(route_name='search.order', renderer='altair.app.ticketing.famiport.optool:templates/order_search.mako', permission='operator')
+    @view_config(route_name='search.receipt', renderer='altair.app.ticketing.famiport.optool:templates/receipt_search.mako', permission='operator')
     def search_order(self):
         form = SearchReceiptForm()
 
@@ -159,10 +159,10 @@ class FamiPortDetailView(object):
         self.request = request
 
 
-    @view_config(route_name='order.detail', renderer='altair.app.ticketing.famiport.optool:templates/order_detail.mako')
+    @view_config(route_name='receipt.detail', renderer='altair.app.ticketing.famiport.optool:templates/receipt_detail.mako')
     def show_order_detail(self):
-        # TODO Show order detail
-        return dict()
+        receipt = self.context.receipt
+        return dict(receipt=receipt,)
 
     @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako', permission='operator')
     def show_performance_detail(self):

@@ -53,12 +53,12 @@ def main(global_conf, **local_conf):
     config.add_route('example.page_needs_authentication',  '/.example/page_needs_authentication', factory='.resources.ExampleResource')
     # Search
     # config.add_route('index', '/', factory='.resources.SearchResource')
-    config.add_route('search.order', '/search/order', factory='.resources.SearchResource')
+    config.add_route('search.receipt', '/search/receipt', factory='.resources.SearchResource')
     config.add_route('search.performance', '/search/performance', factory='.resources.SearchResource')
     config.add_route('search.refund_performance', '/search/refund_performance', factory='.resources.SearchResource')
     config.add_route('search.refund_ticket', '/search/refund_ticket', factory='.resources.SearchResource')
     # Detail
-    config.add_route('order.detail',  '/show/order/{order_id}')
+    config.add_route('receipt.detail',  '/show/receipt/{receipt_id}', factory='.resources.ReceiptDetailResource')
     config.add_route('performance.detail', '/show/performance/{performance_id}', factory='.resources.PerformanceDetailResource')
     config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}')
     # Rebook or reprint
