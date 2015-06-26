@@ -202,6 +202,18 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.canceled_at==None, # キャンセルされていない
         )
 
+    @property
+    def query_not_sent_mail_entries(self):
+        """ メール未送信のエントリ """
+
+        return LotEntry.query.filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+            LotEntry.entry_no!=None,
+        ).filter(
+            LotEntry.ordered_mail_sent_at==None, # メール未送信
+        )
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
