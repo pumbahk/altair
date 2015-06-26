@@ -26,16 +26,18 @@
                     <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                    <ScrollViewer
+                    <Border
                         Grid.Row="0"
-                        VerticalScrollBarVisibility="Auto"
                         Margin="20,50,20,50">
+                    <Viewbox
+                                StretchDirection="DownOnly" Stretch="Uniform">
                         <TextBlock
                             TextAlignment="Center"
                             Style="{StaticResource MessageDialogMessageTextStyle}"
                             Text="{Binding ElementName=Container, Path=MessageText}"
                          />
-                    </ScrollViewer>
+                    </Viewbox>
+                </Border>
                 <Button
                     Grid.Row="1"
                     Width="300" Height="80"
@@ -43,6 +45,7 @@
                     Command="{Binding ReturnHomeCommand}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
+
                     <TextBlock Style="{StaticResource SubmitButtonTextStyle}"
                                FontSize="35"
                         Text="{Binding ElementName=Container, Path=ButtonText}"/>

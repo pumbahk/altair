@@ -167,8 +167,8 @@ namespace checkin.presentation.gui.page
             else
             {
                 ctx.NumberOfPrintableTicket = 0;
-                ctx.Description = "このＱＲコードのチケットは発券済みです";
-                ctx.ErrorMessage = "このＱＲコードのチケットは発券済みです";
+                ctx.Description = "このチケットは発券済みです";
+                ctx.ErrorMessage = "このチケットは発券済みです";
                 ctx.NextEnable = false;
                 ctx.AllPrintedVisibility = Visibility.Visible;
                 ctx.MultiPrintModeVisibility = Visibility.Hidden;

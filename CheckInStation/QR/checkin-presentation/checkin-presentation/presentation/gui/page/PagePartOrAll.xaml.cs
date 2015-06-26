@@ -72,7 +72,7 @@ namespace checkin.presentation.gui.page
         {
             e.Handled = true;
             (this.DataContext as PartOrAllDataContext).PrintCount = 0;
-            ((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 0;
+            //((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 0;
             this.OnSubmitWithBoundContext(sender, e);
 
         }
@@ -81,7 +81,7 @@ namespace checkin.presentation.gui.page
         {
             e.Handled = true;
             (this.DataContext as PartOrAllDataContext).PrintCount = 1;
-            ((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 1;
+            //((this.DataContext as PartOrAllDataContext).Case.PresentationChanel as PartOrAllEvent).PrintCount = 1;
             this.OnSubmitWithBoundContext(sender, e);
         }
 
