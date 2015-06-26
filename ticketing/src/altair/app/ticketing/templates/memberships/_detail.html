@@ -10,6 +10,10 @@
     <td>${membership.name}</td>
   </tr>
   <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${membership.display_name if membership.display_name else ""}</td>
+  </tr>
+  <tr>
     <th class="span3">${form.organization_id.label.text}</th>
     <td>${membership.organization_id}</td>
   </tr>

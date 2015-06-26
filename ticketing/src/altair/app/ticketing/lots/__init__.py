@@ -8,6 +8,8 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
 from pyramid.tweens import INGRESS
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
+from ..users.models import Membership
+from altair.sqlahelper import get_db_session
 
 import sqlalchemy as sa
 import sqlahelper
@@ -83,8 +85,11 @@ def setup_auth(config):
 def forbidden_handler(context, request):
     from altair.app.ticketing.cart.view_support import render_view_to_response_with_derived_request
     # XXX: 本当は context をこういう使い方するべきではない
+    session = get_db_session(request, 'slave')
+    membership_name=request.altair_auth_info['membership']
+    membership=session.query(Membership).filter(Membership.name==membership_name).one()
     request.context.message = u'現在{membership}としてログインしています。{lot_name}にエントリーするには再ログインが必要となります。'.format(
-        membership=request.altair_auth_info['membership'],
+        membership=membership.display_name if membership.display_name else membership.name,
         lot_name=request.context.lot.name
         )
     response = render_view_to_response_with_derived_request(
