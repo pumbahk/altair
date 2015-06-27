@@ -31,7 +31,7 @@ from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
-from altair.app.ticketing.orders.api import OrderAttributeIO
+from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order
 from altair.app.ticketing.lots.models import LotEntry
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
@@ -338,9 +338,9 @@ class OrderAttributesEditView(object):
         order = self.context.order
         data = {
             entry[0]: entry[2]
-            for entry in OrderAttributeIO(for_='cart', mode=mode).marshal(self.request, order)
+            for entry in OrderAttributeIO(mode=mode).marshal(self.request, order)
             }
-        extra_form_field_descs = get_extra_form_schema(self.context, self.request, order.sales_segment, for_='cart')
+        extra_form_field_descs = get_extra_form_fields_for_order(self.request, order)
         form, form_fields = schemas.build_dynamic_form(
             self.request,
             filter_extra_form_schema(extra_form_field_descs, mode=mode),
