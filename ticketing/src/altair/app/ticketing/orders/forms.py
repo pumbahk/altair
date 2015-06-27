@@ -516,7 +516,7 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(OrderRefundSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
-        self.status.data = list(self.status.data or ()) + ['ordered']
+        self.status.data = list(self.status.data or ()) + ['ordered', 'delivered']
         self.payment_status.data = ['paid']
         self.public.data = u'一般発売のみ'
 
