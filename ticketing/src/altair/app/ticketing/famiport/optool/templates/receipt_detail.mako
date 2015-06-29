@@ -16,7 +16,7 @@
       </tr>
       <tr>
         <th>引換票番号</th>
-        <td><span style="color:red;">exchange_number?</span></td>
+        <td>${receipt.reserve_number}</td>
         <th>発券区分</th>
         <td>${receipt.famiport_order.get_type_in_str}</td>
       </tr>

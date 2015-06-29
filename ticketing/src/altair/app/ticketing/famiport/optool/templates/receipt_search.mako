@@ -92,7 +92,7 @@
         <td>${receipt.famiport_order.customer_name}</td>
         <td>${receipt.famiport_order.customer_phone_number}</td>
         <td>${receipt.barcode_no}</td>
-        <td><span style="color:red;">exchange_number?</span></td>
+        <td>${receipt.reserve_number}</td>
         <td>${receipt.famiport_order.ticket_total_count}</td>
         <td>${receipt.famiport_order.paid_at}</td>
         <td>${receipt.shop_code}</td>

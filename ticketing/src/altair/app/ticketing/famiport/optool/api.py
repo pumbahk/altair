@@ -98,7 +98,8 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
-                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id)
+                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
+                        .filter(FamiPortReceipt.type == 2)  # Ticketing
 
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
