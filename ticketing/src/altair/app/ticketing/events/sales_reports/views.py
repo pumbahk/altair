@@ -221,7 +221,7 @@ class SalesReports(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class ReportSettings(BaseView):
 
-    def _save_report_setting(self, report_setting=None):
+    def _save_report_setting(self, report_setting=None, copy=False):
         f = ReportSettingForm(self.request.POST, context=self.context)
         if not f.validate():
             raise ReportSettingValidationError(form=f)
@@ -246,6 +246,9 @@ class ReportSettings(BaseView):
         report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
+
+        if copy:
+            report_setting.id=None
         report_setting.save()
         return
 
@@ -280,6 +283,25 @@ class ReportSettings(BaseView):
         try:
             self._save_report_setting(self.context.report_setting)
             self.request.session.flash(u'レポート送信設定を保存しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        except ReportSettingValidationError as e:
+            return {
+                'form':e.form,
+                'action': self.request.path,
+                }
+
+    @view_config(route_name='report_settings.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
+    def copy_xhr(self):
+        return {
+            'form': ReportSettingForm(obj=self.context.report_setting, context=self.context),
+            'action': self.request.path,
+            }
+
+    @view_config(route_name='report_settings.copy', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
+    def copy_post_xhr(self):
+        try:
+            self._save_report_setting(copy=True)
+            self.request.session.flash(u'レポート送信設定をコピーしました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         except ReportSettingValidationError as e:
             return {
