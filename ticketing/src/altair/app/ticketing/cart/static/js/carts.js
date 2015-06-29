@@ -1343,14 +1343,6 @@ cart.VenueView = Backbone.View.extend({
                     self.currentViewer.venueviewer('hideSmallTexts');
                 }
 
-               var svg = $('svg', cart.currentViewer).get(0);
-               if(svg) {
-                   if(svg.clientWidth / svg.style.width.replace(/px/, '') * 1 < 0.8) {
-                       // browser bug detected, auto fix zoom ratio (not adjust x-pan)
-                       svg.style.width = (svg.style.width.replace(/px/, '') * 1 + 0.01) + "px";
-                   }
-                }
-          
             },
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;
