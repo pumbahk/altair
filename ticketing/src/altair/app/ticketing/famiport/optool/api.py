@@ -104,7 +104,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
     if formdata.get('exchange_number'):
-        query = query.filter()
+        query = query.filter(FamiPortReceipt.reserve_number == formdata.get('exchange_number'))
     if formdata.get('famiport_order_identifier'):
         query = query.filter(FamiPortOrder.famiport_order_identifier == formdata.get('famiport_order_identifier').zfill(12))
     if formdata.get('barcode_number'):
