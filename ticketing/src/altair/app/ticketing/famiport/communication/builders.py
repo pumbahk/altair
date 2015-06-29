@@ -262,6 +262,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 famiport_receipt.shop_code = storeCode
                 famiport_receipt.barcode_no = FamiPortOrderTicketNoSequence.get_next_value(session)
                 famiport_receipt.mark_inquired(now, request)
+                session.add(famiport_receipt)
                 session.commit()
 
             if famiport_receipt is not None:
