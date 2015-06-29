@@ -1892,6 +1892,12 @@ def get_extra_form_fields_for_order(request, order_like, for_=None, mode=None):
     if order_like.sales_segment is None:
         return []
     from altair.app.ticketing.cart.view_support import get_extra_form_schema, filter_extra_form_schema, DummyCartContext
+    if for_ is None:
+        if hasattr(order_like, 'created_from_lot_entry') and \
+           order_like.created_from_lot_entry:
+            for_ = 'lots'
+        else:
+            for_ = 'cart'
     extra_form_fields = get_extra_form_schema(
         DummyCartContext(request, order_like),
         request,
