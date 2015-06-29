@@ -127,5 +127,5 @@
   </table>
 </div>
 <div class="buttonBoxBottom pull-right">
-  <a href=""><button type="button" class="btn btn-info">発券指示</button></a>
+  <a href="${request.route_url('rebook_order', action="show", order_id=request.matchdict['receipt_id'])}"><button type="button" class="btn btn-info">発券指示</button></a>
 </div>

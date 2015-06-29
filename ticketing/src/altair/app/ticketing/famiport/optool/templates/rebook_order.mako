@@ -32,13 +32,13 @@
       <div class="form-group">
           <label for="old_num_type" class="col-md-2">旧番号種類:</label>
           <div class="col-md-10">
-            <input type="text" class="form-control" id="old_num_type">
+            <input type="text" class="form-control" id="old_num_type" value="払込票番号">
           </div>
       </div>
       <div class="form-group">
           <label for="old_num" class="col-md-2">旧番号:</label>
           <div class="col-md-10">
-            <input type="text" class="form-control" id="old_num">
+            <input type="text" class="form-control" id="old_num" value=${receipt.barcode_no}>
           </div>
       </div>
     </div>

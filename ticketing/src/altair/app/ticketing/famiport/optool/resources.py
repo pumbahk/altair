@@ -48,3 +48,13 @@ class ReceiptDetailResource(DetailBaseResource):
             self.receipt = fami_session.query(FamiPortReceipt)\
                                        .filter(FamiPortReceipt.id == receipt_id)\
                                        .one()
+
+class RebookOrderResource(BaseResource):
+    def __init__(self, request):
+        self.request = request
+        fami_session = get_db_session(self.request, 'famiport')
+        receipt_id = self.request.matchdict.get('order_id')
+        if receipt_id:
+            self.receipt = fami_session.query(FamiPortReceipt)\
+                                       .filter(FamiPortReceipt.id == receipt_id)\
+                                       .one()

@@ -80,7 +80,7 @@
     <tbody>
     % for receipt in entries:
       <tr>
-        <td><input type="radio" value="${request.route_url('receipt.detail', receipt_id=receipt.id)}" name="radio_gr" form="order"></td>
+        <td><input type="radio" value="${receipt.id}" name="radio_gr" form="order"></td>
         <td>${receipt.famiport_order.famiport_sales_segment.name}</td>
         <td>${receipt.famiport_order.get_type_in_str}</td>
         <td>${receipt.famiport_order.get_issued_status_in_str}</td>
@@ -110,7 +110,7 @@
   % endif
 </div>
 <div class="buttonBoxBottom pull-right">
-  <a href="re_order.html"><button type="button" class="btn btn-info">発券指示</button></a>
+  <a id="to_rebook" href=""><button type="button" class="btn btn-info">発券指示</button></a>
   <button type="button" class="btn btn-info">CSVダウンロード</button>
   <a id="to_detail" href=""><button type="button" class="btn btn-info">申込詳細</button></a>
 </div>
@@ -118,7 +118,9 @@
   <script type="text/javascript">
     $(document).ready(function(){
       $("*[name=radio_gr]:radio").change(function(){
-        $("#to_detail").attr("href",$(this).val());
+        var receipt_id = $(this).val();
+        $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
+        $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", order_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
         });
       });
   </script>

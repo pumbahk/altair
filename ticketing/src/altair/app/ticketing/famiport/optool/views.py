@@ -183,11 +183,10 @@ class FamiPortRebookOrderView(object):
 
     @view_config(route_name='rebook_order', request_method='GET', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
     def rebook_order(self):
-        # TODO rebook order
-        return dict()
+        return dict(receipt=self.context.receipt,)
 
     @view_config(route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
-    def rebook_order(self):
+    def post_rebook_order(self):
         # TODO rebook order
         return dict()
 
