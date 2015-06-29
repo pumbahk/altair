@@ -103,7 +103,8 @@ class FamiPortRequestFactory(object):
                         value = crypto.decrypt(value)
                     except Exception as err:
                         raise err.__class__(
-                            'decrypt error: {}: {}'.format(err.message, value))
+                            'decrypt error: {}: key={}, value={}, secret={}'.format(
+                                err.message, key, value, barcode_no))
                 setattr(famiport_request, key, value)
         else:
             for attribute_name, key in unserialized_attrs:
@@ -400,7 +401,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 elif not famiport_receipt.can_payment(now):
-                    logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired' % (famiport_receipt.barcode_no, ))
+                    logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired or invalid status.' % (famiport_receipt.barcode_no, ))
                     resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
