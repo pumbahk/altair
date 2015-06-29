@@ -118,7 +118,7 @@
                         Canvas.Top="220"
                         Height="430"
                         Style="{StaticResource MainBorder}">
-                        <StackPanel Margin="50,20,50,20">
+                        <StackPanel Margin="50,10,50,10">
                             <ListView 
                             	Margin="0,0,0,0"
                             	ItemsSource="{Binding DisplayTicketDataCollection}"
@@ -153,7 +153,7 @@
                             Canvas.Left="1180"
                             Canvas.Top="60"
                             VerticalAlignment="Center">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
                     <!-- ボタン -->
@@ -171,7 +171,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Click="OnSubmitWithBoundContext">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する ▶</TextBlock>
                     </Button>
                     <Button
                         x:Name="Backward"
@@ -181,7 +181,7 @@
                         Click="OnBackwardWithBoundContext"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->

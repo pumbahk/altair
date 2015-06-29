@@ -54,7 +54,7 @@
   <Style x:Key="MessageDialogMessageTextStyle" TargetType="TextBlock">
     <Setter Property="Foreground" Value="#840315"/>
     <Setter Property="TextWrapping" Value="Wrap"/>
-    <Setter Property="FontSize" Value="33"/>
+    <Setter Property="FontSize" Value="30"/>
   </Style>
   
   <Style TargetType="c:MessageDialog" x:Key="ErrorDialogStyle">
@@ -471,7 +471,14 @@
     <Setter Property="FontSize" Value="20"/>
   </Style>
 
-  <Style x:Key="SubmitButtonLongTextStyle" TargetType="TextBlock">
+    <SolidColorBrush x:Key="HomeSubmitButtonTextBrush" Color="#840315"/>
+
+    <Style x:Key="HomeSubmitButtonTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource HomeSubmitButtonTextBrush}"/>
+        <Setter Property="FontSize" Value="20"/>
+    </Style>
+
+    <Style x:Key="SubmitButtonLongTextStyle" TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
     <Setter Property="FontSize" Value="20"/>
   </Style>
@@ -508,8 +515,32 @@
     <GradientStop Color="#FFD87D" Offset="1.0"/>
   </LinearGradientBrush>
 
+    <LinearGradientBrush x:Key="HomeSubmitButtonBackGroundBrush"
+                       StartPoint="0.5,0"
+                       EndPoint="0.5,1">
+        <GradientStop Color="#FFD87D" Offset="0.05"/>
+        <GradientStop Color="#F6AA00" Offset="1.0"/>
+    </LinearGradientBrush>
 
-  <!-- backward -->
+    <SolidColorBrush x:Key="HomeSubmitButtonBorderBrush" Color="#D96D00"/>
+    <SolidColorBrush x:Key="HomeSubmitButtonForegroundBrush" Color="#610000"/>
+
+    <LinearGradientBrush x:Key="HomeMouseSubmitButtonBackGroundBrushBrush"
+                       StartPoint="0.5,0"
+                       EndPoint="0.5,1">
+        <GradientStop Color="#F6AA00" Offset="0.05"/>
+        <GradientStop Color="#FFD87D" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <Style TargetType="Border" x:Key="HomeSubmitButtonContainer">
+        <Setter Property="Background" Value="{Binding Path=Background, RelativeSource={RelativeSource FindAncestor,AncestorLevel=1,AncestorType={x:Type Button}}}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource HomeSubmitButtonBorderBrush}"/>
+    </Style>
+
+
+    <!-- backward -->
 
   <LinearGradientBrush x:Key="BackwardButtonBackGroundBrush"
                        StartPoint="0.5,0"
@@ -580,6 +611,15 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Style="{StaticResource SubmitButtonContainer}">
+                        <ContentPresenter
+                                x:Name="contentPresenter"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                              ContentTemplate="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                              Margin="{TemplateBinding Margin}"/>
+                        <!--
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="80"></RowDefinition>
@@ -602,11 +642,12 @@
                                 Margin="10"
                                 Source="/Resource/next.png"/>
                         </Grid>
+                        -->
 
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource MouseSubmitButtonBackGroundBrushBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource MouseSubmitButtonBackGroundBrushBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -615,14 +656,14 @@
     </Style>
 
     <Style TargetType="Button" x:Key="HomeButton" BasedOn="{StaticResource GoHomeButtonStyle}">
-        <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
-        <Setter Property="Background" Value="{DynamicResource SubmitButtonBackGroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource HomeSubmitButtonForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource HomeSubmitButtonBackGroundBrush}"/>
         <Setter Property="Canvas.Top" Value="17"/>
         <Setter Property="Canvas.Left" Value="1080"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Style="{StaticResource SubmitButtonContainer}">
+                    <Border Style="{StaticResource HomeSubmitButtonContainer}">
                         <ContentPresenter x:Name="contentPresenter"
                               ContentTemplate="{TemplateBinding Content}"
                               HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
@@ -631,7 +672,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource MouseSubmitButtonBackGroundBrushBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource HomeMouseSubmitButtonBackGroundBrushBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -647,12 +688,21 @@
   </Style>
 
   <Style TargetType="Button" x:Key="BackwardButton" BasedOn="{StaticResource SubmitButtonStyle}">
-    <Setter Property="Foreground" Value="{StaticResource BackwardButtonForegroundBrush}"/>
-        <Setter Property="Background" Value="{StaticResource BackwardButtonBackGroundBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource BackwardButtonForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource BackwardButtonBackGroundBrush}"/>
         <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Style="{StaticResource BackwardButtonContainer}">
+                        <ContentPresenter
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        x:Name="contentPresenter"
+                        ContentTemplate="{TemplateBinding Content}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        Margin="{TemplateBinding Margin}"/>
+                        <!--
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="80"></RowDefinition>
@@ -676,10 +726,11 @@
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
                         Margin="{TemplateBinding Margin}"/>
                 </Grid>
+              -->
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsPressed" Value="True">
-              <Setter Property="Background" Value="{StaticResource MouseBackwardButtonBackGroundBrush}"/>
+              <Setter Property="Background" Value="{DynamicResource MouseBackwardButtonBackGroundBrush}"/>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -1076,12 +1127,12 @@
 
     <DataTemplate x:Key="ShowTicketItemBoxData">
         <Grid
-                Height="70"
+                Height="75"
                 Width="520"
                 Margin="2"
                 >
             <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
+                <RowDefinition Height="72"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="500"/>
@@ -1091,12 +1142,12 @@
                 <WrapPanel
                 Grid.Row="0"
                 Grid.Column="0"
-                Height="60"
+                Height="70"
                 Width="500"
                 HorizontalAlignment="Center"
                 >
-                    <TextBlock FontSize="30" FontWeight="Black" Text="{Binding ProductName}"/>
-                    <TextBlock FontSize="30" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                    <TextBlock FontSize="24" FontWeight="Black" Text="{Binding ProductName}"/>
+                    <TextBlock FontSize="24" FontWeight="Black" Text="{Binding SeatName,StringFormat={}({0})}"/>
                 </WrapPanel>
             </Viewbox>
         </Grid>

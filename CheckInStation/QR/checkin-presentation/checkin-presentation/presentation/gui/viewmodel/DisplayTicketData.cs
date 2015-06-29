@@ -29,7 +29,8 @@ namespace checkin.presentation.gui.viewmodel
             this.PrintedAt = tdata.printed_at; //null?
             this.LockedAt = tdata.locked_at; //null?
             this.TokenId = tdata.ordered_product_item_token_id;
-            this.IsPrinted = tdata.is_selected;
+            //this.IsPrinted = tdata.is_selected;
+            this.IsPrinted = (tdata.printed_at != null ? false : true);
         }
 
         private readonly TicketDataMinumum coreData;

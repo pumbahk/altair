@@ -53,13 +53,16 @@
                             <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
-                        <WrapPanel
-                            Grid.Row="1" Grid.ColumnSpan="2"
-                            HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
-                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                        </WrapPanel>
-                        <WrapPanel
+                            <Viewbox
+                                Grid.Row="1" Grid.ColumnSpan="2"
+                                HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                StretchDirection="DownOnly" Stretch="Uniform">
+                                <WrapPanel>
+                                    <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
+                                    <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                                </WrapPanel>
+                            </Viewbox>
+                            <WrapPanel
                             Grid.RowSpan="2" Grid.Column="2"
                             HorizontalAlignment="Right" VerticalAlignment="Stretch">
                                 <TextBlock FontSize="40" FontWeight="ExtraBlack">選択枚数:</TextBlock>
@@ -144,7 +147,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
                     <!-- ボタン -->
@@ -162,7 +165,7 @@
                         Click="OnSubmitWithBoundContext"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">確認する</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">確認する ▶</TextBlock>
                     </Button>
                     <Button
                         x:Name="Backward"
@@ -172,7 +175,7 @@
                         Click="OnBackwardWithBoundContext"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"

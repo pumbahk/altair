@@ -8,13 +8,13 @@ using checkin.core.flow;
 namespace checkin.core.flow
 {
 
-    public class QRAllOnceFlowDefinition : IFlowDefinition
+    public class StandardFlowDefinition : IFlowDefinition
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public InputUnit CurrentInputUnit { get; set; }
 
-        public QRAllOnceFlowDefinition()
+        public StandardFlowDefinition()
         {
             this.CurrentInputUnit = InputUnit.before_auth;
         }

@@ -26,6 +26,11 @@ namespace checkin.presentation.gui
             return new T();
         }
 
+        public Page ReturnPrev(AbstractCase CurrentCase)
+        {
+            return new PageConfirmAll(CurrentCase);
+        }
+
         public Page Choice(ICase CurrentCase, Page previous)
         {
             var c = CurrentCase;
@@ -59,6 +64,8 @@ namespace checkin.presentation.gui
             {
                 if ((c as CaseQRConfirmForAll).PartOrAll == 0)
                 {
+                    if(previous is PageConfirmListPart)
+                        return this.ReturnPrev(c as AbstractCase);
                     return this.CreateOrReUse<PageConfirmAll>(c, previous);
                 }
                 else
@@ -77,6 +84,8 @@ namespace checkin.presentation.gui
             {
                 if ((c as CaseOrdernoConfirmForAll).PartOrAll == 0)
                 {
+                    if (previous is PageConfirmListPart)
+                        return this.ReturnPrev(c as AbstractCase);
                     return this.CreateOrReUse<PageConfirmAll>(c, previous);
                 }
                 else

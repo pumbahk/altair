@@ -74,7 +74,7 @@
                      Canvas.Top="655"
                      Click="Button_Click"
                      Style="{StaticResource NextSubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ ▶</TextBlock>
                     </Button>
                  
                     <Button
@@ -83,7 +83,7 @@
                     Click="OnBackward"
                     Style="{StaticResource BackwardButton}"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
                     
                     <!-- エラーダイアログ -->

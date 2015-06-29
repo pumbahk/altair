@@ -35,13 +35,13 @@
                             </Style>
                         </StackPanel.Resources>
                         <TextBlock>
-                        発券完了しました
+                        発券が完了しました
                         </TextBlock>
                         <TextBlock>
-                        ありがとうございました
+                        チケットをお受け取りください
                         </TextBlock>
-                        <TextBlock>
-                        チケットに記載の入場ゲートからご入場ください
+                        <TextBlock FontSize="20"><LineBreak/><LineBreak/><LineBreak/><LineBreak/><LineBreak/><LineBreak/>
+                        QRコードはデンソーウェーブの登録商標です
                         </TextBlock>
                     </StackPanel>
                     

@@ -11,6 +11,6 @@ namespace checkin.core
         QRFront,
         OrdernoFront,
         CommonMode,
-        QRAllOnce
+        StandardFlow
     }
 }

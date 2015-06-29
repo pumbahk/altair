@@ -82,7 +82,7 @@
                      Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ ▶</TextBlock>
                     </Button>
 
 
@@ -95,7 +95,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <!-- Return to Home-->
@@ -103,7 +103,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
                     
                     <!-- エラーダイアログ -->

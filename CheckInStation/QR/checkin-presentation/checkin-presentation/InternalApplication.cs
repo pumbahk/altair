@@ -30,8 +30,8 @@ namespace checkin.presentation
                     return new VisselFlowDefinition();
                 case FlowDefinitionType.CommonMode:
                     return new CommonFlowDefinition();
-                case FlowDefinitionType.QRAllOnce:
-                    return new QRAllOnceFlowDefinition();
+                case FlowDefinitionType.StandardFlow:
+                    return new StandardFlowDefinition();
                 default:
                     throw new InvalidOperationException("anything is wrong");
             }         

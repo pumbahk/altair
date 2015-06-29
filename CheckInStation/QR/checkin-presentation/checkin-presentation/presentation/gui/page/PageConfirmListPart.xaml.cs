@@ -133,12 +133,13 @@ namespace checkin.presentation.gui.page
             var broker = AppUtil.GetCurrentBroker();
             var ev = broker.GetInternalEvent() as ConfirmAllEvent;
             var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected && o.printed_at == null).Count();
-            var collection = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected && o.printed_at == null);
-            ev.StatusInfo.TicketDataCollection.collection = collection.Cast<TicketDataMinumum>().ToArray();
+            //var collection = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected && o.printed_at == null);
+            //ev.StatusInfo.TicketDataCollection.collection = collection.Cast<TicketDataMinumum>().ToArray();
             var ctx = new PageConfirmListPartDataContext(this)
-            { 
+            {
                 Broker = AppUtil.GetCurrentBroker(),
                 NumberOfPrintableTicket = numOfPrintableTicket,
+                //TicketDataCollection = ev.StatusInfo.TicketDataCollection,
                 TicketDataCollection = ev.StatusInfo.TicketDataCollection,
                 RefreshModeVisibility = Visibility.Hidden,
                 DisplayTicketDataCollection = new DisplayTicketDataCollection()
@@ -159,9 +160,12 @@ namespace checkin.presentation.gui.page
             ctx.CustomerName = source.additional.user;
             foreach (var tdata in source.collection)
             {
-                var dtdata = new DisplayTicketData(ctx, tdata);
-                dtdata.IsSelected = true;
-                displayColl.Add(dtdata);
+                if(tdata.is_selected == true && tdata.printed_at == null)
+                {
+                    var dtdata = new DisplayTicketData(ctx, tdata);
+                    dtdata.IsSelected = true;
+                    displayColl.Add(dtdata);
+                }   
             }
         }
 

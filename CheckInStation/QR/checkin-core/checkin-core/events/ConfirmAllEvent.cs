@@ -31,9 +31,44 @@ namespace checkin.core.events
             this.StatusInfo.Status = s;
         }
 
-        public void SetCollection(TicketDataCollection collection)
+        public void SetCollection(TicketDataCollection ticketcollection, int type)
         {
-            this.StatusInfo.TicketDataCollection = collection;
+            TicketDataCollection tempCollection = this.StatusInfo.TicketDataCollection;
+            foreach (TicketDataMinumum ticket in ticketcollection.collection)
+            {
+                if (type == 0)
+                {
+                    ticket.is_selected = false;
+                }
+                else
+                {
+                    if (ticket.printed_at == null)
+                    {
+                        ticket.is_selected = true;
+                    }
+                }
+            }
+            if (tempCollection != null)
+            {
+                /*
+                foreach (TicketDataMinumum ticket in ticketcollection.collection)
+                {
+                    ticket.is_selected = false;
+                }
+                foreach(TicketDataMinumum t in tempCollection.collection)
+                {
+                    foreach (TicketDataMinumum ticket in ticketcollection.collection)
+                    {   
+                        if (ticket.ordered_product_item_token_id == t.ordered_product_item_token_id)
+                        {
+                            ticket.is_selected = t.is_selected;
+                        }
+                    }
+                }
+                 */
+                ticketcollection = tempCollection;
+            }
+            this.StatusInfo.TicketDataCollection = ticketcollection;
             this.StatusInfo.Status = ConfirmAllStatus.prepared;
         }
     

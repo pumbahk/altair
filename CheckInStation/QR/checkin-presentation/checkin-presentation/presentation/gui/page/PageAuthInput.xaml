@@ -76,7 +76,7 @@
                      Style="{StaticResource NextSubmitButton}"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ ▶</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->

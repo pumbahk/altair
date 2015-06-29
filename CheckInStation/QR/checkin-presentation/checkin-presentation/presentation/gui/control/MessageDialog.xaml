@@ -21,22 +21,20 @@
             <Grid
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Height="360">
+                Height="400">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                    <Border
+                <Border
                         Grid.Row="0"
                         Margin="20,50,20,50">
-                    <Viewbox
-                                StretchDirection="DownOnly" Stretch="Uniform">
-                        <TextBlock
+                    <TextBlock
                             TextAlignment="Center"
+                            TextWrapping="Wrap"
                             Style="{StaticResource MessageDialogMessageTextStyle}"
                             Text="{Binding ElementName=Container, Path=MessageText}"
                          />
-                    </Viewbox>
                 </Border>
                 <Button
                     Grid.Row="1"

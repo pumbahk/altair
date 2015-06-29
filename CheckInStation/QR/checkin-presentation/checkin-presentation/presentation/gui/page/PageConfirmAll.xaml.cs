@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.events;
 using checkin.core.models;
+using checkin.core.flow;
 
 namespace checkin.presentation.gui.page
 {
@@ -140,6 +141,13 @@ namespace checkin.presentation.gui.page
             this.DataContext = this.CreateDataContext();
         }
 
+        public PageConfirmAll(AbstractCase c)
+        {
+            InitializeComponent();
+            this.loadingLock = false;
+            this.DataContext = this.CreateDataContext(c);
+        }
+
         private InputDataContext CreateDataContext()
         {
             var ctx = new PageConfirmAllDataContext(this)
@@ -151,6 +159,23 @@ namespace checkin.presentation.gui.page
                 NotPrintVisibility = Visibility.Hidden
             };
             ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
+            ctx.PropertyChanged += Status_OnPrepared;
+            return ctx;
+        }
+
+        private InputDataContext CreateDataContext(AbstractCase c)
+        {
+            var ctx = new PageConfirmAllDataContext(this)
+            {
+                Broker = AppUtil.GetCurrentBroker(),
+                Status = ConfirmAllStatus.starting,
+                DisplayTicketDataCollection = new DisplayTicketDataCollection(),
+                RefreshModeVisibility = Visibility.Hidden,
+                NotPrintVisibility = Visibility.Hidden
+            };
+            ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
+            var e = ctx.Event as ConfirmAllEvent;
+            e.StatusInfo.TicketDataCollection = (c.PresentationChanel as ConfirmAllEvent).StatusInfo.TicketDataCollection;
             ctx.PropertyChanged += Status_OnPrepared;
             return ctx;
         }
@@ -195,10 +220,10 @@ namespace checkin.presentation.gui.page
                     // QRÇì«Ç›çûÇÒÇæÇ‡ÇÃÇæÇØèâä˙î≠åîó\íËÇ∆Ç∑ÇÈÅB
                     if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
                     {
-                        dtdata.IsSelected = false;
+                        //dtdata.IsSelected = false;
                         ctx.NumberOfPrintableTicket--;
                     }
-                    else
+                    else if(tdata.printed_at == null)
                     {
                         dtdata.IsSelected = true;
                     }

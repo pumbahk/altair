@@ -48,13 +48,37 @@ namespace checkin.presentation.gui.command
                         }
                     }
                 }
-                if (this.Wrapper is PageConfirmListOne ||
-                    this.Wrapper is PageConfirmListAll ||
-                    this.Wrapper is PageCloseConfirm ||
-                    this.Wrapper is PageConfirmListPart)
+                else if (this.Wrapper is PageConfirmListOne)
                 {
                     AppUtil.GotoWelcome(this.Wrapper);
                 }
+                else if(this.Wrapper is PageConfirmListAll)
+                {
+                    AppUtil.GotoWelcome(this.Wrapper);
+                }
+                else if(this.Wrapper is PageCloseConfirm)
+                {
+                    AppUtil.GotoWelcome(this.Wrapper);
+                }
+                else if(this.Wrapper is PageConfirmListPart)
+                {
+                    AppUtil.GotoWelcome(this.Wrapper);
+                }
+                else if(this.Wrapper is PageQRCodeInput)
+                {
+                    var p = this.Wrapper as PageQRCodeInput;
+                    Button b = p.FindName("buttonsubmit") as Button;
+                    if(b != null)
+                    {
+                        b.Visibility = Visibility.Hidden;
+                    }
+                    TextBox tb = p.FindName("QRCodeInput") as TextBox;
+                    if (tb != null)
+                    {
+                        tb.Focus();
+                    }
+                }
+
                 MessageDialog e = this.Wrapper.FindName("ErrorDialog") as MessageDialog;
                 if (e != null)
                 {

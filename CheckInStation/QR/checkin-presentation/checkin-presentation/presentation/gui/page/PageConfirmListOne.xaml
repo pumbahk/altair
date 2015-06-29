@@ -121,8 +121,20 @@
                                 Width="1000"
                                 HorizontalAlignment="Center"
                                 >
-                                        <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>
-                                    <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName, Mode=OneWay}"/>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="75"></RowDefinition>
+                                            <RowDefinition Height="75"></RowDefinition>
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Row="0">
+                                            <TextBlock FontSize="40" FontWeight="Black" Text="{Binding ProductName, Mode=OneWay}"/>
+                                            <TextBlock><LineBreak/></TextBlock>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1">
+                                            <TextBlock FontSize="40" FontWeight="Black" Text="{Binding SeatName, Mode=OneWay, StringFormat='(\{0\})'}"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </WrapPanel>
                             </Viewbox>
                         </Grid>
@@ -162,7 +174,7 @@
                             Canvas.Left="1180"
                             Canvas.Top="60"
                             VerticalAlignment="Center">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
                     <TextBlock
@@ -180,7 +192,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Click="OnSubmitPrint">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">発券する ▶</TextBlock>
                     </Button>
 
                     <Button
@@ -192,7 +204,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->

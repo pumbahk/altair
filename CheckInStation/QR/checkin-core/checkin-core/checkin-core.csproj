@@ -85,7 +85,7 @@
     <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />
     <Compile Include="flow\CaseWelcome.cs" />
     <Compile Include="flow\CasePartOrAll.cs" />
-    <Compile Include="flow\QRAllOnceFlowDefinition.cs" />
+    <Compile Include="flow\StandardFlowDefinition.cs" />
     <Compile Include="flow\CommonFlowDefinition.cs" />
     <Compile Include="IConfigurator.cs" />
     <Compile Include="models\TicketRefreshedAtUpdater2.cs" />

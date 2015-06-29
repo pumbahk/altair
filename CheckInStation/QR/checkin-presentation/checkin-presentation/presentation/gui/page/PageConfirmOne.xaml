@@ -187,7 +187,7 @@
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
                     <TextBlock
@@ -204,7 +204,7 @@
                         Style="{StaticResource NextSubmitButton}"
                         Click="OnSubmitAllPrint"
                         >
-                        <TextBlock FontSize="20">他のチケットも発券</TextBlock>
+                        <TextBlock FontSize="20">他のチケットも発券 ▶</TextBlock>
                     </Button>
                     <Button
                         Canvas.Right="140"
@@ -214,7 +214,7 @@
                         HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                         Click="OnSubmitPrint">
-                        <TextBlock FontSize="20">このチケットを発券</TextBlock>
+                        <TextBlock FontSize="20">このチケットを発券 ▶</TextBlock>
                     </Button>
 
                     <!--
@@ -235,7 +235,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
 

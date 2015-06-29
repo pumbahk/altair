@@ -77,7 +77,7 @@
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">ログアウト</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">ログアウト ▶</TextBlock>
                     </Button>
                     <Button
                     Canvas.Left="140"
@@ -87,7 +87,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <!-- 再発券許可ON/OFF -->

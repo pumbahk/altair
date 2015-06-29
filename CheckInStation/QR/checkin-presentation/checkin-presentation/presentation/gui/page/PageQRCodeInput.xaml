@@ -50,6 +50,7 @@
                                         <ac:AdornedControl
                                             Margin="0,-350,0,0"
                                             x:Name="LoadingAdorner"
+                                            Focusable="False"
                                             Visibility="{Binding IsWaiting}"
                                             >
                                             <ac:AdornedControl.AdornerContent>
@@ -88,6 +89,7 @@
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
+                        Focusable="False"
                         >
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -102,7 +104,8 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock 
+                        <TextBlock
+                            Focusable="False"
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                         Text="{Binding DescriptionInfo}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
@@ -116,7 +119,7 @@
                     VerticalAlignment="Center"
                     Focusable="False"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                            <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
                     
                     <Button
@@ -130,7 +133,7 @@
                      VerticalAlignment="Center"
                      Focusable="False">
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}" TextWrapping="Wrap">
-                            次へ
+                            次へ ▶
                         </TextBlock>
                     </Button>
 
@@ -138,6 +141,7 @@
                         Text="※再発券モード※"
                         Canvas.Top="655"
                         Canvas.Left="520"
+                        Focusable="False"
                         Style="{StaticResource RefreshModeText}" Visibility="{Binding RefreshModeVisibility}"/>
 
 
@@ -147,13 +151,14 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Focusable="False">
-                        <TextBlock FontSize="30">TOP</TextBlock>
+                            <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageDialogComplete="ErrorDialog_MessageDialogComplete"
                                       MessageText="{Binding ErrorMessage}"
+                                      Focusable="False"
                                       ButtonText="OK"/>
 
                     
