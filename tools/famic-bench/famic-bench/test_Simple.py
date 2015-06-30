@@ -18,6 +18,7 @@ from zope.interface import (
     Interface,
     Attribute,
 )
+from kombu import Connection
 import famic.crypto
 
 
@@ -130,11 +131,18 @@ class Simple(FunkLoadTestCase):
         self.stamp = '20150625000000'
 
     def test_it(self):
-        reserve_number = '575L2R12LH464'
+        reserve_number = self.get_reserve_number()
         inquiry_context = self.inquiry(reserve_number)
         payment_context = self.payment(inquiry_context)
         completion_context = self.completion(payment_context)
-        customer_context = self.customer(completion_context)
+        customer_context = self.customer(completion_context)  # noqa
+
+    def get_reserve_number(self):
+        '575L2R12LH464'
+        que = createObject('receipt_queue')
+        msg = que.get(block=True)
+        msg.ack()
+        return msg.body
 
     def inquiry(self, reserve_number):
         url = FamiPortAPIURL.inquiry.value
@@ -250,13 +258,42 @@ class Simple(FunkLoadTestCase):
         # end of test -----------------------------------------------
 
 
-def setup():
+def init_db():
     import os
     os.system("""echo "UPDATE FamiPortReceipt """
               """set inquired_at=NULL, payment_request_received_at=NULL, """
               """customer_request_received_at=NULL, completed_at=NULL, """
               """void_at=NULL, rescued_at=NULL;" | """
               """mysql -u root -D famiport""")  # initialize
+
+
+@implementer(IFactory)
+class AMQPConnectionFactory(object):
+    def __init__(self, uri):
+        self._uri = uri
+        self._core = None
+
+    def __call__(self):
+        if not self._core:
+            self._core = Connection(self._uri)
+        return self._core
+
+
+@implementer(IFactory)
+class RecepitQueueFactory(object):
+    def __init__(self, name):
+        self._name = name
+        self._core = None
+
+    def __call__(self):
+        if not self._core:
+            conn = createObject('amqp')
+            self._core = conn.SimpleQueue(self._name)
+        return self._core
+
+
+def setup():
+    init_db()
     gsm = getGlobalSiteManager()
     context_name_class = {
         'inquiry': InquiryResponseContext,
@@ -268,6 +305,12 @@ def setup():
     for name, context_class in context_name_class.items():
         factory = ResponseContextFactory(context_class)
         gsm.registerUtility(factory, IFactory, name)
+
+    factory = AMQPConnectionFactory('amqp://guest:guest@localhost:5672//')
+    gsm.registerUtility(factory, IFactory, 'amqp')
+
+    factory = RecepitQueueFactory('receipt_queue')
+    gsm.registerUtility(factory, IFactory, 'receipt_queue')
 
 setup()
 
