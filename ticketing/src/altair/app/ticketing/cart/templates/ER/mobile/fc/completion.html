@@ -29,13 +29,18 @@
 ${order.shipping_address.last_name} ${order.shipping_address.first_name}様
 <%mobile:header>決済情報</%mobile:header>
 ${h.render_payment_finished_viewlet(request, order)}
+<br/>
+抽選結果発表後、入金期間内に、払込票or払込票番号をお持ちの上、セブン-イレブン店頭レジにご提示の上、代金をお支払いください。<br/>
+入金がない場合、当選が無効となりますのでご注意ください。
 <%mobile:header>注意事項</%mobile:header>
 <div>
 <font size="-2">
-・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br /> 
+・セブンイレブンで発券される券は、旅行券本券ではなく、【引換券】となります。<br/>
+・お申込時にご入力いただいた《指定引換店舗》にて上記【引換券】をご提示いただき、商品券冊子とお引換ください。<br/>
+※セブンイレブン店舗での商品券冊子とのお引換は行っておりません。<br/>
+※引換店舗の詳細は<a href="http://ehime.tstar.jp/shop">コチラ</a>よりご確認いただけます。・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br />
 （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
 ・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
-・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
 % if view_context.orderreview_page_url != 'about:blank':
 ・お申込内容は、「<a href="${view_context.orderreview_page_url}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。<br />
 % endif
