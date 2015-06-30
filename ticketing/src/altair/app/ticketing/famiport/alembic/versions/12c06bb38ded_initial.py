@@ -210,6 +210,7 @@ def create_schemas():
         sa.Column('barcode_number', sa.Unicode(13), nullable=False),
         sa.Column('template_code', sa.Unicode(10), nullable=False),
         sa.Column('data', sa.Unicode(4000), nullable=False),
+        sa.Column('price', sa.Numeric(precision=16, scale=0), nullable=False, server_default=text(u"0")),
         sa.Column('issued_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)

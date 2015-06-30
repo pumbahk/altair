@@ -126,11 +126,12 @@ def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).famiport_only_tickets()
 
 
-def build_ticket_dict(type_, data, template_code):
+def build_ticket_dict(type_, data, template_code, price):
     return dict(
         type=type_,
         data=data,
-        template=template_code
+        template=template_code,
+        price=price
         )
 
 DICT_XML_ELEMENT_NAME_MAP = {
@@ -212,7 +213,8 @@ def build_ticket_dicts_from_order_like(request, order_like):
                     ticket = build_ticket_dict(
                         type_=ticket_type,
                         data=xml,
-                        template_code=template_code
+                        template_code=template_code,
+                        price=ordered_product_item.price
                         )
                     tickets.append(ticket)
     return tickets

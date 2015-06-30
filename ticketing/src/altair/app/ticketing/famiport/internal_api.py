@@ -101,6 +101,7 @@ def create_famiport_ticket(session, famiport_playguide, ticket_dict):
         type=ticket_dict['type'],
         barcode_number=FamiPortBarcodeNoSequence.get_next_value(famiport_playguide.discrimination_code, session),
         template_code=ticket_dict['template'],
+        price=ticket_dict['price'],
         data=ticket_dict['data']
         )
 

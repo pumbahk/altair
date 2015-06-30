@@ -794,6 +794,7 @@ class FamiPortTicket(Base, WithTimestamp):
     type                      = sa.Column(sa.Integer, nullable=False, default=FamiPortTicketType.TicketWithBarcode.value)
     barcode_number            = sa.Column(sa.Unicode(13), nullable=False)
     template_code             = sa.Column(sa.Unicode(10), nullable=False)
+    price                     = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False, default=0)
     data                      = sa.Column(sa.Unicode(4000), nullable=False)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
