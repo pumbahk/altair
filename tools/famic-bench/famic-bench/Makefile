@@ -64,6 +64,11 @@ stop_monitor:
 restart_monitor:
 	$(MONCTL) restart
 
+famic-bench:
+	fl-run-bench -c 1:10:20 test_Simple.py Simple.test_it
+
+report:
+	fl-build-report --html simple-bench.xml
 
 clean:
 	-find . "(" -name "*~" -or  -name ".#*" ")" -print0 | xargs -0 rm -f

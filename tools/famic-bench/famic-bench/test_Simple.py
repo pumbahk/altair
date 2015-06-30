@@ -3,7 +3,12 @@
 
 $Id$
 """
+import six
 import unittest
+if six.PY3:
+    import queue
+else:
+    import Queue as queue
 from datetime import datetime
 import enum
 import lxml.etree
@@ -15,8 +20,6 @@ from zope.component import (
 from zope.component.interfaces import IFactory
 from zope.interface import (
     implementer,
-    Interface,
-    Attribute,
 )
 from kombu import Connection
 import famic.crypto
@@ -127,22 +130,20 @@ class Simple(FunkLoadTestCase):
     def setUp(self):
         """Setting up test."""
         self.server_url = self.conf_get('main', 'url')
-        # self.stamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        self.stamp = '20150625000000'
+        self.stamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        # self.stamp = #'20150625000000'
 
     def test_it(self):
-        reserve_number = self.get_reserve_number()
+        reserve_number = self.get_message_reserve_number()
         inquiry_context = self.inquiry(reserve_number)
         payment_context = self.payment(inquiry_context)
         completion_context = self.completion(payment_context)
         customer_context = self.customer(completion_context)  # noqa
 
-    def get_reserve_number(self):
-        '575L2R12LH464'
-        que = createObject('receipt_queue')
+    def get_message_reserve_number(self):
+        que = createObject('py_receipt_queue')
         msg = que.get(block=True)
-        msg.ack()
-        return msg.body
+        return msg
 
     def inquiry(self, reserve_number):
         url = FamiPortAPIURL.inquiry.value
@@ -280,7 +281,7 @@ class AMQPConnectionFactory(object):
 
 
 @implementer(IFactory)
-class RecepitQueueFactory(object):
+class AMQPRecepitQueueFactory(object):
     def __init__(self, name):
         self._name = name
         self._core = None
@@ -289,6 +290,22 @@ class RecepitQueueFactory(object):
         if not self._core:
             conn = createObject('amqp')
             self._core = conn.SimpleQueue(self._name)
+        return self._core
+
+
+@implementer(IFactory)
+class PyRecepitQueueFactory(object):
+    def __init__(self, name):
+        self._name = name
+        self._core = None
+
+    def __call__(self):
+        if not self._core:
+            self._core = queue.Queue()
+            with open(self._name, 'rb') as fp:
+                for line in fp:
+                    reserve_number = line.strip()
+                    self._core.put(reserve_number)
         return self._core
 
 
@@ -309,11 +326,13 @@ def setup():
     factory = AMQPConnectionFactory('amqp://guest:guest@localhost:5672//')
     gsm.registerUtility(factory, IFactory, 'amqp')
 
-    factory = RecepitQueueFactory('receipt_queue')
-    gsm.registerUtility(factory, IFactory, 'receipt_queue')
+    factory = AMQPRecepitQueueFactory('receipt_queue')
+    gsm.registerUtility(factory, IFactory, 'amqp_receipt_queue')
+
+    factory = PyRecepitQueueFactory('reserve_number.txt')
+    gsm.registerUtility(factory, IFactory, 'py_receipt_queue')
 
 setup()
-
 
 if __name__ in ('main', '__main__'):
     unittest.main()
