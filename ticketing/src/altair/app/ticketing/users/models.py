@@ -208,6 +208,7 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    display_name = AnnotatedColumn(String(255), _a_label=_(u'表示名'))
     enable_auto_input_form = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'自動フォーム入力'))
     enable_point_input = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'楽天ポイント手入力'))
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
