@@ -105,7 +105,7 @@ class InquiryTest(FamiPortAPIViewTest):
         from ..testing import FamiPortReservationInquiryResponseFakeFactory as FakeFactory
         from datetime import datetime
         from ..testing import generate_ticket_data
-        from ..models import FamiPortTicket, FamiPortReceiptType
+        from ..models import FamiPortTicket, FamiPortReceiptType, FamiPortReceipt, FamiPortOrder, FamiPortPerformance, FamiPortSalesSegment, FamiPortClient, FamiPortPlayguide, FamiPortEvent, FamiPortVenue
         from ..communication import FamiPortReservationInquiryResponse as FamiPortResponse
         famiport_tickets = [
             FamiPortTicket(
@@ -122,18 +122,25 @@ class InquiryTest(FamiPortAPIViewTest):
         ticketing_end_at = datetime(2015, 3, 31, 17, 25, 55)
         performance_start_at = datetime(2015, 5, 1, 10, 0)
 
-        get_by_reserve_number.return_value = DummyModel(
+        famiport_client = FamiPortClient(
+            code=u'00001',
+            name=u'クライアント１',
+            prefix=u'000',
+            playguide=FamiPortPlayguide(discrimination_code='5')
+            )
+        get_by_reserve_number.return_value = FamiPortReceipt(
             type=FamiPortReceiptType.CashOnDelivery.value,
             shop_code='99999',
-            can_inquiry=lambda: True,
             completed_at=None,
             void_at=None,
             barcode_no=u'4110000000006',
             famiport_order_identifier=u'430000000002',
             mark_inquired=lambda *args: None,
-            famiport_order=DummyModel(
-                orderId='a',
+            famiport_order=FamiPortOrder(
+                order_no=u'XX0000000000',
+                famiport_order_identifier=u'000000000000',
                 customer_name=u'楽天太郎',
+                customer_phone_number=u'',
                 type=1,
                 payment_start_at=payment_start_at,
                 payment_due_at=payment_due_at,
@@ -141,29 +148,31 @@ class InquiryTest(FamiPortAPIViewTest):
                 issued_at=None,
                 ticketing_start_at=ticketing_start_at,
                 ticketing_end_at=ticketing_end_at,
-                playguide_id=1,
-                playguide_name=u'クライアント１',
                 total_amount=670,
                 ticket_payment=0,
                 system_fee=500,
                 ticketing_fee=170,
-                ticket_total_count=len(famiport_tickets),
-                ticket_count=len(famiport_tickets),
-                koen_date=None,
                 famiport_tickets=famiport_tickets,
                 customer_name_input=0,
                 customer_phone_input=0,
                 auth_number=u'',
-                performance_start_at=performance_start_at,
-                famiport_sales_segment=DummyModel(
-                    famiport_performance=DummyModel(
+                famiport_sales_segment=FamiPortSalesSegment(
+                    code=u'000',
+                    start_at=datetime(2015, 1, 1),
+                    end_at=datetime(2015, 1, 1),
+                    famiport_performance=FamiPortPerformance(
                         name=u'サンプル興行',
                         start_at=performance_start_at,
+                        code=u'000',
+                        famiport_event=FamiPortEvent(
+                            venue=FamiPortVenue(name=u'', name_kana=u'', client_code=famiport_client.code),
+                            client=famiport_client,
+                            code_1=u'00000',
+                            code_2=u'000',
+                            )
                         ),
                     ),
-                famiport_client=DummyModel(
-                    code=u'00001',
-                    ),
+                famiport_client=famiport_client,
                 )
             )
 
