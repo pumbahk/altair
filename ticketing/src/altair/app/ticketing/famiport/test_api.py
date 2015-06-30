@@ -888,13 +888,15 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     type=FamiPortTicketType.TicketWithBarcode.value,
                     barcode_no=u'0000000000001',
                     template=u'TTEV000001',
-                    data=u'<ticket>test</ticket>'
+                    data=u'<ticket>test</ticket>',
+                    price=500
                     ),
                 dict(
                     type=FamiPortTicketType.TicketWithBarcode.value,
                     barcode_no=u'0000000000001',
                     template=u'TTEV000001',
-                    data=u'<ticket>test</ticket>'
+                    data=u'<ticket>test</ticket>',
+                    price=500
                     )
                 ],
             payment_start_at=datetime(2015, 6, 1, 0, 0, 0),
