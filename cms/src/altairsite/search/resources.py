@@ -232,7 +232,8 @@ class SearchResultRender(object):
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
         link_label = self.pageset.event.title #xx?
         event = self.pageset.event
-        performances = [p for p in event.performances if p.start_on >= self.today]
+        performances = [p for p in event.performances if p.start_on >= self.today and p.public]
+        perf_num = len(performances)
 
         if "prefectures" in self.query_params:
             if self.query_params['prefectures']:
@@ -247,7 +248,7 @@ class SearchResultRender(object):
         performances = performances if len(performances) < 3 else performances[:3]
         performances = u"</p><p class='align1'>".join([u"%s %s(%s)" %
             (p.start_on.strftime("%Y-%m-%d %H:%M"), p.venue, p.jprefecture) for p in performances])
-        return fmt % (link, link_label, len(event.performances), event.description, performances)
+        return fmt % (link, link_label, perf_num, event.description, performances)
 
     # def deal_info_icons(self):
     #     event = self.pageset.event
