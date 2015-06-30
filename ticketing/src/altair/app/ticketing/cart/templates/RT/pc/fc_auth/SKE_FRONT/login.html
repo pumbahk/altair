@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<title>楽天チケット ログインページ</title>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/RT/pc/css/import2.css')}" media="all" />
+
+<style type="text/css">
+<!-- 
+@charset "utf-8";
+#fc p { font-size: 14px; }
+#fc .fcBox { background: #f9f9f2; text-align: center; padding: 50px 0; margin: 20px 0; }
+#fc .fcno { font-size: 24px; font-weight: bold; height: 40px; margin-bottom: 20px; }
+#fc .fcbtn { width: 120px; height: 40px; }
+#fc .fcatt { font-size: 14px; }
+#fc .fcatt ul li { line-height:1.5; list-style: outside disc; margin-left: 30px; }
+
+#fc .centertable {
+ margin-left: auto;
+ margin-right: auto;
+}
+-->
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+
+
+<!-- ***** header [start] ***** -->
+<div id="header">
+<h1><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/pc/images/header_logo_03.gif')}" alt="楽天チケット" /></a></h1>
+</div>
+<!-- ***** header [end] ***** -->
+
+<h2>SKE48 アイア特別公演"最前列席当選者"エントリー</h2>
+
+
+<div id="fc">
+
+<h3>I-SKY登録メールアドレス情報入力</h3>
+
+<div class="fcBox">
+<form action="${request.current_route_path()}" method="post">
+<table class="centertable">
+    <input type="hidden" name="password" value="rakuten">
+    <tr>
+        <td>登録メールアドレス</td><td><input type="text" name="username"></td>
+    </tr>
+</table>
+<br>
+<input type="submit" value="申込に進む"  class="fcbtn">
+%if message:
+<br/><br/><span class="red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
+%endif
+</form>
+</div>
+
+<h3>【登録メールアドレスに関して】</h3>
+<div class="fcatt">
+I-SKYにご登録いただいているメールアドレスをご入力ください。それ以外のメールアドレスを入力しても認証されません。<br/>
+<span style="color:red;">※携帯電話等の受信設定でドメイン指定受信を設定している方は、<br/>
+「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。</span>
+</div>
+<br/>
+
+<h3>【対象公演】</h3>
+<div class="fcatt">
+<p>
+
+</p>
+公演名：SKE48 アイア特別公演<br/>
+公演日：2015年7月22日(水)<br/>
+会場：AiiAシアター<br/>
+<span style="color:red">※本公演は当選者限定のスペシャルライブとなります。</span><br/><br/>
+
+◆エントリー期間：2015年7月7日（火）12:00～7月11日（土）23:59<br/>
+◆エントリー完了案内・確認：2015年7月13日（月）夕方以降<br/>
+エントリー完了結果をメールにてお知らせ致します。<br/>
+◆入金期間：2015年7月13日（月）完了案内連絡後～7月15日（水）23:59 <br/>
+但し、エントリー時に手数料等をクレジットカード決済した場合は入金の必要はありません。
+</p>
+</div>
+<br/>
+
+<h3 style="color:red;">【お申込み時の注意事項　≪必ずご確認ください≫】</h3>
+<div class="fcatt">
+※当エントリーは「楽天チケット」の抽選システムを利用しております。
+一部「抽選」の文言がございますが、ご当選の皆様のエントリー、および発券の為のお申込みとなります。<br/>
+※登録メールアドレス情報を不正に入力された場合、お申し込みを取り消す事がございます。<br/>
+※PC/スマートフォン/携帯にてエントリーしていただき、ライブ主催者側にて申込み者の情報を確認した上で、エントリー完了案内をメールにてご連絡させていただきます。<br/>
+※メールが届かない事により、エントリーが確認できない場合や、チケットのお受け取りが出来ない場合でも責任は負いかねます。<br/>
+なりすましメールのフィルター等の設定によって届かない事もございますので、メール受信の設定を事前にご確認お願いいたします。<br/>
+※お申し込み後に発行される受付番号(RT00000～)は、エントリーの確認の際などにも必要となります。必ずお控えください。<br/>
+［エントリー内容履歴確認］<a href="https://rt.tstar.jp/lots/review" target=”_blank”>https://rt.tstar.jp/lots/review</a>
+</div>
+<br/>
+
+
+<!-- ***** footer [start] ***** -->
+<div class="footer">
+<ul class="footernav">
+<li class="first"><a href="http://www.ticketstar.jp/">運営会社</a></li>
+<li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+<li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+<li class="last"><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+</ul>
+<div class="copyright">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved. </div>
+</div>
+<!-- ***** footer [end] ***** -->
+
+</div>
+</body>
+</html>
