@@ -3,6 +3,7 @@
 
 $Id$
 """
+import os
 import six
 import unittest
 if six.PY3:
@@ -259,8 +260,12 @@ class Simple(FunkLoadTestCase):
         # end of test -----------------------------------------------
 
 
+class InitializeDBError(Exception):
+    pass
+
+
 def init_db():
-    import os
+    raise InitializeDBError(u'DBの値を書き換えたい場合はこの1行をコメントアウトする')
     os.system("""echo "UPDATE FamiPortReceipt """
               """set inquired_at=NULL, payment_request_received_at=NULL, """
               """customer_request_received_at=NULL, completed_at=NULL, """
@@ -310,7 +315,6 @@ class PyRecepitQueueFactory(object):
 
 
 def setup():
-    init_db()
     gsm = getGlobalSiteManager()
     context_name_class = {
         'inquiry': InquiryResponseContext,
