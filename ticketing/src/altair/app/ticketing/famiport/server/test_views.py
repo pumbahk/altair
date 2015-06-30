@@ -362,7 +362,10 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
             can_completion=lambda now: True,
             mark_completed=lambda *args: None,
             famiport_order_identifier=u'000000000000',
-            famiport_order=DummyModel()
+            famiport_order=DummyModel(
+                mark_issued=lambda *args: None,
+                mark_paid=lambda *args: None
+                )
             )
         res = self._callFUT({
             'ticketingDate': '20150331184114',

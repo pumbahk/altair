@@ -632,8 +632,8 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             famiport_receipt.mark_completed(now, request)
-                            famiport_order.issued_at = now
-                            famiport_order.paid_at = now
+                            famiport_order.mark_issued(now, request)
+                            famiport_order.mark_paid(now, request)
                             session.commit()
                     elif famiport_receipt.type == FamiPortReceiptType.Payment.value:
                         # 前払後日の支払 / 支払いのみ
@@ -644,7 +644,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             famiport_receipt.mark_completed(now, request)
-                            famiport_order.paid_at = now
+                            famiport_order.mark_paid(now, request)
                             session.commit()
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         # 前払後日の発券 / 発券のみ
@@ -655,7 +655,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             famiport_receipt.mark_completed(now, request)
-                            famiport_order.issued_at = now
+                            famiport_order.mark_issued(now, request)
                             session.commit()
                     else:
                         raise AssertionError('NEVER GET HERE')

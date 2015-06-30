@@ -696,6 +696,29 @@ class FamiPortOrder(Base, WithTimestamp):
         elif self.type == 4:
             return u'前払いのみ'
 
+    def mark_issued(self, now, request):
+        if self.invalidated_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+        if self.issued_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already issued' % (self.id, self.order_no))
+        logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as issued' % (self.id, self.order_no))
+        self.issued_at = now
+        for famiport_ticket in self.famiport_tickets:
+            famiport_ticket.issued_at = now
+
+    def mark_paid(self, now, request):
+        if self.invalidated_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+        if self.canceled_at is not None:
+            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+        if self.paid_at is not None:
+            # 再発券のケースがあるので例外にしない
+            logger.warning('FamiPortOrder(id=%ld, order_no=%s) is already paid' % (self.id, self.order_no))
+        logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as paid' % (self.id, self.order_no))
+        self.paid_at = now
+
     def mark_canceled(self, now, request, reason=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
@@ -735,6 +758,7 @@ class FamiPortOrder(Base, WithTimestamp):
             type=ticketing_famiport_receipt.type
             )
         self.famiport_receipts.append(new_receipt)
+        self.issued_at = None
 
     def make_suborder(self, now, request, reason=None):
         if self.invalidated_at is not None:
@@ -748,6 +772,8 @@ class FamiPortOrder(Base, WithTimestamp):
             else:
                 famiport_receipt.mark_canceled(now, request, reason)
         self.add_receipts()
+        self.paid_at = None
+        self.issued_at = None
 
     def add_receipts(self):
         session = object_session(self)
