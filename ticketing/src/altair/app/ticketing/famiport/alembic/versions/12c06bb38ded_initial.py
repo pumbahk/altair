@@ -579,6 +579,7 @@ def create_schemas():
         sa.Column('completed_at', sa.DateTime(), nullable=True),  # 完了処理が行われた日時
         sa.Column('void_at', sa.DateTime(), nullable=True),  # 30分voidによって無効化された日時
         sa.Column('canceled_at', sa.DateTime(), nullable=True),  # キャンセル処理された日時
+        sa.Column('cancel_reason', sa.Integer, nullable=True), # キャンセル事由
         sa.Column('rescued_at', sa.DateTime(), nullable=True),  # 90分救済措置にて救済された時刻
         sa.Column('report_generated_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),

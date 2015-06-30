@@ -247,6 +247,7 @@ class FamiPortEvent(Base, WithTimestamp):
     revision                = sa.Column(sa.Integer, nullable=False, default=0)
     file_generated_at       = sa.Column(sa.DateTime(), nullable=True)
     invalidated_at          = sa.Column(sa.DateTime(), nullable=True)
+    reflected_at            = sa.Column(sa.DateTime(), nullable=True)
 
     client                  = orm.relationship(FamiPortClient)
     venue                   = orm.relationship(FamiPortVenue)
@@ -695,7 +696,7 @@ class FamiPortOrder(Base, WithTimestamp):
         elif self.type == 4:
             return u'前払いのみ'
 
-    def mark_canceled(self, now, request):
+    def mark_canceled(self, now, request, reason=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
@@ -704,11 +705,12 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
             if not famiport_receipt.void_at:
-                famiport_receipt.mark_canceled(now, request)
+                famiport_receipt.mark_canceled(now, request, reason)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
+        self.cancel_reason = reason
 
-    def make_reissueable(self, now, request):
+    def make_reissueable(self, now, request, reason=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -726,6 +728,7 @@ class FamiPortOrder(Base, WithTimestamp):
                     if famiport_receipt.canceled_at is None:
                         assert ticketing_famiport_receipt is None
                         ticketing_famiport_receipt = famiport_receipt
+        ticketing_famiport_receipt.cancel_reason = reason
         session = object_session(self)
         new_receipt = FamiPortReceipt.create(
             session, self.famiport_client,
@@ -733,7 +736,7 @@ class FamiPortOrder(Base, WithTimestamp):
             )
         self.famiport_receipts.append(new_receipt)
 
-    def make_suborder(self, now, request):
+    def make_suborder(self, now, request, reason=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -743,7 +746,7 @@ class FamiPortOrder(Base, WithTimestamp):
                 if famiport_receipt.void_at is None:
                     famiport_receipt.void_at = now
             else:
-                famiport_receipt.mark_canceled(now)
+                famiport_receipt.mark_canceled(now, request, reason)
         self.add_receipts()
 
     def add_receipts(self):
@@ -897,6 +900,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
     void_at = sa.Column(sa.DateTime(), nullable=True)
     canceled_at = sa.Column(sa.DateTime(), nullable=True)
+    cancel_reason = sa.Column(sa.Integer, nullable=True)
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
     barcode_no = sa.Column(sa.Unicode(13), nullable=True, unique=True)  # 支払番号
 
@@ -1007,11 +1011,12 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.voided_at = now
         request.registry.notify(events.ReceiptVoided(self, request))
 
-    def mark_canceled(self, now, request):
+    def mark_canceled(self, now, request, reason=None):
         if self.canceled_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
         self.canceled_at = now
+        self.cancel_reason = reason
         request.registry.notify(events.ReceiptCanceled(self, request))
 
     @classmethod
