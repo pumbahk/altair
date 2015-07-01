@@ -7,8 +7,11 @@ from lxml import etree
 from sqlalchemy import sql
 from markupsafe import Markup
 from zope.interface import implementer
+import sqlalchemy as sa
 from pyramid.response import Response
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.sqlahelper import get_db_session
+from altair.models import Identifier, MutationDict, JSONEncodedDict
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.cart.interfaces import (
     ICartPayment,
@@ -27,7 +30,7 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsAcceptedMailResource,
     ILotsRejectedMailResource,
     )
-from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.models import DBSession, Base
 from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.cart.models import CartedProductItem
 from altair.app.ticketing.core.models import FamiPortTenant
@@ -126,53 +129,49 @@ def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).famiport_only_tickets()
 
 
-def build_ticket_dict(type_, data, template_code, price):
+def build_ticket_dict(type_, data, template_code, price, logically_subticket):
     return dict(
         type=type_,
         data=data,
         template=template_code,
-        price=price
+        price=price,
+        logically_subticket=logically_subticket
         )
 
-DICT_XML_ELEMENT_NAME_MAP = {
-    u'TTEVEN0001': [
-        (u'TitleOver', u'{{{イベント名}}}'),
-        (u'TitleMain', u'{{{パフォーマンス名}}}'),
-        (u'TitleSub', u'{{{公演名副題}}}'),
-        (u'Date', u'{{{開催日}}}'),
-        (u'OpenTime', u'{{{開場時刻}}}'),
-        (u'StartTime', u'{{{開始時刻}}}'),
-        (u'Price', u'{{{チケット価格}}}'),
-        (u'Hall', u'{{{会場名}}}'),
-        (u'Note1', u'{{{aux.注意事項1}}}'),
-        (u'Note2', u'{{{aux.注意事項2}}}'),
-        (u'Note3', u'{{{aux.注意事項3}}}'),
-        (u'Note4', u'{{{aux.注意事項4}}}'),
-        (u'Note5', u'{{{aux.注意事項5}}}'),
-        (u'Note6', u'{{{aux.注意事項6}}}'),
-        (u'Note7', u'{{{aux.注意事項7}}}'),
-        (u'Seat1', u'{{{券種名}}}'),
-        (u'Sub-Title1', u'{{{イベント名}}}'),
-        (u'Sub-Title2', u'{{{パフォーマンス名}}}'),
-        (u'Sub-Title3', u'{{{公演名副題}}}'),
-        (u'Sub-Date', u'{{{開催日s}}}'),
-        (u'Sub-OpenTime', u'{{{開場時刻s}}}'),
-        (u'Sub-StartTime', u'{{{開始時刻s}}}'),
-        (u'Sub-Price', u'{{{チケット価格}}}'),
-        (u'Sub-Seat1', u'{{{券種名}}}'),
-        ],
-    }
+
+class FamiPortTicketTemplate(Base):
+    __tablename__ = 'FamiPortTicketTemplate'
+
+    id = sa.Column(Identifier(), nullable=False, autoincrement=True, primary_key=True)
+    template_code = sa.Column(sa.Unicode(13), nullable=False)
+    logically_subticket = sa.Column(sa.Boolean(), nullable=False, default=False)
+    mappings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False)
 
 
-def build_xml_from_dicts(template_code, dicts):
-    render = pystache.render
-    root = etree.Element(u'TICKET')
-    map_ = DICT_XML_ELEMENT_NAME_MAP[template_code]
-    for element_name, t in map_:
-        e = etree.Element(element_name)
-        e.text = render(t, dicts)
-        root.append(e)
-    return root
+class FamiPortTicketXMLBuilder(object):
+    def __init__(self, request):
+        self.request = request
+        self.session = get_db_session(request, 'slave')
+        self.cache = {}
+
+    def _get_template_info(self, template_code):
+        ti = self.cache.get(template_code)
+        if ti is None:
+            ti = self.session.query(FamiPortTicketTemplate) \
+                .filter_by(template_code=template_code) \
+                .one()
+            self.cache[template_code] = ti
+        return ti
+
+    def __call__(self, template_code, dicts):
+        render = pystache.render
+        root = etree.Element(u'TICKET')
+        ti = self._get_template_info(template_code)
+        for element_name, t in ti.mappings:
+            e = etree.Element(element_name)
+            e.text = render(t, dicts)
+            root.append(e)
+        return root, ti.logically_subticket
 
 
 def get_ticket_template_code_from_ticket_format(ticket_format):
@@ -181,7 +180,7 @@ def get_ticket_template_code_from_ticket_format(ticket_format):
     if aux is not None:
         retval = aux.get('famiport_ticket_template_code')
     if retval is None:
-        retval = u'TTEVEN0001'  # XXX: デフォルト
+        retval = u'TTTSTR0001'  # XXX: デフォルト
     return retval
 
 
@@ -198,23 +197,21 @@ def build_ticket_dicts_from_order_like(request, order_like):
             else:
                 raise TypeError('!')
             bundle = ordered_product_item.product_item.ticket_bundle
+            xml_builder = FamiPortTicketXMLBuilder(request)
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
-                    if ticket.principal:
-                        ticket_type = FamiPortTicketType.TicketWithBarcode.value
-                    else:
-                        ticket_type = FamiPortTicketType.ExtraTicket.value
                     ticket_format = ticket.ticket_format
                     template_code = get_ticket_template_code_from_ticket_format(ticket_format)
-                    xml = etree.tostring(
-                        build_xml_from_dicts(template_code, dict_),
-                        encoding='unicode'
-                        )
+                    xml_root, logically_subticket = xml_builder(template_code, dict_)
+                    xml = etree.tostring(xml_root, encoding='unicode')
+                    if logically_subticket != (not ticket.principal):
+                        raise RuntimeError('logically_subticket=%r while expecting %r' % (logically_subticket, not ticket.principal))
                     ticket = build_ticket_dict(
-                        type_=ticket_type,
+                        type_=FamiPortTicketType.TicketWithBarcode.value,
                         data=xml,
                         template_code=template_code,
-                        price=ordered_product_item.price
+                        price=ordered_product_item.price,
+                        logically_subticket=logically_subticket
                         )
                     tickets.append(ticket)
     return tickets

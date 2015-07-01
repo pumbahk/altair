@@ -145,7 +145,9 @@ def famiport_order_to_dict(famiport_order):
                 type=famiport_ticket.type,
                 barcode_number=famiport_ticket.barcode_number,
                 template=famiport_ticket.template_code,
-                data=famiport_ticket.data
+                data=famiport_ticket.data,
+                subticket=famiport_ticket.is_subticket,
+                logically_subticket=famiport_ticket.logically_subticket
                 )
             for famiport_ticket in famiport_order.famiport_tickets
             ]

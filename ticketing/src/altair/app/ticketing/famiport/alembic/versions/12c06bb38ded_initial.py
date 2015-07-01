@@ -207,6 +207,7 @@ def create_schemas():
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
         sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortTicketType.TicketWithBarcode.value))),
+        sa.Column('logically_subticket', sa.Boolean, nullable=False, server_default=text(u"FALSE")),
         sa.Column('barcode_number', sa.Unicode(13), nullable=False),
         sa.Column('template_code', sa.Unicode(10), nullable=False),
         sa.Column('data', sa.Unicode(4000), nullable=False),

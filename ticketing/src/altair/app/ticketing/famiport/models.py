@@ -818,6 +818,7 @@ class FamiPortTicket(Base, WithTimestamp):
     id                        = sa.Column(Identifier, primary_key=True, autoincrement=True)
     famiport_order_id         = sa.Column(Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False)
     type                      = sa.Column(sa.Integer, nullable=False, default=FamiPortTicketType.TicketWithBarcode.value)
+    logically_subticket       = sa.Column(sa.Boolean, nullable=False, default=False)
     barcode_number            = sa.Column(sa.Unicode(13), nullable=False)
     template_code             = sa.Column(sa.Unicode(10), nullable=False)
     price                     = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False, default=0)
@@ -828,7 +829,8 @@ class FamiPortTicket(Base, WithTimestamp):
 
     @property
     def is_subticket(self):
-        return self.type in (FamiPortTicketType.ExtraTicket.value, FamiPortTicketType.ExtraTicketWithBarcode.value)
+        return self.logically_subticket or \
+               self.type in (FamiPortTicketType.ExtraTicket.value, FamiPortTicketType.ExtraTicketWithBarcode.value)
 
 
 class FamiPortInformationMessage(Base, WithTimestamp):

@@ -102,7 +102,8 @@ def create_famiport_ticket(session, famiport_playguide, ticket_dict):
         barcode_number=FamiPortBarcodeNoSequence.get_next_value(famiport_playguide.discrimination_code, session),
         template_code=ticket_dict['template'],
         price=ticket_dict['price'],
-        data=ticket_dict['data']
+        data=ticket_dict['data'],
+        logically_subticket=ticket_dict['logically_subticket']
         )
 
 def validate_sales_channel(sales_channel):
