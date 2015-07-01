@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 from setuptools import setup, find_packages
@@ -74,7 +75,7 @@ requires = [
     'beaker-extensions == 0.2.0.post1',
     'boto',
     'fluent-logger == 0.3.3.post1',
-    'Pillow', # for qrcode.image.pil
+    'Pillow',  # for qrcode.image.pil
     'altair.findable_label',
     'altair.log',
     "jsonrpclib",
@@ -127,7 +128,7 @@ setup(name='altair.app.ticketing',
       version='0.0',
       use_date_versioning=True,
       description='altair.app.ticketing',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -147,7 +148,7 @@ setup(name='altair.app.ticketing',
       tests_require=tests_require,
       extras_require=extras_require,
       test_suite="altair.app.ticketing",
-      entry_points = """\
+      entry_points="""\
       [paste.app_factory]
       main = altair.app.ticketing:main
       zea-admin = altair.app.ticketing.project_specific.zea:main
@@ -199,7 +200,7 @@ setup(name='altair.app.ticketing',
       send_mail=altair.app.ticketing.scripts.send_mail:main
       laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main
       """,
-      dependency_links = [
+      dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
         ],
       paster_plugins=['pyramid'],
