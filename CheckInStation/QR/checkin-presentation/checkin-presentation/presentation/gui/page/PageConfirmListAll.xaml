@@ -21,19 +21,18 @@
                     <Border Canvas.Top="-17" Canvas.Left="0" Width="1366" Height="768" BorderThickness="3" BorderBrush="Blue"></Border>
                     -->
                     <!-- 情報 -->
-                    <ListView
-                        Canvas.Top="17"
-                        Canvas.Left="50"
-                        Style="{StaticResource DisableListViewScrolviewer}">
                         <TextBlock 
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Canvas.Left="0"
+                                Canvas.Top="17"
+                                Canvas.Left="50"
                                 LineHeight="25"
                                 FontSize="25"
                                 Style="{StaticResource MainText}" Margin="121,0"><Run Text="{Binding Description}"/>
                         </TextBlock>
                         <Grid
+                        Canvas.Top="45"
+                        Canvas.Left="50"
                         Height="160"
                         Width="1100"
                         >
@@ -110,8 +109,6 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
                     -->
-
-                    </ListView>
 
                     <Border 
                         Canvas.Left="50"

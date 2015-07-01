@@ -80,7 +80,7 @@
         <SolidColorBrush.Color>White</SolidColorBrush.Color>
     </SolidColorBrush>
     <SolidColorBrush x:Key="Grayout_InactiveTextColor">
-        <SolidColorBrush.Color>Gray</SolidColorBrush.Color>
+        <SolidColorBrush.Color>Black</SolidColorBrush.Color>
     </SolidColorBrush>
 
 
@@ -207,14 +207,14 @@
 
 
     <LinearGradientBrush x:Key="ToggleButtonFillNormal" StartPoint="0.5,0" EndPoint="0.5,1">
-        <GradientStop Color="#ddddff" Offset="0" />
-        <GradientStop Color="#bbbbff" Offset="1" />
+        <GradientStop Color="#DDE9F2" Offset="0.05" />
+        <GradientStop Color="#C5D8EA" Offset="1" />
     </LinearGradientBrush>
     <SolidColorBrush x:Key="ToggleButtonStrokeNormal"  Color="#555555"/>
     <SolidColorBrush x:Key="ToggleButtonForegroundNormal"  Color="#000000"/>
     <LinearGradientBrush x:Key="ToggleButtonFillSelected" StartPoint="0.5,0" EndPoint="0.5,1">
-        <GradientStop Color="#444444" Offset="0.0"></GradientStop>
-        <GradientStop Color="#222222" Offset="1.0"></GradientStop>
+        <GradientStop Color="Black" Offset="0.05"></GradientStop>
+        <GradientStop Color="Black" Offset="1.0"></GradientStop>
     </LinearGradientBrush>
     <SolidColorBrush x:Key="ToggleButtonStrokeSelected"  Color="#111111"/>
     <SolidColorBrush x:Key="ToggleButtonForegroundSelected"  Color="#ffffff"/>

@@ -117,7 +117,6 @@ namespace checkin.presentation.gui.page
             {
                 ctx.RefreshModeVisibility = Visibility.Visible;
             }
-            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
             ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
             this.buttonsubmit.Visibility = Visibility.Hidden;
         }
@@ -184,7 +183,7 @@ namespace checkin.presentation.gui.page
                 ctx.SubDescription = "読み込みに時間がかかる場合は\r\nもう一度最初からやり直してQRコードをしっかりかざしてください";
                 ctx.IsWaiting = Visibility.Visible;
             }
-            if (this.QRCodeInput.Text.Length >= 60)
+            if (this.QRCodeInput.Text.Length >= 50)
             {
                 this.buttonsubmit.Visibility = Visibility.Visible;
             }

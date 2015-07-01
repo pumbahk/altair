@@ -226,12 +226,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Resource Include="Resource\next.png" />
+    <Resource Include="Resource\qr_input.png" />
+    <Resource Include="Resource\qr_read.png" />
     <Resource Include="Resource\off_check.png" />
     <Resource Include="Resource\on_check.png" />
+    <Resource Include="Resource\next.png" />
     <Resource Include="Resource\orderno.png" />
-    <Resource Include="Resource\prev.png" />
-    <Resource Include="Resource\qr_read.png" />
     <Resource Include="Resource\ticket-multi.png" />
     <Resource Include="Resource\ticket-single.png" />
     <Resource Include="ticket.ico" />

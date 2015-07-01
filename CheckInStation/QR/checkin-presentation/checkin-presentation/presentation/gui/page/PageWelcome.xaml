@@ -93,7 +93,7 @@
                                        FontSize="80">
                                 QRコード
                             </TextBlock>
-                            <Image Grid.Row="0" Grid.Column="0" Margin="50,30,10,0" Source="/Resource/qr_read.png"/>
+                            <Image Grid.Row="0" Grid.Column="0" Margin="40,60,40,20" Source="/Resource/qr_read.png"/>
                         </Grid>
                     </Button>
 

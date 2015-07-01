@@ -235,10 +235,10 @@
   </SolidColorBrush>
   
   <SolidColorBrush x:Key="Grayout_ActiveTextColor">
-    <SolidColorBrush.Color>White</SolidColorBrush.Color>
+        <SolidColorBrush.Color>White</SolidColorBrush.Color>
   </SolidColorBrush>
   <SolidColorBrush x:Key="Grayout_InactiveTextColor">
-    <SolidColorBrush.Color>Gray</SolidColorBrush.Color>
+        <SolidColorBrush.Color>Gray</SolidColorBrush.Color>
   </SolidColorBrush>
 
   <Style TargetType="Border" x:Key="GrayoutIfNeedCheckBoxBorder">
@@ -964,8 +964,8 @@
     </Style>
 
 
-    <ImageBrush x:Key="StatusBoxCheckedBrush" ImageSource="/Resource/on_check.png"/>
-    <ImageBrush x:Key="StatusBoxUnCheckedBrush" ImageSource="/Resource/off_check.png"/>
+    <ImageBrush x:Key="StatusBoxCheckedBrush" ImageSource="/Resource/on_check.png" Stretch="None"/>
+    <ImageBrush x:Key="StatusBoxUnCheckedBrush" ImageSource="/Resource/off_check.png" Stretch="None"/>
     
     <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
     <Style.Triggers>
