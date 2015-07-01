@@ -8,6 +8,7 @@ from datetime import datetime
 from zope.interface import implementer, provider
 from ftplib_ import FTP_TLS_ as FTP_TLS
 from enum import IntEnum
+from pyramid.settings import asbool
 from .interfaces import IFileSender, IFileSenderFactory, IFamiPortFileManagerFactory
 from .utils import make_room
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class FTPSFileSender(object):
     FTP_TLS = FTP_TLS
 
-    def __init__(self, host, port=21, timeout=600, username=None, password=None, ca_certs = None, passive=True, debuglevel=0):
+    def __init__(self, host, port=21, timeout=600, username=None, password=None, ca_certs = None, passive=True, implicit_ssl=False):
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -26,7 +27,7 @@ class FTPSFileSender(object):
         self.password = password
         self.ca_certs = ca_certs
         self.passive = passive
-        self.debuglevel = debuglevel
+        self.implicit_ssl = implicit_ssl
 
     def send_file(self, remote_path, file):
         remote_dir = os.path.dirname(remote_path)
@@ -34,8 +35,7 @@ class FTPSFileSender(object):
 
         logger.info('uploading file to %s' % remote_path)
 
-        ftp = self.FTP_TLS(ca_certs=self.ca_certs) # FTP over SSL/TLS
-        ftp.set_debuglevel(self.debuglevel)
+        ftp = self.FTP_TLS(ca_certs=self.ca_certs, implicit=self.implicit_ssl) # FTP over SSL/TLS
 
         logger.info('trying to connect to %s:%d' % (self.host, self.port))
         ftp.connect(host=self.host, port=self.port, timeout=self.timeout)
@@ -118,8 +118,9 @@ def create_ftps_file_sender_from_settings(settings, prefix='altair.famiport.send
         raise ValueError('invalid host name: %s' % host_port_pair)
     username = settings['%s.username' % prefix]
     password = settings['%s.password' % prefix]
+    implicit_ssl = asbool(settings.get('%s.implicit_ssl' % prefix, False))
     certificate = settings.get('%s.certificate' % prefix, None)
-    return FTPSFileSender(host=host, port=port, username=username, password=password, ca_certs=certificate)
+    return FTPSFileSender(host=host, port=port, username=username, password=password, ca_certs=certificate, implicit_ssl=implicit_ssl)
 
 
 class FamiPortFileManager(object):
