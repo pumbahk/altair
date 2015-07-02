@@ -16,6 +16,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from altair.sqlahelper import get_db_session
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
@@ -942,7 +943,7 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
 
-    attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt')
+    attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt', collection_class=attribute_mapped_collection('name'), )
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: FamiPortReceiptAttribute(name=k, value=v))
 
     @property
@@ -1064,12 +1065,14 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.completed_at = now
         request.registry.notify(events.ReceiptCompleted(self, request))
 
-    def mark_voided(self, now, request, reason=None):
+    def mark_voided(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.void_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
         self.void_at = now
         self.void_reason = reason
+        self.cancel_reason_code = cancel_reason_code
+        self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptVoided(self, request))
 
     def mark_canceled(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
