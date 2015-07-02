@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurTextField, DateTimeField
-from altair.formhelpers.widgets import OurPasswordInput, OurTextInput, OurDateWidget
+from altair.formhelpers.fields import (
+    OurTextField,
+    DateTimeField,
+    OurRadioField,
+    OurSelectField,
+    OurTextAreaField,
+)
+from altair.formhelpers.widgets import (
+    OurPasswordInput,
+    OurTextInput,
+    OurDateWidget,
+)
 from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
@@ -77,3 +87,30 @@ class SearchPerformanceForm(OurForm):
     def validate_event_code_2(form, field):
         if not form.event_code_1.data and form.event_code_2.data:
             raise ValidationError(u'code_1とcode_2セットで入力要')
+
+class RebookOrderForm(OurForm):
+    reason_code = OurSelectField(
+        label=u'理由コード：',
+        choices=[
+            ('910', u'【910】同席番再予約（店舗都合）'),
+            ('911', u'【911】同席番再予約（お客様都合）'),
+            ('912', u'【912】同席番再予約（強制成立）'),
+            ('913', u'【913】再発券（店舗都合）'),
+            ('914', u'【914】その他'),
+        ],
+        validators=[
+            Required(),
+        ],
+    )
+    reason_text = OurTextAreaField(
+        label=u'理由備考：',
+    )
+    old_num_type = OurTextField(
+        label=u'旧番号種類：',
+    )
+    old_num = OurTextField(
+        label=u'旧番号：',
+        validators=[
+            Required(),
+        ],
+    )

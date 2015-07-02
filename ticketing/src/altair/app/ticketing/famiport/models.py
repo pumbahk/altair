@@ -687,13 +687,13 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @property
     def get_type_in_str(self):
-        if self.type == 1:
+        if self.type == FamiPortOrderType.CashOnDelivery.value:
             return u'代引'
-        elif self.type == 2:
+        elif self.type == FamiPortOrderType.Payment.value:
             return u'前払い(後日渡し)'
-        elif self.type == 3:
+        elif self.type == FamiPortOrderType.Ticketing.value:
             return u'代済'
-        elif self.type == 4:
+        elif self.type == FamiPortOrderType.PaymentOnly.value:
             return u'前払いのみ'
 
     def mark_issued(self, now, request):
@@ -771,6 +771,7 @@ class FamiPortOrder(Base, WithTimestamp):
                     famiport_receipt.void_at = now
             else:
                 famiport_receipt.mark_canceled(now, request, reason)
+
         self.add_receipts()
         self.paid_at = None
         self.issued_at = None
@@ -781,11 +782,13 @@ class FamiPortOrder(Base, WithTimestamp):
             self.famiport_receipts.extend([
                 FamiPortReceipt.create(
                     session, self.famiport_client,
-                    type=FamiPortReceiptType.Payment.value
+                    type=FamiPortReceiptType.Payment.value,
+                    famiport_order_id=self.id
                     ),
                 FamiPortReceipt.create(
                     session, self.famiport_client,
-                    type=FamiPortReceiptType.Ticketing.value
+                    type=FamiPortReceiptType.Ticketing.value,
+                    famiport_order_id=self.id
                     )
                 ])
         else:
@@ -800,9 +803,11 @@ class FamiPortOrder(Base, WithTimestamp):
             self.famiport_receipts.append(
                 FamiPortReceipt.create(
                     session, self.famiport_client,
-                    type=receipt_type
+                    type=receipt_type,
+                    famiport_order_id=self.id
                     )
                 )
+        session.commit()
 
 
 class FamiPortTicketType(Enum):
@@ -950,6 +955,16 @@ class FamiPortReceipt(Base, WithTimestamp):
         return (self.type == FamiPortReceiptType.Ticketing.value) | \
                (self.type == FamiPortReceiptType.CashOnDelivery.value)
 
+    def is_rebookable(self, now):
+        if self.void_at is not None or self.canceled_at is not None:
+            return False
+        # 申込ステータスが確定待ちじゃないかつ期限超過ならfalse
+        # todo:playguid設定締日の確認
+        if not (self.payment_request_received_at is not None and self.completed_at is None):
+            return False
+
+        return True
+
     def get_shop_name(self, request):
         if self.payment_request_received_at:
             session = get_db_session(request, name="famiport")
@@ -1049,9 +1064,10 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptCanceled(self, request))
 
     @classmethod
-    def create(cls, session, famiport_client, **kwargs):
+    def create(cls, session, famiport_client,famiport_order_id, **kwargs):
         return FamiPortReceipt(
             reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
             famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
+            famiport_order_id=famiport_order_id,
             **kwargs
             )

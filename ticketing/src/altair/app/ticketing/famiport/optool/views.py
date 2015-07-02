@@ -1,24 +1,34 @@
 # encoding: utf-8
 import logging
+import itertools
 from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.famiport.models import FamiPortPerformance, FamiPortEvent
+from altair.app.ticketing.famiport.models import (
+    FamiPortPerformance,
+    FamiPortEvent,
+    FamiPortOrder,
+    FamiPortOrderType,
+)
 from .api import (
     lookup_user_by_credentials,
     lookup_performance_by_searchform_data,
     lookup_receipt_by_searchform_data,
 )
+from ..internal_api import make_suborder_by_order_no
 from .forms import (
     LoginForm,
     SearchPerformanceForm,
     SearchReceiptForm,
+    RebookOrderForm,
 )
 from webhelpers import paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from .helpers import ViewHelpers
+from ..exc import FamiPortAPIError
+
 
 logger = logging.getLogger(__name__)
 
@@ -183,12 +193,34 @@ class FamiPortRebookOrderView(object):
 
     @view_config(route_name='rebook_order', request_method='GET', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
     def rebook_order(self):
-        return dict(receipt=self.context.receipt,)
+        form = RebookOrderForm()
+        receipt = self.context.receipt
+        return dict(form=form, receipt=receipt, now=datetime.now())
 
-    @view_config(route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    @view_config(xhr=True, route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='json', permission='operator')
     def post_rebook_order(self):
-        # TODO rebook order
-        return dict()
+        session = get_db_session(self.request, name="famiport")
+        receipt = self.context.receipt
+        order = receipt.famiport_order
+        old_fami_identifier = receipt.famiport_order_identifier
+        reason = self.request.POST.get('reason')
+
+        if receipt.is_rebookable(datetime.now()):
+            # todo:cancelreasonをDBへ流し込む処理必要
+            make_suborder_by_order_no(request=self.request, session=session, order_no=order.order_no,)
+            if order.type == FamiPortOrderType.PaymentOnly.value:
+                new_receipt = order.payment_famiport_receipt
+            elif order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value, FamiPortOrderType.CashOnDelivery.value):
+                # Ordertype.Paymentの時はticketing側のレシートが取得される
+                new_receipt = order.ticketing_famiport_receipt
+            else:
+                raise FamiPortAPIError(u'make_suborder_by_order_no failed')
+
+            new_fami_identifier = new_receipt.famiport_order_identifier
+        else:
+            raise FamiPortAPIError(u'error occurred!')
+
+        return dict(old_identifier=old_fami_identifier, new_identifier=new_fami_identifier)
 
     @view_config(route_name='rebook_order', request_method='POST', match_param='action=reprint', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
     def reprint_ticket(self):

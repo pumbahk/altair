@@ -215,14 +215,15 @@ def mark_order_reissueable_by_order_no(
 
 
 def make_suborder_by_order_no(
-        session, 
-        client_code,
+        request,
+        session,
         order_no,
+        client_code=None,
         now=None
         ):
     """FamiPortOrderを同席番再予約"""
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no)
-    famiport_order.make_suborder(now)
+    famiport_order.make_suborder(now, request)
 

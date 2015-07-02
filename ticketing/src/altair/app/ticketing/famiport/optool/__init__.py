@@ -62,6 +62,6 @@ def main(global_conf, **local_conf):
     config.add_route('performance.detail', '/show/performance/{performance_id}', factory='.resources.PerformanceDetailResource')
     config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}')
     # Rebook or reprint
-    config.add_route('rebook_order', '/rebook_order/{action}/{order_id}', factory='.resources.RebookOrderResource') # action = (show, rebook, reprint)
+    config.add_route('rebook_order', '/rebook_order/{action}/{receipt_id}', factory='.resources.RebookReceiptResource') # action = (show, rebook, reprint)
     config.scan('.views')
     return config.make_wsgi_app()
