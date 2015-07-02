@@ -1182,19 +1182,32 @@ class LotReport(object):
     def index_url(self):
         return self.request.route_url("lots.entries.index", **self.request.matchdict)
 
-    def _save_report_setting(self, report_setting=None):
+    def _save_report_setting(self, report_setting=None, copy=False):
         f = LotEntryReportSettingForm(self.request.POST, context=self.context)
         if not f.validate():
             raise ReportSettingValidationError(form=f)
+
+        from altair.sqlahelper import get_db_session
+        mails = [mail for mail in f.recipients.data.split(" ") if mail]
+        session = get_db_session(self.request, 'slave')
+        recipients = session.query(ReportRecipient).filter(ReportRecipient.email.in_(mails)).all()
+
         new_recipients = [
-            ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
-            for report_recipient_id in f.recipients.data
+            ReportRecipient.query.filter_by(id=recipient.id, organization_id=self.context.organization.id).one()
+            for recipient in recipients
             ]
+
+        # 送信先がないときは、必ず送信先追加
+        if not new_recipients and not f.email.data:
+            f.recipients.errors = [u'送信先が指定されていません。送信先を登録する場合は、送信先追加を入力してください。']
+            raise ReportSettingValidationError(form=f)
+
         if f.email.data:
             rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
             if not rr:
                 rr = ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id)
             new_recipients.append(rr)
+
         if report_setting is None:
             report_setting = LotEntryReportSetting()
 
@@ -1204,7 +1217,21 @@ class LotReport(object):
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 
-        report_setting = merge_session_with_post(report_setting, f.data)
+        report_setting.event_id = f.event_id.data
+        report_setting.performance_id = f.performance_id.data
+        report_setting.name = f.name.data
+        report_setting.email = f.email.data
+        report_setting.frequency = f.frequency.data
+        report_setting.day_of_week = f.day_of_week.data
+        report_setting.report_hour = f.report_hour.data
+        report_setting.report_minute = f.report_minute.data
+        report_setting.time = f.time.data
+        report_setting.start_on = f.start_on.data
+        report_setting.end_on = f.end_on.data
+        report_setting.period = f.period.data
+        report_setting.report_type = f.report_type.data
+        report_setting.lot_id = f.lot_id.data
+
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
         report_setting.save()
