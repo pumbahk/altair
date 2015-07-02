@@ -3,7 +3,7 @@
 import logging
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, TableWidget
 from datetime import datetime, timedelta
 from altair.formhelpers import (
     OurTextField,
@@ -436,5 +436,7 @@ class MemberGroupToSalesSegmentForm(OurForm):
     membergroups = OurSelectMultipleField(
         label=u"membergroups",
         choices=[],
+        widget=TableWidget(),
+        option_widget=CheckboxInput(),
         coerce=unicode,
     )

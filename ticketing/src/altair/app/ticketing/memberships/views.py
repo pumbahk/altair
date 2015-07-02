@@ -50,7 +50,8 @@ class MembershipView(BaseView):
         form = forms.MembershipForm(self.request.POST)
         if not form.validate():
             return {"form":form}
-        membership = umodels.Membership(name=form.data["name"], 
+        membership = umodels.Membership(name=form.data["name"],
+                                        display_name=form.data["display_name"],
                                         organization_id=form.data["organization_id"],
                                         enable_auto_input_form=form.data['enable_auto_input_form'],
                                         enable_point_input=form.data['enable_point_input'],
@@ -77,6 +78,7 @@ class MembershipView(BaseView):
 
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
         membership.name=form.data["name"]
+        membership.display_name=form.data['display_name']
         membership.organization_id=form.data["organization_id"]
         membership.memo=form.data['memo']
         membership.enable_auto_input_form=form.data["enable_auto_input_form"]

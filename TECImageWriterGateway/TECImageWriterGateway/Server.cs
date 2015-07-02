@@ -60,6 +60,7 @@ namespace TECImageWriterGateway
                 {
                     RemoveAll(item);
                 }
+                _info.Delete();
             }
         }
 
@@ -84,6 +85,15 @@ namespace TECImageWriterGateway
             resp.StatusDescription = "Internal Server Error";
             StreamWriter writer = new StreamWriter(resp.OutputStream);
             writer.WriteLine("Internal Server Error");
+            writer.Close();
+        }
+
+        static void SendGatewayTimeout(HttpListenerResponse resp)
+        {
+            resp.StatusCode = 504;
+            resp.StatusDescription = "Gateway Timeout";
+            StreamWriter writer = new StreamWriter(resp.OutputStream);
+            writer.WriteLine("Gateway Timeout");
             writer.Close();
         }
 
@@ -207,6 +217,11 @@ namespace TECImageWriterGateway
                 {
                     Logger.Write(e);
                     SendBadRequest(resp);
+                }
+                catch (TimeoutException e)
+                {
+                    Logger.Write(e);
+                    SendGatewayTimeout(resp);
                 }
                 catch (Exception e)
                 {

@@ -25,6 +25,7 @@ class LotCloser(object):
     def can_close(self):
         """ 申込中の状態が残ってたらクローズできない
         二回クローズしない
+        メールの送信が終わっている
         """
         return (not self.lot.query_receipt_entries.count()
-                and not self.lot.is_finished())
+                and not self.lot.is_finished() and not self.lot.query_not_sent_mail_entries.count())
