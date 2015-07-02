@@ -759,17 +759,20 @@ class FamiPortOrder(Base, WithTimestamp):
         self.famiport_receipts.append(new_receipt)
         self.issued_at = None
 
-    def make_suborder(self, now, request, reason=None):
+    def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
         for famiport_receipt in self.famiport_receipts:
+            # todo:refactor(rebookの確定待ち用)
+            if famiport_receipt.payment_request_received_at is not None and famiport_receipt.completed_at is None:
+                famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
             if famiport_receipt.completed_at is None:
                 if famiport_receipt.void_at is None:
                     famiport_receipt.void_at = now
             else:
-                famiport_receipt.mark_canceled(now, request, reason)
+                famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
         self.add_receipts()
         self.paid_at = None
@@ -977,7 +980,7 @@ class FamiPortReceipt(Base, WithTimestamp):
             return False
         # 申込ステータスが確定待ちじゃないかつ期限超過ならfalse
         # todo:playguid設定締日の確認
-        if not (self.payment_request_received_at is not None and self.completed_at is None):
+        if self.payment_request_received_at is None:
             return False
 
         return True
@@ -1075,11 +1078,12 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptVoided(self, request))
 
-    def mark_canceled(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
+    def mark_canceled(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.canceled_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
         self.canceled_at = now
+        self.void_reason = reason
         self.cancel_reason_code = cancel_reason_code
         self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptCanceled(self, request))

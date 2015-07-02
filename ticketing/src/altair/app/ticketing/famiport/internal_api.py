@@ -218,6 +218,9 @@ def make_suborder_by_order_no(
         request,
         session,
         order_no,
+        reason=None,
+        cancel_reason_code=None,
+        cancel_reason_text=None,
         client_code=None,
         now=None
         ):
@@ -225,5 +228,5 @@ def make_suborder_by_order_no(
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no)
-    famiport_order.make_suborder(now, request)
+    famiport_order.make_suborder(now, request, reason, cancel_reason_code, cancel_reason_text)
 

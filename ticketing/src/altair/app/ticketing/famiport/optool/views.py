@@ -195,6 +195,8 @@ class FamiPortRebookOrderView(object):
     def rebook_order(self):
         form = RebookOrderForm()
         receipt = self.context.receipt
+        form.cancel_reason_code.data = receipt.cancel_reason_code
+        form.cancel_reason_text.data = receipt.cancel_reason_text
         return dict(form=form, receipt=receipt, now=datetime.now())
 
     @view_config(xhr=True, route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='json', permission='operator')
@@ -203,11 +205,11 @@ class FamiPortRebookOrderView(object):
         receipt = self.context.receipt
         order = receipt.famiport_order
         old_fami_identifier = receipt.famiport_order_identifier
-        reason = self.request.POST.get('reason')
+        cancel_code = self.request.POST.get('cancel_reason_code')
+        cancel_text = self.request.POST.get('cancel_reason_text')
 
         if receipt.is_rebookable(datetime.now()):
-            # todo:cancelreasonをDBへ流し込む処理必要
-            make_suborder_by_order_no(request=self.request, session=session, order_no=order.order_no,)
+            make_suborder_by_order_no(request=self.request, session=session, order_no=order.order_no, cancel_reason_code=cancel_code, cancel_reason_text=cancel_text)
             if order.type == FamiPortOrderType.PaymentOnly.value:
                 new_receipt = order.payment_famiport_receipt
             elif order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value, FamiPortOrderType.CashOnDelivery.value):

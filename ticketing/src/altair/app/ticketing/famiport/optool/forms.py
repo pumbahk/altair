@@ -89,7 +89,7 @@ class SearchPerformanceForm(OurForm):
             raise ValidationError(u'code_1とcode_2セットで入力要')
 
 class RebookOrderForm(OurForm):
-    reason_code = OurSelectField(
+    cancel_reason_code = OurSelectField(
         label=u'理由コード：',
         choices=[
             ('910', u'【910】同席番再予約（店舗都合）'),
@@ -102,7 +102,7 @@ class RebookOrderForm(OurForm):
             Required(),
         ],
     )
-    reason_text = OurTextAreaField(
+    cancel_reason_text = OurTextAreaField(
         label=u'理由備考：',
     )
     old_num_type = OurTextField(

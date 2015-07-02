@@ -12,12 +12,12 @@
         </label>
       </div>
       <div class="form-group">
-        <div class="col-md-2">${form.reason_code.label}</div>
-        <div class="col-md-10">${form.reason_code(class_="form-control")}</div>
+        <div class="col-md-2">${form.cancel_reason_code.label}</div>
+        <div class="col-md-10">${form.cancel_reason_code(class_="form-control")}</div>
       </div>
       <div class="form-group">
-        <div class="col-md-2">${form.reason_text.label}</div>
-        <div class="col-md-10">${form.reason_text(class_="form-control")}</div>
+        <div class="col-md-2">${form.cancel_reason_text.label}</div>
+        <div class="col-md-10">${form.cancel_reason_text(class_="form-control")}</div>
       </div>
       <div class="form-group">
           <div class="col-md-2">${form.old_num_type.label}</div>
@@ -95,7 +95,7 @@ $(document).ready(function() {
   });
   $("*[name=optradio]:radio").change(function(){
         var action = $(this).val();
-        $("#rebookinfo").attr(
+        $("#rebookform").attr(
                     "href",
                     '${request.route_url('rebook_order', action='{action}', receipt_id='{receipt_id}')}'
                     .replace(encodeURIComponent('{action}'), action)
