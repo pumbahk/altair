@@ -212,6 +212,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.entry_no!=None,
         ).filter(
             LotEntry.ordered_mail_sent_at==None, # メール未送信
+            LotEntry.canceled_at==None, # キャンセルされていない
         )
 
     def is_elected(self):
