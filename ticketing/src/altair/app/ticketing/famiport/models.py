@@ -726,6 +726,8 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
         if any(famiport_receipt.completed_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
+        if any(famiport_receipt.payment_request_received_at is not None and famiport_receipt.void_at is None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; there are pending receipt(s)' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
             if not famiport_receipt.void_at:
                 famiport_receipt.mark_canceled(now, request, reason)
