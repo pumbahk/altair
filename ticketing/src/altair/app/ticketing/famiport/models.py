@@ -1065,10 +1065,10 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptCompleted(self, request))
 
     def mark_voided(self, now, request, reason=None):
-        if self.voided_at is not None:
+        if self.void_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
-        self.voided_at = now
+        self.void_at = now
         self.void_reason = reason
         request.registry.notify(events.ReceiptVoided(self, request))
 
