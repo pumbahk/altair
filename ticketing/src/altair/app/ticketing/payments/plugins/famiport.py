@@ -110,7 +110,7 @@ def select_famiport_order_type(order_like, plugin):
             return FamiPortOrderType.Payment.value  # 前払後日前払
         else:
             return FamiPortOrderType.CashOnDelivery.value
-    raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin), order_like.order_no, None, None)
+    raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin), order_no=order_like.order_no, back_url=None)
 
 
 def includeme(config):
@@ -231,8 +231,7 @@ def get_altair_famiport_sales_segment_pair(order_like):
             ) \
         .one()
 
-
-def create_famiport_order(request, order_like, in_payment, plugin, name='famiport'):
+def build_famiport_order_dict(request, order_like, client_code, in_payment, plugin, name='famiport'):
     """FamiPortOrderを作成する
 
     クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
@@ -256,23 +255,11 @@ def create_famiport_order(request, order_like, in_payment, plugin, name='famipor
     customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
-    tenant = lookup_famiport_tenant(request, order_like)
-    if tenant is None:
-        raise FamiPortPluginFailure('not found famiport tenant', order_like.order_no, None, None)
     altair_famiport_sales_segment_pair = get_altair_famiport_sales_segment_pair(order_like)
-    # altair_famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
-    #     .filter(
-    #         sql.or_(
-    #             AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
-    #             AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
-    #             )
-    #         ) \
-    #     .one()
-    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, tenant.code, altair_famiport_sales_segment_pair.id)
+    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, client_code, altair_famiport_sales_segment_pair.id)
 
-    return famiport_api.create_famiport_order(
-        request,
-        client_code=tenant.code,
+    return dict(
+        client_code=client_code,
         type_=type_,
         order_no=order_like.order_no,
         event_code_1=famiport_sales_segment['event_code_1'],
@@ -298,6 +285,20 @@ def create_famiport_order(request, order_like, in_payment, plugin, name='famipor
         ticketing_end_at=order_like.issuing_end_at,
         )
 
+def create_famiport_order(request, order_like, in_payment, plugin, name='famiport'):
+    """FamiPortOrderを作成する
+
+    クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
+    """
+    tenant = lookup_famiport_tenant(request, order_like)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+
+    return famiport_api.create_famiport_order(
+        request,
+        **build_famiport_order_dict(request, order_like, tenant.code, in_payment, plugin, name) 
+        )
+
 
 def refund_order(request, order, refund_record, now=None):
     """払い戻し"""
@@ -306,12 +307,27 @@ def refund_order(request, order, refund_record, now=None):
 
 def cancel_order(request, order, now=None):
     """キャンセル"""
-    raise FamiPortPluginFailure('unimplemented', None, None, None)
+    tenant = lookup_famiport_tenant(request, order)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+    try:
+        famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no)
+    except FamiPortAPIError:
+        raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
 
 
 def refresh_order(request, order, now=None):
     """予約更新"""
-    raise FamiPortPluginFailure('unimplemented', None, None, None)
+    tenant = lookup_famiport_tenant(request, order)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_like.order_no, None, None)
+    try:
+        famiport_api.update_famiport_order_by_order_no(
+            request,
+            **build_famiport_order_dict(request, order_like, tenant.code, in_payment, plugin, name) 
+            )
+    except FamiPortAPIError:
+        raise FamiPortPluginFailure('failed to refresh order', order_no=order.order_no)
 
 
 def _overridable_payment(path, fallback_ua_type=None):
@@ -398,7 +414,7 @@ class FamiPortPaymentPlugin(object):
         try:
             create_famiport_order(request, cart, in_payment=self._in_payment, plugin=self)
         except FamiPortAPIError:
-            raise FamiPortPluginFailure('payment failed', cart.order_no, None, None)
+            raise FamiPortPluginFailure('payment failed', order_no=cart.order_no, back_url=None)
 
     def finished(self, requrst, order):
         """支払状態遷移済みかどうかを判定"""

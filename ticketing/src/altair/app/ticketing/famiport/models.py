@@ -24,7 +24,7 @@ from . import events
 from .exc import (
     FamiPortError,
     FamiPortNumberingError,
-    FamiPortUnsatisifiedPreconditionError,
+    FamiPortUnsatisfiedPreconditionError,
     )
 
 Base = declarative.declarative_base()
@@ -698,11 +698,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     def mark_issued(self, now, request):
         if self.invalidated_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
         if self.issued_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already issued' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already issued' % (self.id, self.order_no))
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as issued' % (self.id, self.order_no))
         self.issued_at = now
         for famiport_ticket in self.famiport_tickets:
@@ -710,9 +710,9 @@ class FamiPortOrder(Base, WithTimestamp):
 
     def mark_paid(self, now, request):
         if self.invalidated_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
         if self.paid_at is not None:
             # 再発券のケースがあるので例外にしない
             logger.warning('FamiPortOrder(id=%ld, order_no=%s) is already paid' % (self.id, self.order_no))
@@ -721,11 +721,11 @@ class FamiPortOrder(Base, WithTimestamp):
 
     def mark_canceled(self, now, request, reason=None):
         if self.invalidated_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
         if any(famiport_receipt.completed_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
             if not famiport_receipt.void_at:
                 famiport_receipt.mark_canceled(now, request, reason)
@@ -1063,14 +1063,14 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def mark_completed(self, now, request):
         if self.completed_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as completed' % (self.id, self.reserve_number))
         self.completed_at = now
         request.registry.notify(events.ReceiptCompleted(self, request))
 
     def mark_voided(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.void_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
         self.void_at = now
         self.void_reason = reason
@@ -1080,7 +1080,7 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def mark_canceled(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.canceled_at is not None:
-            raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
         self.canceled_at = now
         self.void_reason = reason

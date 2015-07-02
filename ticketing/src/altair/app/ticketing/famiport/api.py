@@ -262,7 +262,7 @@ def create_or_update_famiport_venue(
         except NoResultFound:
             pass
         except MultipleResultsFound:
-            raise FamiPortAPIError('internel error')
+            raise FamiPortAPIError('internal error')
         sys.exc_clear()
 
         if not update_existing and venue is not None:
@@ -623,7 +623,7 @@ def create_famiport_order(
             performance_code=performance_code,
             code=sales_segment_code
             )
-        internal.create_famiport_order(
+        famiport_order = internal.create_famiport_order(
             session,
             client_code=client_code,
             type_=type_,
@@ -643,6 +643,7 @@ def create_famiport_order(
             ticketing_start_at=ticketing_start_at,
             ticketing_end_at=ticketing_end_at
             )
+        return famiport_order_to_dict(famiport_order)
     except FamiPortAPIError:
         raise
     except:
@@ -701,8 +702,56 @@ def cancel_famiport_order_by_order_no(request, client_code, order_no):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        internel.cancel_famiport_order_by_order_no(session, order_no)
+        internal.cancel_famiport_order_by_order_no(request, session, client_code, order_no)
         session.commit()
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
+
+@user_api
+def update_famiport_order_by_order_no(
+        request,
+        client_code,
+        order_no=None,
+        famiport_order_identifier=None,
+        customer_name=None,
+        customer_phone_number=None,
+        customer_address_1=None,
+        customer_address_2=None,
+        total_amount=None,
+        system_fee=None,
+        ticketing_fee=None,
+        ticket_payment=None,
+        tickets=None,
+        payment_start_at=None,
+        payment_due_at=None,
+        ticketing_start_at=None,
+        ticketing_end_at=None):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        internal.update_famiport_order_by_order_no(
+            session,
+            client_code=client_code,
+            order_no=order_no,
+            famiport_order_identifier=famiport_order_identifier,
+            customer_name=customer_name,
+            customer_phone_number=customer_phone_number,
+            customer_address_1=customer_address_1,
+            customer_address_2=customer_address_2,
+            total_amount=total_amount,
+            system_fee=system_fee,
+            ticketing_fee=ticketing_fee,
+            ticket_payment=ticket_payment,
+            tickets=tickets,
+            payment_start_at=payment_start_at,
+            payment_due_at=payment_due_at,
+            ticketing_start_at=ticketing_start_at,
+            ticketing_end_at=ticketing_end_at
+            )
+        session.commit()
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+

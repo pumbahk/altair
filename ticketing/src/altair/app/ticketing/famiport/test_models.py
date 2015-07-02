@@ -198,7 +198,7 @@ class TestFamiPortReceipt(TestCase):
         self.assertTrue(request.registry.notify.called)
 
     def test_mark_completed_error(self):
-        from .exc import FamiPortUnsatisifiedPreconditionError
+        from .exc import FamiPortUnsatisfiedPreconditionError
         from pyramid.testing import DummyRequest
         from datetime import datetime
         now_ = datetime.now()
@@ -209,5 +209,5 @@ class TestFamiPortReceipt(TestCase):
             reserve_number=u'111111111',
             completed_at=now_,
             )
-        with self.assertRaises(FamiPortUnsatisifiedPreconditionError):
+        with self.assertRaises(FamiPortUnsatisfiedPreconditionError):
             receipt.mark_completed(now_, request)
