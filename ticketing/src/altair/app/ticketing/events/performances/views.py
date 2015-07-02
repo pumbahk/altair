@@ -702,10 +702,10 @@ class Performances(BaseView):
                 if params[cnt * 4 + 2][1]:
                     open = datetime.datetime.strptime(
                         params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
-                if open > start:
-                    self.request.session.flash(
-                        u'{}行目の開場時間が、公演開始時刻より後に設定されています。'.format(cnt + 1))
-                    error_exist = True
+                    if open > start:
+                        self.request.session.flash(
+                            u'{}行目の開場時間が、公演開始時刻より後に設定されています。'.format(cnt + 1))
+                        error_exist = True
             except ValueError:
                 self.request.session.flash(
                     u'{}行目の公演開始時刻が不正です。'.format(cnt + 1))

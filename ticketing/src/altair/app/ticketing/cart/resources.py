@@ -599,11 +599,13 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @reify
     def sales_segment(self):
+        if self.raw_sales_segment is None:
+            raise NoSalesSegment(self.request, '', host_base_url=self.host_base_url)
         return self.raw_sales_segment
 
     @property
     def performance(self):
-        return self.raw_sales_segment.performance
+        return self.sales_segment.performance
 
     @property
     def event(self):
@@ -612,8 +614,6 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
     @reify
     def sales_segments(self):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
-        if self.sales_segment is None:
-            raise HTTPNotFound()
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
 class CartBoundTicketingCartResource(TicketingCartResourceBase):
@@ -623,11 +623,13 @@ class CartBoundTicketingCartResource(TicketingCartResourceBase):
     @reify
     def sales_segment(self):
         cart = cart_api.get_cart(self.request, for_update=False)
-        return cart.sales_segment if cart else None
+        if cart is None:
+            raise NoSalesSegment(self.request, '', host_base_url=self.host_base_url)
+        return cart.sales_segment
 
     @reify
     def performance(self):
-        return self.sales_segment.performance if self.sales_segment is not None else None
+        return self.sales_segment.performance
 
     @reify
     def event(self):
