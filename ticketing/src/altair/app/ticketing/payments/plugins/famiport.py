@@ -449,7 +449,7 @@ def deliver_completion_viewlet(context, request):
 
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
-                 renderer=_overridable_delivery('famiport_mail_complete.html', fallback_ua_type='mail'))
+                 renderer=_overridable_delivery('famiport_delivery_mail_complete.html', fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
     """購入完了メールの配送方法部分のhtmlを出力する"""
     delivery_method = context.order.payment_delivery_pair.delivery_method
