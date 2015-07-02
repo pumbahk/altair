@@ -594,7 +594,6 @@ class FamiPortOrder(Base, WithTimestamp):
     paid_at                      = sa.Column(sa.DateTime(), nullable=True)
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
     canceled_at                  = sa.Column(sa.DateTime(), nullable=True)
-    cancel_reason                = sa.Column(sa.Integer, nullable=True)
 
     ticketing_start_at = sa.Column(sa.DateTime(), nullable=True)
     ticketing_end_at = sa.Column(sa.DateTime(), nullable=True)
@@ -731,7 +730,6 @@ class FamiPortOrder(Base, WithTimestamp):
                 famiport_receipt.mark_canceled(now, request, reason)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
-        self.cancel_reason = reason
 
     def make_reissueable(self, now, request, reason=None):
         if self.invalidated_at is not None:
@@ -808,7 +806,6 @@ class FamiPortOrder(Base, WithTimestamp):
                     )
                 )
         session.commit()
-
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
@@ -934,7 +931,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     completed_at = sa.Column(sa.DateTime(), nullable=True)  # 完了処理が行われた日時
     void_at = sa.Column(sa.DateTime(), nullable=True)
     canceled_at = sa.Column(sa.DateTime(), nullable=True)
-    cancel_reason = sa.Column(sa.Integer, nullable=True)
+    void_reason = sa.Column(sa.Integer, nullable=True)
     rescued_at = sa.Column(sa.DateTime(), nullable=True)  # 90分救済措置にて救済された時刻
     barcode_no = sa.Column(sa.Unicode(13), nullable=True, unique=True)  # 支払番号
 
@@ -944,6 +941,25 @@ class FamiPortReceipt(Base, WithTimestamp):
     shop_code = sa.Column(sa.Unicode(6), nullable=False, default=u'')
 
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
+
+    attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: FamiPortReceiptAttribute(name=k, value=v))
+
+    @property
+    def cancel_reason_code(self):
+        return self.attributes.get('cancel_reason_code')
+
+    @cancel_reason_code.setter
+    def cancel_reason_code(self, value):
+        self.attributes['cancel_reason_code'] = value
+
+    @property
+    def cancel_reason_text(self):
+        return self.attributes.get('cancel_reason_text')
+
+    @cancel_reason_text.setter
+    def cancel_reason_text(self, value):
+        self.attributes['cancel_reason_text'] = value
 
     @hybrid_property
     def is_payment_receipt(self):
@@ -1048,19 +1064,21 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.completed_at = now
         request.registry.notify(events.ReceiptCompleted(self, request))
 
-    def mark_voided(self, now, request):
+    def mark_voided(self, now, request, reason=None):
         if self.voided_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
         self.voided_at = now
+        self.void_reason = reason
         request.registry.notify(events.ReceiptVoided(self, request))
 
-    def mark_canceled(self, now, request, reason=None):
+    def mark_canceled(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
         if self.canceled_at is not None:
             raise FamiPortUnsatisifiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already canceled' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as canceled' % (self.id, self.reserve_number))
         self.canceled_at = now
-        self.cancel_reason = reason
+        self.cancel_reason_code = cancel_reason_code
+        self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptCanceled(self, request))
 
     @classmethod
@@ -1071,3 +1089,14 @@ class FamiPortReceipt(Base, WithTimestamp):
             famiport_order_id=famiport_order_id,
             **kwargs
             )
+
+
+class FamiPortReceiptAttribute(Base):
+    __tablename__ = 'FamiPortReceiptAttribute'
+    __table_args__ = (
+        sa.PrimaryKeyConstraint('famiport_receipt_id', 'name'),
+        )
+    famiport_receipt_id = sa.Column(Identifier, sa.ForeignKey('FamiPortReceipt.id'), nullable=False)
+    name = sa.Column(sa.Unicode(64), nullable=False)
+    value = sa.Column(sa.Unicode(1024), nullable=True)
+    

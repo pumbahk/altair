@@ -722,6 +722,11 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
             except ValueError:
                 logger.exception(u"不正な利用日時です (%s)" % famiport_payment_ticketing_cancel_request.ticketingDate)
                 raise
+            try:
+                cancelCode = int(famiport_payment_ticketing_cancel_request.cancelCode)
+            except (ValueError, TypeError):
+                logger.exception(u"不正なキャンセルコードです (%s)" % famiport_payment_ticketing_cancel_request.cancelCode)
+                raise
 
             famiport_receipt = FamiPortReceipt.get_by_barcode_no(
                 famiport_payment_ticketing_cancel_request.barCodeNo,
@@ -761,7 +766,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 famiport_response.replyCode = ReplyCodeEnum.Normal.value
                 famiport_response.orderId = famiport_receipt.famiport_order_identifier
                 famiport_response.barCodeNo = famiport_receipt.barcode_no
-                famiport_receipt.mark_voided(now, request)  # 30分破棄処理
+                famiport_receipt.mark_voided(now, request, cancelCode)  # 30分破棄処理
                 session.commit()
         except Exception as err:  # その他の異常
             logger.exception(u'famiport order cancel error')
