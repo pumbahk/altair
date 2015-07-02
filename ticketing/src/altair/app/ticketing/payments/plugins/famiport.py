@@ -110,7 +110,7 @@ def select_famiport_order_type(order_like, plugin):
             return FamiPortOrderType.Payment.value  # 前払後日前払
         else:
             return FamiPortOrderType.CashOnDelivery.value
-    raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin))
+    raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin), order_like.order_no, None, None)
 
 
 def includeme(config):
@@ -258,7 +258,7 @@ def create_famiport_order(request, order_like, in_payment, plugin, name='famipor
 
     tenant = lookup_famiport_tenant(request, order_like)
     if tenant is None:
-        raise FamiPortPluginFailure('not found famiport tenant: order_no={}'.format(order_like.order_no))
+        raise FamiPortPluginFailure('not found famiport tenant', order_like.order_no, None, None)
     altair_famiport_sales_segment_pair = get_altair_famiport_sales_segment_pair(order_like)
     # altair_famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
     #     .filter(
@@ -352,11 +352,13 @@ def reserved_number_payment_confirm_viewlet(context, request):
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID,
-                 renderer=_overridable_payment("famiport_mail_complete.html", fallback_ua_type='mail'))
-def complete_mail(context, request):
+                 renderer=_overridable_payment("famiport_payment_mail_complete.html", fallback_ua_type='mail'))
+def payment_mail_viewlet(context, request):
     """購入完了メールの決済方法部分のhtmlを出力する"""
-    notice = context.mail_data("P", "notice")
-    return dict(notice=notice, h=cart_helper)
+    payment_method = context.order.payment_delivery_pair.payment_method
+    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
+                famiport_order=famiport_order, h=cart_helper)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
@@ -396,7 +398,7 @@ class FamiPortPaymentPlugin(object):
         try:
             create_famiport_order(request, cart, in_payment=self._in_payment, plugin=self)
         except FamiPortAPIError:
-            raise FamiPortPluginFailure()
+            raise FamiPortPluginFailure('payment failed', cart.order_no, None, None)
 
     def finished(self, requrst, order):
         """支払状態遷移済みかどうかを判定"""
@@ -434,12 +436,29 @@ def deliver_completion_viewlet(context, request):
                 famiport_order=famiport_order, h=cart_helper)
 
 
+# @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID,
+#                  renderer=_overridable_payment("famiport_delivery_mail_complete.html", fallback_ua_type='mail'))
+# def delivery_mail_viewlet(context, request):
+#     """購入完了メールの決済方法部分のhtmlを出力する"""
+#     delivery_method = context.order.payment_delivery_pair.delivery_method
+#     famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+#     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
+#                 famiport_order=famiport_order, h=cart_helper)
+
+
+
+
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_mail_complete.html', fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
     """購入完了メールの配送方法部分のhtmlを出力する"""
-    notice = context.mail_data("P", "notice")
-    return dict(notice=notice, h=cart_helper)
+    delivery_method = context.order.payment_delivery_pair.delivery_method
+    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
+                famiport_order=famiport_order, h=cart_helper)
+
+    # notice = context.mail_data("P", "notice")
+    # return dict(notice=notice, h=cart_helper)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
