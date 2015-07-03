@@ -8,6 +8,7 @@ using checkin.core.support;
 using checkin.core.models;
 using checkin.core;
 using checkin.core.web;
+using checkin.core.auth;
 
 namespace checkin.config
 {
@@ -29,24 +30,17 @@ namespace checkin.config
 
     public class HttpCommunicationConfiguration
     {
-        public static Uri DefaultBasicAuthURI = new Uri("https://backend.stg.altr.jp/checkinstation/login");
         public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
         public X509Certificate2 Certificate { get; set; }
         public Func<CredentialCache> CredentialCacheFactory { get; set; }
 
+        public IAuthentication Authentication { get; set; }
+
         public HttpCommunicationConfiguration(IConfigurator config, ReleaseStageType s)
         {
-            switch (s)
-            {
-                case ReleaseStageType.staging:
-                    this.CredentialCacheFactory = this.CreateCacheForStaging;
-                    break;
-                default:
-                    this.CredentialCacheFactory = this.CreateCacheDefault;
-                    break;
-            }
-
+            this.CredentialCacheFactory = this.CreateCredentialCache;
+            this.Authentication = config.Resource.Authentication;
             if (s == ReleaseStageType.production)
             {
                 string certfile = config.Resource.SettingValue("https.client.certificate.p12file");
@@ -59,16 +53,36 @@ namespace checkin.config
         }
 
 
-        public CredentialCache CreateCacheForStaging()
+        public CredentialCache CreateCredentialCache()
         {
             var cache = new CredentialCache();
-            cache.Add(DefaultBasicAuthURI, "Basic", new NetworkCredential("kenta", "matsui"));
-            return cache;
-        }
+            Uri authBaseURL = null;
+            NetworkCredential credentialProvidedInLoginURL = null;
+            if (Authentication != null)
+            {
+                string loginURLString = Authentication.LoginURL;
+                if (loginURLString != null)
+                {
+                    try
+                    {
+                        Uri loginURL = new Uri(loginURLString);
+                        authBaseURL = new Uri(loginURL.GetLeftPart(UriPartial.Authority));
+                        string userInfo = loginURL.UserInfo;
+                        string[] pair = userInfo.Split(new char[] { ':' }, 2);
+                        credentialProvidedInLoginURL = new NetworkCredential(pair[0], pair.Length > 1 ? pair[1] : null);
+                    }
+                    catch (UriFormatException)
+                    {
+                        // do nothing
+                    }
+                }
+            }
 
-        public CredentialCache CreateCacheDefault()
-        {
-            return new CredentialCache();
+            if (credentialProvidedInLoginURL != null)
+            {
+                cache.Add(authBaseURL, "Basic", credentialProvidedInLoginURL);
+            }
+            return cache;
         }
 
         public HttpClientHandler CreateHandler(CookieContainer cookieContainer)
