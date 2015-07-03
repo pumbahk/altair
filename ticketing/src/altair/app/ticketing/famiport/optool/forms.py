@@ -40,6 +40,10 @@ class SearchReceiptForm(OurForm):
     )
     famiport_order_identifier = OurTextField(
         label=u'管理番号：',
+        validators=[
+            Optional(),
+            Length(9, message=u'管理番号は9桁で入力してください'),
+        ]
     )
     barcode_number = OurTextField(
         label=u'バーコード番号：',

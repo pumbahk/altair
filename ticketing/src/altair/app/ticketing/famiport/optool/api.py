@@ -98,15 +98,15 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
-                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
-                        .filter(FamiPortReceipt.type == 2)  # Ticketing
+                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id)
 
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
     if formdata.get('exchange_number'):
         query = query.filter(FamiPortReceipt.reserve_number == formdata.get('exchange_number'))
     if formdata.get('famiport_order_identifier'):
-        query = query.filter(FamiPortOrder.famiport_order_identifier == formdata.get('famiport_order_identifier').zfill(12))
+        pattern = u'%{}'.format(formdata.get('famiport_order_identifier'))
+        query = query.filter(FamiPortOrder.famiport_order_identifier.like(pattern))
     if formdata.get('barcode_number'):
         pattern = u'%{}'.format(formdata.get('barcode_number'))
         query = query.filter(FamiPortTicket.barcode_number.like(pattern))

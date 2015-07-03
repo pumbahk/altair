@@ -1,7 +1,7 @@
 <%inherit file="_base.mako"/>
 
 <div class="jumbotron">
-  <form class="form" action="${request.route_path('search.receipt')}" method='POST'>
+  <form class="form" action="${request.route_url('search.receipt')}" method='POST'>
     <div class="row">
       <div class="col-md-10">
         <h3 class="form-heading">申込検索</h3>
@@ -119,8 +119,8 @@
     $(document).ready(function(){
       $("*[name=radio_gr]:radio").change(function(){
         var receipt_id = $(this).val();
-        $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
-        $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", order_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
+        $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
+        $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
         });
       });
   </script>

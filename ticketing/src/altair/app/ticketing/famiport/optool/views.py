@@ -114,6 +114,11 @@ class FamiPortSearchView(object):
                                       items_per_page=20,
                                       url=page_url)
             else:
+                for error in form.errors.values():
+                    logger.info('validation failed:{}'.format(error))
+
+                errors = u'・'.join(sum(form.errors.values(), []))
+                self.request.session.flash(errors)
                 return dict(form=form,count=None,entries=[])
         else:
             count = None
