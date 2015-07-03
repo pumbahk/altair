@@ -53,8 +53,14 @@ class RebookReceiptResource(BaseResource):
     def __init__(self, request):
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
+        self.fami_session = fami_session
         receipt_id = self.request.matchdict.get('receipt_id')
         if receipt_id:
             self.receipt = fami_session.query(FamiPortReceipt)\
                                        .filter(FamiPortReceipt.id == receipt_id)\
                                        .one()
+
+    def update_cancel_reason(self, data):
+        self.receipt.cancel_reason_code = data['cancel_reason_code']
+        self.receipt.cancel_reason_text = data['cancel_reason_text']
+        self.fami_session.commit()

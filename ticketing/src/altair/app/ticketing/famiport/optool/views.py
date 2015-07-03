@@ -209,7 +209,11 @@ class FamiPortRebookOrderView(object):
         cancel_text = self.request.POST.get('cancel_reason_text')
 
         if receipt.is_rebookable(datetime.now()):
-            make_suborder_by_order_no(request=self.request, session=session, order_no=order.order_no, cancel_reason_code=cancel_code, cancel_reason_text=cancel_text)
+            make_suborder_by_order_no(request=self.request,
+                                      session=session,
+                                      order_no=order.order_no,
+                                      cancel_reason_code=cancel_code,
+                                      cancel_reason_text=cancel_text)
             if order.type == FamiPortOrderType.PaymentOnly.value:
                 new_receipt = order.payment_famiport_receipt
             elif order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value, FamiPortOrderType.CashOnDelivery.value):
@@ -223,6 +227,12 @@ class FamiPortRebookOrderView(object):
             raise FamiPortAPIError(u'error occurred!')
 
         return dict(old_identifier=old_fami_identifier, new_identifier=new_fami_identifier)
+
+    @view_config(route_name='rebook_order', request_method='POST', match_param='action=fix-reason', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    def post_fix_reason(self):
+        self.context.update_cancel_reason(self.request.POST)
+        self.request.session.flash(u'理由コードと理由テキストを更新しました')
+        return HTTPFound(self.request.route_url('rebook_order', action='show', receipt_id=self.context.receipt.id))
 
     @view_config(route_name='rebook_order', request_method='POST', match_param='action=reprint', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
     def reprint_ticket(self):

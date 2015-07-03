@@ -765,12 +765,9 @@ class FamiPortOrder(Base, WithTimestamp):
         if self.canceled_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
         for famiport_receipt in self.famiport_receipts:
-            # todo:refactor(rebookの確定待ち用)
-            if famiport_receipt.payment_request_received_at is not None and famiport_receipt.completed_at is None:
-                famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
             if famiport_receipt.completed_at is None:
                 if famiport_receipt.void_at is None:
-                    famiport_receipt.void_at = now
+                    famiport_receipt.mark_voided(now, request, reason, cancel_reason_code, cancel_reason_text)
             else:
                 famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 

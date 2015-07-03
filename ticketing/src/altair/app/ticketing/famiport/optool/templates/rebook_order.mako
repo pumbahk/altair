@@ -1,6 +1,6 @@
 <%inherit file="_base.mako"/>
 <div class="jumbotron">
-  <form id="rebookform" class="form re_order_form" action="${request.route_url('rebook_order', action='rebook', receipt_id=receipt.id)}" method="post">
+  <form id="rebookform" class="form re_order_form" action="" method="post">
     <div class="row" style="margin-bottom:10px;">
       <h3 class="form-heading">発券方法</h3>
       <div class="form-group">
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="row pull-right">
-      <button type="button" class="btn btn-default">理由修正</button>
+      <button id="fix-reason" type="button" class="btn btn-default">理由修正</button>
       % if receipt.is_rebookable(now):
         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">実行</button>
       % else:
@@ -65,8 +65,9 @@ $(document).ready(function() {
         console.log('the button was pushed!');
         var $form = $("#rebookform");
         var $button = $("#modal_ok");
+        var $url = '${request.route_url('rebook_order', action='rebook', receipt_id=receipt.id)}';
         $.ajax({
-            url: $form.attr('action'),
+            url: $url,
             type: $form.attr('method'),
             data: $form.serialize(),
             timeout: 10000,
@@ -92,8 +93,11 @@ $(document).ready(function() {
                 console.log(error);
             }
         });
-  });
-  $("*[name=optradio]:radio").change(function(){
+    });
+    $("#fix-reason").on('click', function() {
+        $("#rebookform").attr('action', '${request.route_url('rebook_order', action='fix-reason', receipt_id=receipt.id)}').submit();
+    });
+    $("*[name=optradio]:radio").change(function(){
         var action = $(this).val();
         $("#rebookform").attr(
                     "href",
