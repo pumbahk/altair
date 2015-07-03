@@ -7,6 +7,7 @@ from altair.formhelpers.fields import (
     OurRadioField,
     OurSelectField,
     OurTextAreaField,
+    OurBooleanField
 )
 from altair.formhelpers.widgets import (
     OurPasswordInput,
@@ -116,5 +117,79 @@ class RebookOrderForm(OurForm):
         label=u'旧番号：',
         validators=[
             Required(),
+        ]
+    )
+
+class RefundTicketSearchForm(OurForm):
+
+    before_refund = OurBooleanField(
+        label=u'払戻期間前',
+        validators=[
+            Optional()
+        ],
+    )
+
+    during_refund = OurBooleanField(
+        label=u'払戻期間中',
+        validators=[
+            Optional()
+        ],
+    )
+
+    after_refund = OurBooleanField(
+        label=u'払戻期間後',
+        validators=[
+            Optional()
+        ],
+    )
+
+    management_number = OurTextField(
+        label=u'管理番号:',
+        validators=[
+            Optional(),
+            Length(min=9, max=9, message=u'半角数字9文字で入力してください')
+        ],
+
+    )
+    barcode_number = OurTextField(
+        label=u'バーコード:',
+        validators=[
+            Optional(),
+            Length(min=13, max=13, message=u'半角数字13文字で入力してください')
+        ]
+    )
+    refunded_shop_code = OurTextField(
+        label=u'払戻店番:',
+        validators=[
+            Optional(),
+            Length(min=5, max=5, message=u'半角数字5文字で入力してください')
+        ]
+    )
+    event_code = OurTextField(
+        label=u'興行コード:',
+        validators=[
+            Optional(),
+            Length(min=4, max=6, message=u'半角数字6文字で入力してください')
+        ]
+    )
+    event_subcode = OurTextField(
+        label=u'興行サブコード:',
+        validators=[
+            Optional(),
+            Length(min=4, max=4, message=u'半角数字4文字で入力してください')
+        ]
+    )
+    performance_start_date = OurTextField(
+        id="datepicker1",
+        label=u'公演日:',
+        validators=[
+            Optional()
+        ],
+    )
+    performance_end_date = OurTextField(
+        id="datepicker2",
+        label=u'〜',
+        validators=[
+            Optional()
         ],
     )

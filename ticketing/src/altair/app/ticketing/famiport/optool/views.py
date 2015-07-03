@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 import logging
 import itertools
 from datetime import datetime
@@ -11,11 +12,13 @@ from altair.app.ticketing.famiport.models import (
     FamiPortEvent,
     FamiPortOrder,
     FamiPortOrderType,
+    FamiPortRefundEntry
 )
 from .api import (
     lookup_user_by_credentials,
     lookup_performance_by_searchform_data,
     lookup_receipt_by_searchform_data,
+    search_refund_ticket_by
 )
 from ..internal_api import make_suborder_by_order_no, mark_order_reissueable_by_order_no
 from .forms import (
@@ -28,7 +31,8 @@ from webhelpers import paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from .helpers import ViewHelpers
 from ..exc import FamiPortAPIError
-
+from .forms import LoginForm, RefundTicketSearchForm
+from .helpers import get_paginator, RefundTicketSearchHelper
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +99,7 @@ class FamiPortSearchView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self.session = get_db_session(self.request, 'famiport')
 
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
     @view_config(route_name='search.receipt', renderer='altair.app.ticketing.famiport.optool:templates/receipt_search.mako', permission='operator')
@@ -129,7 +134,8 @@ class FamiPortSearchView(object):
                     entries=pages,
                     vh=ViewHelpers(),)
 
-    @view_config(route_name='search.performance', renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako', permission='operator')
+    @view_config(route_name='search.performance', request_method='GET', permission='operator',
+                 renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako')
     def search_performance(self):
         form = SearchPerformanceForm()
 
@@ -157,15 +163,35 @@ class FamiPortSearchView(object):
                     count=count,
                     entries=pages)
 
-    @view_config(route_name='search.refund_performance', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako', permission='operator')
+    @view_config(route_name='search.refund_performance', request_method='GET', permission='operator',
+                 renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako')
     def search_refund_performance(self):
         # TODO Search refund performance
         return dict()
 
-    @view_config(route_name='search.refund_ticket', renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako', permission='operator')
-    def search_refund_performance(self):
-        # TODO Search refund ticket
-        return dict()
+    @view_config(route_name='search.refund_ticket', request_method='GET', permission='operator',
+                 renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako')
+    def search_refund_ticket(self):
+        form = RefundTicketSearchForm(self.request.params)
+        if not form.validate():
+            self.request.session.flash(u'検索条件の入力内容を確認してください。')
+            return dict(form=form)
+        # before_refund = self.request.GET.get('before_refund')
+        # during_refund = self.request.GET.get('during_refund')
+        # after_refund = self.request.GET.get('after_refund')
+        # management_number = self.request.GET.get('management_number')
+        # barcode_number = self.request.GET.get('barcode_number')
+        # refunded_shop_code = self.request.GET.get('refunded_shop_code')
+        # event_code = self.request.GET.get('event_code')
+        # event_subcode = self.request.GET.get('event_subcode')
+        # logger.info("repr request.GET: %s" % repr(self.request.GET))
+        # logger.info("barcode_number: %s" % barcode_number)
+        page = int(self.request.GET.get('page', 1))
+        paginator = get_paginator(self.request, search_refund_ticket_by(self.request, self.request.GET), page)
+        FamiPortRefundEntry.set_session(self.request)
+        rts_helper = RefundTicketSearchHelper()
+        columns = rts_helper.get_columns()
+        return dict(form=form, paginator=paginator, rts_helper=rts_helper, columns=columns)
 
 # TODO Make sure the permission of each operation
 class FamiPortDetailView(object):

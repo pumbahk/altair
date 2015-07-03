@@ -1,16 +1,24 @@
 from os import urandom
 import hashlib
 import six
+import logging
+from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import and_, not_
 from altair.sqlahelper import get_db_session
-from .models import FamiPortOperator
 from ..models import (
     FamiPortPerformance,
     FamiPortEvent,
+    FamiPortSalesSegment,
     FamiPortReceipt,
     FamiPortOrder,
     FamiPortTicket,
+    FamiPortRefund,
+    FamiPortRefundEntry
 )
+from .models import FamiPortOperator
+
+logger = logging.getLogger(__name__)
 
 def create_user(request, user_name, password, role):
     salt = u''.join('%02x' % six.byte2int(c) for c in urandom(16))
@@ -117,3 +125,58 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     receipts = query.all()
     return receipts
+
+def search_refund_ticket_by(request, params):
+    session = get_db_session(request, 'famiport')
+    query = session.query(FamiPortRefundEntry).join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
+                                              .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
+                                              .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
+                                              .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
+                                              .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
+                                              .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)
+
+    before_refund = params.get('before_refund', None)
+    during_refund = params.get('during_refund', None)
+    after_refund = params.get('after_refund', None)
+    management_number = params.get('management_number', None)
+    barcode_number = params.get('barcode_number', None)
+    refunded_shop_code = params.get('refunded_shop_code', None)
+    event_code = params.get('event_code', None)
+    event_subcode = params.get('event_subcode', None)
+    str_performance_start_date = params.get('performance_start_date', '')
+    performance_start_date = datetime.strptime(str_performance_start_date, "%Y-%m-%d") if str_performance_start_date else str_performance_start_date
+    str_performance_end_date = params.get('performance_end_date', '')
+    performance_end_date = datetime.strptime(str_performance_end_date, "%Y-%m-%d") if str_performance_end_date else str_performance_end_date
+
+    if before_refund and during_refund and after_refund:
+        pass
+    elif before_refund and during_refund: # <=> Not after_refund
+        query = query.filter(not_(FamiPortRefund.end_at < datetime.now()))
+    elif during_refund and after_refund: # <=> Not before_refund
+        query = query.filter(not_(FamiPortRefund.start_at > datetime.now()))
+    elif before_refund and after_refund: # <=> Not during_refund
+        query = query.filter(not_(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at)))
+    elif before_refund:
+        query = query.filter(FamiPortRefund.start_at > datetime.now())
+    elif during_refund:
+        query = query.filter(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at))
+    elif after_refund:
+        query = query.filter(FamiPortRefund.end_at < datetime.now())
+
+    if barcode_number:
+        query = query.filter(FamiPortTicket.barcode_number == barcode_number)
+    if management_number:
+        query = query.filter(FamiPortOrder.famiport_order_identifier.endswith(management_number))
+    if refunded_shop_code:
+        query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code)
+    if event_code:
+        query = query.filter(FamiPortEvent.code_1 == event_code)
+    if event_subcode:
+        query = query.filter(FamiPortEvent.code_2 == event_subcode)
+    if performance_start_date:
+        query = query.filter(performance_start_date <= FamiPortPerformance.start_at)
+    if performance_end_date:
+        query = query.filter(FamiPortPerformance.start_at <= performance_end_date)
+    query = query.order_by(FamiPortRefundEntry.refunded_at)
+    logger.info('query@search_refund_ticket_by: %s' % query)
+    return query.all()

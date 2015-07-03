@@ -19,7 +19,6 @@ class BaseResource(object):
 class TopResource(BaseResource):
     pass
 
-
 class ExampleResource(BaseResource):
     pass
 
@@ -64,3 +63,9 @@ class RebookReceiptResource(BaseResource):
         self.receipt.cancel_reason_code = data['cancel_reason_code']
         self.receipt.cancel_reason_text = data['cancel_reason_text']
         self.fami_session.commit()
+
+class DetailResource(BaseResource):
+    pass
+
+class RebookResource(BaseResource):
+    pass

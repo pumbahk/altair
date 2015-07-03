@@ -26,6 +26,7 @@ from .exc import (
     FamiPortNumberingError,
     FamiPortUnsatisfiedPreconditionError,
     )
+from altair.sqlahelper import get_db_session
 
 Base = declarative.declarative_base()
 
@@ -343,6 +344,8 @@ class FamiPortRefund(Base, WithTimestamp):
 class FamiPortRefundEntry(Base, WithTimestamp):
     __tablename__ = 'FamiPortRefundEntry'
 
+    session = None
+
     id                   = sa.Column(Identifier, primary_key=True, autoincrement=True)
     famiport_refund_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortRefund.id'), nullable=False)
     serial               = sa.Column(sa.Integer, nullable=False, default=0)
@@ -358,6 +361,17 @@ class FamiPortRefundEntry(Base, WithTimestamp):
 
     famiport_ticket = orm.relationship('FamiPortTicket')
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
+
+    @classmethod
+    def set_session(self, request):
+        self.session = get_db_session(request, 'famiport')
+
+    @property
+    def famiport_shop(self, request=None):
+        if self.session is None and request is not None:
+            logger.info("session is None @ famiport_shop")
+            self.session = self.set_session(request)
+        return self.session.query(FamiPortShop).outerjoin(FamiPortRefundEntry, self.shop_code==FamiPortShop.code).first()
 
 
 class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
@@ -870,7 +884,6 @@ class FamiPortInformationMessage(Base, WithTimestamp):
         else:
             return default_message
 
-
 class FamiPortShop(Base, WithTimestamp):
     __tablename__ = 'FamiPortShop'
 
@@ -917,6 +930,11 @@ class FamiPortShop(Base, WithTimestamp):
     business_status = sa.Column(sa.Integer, nullable=False, default=0)
     paused = sa.Column(sa.Boolean(), nullable=False, default=False)
     deleted = sa.Column(sa.Boolean(), nullable=False, default=False)
+
+    # @classmethod
+    # def get_by_code(cls, request, code):
+    #     session = get_db_session(request, 'famiport')
+    #     return session.query(FamiPortShop).filter_by(code = code).first()
 
 
 class FamiPortReceipt(Base, WithTimestamp):
