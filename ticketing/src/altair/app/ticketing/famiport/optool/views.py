@@ -17,7 +17,7 @@ from .api import (
     lookup_performance_by_searchform_data,
     lookup_receipt_by_searchform_data,
 )
-from ..internal_api import make_suborder_by_order_no
+from ..internal_api import make_suborder_by_order_no, mark_order_reissueable_by_order_no
 from .forms import (
     LoginForm,
     SearchPerformanceForm,
@@ -224,7 +224,8 @@ class FamiPortRebookOrderView(object):
 
             new_fami_identifier = new_receipt.famiport_order_identifier
         else:
-            raise FamiPortAPIError(u'error occurred!')
+            raise FamiPortAPIError(u'this receipt is not rebookable!')
+        session.commit()
 
         return dict(old_identifier=old_fami_identifier, new_identifier=new_fami_identifier)
 
@@ -234,7 +235,25 @@ class FamiPortRebookOrderView(object):
         self.request.session.flash(u'理由コードと理由テキストを更新しました')
         return HTTPFound(self.request.route_url('rebook_order', action='show', receipt_id=self.context.receipt.id))
 
-    @view_config(route_name='rebook_order', request_method='POST', match_param='action=reprint', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
+    @view_config(xhr=True, route_name='rebook_order', request_method='POST', match_param='action=reprint', renderer='json', permission='operator')
     def reprint_ticket(self):
-        # TODO reprint order
-        return dict()
+        session = get_db_session(self.request, name="famiport")
+        receipt = self.context.receipt
+        order = receipt.famiport_order
+        old_fami_identifier = receipt.famiport_order_identifier
+        cancel_code = self.request.POST.get('cancel_reason_code')
+        cancel_text = self.request.POST.get('cancel_reason_text')
+
+        if receipt.is_reprintable(datetime.now()):
+            mark_order_reissueable_by_order_no(request=self.request,
+                                      session=session,
+                                      order_no=order.order_no,
+                                      cancel_reason_code=cancel_code,
+                                      cancel_reason_text=cancel_text)
+            new_receipt = order.ticketing_famiport_receipt
+            new_fami_identifier = new_receipt.famiport_order_identifier
+        else:
+            raise FamiPortAPIError(u'this receipt is not reprintable!')
+        session.commit()
+
+        return dict(old_identifier=old_fami_identifier, new_identifier=new_fami_identifier)

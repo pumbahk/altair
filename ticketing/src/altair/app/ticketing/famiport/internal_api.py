@@ -239,16 +239,20 @@ def cancel_famiport_order_by_order_no(
 
 
 def mark_order_reissueable_by_order_no(
-        session, 
-        client_code,
+        request,
+        session,
         order_no,
+        reason=None,
+        cancel_reason_code=None,
+        cancel_reason_text=None,
+        client_code=None,
         now=None
         ):
     """FamiPortOrderに再発券許可"""
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no)
-    famiport_order.make_reissueable(now)
+    famiport_order.make_reissueable(now, request, reason, cancel_reason_code, cancel_reason_text)
 
 
 def make_suborder_by_order_no(

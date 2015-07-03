@@ -3,14 +3,18 @@
   <form id="rebookform" class="form re_order_form" action="${request.route_url('rebook_order', action='rebook', receipt_id=receipt.id)}" method="post">
     <div class="row" style="margin-bottom:10px;">
       <h3 class="form-heading">発券方法</h3>
-      %if receipt.canceled_at is None or receipt.void_at is None:
+      %if receipt.canceled_at is None and receipt.void_at is None:
       <div class="form-group">
         <label class="radio-inline">
           <input type="radio" name="optradio" value="rebook" checked="checked"><span class="text-lg">同席番再予約</span>
         </label>
+        % if receipt.famiport_order.type == 4:
+          <span class="small" style="color:red;">当予約は前払いのみのため、再発券出来ません</span>
+        % else:
         <label class="radio-inline">
           <input type="radio" name="optradio" value="reprint"><span class="text-lg">再発券</span>
         </label>
+        % endif
       </div>
       %endif
       <div class="form-group">
@@ -31,10 +35,10 @@
       </div>
     </div>
     <div class="row pull-right">
-      <button id="fix-reason" type="button" class="btn btn-default">理由修正</button>
-      %if receipt.canceled_at is None or receipt.void_at is None:
+      %if receipt.canceled_at is None and receipt.void_at is None:
         <button id="exe-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">実行</button>
       %else:
+        <button id="fix-reason" type="button" class="btn btn-default">理由修正</button>
         <span class="small">当予約はキャンセル済みのため再予約・再発券できません</span>
       %endif
     </div>
@@ -91,7 +95,7 @@ $(document).ready(function() {
             error: function(xhr, textStatus, error) {
                 $('#myModalLabel').html('実行結果');
                 $('#result-msg').html('エラー');
-                $('.modal-body').html('指定された申込は、同席番再予約ができません');
+                $('.modal-body').html('処理に失敗しました');
                 console.log(error);
             }
         });
@@ -102,7 +106,7 @@ $(document).ready(function() {
     $("*[name=optradio]:radio").change(function(){
         var action = $(this).val();
         $("#rebookform").attr(
-                    "href",
+                    "action",
                     '${request.route_url('rebook_order', action='{action}', receipt_id='{receipt_id}')}'
                     .replace(encodeURIComponent('{action}'), action)
                     .replace(encodeURIComponent('{receipt_id}'), ${receipt.id})

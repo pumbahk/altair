@@ -734,7 +734,7 @@ class FamiPortOrder(Base, WithTimestamp):
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
 
-    def make_reissueable(self, now, request, reason=None):
+    def make_reissueable(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -748,11 +748,12 @@ class FamiPortOrder(Base, WithTimestamp):
                     if famiport_receipt.void_at is None:
                         assert ticketing_famiport_receipt is None
                         ticketing_famiport_receipt = famiport_receipt
+                        famiport_receipt.mark_voided(now, request, reason, cancel_reason_code, cancel_reason_text)
                 else:
                     if famiport_receipt.canceled_at is None:
                         assert ticketing_famiport_receipt is None
                         ticketing_famiport_receipt = famiport_receipt
-        ticketing_famiport_receipt.cancel_reason = reason
+                        famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
         session = object_session(self)
         new_receipt = FamiPortReceipt.create(
             session, self.famiport_client,
@@ -783,13 +784,11 @@ class FamiPortOrder(Base, WithTimestamp):
             self.famiport_receipts.extend([
                 FamiPortReceipt.create(
                     session, self.famiport_client,
-                    type=FamiPortReceiptType.Payment.value,
-                    famiport_order_id=self.id
+                    type=FamiPortReceiptType.Payment.value
                     ),
                 FamiPortReceipt.create(
                     session, self.famiport_client,
-                    type=FamiPortReceiptType.Ticketing.value,
-                    famiport_order_id=self.id
+                    type=FamiPortReceiptType.Ticketing.value
                     )
                 ])
         else:
@@ -808,7 +807,6 @@ class FamiPortOrder(Base, WithTimestamp):
                     famiport_order_id=self.id
                     )
                 )
-        session.commit()
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
@@ -975,16 +973,40 @@ class FamiPortReceipt(Base, WithTimestamp):
                (self.type == FamiPortReceiptType.CashOnDelivery.value)
 
     def is_rebookable(self, now):
+        # キャンセル済みの場合
         if self.void_at is not None or self.canceled_at is not None:
+            logger.info('canceled receipt is not rebookable')
             return False
         # 申込ステータスが確定待ちじゃないかつ期限超過ならfalse
         # todo:playguid設定締日の確認
         if self.payment_request_received_at is None:
+            logger.info('non paid(issued) receipt is not rebookable')
             return False
 
         return True
 
     def is_reprintable(self, now):
+        # キャンセル済みの場合
+        if self.void_at is not None or self.canceled_at is not None:
+            logger.info('canceled receipt is not reprintable')
+            return False
+        # 払込レシートの場合
+        if self.type == FamiPortReceiptType.Payment.value:
+            logger.info('payment receipt is not reprintable')
+            return False
+        # 期限超過の場合
+        if self.type == FamiPortReceiptType.CashOnDelivery:
+            if self.famiport_order.payment_due_at < now:
+                logger.info('too late to reprint')
+                return False
+        else:
+            if self.famiport_order.ticketing_end_at < now:
+                logger.info('too late to reprint')
+                return False
+        # 未発券の場合
+        if self.payment_request_received_at is None:
+            logger.info('non issued receipt is not reprintable')
+            return False
 
         return True
 
@@ -1092,11 +1114,10 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptCanceled(self, request))
 
     @classmethod
-    def create(cls, session, famiport_client,famiport_order_id, **kwargs):
+    def create(cls, session, famiport_client, **kwargs):
         return FamiPortReceipt(
             reserve_number=FamiPortReserveNumberSequence.get_next_value(famiport_client, session),
             famiport_order_identifier=FamiPortOrderIdentifierSequence.get_next_value(famiport_client.prefix, session),
-            famiport_order_id=famiport_order_id,
             **kwargs
             )
 
