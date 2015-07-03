@@ -984,6 +984,10 @@ class FamiPortReceipt(Base, WithTimestamp):
 
         return True
 
+    def is_reprintable(self, now):
+
+        return True
+
     def get_shop_name(self, request):
         if self.payment_request_received_at:
             session = get_db_session(request, name="famiport")
