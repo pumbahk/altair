@@ -11,7 +11,19 @@ class FamiPortNumberingError(FamiPortError):
     pass
 
 
-class FamiPortUnsatisifiedPreconditionError(FamiPortError):
+class FamiPortUnsatisfiedPreconditionError(FamiPortError):
+    pass
+
+
+class FamiPortAlreadyPaidError(FamiPortError):
+    pass
+
+
+class FamiPortAlreadyIssuedError(FamiPortError):
+    pass
+
+
+class FamiPortAlreadyCanceledError(FamiPortError):
     pass
 
 

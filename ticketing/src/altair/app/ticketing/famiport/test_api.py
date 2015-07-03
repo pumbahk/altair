@@ -131,7 +131,7 @@ class GetFamiPortOrderTest(unittest.TestCase):
             order_no=u'XX000012345',
             famiport_order_identifier=u'012301230123',
             type=FamiPortOrderType.CashOnDelivery.value,
-            total_amount=Decimal(10500),
+            total_amount=Decimal(10400),
             ticket_payment=Decimal(10000),
             system_fee=Decimal(200),
             ticketing_fee=Decimal(200),
