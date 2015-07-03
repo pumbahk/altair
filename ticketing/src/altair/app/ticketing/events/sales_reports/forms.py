@@ -326,13 +326,16 @@ class ReportSettingForm(OurForm):
 
     def validate_recipients(form, field):
         if field.data:
+            mails = [mail for mail in field.data.split(" ") if mail]
+            recipients = [rr.id for rr in ReportRecipient.filter(ReportRecipient.email.in_(mails)).all()]
+
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.format_report_time(),
             ).join(
                 ReportSetting.recipients
             ).filter(
-                ReportRecipient.id.in_(field.data)
+                ReportRecipient.id.in_(recipients)
             )
             if form.id.data:
                 query = query.filter(ReportSetting.id!=form.id.data)
