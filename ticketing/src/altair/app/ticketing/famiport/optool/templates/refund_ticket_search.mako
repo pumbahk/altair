@@ -74,7 +74,7 @@
       <table class="table table-hover">
         <thead>
           <tr>
-            <th nowrap="nowrap">選択</th>
+            <!-- <th nowrap="nowrap">選択</th> -->
             % for column in columns:
                 <th nowrap="nowrap">${column[1]}</th>
             % endfor
@@ -85,7 +85,7 @@
         % for famiport_refund_entry in paginator.items:
         <% famiport_shop = famiport_refund_entry.famiport_shop %>
         <tr>
-            <td><input type="radio" value="1" name="radio_gr" form="order"></td>
+            <!-- <td><input type="radio" value="1" name="radio_gr" form="order"></td> -->
             <td>${rts_helper.get_refund_status_text(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_shop.district_code if famiport_shop else ''}</td>
             <td>${famiport_shop.branch_code if famiport_shop else ''}</td>
@@ -110,6 +110,7 @@
   % endif
 </div>
 <div class="buttonBoxBottom pull-right">
+  <!-- <button type="submit" class="btn btn-info">払戻取消</button> -->
   <button type="submit" class="btn btn-info">CSVダウンロード</button>
 </div>
   <!-- /container -->

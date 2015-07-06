@@ -156,7 +156,7 @@ class RefundTicketSearchForm(OurForm):
         label=u'管理番号:',
         validators=[
             Optional(),
-            Length(min=9, max=9, message=u'半角数字9文字で入力してください')
+            Length(min=9, max=9, message=u'管理番号は半角数字9文字で入力してください')
         ],
 
     )
@@ -164,28 +164,28 @@ class RefundTicketSearchForm(OurForm):
         label=u'バーコード:',
         validators=[
             Optional(),
-            Length(min=13, max=13, message=u'半角数字13文字で入力してください')
+            Length(min=13, max=13, message=u'バーコードは半角数字13文字で入力してください')
         ]
     )
     refunded_shop_code = OurTextField(
         label=u'払戻店番:',
         validators=[
             Optional(),
-            Length(min=5, max=5, message=u'半角数字5文字で入力してください')
+            Length(min=5, max=5, message=u'払戻店番は半角数字5文字で入力してください')
         ]
     )
     event_code = OurTextField(
         label=u'興行コード:',
         validators=[
             Optional(),
-            Length(min=4, max=6, message=u'半角数字6文字で入力してください')
+            Length(min=4, max=6, message=u'興行コードは半角数字6文字で入力してください')
         ]
     )
     event_subcode = OurTextField(
         label=u'興行サブコード:',
         validators=[
             Optional(),
-            Length(min=4, max=4, message=u'半角数字4文字で入力してください')
+            Length(min=4, max=4, message=u'興行サブコードは半角数字4文字で入力してください')
         ]
     )
     performance_start_date = OurTextField(
