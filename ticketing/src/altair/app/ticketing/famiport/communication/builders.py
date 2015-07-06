@@ -859,6 +859,9 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                             ]
                 else:
                     famiport_order = famiport_receipt.famiport_order
+                    famiport_sales_segment = famiport_order.famiport_sales_segment
+                    famiport_performance = famiport_sales_segment.famiport_performance
+                    famiport_event = famiport_performance.famiport_event
                     criteria = [
                         lambda q: \
                             q.filter(
@@ -870,35 +873,35 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                                 ),
                         lambda q: \
                             q.filter(
-                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
-                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
+                                FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
                                 FamiPortInformationMessage.performance_code == None,
                                 FamiPortInformationMessage.sales_segment_code == None,
                                 FamiPortInformationMessage.reserve_number == None
                                 ),
                         lambda q: \
                             q.filter(
-                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
-                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
-                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
+                                FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
+                                FamiPortInformationMessage.performance_code == famiport_performance.code,
                                 FamiPortInformationMessage.sales_segment_code == None,
                                 FamiPortInformationMessage.reserve_number == None
                                 ),
                         lambda q: \
                             q.filter(
-                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
-                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
-                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
-                                FamiPortInformationMessage.sales_segment_code == famiport_order.sales_segment_code,
+                                FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
+                                FamiPortInformationMessage.performance_code == famiport_performance.code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment.code,
                                 FamiPortInformationMessage.reserve_number == None
                                 ),
                         lambda q: \
                             q.filter(
-                                FamiPortInformationMessage.event_code_1 == famiport_order.evenet_code_1,
-                                FamiPortInformationMessage.event_code_2 == famiport_order.event_code_2,
-                                FamiPortInformationMessage.performance_code == famiport_order.performance_code,
-                                FamiPortInformationMessage.sales_segment_code == famiport_order.sales_segment_code,
-                                FamiPortInformationMessage.reserve_number == famiport_order.reserve_number
+                                FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
+                                FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
+                                FamiPortInformationMessage.performance_code == famiport_performance.code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment.code,
+                                FamiPortInformationMessage.reserve_number == famiport_receipt.reserve_number
                                 ),
                         ]
 

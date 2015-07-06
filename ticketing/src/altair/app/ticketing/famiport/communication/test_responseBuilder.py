@@ -322,27 +322,7 @@ class FamiPortResponseBuilderTestBase(object):
         tearDown()
 
 
-class _FamiPortInformationMessageResponseBuilderTestBase(unittest.TestCase, FamiPortResponseBuilderTestBase):
-    def setUp(self):
-        FamiPortResponseBuilderTestBase.setUp(self)
-
-    def tearDown(self):
-        FamiPortResponseBuilderTestBase.tearDown(self)
-
-    def _create_famiport_request(self, *args, **kwds):
-        from .models import FamiPortInformationRequest as klass
-        return klass(*args, **kwds)
-
-    def _get_target(self, *args, **kwds):
-        from .builders import FamiPortInformationResponseBuilder as klass
-        return klass(*args, **kwds)
-
-    def _callFUT(self, *args, **kwds):
-        target = self._get_target(self.request.registry)
-        return target.build_response(*args, **kwds)
-
-
-class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageResponseBuilderTestBase):
+class FamiPortInformationMessageResponseBuilderTest(unittest.TestCase, FamiPortResponseBuilderTestBase):
     """FamiPort案内通信で返すためのデータの作成
 
     リクエストからInformationMessageのデータを検索して
@@ -438,6 +418,24 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
       famiport_sales_segment_id: 1
     """
 
+    def setUp(self):
+        FamiPortResponseBuilderTestBase.setUp(self)
+
+    def tearDown(self):
+        FamiPortResponseBuilderTestBase.tearDown(self)
+
+    def _create_famiport_request(self, *args, **kwds):
+        from .models import FamiPortInformationRequest as klass
+        return klass(*args, **kwds)
+
+    def _get_target(self, *args, **kwds):
+        from .builders import FamiPortInformationResponseBuilder as klass
+        return klass(*args, **kwds)
+
+    def _callFUT(self, *args, **kwds):
+        target = self._get_target(self.request.registry)
+        return target.build_response(*args, **kwds)
+
     def test_it(self):
         args = []
         kwds = {
@@ -459,6 +457,37 @@ class FamiPortInformationMessageResponseBuilderTest(_FamiPortInformationMessageR
         res = self._callFUT(famiport_request, session, now, self.request)
         from .models import FamiPortInformationResponse
         self.assertTrue(type(res), FamiPortInformationResponse)
+
+    def test_with_sales_segment(self):
+        from .models import FamiPortInformationRequest
+        from ..models import FamiPortInformationMessage
+        self.session.add(
+            FamiPortInformationMessage(
+                result_code=u'01',
+                event_code_1=self.famiport_order_cash_on_delivery.famiport_sales_segment.famiport_performance.famiport_event.code_1,
+                event_code_2=self.famiport_order_cash_on_delivery.famiport_sales_segment.famiport_performance.famiport_event.code_2,
+                performance_code=self.famiport_order_cash_on_delivery.famiport_sales_segment.famiport_performance.code,
+                sales_segment_code=self.famiport_order_cash_on_delivery.famiport_sales_segment.code,
+                client_code=self.famiport_order_cash_on_delivery.client_code,
+                message=u'メッセージ'
+                )
+            )
+        self.session.flush()
+        famiport_request = FamiPortInformationRequest(
+            infoKubun='1',
+            storeCode=u'00001',
+            kogyoCode=u'000000',
+            kogyoSubCode=u'1111',
+            koenCode=u'001',
+            uketsukeCode=u'001',
+            playGuideId=u'012340123401234012340123'
+            )
+        now = datetime(2015, 1, 1)
+        res = self._callFUT(famiport_request, self.session, now, self.request)
+        self.assertEqual(res.resultCode, u'01')
+        self.assertEqual(res.infoKubun, u'1')
+        self.assertEqual(res.infoMessage, u'メッセージ')
+
 
     def test_no_reserve_number_no_uketsuke_no(self):
         args = []
