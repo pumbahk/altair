@@ -512,7 +512,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         ftr.barCodeNo = ticket.barcode_number
                         ftr.ticketClass = str(ticket.type)
                         ftr.templateCode = ticket.template_code
-                        ftr.ticketData = ticket.data
+                        ftr.ticketData = u'<?xml version="1.0" encoding="Shift_JIS" ?>' + ticket.data
                         famiport_ticket_responses.append(ftr)
 
                 resultCode = str_or_blank(resultCode)

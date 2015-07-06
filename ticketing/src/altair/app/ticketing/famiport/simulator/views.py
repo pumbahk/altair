@@ -1,6 +1,8 @@
 # encoding: utf-8
 import logging
+from io import BytesIO
 from datetime import datetime
+from lxml import etree
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
@@ -284,9 +286,11 @@ class FamiPortReservedView(object):
             customer_phone_number=self.request.session.get('customer_phone_number'),
             )
         tickets = result.get('ticket', None)
-        if tickets is not None and not isinstance(tickets, list):
-            tickets = [tickets]
-
+        if tickets is not None:
+            if not isinstance(tickets, list):
+                tickets = [tickets]
+            for ticket in tickets:
+                ticket['ticketData'] = etree.tostring(etree.parse(BytesIO(ticket['ticketData'].encode('CP932'))), encoding='unicode')
         if result['resultCode'] == u'00':
             store_payment_result(
                 self.request,
