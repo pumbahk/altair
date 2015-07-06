@@ -174,7 +174,8 @@ class FamiPortSearchView(object):
     def search_refund_ticket(self):
         form = RefundTicketSearchForm(self.request.params)
         if not form.validate():
-            self.request.session.flash(u'検索条件の入力内容を確認してください。')
+            errors = u'・'.join(sum(form.errors.values(), []))
+            self.request.session.flash(errors)
             return dict(form=form)
         # before_refund = self.request.GET.get('before_refund')
         # during_refund = self.request.GET.get('during_refund')
