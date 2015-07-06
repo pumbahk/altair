@@ -79,10 +79,10 @@
       
       指定公演のみ<div style="margin-left: 20px;">
       % for p in event.performances:
-        <div style="margin-bottom: 2px;"><label style="display: inline;"><input type="checkbox" name="performance_id" value="${p.id}" checked="checked" /> ${p.name} ${vh.datetime(p.start_on, with_weekday=True)}開始</label>
-	% for ss in p.sales_segments:
-	  <span class="label ${'label-important' if ss.reporting and ss.sales_segment_group.reporting else 'label-default'}" /> ${ss.name}</span>
-	% endfor
+        <div style="margin-bottom: 2px;"><label style="display: inline;"><input type="checkbox" name="performance_id" value="${p.id}" ${'checked="checked"' if p.id in map(lambda r:r.id, performance_total_reporter.sort_data()) else ''} /> ${p.name} ${vh.datetime(p.start_on, with_weekday=True)}開始</label>
+          % for ss in p.sales_segments:
+             <span class="label ${'label-important' if ss.reporting and ss.sales_segment_group.reporting else 'label-default'}" /> ${ss.name}</span>
+          % endfor
         </div>
       % endfor
       </div>
