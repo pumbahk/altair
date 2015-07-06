@@ -165,7 +165,7 @@ class FamiPortTicketXMLBuilder(object):
 
     def __call__(self, template_code, dicts):
         render = pystache.render
-        root = etree.Element(u'TICKET')
+        root = etree.Element(u'ticket')
         ti = self._get_template_info(template_code)
         for element_name, t in ti.mappings:
             e = etree.Element(element_name)
