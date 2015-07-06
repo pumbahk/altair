@@ -655,6 +655,8 @@ class FamiPortOrder(Base, WithTimestamp):
             (FamiPortReceipt.canceled_at == None)
         )
 
+    famiport_tickets = orm.relationship('FamiPortTicket', cascade='all,delete-orphan')
+
     @property
     def performance_start_at(self):
         return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
@@ -835,7 +837,7 @@ class FamiPortTicket(Base, WithTimestamp):
     data                      = sa.Column(sa.Unicode(4000), nullable=False)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 
-    famiport_order = orm.relationship('FamiPortOrder', backref='famiport_tickets')
+    famiport_order = orm.relationship('FamiPortOrder')
 
     @property
     def is_subticket(self):

@@ -121,6 +121,7 @@ def famiport_order_to_dict(famiport_order):
         exchange_number = reserve_number
 
     retval = dict(
+        type=famiport_order.type,
         order_no=famiport_order.order_no,
         famiport_order_identifier=famiport_order.famiport_order_identifier,
         customer_name=famiport_order.customer_name,
@@ -716,6 +717,11 @@ def update_famiport_order_by_order_no(
         client_code,
         order_no=None,
         famiport_order_identifier=None,
+        type_=None,
+        event_code_1=None,
+        event_code_2=None,
+        performance_code=None,
+        sales_segment_code=None,
         customer_name=None,
         customer_phone_number=None,
         customer_address_1=None,
@@ -737,6 +743,11 @@ def update_famiport_order_by_order_no(
             client_code=client_code,
             order_no=order_no,
             famiport_order_identifier=famiport_order_identifier,
+            type_=type_,
+            event_code_1=event_code_1,
+            event_code_2=event_code_2,
+            performance_code=performance_code,
+            sales_segment_code=sales_segment_code,
             customer_name=customer_name,
             customer_phone_number=customer_phone_number,
             customer_address_1=customer_address_1,

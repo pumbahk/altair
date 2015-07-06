@@ -276,6 +276,11 @@ def update_famiport_order_by_order_no(
         client_code,
         order_no,
         famiport_order_identifier,
+        type_,
+        event_code_1,
+        event_code_2,
+        performance_code,
+        sales_segment_code,
         customer_name,
         customer_phone_number,
         customer_address_1,
@@ -294,6 +299,19 @@ def update_famiport_order_by_order_no(
 
     if famiport_order.canceled_at is not None:
         raise FamiPortAlreadyCanceledError('FamiPortOrder(id=%ld) is already canceled' % famiport_order.id)
+
+    if famiport_order.type != type_:
+        raise FamiPortError(u'type differs')
+
+    famiport_sales_segment = famiport_order.famiport_sales_segment
+    famiport_performance = famiport_sales_segment.famiport_performance
+    famiport_event = famiport_performance.famiport_event
+
+    if famiport_event.code_1 != event_code_1 or \
+       famiport_event.code_2 != event_code_2 or \
+       famiport_performance.code != performance_code or \
+       famiport_sales_segment.code != sales_segment_code:
+        raise FamiPortError(u'event_code_1, event_code_2, performance_code or sales_segment_code differs')
 
     def check_updatable(payment_related=False, ticketing_related=False):
         if famiport_order.type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
@@ -362,24 +380,29 @@ def update_famiport_order_by_order_no(
         total_amount=_total_amount
         )
 
-    famiport_tickets = None
+    added_famiport_tickets = None
+    deleted_famiport_tickets = None 
     if tickets is not None:
         check_updatable(payment_related=False, ticketing_related=True)
-        famiport_tickets = []
+        added_famiport_tickets = []
+        updated_famiport_ticket_count = 0
         ticket_map = {
             famiport_ticket.barcode_number: famiport_ticket
             for famiport_ticket in famiport_order.famiport_tickets
             }
         for ticket_dict in tickets:
-            famiport_ticket = ticket_map.get(ticket_dict['barcode_number'])
+            famiport_ticket = ticket_map.pop(ticket_dict['barcode_number']) if 'barcode_number' in ticket_dict else None
             if famiport_ticket is not None:
                 famiport_ticket.type = ticket_dict['type']
                 famiport_ticket.template_code = ticket_dict['template']
                 famiport_ticket.data = ticket_dict['data']
                 famiport_ticket.logically_subticket = ticket_dict['logically_subticket']
+                updated_famiport_ticket_count += 1
             else:
                 famiport_ticket = create_famiport_ticket(session, famiport_order.famiport_client.playguide, ticket_dict)
-            famiport_tickets.append(famiport_ticket)
+                added_famiport_tickets.append(famiport_ticket)
+        deleted_famiport_tickets = ticket_map.values()
+        logger.info('added tickets: %d; updated tickets: %d; deleted tickets: %d' % (len(added_famiport_tickets), updated_famiport_ticket_count, len(deleted_famiport_tickets)))
 
     if customer_name is not None:
         logger.info('updating FamiPortOrder(id=%ld).customer_name' % famiport_order.id)
@@ -405,9 +428,11 @@ def update_famiport_order_by_order_no(
     if ticket_payment is not None:
         logger.info('updating FamiPortOrder(id=%ld).ticket_payment' % famiport_order.id)
         famiport_order.ticket_payment = ticket_payment
-    if famiport_tickets is not None:
+    if added_famiport_tickets is not None:
         logger.info('updating FamiPortOrder(id=%ld).famiport_tickets' % famiport_order.id)
-        famiport_order.famiport_tickets = famiport_tickets
+        famiport_order.famiport_tickets.extend(added_famiport_tickets)
+        for famiport_ticket in deleted_famiport_tickets:
+            famiport_order.famiport_tickets.remove(famiport_ticket)
     if payment_start_at is not None:
         logger.info('updating FamiPortOrder(id=%ld).payment_start_at' % famiport_order.id)
         famiport_order.payment_start_at = payment_start_at

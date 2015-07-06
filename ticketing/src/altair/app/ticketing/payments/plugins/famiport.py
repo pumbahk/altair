@@ -231,10 +231,8 @@ def get_altair_famiport_sales_segment_pair(order_like):
             ) \
         .one()
 
-def build_famiport_order_dict(request, order_like, client_code, in_payment, plugin, name='famiport'):
+def build_famiport_order_dict(request, order_like, client_code, type_, name='famiport'):
     """FamiPortOrderを作成する
-
-    クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
     """
 
     # FamiPortで決済しない場合は0をセットする
@@ -242,9 +240,8 @@ def build_famiport_order_dict(request, order_like, client_code, in_payment, plug
     system_fee = 0
     ticketing_fee = 0
     ticket_payment = 0
-    type_ = select_famiport_order_type(order_like, plugin)
 
-    if in_payment:
+    if type_ != FamiPortOrderType.Ticketing.value:
         total_amount = order_like.total_amount
         system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
         ticketing_fee = order_like.delivery_fee
@@ -285,18 +282,17 @@ def build_famiport_order_dict(request, order_like, client_code, in_payment, plug
         ticketing_end_at=order_like.issuing_end_at,
         )
 
-def create_famiport_order(request, order_like, in_payment, plugin, name='famiport'):
+def create_famiport_order(request, order_like, plugin, name='famiport'):
     """FamiPortOrderを作成する
-
-    クレカ決済などで決済をFamiPortで実施しないケースはin_paymentにFalseを指定する。
     """
     tenant = lookup_famiport_tenant(request, order_like)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
 
+    type_ = select_famiport_order_type(order_like, plugin)
     return famiport_api.create_famiport_order(
         request,
-        **build_famiport_order_dict(request, order_like, tenant.code, in_payment, plugin, name) 
+        **build_famiport_order_dict(request, order_like, tenant.code, type_, name) 
         )
 
 
@@ -316,18 +312,20 @@ def cancel_order(request, order, now=None):
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
 
 
-def refresh_order(request, order, now=None):
+def refresh_order(request, order, now=None, name='famiport'):
     """予約更新"""
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_like.order_no, None, None)
     try:
+        existing_order = famiport_api.get_famiport_order(request, order.order_no)
+        type_ = existing_order['type']
         famiport_api.update_famiport_order_by_order_no(
             request,
-            **build_famiport_order_dict(request, order_like, tenant.code, in_payment, plugin, name) 
+            **build_famiport_order_dict(request, order, tenant.code, type_, name=name)
             )
     except FamiPortAPIError:
-        raise FamiPortPluginFailure('failed to refresh order', order_no=order.order_no)
+        raise FamiPortPluginFailure('failed to refresh order', order_no=order.order_no, back_url=None)
 
 
 def _overridable_payment(path, fallback_ua_type=None):
@@ -394,8 +392,6 @@ def lot_payment_notice_viewlet(context, request):
 class FamiPortPaymentPlugin(object):
     """ファミポート用決済プラグイン"""
 
-    _in_payment = False  # FamiPortでの決済を行う
-
     def validate_order(self, request, order_like):
         """予約を作成する前にvalidationする"""
 
@@ -412,7 +408,7 @@ class FamiPortPaymentPlugin(object):
     def finish2(self, request, cart):
         """確定処理2"""
         try:
-            create_famiport_order(request, cart, in_payment=self._in_payment, plugin=self)
+            create_famiport_order(request, cart, plugin=self)
         except FamiPortAPIError:
             raise FamiPortPluginFailure('payment failed', order_no=cart.order_no, back_url=None)
 
@@ -487,8 +483,6 @@ def delivery_notice_viewlet(context, request):
 
 @implementer(IDeliveryPlugin)
 class FamiPortDeliveryPlugin(object):
-    _in_payment = False  # FamiPortで決済を行わない (例えばクレカ決済)
-
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -502,7 +496,7 @@ class FamiPortDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """確定時処理"""
         try:
-            create_famiport_order(request, order_like, in_payment=self._in_payment, plugin=self)  # noqa
+            create_famiport_order(request, order_like, plugin=self)  # noqa
         except FamiPortAPIError:
             raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
@@ -525,8 +519,6 @@ class FamiPortDeliveryPlugin(object):
 
 @implementer(IPaymentDeliveryPlugin)
 class FamiPortPaymentDeliveryPlugin(object):
-    _in_payment = True  # FamiPortで決済を行う
-
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
 
@@ -543,7 +535,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         """ 確定時処理 """
         try:
-            create_famiport_order(request, order_like, in_payment=self._in_payment, plugin=self)  # noqa
+            create_famiport_order(request, order_like, plugin=self)  # noqa
         except FamiPortAPIError:
             raise FamiPortPluginFailure(u'failed', order_no=order_like.order_no, back_url=None)
 
