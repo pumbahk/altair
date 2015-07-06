@@ -103,8 +103,8 @@
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td>${receipt.famiport_order.famiport_sales_segment.name}</td>
         <td>${receipt.famiport_order.get_type_in_str}</td>
-        <td>${receipt.famiport_order.get_issued_status_in_str}</td>
-        <td>${u'入金済み' if receipt.famiport_order.paid_at else u'入金待ち'}</td>
+        <td>${receipt.get_issued_status_in_str}</td>
+        <td>${receipt.get_payment_status_in_str}</td>
         <td>${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
         <td>${vh.get_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
         <td>${vh.get_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
@@ -131,7 +131,6 @@
 </div>
 <div class="buttonBoxBottom pull-right">
   <a id="to_rebook" href=""><button type="button" class="btn btn-info">発券指示</button></a>
-  <button type="button" class="btn btn-info">CSVダウンロード</button>
   <a id="to_detail" href=""><button type="button" class="btn btn-info">申込詳細</button></a>
 </div>
 
@@ -142,8 +141,8 @@
     $(document).ready(function(){
       $("*[name=radio_gr]:radio").change(function(){
         var receipt_id = $(this).val();
-        $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
-        $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
+        $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
+        $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
         });
         $('#sales_from').datepicker({
               format: "yyyy-mm-dd",

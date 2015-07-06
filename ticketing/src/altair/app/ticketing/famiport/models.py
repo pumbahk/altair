@@ -693,13 +693,6 @@ class FamiPortOrder(Base, WithTimestamp):
         return None
 
     @property
-    def get_issued_status_in_str(self):
-        if self.issued_at and self.canceled_at is None and self.invalidated_at is None:
-            return u'発券済み'
-        elif self.issued_at is None:
-            return u'発券待ち'
-
-    @property
     def get_type_in_str(self):
         if self.type == FamiPortOrderType.CashOnDelivery.value:
             return u'代引'
@@ -990,6 +983,37 @@ class FamiPortReceipt(Base, WithTimestamp):
         return (self.type == FamiPortReceiptType.Ticketing.value) | \
                (self.type == FamiPortReceiptType.CashOnDelivery.value)
 
+    @property
+    def get_issued_status_in_str(self):
+        # 発券対象でない場合
+        if self.type == FamiPortReceiptType.Payment.value:
+            return u'-'
+        else:
+            if self.payment_request_received_at is not None and self.completed_at is not None:
+                return u'発券済み'
+            elif self.payment_request_received_at is not None and self.completed_at is None:
+                return u'発券確定待ち'
+            elif self.payment_request_received_at is None:
+                return u'発券待ち'
+            else:
+                return u'状態不正'
+
+    @property
+    def get_payment_status_in_str(self):
+        # 入金対象でない場合
+        if self.type == FamiPortReceiptType.Ticketing.value:
+            return u'-'
+        else:
+            if self.payment_request_received_at is not None and self.completed_at is not None:
+                return u'入金済み'
+            elif self.payment_request_received_at is not None and self.completed_at is None:
+                return u'入金確定待ち'
+            elif self.payment_request_received_at is None:
+                return u'入金待ち'
+            else:
+                return u'状態不正'
+
+
     def is_rebookable(self, now):
         # キャンセル済みの場合
         if self.void_at is not None or self.canceled_at is not None:
@@ -1031,12 +1055,13 @@ class FamiPortReceipt(Base, WithTimestamp):
     def get_shop_name(self, request):
         if self.payment_request_received_at:
             session = get_db_session(request, name="famiport")
-            shop_name = session.query(FamiPortShop)\
+            shop = session.query(FamiPortShop)\
                                .filter(FamiPortShop.code == self.shop_code)\
                                .first()
         else:
-            shop_name = u"要求未済"
-        return shop_name
+            return u"要求未済"
+
+        return shop.name if shop else u'-'
 
     def can_payment(self, now):
         return self.inquired_at \

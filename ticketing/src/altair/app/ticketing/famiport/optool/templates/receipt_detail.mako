@@ -12,7 +12,7 @@
         <th>払込票番号</th>
         <td>${receipt.barcode_no}</td>
         <th>申込ステータス</th>
-        <td>${receipt.famiport_order.get_issued_status_in_str}</td>
+        <td>${receipt.get_issued_status_in_str}</td>
       </tr>
       <tr>
         <th>引換票番号</th>
@@ -127,5 +127,5 @@
   </table>
 </div>
 <div class="buttonBoxBottom pull-right">
-  <a href="${request.route_url('rebook_order', action="show", order_id=request.matchdict['receipt_id'])}"><button type="button" class="btn btn-info">発券指示</button></a>
+  <a href="${request.route_url('rebook_order', action="show", receipt_id=request.matchdict['receipt_id'])}"><button type="button" class="btn btn-info">発券指示</button></a>
 </div>
