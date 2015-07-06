@@ -8,7 +8,7 @@
       <ul class="nav navbar-nav">
         <li><a href="${request.route_path('search.receipt')}">申込検索</a></li>
         <li><a href="${request.route_path('search.performance')}">公演検索</a></li>
-        <li><a href="#">払戻公演データ検索</a></li>
+        <li><a href="${request.route_path('search.refund_performance')}">払戻公演データ検索</a></li>
         <li><a href="${request.route_path('search.refund_ticket')}">払戻チケットデータ検索</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">

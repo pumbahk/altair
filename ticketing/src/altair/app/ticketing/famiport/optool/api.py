@@ -102,6 +102,18 @@ def lookup_performance_by_searchform_data(request, formdata=None):
     performances = query.all()
     return performances
 
+def lookup_refund_performance_by_searchform_data(request, formdata=None):
+    fami_session = get_db_session(request, name='famiport')
+    query = fami_session.query(FamiPortRefundEntry)\
+                        .join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
+                        .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
+                        .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
+                        .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
+                        .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
+                        .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)
+    performances = query.all()
+    return performances
+
 def lookup_receipt_by_searchform_data(request, formdata=None):
     fami_session = get_db_session(request, name="famiport")
 

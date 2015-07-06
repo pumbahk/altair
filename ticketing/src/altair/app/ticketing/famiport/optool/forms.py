@@ -129,6 +129,23 @@ class RebookOrderForm(OurForm):
         ]
     )
 
+class SearchRefundPerformanceForm(OurForm):
+    before_refund = OurBooleanField(
+        label=u'払戻期間前',
+    )
+    during_refund = OurBooleanField(
+        label=u'払戻期間中',
+    )
+    after_refund = OurBooleanField(
+        label=u'払戻期間後',
+    )
+    performance_from = OurTextField(
+        label=u'公演日：',
+    )
+    performance_to = OurTextField(
+        label=u'公演日：',
+    )
+
 class RefundTicketSearchForm(OurForm):
 
     before_refund = OurBooleanField(
