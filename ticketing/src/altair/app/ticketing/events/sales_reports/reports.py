@@ -747,8 +747,8 @@ class ExportableReporter(object):
         for r in self.make_query().all():
             if not r.Stock.id in by_stock:
                 by_stock[r.Stock.id] = dict(stock=r.Stock, available=r.Stock.quantity, data=[ ])
-            if r.SalesSegmentGroup.reporting:
-                # レポート出力設定されている販売区分グループのみ掲載(クエリで絞りこむと合計がずれる!)
+            if r.SalesSegmentGroup.reporting and r.SalesSegment.reporting:
+                # レポート出力設定されている販売区分のみ掲載(クエリで絞りこむと合計がずれる!)
                 by_stock[r.Stock.id]['data'].append(r)
             by_stock[r.Stock.id]['available'] = by_stock[r.Stock.id]['available'] - r.ordered
 
