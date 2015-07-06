@@ -14,7 +14,8 @@ from ..models import (
     FamiPortOrder,
     FamiPortTicket,
     FamiPortRefund,
-    FamiPortRefundEntry
+    FamiPortRefundEntry,
+    FamiPortShop
 )
 from .models import FamiPortOperator
 
@@ -106,7 +107,10 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
-                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id)
+                        .outerjoin(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
+                        .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
+                        .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
+                        .group_by(FamiPortReceipt.id)
 
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
@@ -122,6 +126,22 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         query = query.filter(FamiPortOrder.customer_phone_number == formdata.get('customer_phone_number'))
     if formdata.get('shop_code'):
         query = query.filter(FamiPortReceipt.shop_code == formdata.get('shop_code'))
+    if formdata.get('shop_name'):
+        pattern = u'%{}%'.format(formdata.get('shop_name'))
+        query = query.filter(FamiPortShop.name.like(pattern))
+    if formdata.get('sales_from'):
+        req_from = formdata.get('sales_from') + ' 00:00:00'
+        if formdata.get('sales_to'):
+            req_to = formdata.get('sales_to') + ' 23:59:59'
+            query = query.filter(FamiPortSalesSegment.start_at >= req_from,
+                                 FamiPortSalesSegment.start_at <= req_to)
+        else:
+            query = query.filter(FamiPortSalesSegment.start_at >= req_from)
+    elif formdata.get('sales_to'):
+        req_from = '1900-01-01 00:00:00'
+        req_to = formdata.get('sales_to') + ' 23:59:59'
+        query = query.filter(FamiPortSalesSegment.start_at >= req_from,
+                             FamiPortSalesSegment.start_at <= req_to)
 
     receipts = query.all()
     return receipts

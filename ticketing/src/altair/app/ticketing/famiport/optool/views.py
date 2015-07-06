@@ -103,7 +103,7 @@ class FamiPortSearchView(object):
 
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
     @view_config(route_name='search.receipt', renderer='altair.app.ticketing.famiport.optool:templates/receipt_search.mako', permission='operator')
-    def search_order(self):
+    def search_receipt(self):
         form = SearchReceiptForm()
 
         if self.request.POST or self.request.params:

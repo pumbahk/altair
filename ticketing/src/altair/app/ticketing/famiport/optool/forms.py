@@ -53,7 +53,16 @@ class SearchReceiptForm(OurForm):
         label=u'電話番号：',
     )
     shop_code = OurTextField(
-        label=u'店番：'
+        label=u'店番：',
+    )
+    shop_name = OurTextField(
+        label=u'店名：',
+    )
+    sales_from = OurTextField(
+        label=u'販売開始日：',
+    )
+    sales_to = OurTextField(
+        label=u'販売終了日',
     )
 
 

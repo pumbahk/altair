@@ -25,6 +25,26 @@
               <th class="pull-right">${form.shop_code.label}</th>
               <td>${form.shop_code(class_='form-control')}</td>
             </tr>
+            <tr>
+              <th class="pull-right">${form.shop_name.label}</th>
+              <td>${form.shop_name(class_='form-control')}</td>
+              <th class="pull-right"></th>
+              <td></td>
+            </tr>
+            <tr>
+                <th class="pull-right">${form.sales_from.label}</th>
+                <td colspan="3">
+                  <div class="form-inline">
+                    <div class="input-group date">
+                      ${form.sales_from(class_='form-control')}
+                    </div>
+                    ~
+                    <div class="input-group date">
+                      ${form.sales_to(class_='form-control')}
+                    </div>
+                  </div>
+                </td>
+             </tr>
           </table>
       </div>
       <div class="col-md-2 buttonBox">
@@ -80,7 +100,7 @@
     <tbody>
     % for receipt in entries:
       <tr>
-        <td><input type="radio" value="${receipt.id}" name="radio_gr" form="order"></td>
+        <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td>${receipt.famiport_order.famiport_sales_segment.name}</td>
         <td>${receipt.famiport_order.get_type_in_str}</td>
         <td>${receipt.famiport_order.get_issued_status_in_str}</td>
@@ -115,13 +135,24 @@
   <a id="to_detail" href=""><button type="button" class="btn btn-info">申込詳細</button></a>
 </div>
 
-  <script type="text/javascript">
+
+<script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.min.js')}"></script>
+<script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.ja.min.js')}"></script>
+<script type="text/javascript">
     $(document).ready(function(){
       $("*[name=radio_gr]:radio").change(function(){
         var receipt_id = $(this).val();
         $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
         $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt.id));
         });
+        $('#sales_from').datepicker({
+              format: "yyyy-mm-dd",
+              language: "ja"
+            });
+        $('#sales_to').datepicker({
+              format: "yyyy-mm-dd",
+              language: "ja"
+        });
       });
-  </script>
+</script>
 
