@@ -60,7 +60,7 @@ def main(global_conf, **local_conf):
     # Detail
     config.add_route('receipt.detail',  '/show/receipt/{receipt_id}', factory='.resources.ReceiptDetailResource')
     config.add_route('performance.detail', '/show/performance/{performance_id}', factory='.resources.PerformanceDetailResource')
-    config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}')
+    config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}', factory='.resources.RefundPerformanceDetailResource')
     # Rebook or reprint
     config.add_route('rebook_order', '/rebook_order/{action}/{receipt_id}', factory='.resources.RebookReceiptResource') # action = (show, rebook, reprint)
     config.scan('.views')

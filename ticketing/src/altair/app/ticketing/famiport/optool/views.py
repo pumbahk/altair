@@ -244,11 +244,10 @@ class FamiPortDetailView(object):
         performance = self.context.performance
         return dict(performance=performance, h=ViewHelpers(),)
 
-    # TODO refund_performance.htmlはperformance_detail.htmlと統合できそう
     @view_config(route_name='refund_performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_detail.mako')
     def show_refund_performance_detail(self):
-        # TODO Show performance detail
-        return dict()
+        performance = self.context.performance
+        return dict(performance=performance,)
 
 # TODO Make sure the permission of each operation
 class FamiPortRebookOrderView(object):

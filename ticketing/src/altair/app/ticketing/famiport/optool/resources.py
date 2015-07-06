@@ -38,6 +38,16 @@ class PerformanceDetailResource(DetailBaseResource):
                                            .filter(FamiPortPerformance.id == performance_id)\
                                            .one()
 
+class RefundPerformanceDetailResource(DetailBaseResource):
+    def __init__(self, request):
+        self.request = request
+        fami_session = get_db_session(self.request, 'famiport')
+        performance_id = self.request.matchdict.get('performance_id')
+        if performance_id:
+            self.performance = fami_session.query(FamiPortPerformance)\
+                                           .filter(FamiPortPerformance.id == performance_id)\
+                                           .one()
+
 class ReceiptDetailResource(DetailBaseResource):
     def __init__(self, request):
         self.request = request

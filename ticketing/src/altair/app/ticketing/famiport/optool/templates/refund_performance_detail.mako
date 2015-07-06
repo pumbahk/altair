@@ -4,45 +4,34 @@
   <table class="table table-hover">
     <thead>
       <tr>
-        <th colspan="2">払戻公演詳細情報</th>
+        <th colspan="4">払戻公演詳細情報</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <th>公演ステータス</th>
-        <td>aaaaaaaaa</td>
+        <th colspan="1">興行コード・サブコード</th>
+        <td colspan="3">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</td>
       </tr>
       <tr>
-        <th>興行コード・サブコード</th>
-        <td ></td>
+        <th colspan="1">興行名</th>
+        <td colspan="3">${performance.famiport_event.name_1}</td>
       </tr>
       <tr>
-        <th>興行名</th>
-        <td ></td>
+        <th colspan="1">公演日時</th>
+        <td colspan="3">${performance.start_at}</td>
       </tr>
       <tr>
-        <th>公演日時</th>
-        <td ></td>
+        <th colspan="1">会場名</th>
+        <td colspan="3">${performance.famiport_event.venue.name}</td>
       </tr>
       <tr>
-        <th>会場名</th>
-        <td></td>
+        <th colspan="1">払戻開始日〜払戻終了日</th>
+        <td colspan="3"><span style="color:red;">公演共通の日付があるか要確認</span></td>
       </tr>
       <tr>
-        <th>払戻理由</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>払戻開始日〜払戻終了日</th>
-        <td></td>
-      </tr>
-      <tr>
-        <th>プライガイド必着日</th>
-        <td></td>
+        <th colspan="1">プライガイド必着日</th>
+        <td colspan="3"><span style="color:red;">公演共通の日付か要確認</span></td>
       </tr>
     </tbody>
   </table>
-</div>
-<div class="buttonBoxBottom pull-right">
-  <a href="search_payback.html"><button type="submit" class="btn btn-info">閉じる</button></a>
 </div>
