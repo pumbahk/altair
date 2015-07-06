@@ -198,5 +198,4 @@ def search_refund_ticket_by(request, params):
     if performance_end_date:
         query = query.filter(FamiPortPerformance.start_at <= performance_end_date)
     query = query.order_by(FamiPortRefundEntry.refunded_at)
-    logger.info('query@search_refund_ticket_by: %s' % query)
     return query.all()
