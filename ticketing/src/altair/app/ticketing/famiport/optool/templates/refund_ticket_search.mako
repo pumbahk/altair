@@ -96,7 +96,7 @@
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1}</td>
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2}</td>
             <td nowrap="nowrap">${rts_helper.format_date(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)}</td>
-            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
+            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1}</td>
             <td>${famiport_refund_entry.ticket_payment}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_refund_entry.shop_code}</td>
