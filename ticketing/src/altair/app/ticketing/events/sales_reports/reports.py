@@ -686,7 +686,6 @@ class ExportableReporter(object):
         self.performance_ids = None
         if request.params.getall('performance_id') is not None:
             self.performance_ids = request.params.getall('performance_id')
-        logger.info(self.performance_ids)
 
         self.performance_codes = None
         if request.params.get('performance_code'):
