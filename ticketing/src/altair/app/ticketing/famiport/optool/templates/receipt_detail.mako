@@ -64,7 +64,7 @@
       </tr>
       <tr>
         <th>申込サイト</th>
-        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.sales_channel}</td>
+        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
       </tr>
     </tbody>
 
