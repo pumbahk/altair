@@ -683,17 +683,26 @@ class ExportableReporter(object):
         self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
         self.event = event
 
+        self.performance_ids = None
+        if request.params.getall('performance_id') is not None:
+            self.performance_ids = request.params.getall('performance_id')
+
         self.performance_codes = None
-        if self.request.params.get('performance_code'):
-            self.performance_codes = self.request.params.get('performance_code').split(',')
+        if request.params.get('performance_code'):
+            self.performance_codes = map(unicode.strip, request.params.get('performance_code').split(','))
 
         self.ordered_from = None
-        if self.request.params.get('from'):
-            self.ordered_from = datetime.strptime(self.request.params.get('from'), '%Y-%m-%d')
+        if request.params.get('from'):
+            self.ordered_from = datetime.strptime(request.params.get('from'), '%Y-%m-%d')
 
         self.ordered_to = None
-        if self.request.params.get('to'):
-            self.ordered_to = datetime.strptime(self.request.params.get('to'), '%Y-%m-%d')
+        if request.params.get('to'):
+            self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
+
+        # レポート設定を無視する
+        self.without_filter = False
+        if request.params.get('all'):
+            self.without_filter = True if request.params.get('all') else False
 
         self.by_stock = None
 
@@ -734,6 +743,8 @@ class ExportableReporter(object):
             # Productはsales_segment_idとsales_segment_group_idの両方を持つ
             # SalesSegmentはperformance_idを持つ
 
+        if self.performance_ids:
+            q = q.filter(Performance.id.in_(self.performance_ids))
         if self.performance_codes:
             q = q.filter(Performance.code.in_(self.performance_codes))
 
@@ -747,7 +758,7 @@ class ExportableReporter(object):
         for r in self.make_query().all():
             if not r.Stock.id in by_stock:
                 by_stock[r.Stock.id] = dict(stock=r.Stock, available=r.Stock.quantity, data=[ ])
-            if r.SalesSegmentGroup.reporting and r.SalesSegment.reporting:
+            if self.without_filter or (r.SalesSegmentGroup.reporting and r.SalesSegment.reporting):
                 # レポート出力設定されている販売区分のみ掲載(クエリで絞りこむと合計がずれる!)
                 by_stock[r.Stock.id]['data'].append(r)
             by_stock[r.Stock.id]['available'] = by_stock[r.Stock.id]['available'] - r.ordered
