@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 import logging
-import itertools
 from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
@@ -32,9 +31,12 @@ from .forms import (
 )
 from webhelpers import paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from .helpers import ViewHelpers
+from .helpers import (
+    ViewHelpers,
+    get_paginator,
+    RefundTicketSearchHelper,
+)
 from ..exc import FamiPortAPIError
-from .helpers import get_paginator, RefundTicketSearchHelper
 
 logger = logging.getLogger(__name__)
 
@@ -321,3 +323,57 @@ class FamiPortRebookOrderView(object):
         session.commit()
 
         return dict(old_identifier=old_fami_identifier, new_identifier=new_fami_identifier)
+
+class FamiPortDownloadRefundTicketView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='download.refund_ticket', renderer='csv', permission='operator')
+    def download_csv(self):
+        refund_entries = search_refund_ticket_by(self.request, self.request.POST)
+
+        header = [
+            u'払戻状況',
+            u'地区',
+            u'営業所',
+            u'発券店番',
+            u'発券店舗名',
+            u'管理番号',
+            u'バーコード',
+            u'興行コード-サブコード',
+            u'公演名',
+            u'席種',
+            u'興行名',
+            u'返金額',
+            u'払戻日時',
+            u'払戻店番',
+            u'払戻店舗名',
+        ]
+
+        rts_helper = RefundTicketSearchHelper()
+        rows = []
+        for famiport_refund_entry in refund_entries:
+            famiport_shop = famiport_refund_entry.famiport_shop
+            rows.append([
+                unicode(rts_helper.get_refund_status_text(famiport_refund_entry.refunded_at)),
+                unicode(famiport_shop.district_code if famiport_shop else u''),
+                unicode(famiport_shop.branch_code if famiport_shop else u''),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.issuing_shop_code),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.get_shop_name(self.request)),
+                unicode(rts_helper.get_management_number_from_famiport_order_identifier(famiport_refund_entry.famiport_ticket.famiport_order.famiport_order_identifier)),
+                unicode(famiport_refund_entry.famiport_ticket.barcode_number),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2),
+                unicode(rts_helper.format_date(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.name),
+                unicode(famiport_refund_entry.ticket_payment),
+                unicode(rts_helper.format_datetime(famiport_refund_entry.refunded_at)),
+                unicode(famiport_refund_entry.shop_code),
+                unicode(famiport_shop.branch_name if famiport_shop else u''),
+            ])
+
+        return {'header':header, 'rows': rows}
+
+
+

@@ -45,6 +45,8 @@ def main(global_conf, **local_conf):
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
+
+    config.add_renderer('csv', '.renderers.CSVRenderer')
     config.add_static_view('static', '%s:static' % __name__, cache_max_age=3600)
     config.add_forbidden_view(lambda context, request: HTTPFound(request.route_path('login', _query=dict(return_url=request.path))))
     config.add_route('logout',  '/logout')
@@ -57,6 +59,7 @@ def main(global_conf, **local_conf):
     config.add_route('search.performance', '/search/performance', factory='.resources.SearchResource')
     config.add_route('search.refund_performance', '/search/refund_performance', factory='.resources.SearchResource')
     config.add_route('search.refund_ticket', '/search/refund_ticket', factory='.resources.SearchResource')
+    config.add_route('download.refund_ticket', '/download/refund_ticket', factory='.resources.SearchResource')
     # Detail
     config.add_route('receipt.detail',  '/show/receipt/{receipt_id}', factory='.resources.ReceiptDetailResource')
     config.add_route('performance.detail', '/show/performance/{performance_id}', factory='.resources.PerformanceDetailResource')

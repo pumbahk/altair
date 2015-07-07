@@ -1,6 +1,6 @@
 <%inherit file="_base.mako"/>
 <div class="jumbotron">
-<form class="form">
+<form class="form" id="search-form" action="" method="post">
   <div class="row">
     <div class="col-md-10">
       <h3 class="form-heading">払戻チケットデータ検索</h3>
@@ -111,7 +111,7 @@
 </div>
 <div class="buttonBoxBottom pull-right">
   <!-- <button type="submit" class="btn btn-info">払戻取消</button> -->
-  <button type="submit" class="btn btn-info">CSVダウンロード</button>
+  <button type="button" id="csv-download" class="btn btn-info">CSVダウンロード</button>
 </div>
   <!-- /container -->
 
@@ -150,6 +150,10 @@
               $('.modal-title').html('実行結果');
               $('.modal-body').html('払戻取消は正常に行われました');
               $('.modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>');
+            });
+            $("#csv-download").on('click', function() {
+                console.log("csv button was pushed!");
+                $("#search-form").attr('action', '${request.route_url('download.refund_ticket')}').submit();
             });
       });
 </script>
