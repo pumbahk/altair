@@ -86,9 +86,6 @@
   </table>
  % endif
 </div>
-<div class="buttonBoxBottom pull-right">
-  <button type="submit" class="btn btn-info">CSVダウンロード</button>
-</div>
 
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.ja.min.js')}"></script>
