@@ -342,8 +342,7 @@ class FamiPortDownloadRefundTicketView(object):
             u'管理番号',
             u'バーコード',
             u'興行コード-サブコード',
-            u'公演名',
-            u'席種',
+            u'公演日',
             u'興行名',
             u'返金額',
             u'払戻日時',
@@ -355,6 +354,8 @@ class FamiPortDownloadRefundTicketView(object):
         rows = []
         for famiport_refund_entry in refund_entries:
             famiport_shop = famiport_refund_entry.famiport_shop
+            event_code_1 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1
+            event_code_2 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2
             rows.append([
                 unicode(rts_helper.get_refund_status_text(famiport_refund_entry.refunded_at)),
                 unicode(famiport_shop.district_code if famiport_shop else u''),
@@ -363,8 +364,7 @@ class FamiPortDownloadRefundTicketView(object):
                 unicode(famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.get_shop_name(self.request)),
                 unicode(rts_helper.get_management_number_from_famiport_order_identifier(famiport_refund_entry.famiport_ticket.famiport_order.famiport_order_identifier)),
                 unicode(famiport_refund_entry.famiport_ticket.barcode_number),
-                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1),
-                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2),
+                unicode(u'-'.join([event_code_1,event_code_2])),
                 unicode(rts_helper.format_date(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)),
                 unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.name),
                 unicode(famiport_refund_entry.ticket_payment),
