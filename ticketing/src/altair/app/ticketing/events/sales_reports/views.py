@@ -227,7 +227,8 @@ class ReportSettings(BaseView):
             raise ReportSettingValidationError(form=f)
 
         from altair.sqlahelper import get_db_session
-        mails = [mail for mail in f.recipients.data.split(" ") if mail]
+        import re
+        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|"|,|　', f.recipients.data))
         session = get_db_session(self.request, 'slave')
         recipients = session.query(ReportRecipient).filter(ReportRecipient.email.in_(mails)).all()
 
