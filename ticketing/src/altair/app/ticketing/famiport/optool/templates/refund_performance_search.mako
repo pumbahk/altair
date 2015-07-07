@@ -54,6 +54,9 @@
     </div>
     % endif
   </div>
+  % if entries:
+  ${entries.pager()}
+  % endif
   <table class="table table-hover">
     <thead>
       <tr>

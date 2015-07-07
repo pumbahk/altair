@@ -69,6 +69,7 @@
   </div>
   % if entries:
   ${entries.pager()}
+  % endif
   <table class="table table-hover">
     <thead>
       <tr>
@@ -97,6 +98,7 @@
         <th>申込日時</th>
       </tr>
     </thead>
+    % if entries:
     <tbody>
     % for receipt in entries:
       <tr>
@@ -126,8 +128,8 @@
       </tr>
     % endfor
     </tbody>
+    % endif
   </table>
-  % endif
 </div>
 <div class="buttonBoxBottom pull-right">
   <a id="to_rebook" href=""><button type="button" class="btn btn-info">発券指示</button></a>

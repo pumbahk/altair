@@ -60,6 +60,7 @@
   </div>
   % if entries:
   ${entries.pager()}
+  % endif
   <table class="table table-hover">
     <thead>
       <tr>
@@ -71,6 +72,7 @@
         <th>会場名</th>
       </tr>
     </thead>
+    % if entries:
     <tbody>
       % for performance in entries:
       <tr>
@@ -83,8 +85,8 @@
       </tr>
       % endfor
     </tbody>
+    % endif
   </table>
- % endif
 </div>
 
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.min.js')}"></script>
