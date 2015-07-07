@@ -15,7 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;using checkin.core.support;
+using System.Windows.Shapes;
+using checkin.core.support;
 using checkin.core.events;
 using checkin.core.flow;
 
@@ -93,6 +94,19 @@ namespace checkin.presentation.gui.page
             if (AppUtil.GetCurrentResource().RefreshMode)
             {
                 ctx.RefreshModeVisibility = Visibility.Visible;
+            }
+
+            if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+            {
+                this.gotoanothermode.Visibility = Visibility.Visible;
+                this.gotowelcome.Visibility = Visibility.Hidden;
+                this.goback.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.gotoanothermode.Visibility = Visibility.Hidden;
+                this.gotowelcome.Visibility = Visibility.Visible;
+                this.goback.Visibility = Visibility.Visible;
             }
 
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();

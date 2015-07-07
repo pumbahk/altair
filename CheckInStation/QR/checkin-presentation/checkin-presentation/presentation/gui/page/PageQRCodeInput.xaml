@@ -113,11 +113,13 @@
                     <Button
                     Canvas.Left="140"
                     Canvas.Top="655"
+                    x:Name="goback"
                     Click="OnBackwardWithBoundContext"
                     Style="{StaticResource BackwardButton}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Focusable="False"
+                    Visibility="Hidden"
                     >
                             <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
@@ -147,14 +149,35 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                            Visibility="Hidden"
                             Focusable="False">
                             <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
 
-                    <!-- エラーダイアログ -->
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                            <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">受付番号</TextBlock>
+                    </Button>
+
+                    <!-- 終了ボタン-->
+                    <Button
+                        Command="{Binding AppCloseCommand}"
+                        Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                        x:Name="endbutton"
+                        Background="Transparent"
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                        />
+
+                        <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageDialogComplete="ErrorDialog_MessageDialogComplete"
                                       MessageText="{Binding ErrorMessage}"

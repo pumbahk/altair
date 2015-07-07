@@ -82,9 +82,11 @@
     <Compile Include="flow\CaseConfirmListForPart.cs" />
     <Compile Include="flow\CaseConfirmListForOne.cs" />
     <Compile Include="flow\CaseOneOrPart.cs" />
+    <Compile Include="flow\CaseOrdernoConfirmAllHidden.cs" />
     <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />
     <Compile Include="flow\CaseWelcome.cs" />
     <Compile Include="flow\CasePartOrAll.cs" />
+    <Compile Include="flow\OneStepFlowDefinition.cs" />
     <Compile Include="flow\StandardFlowDefinition.cs" />
     <Compile Include="flow\CommonFlowDefinition.cs" />
     <Compile Include="IConfigurator.cs" />

@@ -30,6 +30,13 @@ namespace checkin.presentation.gui.page
             set { this._status = value; this.OnPropertyChanged("Status"); }
         }
 
+        private int _totalPrinted;
+        public int TotalPrinted
+        {
+            get { return this._totalPrinted; }
+            set { this._totalPrinted = value; this.OnPropertyChanged("TotalPrinted"); }
+        }
+
         public override void OnSubmit()
         {
             var ev = this.Event as IInternalEvent;

@@ -76,7 +76,7 @@ namespace checkin.presentation.gui
             }
             else if (c is CaseOrdernoOrdernoInput)
                 return this.CreateOrReUse<PageOrdernoOrdernoInput>(c, previous);
-            else if (c is CaseOrdernoTelInput)
+            else if (c is CaseOrdernoTelInput || c is CaseOrdernoConfirmForAllHidden)
                 return this.CreateOrReUse<PageOrdernoTelInput>(c, previous);
             else if (c is CaseOrdernoVerifyRequestData)
                 return this.CreateOrReUse<PageOrdernoTelInput>(c, previous); //xxx:
@@ -94,10 +94,22 @@ namespace checkin.presentation.gui
                 }
                 
             }
-            else if (c is CasePrintForOne || c is CasePrintForAll)
+            else if (c is CasePrintForOne)
                 return this.CreateOrReUse<PagePrinting>(c, previous);
+            else if (c is CasePrintForAll)
+            {
+                if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    return this.CreateOrReUse<PagePrinting2>(c, previous);
+                else
+                    return this.CreateOrReUse<PagePrinting>(c, previous);
+            }
             else if (c is CasePrintFinish)
-                return this.CreateOrReUse<PageFinish>(c, previous);
+            {
+                if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    return this.CreateOrReUse<PageFinish2>(c, previous);
+                else
+                    return this.CreateOrReUse<PageFinish>(c, previous);
+            }
             throw new NotImplementedException("sorry");
         }
 

@@ -10,6 +10,7 @@ using checkin.presentation.gui.viewmodel;
 using System.Windows.Controls;
 using checkin.presentation.gui.page;
 using checkin.presentation.gui.control;
+using checkin.core.flow;
 
 namespace checkin.presentation.gui.command
 {
@@ -58,7 +59,16 @@ namespace checkin.presentation.gui.command
                 }
                 else if(this.Wrapper is PageCloseConfirm)
                 {
-                    AppUtil.GotoWelcome(this.Wrapper);
+                    if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    {
+                        var r = AppUtil.GetCurrentResource();
+                        var case_ = AppUtil.GetCurrentResource().FlowDefinition.AfterAuthorization(r);
+                        AppUtil.GetNavigator().NavigateToMatchedPage(case_, this.Wrapper);
+                    }
+                    else
+                    {
+                        AppUtil.GotoWelcome(this.Wrapper);
+                    }
                 }
                 else if(this.Wrapper is PageConfirmListPart)
                 {

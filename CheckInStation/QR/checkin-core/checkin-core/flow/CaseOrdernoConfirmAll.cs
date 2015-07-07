@@ -57,7 +57,7 @@ namespace checkin.core.flow
                 this.tokenStatus = result.Right.status;
 
                 var subject = this.PresentationChanel as ConfirmAllEvent;
-                subject.SetCollection(this.Collection, 1);
+                subject.SetCollection(this.Collection, ConfirmAllType.all);
             }
             else
             {

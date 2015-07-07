@@ -22,6 +22,8 @@ namespace checkin.core.flow
 
         public TicketDataCollection TicketDataCollection { get; set; }
 
+        public AggregateShorthandError TreatShorthandError { get; set; }
+
         public CaseQRConfirmForAllHidden(IResource resource, TicketData ticketdata)
             : base(resource)
         {
@@ -43,7 +45,7 @@ namespace checkin.core.flow
             {
                 this.TicketDataCollection = result.Right;
                 this.tokenStatus = this.TicketDataCollection.status;
-                subject.SetCollection(result.Right, 0);
+                subject.SetCollection(result.Right, ConfirmAllType.all);
             }
             else
             {
@@ -55,11 +57,24 @@ namespace checkin.core.flow
 
         public override Task<bool> VerifyAsync()
         {
+            /*
+            if(this.tokenStatus == TokenStatus.printed)
+            {
+                this.TreatShorthandError = new AggregateShorthandError(this.PresentationChanel);
+                this.TreatShorthandError.Parse("test");
+            }
+             */
             return Task.Run(() => this.tokenStatus == TokenStatus.valid);
         }
 
         public override ICase OnFailure(IFlow flow)
         {
+            /*
+            if (this.TreatShorthandError != null && this.tokenStatus == TokenStatus.printed)
+            {
+                return this.TreatShorthandError.Redirect(flow);
+            }
+             */
             flow.Finish();
             logger.Warn("invalid status: status={0}, token_id={1}".WithMachineName(), this.tokenStatus.ToString(), this.TicketData.ordered_product_item_token_id);
             var message = this.Resource.GetTokenStatusMessage(this.tokenStatus);

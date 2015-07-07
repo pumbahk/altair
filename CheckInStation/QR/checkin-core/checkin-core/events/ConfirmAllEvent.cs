@@ -15,6 +15,12 @@ namespace checkin.core.events
         fetched,
     }
 
+    public enum ConfirmAllType
+    {
+        none,
+        all,
+    }
+
     public interface IConfirmAllStatusInfo
     {
         ConfirmAllStatus Status { get; set; }
@@ -31,12 +37,12 @@ namespace checkin.core.events
             this.StatusInfo.Status = s;
         }
 
-        public void SetCollection(TicketDataCollection ticketcollection, int type)
+        public void SetCollection(TicketDataCollection ticketcollection, ConfirmAllType type)
         {
             TicketDataCollection tempCollection = this.StatusInfo.TicketDataCollection;
             foreach (TicketDataMinumum ticket in ticketcollection.collection)
             {
-                if (type == 0)
+                if (type == ConfirmAllType.none)
                 {
                     ticket.is_selected = false;
                 }

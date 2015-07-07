@@ -100,12 +100,25 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Visibility="Hidden"
+                            Focusable="False">
                         <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
                     </Button>
-                    
+
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">QRコード</TextBlock>
+                    </Button>
+
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"

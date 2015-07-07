@@ -54,7 +54,7 @@ namespace checkin.core.flow
             {
                 this.TicketDataCollection = result.Right;
                 this.tokenStatus = this.TicketDataCollection.status;
-                subject.SetCollection(result.Right, 0);
+                subject.SetCollection(result.Right, ConfirmAllType.none);
                 subject.SetPartOrAll(this.PartOrAll);
             }
             else

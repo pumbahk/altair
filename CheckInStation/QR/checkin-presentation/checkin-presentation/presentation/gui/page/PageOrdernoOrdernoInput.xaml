@@ -71,20 +71,35 @@
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
                             Style="{StaticResource HomeButton}"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Visibility="Hidden"
+                            Focusable="False">
                         <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
+                    </Button>
+
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">QRコード</TextBlock>
                     </Button>
 
                     <Button
                     Canvas.Left="140"
                     Canvas.Top="655"
+                    x:Name="goback"
                     Click="OnBackwardWithBoundContext"
                     Style="{StaticResource BackwardButton}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Focusable="False"
+                    Visibility="Hidden"
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>

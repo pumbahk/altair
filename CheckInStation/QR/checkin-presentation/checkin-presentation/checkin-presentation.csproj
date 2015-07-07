@@ -108,11 +108,17 @@
     <Compile Include="presentation\gui\page\PageConfirmListOne.xaml.cs">
       <DependentUpon>PageConfirmListOne.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\page\PageFinish2.xaml.cs">
+      <DependentUpon>PageFinish2.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PageOneOrPart.xaml.cs">
       <DependentUpon>PageOneOrPart.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\page\PagePartOrAll.xaml.cs">
       <DependentUpon>PagePartOrAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePrinting2.xaml.cs">
+      <DependentUpon>PagePrinting2.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\page\PageWelcome.xaml.cs">
       <DependentUpon>PageWelcome.xaml</DependentUpon>
@@ -316,11 +322,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="presentation\gui\page\PageFinish2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\page\PageOneOrPart.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PagePartOrAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrinting2.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

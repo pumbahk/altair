@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.events;
 using checkin.core.flow;
+using checkin.core.support;
 
 namespace checkin.presentation.gui.page
 {
@@ -80,6 +81,17 @@ namespace checkin.presentation.gui.page
                 ctx.RefreshModeVisibility = Visibility.Visible;
             }
 
+            if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+            {
+                this.gotoanothermode.Visibility = Visibility.Visible;
+                this.gotowelcome.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.gotoanothermode.Visibility = Visibility.Hidden;
+                this.gotowelcome.Visibility = Visibility.Visible;
+            }
+
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
@@ -95,6 +107,20 @@ namespace checkin.presentation.gui.page
                     case_ = await ctx.SubmitAsync();
                 }
                 ctx.TreatErrorMessage();
+                if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                {
+                    if (ctx.Event.Status == InternalEventStaus.success)
+                    {
+                        var ctx_ = new PageConfirmAllDataContext(this)
+                        {
+                            Broker = AppUtil.GetCurrentBroker(),
+                            Status = ConfirmAllStatus.starting
+                        };
+                        ctx_.Event = new ConfirmAllEvent() { StatusInfo = ctx_ };
+                        case_ = await ctx_.SubmitAsync();
+                        ctx_.TreatErrorMessage();
+                    }
+                } 
 
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage);
             });
@@ -122,6 +148,22 @@ namespace checkin.presentation.gui.page
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             (this.KeyPad as VirtualKeyboard).RaiseVirtualkeyboardFinishEvent();
+        }
+
+        private void OnGotoAnotherMode(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            try
+            {
+                var broker = AppUtil.GetCurrentBroker();
+                var current = broker.FlowManager.Peek().Case;
+                var another = broker.RedirectAlternativeCase(current);
+                AppUtil.GetNavigator().NavigateToMatchedPage(another, this);
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("goto another mode".WithMachineName(), ex);
+            }
         }
 
         private async void OnGotoWelcome(object sender, RoutedEventArgs e)
