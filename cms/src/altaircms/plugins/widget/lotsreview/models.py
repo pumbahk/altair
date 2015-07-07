@@ -19,9 +19,7 @@ def lotsreview_simple_render(request, widget, event):
     if widget.external_link:
         href = widget.external_link
     else:
-        href = "http://rt.tstar.jp/lots/review"
-        if request.organization.code != u"RT":
-            href = "http://{0}/lots/review".format(request.host)
+        href = "https://{0}/lots/review".format(request.host)
     return u'<div style="text-align:{0}"><a href="{1}" target="_blank"><img src="{2}"></a></div>'.format(widget.attributes['align'], href, request.static_url("altaircms:static/RT/img/lots/lotsreviewSimple.jpg"))
 
 LOTSREVIEW_DISPATCH = {
