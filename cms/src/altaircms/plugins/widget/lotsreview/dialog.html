@@ -1,0 +1,17 @@
+## lotsreview widget dialog
+##  view function is views.LotsreviewWidgetView.dialog
+##
+<%namespace file="../components.html" name="co"/>
+
+<div class="title">
+  <h1>抽選結果　widget</h1>
+</div>
+
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "kind")}
+    ${co.formfield(form, "external_link")}
+    ${co.formfield(form, "align")}
+  </tbody>
+</table>
+<button type="button" id="lotsreview_submit">登録</button>
