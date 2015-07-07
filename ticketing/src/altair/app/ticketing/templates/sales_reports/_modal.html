@@ -36,6 +36,16 @@
           function () {}
         );
       };
+      copy_report_setting = function copy_report_setting(id) {
+        if (!id) return false;
+        var url = '${request.route_path('report_settings.copy', report_setting_id='{id}')}';
+        load_modal_form(
+          modal_report_setting,
+          url.replace(encodeURIComponent('{id}'), id),
+          null,
+          function () {}
+        );
+      };
       delete_report_setting = function delete_report_setting(id) {
         if (!id) return false;
         var modal = $('#modal-delete');

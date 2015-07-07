@@ -21,13 +21,18 @@
       url='javascript:edit_report_setting(get_selected_report_setting_id());',
       icon='icon-pencil',
     ),
+    'copy':dict(
+      label=u'コピー',
+      url='javascript:copy_report_setting(get_selected_report_setting_id());',
+      icon='icon-plus',
+    ),
     'delete':dict(
       label=u'削除',
       url='javascript:delete_report_setting(get_selected_report_setting_id());',
       icon='icon-minus',
     ),
   }
-  order = iter(order or ['new', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'copy', 'delete'])
 %>
 ${HH.action_button(actions, order)}
 
