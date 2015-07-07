@@ -63,24 +63,3 @@ class RefundTicketSearchHelper(object):
             return datetime.strftime("%Y/%m/%d")
         else:
             return ""
-
-class SearchResult(object):
-    pass
-
-class SearchResultRow(object):
-    def __iter__(self):
-        pass
-
-    def next(self):
-        pass
-
-class OrderSearchResultRow(SearchResultRow):
-    pass
-
-class PerformanceSearchResultRaw(SearchResultRow):
-    pass
-
-class RefundPerformanceSearchResultRaw(SearchResultRow):
-    pass
-
-

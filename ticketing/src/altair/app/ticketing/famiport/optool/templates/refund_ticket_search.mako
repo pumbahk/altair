@@ -100,7 +100,7 @@
             <td>${famiport_refund_entry.ticket_payment}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_refund_entry.shop_code}</td>
-            <td>${famiport_shop.branch_name if famiport_shop else ''}</td>
+            <td>${famiport_shop.name if famiport_shop else ''}</td>
         </tr>
         % endfor
         </tbody>
