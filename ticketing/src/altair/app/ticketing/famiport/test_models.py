@@ -57,6 +57,12 @@ class TestScrew(TestCase):
         v = screw36(0xaaaaaaaaa, 0x123456789)
         self.assertEqual(v, 0x569ea94a9 ^ 0x123456789)
 
+    def test_screw36_1e10(self):
+        import math
+        from .models import screw36
+        for i in range(0, 100000):
+            assert math.log10(screw36(i, 0x123456789)) < 11 
+
     def test_screw47(self):
         from .models import screw47
         v = screw47(0x555555555555, 0x12345678901)
