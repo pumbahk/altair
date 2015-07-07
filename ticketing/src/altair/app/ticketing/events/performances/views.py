@@ -2,7 +2,9 @@
 
 import sys
 import re
+
 import logging
+import datetime
 from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
@@ -620,8 +622,8 @@ class Performances(BaseView):
             new_performance.event_id = origin_performance.event_id
             new_performance.name = params[cnt * 4 + 1][1]
             if params[cnt * 4 + 2][1]:
-                new_performance.open_on = params[cnt * 4 + 2][1]
-            new_performance.start_on = params[cnt * 4 + 3][1]
+                new_performance.open_on = datetime.datetime.strptime(params[cnt * 4 + 2][1], '%Y-%m-%d %H:%M:%S')
+            new_performance.start_on = datetime.datetime.strptime(params[cnt * 4 + 3][1], '%Y-%m-%d %H:%M:%S')
             new_performance.display_order = params[cnt * 4 + 4][1]
 
             # Copy data
@@ -686,7 +688,6 @@ class Performances(BaseView):
                 self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt + 1))
                 error_exist = True
 
-            import datetime
             if params[cnt * 4 + 2][1]:
                 try:
                     datetime.datetime.strptime(
