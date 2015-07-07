@@ -482,10 +482,10 @@ def screw47(x, s):
 # http://www.gs1.org/how-calculate-check-digit-manually
 def calculate_gtin_cd(barcode):
     return u'%d' % (
-        10 - sum(
+        9 - (sum(
             (3 - (i % 2) * 2) * int(barcode[-i-1])
             for i in range(0, len(barcode))
-            ) % 10
+            ) + 9) % 10
         )
 
 
