@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 import urllib
+import re
 
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
@@ -227,8 +228,7 @@ class ReportSettings(BaseView):
             raise ReportSettingValidationError(form=f)
 
         from altair.sqlahelper import get_db_session
-        import re
-        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|"|,|　', f.recipients.data))
+        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|,|　', f.recipients.data))
         session = get_db_session(self.request, 'slave')
         recipients = session.query(ReportRecipient).filter(ReportRecipient.email.in_(mails)).all()
 

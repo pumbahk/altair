@@ -2,6 +2,7 @@
 
 import csv
 import logging
+import re
 from datetime import datetime
 from sqlalchemy import sql
 from sqlalchemy import orm
@@ -1188,8 +1189,7 @@ class LotReport(object):
             raise ReportSettingValidationError(form=f)
 
         from altair.sqlahelper import get_db_session
-        import re
-        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|"|,|　', f.recipients.data))
+        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|,|　', f.recipients.data))
         session = get_db_session(self.request, 'slave')
         recipients = session.query(ReportRecipient).filter(ReportRecipient.email.in_(mails)).all()
 
