@@ -597,7 +597,7 @@ class FamiPortOrder(Base, WithTimestamp):
     id                           = sa.Column(Identifier, primary_key=True, autoincrement=True)
     type                         = sa.Column(sa.Integer, nullable=False)
     order_no                     = sa.Column(sa.Unicode(12), nullable=False)
-    famiport_order_identifier    = sa.Column(sa.Unicode(12), nullable=False)  # 注文ID
+    famiport_order_identifier    = sa.Column(sa.Unicode(12), nullable=False, unique=True)  # 注文ID
     famiport_sales_segment_id    = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
     client_code                  = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     generation                   = sa.Column(sa.Integer, nullable=False, default=0)
