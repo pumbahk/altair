@@ -39,7 +39,7 @@ class SearchReceiptForm(OurForm):
     exchange_number = OurTextField(
         label=u'引換票番号：',
     )
-    famiport_order_identifier = OurTextField(
+    management_number = OurTextField(
         label=u'管理番号：',
         validators=[
             Optional(),

@@ -926,11 +926,6 @@ class FamiPortShop(Base, WithTimestamp):
     paused = sa.Column(sa.Boolean(), nullable=False, default=False)
     deleted = sa.Column(sa.Boolean(), nullable=False, default=False)
 
-    # @classmethod
-    # def get_by_code(cls, request, code):
-    #     session = get_db_session(request, 'famiport')
-    #     return session.query(FamiPortShop).filter_by(code = code).first()
-
 
 class FamiPortReceipt(Base, WithTimestamp):
     __tablename__ = 'FamiPortReceipt'

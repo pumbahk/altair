@@ -14,8 +14,8 @@
               <td>${form.exchange_number(class_='form-control')}</td>
             </tr>
             <tr>
-              <th class="pull-right">${form.famiport_order_identifier.label}</th>
-              <td>${form.famiport_order_identifier(class_='form-control')}</td>
+              <th class="pull-right">${form.management_number.label}</th>
+              <td>${form.management_number(class_='form-control')}</td>
               <th class="pull-right">${form.barcode_number.label}</th>
               <td>${form.barcode_number(class_='form-control')}</td>
             </tr>

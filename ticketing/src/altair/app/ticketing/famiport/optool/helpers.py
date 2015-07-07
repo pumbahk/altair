@@ -51,15 +51,15 @@ class RefundTicketSearchHelper(object):
         return famiport_order_identifier[3:12]
 
     @classmethod
-    def format_datetime(cls, datetime):
+    def format_datetime(cls, datetime, format="%Y/%m/%d %H:%M"):
         if datetime:
-            return datetime.strftime("%Y/%m/%d %H:%M")
+            return datetime.strftime(format)
         else:
             return ""
 
     @classmethod
-    def format_date(cls, datetime):
+    def format_date(cls, datetime, format="%Y/%m/%d"):
         if datetime:
-            return datetime.strftime("%Y/%m/%d")
+            return datetime.strftime(format)
         else:
             return ""
