@@ -66,14 +66,6 @@
         <th>申込サイト</th>
         <td colspan="3">${receipt.famiport_order.famiport_sales_segment.sales_channel}</td>
       </tr>
-      <tr>
-        <th rowspan="2">席種・料金</th>
-        <td rowspan="2"><span style="color:red;">要確認</span></td>
-        <td colspan="2"><span style="color:red;">要確認</span></td>
-      </tr>
-      <tr>
-        <td colspan="2"><span style="color:red;">要確認</span></td>
-      </tr>
     </tbody>
 
     <thead><tr><th colspan="4"></th></tr></thead>
