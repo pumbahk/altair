@@ -689,7 +689,7 @@ class ExportableReporter(object):
 
         self.performance_codes = None
         if request.params.get('performance_code'):
-            self.performance_codes = request.params.get('performance_code').split(',')
+            self.performance_codes = map(unicode.strip, request.params.get('performance_code').split(','))
 
         self.ordered_from = None
         if request.params.get('from'):
