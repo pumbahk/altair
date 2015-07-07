@@ -4,7 +4,7 @@ import six
 import logging
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import and_, not_
+from sqlalchemy.sql import and_, not_, or_
 from altair.sqlahelper import get_db_session
 from ..models import (
     FamiPortPerformance,
@@ -130,7 +130,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         query = query.filter(FamiPortReceipt.reserve_number == formdata.get('exchange_number'))
     if formdata.get('management_number'):
         pattern = u'%{}'.format(formdata.get('management_number'))
-        query = query.filter(FamiPortOrder.famiport_order_identifier.like(pattern)) # TODO Filter with amiPortOrder.famiport_order_identifier or FamiPortReceipt.famiport_order_identifier
+        query = query.filter(or_(FamiPortOrder.famiport_order_identifier.like(pattern), FamiPortReceipt.famiport_order_identifier.like(pattern)))
     if formdata.get('barcode_number'):
         pattern = u'%{}'.format(formdata.get('barcode_number'))
         query = query.filter(FamiPortTicket.barcode_number.like(pattern))
