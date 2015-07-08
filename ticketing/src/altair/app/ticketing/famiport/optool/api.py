@@ -180,7 +180,7 @@ def search_refund_ticket_by(request, params):
     str_performance_end_date = params.get('performance_end_date', '')
     performance_end_date = datetime.strptime(str_performance_end_date, "%Y-%m-%d") if str_performance_end_date else str_performance_end_date
 
-    if before_refund and during_refund and after_refund:
+    if (before_refund and during_refund and after_refund) or not (before_refund or during_refund or after_refund):
         pass
     elif before_refund and during_refund: # <=> Not after_refund
         query = query.filter(not_(FamiPortRefund.end_at < datetime.now()))
