@@ -21,10 +21,11 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
+    from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
     op.add_column('DeliveryMethod',
         sa.Column('preferences', sa.Unicode(16384), nullable=False, server_default=text(u"'{}'"))
         )
-    op.execute("""UPDATE DeliveryMethod SET preferences=CONCAT('{"hide_voucher":', hide_voucher, '}')""")
+    op.execute("""UPDATE DeliveryMethod SET preferences=CONCAT('{"%d":{"hide_voucher":', hide_voucher, '}}')""" % SEJ_DELIVERY_PLUGIN_ID)
     # op.drop_column('DeliveryMethod', 'hide_voucher') # DO THIS LATER
 
 def downgrade():

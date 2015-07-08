@@ -1951,13 +1951,17 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
 
+    @property
+    def sej_preferences(self):
+        return self.preferences.get(unicode(plugins.SEJ_DELIVERY_PLUGIN_ID), {})
+
     @annotated_property(label=_(u'引換票を表示しない'))
     def hide_voucher(self):
-        return self.preferences.get('hide_voucher')
+        return self.sej_preferences.get('hide_voucher', False)
 
     @hide_voucher.setter
     def hide_voucher(self, value):
-        self.preferences['hide_voucher'] = value
+        self.sej_preferences['hide_voucher'] = value
 
     @property
     def fee(self):
