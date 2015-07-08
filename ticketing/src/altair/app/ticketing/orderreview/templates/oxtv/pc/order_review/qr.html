@@ -19,7 +19,9 @@
     <br />
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
   <br />
-　<font size="5"> ${product.name} (${product.id})</font> <br />
+  %if product:
+  <font size="5">商品名 ${product.name} (${product.id})</font><br />
+  %endif
   %if ticket.seat:
   <font size="5"> ${ticket.seat.name} (${ticket.seat.l0_id})</font> <br />
   %endif

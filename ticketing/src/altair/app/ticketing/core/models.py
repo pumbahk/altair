@@ -1953,7 +1953,9 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_preferences(self):
-        return self.preferences.get(unicode(plugins.SEJ_DELIVERY_PLUGIN_ID), {})
+        if self.preferences is None:
+            self.preferences = {}
+        return self.preferences.setdefault(unicode(plugins.SEJ_DELIVERY_PLUGIN_ID), {})
 
     @annotated_property(label=_(u'引換票を表示しない'))
     def hide_voucher(self):
