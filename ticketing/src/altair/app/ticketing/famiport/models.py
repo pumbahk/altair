@@ -362,17 +362,6 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_ticket = orm.relationship('FamiPortTicket')
     famiport_refund = orm.relationship('FamiPortRefund', backref='entries')
 
-    @classmethod
-    def set_session(self, request):
-        self.session = get_db_session(request, 'famiport')
-
-    @property
-    def famiport_shop(self, request=None):
-        if self.session is None and request is not None:
-            logger.info("session is None @ famiport_shop")
-            self.session = self.set_session(request)
-        return self.session.query(FamiPortShop).outerjoin(FamiPortRefundEntry, self.shop_code==FamiPortShop.code).first()
-
 
 class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
     CashOnDelivery       = 1  # 代引き
@@ -926,6 +915,9 @@ class FamiPortShop(Base, WithTimestamp):
     paused = sa.Column(sa.Boolean(), nullable=False, default=False)
     deleted = sa.Column(sa.Boolean(), nullable=False, default=False)
 
+    @classmethod
+    def get_by_code(cls, code, session):
+        return session.query(FamiPortShop).filter_by(code = code).first()
 
 class FamiPortReceipt(Base, WithTimestamp):
     __tablename__ = 'FamiPortReceipt'

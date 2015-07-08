@@ -211,3 +211,7 @@ def search_refund_ticket_by(request, params):
         query = query.filter(FamiPortPerformance.start_at <= performance_end_date)
     query = query.order_by(FamiPortRefundEntry.refunded_at)
     return query.all()
+
+def get_famiport_shop_by_code(request, shop_code):
+    session = get_db_session(request, 'famiport')
+    return FamiPortShop.get_by_code(shop_code, session)

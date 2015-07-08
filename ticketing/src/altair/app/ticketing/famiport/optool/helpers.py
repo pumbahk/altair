@@ -1,6 +1,7 @@
 # encoding: utf-8
 from webhelpers.paginate import PageURL_WebOb, Page
 import logging
+from .api import get_famiport_shop_by_code
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,9 @@ class RefundTicketSearchHelper(object):
                ('performance_date', u'公演日'), ('event_name', u'興行名'),
                ('refunded_amount', u'返金額'), ('refunded_at', u'払戻日時'), ('refunded_shop_code', u'払戻店番'),
                ('refunded_branch_name', u'払戻店舗名'))
+
+    def __init__(self, request):
+        self.request = request
 
     @classmethod
     def get_columns(cls):
@@ -63,3 +67,12 @@ class RefundTicketSearchHelper(object):
             return datetime.strftime(format)
         else:
             return ""
+
+    def get_famiport_shop_by_code(self, shop_code):
+        return get_famiport_shop_by_code(self.request, shop_code)
+
+    def get_shop_name_text(self, famiport_shop):
+        if famiport_shop:
+            return famiport_shop.name
+        else:
+            return u''
