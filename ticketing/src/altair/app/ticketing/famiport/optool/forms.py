@@ -38,22 +38,38 @@ class SearchReceiptForm(OurForm):
     )
     reserve_number = OurTextField(
         label=u'引換票番号：',
+        validators=[
+            Optional(),
+            Length(max=13, message=u'引換票番号は13文字以内で入力して下さい')
+        ]
     )
     management_number = OurTextField(
         label=u'管理番号：',
         validators=[
             Optional(),
-            Length(9, message=u'管理番号は9桁で入力してください'),
+            Length(9, message=u'管理番号は9桁で入力して下さい'),
         ]
     )
     barcode_number = OurTextField(
         label=u'バーコード番号：',
+        validators=[
+            Optional(),
+            Length(max=13, message=u'バーコード番号は13文字以内で入力して下さい')
+        ]
     )
     customer_phone_number = OurTextField(
-        label=u'電話番号：',
+        label=u'電話番号(ハイフンなし)：',
+        validators=[
+            Optional(),
+            Length(max=12, message=u'電話番号は12文字以内で入力して下さい')
+        ]
     )
     shop_code = OurTextField(
         label=u'店番：',
+        validators=[
+            Optional(),
+            Length(max=5, message=u'店番は5文字以内で入力して下さい')
+        ]
     )
     shop_name = OurTextField(
         label=u'店名：',
