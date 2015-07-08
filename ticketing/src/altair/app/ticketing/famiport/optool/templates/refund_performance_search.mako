@@ -75,8 +75,9 @@
     % for entry in entries:
     <% refund_entry = entry.FamiPortRefundEntry %>
     <% performance = entry.FamiPortPerformance %>
+    <% url_with_eventcode = '{}?event_code={}&event_subcode={}'.format(request.route_url('search.refund_ticket'), performance.famiport_event.code_1, performance.famiport_event.code_2) %>
       <tr>
-        <td><a href="">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</a></td>
+        <td><a href="${url_with_eventcode}">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</a></td>
         <td><a href="${request.route_url('refund_performance.detail', performance_id=performance.id)}">${performance.name}</a></td>
         <td>${refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.code}</td>
         <td>${vh.get_date(performance.start_at)}</td>
