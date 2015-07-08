@@ -39,7 +39,7 @@
         </table>
       </div>
       <div class="buttonBox col-md-2">
-        <button type="button" class="btn btn-default">Clear<span class="glyphicon glyphicon-erase"></span></button>
+        <button type="reset" class="btn btn-default">Clear<span class="glyphicon glyphicon-erase"></span></button>
         <button type="submit" class="btn btn-lg btn-default">Search
           <span class="glyphicon glyphicon-search"></span>
         </button>

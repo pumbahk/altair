@@ -152,7 +152,6 @@
               $('.modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>');
             });
             $("#csv-download").on('click', function() {
-                console.log("csv button was pushed!");
                 $("#search-form").attr('action', '${request.route_url('download.refund_ticket')}').submit();
             });
       });
