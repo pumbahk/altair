@@ -116,6 +116,8 @@ class FamiPortSearchView(object):
             if form.validate():
                 receipts = lookup_receipt_by_searchform_data(self.request, postdata)
                 count = len(receipts)
+                if count == 0:
+                    self.request.session.flash(u'該当するデータはありませんでした')
                 page_url = PageURL_WebOb_Ex(self.request)
                 pages = paginate.Page(receipts,
                                       page=self.request.GET.get('page', '1'),

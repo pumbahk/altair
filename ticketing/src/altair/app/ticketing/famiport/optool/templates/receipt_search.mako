@@ -10,8 +10,8 @@
             <tr>
               <th class="pull-right">${form.barcode_no.label}</th>
               <td>${form.barcode_no(class_='form-control')}</td>
-              <th class="pull-right">${form.exchange_number.label}</th>
-              <td>${form.exchange_number(class_='form-control')}</td>
+              <th class="pull-right">${form.reserve_number.label}</th>
+              <td>${form.reserve_number(class_='form-control')}</td>
             </tr>
             <tr>
               <th class="pull-right">${form.management_number.label}</th>
@@ -70,6 +70,7 @@
   % if entries:
   ${entries.pager()}
   % endif
+  <a href="#" class="toggle-btn pull-right">残り項目表示</a>
   <table class="table table-hover">
     <thead>
       <tr>
@@ -83,19 +84,19 @@
         <th>開演時間</th>
         <th>管理番号</th>
         <th>氏名</th>
-        <th>電話番号</th>
-        <th>払込票番号</th>
-        <th>引換票番号</th>
-        <th>発券枚数</th>
-        <th>入金日時</th>
-        <th>入金店番</th>
-        <th>入金店名</th>
-        <th>発券日時</th>
-        <th>発券店番</th>
-        <th>発券店名</th>
         <th>支払期限日時</th>
         <th>発券期限日時</th>
         <th>申込日時</th>
+        <th class="first-hidden">電話番号</th>
+        <th class="first-hidden">払込票番号</th>
+        <th class="first-hidden">引換票番号</th>
+        <th class="first-hidden">発券枚数</th>
+        <th class="first-hidden">入金日時</th>
+        <th class="first-hidden">入金店番</th>
+        <th class="first-hidden">入金店名</th>
+        <th class="first-hidden">発券日時</th>
+        <th class="first-hidden">発券店番</th>
+        <th class="first-hidden">発券店名</th>
       </tr>
     </thead>
     % if entries:
@@ -112,19 +113,19 @@
         <td>${vh.get_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
         <td>${receipt.famiport_order.famiport_order_identifier}</td>
         <td>${receipt.famiport_order.customer_name}</td>
-        <td>${receipt.famiport_order.customer_phone_number}</td>
-        <td>${receipt.barcode_no}</td>
-        <td>${receipt.reserve_number}</td>
-        <td>${receipt.famiport_order.ticket_total_count}</td>
-        <td>${receipt.famiport_order.paid_at}</td>
-        <td>${receipt.shop_code}</td>
-        <td>${receipt.get_shop_name(request)}</td>
-        <td>${receipt.famiport_order.issued_at}</td>
-        <td>${receipt.shop_code}</td>
-        <td>${receipt.get_shop_name(request)}</td>
         <td>${receipt.famiport_order.payment_due_at}</td>
         <td>${receipt.famiport_order.ticketing_end_at}</td>
         <td>${receipt.famiport_order.created_at}</td>
+        <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
+        <td class="first-hidden">${receipt.barcode_no}</td>
+        <td class="first-hidden">${receipt.reserve_number}</td>
+        <td class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
+        <td class="first-hidden">${receipt.famiport_order.paid_at}</td>
+        <td class="first-hidden">${receipt.shop_code}</td>
+        <td class="first-hidden">${receipt.get_shop_name(request)}</td>
+        <td class="first-hidden">${receipt.famiport_order.issued_at}</td>
+        <td class="first-hidden">${receipt.shop_code}</td>
+        <td class="first-hidden">${receipt.get_shop_name(request)}</td>
       </tr>
     % endfor
     </tbody>
@@ -153,6 +154,11 @@
         $('#sales_to').datepicker({
               format: "yyyy-mm-dd",
               language: "ja"
+        });
+        $('.toggle-btn').on('click', function(e) {
+            e.preventDefault();
+            console.log('push toggle');
+            $('td.first-hidden, th.first-hidden').show();
         });
       });
 </script>

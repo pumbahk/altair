@@ -36,7 +36,7 @@ class SearchReceiptForm(OurForm):
     barcode_no = OurTextField(
         label=u'払込票番号：',
     )
-    exchange_number = OurTextField(
+    reserve_number = OurTextField(
         label=u'引換票番号：',
     )
     management_number = OurTextField(

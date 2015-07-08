@@ -94,6 +94,11 @@ body {
 
 .table tbody td {
   border-bottom: 1px solid #AEDE94;
+  font-size:85%;
+}
+
+.first-hidden {
+    display: none;
 }
 
 .table tbody th {
