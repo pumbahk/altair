@@ -56,7 +56,7 @@ class DeliveryMethodForm(Form):
         widget=TextArea()
         )
     hide_voucher = OurBooleanField(
-        label=get_annotations_for(DeliveryMethod.hide_voucher)['label']
+        label=u'引換票を表示しない'
         )
     display_order = TextField(
         label=u'表示順',

@@ -32,7 +32,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 
 from zope.deprecation import deprecation
-
+from altair.types import annotated_property
 from .exceptions import InvalidStockStateError, InvalidRefundStateError
 from .interfaces import (
     ISalesSegmentQueryable,
@@ -1945,12 +1945,19 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
 
-    # 引換票を表示しないオプション（SEJ専用）
-    hide_voucher = AnnotatedColumn(Boolean, default=False, _a_label=_(u'引換票を表示しない'))
-
     # Backend内の表示制御項目
     display_order = Column(Integer, default=0, nullable=False)
     selectable = Column(Boolean, default=True, nullable=False)
+
+    preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
+    @annotated_property(label=_(u'引換票を表示しない'))
+    def hide_voucher(self):
+        return self.preferences.get('hide_voucher')
+
+    @hide_voucher.setter
+    def hide_voucher(self, value):
+        self.preferences['hide_voucher'] = value
 
     @property
     def fee(self):
