@@ -110,8 +110,8 @@ class FamiPortSearchView(object):
     def search_receipt(self):
         form = SearchReceiptForm()
 
-        if self.request.POST or self.request.params:
-            postdata = self.request.POST
+        if self.request.params:
+            postdata = self.request.params
             form = SearchReceiptForm(postdata)
             if form.validate():
                 receipts = lookup_receipt_by_searchform_data(self.request, postdata)
@@ -143,8 +143,8 @@ class FamiPortSearchView(object):
     def search_performance(self):
         form = SearchPerformanceForm()
 
-        if self.request.POST or self.request.params:
-            postdata = self.request.POST
+        if self.request.params:
+            postdata = self.request.params
             form = SearchPerformanceForm(postdata)
             if form.validate():
                 performances = lookup_performance_by_searchform_data(self.request, postdata)

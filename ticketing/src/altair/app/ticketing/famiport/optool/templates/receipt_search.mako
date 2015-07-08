@@ -1,7 +1,7 @@
 <%inherit file="_base.mako"/>
 
 <div class="jumbotron">
-  <form class="form" action="${request.route_url('search.receipt')}" method='POST'>
+  <form class="form" action="${request.route_url('search.receipt')}">
     <div class="row">
       <div class="col-md-10">
         <h3 class="form-heading">申込検索</h3>

@@ -1,6 +1,6 @@
 <%inherit file="_base.mako"/>
 <div class="jumbotron">
-  <form class="form" action="${request.route_path('search.performance')}" method='POST'>
+  <form class="form" action="${request.route_path('search.performance')}">
     <div class="row">
       <div class="col-md-10">
         <h3 class="form-heading">公演検索</h3>
