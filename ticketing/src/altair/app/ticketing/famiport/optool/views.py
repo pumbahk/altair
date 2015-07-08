@@ -130,7 +130,8 @@ class FamiPortSearchView(object):
 
                 errors = u'・'.join(sum(form.errors.values(), []))
                 self.request.session.flash(errors)
-                return dict(form=form,count=None,entries=[])
+                count = None
+                pages = []
         else:
             count = None
             pages = []
@@ -158,6 +159,11 @@ class FamiPortSearchView(object):
                                      items_per_page=20,
                                      url=page_url)
             else:
+                for error in form.errors.values():
+                    logger.info('validation failed:{}'.format(error))
+
+                errors = u'・'.join(sum(form.errors.values(), []))
+                self.request.session.flash(errors)
                 if not postdata.get('event_code_1') and postdata.get('event_code_2'):
                     self.request.session.flash(u'mainとsubセットでご入力下さい')
                 count = None
@@ -187,6 +193,11 @@ class FamiPortSearchView(object):
                                       items_per_page=20,
                                       url=page_url)
             else:
+                for error in form.errors.values():
+                    logger.info('validation failed:{}'.format(error))
+
+                errors = u'・'.join(sum(form.errors.values(), []))
+                self.request.session.flash(errors)
                 count = None
                 pages = []
         else:
