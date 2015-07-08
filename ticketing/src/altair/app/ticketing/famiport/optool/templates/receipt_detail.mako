@@ -96,17 +96,31 @@
     <thead><tr><th colspan="4"></th></tr></thead>
     <tbody>
       <tr>
-        <th>Famiポート受付日時</th>
-        <td>${receipt.payment_request_received_at}</td>
-        <th>発券日時</th>
-        <td>${receipt.famiport_order.issued_at if receipt.famiport_order.issued_at else u'未発券'}</td>
+        <th colspan="1">Famiポート受付日時</th>
+        <td colspan="3">${receipt.payment_request_received_at}</td>
       </tr>
       <tr>
-        <th>発券店番</th>
-        <td>${receipt.shop_code}</td>
-        <th>発券店舗</th>
-        <td>${receipt.get_shop_name(request)}</td>
+        <th>発券日時</th>
+        <td>${receipt.famiport_order.issued_at if receipt.famiport_order.issued_at else u'未発券'}</td>
+        <th>入金日時</th>
+        <td>${receipt.famiport_order.paid_at if receipt.famiport_order.paid_at else u'未入金'}</td>
       </tr>
+      % if receipt.famiport_order.type != 2:
+      <tr>
+        <th>入金店番</th>
+        <td>${u"-" if receipt.is_ticketing_receipt else receipt.shop_code}</td>
+        <th>入金店舗</th>
+        <td>${u"-" if receipt.is_ticketing_receipt else receipt.get_shop_name(request)}</td>
+      </tr>
+      % endif
+      % if receipt.famiport_order.type != 1:
+      <tr>
+        <th>発券店番</th>
+        <td>${u"-" if receipt.is_payment_receipt else receipt.shop_code}</td>
+        <th>発券店舗</th>
+        <td>${u"-" if receipt.is_payment_receipt else receipt.get_shop_name(request)}</td>
+      </tr>
+      % endif
       % if receipt.famiport_order.famiport_tickets:
       % for index in range(0,len(receipt.famiport_order.famiport_tickets)):
       <tr>
