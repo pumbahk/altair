@@ -52,8 +52,8 @@
     </div>
 
     <div class="buttonBox col-md-1">
-      <button type="submit" class="btn btn-default">Clear<span class="glyphicon glyphicon-erase"></span></button>
-      <button type="submit" class="btn btn-lg btn-default">Search
+      <button type="reset" class="btn btn-default">クリア<span class="glyphicon glyphicon-erase"></span></button>
+      <button type="submit" class="btn btn-lg btn-default">検索
         <span class="glyphicon glyphicon-search"></span>
       </button>
     </div>
@@ -61,11 +61,11 @@
 </form>
 </div>
 <div id="table-content">
+  % if paginator:
   <div class="row">
     <div class="col-md-3">
       <h4>払戻チケット一覧</h4>
     </div>
-  % if paginator:
   ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
     <div class="col-md-9 text-center">
       <h4>検索結果件数${paginator.item_count}件</h4>

@@ -208,6 +208,8 @@ class FamiPortSearchView(object):
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako')
     def search_refund_ticket(self):
         form = RefundTicketSearchForm(self.request.params)
+        if not self.request.GET:
+            return dict(form=form)
         if not form.validate():
             errors = u'・'.join(sum(form.errors.values(), []))
             self.request.session.flash(errors)
