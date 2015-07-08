@@ -1,6 +1,6 @@
 <%inherit file="_base.mako"/>
 <div class="jumbotron">
-  <form class="form" action="${request.route_url('search.refund_performance')}" method='POST'>
+  <form class="form" action="${request.route_url('search.refund_performance')}">
     <div class="row">
       <div class="col-md-10">
         <h3 class="form-heading">払戻公演検索</h3>
@@ -72,16 +72,18 @@
     </thead>
     % if entries:
     <tbody>
-    % for performance in entries:
+    % for entry in entries:
+    <% refund_entry = entry.FamiPortRefundEntry %>
+    <% performance = entry.FamiPortPerformance %>
       <tr>
         <td><a href="">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</a></td>
         <td><a href="${request.route_url('refund_performance.detail', performance_id=performance.id)}">${performance.name}</a></td>
-        <td></td>
+        <td>${refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.code}</td>
         <td>${vh.get_date(performance.start_at)}</td>
         <td>${vh.get_time(performance.start_at)}</td>
-        <td><span style="color:red;">要確認</span></td>
-        <td><span style="color:red;">要確認</span></td>
-        <td><span style="color:red;">要確認</span></td>
+        <td>${refund_entry.famiport_refund.start_at}</td>
+        <td>${refund_entry.famiport_refund.end_at}</td>
+        <td>${refund_entry.famiport_refund.send_back_due_at}</td>
       </tr>
     % endfor
     </tbody>

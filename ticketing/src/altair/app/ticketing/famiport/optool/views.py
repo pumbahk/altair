@@ -172,30 +172,21 @@ class FamiPortSearchView(object):
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako')
     def search_refund_performance(self):
         form = SearchRefundPerformanceForm()
-        if self.request.POST or self.request.params:
-            '''
-            postdata = self.request.POST
+        if self.request.params:
+            postdata = self.request.params
             form = SearchRefundPerformanceForm(postdata)
             if form.validate():
-                performances = lookup_refund_performance_by_searchform_data(self.request, postdata)
-
-            '''
-            # testdata
-            fami_session = get_db_session(self.request, name="famiport")
-            performances = fami_session.query(FamiPortPerformance).filter(FamiPortPerformance.id == 2).all()
-
-            count = len(performances)
-            page_url = PageURL_WebOb_Ex(self.request)
-            pages = paginate.Page(performances,
-                                  page=self.request.GET.get('page', '1'),
-                                  item_count=count,
-                                  items_per_page=20,
-                                  url=page_url)
-            '''
+                results = lookup_refund_performance_by_searchform_data(self.request, postdata)
+                count = len(results)
+                page_url = PageURL_WebOb_Ex(self.request)
+                pages = paginate.Page(results,
+                                      page=self.request.GET.get('page', '1'),
+                                      item_count=count,
+                                      items_per_page=20,
+                                      url=page_url)
             else:
                 count = None
                 pages = []
-            '''
         else:
             count = None
             pages = []
