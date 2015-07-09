@@ -244,5 +244,35 @@
 
     <SolidColorBrush x:Key="KeyPadSurfaceBorderBrush" Color="#111111"/>
     <SolidColorBrush x:Key="KeyPadSurfaceBorderDisableBrush" Color="#999999"/>
+
+
+    <Style TargetType="Button" x:Key="HomeButton">
+        <Setter Property="Width" Value="150"/>
+        <Setter Property="Height" Value="60"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource HomeSubmitButtonForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource HomeSubmitButtonBackGroundBrush}"/>
+        <Setter Property="Canvas.Top" Value="17"/>
+        <Setter Property="Canvas.Left" Value="1050"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Style="{StaticResource HomeSubmitButtonContainer}">
+                        <ContentPresenter x:Name="contentPresenter"
+                              ContentTemplate="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                              Margin="{TemplateBinding Margin}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource HomeMouseSubmitButtonBackGroundBrushBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
 

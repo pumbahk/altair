@@ -34,11 +34,29 @@ namespace checkin.presentation
             AppUtil.Broker = app.RequestBroker;
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
             AppUtil.RefreshPageNavigator = new RefreshPageNavigator(AppUtil.PageChoicer);
+            AppUtil.Loadstyle();
         }
 
         public static IResource GetCurrentResource()
         {
             return AppUtil.Internal.Resource;
+        }
+
+        private static void Loadstyle()
+        {
+            ResourceDictionary myResourceDictionary = new ResourceDictionary();
+            switch (ConfigurationManager.AppSettings["application.flow"])
+            {
+                case "StandardFlow":
+                    myResourceDictionary.Source = new Uri("Styles\\Ticketstar\\StandardFlow.xaml", UriKind.Relative);
+                    break;
+                case "OneStep":
+                    myResourceDictionary.Source = new Uri("Styles\\Ticketstar\\OneStep.xaml", UriKind.Relative);
+                    break;
+                default:
+                    break;
+            }
+            Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
         }
 
         public static void GotoWelcome(Page previous)
