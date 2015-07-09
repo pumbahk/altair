@@ -157,7 +157,7 @@ def get_or_create_matched_history_from_token(order_no, token):
             seat_id=token.seat_id,
             item_token_id=token.id, 
             ordered_product_item_id=token.ordered_product_item_id,
-            order_id=token.ordered_product_item.ordered_product.order.id
+            order_id=token.item.ordered_product.order.id
             )
         DBSession.add(history)
         DBSession.flush()
