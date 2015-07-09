@@ -91,6 +91,7 @@ WIDGET_LABEL_DICT =  {
     "promotion" : u"プロモーション枠",
     "anchorlist" : u"ページ内リンク一覧",
     "purchase" : u"購入ボタン",
+    "lotsreview" : u"抽選結果ボタン",
     "twitter" : u"Twitter"
     }
 

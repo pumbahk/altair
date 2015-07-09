@@ -1,9 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
 
-<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
-<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
-
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'レポート送信設定'],
@@ -32,9 +29,6 @@
       ${ch.validate_errors(form.recipients)}
     </div>
   </div>
-  <script type="text/javascript">
-    $("form select[name='recipients']").chosen();
-  </script>
   <div class="control-group">
     <label class="control-label">送信先追加</label>
     <div class="controls">

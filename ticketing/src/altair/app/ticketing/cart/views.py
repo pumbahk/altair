@@ -62,6 +62,7 @@ filter_extra_form_schema,
     back_to_top,
     gzip_preferred,
     is_booster_or_fc_cart_pred,
+    is_fc_cart_pred,
     render_view_to_response_with_derived_request,
     )
 from .exceptions import (
@@ -124,6 +125,10 @@ def flow_predicate_prepared(pe, flow_context, context, request):
 def flow_predicate_non_booster_cart(pe, flow_context, context, request):
     return not is_booster_or_fc_cart_pred(context, request)
 
+@provider(IPageFlowPredicate)
+def flow_predicate_fc_cart(pe, flow_context, context, request):
+    return is_fc_cart_pred(context, request)
+
 @implementer(flow.IPageFlowAction)
 class PaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
@@ -177,6 +182,16 @@ flow_graph = flow.PageFlowGraph(
                 flow.Not(flow_predicate_prepared),
                 flow.Not(flow_predicate_point_input_required),
                 flow.Not(flow_predicate_extra_form),
+                ]
+            ),
+        # 入会カートでの購入者情報 => 決済情報入力
+        PaymentAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.payment'),
+                flow.Not(flow_predicate_prepared),
+                flow.Not(flow_predicate_point_input_required),
+                flow_predicate_fc_cart
                 ]
             ),
         # ポイント入力 => 決済情報入力
