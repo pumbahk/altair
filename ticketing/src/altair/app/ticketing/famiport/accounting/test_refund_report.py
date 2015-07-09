@@ -42,7 +42,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
     def setUp(self):
         self.config = setUp()
         self.engine = _setup_db(
-            self.config.registry, 
+            self.config.registry,
             [
                 'altair.app.ticketing.famiport.models',
                 ]
@@ -155,7 +155,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
     def setUp(self):
         self.config = setUp()
         self.engine = _setup_db(
-            self.config.registry, 
+            self.config.registry,
             [
                 'altair.app.ticketing.famiport.models',
                 ]
@@ -247,7 +247,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                         type=FamiPortOrderType.CashOnDelivery.value,
                         order_no=u'XX0000000000',
                         client_code=u'0',
-                        famiport_order_identifier=u'123%09d' % i,
+                        famiport_order_identifier=u'123%09d' % (j * 10 + i),
                         famiport_sales_segment=self.famiport_sales_segment,
                         total_amount=Decimal(130),
                         ticket_payment=Decimal(100),
@@ -276,4 +276,3 @@ class BuildRefundReportFileTest(unittest.TestCase):
         eor = '\n'
         build_refund_file(f, refund_entries, eor=eor)
         self.assertEqual(f.getvalue().count(eor), 100)
-
