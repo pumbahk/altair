@@ -475,7 +475,7 @@ class QRView(object):
             gate = ticket.seat.attributes.get("gate", None)
 
         return dict(
-            token = ticket.item_token.id, # dummy
+            token = ticket.item_token and ticket.item_token.id, # dummy
             serial = ticket_id,           # dummy
             sign = sign,
             order = ticket.order,
