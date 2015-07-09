@@ -182,6 +182,7 @@ flow_graph = flow.PageFlowGraph(
                 flow.Not(flow_predicate_prepared),
                 flow.Not(flow_predicate_point_input_required),
                 flow.Not(flow_predicate_extra_form),
+                flow.Not(flow_predicate_fc_cart),
                 ]
             ),
         # 入会カートでの購入者情報 => 決済情報入力
