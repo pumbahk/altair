@@ -11,32 +11,42 @@
       <tr>
         <th>払込票番号</th>
         <td>${receipt.barcode_no}</td>
-        <th>申込ステータス</th>
-        <td>${receipt.get_issued_status_in_str}</td>
+        <th>発券ステータス</th>
+        <td>
+            ${receipt.get_issued_status_in_str}
+            % if receipt.canceled_at or receipt.void_at:
+                <button type="button" class="btn btn-xs btn-danger">canceled</button>
+            % endif
+        </td>
       </tr>
       <tr>
         <th>引換票番号</th>
         <td>${receipt.reserve_number}</td>
-        <th>発券区分</th>
-        <td>${receipt.famiport_order.get_type_in_str}</td>
+        <th>入金ステータス</th>
+        <td>
+            ${receipt.get_payment_status_in_str}
+            % if receipt.canceled_at or receipt.void_at:
+                <button type="button" class="btn btn-xs btn-danger">canceled</button>
+            % endif
+        </td>
       </tr>
       <tr>
         <th>管理番号</th>
         <td>${receipt.famiport_order.famiport_order_identifier}</td>
-        <th>受付日</th>
-        <td>${receipt.famiport_order.created_at}</td>
+        <th>発券区分</th>
+        <td>${receipt.famiport_order.get_type_in_str}</td>
       </tr>
       <tr>
         <th>氏名</th>
         <td>${receipt.famiport_order.customer_name}</td>
-        <th>電話番号</th>
-        <td>${receipt.famiport_order.customer_phone_number}</td>
+        <th>受付日</th>
+        <td>${receipt.famiport_order.created_at}</td>
       </tr>
       <tr>
         <th>申込方法</th>
         <td>${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
-        <th></th>
-        <td></td>
+        <th>電話番号</th>
+        <td>${receipt.famiport_order.customer_phone_number}</td>
       </tr>
     </tbody>
 

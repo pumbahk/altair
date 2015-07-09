@@ -127,3 +127,7 @@ span .success {
 span .info {
   color: #2669AE;
 }
+
+.btn-xs {
+  font-size: 10px;
+}

@@ -104,7 +104,12 @@
     % for receipt in entries:
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
-        <td>${receipt.famiport_order.famiport_sales_segment.name}</td>
+        <td>
+            ${receipt.famiport_order.famiport_sales_segment.name}
+            % if receipt.canceled_at or receipt.void_at:
+                <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
+            % endif
+        </td>
         <td>${receipt.famiport_order.get_type_in_str}</td>
         <td>${receipt.get_issued_status_in_str}</td>
         <td>${receipt.get_payment_status_in_str}</td>
