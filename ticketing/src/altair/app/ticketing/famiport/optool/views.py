@@ -348,7 +348,7 @@ class FamiPortDownloadRefundTicketView(object):
         rts_helper = RefundTicketSearchHelper(self.request)
         rows = []
         for famiport_refund_entry in refund_entries:
-            famiport_shop = famiport_refund_entry.famiport_shop
+            famiport_shop = rts_helper.get_famiport_shop_by_code(famiport_refund_entry.shop_code)
             event_code_1 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1
             event_code_2 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2
             rows.append([
