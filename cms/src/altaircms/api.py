@@ -38,6 +38,8 @@ def get_cart_url_builder(request):
 
 def get_cart_domain(request):
     session = get_db_session(request, 'slave')
+    if request.organization is None:
+        return None
     host = session.query(Host).filter_by(organization_id=request.organization.id).first()
     if host is None:
         return None

@@ -62,8 +62,31 @@
 <h3>公演</h3>
 <%include file="./_list.html" args="form=form, reporter=performance_total_reporter" />
 
-<div><a href="${request.route_path("sales_reports.export")}?event_id=${event.id}">CSVダウンロード</a> (β)</div>
-
 % else:
 レポート対象データがありません
+<br /><br />
 % endif
+
+<div>
+  <a href="${request.route_path("sales_reports.export")}?event_id=${event.id}">CSVダウンロード</a> (β)
+  <a href="#" onclick="$(this).nextAll('div').eq(0).slideDown('fast'); $(this).remove(); return false;">詳しく条件指定...</a> <br />
+  
+  <div style="display: none;">
+    <h4>詳しく条件指定してCSVダウンロード</h4>
+    <form action="${request.route_path('sales_reports.export')}">
+      <input type="hidden" name="event_id" value="${event.id}" />
+      <label><input type="checkbox" name="all" value="1" /> <span class="label label-default">レポート出力対象設定外の販売区分</span>も含める</label> <br />
+      
+      指定公演のみ<div style="margin-left: 20px;">
+      % for p in event.performances:
+        <div style="margin-bottom: 2px;"><label style="display: inline;"><input type="checkbox" name="performance_id" value="${p.id}" ${'checked="checked"' if p.id in map(lambda r:r.id, performance_total_reporter.sort_data()) else ''} /> ${p.name} ${vh.datetime(p.start_on, with_weekday=True)}開始</label>
+          % for ss in p.sales_segments:
+             <span class="label ${'label-important' if ss.reporting and ss.sales_segment_group.reporting else 'label-default'}" /> ${ss.name}</span>
+          % endfor
+        </div>
+      % endfor
+      </div>
+      <input type="submit" value="ダウンロード" class="btn" />
+    </form>
+  </div>
+</div>

@@ -393,6 +393,10 @@ class StaticPageView(BaseView):
             raise HTTPFound(self.context.endpoint(static_page))
 
         creator = self.context.creation(creation.StaticPageCreate, form.data)
+        if not hasattr(creator.data['zipfile'], "file"):
+            FlashMessage.error(u"ファイルを指定してください", request=self.request)
+            raise HTTPFound(self.context.endpoint(static_page))
+
         try:
             creator.update_underlying_something(static_page)
         except StaticUploadAssertionError as e:

@@ -47,6 +47,7 @@ ${tabs.tabs(request)}
   <tbody>
     <tr>
       <th>送信先</th>
+      <th>送信先（メールのみ一覧）</th>
       <th>メール通知頻度</th>
       <th>送信曜日</th>
       <th>送信時刻</th>
@@ -60,6 +61,11 @@ ${tabs.tabs(request)}
       <td>
       % for recipient in rs.recipients:
         ${recipient.format_recipient()}<br>
+      % endfor
+      </td>
+      <td>
+      % for recipient in rs.recipients:
+        ${recipient.email}<br>
       % endfor
       </td>
       <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>

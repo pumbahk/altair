@@ -14,4 +14,5 @@ def includeme(config):
     from .resources import ReportSettingAdminResource
     config.add_route('report_settings.new', '/report_settings/new/', factory=ReportSettingAdminResource)
     config.add_route('report_settings.edit', '/report_settings/edit/{report_setting_id}', factory=ReportSettingAdminResource)
+    config.add_route('report_settings.copy', '/report_settings/copy/{report_setting_id}', factory=ReportSettingAdminResource)
     config.add_route('report_settings.delete', '/report_settings/delete/{report_setting_id}', factory=ReportSettingAdminResource)

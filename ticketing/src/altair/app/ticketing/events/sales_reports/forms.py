@@ -9,7 +9,7 @@ from wtforms.compat import iteritems
 from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate, MultipleEmail,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
-    OurTimeField, PHPCompatibleSelectMultipleField, zero_as_none, after1900, Max,
+    OurTimeField, PHPCompatibleSelectMultipleField, zero_as_none, after1900, Max, OurTextField
     )
 from altair.app.ticketing.core.models import Operator, ReportSetting, ReportRecipient, SalesSegment, Performance, Event
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum
@@ -220,7 +220,7 @@ class ReportSettingForm(OurForm):
         if obj:
             self.report_hour.data = int(obj.time[0:2] or 0)
             self.report_minute.data = int(obj.time[2:4] or 0)
-            self.recipients.data = [r.id for r in obj.recipients]
+            self.recipients.data = " ".join([r.email for r in obj.recipients])
         self.time.data = self.format_report_time()
 
     def _get_translations(self):
@@ -235,11 +235,9 @@ class ReportSettingForm(OurForm):
     performance_id = HiddenField(
         validators=[Optional()],
     )
-    recipients = PHPCompatibleSelectMultipleField(
-        label=u'送信先',
+    recipients = OurTextField(
+        label=u'送信先（スペース区切り）',
         validators=[Optional()],
-        choices=[],
-        coerce=lambda v: None if not v else int(v)
     )
     name = TextField(
         label=u'名前',
@@ -328,13 +326,16 @@ class ReportSettingForm(OurForm):
 
     def validate_recipients(form, field):
         if field.data:
+            mails = [mail for mail in field.data.split(" ") if mail]
+            recipients = [rr.id for rr in ReportRecipient.filter(ReportRecipient.email.in_(mails)).all()]
+
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.format_report_time(),
             ).join(
                 ReportSetting.recipients
             ).filter(
-                ReportRecipient.id.in_(field.data)
+                ReportRecipient.id.in_(recipients)
             )
             if form.id.data:
                 query = query.filter(ReportSetting.id!=form.id.data)
