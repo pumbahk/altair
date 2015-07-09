@@ -21,6 +21,7 @@ namespace checkin.presentation
     /// </summary>
     public class AppUtil
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public static RequestBroker Broker;
         public static InternalApplication Internal;
         public static PageNavigator PageChoicer;
@@ -38,6 +39,25 @@ namespace checkin.presentation
         public static IResource GetCurrentResource()
         {
             return AppUtil.Internal.Resource;
+        }
+
+        public static void GotoWelcome(Page previous)
+        {
+            try
+            {
+                var broker = AppUtil.GetCurrentBroker();
+                var manager = broker.FlowManager;
+                var case_ = new CaseWelcome(AppUtil.GetCurrentResource());
+                var flow_ = new Flow(manager, case_);
+                manager.Refresh();
+                manager.Push(flow_);
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, previous);
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("goto welcome page".WithMachineName(), ex);
+            }
+            
         }
 
         public static void OnExit(ExitEventArgs e)

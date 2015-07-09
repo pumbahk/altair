@@ -15,7 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;using checkin.core.support;
+using System.Windows.Shapes;
+using checkin.core.support;
 using checkin.core.events;
 using checkin.core.flow;
 
@@ -68,7 +69,8 @@ namespace checkin.presentation.gui.page
             return new PageOrdernoOrdernoInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new OrdernoInputEvent()
+                Event = new OrdernoInputEvent(),
+                RefreshModeVisibility = Visibility.Hidden,
             };
         }
 
@@ -81,6 +83,7 @@ namespace checkin.presentation.gui.page
                 string orderno;
                 var organization_code = AppUtil.GetCurrentResource().AuthInfo.organization_code;
                 ctx.Description = "(“ü—Í—á:" + organization_code + "0101010101)";
+                ctx.Description = "Žó•t”Ô†‚ð“ü—Í‚µ‚Ä‚­‚¾‚³‚¢";
                 if (data != null && data.order_no != null)
                     orderno = data.order_no;
                 else
@@ -88,9 +91,22 @@ namespace checkin.presentation.gui.page
                 this.KeyPad.Text = orderno;
             }
 
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
+            }
+
+            if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+            {
+                this.gotoanothermode.Visibility = Visibility.Visible;
+                this.gotowelcome.Visibility = Visibility.Hidden;
+                this.goback.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.gotoanothermode.Visibility = Visibility.Hidden;
+                this.gotowelcome.Visibility = Visibility.Visible;
+                this.goback.Visibility = Visibility.Visible;
             }
 
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
@@ -145,6 +161,16 @@ namespace checkin.presentation.gui.page
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             (this.KeyPad as VirtualKeyboard).RaiseVirtualkeyboardFinishEvent();
+        }
+
+        private async void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
+            });
         }
     }
 }

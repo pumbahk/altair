@@ -52,8 +52,8 @@ namespace checkin.presentation.gui.page{
             set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle"); }
         }
 
-        private bool _multiPrintMode;
-        public bool MultiPrintMode
+        private string _multiPrintMode;
+        public string MultiPrintMode
         {
             get { return this._multiPrintMode; }
             set { this._multiPrintMode = value; this.OnPropertyChanged("MultiPrintMode"); }
@@ -129,10 +129,16 @@ namespace checkin.presentation.gui.page{
                 TestStatusDescription = "<準備中>",
                 ApplicationVersion=ApplicationVersion.GetApplicationInformationalVersion()
             };
-           
+            if (AppUtil.GetCurrentResource().MultiPrintMode)
+            {
+                ctx.MultiPrintMode = "On";
+            }
+            else
+            {
+                ctx.MultiPrintMode = "Off";
+            } 
             return ctx;
         }
-
 
         private void OnPrinterSelected(object sender, SelectionChangedEventArgs e)
         {
@@ -214,8 +220,15 @@ namespace checkin.presentation.gui.page{
         {
             var checkBox = sender as CheckBox;
             var ctx = (this.DataContext as HomeMenuDataContext);
-            ctx.MultiPrintMode = (bool)checkBox.IsChecked;
-            AppUtil.GetCurrentResource().MultiPrintMode = ctx.MultiPrintMode;
+            if ((bool)checkBox.IsChecked)
+            {
+                ctx.MultiPrintMode = "On";
+            }
+            else
+            {
+                ctx.MultiPrintMode = "Off";
+            }
+            AppUtil.GetCurrentResource().MultiPrintMode = (bool)checkBox.IsChecked;
         }
     }
 }

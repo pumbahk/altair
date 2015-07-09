@@ -69,6 +69,41 @@
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Hidden"
+                            Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
+                    </Button>
+
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">QRコード</TextBlock>
+                    </Button>
+
+                    <Button
+                    Canvas.Left="140"
+                    Canvas.Top="655"
+                    x:Name="goback"
+                    Click="OnBackwardWithBoundContext"
+                    Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Focusable="False"
+                    Visibility="Hidden"
+                    >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
+                    </Button>
+                    
                     <TextBlock
                         Text="※再発券モード※"
                         Canvas.Top="655"
@@ -77,11 +112,13 @@
                         Visibility="{Binding RefreshModeVisibility}"/>
                     <!-- ボタン -->
                     <Button
-                     Canvas.Right="60"
+                     Canvas.Right="140"
                      Canvas.Top="655"
                      Click="Button_Click"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ</TextBlock>
+                     Style="{StaticResource NextSubmitButton}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ ▶</TextBlock>
                     </Button>
                     <!--
                     <Button
@@ -94,7 +131,7 @@
                     </Button>
                     -->
 
-                    <!-- change mode-->
+                    <!-- change mode
                     <Button Click="OnGotoAnotherMode"
                             Canvas.Top="17"
                             RenderTransformOrigin="10.794,2.52"
@@ -112,6 +149,7 @@
                         </Button.Style>
                          QRで認証
                     </Button>
+                    -->
 
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"

@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:c="clr-namespace:checkin.presentation.gui.control"
+      xmlns:ac="clr-namespace:AdornedControl;assembly=AdornedControl"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:checkin.presentation.gui.control"
       mc:Ignorable="d" 
@@ -22,6 +23,7 @@
     </Page.Resources>
     <Grid>
         <Viewbox Style="{StaticResource ContentViewboxStyle}">
+            <Grid>
             <Grid Background="{StaticResource LogoBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
 
@@ -33,19 +35,52 @@
                         Canvas.Top="143"
                         Style="{StaticResource MainBorder}">
                         <Grid>
-                            <Border Background="White" Width="717" Height="477"
+                            <Border Background="White" Width="1000" Height="477"
                             CornerRadius="24"
                             Padding="40,20,40,20"
                             Canvas.Left="327" 
                             Canvas.Top="169">
                                 <StackPanel HorizontalAlignment="Stretch">
-                                    <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
-                                    <TextBox
-                                        Width="400"
+                                    <Image Visibility="{Binding IsIdle}" Stretch="Uniform" MaxHeight="350" Source="/Resource/qr_input.png"/>
+                                        <TextBox
+                                        Width="0"
                                         HorizontalAlignment="Center"
-                                        KeyDown="OnKeyDownHandler"                 
+                                        KeyDown="OnKeyDownHandler"
                                         x:Name="QRCodeInput"/>
-                                </StackPanel>
+                                        <ac:AdornedControl
+                                            Margin="0,-350,0,0"
+                                            x:Name="LoadingAdorner"
+                                            Focusable="False"
+                                            Visibility="{Binding IsWaiting}"
+                                            >
+                                            <ac:AdornedControl.AdornerContent>
+                                                <c:Loading Background="Transparent"></c:Loading>
+                                            </ac:AdornedControl.AdornerContent>
+                                            <Border
+                                                Height="400"
+                                                Width="900"
+                                                HorizontalAlignment="Center">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                    Margin="80"
+                                                    Background="Transparent"
+                                                    TextAlignment="Center"
+                                                    FontSize="30"
+                                                    Text="{Binding Description}"
+                                                />
+                                                    <Viewbox StretchDirection="DownOnly" Stretch="Uniform">
+                                                    <TextBlock
+                                                    TextAlignment="Center"
+                                                    Margin="80"
+                                                    Background="Transparent"
+                                                    FontSize="30"
+                                                    Text="{Binding SubDescription}"
+                                                />
+                                                    </Viewbox>
+                                                </StackPanel>
+                                            </Border>
+                                        </ac:AdornedControl>
+                                    </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
@@ -54,6 +89,7 @@
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
+                        Focusable="False"
                         >
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -68,19 +104,38 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock 
+                        <TextBlock
+                            Focusable="False"
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
+                        Text="{Binding DescriptionInfo}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
-
                     <Button
-                     Canvas.Right="60"
+                    Canvas.Left="140"
+                    Canvas.Top="655"
+                    x:Name="goback"
+                    Click="OnBackwardWithBoundContext"
+                    Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Focusable="False"
+                    Visibility="Hidden"
+                    >
+                            <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
+                    </Button>
+                    
+                    <Button
+                     Canvas.Right="140"
                      Canvas.Top="655"
+                     x:Name="buttonsubmit"
+                     Visibility="Hidden"
                      Click="OnSubmitWithBoundContext"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            QRコード読み込み
+                     Style="{StaticResource NextSubmitButton}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Focusable="False">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}" TextWrapping="Wrap">
+                            次へ ▶
                         </TextBlock>
                     </Button>
 
@@ -88,41 +143,73 @@
                         Text="※再発券モード※"
                         Canvas.Top="655"
                         Canvas.Left="520"
+                        Focusable="False"
                         Style="{StaticResource RefreshModeText}" Visibility="{Binding RefreshModeVisibility}"/>
 
 
-                    <!-- change mode-->
-                    <Button Click="OnGotoAnotherMode"
-                            Canvas.Top="17"
-                            RenderTransformOrigin="10.794,2.52"
-                            Canvas.Left="1060"
-                            Height="64" Width="240">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource HeaderMenuButtonStyle}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding EnableAnotherMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                                <Setter Property="Visibility" Value="Hidden"/>
-                            </Style>
-                        </Button.Style>
-                        受付番号で認証</Button>
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Hidden"
+                            Focusable="False">
+                            <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
+                    </Button>
 
-                    <!-- エラーダイアログ -->
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                            <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">受付番号</TextBlock>
+                    </Button>
+
+                    <!-- 終了ボタン-->
+                    <Button
+                        Command="{Binding AppCloseCommand}"
+                        Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                        x:Name="endbutton"
+                        Background="Transparent"
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                        />
+
+                        <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageDialogComplete="ErrorDialog_MessageDialogComplete"
                                       MessageText="{Binding ErrorMessage}"
+                                      Focusable="False"
                                       ButtonText="OK"/>
 
-                    <!-- 終了ボタン-->
-                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
-                            Background="Transparent"
-                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
-                            />
+                    
+                    
                 </Canvas>
             </Grid>
-        </Viewbox>
+                <!--
+                <Grid
+                    Visibility="{Binding IsWaiting}"
+                    Height="728"
+                    Width="1366" Margin="0,0,0,0"
+                    IsHitTestVisible="False"
+                    >
+                    <Rectangle Fill="White" Opacity="0.7"/>
+                    <StackPanel
+                        Canvas.Top="250"
+                        Orientation="Horizontal"
+                        >
+                        
+                    </StackPanel>             
+                    
+                </Grid>
+                -->
+            </Grid>
+        </Viewbox>   
+        
     </Grid>
+
+    
 </Page>
 

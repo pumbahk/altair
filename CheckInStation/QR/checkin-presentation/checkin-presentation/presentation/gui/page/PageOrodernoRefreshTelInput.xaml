@@ -73,8 +73,8 @@
                      Canvas.Right="60"
                      Canvas.Top="655"
                      Click="Button_Click"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
+                     Style="{StaticResource NextSubmitButton}">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定 ▶</TextBlock>
                     </Button>
                     <Button
                     Canvas.Left="60"
@@ -82,7 +82,7 @@
                     Click="OnBackward"
                     Style="{StaticResource BackwardButton}"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"

@@ -73,7 +73,21 @@
   <ItemGroup>
     <Compile Include="Configurator.cs" />
     <Compile Include="DynamicJson.cs" />
+    <Compile Include="events\ConfirmListAllEvent.cs" />
+    <Compile Include="events\ConfirmListOneEvent.cs" />
+    <Compile Include="events\OneOrPartEvent.cs" />
+    <Compile Include="events\PartOrAllEvent.cs" />
+    <Compile Include="events\WelcomeEvent.cs" />
     <Compile Include="FlowDefinitionType.cs" />
+    <Compile Include="flow\CaseConfirmListForPart.cs" />
+    <Compile Include="flow\CaseConfirmListForOne.cs" />
+    <Compile Include="flow\CaseOneOrPart.cs" />
+    <Compile Include="flow\CaseOrdernoConfirmAllHidden.cs" />
+    <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />
+    <Compile Include="flow\CaseWelcome.cs" />
+    <Compile Include="flow\CasePartOrAll.cs" />
+    <Compile Include="flow\OneStepFlowDefinition.cs" />
+    <Compile Include="flow\StandardFlowDefinition.cs" />
     <Compile Include="flow\CommonFlowDefinition.cs" />
     <Compile Include="IConfigurator.cs" />
     <Compile Include="models\TicketRefreshedAtUpdater2.cs" />

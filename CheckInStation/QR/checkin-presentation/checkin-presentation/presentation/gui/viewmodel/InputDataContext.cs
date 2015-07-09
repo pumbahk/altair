@@ -26,6 +26,7 @@ namespace checkin.presentation.gui
     {
         public InputDataContext (Page page){
             this.AppCloseCommand = new AppCloseCommand(page);
+            this.ReturnHomeCommand = new ReturnHomeCommand(page);
         }
         public InputDataContext()
         {
@@ -49,6 +50,7 @@ namespace checkin.presentation.gui
         public IInternalEvent Event { get; set; }
 
         public ICommand AppCloseCommand { get; private set; }
+        public ICommand ReturnHomeCommand { get; private set; }
     
         private string errorMessage;
 

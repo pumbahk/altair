@@ -76,20 +76,49 @@
                         Visibility="{Binding RefreshModeVisibility}"/>
                     <!-- ボタン -->
                     <Button
-                     Canvas.Right="60"
+                     Canvas.Right="140"
                      Canvas.Top="655"
                      Click="Button_Click"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
+                     Style="{StaticResource NextSubmitButton}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">次へ ▶</TextBlock>
                     </Button>
+
+
+
                     <Button
-                    Canvas.Left="60"
+                    Canvas.Left="140"
                     Canvas.Top="655"
                     Click="OnBackwardWithBoundContext"
                     Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
+
+                    <!-- Return to Home-->
+                    <Button Click="OnGotoWelcome"
+                            x:Name="gotowelcome"
+                            Style="{StaticResource HomeButton}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Hidden"
+                            Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">トップ</TextBlock>
+                    </Button>
+
+                    <Button Click="OnGotoAnotherMode"
+                        x:Name="gotoanothermode"
+                        Style="{StaticResource HomeButton}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Hidden"
+                        Focusable="False">
+                        <TextBlock Style="{StaticResource HomeSubmitButtonTextStyle}">QRコード</TextBlock>
+                    </Button>
+
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"

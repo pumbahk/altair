@@ -9,12 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>checkin_presentation</RootNamespace>
     <AssemblyName>checkin-presentation</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,9 +32,12 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ticket.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="InputSimulator">
@@ -90,7 +94,35 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="presentation\gui\command\ReturnHomeCommand.cs" />
+    <Compile Include="presentation\gui\control\Loading.xaml.cs">
+      <DependentUpon>Loading.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\control\ToggleButton.cs" />
+    <Compile Include="presentation\gui\page\PageConfirmListAll.xaml.cs">
+      <DependentUpon>PageConfirmListAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmListPart.xaml.cs">
+      <DependentUpon>PageConfirmListPart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmListOne.xaml.cs">
+      <DependentUpon>PageConfirmListOne.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFinish2.xaml.cs">
+      <DependentUpon>PageFinish2.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOneOrPart.xaml.cs">
+      <DependentUpon>PageOneOrPart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePartOrAll.xaml.cs">
+      <DependentUpon>PagePartOrAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePrinting2.xaml.cs">
+      <DependentUpon>PagePrinting2.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageWelcome.xaml.cs">
+      <DependentUpon>PageWelcome.xaml</DependentUpon>
+    </Compile>
     <Compile Include="support\ApplicationVersion.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
@@ -200,6 +232,15 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Resource Include="Resource\qr_input.png" />
+    <Resource Include="Resource\qr_read.png" />
+    <Resource Include="Resource\off_check.png" />
+    <Resource Include="Resource\on_check.png" />
+    <Resource Include="Resource\next.png" />
+    <Resource Include="Resource\orderno.png" />
+    <Resource Include="Resource\ticket-multi.png" />
+    <Resource Include="Resource\ticket-single.png" />
+    <Resource Include="ticket.ico" />
     <Resource Include="Resource\qr.input.new.jpg" />
     <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />
@@ -245,6 +286,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="presentation\gui\control\Loading.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\control\MenuDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,6 +307,38 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmListAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmListPart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmListOne.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFinish2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOneOrPart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePartOrAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrinting2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageWelcome.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -387,7 +464,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -405,6 +482,10 @@
       <Project>{0784cdc9-0f52-4b8b-9488-6589c11e94e2}</Project>
       <Name>WpfKb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AdornedControl\AdornedControl.csproj">
+      <Project>{94b81cb7-f8a6-44bc-bd71-e927f701e0d8}</Project>
+      <Name>AdornedControl</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
@@ -413,7 +494,7 @@
   <Target Name="Version" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="setting git commit hash" />
     <PropertyGroup>
-      <Major>0</Major>
+      <Major>1</Major>
       <Minor>0</Minor>
       <Build>0</Build>
       <Revision>0</Revision>
@@ -422,7 +503,7 @@
     <GitVersion Localpath="$(MSBuildProjectDirectory)" short="false">
       <Output TaskParameter="CommitHash" PropertyName="Revision" />
     </GitVersion>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2015" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
   <Target Name="CompressOutputDirectory" BeforeTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="compressing target $(MSBuildProjectDirectory)\bin\$(Configuration)" />

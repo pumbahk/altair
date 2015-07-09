@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.events;
 using checkin.core.models;
+using checkin.core.flow;
 
 namespace checkin.presentation.gui.page
 {
@@ -38,6 +39,13 @@ namespace checkin.presentation.gui.page
         {
             get { return this._TicketDataCollection; }
             set { this._TicketDataCollection = value; this.OnPropertyChanged("TicketDataCollection"); }
+        }
+
+        private int _PartOrAll;
+        public int PartOrAll
+        {
+            get { return this._PartOrAll; }
+            set { this._PartOrAll = value; this.OnPropertyChanged("PartOrAll"); }
         }
 
         private TicketData _readTicketData;
@@ -81,6 +89,20 @@ namespace checkin.presentation.gui.page
             set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
+        private int _NumberOfSelectableTicket;
+        public int NumberOfSelectableTicket
+        {
+            get { return this._NumberOfSelectableTicket; }
+            set { this._NumberOfSelectableTicket = value; }
+        }
+
+        private int _TotalNumberOfTicket;
+        public int TotalNumberOfTicket
+        {
+            get { return this._TotalNumberOfTicket; }
+            set { this._TotalNumberOfTicket = value; this.OnPropertyChanged("TotalNumberOfTicket"); }
+        }
+
         public DisplayTicketDataCollection DisplayTicketDataCollection { get; set; }
 
         public override void OnSubmit()
@@ -119,15 +141,41 @@ namespace checkin.presentation.gui.page
             this.DataContext = this.CreateDataContext();
         }
 
+        public PageConfirmAll(AbstractCase c)
+        {
+            InitializeComponent();
+            this.loadingLock = false;
+            this.DataContext = this.CreateDataContext(c);
+        }
+
         private InputDataContext CreateDataContext()
         {
             var ctx = new PageConfirmAllDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = ConfirmAllStatus.starting,
-                DisplayTicketDataCollection = new DisplayTicketDataCollection()
+                DisplayTicketDataCollection = new DisplayTicketDataCollection(),
+                RefreshModeVisibility = Visibility.Hidden,
+                NotPrintVisibility = Visibility.Hidden
             };
             ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
+            ctx.PropertyChanged += Status_OnPrepared;
+            return ctx;
+        }
+
+        private InputDataContext CreateDataContext(AbstractCase c)
+        {
+            var ctx = new PageConfirmAllDataContext(this)
+            {
+                Broker = AppUtil.GetCurrentBroker(),
+                Status = ConfirmAllStatus.starting,
+                DisplayTicketDataCollection = new DisplayTicketDataCollection(),
+                RefreshModeVisibility = Visibility.Hidden,
+                NotPrintVisibility = Visibility.Hidden
+            };
+            ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
+            var e = ctx.Event as ConfirmAllEvent;
+            e.StatusInfo.TicketDataCollection = (c.PresentationChanel as ConfirmAllEvent).StatusInfo.TicketDataCollection;
             ctx.PropertyChanged += Status_OnPrepared;
             return ctx;
         }
@@ -172,14 +220,24 @@ namespace checkin.presentation.gui.page
                     // QRを読み込んだものだけ初期発券予定とする。
                     if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
                     {
-                        dtdata.IsSelected = false;
+                        //dtdata.IsSelected = false;
                         ctx.NumberOfPrintableTicket--;
+                    }
+                    else if(tdata.printed_at == null)
+                    {
+                        dtdata.IsSelected = true;
                     }
                 }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
                 displayColl.Add(dtdata);
             }
-            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
+            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected && o.printed_at == null).Count();
+            ctx.NumberOfSelectableTicket = source.collection.Where(o => o.printed_at == null).Count();
+            ctx.TotalNumberOfTicket = source.collection.Count();
+            if (ctx.NumberOfSelectableTicket > 0)
+            {
+                ctx.NotPrintVisibility = Visibility.Visible;
+            }
         }
 
         void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)
@@ -198,9 +256,9 @@ namespace checkin.presentation.gui.page
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as PageConfirmAllDataContext;
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
             }
             ctx.Description = "データを取得しています。少々お待ちください";
             await ctx.PrepareAsync();
@@ -211,6 +269,8 @@ namespace checkin.presentation.gui.page
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
             }
+             
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -221,6 +281,15 @@ namespace checkin.presentation.gui.page
                 return;
             }
             var ctx = this.DataContext as InputDataContext;
+            var pageCtx = ctx as PageConfirmAllDataContext;
+            if (sender is System.Windows.Controls.Button)
+            {
+                if (pageCtx.NumberOfPrintableTicket == 0 && pageCtx.NumberOfSelectableTicket > 0)
+                {
+                    pageCtx.ErrorMessage = "発券したいチケットを選択してください";
+                    return;
+                }
+            }
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync();
@@ -228,7 +297,6 @@ namespace checkin.presentation.gui.page
 
                 //unregister event
                 int notPrintedCount = 0;
-                var pageCtx = ctx as PageConfirmAllDataContext;
                 foreach (var dc in pageCtx.DisplayTicketDataCollection)
                 {
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
@@ -240,12 +308,13 @@ namespace checkin.presentation.gui.page
 
                 if (notPrintedCount == 0)
                 {
-                    pageCtx.NotPrintVisibility = Visibility.Hidden;
-                    pageCtx.Description = "発券済みです";
+                    pageCtx.Description = "このチケットは発券済みです";
+                    pageCtx.ErrorMessage = "このチケットは発券済みです";
+                    this.Backward.Visibility = Visibility.Hidden;
                     return;
                 }
-                this.NavigationService.Navigate(new PagePrintingConfirm());
-                // AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                //this.NavigationService.Navigate(new PagePrintingConfirm());
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 
@@ -268,6 +337,16 @@ namespace checkin.presentation.gui.page
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
+        }
+
+        private async void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
             });
         }
     }

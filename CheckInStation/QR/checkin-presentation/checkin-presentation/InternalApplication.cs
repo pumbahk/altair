@@ -30,6 +30,10 @@ namespace checkin.presentation
                     return new VisselFlowDefinition();
                 case FlowDefinitionType.CommonMode:
                     return new CommonFlowDefinition();
+                case FlowDefinitionType.StandardFlow:
+                    return new StandardFlowDefinition();
+                case FlowDefinitionType.OneStep:
+                    return new OneStepFlowDefinition();
                 default:
                     throw new InvalidOperationException("anything is wrong");
             }         

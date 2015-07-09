@@ -22,11 +22,23 @@ namespace checkin.core.flow
 
         public TicketDataCollection TicketDataCollection { get; set; }
 
+        public int PartOrAll { get; set; }
+
         public CaseQRConfirmForAll (IResource resource, TicketData ticketdata) : base (resource)
         {
             TicketData = ticketdata;
             this.tokenStatus = TokenStatus.valid;
             this.Resource = resource;
+            this.PartOrAll = 1;
+        }
+
+        public CaseQRConfirmForAll(IResource resource, TicketData ticketdata, int partorall)
+            : base(resource)
+        {
+            TicketData = ticketdata;
+            this.tokenStatus = TokenStatus.valid;
+            this.Resource = resource;
+            this.PartOrAll = partorall;
         }
 
         public override async Task PrepareAsync(IInternalEvent ev)
@@ -42,7 +54,8 @@ namespace checkin.core.flow
             {
                 this.TicketDataCollection = result.Right;
                 this.tokenStatus = this.TicketDataCollection.status;
-                subject.SetCollection(result.Right);
+                subject.SetCollection(result.Right, ConfirmAllType.none);
+                subject.SetPartOrAll(this.PartOrAll);
             }
             else
             {
@@ -67,7 +80,15 @@ namespace checkin.core.flow
 
         public override ICase OnSuccess (IFlow flow)
         {
-            return new CasePrintForAll (Resource, TicketDataCollection);
+            if (this.PartOrAll == 0)
+            {
+                return new CaseConfirmListForPart(Resource);
+            }
+            else
+            {
+                return new CasePrintForAll(Resource, TicketDataCollection);
+            }
+            
         }
     }
 }

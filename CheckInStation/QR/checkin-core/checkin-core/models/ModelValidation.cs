@@ -17,7 +17,7 @@ namespace checkin.core.models
         public message.ResultTuple<string, bool> ValidateAuthLoginName(string name)
         {
             if (name.Equals(""))
-                return new NG("名前が未入力です。入力してください");
+                return new NG("ユーザー名を正しく入力してください");
             else
                 return OK;
         }
@@ -25,7 +25,7 @@ namespace checkin.core.models
         public message.ResultTuple<string, bool> ValidateAuthPassword(string password)
         {
             if (password.Equals(""))
-                return new NG("パスワードが未入力です。入力してください");
+                return new NG("パスワードを正しく入力してください");
             else
                 return OK;
         }

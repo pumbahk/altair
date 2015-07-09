@@ -26,6 +26,35 @@ namespace checkin.core.flow
             return new CaseInputStrategySelect (resource);
         }
 
+        public ICase AfterWelcome(IResource resource, int printtype)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterCountChoice(IResource resource, int printtype, TicketData tdata)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterTicketChoice(IResource resource, int printcount, TicketData tdata)
+        {
+            this.CurrentInputUnit = InputUnit.qrcode;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterTicketChoice(IResource resource, int printcount, VerifiedOrdernoRequestData verifieddata)
+        {
+            this.CurrentInputUnit = InputUnit.order_no;
+            return new CaseQRCodeInput(resource);
+        }
+
+        public ICase AfterOrdernoConfirmed(IResource resource, VerifiedOrdernoRequestData verifieddata)
+        {
+            return new CaseOrdernoConfirmForAll(resource, verifieddata);
+        }
+
         public ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected)
         {
             this.CurrentInputUnit = Selected;
@@ -70,7 +99,7 @@ namespace checkin.core.flow
                 return new CaseAuthInput (resource);
             default:
                 logger.Info("InputUnit: {0} is unknown value. default={1} is selected".WithMachineName(), Selected.ToString (), default(InputUnit));
-                return new CaseQRCodeInput (resource);
+                return new CaseWelcome (resource);
             }
         }
     }

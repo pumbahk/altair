@@ -16,6 +16,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.support;
 using checkin.core.events;
+using checkin.core.flow;
+using checkin.config;
 
 namespace checkin.presentation.gui.page
 {
@@ -31,6 +33,26 @@ namespace checkin.presentation.gui.page
             set { this._QRCode = value; this.OnPropertyChanged("QRCode"); }
         }
 
+        private Visibility _IsWaiting;
+        public Visibility IsWaiting
+        {
+            get { return this._IsWaiting; }
+            set { this._IsWaiting = value; this.OnPropertyChanged("IsWaiting"); }
+        }
+
+        private Visibility _IsIdle;
+        public Visibility IsIdle
+        {
+            get { return this._IsIdle; }
+            set { this._IsIdle = value; this.OnPropertyChanged("IsIdle"); }
+        }
+
+        private string _DescriptionInfo;
+        public string DescriptionInfo
+        {
+            get { return this._DescriptionInfo; }
+            set { this._DescriptionInfo = value; this.OnPropertyChanged("DescriptionInfo"); }
+        }
         public override void OnSubmit()
         {
             var ev = this.Event as QRInputEvent;
@@ -43,6 +65,17 @@ namespace checkin.presentation.gui.page
         {
             get { return this._refreshModeVisibility; }
             set { this._refreshModeVisibility = value; this.OnPropertyChanged("RefreshModeVisibility"); }
+        }
+
+        private string _subDescription;
+        public string SubDescription
+        {
+            get { return this._subDescription; }
+            set
+            {
+                this._subDescription = value;
+                this.OnPropertyChanged("SubDescription");
+            }
         }
     }
 
@@ -69,7 +102,10 @@ namespace checkin.presentation.gui.page
             return new PageQRCodeInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new QRInputEvent()
+                Event = new QRInputEvent(),
+                IsWaiting = Visibility.Hidden,
+                IsIdle = Visibility.Visible,
+                RefreshModeVisibility = Visibility.Hidden,
             };
         }
 
@@ -78,14 +114,30 @@ namespace checkin.presentation.gui.page
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
-            if (!AppUtil.GetCurrentResource().RefreshMode)
+            if (AppUtil.GetCurrentResource().RefreshMode)
             {
-                ctx.RefreshModeVisibility = Visibility.Hidden;
+                ctx.RefreshModeVisibility = Visibility.Visible;
+            }
+            ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
+            this.buttonsubmit.Visibility = Visibility.Hidden;
+            if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+            {
+                this.gotoanothermode.Visibility = Visibility.Visible;
+                this.gotowelcome.Visibility = Visibility.Hidden;
+                this.goback.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                this.gotoanothermode.Visibility = Visibility.Hidden;
+                this.gotowelcome.Visibility = Visibility.Visible;
+                this.goback.Visibility = Visibility.Visible;
+                this.endbutton.Visibility = Visibility.Hidden;
             }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
+            this.buttonsubmit.Visibility = Visibility.Hidden;
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             logger.Info("PRessed!!".WithMachineName());
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
@@ -99,6 +151,28 @@ namespace checkin.presentation.gui.page
                 {
                     case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
+
+                    if (ctx.Event.Status == InternalEventStaus.failure)
+                    {
+                        ctx.IsIdle = Visibility.Visible;
+                        ctx.IsWaiting = Visibility.Hidden;
+                        this.LoadingAdorner.HideAdorner();
+                        ctx.DescriptionInfo = "QRリーダーにQRコードをかざしてください";
+                    }
+                    if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    {
+                        if (ctx.Event.Status == InternalEventStaus.success)
+                        {
+                            var ctx_ = new PageConfirmAllDataContext(this)
+                            {
+                                Broker = AppUtil.GetCurrentBroker(),
+                                Status = ConfirmAllStatus.starting
+                            };
+                            ctx_.Event = new ConfirmAllEvent() { StatusInfo = ctx_ };
+                            case_ = await ctx_.SubmitAsync();
+                            ctx_.TreatErrorMessage();
+                        }
+                    }
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
@@ -117,15 +191,30 @@ namespace checkin.presentation.gui.page
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
+            this.LoadingAdorner.ShowAdorner();
+            var ctx = this.DataContext as PageQRCodeInputDataContext;
+            ctx.IsIdle = Visibility.Hidden;
+            ctx.DescriptionInfo = "しばらくお待ちください";
+            if (this.QRCodeInput.Text.Length < 60)
+            {
+                ctx.Description = "QRコードを読込中です";
+                ctx.SubDescription = "読み込みに時間がかかる場合は\r\nもう一度最初からやり直してQRコードをしっかりかざしてください";
+                ctx.IsWaiting = Visibility.Visible;
+            }
+            if (this.QRCodeInput.Text.Length >= 50)
+            {
+                this.buttonsubmit.Visibility = Visibility.Visible;
+            }
             if (e.Key == Key.Return)
             {
+                ctx.SubDescription = "";
                 this.Dispatcher.InvokeAsync(() => {
                     this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
                 });
             }
         }
 
-        private void OnGotoAnotherMode(object sender, RoutedEventArgs e)
+        private async void OnGotoAnotherMode(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
             try
@@ -139,6 +228,16 @@ namespace checkin.presentation.gui.page
             {
                 logger.ErrorException("goto another mode".WithMachineName(), ex);
             }
+        }
+
+        private async void OnGotoWelcome(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                AppUtil.GotoWelcome(this);
+            });
         }
 
         private void ErrorDialog_MessageDialogComplete(object sender, RoutedEventArgs e)

@@ -78,9 +78,9 @@
                      Canvas.Right="60"
                      Canvas.Top="655"
                      Click="OnSubmitWithBoundContext"
-                     Style="{StaticResource SubmitButton}">
+                     Style="{StaticResource NextSubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
-                            QRコード読み込み
+                            QRコード読み込み ▶
                         </TextBlock>
                     </Button>
 
@@ -91,7 +91,7 @@
                     Click="OnBackward"
                     Style="{StaticResource BackwardButton}"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"

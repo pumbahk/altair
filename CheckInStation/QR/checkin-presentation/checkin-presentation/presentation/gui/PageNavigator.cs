@@ -26,6 +26,11 @@ namespace checkin.presentation.gui
             return new T();
         }
 
+        public Page ReturnPrev(AbstractCase CurrentCase)
+        {
+            return new PageConfirmAll(CurrentCase);
+        }
+
         public Page Choice(ICase CurrentCase, Page previous)
         {
             var c = CurrentCase;
@@ -40,26 +45,71 @@ namespace checkin.presentation.gui
             else if (c is CaseFailureRedirect)
                 return this.CreateOrReUse<PageFailure>(c, previous);
 
-            else if (c is CaseQRCodeInput || c is CaseQRDataFetch)
+            else if (c is CaseWelcome)
+                return this.CreateOrReUse<PageWelcome>(c, previous);
+            else if (c is CaseOneOrPart)
+                return this.CreateOrReUse<PageOneOrPart>(c, previous);
+            else if (c is CasePartOrAll)
+                return this.CreateOrReUse<PagePartOrAll>(c, previous);
+            else if (c is CaseConfirmListForOne)
+                return this.CreateOrReUse<PageConfirmListOne>(c, previous);
+            else if (c is CaseConfirmListForPart)
+                return this.CreateOrReUse<PageConfirmListPart>(c, previous);
+
+            else if (c is CaseQRCodeInput || c is CaseQRDataFetch || c is CaseQRConfirmForAllHidden)
                 return this.CreateOrReUse<PageQRCodeInput>(c, previous);
             else if (c is CaseQRConfirmForOne)
                 return this.CreateOrReUse<PageConfirmOne>(c, previous);
             else if (c is CaseQRConfirmForAll)
-                return this.CreateOrReUse<PageConfirmAll>(c, previous);
-
+            {
+                if ((c as CaseQRConfirmForAll).PartOrAll == 0)
+                {
+                    if(previous is PageConfirmListPart)
+                        return this.ReturnPrev(c as AbstractCase);
+                    return this.CreateOrReUse<PageConfirmAll>(c, previous);
+                }
+                else
+                {
+                    return this.CreateOrReUse<PageConfirmListAll>(c, previous);
+                }
+                
+            }
             else if (c is CaseOrdernoOrdernoInput)
                 return this.CreateOrReUse<PageOrdernoOrdernoInput>(c, previous);
-            else if (c is CaseOrdernoTelInput)
+            else if (c is CaseOrdernoTelInput || c is CaseOrdernoConfirmForAllHidden)
                 return this.CreateOrReUse<PageOrdernoTelInput>(c, previous);
             else if (c is CaseOrdernoVerifyRequestData)
                 return this.CreateOrReUse<PageOrdernoTelInput>(c, previous); //xxx:
             else if (c is CaseOrdernoConfirmForAll)
-                return this.CreateOrReUse<PageConfirmAll>(c, previous);
-
-            else if (c is CasePrintForOne || c is CasePrintForAll)
+            {
+                if ((c as CaseOrdernoConfirmForAll).PartOrAll == 0)
+                {
+                    if (previous is PageConfirmListPart)
+                        return this.ReturnPrev(c as AbstractCase);
+                    return this.CreateOrReUse<PageConfirmAll>(c, previous);
+                }
+                else
+                {
+                    return this.CreateOrReUse<PageConfirmListAll>(c, previous);
+                }
+                
+            }
+            else if (c is CasePrintForOne)
                 return this.CreateOrReUse<PagePrinting>(c, previous);
+            else if (c is CasePrintForAll)
+            {
+                if (AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    return this.CreateOrReUse<PagePrinting2>(c, previous);
+                else
+                    return this.CreateOrReUse<PagePrinting>(c, previous);
+            }
             else if (c is CasePrintFinish)
-                return this.CreateOrReUse<PageFinish>(c, previous);
+            {
+                if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
+                    return this.CreateOrReUse<PageFinish2>(c, previous);
+                else
+                    return this.CreateOrReUse<PageFinish>(c, previous);
+            }
             throw new NotImplementedException("sorry");
         }
 

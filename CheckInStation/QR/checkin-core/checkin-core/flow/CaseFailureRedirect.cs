@@ -1,4 +1,4 @@
-using System;
+ using System;
 using System.Threading.Tasks;
 using checkin.core.message;
 using NLog;
@@ -24,7 +24,7 @@ namespace checkin.core.flow
             {
                 var result = String.Format("{0} (マシン名:{2} 現在の時間: {1})", this._message, DateTime.Now.ToString("yyyy/M/d hh:mm:ss"), this.Resource.GetUniqueNameEachMachine());
                 logger.Warn("error is occurred: `{0}`".WithMachineName(), result);
-                return result;
+                return this._message;
             }
             set { this._message = value; }
         }

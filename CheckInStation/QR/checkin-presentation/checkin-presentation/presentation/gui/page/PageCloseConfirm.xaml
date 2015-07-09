@@ -60,32 +60,40 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock 
+                        
+                            <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"
+                                FontSize="30"
+                                TextAlignment="Center"/>
                     </StackPanel>
 
                     <!-- ボタン -->
                     <Button
-                     Canvas.Right="60"
+                     Canvas.Right="140"
                      Canvas.Top="655"
                      Click="OnForward"
-                     Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">ログアウト</TextBlock>
+                     Style="{StaticResource SubmitButton}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">ログアウト ▶</TextBlock>
                     </Button>
                     <Button
-                    Canvas.Left="60"
+                    Canvas.Left="140"
                     Canvas.Top="655"
                     Click="OnBackward"
                     Style="{StaticResource BackwardButton}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     >
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
                     </Button>
 
                     <!-- 再発券許可ON/OFF -->
                     <Button Click="OnGotoRefreshMode"
                     Style="{StaticResource HeaderMenuButtonStyle}"
-                            Canvas.Top="17"
+                            Canvas.Top="20"
                             RenderTransformOrigin="10.794,2.52"
                             Canvas.Left="1060"
                             Height="64" Width="240">再発券許可ON/OFF</Button>

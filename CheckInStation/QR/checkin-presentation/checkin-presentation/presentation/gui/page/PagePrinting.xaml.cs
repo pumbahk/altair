@@ -111,6 +111,8 @@ namespace checkin.presentation.gui.page
                 StatusInfo = ctx as IPrintingStatusInfo,
             };
             ctx.PropertyChanged += ctx_PropertyChanged;
+            ctx.TotalPrinted = 0;
+            ctx.FinishedPrinted = 0;
             return ctx;
         }
 
@@ -125,6 +127,7 @@ namespace checkin.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            this.LoadingAdorner.ShowAdorner();
             await (this.DataContext as PagePrintingDataContext).PrepareAsync();
             await OnPrintingStart();
         }
