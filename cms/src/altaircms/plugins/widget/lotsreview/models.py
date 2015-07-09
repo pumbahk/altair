@@ -12,6 +12,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
+from altaircms.api import get_cart_domain
 import altaircms.helpers as h
 from altaircms.modellib import MutationDict, JSONEncodedDict
 
@@ -19,7 +20,7 @@ def lotsreview_simple_render(request, widget, event):
     if widget.external_link:
         href = widget.external_link
     else:
-        href = "https://{0}/lots/review".format(request.host)
+        href = "{0}/lots/review".format(get_cart_domain(request))
     return u'<div style="text-align:{0}"><a href="{1}" target="_blank"><img src="{2}"></a></div>'.format(widget.attributes['align'], href, request.static_url("altaircms:static/RT/img/lots/lotsreviewSimple.jpg"))
 
 LOTSREVIEW_DISPATCH = {
