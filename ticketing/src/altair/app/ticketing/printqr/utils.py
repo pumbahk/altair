@@ -40,17 +40,22 @@ class UnmatchEventException(Exception):
     pass
 
 def order_and_history_from_qrdata(qrdata):
-    qs =  DBSession.query(Order, TicketPrintHistory)\
-        .filter(TicketPrintHistory.id==qrdata["serial"])\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == qrdata["order"])\
-        .options(orm.joinedload(Order.performance),
-                 orm.joinedload(Order.shipping_address),
-                 orm.joinedload(TicketPrintHistory.ordered_product_item),
-                 orm.joinedload(TicketPrintHistory.item_token),
-                 orm.joinedload(TicketPrintHistory.seat))
+    qs = DBSession.query(Order, TicketPrintHistory)
+    if qrdata.get("serial"):
+        qs = qs.filter(TicketPrintHistory.id == qrdata["serial"])
+    if qrdata.get("order"):
+        qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItemToken.id == TicketPrintHistory.item_token_id) \
+               .outerjoin(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+               .outerjoin(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+               .filter((OrderedProduct.order_id == Order.id) | (TicketPrintHistory.order_id == Order.id)) \
+               .filter(Order.order_no == qrdata["order"])
+    qs = qs.options(
+        orm.joinedload(Order.performance),
+        orm.joinedload(Order.shipping_address),
+        orm.joinedload(TicketPrintHistory.ordered_product_item),
+        orm.joinedload(TicketPrintHistory.item_token),
+        orm.joinedload(TicketPrintHistory.seat)
+        )
     return qs.first()
 
 def order_from_token(token, order):
