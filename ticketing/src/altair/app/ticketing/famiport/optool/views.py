@@ -234,7 +234,7 @@ class FamiPortDetailView(object):
     @view_config(route_name='receipt.detail', renderer='altair.app.ticketing.famiport.optool:templates/receipt_detail.mako')
     def show_order_detail(self):
         receipt = self.context.receipt
-        return dict(receipt=receipt,)
+        return dict(receipt=receipt, vh=ViewHelpers(),)
 
     @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako', permission='operator')
     def show_performance_detail(self):
@@ -345,7 +345,7 @@ class FamiPortDownloadRefundTicketView(object):
             u'払戻店舗名',
         ]
 
-        rts_helper = RefundTicketSearchHelper()
+        rts_helper = RefundTicketSearchHelper(self.request)
         rows = []
         for famiport_refund_entry in refund_entries:
             famiport_shop = famiport_refund_entry.famiport_shop

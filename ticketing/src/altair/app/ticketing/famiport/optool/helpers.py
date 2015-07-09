@@ -19,6 +19,9 @@ class ViewHelpers(object):
     def get_time(self, datetime):
         return "{0:%H:%M}".format(datetime)
 
+    def format_famiport_order_identifier(self, identifier):
+        return identifier[3:12]
+
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
     return Page(query, page, url=page_url, items_per_page=items_per_page)

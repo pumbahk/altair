@@ -32,7 +32,7 @@
       </tr>
       <tr>
         <th>管理番号</th>
-        <td>${receipt.famiport_order.famiport_order_identifier}</td>
+        <td>${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
         <th>発券区分</th>
         <td>${receipt.famiport_order.get_type_in_str}</td>
       </tr>

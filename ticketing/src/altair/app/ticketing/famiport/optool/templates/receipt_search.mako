@@ -116,7 +116,7 @@
         <td>${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
         <td>${vh.get_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
         <td>${vh.get_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
-        <td>${receipt.famiport_order.famiport_order_identifier}</td>
+        <td>${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
         <td>${receipt.famiport_order.customer_name}</td>
         <td>${receipt.famiport_order.payment_due_at}</td>
         <td>${receipt.famiport_order.ticketing_end_at}</td>
