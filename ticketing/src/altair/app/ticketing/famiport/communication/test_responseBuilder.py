@@ -992,7 +992,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
-        self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
 
@@ -1012,7 +1012,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
-        self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.PaymentDueError.value)
 
@@ -1111,7 +1111,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
-        self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyClass, u'')
         self.assertEqual(result.replyCode, ReplyCodeEnum.TicketingBeforeStartError.value)
         self.assertEqual(result.storeCode, u'000009')
@@ -1221,7 +1221,7 @@ class FamiPortPaymentTicketingCompletionBuilderTest(unittest.TestCase, FamiPortR
         self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = None
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
-        self.assertEqual(result.resultCode, '99')
+        self.assertEqual(result.resultCode, '00')
         self.assertEqual(result.replyCode, u'99')
         self.assertEqual(result.storeCode, u'000009')
         self.assertEqual(result.sequenceNo, u'15052100004')

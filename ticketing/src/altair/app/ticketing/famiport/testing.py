@@ -139,7 +139,7 @@ class FamiPortPaymentTicketingCompletionResponseFailFakeFactory(FamiPortFakeFact
     """
     xml = """<?xml version="1.0" encoding="Shift_JIS"?>
 <FMIF>
-<resultCode>99</resultCode>
+<resultCode>00</resultCode>
 <storeCode>099999</storeCode>
 <sequenceNo>12345678901</sequenceNo>
 <barCodeNo>6010000000000</barCodeNo>
