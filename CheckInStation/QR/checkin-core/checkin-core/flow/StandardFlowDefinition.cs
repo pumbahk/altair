@@ -21,7 +21,8 @@ namespace checkin.core.flow
 
         public ICase AfterFailureRedirect(IResource resource)
         {
-            return DispatchICaseUtil.GetInputCaseByInputUnit(resource, this.CurrentInputUnit);
+            //return DispatchICaseUtil.GetInputCaseByInputUnit(resource, this.CurrentInputUnit);
+            return new CaseWelcome(resource);
         }
 
         public ICase AfterAuthorization(IResource resource)

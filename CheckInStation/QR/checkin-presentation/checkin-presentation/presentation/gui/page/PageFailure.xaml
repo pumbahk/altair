@@ -31,22 +31,27 @@
                         Canvas.Top="143"
                         Style="{StaticResource MainBorder}">
                         <Grid>
-                            <Border Background="White" Width="717" Height="477"
+                            <Border Background="White" Width="717" Height="300"
                             CornerRadius="24"
-                            Padding="40,20,40,20"
+                            Padding="20,20,20,20"
                             Canvas.Left="327" 
-                            Canvas.Top="169">
-                                <StackPanel HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Center">
+                            Canvas.Top="60">
+                                <StackPanel
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
                                     <TextBlock Style="{StaticResource MainText}" 
                                                TextWrapping="Wrap"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"
+                                               FontSize="40"
                                                Text="{Binding Message, Mode=OneWay}"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
 
-                    <!-- 説明(description)-->
+                    <!-- 説明(description)
                     <StackPanel
                         Canvas.Top="90"
                         Orientation="Horizontal"
@@ -68,6 +73,7 @@
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                         Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
+                    -->
 
                     <Button
                     Canvas.Left="553"
