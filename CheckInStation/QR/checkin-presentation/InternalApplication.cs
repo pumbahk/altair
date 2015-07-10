@@ -20,9 +20,9 @@ namespace checkin.presentation
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public IFlowDefinition CreateFlowDefinition(IConfigurator config)
+        public IFlowDefinition CreateFlowDefinition(FlowDefinitionType type)
         {
-            switch (config.FlowDefinitionType)
+            switch (type)
             {
                 case FlowDefinitionType.QRFront:
                     return new EaglesFlowDefinition();
@@ -51,16 +51,25 @@ namespace checkin.presentation
             config.Include(AuthConfiguration.IncludeMe);
             config.Include (QRConfiguration.IncludeMe);
             config.Include (HttpCommunicationConfiguration.IncludeMe);
-            this.Resource.FlowDefinition = this.CreateFlowDefinition(config);
-            this.FlowManager = new FlowManager(this.Resource.FlowDefinition);
-            this.RequestBroker = new RequestBroker (FlowManager);
 
             // verify
             logger.Info("internal Application configuration checking.".WithMachineName());
-            if (!this.RequestBroker.IsConfigurationOK () || !config.Verify ()) {
+            if (!config.Verify ()) {
                 throw new InvalidProgramException ("configuration is not end");
             }
         }
+
+        public void CreatePrintMode(FlowDefinitionType type)
+        {
+            this.Resource.FlowDefinition = this.CreateFlowDefinition(type);
+            this.FlowManager = new FlowManager(this.Resource.FlowDefinition);
+            this.RequestBroker = new RequestBroker(FlowManager);
+            if (!this.RequestBroker.IsConfigurationOK())
+            {
+                throw new InvalidProgramException("configuration is not end");
+            }
+        }
+
         public void ShutDown()
         {
             logger.Info("Internal Application shutdown.".WithMachineName());

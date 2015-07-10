@@ -59,8 +59,8 @@ namespace checkin.core.models
                 throw new InvalidOperationException ("AdImageCollector is null");
             if (HttpWrapperFactory == null)
                 throw new InvalidOperationException ("HttpWrapperFactory is null");
-            if (FlowDefinition == null)
-                throw new InvalidOperationException("FlowDefinition is  null");
+            //if (FlowDefinition == null)
+            //    throw new InvalidOperationException("FlowDefinition is  null");
             return true;
         }
 

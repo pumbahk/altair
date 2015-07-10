@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using checkin.core.models;
 using checkin.core.events;
+using checkin.core;
 
 namespace checkin.presentation.gui
 {
@@ -48,6 +49,14 @@ namespace checkin.presentation.gui
             var candidates = new ObservableCollection<UnitPair<Style>>();
             candidates.Add(new UnitPair<Style>("全画面表示", (Style)el.FindResource("MainWindow")));
             candidates.Add(new UnitPair<Style>("ウィンドウ表示", (Style)el.FindResource("MainWindowSmall")));
+            return candidates;
+        }
+
+        public static ObservableCollection<UnitPair<FlowDefinitionType>> FlowStyleCandidates()
+        {
+            var candidates = new ObservableCollection<UnitPair<FlowDefinitionType>>();
+            candidates.Add(new UnitPair<FlowDefinitionType>("汎用発券", FlowDefinitionType.StandardFlow));
+            candidates.Add(new UnitPair<FlowDefinitionType>("一括発券", FlowDefinitionType.OneStep));
             return candidates;
         }
 

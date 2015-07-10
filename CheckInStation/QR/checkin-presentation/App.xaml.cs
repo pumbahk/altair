@@ -28,13 +28,19 @@ namespace checkin.presentation
         public static RefreshPageNavigator RefreshPageNavigator;
         public static void OnStartup(StartupEventArgs e)
         {
+            AppUtil.Internal = new InternalApplication();
+        }
+
+        public static void init(FlowDefinitionType type)
+        {
             //モデル層の処理をどこに置いたらよいのかわからないので、とりあえずここに。
-            var app = AppUtil.Internal = new InternalApplication();
+            var app = AppUtil.Internal;
+            app.CreatePrintMode(type);
             AppUtil.PageChoicer = new PageNavigator();
             AppUtil.Broker = app.RequestBroker;
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
             AppUtil.RefreshPageNavigator = new RefreshPageNavigator(AppUtil.PageChoicer);
-            AppUtil.Loadstyle();
+            AppUtil.Loadstyle(type);
         }
 
         public static IResource GetCurrentResource()
@@ -42,10 +48,10 @@ namespace checkin.presentation
             return AppUtil.Internal.Resource;
         }
 
-        private static void Loadstyle()
+        private static void Loadstyle(FlowDefinitionType type)
         {
             ResourceDictionary myResourceDictionary = new ResourceDictionary();
-            switch (ConfigurationManager.AppSettings["application.flow"])
+            switch (type.ToString())
             {
                 case "StandardFlow":
                     myResourceDictionary.Source = new Uri("Styles\\Ticketstar\\StandardFlow.xaml", UriKind.Relative);

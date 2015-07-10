@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Configuration;
 using checkin.core.support;
 using checkin.presentation.support;
 using checkin.core.events;
@@ -50,6 +51,14 @@ namespace checkin.presentation.gui.page{
         {
             get { return this._selectedWindowStyle; }
             set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle"); }
+        }
+
+        public ObservableCollection<UnitPair<FlowDefinitionType>> AvailableFlowStyles { get; set; }
+        private UnitPair<FlowDefinitionType> _selectedFlowStyle;
+        public UnitPair<FlowDefinitionType> SelectedFlowStyle
+        {
+            get { return this._selectedFlowStyle; }
+            set { this._selectedFlowStyle = value; this.OnPropertyChanged("SelectedFlowStyle"); }
         }
 
         private string _multiPrintMode;
@@ -97,6 +106,7 @@ namespace checkin.presentation.gui.page{
 
             //アプリケーションのwindow表示
             AppUtil.GetCurrentResource().Authentication.LoginURL = ctx.SelectedServerUrl;
+            AppUtil.init(ctx.SelectedFlowStyle.Value);
             var win = new MainWindow() {
                 Style = stylePair.Value,
                 ShowsNavigationUI=false
@@ -117,18 +127,22 @@ namespace checkin.presentation.gui.page{
             var printing = resource.TicketPrinting;
             ObservableCollection<PrintQueue> printers = CandidateCreator.AvailablePrinterCandidates(printing);
             ObservableCollection<UnitPair<Style>> windowStyles = CandidateCreator.WindowStyleCandidates(this);
+            ObservableCollection<UnitPair<FlowDefinitionType>> flowStyles = CandidateCreator.FlowStyleCandidates();
 
             var ctx = new HomeMenuDataContext()
             {
                 AvailablePrinters = printers,
                 SelectedPrinterName = printing.DefaultPrinter.FullName,
                 AvailableWindowStyles = windowStyles,
+                AvailableFlowStyles = flowStyles,
                 SelectedWindowStyle = windowStyles[0],
+                SelectedFlowStyle = flowStyles.FirstOrDefault(o => o.Value == (FlowDefinitionType)Enum.Parse(typeof(FlowDefinitionType), ConfigurationManager.AppSettings["application.flow"])),
                 SelectedServerUrl = resource.Authentication.LoginURL,
                 LoadedQRCode = "<準備中>",
                 TestStatusDescription = "<準備中>",
                 ApplicationVersion=ApplicationVersion.GetApplicationInformationalVersion()
             };
+
             if (AppUtil.GetCurrentResource().MultiPrintMode)
             {
                 ctx.MultiPrintMode = "On";
@@ -153,6 +167,13 @@ namespace checkin.presentation.gui.page{
             var selected = (sender as ListBox).SelectedItem as UnitPair<Style>;
             var ctx = (this.DataContext as HomeMenuDataContext);
             ctx.SelectedWindowStyle = selected;
+        }
+
+        private void OnFlowStyleSelected(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = (sender as ListBox).SelectedItem as UnitPair<FlowDefinitionType>;
+            var ctx = (this.DataContext as HomeMenuDataContext);
+            ctx.SelectedFlowStyle = selected;
         }
 
 

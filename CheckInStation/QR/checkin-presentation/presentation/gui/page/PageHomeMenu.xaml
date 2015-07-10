@@ -226,6 +226,25 @@
                 </StackPanel>
             </c:MenuDialog>
 
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogFlow"
+                          Title="発券モードの設定">
+                <StackPanel>
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">現在の発券モードの表示</TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedFlowStyle.Key, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <ListBox 
+                 ItemsSource="{Binding AvailableFlowStyles}"
+                 ItemTemplate="{StaticResource AvailableWIndowStyleListBoxData}"
+                 Padding="20,0,20,0"
+                 SelectionChanged="OnFlowStyleSelected">
+                    </ListBox>
+                </StackPanel>
+            </c:MenuDialog>
+
 
             <!-- main menu -->
             
@@ -359,6 +378,21 @@
                             </TextBlock>
                         </StackPanel>
                     </Button>
+
+                <Button Command="{Binding ElementName=MenuDialogFlow, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogFlow}"
+                    Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Grid.Row="2" Grid.Column="1">
+                    <StackPanel>
+                        <TextBlock
+                    FontSize="15">
+                    発券モードの設定<LineBreak/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedFlowStyle.Key, Mode=OneWay}"></TextBlock>
+                    </StackPanel>
+                </Button>
 
 
                 <Button Style="{StaticResource MenuSelectButtonLast}"
