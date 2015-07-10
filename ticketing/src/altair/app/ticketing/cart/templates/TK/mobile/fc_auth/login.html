@@ -11,38 +11,25 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#E60048">■</font>会員の方はこちらから</font>
+<div><font color="#E60048">■</font>優待コードをご入力ください</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="TK" />
 <div>
-  会員番号<br/>
+  優待コード(半角英数字)<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+  <br/><span style="color: red">優待コードが一致しません</span>
   %endif
   <br/>
-  パスワード<br/>
-  <input type="password" name="password" size="22" value="" istyle="4">
+  <input type="hidden" name="password" size="22" value="tokinosumika" istyle="4">
 </div>
 <input type="submit" value="ログイン" />
 </form>
 </div>
 
-<div>
-<div><font color="#E60048">■</font>一般の方はこちらから</font>
-</div>
-
-</div>
-<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-<div style="text-align:center;">
-<br/>
-<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
-<div>
-
-</div>
 </div>
 </div>
 </form>
