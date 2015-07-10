@@ -1,5 +1,2 @@
-checkin-presentation/obj
-checkin-presentation/bin
-AdornedControl/obj
-AdornedControl/bin
-packages/
+obj/
+bin/
