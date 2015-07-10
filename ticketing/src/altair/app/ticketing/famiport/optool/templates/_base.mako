@@ -31,7 +31,7 @@
         ${next.body()}
       </div>
       <footer style="text-align:center;">
-          <div>&copy; 2012 TicketStar Inc.</div>
+          <div>&copy; TicketStar Inc.</div>
           <div>version =</div>
       </footer>
   </div>

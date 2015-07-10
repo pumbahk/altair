@@ -48,7 +48,7 @@ class FamiPortOpToolTopView(object):
 
     @view_config(route_name='top', renderer='top.mako', permission='operator')
     def top(self):
-        return dict()
+        return HTTPFound(self.request.route_url('search.receipt'))
 
 
 class FamiPortOpLoginView(object):

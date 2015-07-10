@@ -7,7 +7,7 @@
 </style>
 
 <form class="form-signin" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST">
-    <h2 class="form-signin-heading">プレイガイド様名</h2>
+    <h3 class="form-signin-heading">Famiポート運用ツール</h3>
     <div class="form-group">
       ${form.user_name.label}
       ${form.user_name(class_='form-control',placeholder='ID')}
