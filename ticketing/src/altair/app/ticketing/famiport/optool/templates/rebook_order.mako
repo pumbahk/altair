@@ -105,6 +105,13 @@ $(document).ready(function() {
             }
         });
     });
+    $("#myModal").on("hidden.bs.modal", function(e) {
+        console.log("modal closed!");
+        $('#myModalLabel').html('確認');
+        $('#mbody-title').html('');
+        $('#mbody-msg').html('実行してもよろしいですか');
+        $('.modal-footer button').show();
+    });
     $("#fix-reason").on('click', function() {
         $("#rebookform").attr('action', '${request.route_url('rebook_order', action='fix-reason', receipt_id=receipt.id)}').submit();
     });
