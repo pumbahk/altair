@@ -199,7 +199,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                         u'tickets for order are already issued at %s',
                         famiport_receipt.famiport_order.issued_at,
                         )
-                    resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                     famiport_receipt = None
 
@@ -214,7 +213,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                         if famiport_order.payment_start_at is not None and  \
                            famiport_order.payment_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
                         else:
@@ -227,7 +225,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                         if famiport_order.payment_start_at is not None and  \
                            famiport_order.payment_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
                         else:
@@ -238,21 +235,18 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                                     replyClass = ReplyClassEnum.Prepayment.value
                                 replyClass = ReplyClassEnum.Prepayment.value
                             else:
-                                resultCode = ResultCodeEnum.OtherError.value
                                 replyCode = ReplyCodeEnum.AlreadyPaidError.value
                                 famiport_receipt = None
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         if famiport_order.ticketing_start_at is not None and  \
                            famiport_order.ticketing_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than ticketing_start_at (%r)' % (famiport_order.ticketing_start_at, ))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
                             famiport_receipt = None
                         else:
                             if famiport_receipt.completed_at is None:
                                 replyClass = ReplyClassEnum.Paid.value
                             else:
-                                resultCode = ResultCodeEnum.OtherError.value
                                 replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                                 famiport_receipt = None
                     else:
@@ -392,18 +386,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 famiport_receipt = FamiPortReceipt.get_by_barcode_no(barCodeNo, session=session)
             except NoResultFound:
                 logger.exception(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
-                resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             if famiport_receipt is not None:
                 if famiport_receipt is None or _strip_zfill(famiport_receipt.shop_code) != storeCode:
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
-                    resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 elif not famiport_receipt.can_payment(now):
                     logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired or invalid status.' % (famiport_receipt.barcode_no, ))
-                    resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 else:
@@ -417,7 +408,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
                 if receipt_type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
                     if famiport_receipt.completed_at is not None:
-                        resultCode = ResultCodeEnum.OtherError.value
                         replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         famiport_receipt = None
                     else:
@@ -427,34 +417,29 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                                 ticketingDate,
                                 famiport_order.payment_start_at,
                                 ))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
                         elif famiport_order.payment_due_at is not None \
                                 and famiport_order.payment_due_at + self.moratorium < ticketingDate:
                             logger.error(u'ticketingDate (%r) is later than payment_due_at (%r) + moratorium (%r)' % (
                                 ticketingDate, famiport_order.payment_due_at, self.moratorium))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.PaymentDueError.value
                             famiport_receipt = None
                 if famiport_receipt is not None and \
                    receipt_type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value):
                     if famiport_receipt.completed_at is not None:
                         logger.error(u'tickets for order are already issued at %s' % (famiport_order.issued_at, ))
-                        resultCode = ResultCodeEnum.OtherError.value
                         replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         famiport_receipt = None
                     elif famiport_order.ticketing_start_at is not None \
                             and famiport_order.ticketing_start_at > ticketingDate:
                         logger.error(u'ticketingDate is earlier than ticketing_start_at (%r)' % (famiport_order.ticketing_start_at,))
-                        resultCode = ResultCodeEnum.OtherError.value
                         replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
                         famiport_receipt = None
                     elif famiport_order.ticketing_end_at is not None \
                             and famiport_order.ticketing_end_at + self.moratorium < ticketingDate:
                         logger.error(u'ticketingDate is later than ticketing_end_at (%r) + moratorium (%r)' % (
                             famiport_order.ticketing_end_at, self.moratorium))
-                        resultCode = ResultCodeEnum.OtherError.value
                         replyCode = ReplyCodeEnum.TicketingDueError.value
                         famiport_receipt = None
 
@@ -612,23 +597,19 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
             if famiport_receipt is not None:
                 if _strip_zfill(famiport_receipt.shop_code) != storeCode:
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
-                    resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 elif not famiport_receipt.can_completion(now):
                     logger.error(u'settlement error (%s)' % famiport_receipt.shop_code)
-                    resultCode = ResultCodeEnum.OtherError.value
                     replyCode = ReplyCodeEnum.OtherError.value
                     famiport_receipt = None
                 else:
                     # 正常系
                     famiport_order = famiport_receipt.famiport_order
-                    resultCode = ResultCodeEnum.Normal.value
                     replyCode = ReplyCodeEnum.Normal.value
                     if famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
                         if famiport_receipt.completed_at is not None:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             famiport_receipt.mark_completed(now, request)
@@ -639,7 +620,6 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                         # 前払後日の支払 / 支払いのみ
                         if famiport_receipt.completed_at is not None:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
@@ -650,7 +630,6 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                         # 前払後日の発券 / 発券のみ
                         if famiport_receipt.completed_at is not None:
                             logger.error(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already issued" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
-                            resultCode = ResultCodeEnum.OtherError.value
                             replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
@@ -660,7 +639,6 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     else:
                         raise AssertionError('NEVER GET HERE')
             else:
-                resultCode = ResultCodeEnum.OtherError.value
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
@@ -740,26 +718,22 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
 
             if _strip_zfill(famiport_receipt.shop_code) != storeCode:
                 logger.info('store code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
-                famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 famiport_receipt = None
             elif not famiport_receipt.can_cancel(now):  # 入金発券取消が行えない
                 logger.info('not cancellable')
-                famiport_response.resultCode = ResultCodeEnum.OtherError.value
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 famiport_receipt = None
             elif famiport_receipt.completed_at is not None:  # 支払済
                 logger.info('paid / ticketed')
                 if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
-                    famiport_response.resultCode = ResultCodeEnum.AlreadyPaidError.value
+                    famiport_response.replyCode = ReplyCodeEnum.AlreadyPaidError.value
                 else:
-                    famiport_response.resultCode = ResultCodeEnum.TicketAlreadyIssuedError.value
-                famiport_response.replyCode = ReplyCodeEnum.OtherError.value
+                    famiport_response.replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                 famiport_receipt = None
             elif famiport_receipt.void_at is not None:  # 支払取消済みエラー
                 logger.info('already canceled')
-                famiport_response.resultCode = ResultCodeEnum.PaymentAlreadyCanceledError.value
-                famiport_response.replyCode = ReplyCodeEnum.OtherError.value
+                famiport_response.replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value
                 famiport_receipt = None
             else:  # 正常
                 famiport_response.resultCode = ResultCodeEnum.Normal.value

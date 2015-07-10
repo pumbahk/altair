@@ -47,7 +47,7 @@ class CancelFamiPortOrderTest(unittest.TestCase):
             userside_id=None,
             name=u'テスト会場',
             name_kana=u'テストカイジョウ',
-            prefecture=FamiPortPrefecture.Tokyo.id, 
+            prefecture=FamiPortPrefecture.Tokyo.id,
             )
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
@@ -231,7 +231,7 @@ class CancelFamiPortOrderTest(unittest.TestCase):
     def tearDown(self):
         _teardown_db(self.config.registry)
         tearDown()
-    
+
     def test_it(self):
         from .internal_api import cancel_famiport_order_by_order_no
         cancel_famiport_order_by_order_no(
@@ -298,7 +298,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             userside_id=None,
             name=u'テスト会場',
             name_kana=u'テストカイジョウ',
-            prefecture=FamiPortPrefecture.Tokyo.id, 
+            prefecture=FamiPortPrefecture.Tokyo.id,
             )
         self.session.add(self.venue)
         self.genre_1 = FamiPortGenre1(code=u'00000', name=u'大ジャンル')
@@ -465,6 +465,11 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             order_no=u'XX000012345',
             client_code=None,
             famiport_order_identifier=None,
+            type_=1,
+            event_code_1='000001',
+            event_code_2='0000',
+            performance_code='000',
+            sales_segment_code='000',
             customer_name=None,
             customer_phone_number=None,
             customer_address_1=None,
@@ -490,6 +495,11 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 order_no=u'XX000012345',
                 client_code=None,
                 famiport_order_identifier=None,
+                type_=1,
+                event_code_1='000001',
+                event_code_2='0000',
+                performance_code='000',
+                sales_segment_code='000',
                 customer_name=None,
                 customer_phone_number=None,
                 customer_address_1=None,
@@ -515,6 +525,11 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 order_no=u'XX000012346',
                 client_code=None,
                 famiport_order_identifier=None,
+                type_=2,
+                event_code_1='000001',
+                event_code_2='0000',
+                performance_code='000',
+                sales_segment_code='000',
                 customer_name=None,
                 customer_phone_number=None,
                 customer_address_1=None,
@@ -539,6 +554,11 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             order_no=u'XX000012346',
             client_code=None,
             famiport_order_identifier=None,
+            type_=2,
+            event_code_1='000001',
+            event_code_2='0000',
+            performance_code='000',
+            sales_segment_code='000',
             customer_name=None,
             customer_phone_number=None,
             customer_address_1=None,
