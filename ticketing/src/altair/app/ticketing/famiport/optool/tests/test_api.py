@@ -42,7 +42,6 @@ class APITestBase(object):
     def setUp(self):
         self.request = DummyRequest()
         self.config = setUp(request=self.request)
-        # self.config.include('.')
         self.engine = _setup_db(
             self.config.registry,
             [
@@ -56,6 +55,7 @@ class APITestBase(object):
         _teardown_db(self.config.registry)
         tearDown()
 
+
 class UserCreationTest(APITestBase, TestCase):
     def test_create_user(self):
         user_name = u'famiport_test'
@@ -66,17 +66,11 @@ class UserCreationTest(APITestBase, TestCase):
         self.assertIsNotNone(user)
 
 
-
 class ReceiptSearchTest(APITestBase, TestCase):
-
-    # barcode_no_cash_on_delivery = u'01234012340123'
-    # barcode_no_payment = u'01234012340124'
-    # barcode_no_payment_only = u'01234012340126'
 
     def setUp(self):
         APITestBase.setUp(self)
 
-        # self.barcode_nos = (self.barcode_no_cash_on_delivery, self.barcode_no_payment, self.barcode_no_payment_only)
         self.barcode_nos = (u'01234012340123', u'01234012340124', u'01234012340126')
         self.reserve_numbers = (u'4321043210432', u'4321043210433', u'4321043210434', u'4321043210435')
         self.management_numbers = (u'000011112222', u'000011112223', u'000011112224', u'000011112225', u'000011112226', u'000011112227', u'000011112228')
