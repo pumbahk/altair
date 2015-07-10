@@ -54,8 +54,8 @@
       <h4 class="modal-title" id="myModalLabel">確認</h4>
     </div>
     <div class="modal-body text-center">
-      <div id="result-msg"></div>
-      実行してもよろしいですか
+      <div id="mbody-title"></div>
+      <div id="mbody-msg">実行してもよろしいですか</div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="modal_ok">OK</button>
@@ -68,7 +68,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
     $("#modal_ok").on('click', function(e) {
-        console.log('the button was pushed!');
+        console.log($('#result-msg'));
         var $form = $("#rebookform");
         var $button = $("#modal_ok");
         var $url = $form.attr('action');
@@ -89,13 +89,18 @@ $(document).ready(function() {
             },
 
             success: function(result, textStatus, xhr) {
-                $('#result-msg').html('正常に終了しました');
-                $('.modal-body').html($('input#old_num_type').val() + 'が「' + result['old_identifier'] + '」から「' + result['new_identifier'] + '」に変更されました');
+                console.log(result['error']);
+                if(result['error']) {
+                    $('#mbody-title').html('エラー');
+                    $('#mbody-msg').html('<span style="color:red;">' + result['error'] + '</span>');
+                } else {
+                    $('#mbody-title').html('正常に終了しました');
+                    $('#mbody-msg').html($('input#old_num_type').val() + 'が「' + result['old_identifier'] + '」から「' + result['new_identifier'] + '」に変更されました');
+                }
             },
             error: function(xhr, textStatus, error) {
-                $('#myModalLabel').html('実行結果');
-                $('#result-msg').html('エラー');
-                $('.modal-body').html('処理に失敗しました');
+                $('#mbody-title').html('エラー');
+                $('#mbody-msg').html('処理に失敗しました');
                 console.log(error);
             }
         });

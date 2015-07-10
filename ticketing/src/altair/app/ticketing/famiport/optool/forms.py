@@ -131,11 +131,14 @@ class RebookOrderForm(OurForm):
             ('914', u'【914】その他'),
         ],
         validators=[
-            Required(),
+            Required(message=u'理由コードは必須です'),
         ],
     )
     cancel_reason_text = OurTextAreaField(
         label=u'理由備考：',
+        validators=[
+            Required(message=u'理由備考は必須です'),
+        ]
     )
     old_num_type = OurTextField(
         label=u'旧番号種類：',

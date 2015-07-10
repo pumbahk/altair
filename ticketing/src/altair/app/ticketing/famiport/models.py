@@ -1002,45 +1002,6 @@ class FamiPortReceipt(Base, WithTimestamp):
             else:
                 return u'状態不正'
 
-
-    def is_rebookable(self, now):
-        # キャンセル済みの場合
-        if self.void_at is not None or self.canceled_at is not None:
-            logger.info('canceled receipt is not rebookable')
-            return False
-        # 申込ステータスが確定待ちじゃないかつ期限超過ならfalse
-        # todo:playguid設定締日の確認
-        if self.payment_request_received_at is None:
-            logger.info('non paid(issued) receipt is not rebookable')
-            return False
-
-        return True
-
-    def is_reprintable(self, now):
-        # キャンセル済みの場合
-        if self.void_at is not None or self.canceled_at is not None:
-            logger.info('canceled receipt is not reprintable')
-            return False
-        # 払込レシートの場合
-        if self.type == FamiPortReceiptType.Payment.value:
-            logger.info('payment receipt is not reprintable')
-            return False
-        # 期限超過の場合
-        if self.type == FamiPortReceiptType.CashOnDelivery:
-            if self.famiport_order.payment_due_at < now:
-                logger.info('too late to reprint')
-                return False
-        else:
-            if self.famiport_order.ticketing_end_at < now:
-                logger.info('too late to reprint')
-                return False
-        # 未発券の場合
-        if self.payment_request_received_at is None:
-            logger.info('non issued receipt is not reprintable')
-            return False
-
-        return True
-
     def get_shop_name(self, request):
         if self.payment_request_received_at:
             session = get_db_session(request, name="famiport")
