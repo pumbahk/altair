@@ -23,35 +23,37 @@
           </td>
         </tr>
         </tbody>
-        <thead><tr><th colspan="6">チケット情報</th></tr></thead>
+        <thead><tr><th colspan="4">チケット情報</th></tr></thead>
         <tbody>
         <tr>
-          <td>
-            <th>${form.management_number.label}</th>
+            <th class="pull-right">${form.management_number.label}</th>
             <td>${form.management_number}</td>
-            <th>${form.barcode_number.label}</th>
+            <th class="pull-right">${form.barcode_number.label}</th>
             <td>${form.barcode_number}</td>
-            <th nowrap="nowrap">${form.refunded_shop_code.label}</th>
-            <td>${form.refunded_shop_code}</td>
-          </td>
         </tr>
         <tr>
-          <td>
-            <th nowrap="nowrap">${form.event_code.label}</th>
+            <th class="pull-right" nowrap="nowrap">${form.event_code.label}</th>
             <td>${form.event_code}</td>
-            <th nowrap="nowrap">${form.event_subcode.label}</th>
+            <th class="pull-right" nowrap="nowrap">${form.event_subcode.label}</th>
             <td>${form.event_subcode}</td>
-            <th>${form.performance_start_date.label}</th>
-            <td>${form.performance_start_date}</td>
-            <th>${form.performance_end_date.label}</th>
-            <td>${form.performance_end_date}</td>
-          </td>
+        </tr>
+        <tr>
+            <th class="pull-right" nowrap="nowrap">${form.refunded_shop_code.label}</th>
+            <td>${form.refunded_shop_code}</td>
+        </tr>
+        <tr>
+            <th class="pull-right">${form.performance_start_date.label}</th>
+            <td colspan="3">
+                ${form.performance_start_date}
+                ${form.performance_end_date.label}
+                ${form.performance_end_date}
+            </td>
         </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="buttonBox col-md-1">
+    <div class="buttonBox col-md-2">
       <button type="reset" class="btn btn-default">クリア<span class="glyphicon glyphicon-erase"></span></button>
       <button type="submit" class="btn btn-lg btn-default">検索
         <span class="glyphicon glyphicon-search"></span>
