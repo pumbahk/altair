@@ -1,15 +1,20 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
 <form class="form-horizontal" action="${action}" method="POST">
   <div class="control-group ${u'error' if form.recipients.errors else u''}">
     <label class="control-label">${form.recipients.label.text}</label>
     <div class="controls">
-      ${form.recipients(style="width:300px", size=4, multiple="")}<br/>
-      <span style="color:red">※登録されているメールアドレスだけ指定できます。</span>
+      ${form.recipients(style="width:300px", size=4, multiple="")}
       ${ch.validate_errors(form.recipients)}
     </div>
   </div>
+  <script type="text/javascript">
+    $("form select[name='recipients']").chosen();
+  </script>
   <div class="control-group">
     <label class="control-label">送信先追加</label>
     <div class="controls">

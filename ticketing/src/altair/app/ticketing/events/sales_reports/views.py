@@ -4,7 +4,6 @@ import json
 import logging
 from datetime import datetime, timedelta
 import urllib
-import re
 
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
@@ -222,25 +221,14 @@ class SalesReports(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class ReportSettings(BaseView):
 
-    def _save_report_setting(self, report_setting=None, copy=False):
+    def _save_report_setting(self, report_setting=None):
         f = ReportSettingForm(self.request.POST, context=self.context)
         if not f.validate():
             raise ReportSettingValidationError(form=f)
-
-        from altair.sqlahelper import get_db_session
-        mails = filter(lambda w: len(w) > 0, re.split(ur'\s|,|　', f.recipients.data))
-        session = get_db_session(self.request, 'slave')
-        recipients = session.query(ReportRecipient).filter(ReportRecipient.email.in_(mails)).all()
-
         new_recipients = [
-            ReportRecipient.query.filter_by(id=recipient.id, organization_id=self.context.organization.id).one()
-            for recipient in recipients
+            ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
+            for report_recipient_id in f.recipients.data
             ]
-        # 送信先がないときは、必ず送信先追加
-        if not new_recipients and not f.email.data:
-            f.recipients.errors = [u'送信先が指定されていません。送信先を登録する場合は、送信先追加を入力してください。']
-            raise ReportSettingValidationError(form=f)
-
         if f.email.data:
             rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
             if not rr:
@@ -255,25 +243,9 @@ class ReportSettings(BaseView):
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 
-        report_setting.event_id = f.event_id.data
-        report_setting.performance_id = f.performance_id.data
-        report_setting.name = f.name.data
-        report_setting.email = f.email.data
-        report_setting.frequency = f.frequency.data
-        report_setting.day_of_week = f.day_of_week.data
-        report_setting.report_hour = f.report_hour.data
-        report_setting.report_minute = f.report_minute.data
-        report_setting.time = f.time.data
-        report_setting.start_on = f.start_on.data
-        report_setting.end_on = f.end_on.data
-        report_setting.period = f.period.data
-        report_setting.report_type = f.report_type.data
-
+        report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.recipients[:] = []
         report_setting.recipients.extend(new_recipients)
-
-        if copy:
-            report_setting.id = None
         report_setting.save()
         return
 
@@ -308,25 +280,6 @@ class ReportSettings(BaseView):
         try:
             self._save_report_setting(self.context.report_setting)
             self.request.session.flash(u'レポート送信設定を保存しました')
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        except ReportSettingValidationError as e:
-            return {
-                'form':e.form,
-                'action': self.request.path,
-                }
-
-    @view_config(route_name='report_settings.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
-    def copy_xhr(self):
-        return {
-            'form': ReportSettingForm(obj=self.context.report_setting, context=self.context),
-            'action': self.request.path,
-            }
-
-    @view_config(route_name='report_settings.copy', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
-    def copy_post_xhr(self):
-        try:
-            self._save_report_setting(copy=True)
-            self.request.session.flash(u'レポート送信設定をコピーしました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         except ReportSettingValidationError as e:
             return {
