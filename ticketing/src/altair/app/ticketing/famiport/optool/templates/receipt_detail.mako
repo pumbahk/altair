@@ -37,17 +37,19 @@
         <td>${receipt.famiport_order.get_type_in_str}</td>
       </tr>
       <tr>
-        <th>氏名</th>
-        <td>${receipt.famiport_order.customer_name}</td>
+        <th>申込方法</th>
+        <td>${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
         <th>受付日</th>
         <td>${receipt.famiport_order.created_at}</td>
       </tr>
+      % if request.context.user.has_perm_for_personal_info:
       <tr>
-        <th>申込方法</th>
-        <td>${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
+        <th>氏名</th>
+        <td>${receipt.famiport_order.customer_name}</td>
         <th>電話番号</th>
         <td>${receipt.famiport_order.customer_phone_number}</td>
       </tr>
+      % endif
     </tbody>
 
     <thead>

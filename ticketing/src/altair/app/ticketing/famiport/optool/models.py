@@ -11,4 +11,9 @@ class FamiPortOperator(Base):
     user_name = sa.Column(sa.Unicode(32), nullable=False, unique=True)
     password = sa.Column(sa.Unicode(96), nullable=False)
     role = sa.Column(sa.Unicode(32), nullable=False)
-    
+
+    @property
+    def has_perm_for_personal_info(self):
+        if self.role not in ('administrator', 'superuser',):
+            return False
+        return True

@@ -1,6 +1,7 @@
 from pyramid.security import Allow, Deny, Authenticated, DENY_ALL
 from pyramid.decorator import reify
-from ..models import FamiPortPerformance, FamiPortReceipt, FamiPortOrder
+from ..models import FamiPortPerformance, FamiPortReceipt
+from .models import FamiPortOperator
 from altair.sqlahelper import get_db_session
 
 class BaseResource(object):
@@ -8,13 +9,23 @@ class BaseResource(object):
         (Allow, Authenticated, 'authenticated'),
         (Allow, 'administrator', 'administrator'),
         (Allow, 'administrator', 'operator'),
+        (Allow, 'superuser', 'administrator'),
+        (Allow, 'superuser', 'operator'),
         (Allow, 'operator', 'operator'),
         DENY_ALL,
         ]
 
     def __init__(self, request):
         self.request = request
+        if self.request.authenticated_userid:
+            fami_session = get_db_session(self.request, 'famiport')
+            user_id = self.request.authenticated_userid
+            self.user = fami_session.query(FamiPortOperator)\
+                                    .filter(FamiPortOperator.id == user_id)\
+                                    .one()
 
+    def user(self):
+        return self.user
 
 class TopResource(BaseResource):
     pass
@@ -30,6 +41,7 @@ class DetailBaseResource(BaseResource):
 
 class PerformanceDetailResource(DetailBaseResource):
     def __init__(self, request):
+        super(ReceiptDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         performance_id = self.request.matchdict.get('performance_id')
@@ -40,6 +52,7 @@ class PerformanceDetailResource(DetailBaseResource):
 
 class RefundPerformanceDetailResource(DetailBaseResource):
     def __init__(self, request):
+        super(ReceiptDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         performance_id = self.request.matchdict.get('performance_id')
@@ -50,6 +63,7 @@ class RefundPerformanceDetailResource(DetailBaseResource):
 
 class ReceiptDetailResource(DetailBaseResource):
     def __init__(self, request):
+        super(ReceiptDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         receipt_id = self.request.matchdict.get('receipt_id')
@@ -60,6 +74,7 @@ class ReceiptDetailResource(DetailBaseResource):
 
 class RebookReceiptResource(BaseResource):
     def __init__(self, request):
+        super(ReceiptDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         self.fami_session = fami_session

@@ -70,6 +70,7 @@
   % if entries:
   ${entries.pager()}
   % endif
+  <% personal_info = request.context.user.has_perm_for_personal_info %>
   <a href="#" class="toggle-btn pull-right">残り項目表示</a>
   <table class="table table-hover">
     <thead>
@@ -85,11 +86,15 @@
         <th>管理番号</th>
         <th>払込票番号</th>
         <th>引換票番号</th>
+        % if personal_info:
         <th>氏名</th>
+        % endif
         <th>支払期限日時</th>
         <th>発券期限日時</th>
         <th>申込日時</th>
+        % if personal_info:
         <th class="first-hidden">電話番号</th>
+        % endif
         <th class="first-hidden">発券枚数</th>
         <th class="first-hidden">入金日時</th>
         <th class="first-hidden">入金店番</th>
@@ -119,11 +124,15 @@
         <td>${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
         <td>${receipt.barcode_no}</td>
         <td>${receipt.reserve_number}</td>
+        % if personal_info:
         <td>${receipt.famiport_order.customer_name}</td>
+        % endif
         <td>${receipt.famiport_order.payment_due_at}</td>
         <td>${receipt.famiport_order.ticketing_end_at}</td>
         <td>${receipt.famiport_order.created_at}</td>
+        % if personal_info:
         <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
+        % endif
         <td class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
         <td class="first-hidden">${receipt.famiport_order.paid_at}</td>
         <td class="first-hidden">${receipt.shop_code}</td>
