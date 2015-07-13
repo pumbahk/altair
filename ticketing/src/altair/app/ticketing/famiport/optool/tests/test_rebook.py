@@ -167,10 +167,10 @@ class RebookTest(TestCase):
         incomplete_payment_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_payment_receipt, datetime.now())
         incomplete_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_ticketing_receipt, datetime.now())
         incomplete_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_cash_on_delivery_receipt, datetime.now())
-        # TODO Check if incomplete receipts should be rebookable. If so, make these assertFalse.
-        # self.assertTrue(incomplete_payment_receipt_errors, msg='Incomplete payment receipt should not be rebookable.')
-        # self.assertTrue(incomplete_ticketing_receipt_errors, msg='Incomplete ticketing receipt should not be rebookable.')
-        # self.assertTrue(incomplete_cash_on_delivery_receipt_errors, msg='Incomplete cash on delivery receipt should not be rebookable.')
+
+        self.assertFalse(incomplete_payment_receipt_errors, msg='Incomplete payment receipt should be rebookable.')
+        self.assertFalse(incomplete_ticketing_receipt_errors, msg='Incomplete ticketing receipt should be rebookable.')
+        self.assertFalse(incomplete_cash_on_delivery_receipt_errors, msg='Incomplete cash on delivery receipt should be rebookable.')
 
     def test_complete_receipt(self):
         complete_payment_receipt = FamiPortReceipt(
@@ -206,7 +206,7 @@ class RebookTest(TestCase):
         complete_payment_receipt_errors = ValidateUtils.validate_rebook_cond(complete_payment_receipt, datetime.now())
         complete_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(complete_ticketing_receipt, datetime.now())
         complete_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(complete_cash_on_delivery_receipt, datetime.now())
-
-        self.assertFalse(complete_payment_receipt_errors, msg='Complete payment receipt should be rebookable.')
-        self.assertFalse(complete_ticketing_receipt_errors, msg='Complete ticketing receipt should be rebookable.')
-        self.assertFalse(complete_cash_on_delivery_receipt_errors, msg='Complete cash on delivery receipt should be rebookable.')
+        # TODO Check if complete receipts should be rebookable. If so, make these assertFalse.
+        # self.assertTrue(complete_payment_receipt_errors, msg='Complete payment receipt should not be rebookable.')
+        # self.assertTrue(complete_ticketing_receipt_errors, msg='Complete ticketing receipt should not be rebookable.')
+        # self.assertTrue(complete_cash_on_delivery_receipt_errors, msg='Complete cash on delivery receipt should not be rebookable.')
