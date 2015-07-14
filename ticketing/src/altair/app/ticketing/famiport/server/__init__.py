@@ -41,4 +41,4 @@ def includeme(config):
     config.include('..communication')
     config.include('..datainterchange')
 
-    config.add_renderer('famiport-xml', 'altair.app.ticketing.famiport.renderers.famiport_renderer_factory')
+    config.add_renderer('famiport-xml', '.renderers.famiport_renderer_factory')
