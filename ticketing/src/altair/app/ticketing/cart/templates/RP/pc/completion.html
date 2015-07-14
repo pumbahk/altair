@@ -130,7 +130,6 @@ ${self.widget.flow_widget(4)}
 
 <div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
   <div class="next-action">
-    <a href="${request.context.host_base_url}"><img src="${request.static_url('altair.app.ticketing.cart:static/RP/pc/images/btn_back_to_top.gif')}"/></a>
     <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}"
        ><img src="${request.static_url('altair.app.ticketing.cart:static/RP/pc/images/btn_other_ticket.gif')}"/></a>
   </div>
