@@ -363,6 +363,7 @@ def create_schemas():
     op.create_table(
         'FamiPortReservationInquiryResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortReservationInquiryRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
         sa.Column('replyClass', sa.Unicode(1), nullable=False, server_default=''),  # 応答結果区分
         sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
@@ -385,6 +386,7 @@ def create_schemas():
     op.create_table(
         'FamiPortPaymentTicketingResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
         sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
@@ -416,6 +418,7 @@ def create_schemas():
     op.create_table(
         'FamiPortPaymentTicketingCompletionResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingCompletionRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
         sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
@@ -428,6 +431,7 @@ def create_schemas():
     op.create_table(
         'FamiPortPaymentTicketingCancelResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortPaymentTicketingCancelRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
         sa.Column('storeCode', sa.Unicode(6), nullable=False, server_default=''),  # 店舗コード
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False, server_default=''),  # 処理通番
@@ -440,6 +444,7 @@ def create_schemas():
     op.create_table(
         'FamiPortInformationResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortInformationRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果コード
         sa.Column('infoKubun', sa.Unicode(1), nullable=False, server_default=''),  # 案内区分
         sa.Column('infoMessage', sa.Unicode(500), nullable=False, server_default=''),  # 案内文言
@@ -449,6 +454,7 @@ def create_schemas():
     op.create_table(
         'FamiPortCustomerInformationResponse',
         sa.Column('id', Identifier, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortCustomerInformationRequest.id')),
         sa.Column('resultCode', sa.Unicode(2), nullable=False, server_default=''),  # 処理結果
         sa.Column('replyCode', sa.Unicode(2), nullable=False, server_default=''),  # 応答結果
         sa.Column('name', sa.Unicode(42), nullable=False, server_default=''),  # 氏名
@@ -473,6 +479,7 @@ def create_schemas():
     op.create_table(
         'FamiPortRefundEntryResponse',
         sa.Column('id', Identifier, primary_key=True, autoincrement=True),
+        sa.Column('_request_id', Identifier, sa.ForeignKey('FamiPortRefundEntryRequest.id')),
         sa.Column('businessFlg', sa.Unicode(1)),
         sa.Column('textTyp', sa.Unicode(1)),
         sa.Column('entryTyp', sa.Unicode(1)),

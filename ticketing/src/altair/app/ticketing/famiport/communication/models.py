@@ -332,6 +332,7 @@ class FamiPortReservationInquiryResponse(Base, WithCreatedAt, FamiPortResponse):
     _encryptedFields = ['name']
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortReservationInquiryRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     replyClass = sa.Column(sa.Unicode(1), nullable=False, default=u'')  # 応答結果区分
     replyCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 応答結果
@@ -348,6 +349,8 @@ class FamiPortReservationInquiryResponse(Base, WithCreatedAt, FamiPortResponse):
     name = sa.Column(sa.Unicode(42), nullable=False, default=u'')  # お客様氏名
     nameInput = sa.Column(sa.Unicode(1), nullable=False, default=u'')  # 氏名要求フラグ
     phoneInput = sa.Column(sa.Unicode(1), nullable=False, default=u'')  # 電話番号要求フラグ
+
+    _request = orm.relationship('FamiPortReservationInquiryRequest', backref='_response', uselist=False)
 
     @property
     def _encrypt_key(self):
@@ -389,6 +392,7 @@ class FamiPortPaymentTicketingResponse(Base, WithCreatedAt, FamiPortResponse):
     _encrypt_key = None
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPaymentTicketingRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     storeCode = sa.Column(sa.Unicode(6), nullable=False, default=u'')  # 店舗コード
     sequenceNo = sa.Column(sa.Unicode(11), nullable=False, default=u'')  # 処理通番
@@ -411,6 +415,8 @@ class FamiPortPaymentTicketingResponse(Base, WithCreatedAt, FamiPortResponse):
     kogyoName = sa.Column(sa.Unicode(40), nullable=False, default=u'')  # 興行名
     koenDate = sa.Column(sa.Unicode(12), nullable=False, default=u'')  # 公演日時
 
+    _request = orm.relationship('FamiPortPaymentTicketingRequest', backref='_response', uselist=False)
+
 
 class FamiPortPaymentTicketingCompletionResponse(Base, WithCreatedAt, FamiPortResponse):
     """予約済み入金発券完了
@@ -427,6 +433,7 @@ class FamiPortPaymentTicketingCompletionResponse(Base, WithCreatedAt, FamiPortRe
     _serialized_collection_attrs = ()
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPaymentTicketingCompletionRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     storeCode = sa.Column(sa.Unicode(6), nullable=False, default=u'')  # 店舗コード
     sequenceNo = sa.Column(sa.Unicode(11), nullable=False, default=u'')  # 処理通番
@@ -437,6 +444,8 @@ class FamiPortPaymentTicketingCompletionResponse(Base, WithCreatedAt, FamiPortRe
     _responseType = FamiPortResponseType.PaymentTicketingCompletion
     _encryptedFields = []
     _encrypt_key = None
+
+    _request = orm.relationship('FamiPortPaymentTicketingCompletionRequest', backref='_response', uselist=False)
 
 
 class FamiPortPaymentTicketingCancelResponse(Base, WithCreatedAt, FamiPortResponse):
@@ -457,12 +466,15 @@ class FamiPortPaymentTicketingCancelResponse(Base, WithCreatedAt, FamiPortRespon
     _encrypt_key = None
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortPaymentTicketingCancelRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     storeCode = sa.Column(sa.Unicode(6), nullable=False, default=u'')  # 店舗コード
     sequenceNo = sa.Column(sa.Unicode(11), nullable=False, default=u'')  # 処理通番
     barCodeNo = sa.Column(sa.Unicode(13), nullable=False, default=u'')  # 支払番号
     orderId = sa.Column(sa.Unicode(12), nullable=False, default=u'')  # 注文ID
     replyCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 応答結果
+
+    _request = orm.relationship('FamiPortPaymentTicketingCancelRequest', backref='_response', uselist=False)
 
 
 class FamiPortInformationResponse(Base, WithCreatedAt, FamiPortResponse):
@@ -480,9 +492,12 @@ class FamiPortInformationResponse(Base, WithCreatedAt, FamiPortResponse):
     _encrypt_key = None
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortInformationRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     infoKubun = sa.Column(sa.Unicode(1), nullable=False, default=u'')  # 案内区分
     infoMessage = sa.Column(sa.Unicode(500), nullable=False, default=u'')  # 案内文言
+
+    _request = orm.relationship('FamiPortInformationRequest', backref='_response', uselist=False)
 
 
 class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse):
@@ -504,6 +519,7 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
     _encrypt_key = None
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortCustomerInformationRequest.id'))
     resultCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 処理結果
     replyCode = sa.Column(sa.Unicode(2), nullable=False, default=u'')  # 応答結果
     name = sa.Column(sa.Unicode(42), nullable=False, default=u'')  # 氏名
@@ -511,6 +527,8 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
     address1 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所1
     address2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     identifyNo = sa.Column(sa.Unicode(16), nullable=False, default=u'')  # 半券個人識別番号
+
+    _request = orm.relationship('FamiPortCustomerInformationRequest', backref='_response', uselist=False)
 
     def set_encryptKey(self, encrypt_key):
         self._encrypt_key = encrypt_key
@@ -621,6 +639,7 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
         ]
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    _request_id = sa.Column(Identifier, sa.ForeignKey('FamiPortRefundEntryRequest.id'))
     businessFlg = sa.Column(sa.Unicode(1)) # 業務フラグ
     textTyp = sa.Column(sa.Unicode(1)) # テキスト区分
     entryTyp = sa.Column(sa.Unicode(1)) # 登録/取消区分
@@ -663,6 +682,8 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     refundEnd4 = sa.Column(sa.Unicode(8)) # 払戻終了日[3]
     ticketTyp4 = sa.Column(sa.Unicode(1)) # チケット区分[3]
     charge4 = sa.Column(sa.Unicode(6)) # 利用料[3]
+
+    _request = orm.relationship('FamiPortRefundEntryRequest', backref='_response', uselist=False)
 
     @property
     def per_ticket_records(self):

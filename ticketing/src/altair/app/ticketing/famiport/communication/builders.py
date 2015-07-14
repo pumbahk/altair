@@ -297,6 +297,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 resultCode = ResultCodeEnum.OtherError.value
 
             famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
+                _request=famiport_reservation_inquiry_request,
                 resultCode=resultCode,
                 replyClass=replyClass,
                 replyCode=replyCode,
@@ -323,6 +324,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             resultCode = ResultCodeEnum.OtherError.value
             replyCode = ReplyCodeEnum.OtherError.value
             famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
+                _request=famiport_reservation_inquiry_request,
                 resultCode=resultCode,
                 replyClass=replyClass,
                 replyCode=replyCode
@@ -507,6 +509,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 ticketingEnd = str_or_blank(ticketingEnd)
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                    _request=famiport_payment_ticketing_request,
                     resultCode=resultCode,
                     storeCode=storeCode.zfill(6),
                     sequenceNo=sequenceNo,
@@ -536,6 +539,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyClass = str_or_blank(replyClass)
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                    _request=famiport_payment_ticketing_request,
                     resultCode=str_or_blank(resultCode),
                     replyCode=str_or_blank(replyCode),
                     storeCode=storeCode.zfill(6),
@@ -553,6 +557,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             resultCode = ResultCodeEnum.OtherError.value
             replyCode = ReplyCodeEnum.OtherError.value
             famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
+                _request=famiport_payment_ticketing_request,
                 resultCode=str_or_blank(resultCode),
                 replyCode=str_or_blank(replyCode),
                 sequenceNo=sequenceNo,
@@ -642,6 +647,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
+                _request=famiport_payment_ticketing_completion_request,
                 resultCode=resultCode,
                 storeCode=storeCode.zfill(6),
                 sequenceNo=sequenceNo,
@@ -657,6 +663,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
             resultCode = ResultCodeEnum.OtherError.value
             replyCode = ReplyCodeEnum.OtherError.value
             famiport_payment_ticketing_completion_response = FamiPortPaymentTicketingCompletionResponse(
+                _request=famiport_payment_ticketing_completion_request,
                 resultCode=resultCode,
                 storeCode=storeCode.zfill(6),
                 sequenceNo=sequenceNo,
@@ -684,6 +691,7 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 )
             )
         famiport_response = FamiPortPaymentTicketingCancelResponse(
+            _request=famiport_payment_ticketing_cancel_request,
             orderId=u'',
             barCodeNo=u'',
             storeCode=storeCode.zfill(6),
@@ -774,7 +782,9 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
         :return: FamiPortInformationResponse
         """
         famiport_request = famiport_information_request
-        famiport_response = FamiPortInformationResponse()
+        famiport_response = FamiPortInformationResponse(
+            _request=famiport_information_request
+            )
         famiport_response.infoKubun = famiport_request.infoKubun
         try:
             if famiport_request.infoKubun == InfoKubunEnum.DirectSales.value:  # 直販
@@ -948,7 +958,8 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                 # TODO Make sure where to get identifyNo
                 identifyNo = famiport_order.customer_identify_no
 
-                famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+                famiport_customer_information_response = FamiPortCustomerInformationResponse(
+                    _request=famiport_customer_information_request,
                     resultCode=ResultCodeEnum.Normal.value,
                     replyCode=ReplyCodeEnum.Normal.value,
                     name=name,
@@ -957,9 +968,9 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                     address2=address2,
                     identifyNo=identifyNo
                     )
-                famiport_customer_information_respose.set_encryptKey(orderId)
+                famiport_customer_information_response.set_encryptKey(orderId)
             else:
-                famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+                famiport_customer_information_response = FamiPortCustomerInformationResponse(
                     resultCode=ResultCodeEnum.OtherError.value,
                     replyCode=ReplyCodeEnum.CustomerNamePrintInformationError.value
                     )
@@ -969,17 +980,19 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                 u'店舗コード: %s , 発券Famiポート番号: %s , 利用日時: %s , 処理通番: %s , 支払番号: %s , 注文ID: %s'
                 % (storeCode, mmkNo, ticketingDate, sequenceNo, barCodeNo, orderId)
                 )
-            famiport_customer_information_respose = FamiPortCustomerInformationResponse(
+            famiport_customer_information_response = FamiPortCustomerInformationResponse(
+                _request=famiport_customer_information_request,
                 resultCode=ResultCodeEnum.OtherError.value,
                 replyCode=ReplyCodeEnum.OtherError.value
                 )
-        return famiport_customer_information_respose
+        return famiport_customer_information_response
 
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now, request):
         shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
         famiport_refund_entry_response = FamiPortRefundEntryResponse(
+            _request=famiport_refund_entry_request,
             businessFlg=famiport_refund_entry_request.businessFlg,
             textTyp=famiport_refund_entry_request.textTyp,
             entryTyp=famiport_refund_entry_request.entryTyp,
