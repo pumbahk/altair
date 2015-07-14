@@ -26,11 +26,11 @@
       </tr>
       <tr>
         <th colspan="1">払戻開始日〜払戻終了日</th>
-        <td colspan="3"><span style="color:red;">公演共通の日付があるか要確認</span></td>
+        <td colspan="3">${vh.format_date(refund_entry.famiport_refund.start_at)}〜${vh.format_date(refund_entry.famiport_refund.end_at)}</td>
       </tr>
       <tr>
         <th colspan="1">プレイガイド必着日</th>
-        <td colspan="3"><span style="color:red;">公演共通の日付か要確認</span></td>
+        <td colspan="3">${vh.format_date(refund_entry.famiport_refund.send_back_due_at)}</td>
       </tr>
     </tbody>
   </table>
