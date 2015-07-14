@@ -37,6 +37,7 @@ def includeme(config):
 
     config.scan('.views')
     config.include('.subscribers')
+    config.include('..subscribers')
     config.include('..communication')
     config.include('..datainterchange')
 

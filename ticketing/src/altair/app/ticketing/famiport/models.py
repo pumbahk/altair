@@ -731,6 +731,7 @@ class FamiPortOrder(Base, WithTimestamp):
                 famiport_receipt.mark_canceled(now, request, reason)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
+        request.registry.notify(events.OrderCanceled(self, request))
 
     def make_reissueable(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:

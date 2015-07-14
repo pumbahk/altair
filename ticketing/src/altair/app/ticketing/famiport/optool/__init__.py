@@ -66,5 +66,6 @@ def main(global_conf, **local_conf):
     config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}/{refund_entry_id}', factory='.resources.RefundPerformanceDetailResource')
     # Rebook or reprint
     config.add_route('rebook_order', '/rebook_order/{action}/{receipt_id}', factory='.resources.RebookReceiptResource') # action = (show, rebook, reprint)
+    config.include('..subscribers')
     config.scan('.views')
     return config.make_wsgi_app()

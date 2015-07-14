@@ -154,6 +154,7 @@ setup(name='altair.app.ticketing',
       [paste.app_factory]
       main = altair.app.ticketing:main
       zea-admin = altair.app.ticketing.project_specific.zea:main
+      userside-famiport = altair.app.ticketing.famiport.userside_notification_handler:main
       [console_scripts]
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
       release_carts=altair.app.ticketing.cart.commands:release_carts
@@ -198,6 +199,7 @@ setup(name='altair.app.ticketing',
       famiport_make_refund_file=altair.app.ticketing.famiport.scripts.famiport_make_refund_file:main
       famiport_import_shop_master=altair.app.ticketing.famiport.scripts.famiport_import_shop_master:main
       famiport_auto_complete=altair.app.ticketing.famiport.scripts.famiport_auto_complete:main
+      altair_famiport_process_notifications=altair.app.ticketing.famiport.userside_notification_handler.scripts.altair_famiport_process_notifications:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
       send_mail=altair.app.ticketing.scripts.send_mail:main
       laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main

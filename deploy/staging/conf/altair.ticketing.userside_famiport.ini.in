@@ -1,0 +1,180 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.userside_famiport
+
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.lot_work_history.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
+
+[app:ticketing]
+use = config:%(here)s/../../baseconf/common.ini#userside_famiport
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
+get altair.sqlahelper.sessions.lot_work_history.url = altair.sqlahelper.sessions.lot_work_history.url
+
+;mail
+altair.mails.bcc.show_flash_message = false
+
+; fanstatic
+fanstatic.minified = false
+
+; Beaker
+session.type = ${altair:beaker_backend_type}
+session.data_dir = %(here)s/tmp/beaker/data
+session.lock_dir = %(here)s/tmp/beaker/lock
+
+cache.type = ${altair:beaker_backend_type}
+cache.data_dir = %(here)s/tmp/beaker/data
+cache.lock_dir = %(here)s/tmp/beaker/lock
+
+; altair.httpsession
+altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
+altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
+altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
+
+; altair:site-data
+altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
+
+; altair.mq
+altair.ticketing.lots.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.lots.mq.url = ${altair:ticketing.mq_url}
+
+altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
+
+altair.ticketing.userside_famiport.mq = altair.mq.consumer.pika_client_factory
+                                        altair.mq.publisher.pika_publisher_factory
+altair.ticketing.userside_famiport.mq.url = ${altair:ticketing.mq_url}
+
+;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
+;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.lots.mq.routes =
+;    lots.election:lots.election
+;    lots.rejection:lots.rejection
+;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.cart.mq.routes = cart:cart
+;altair.ticketing.userside_famiport.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.userside_famiport.mq.routes =
+;    userside_famiport.submit_to_downstream:userside_famiport.submit_to_downstream
+
+altair.ticketing.cooperation.augus.bucket = tstar
+altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
+
+[app:main]
+use = userside_famiport
+
+[app:www-check]
+use = egg:Paste#static
+document_root = %(www_check_docroot)s
+
+[filter:prefix]
+use = egg:PasteDeploy#prefix
+prefix = /
+
+[filter:browserid]
+use = egg:altair.browserid#browserid
+cookie_name = browserid
+env_key = repoze.browserid
+
+[pipeline:pipeline_default]
+pipeline = 
+    prefix
+    browserid
+    ticketing_default
+
+[pipeline:pipeline_client_cert]
+pipeline = 
+    prefix
+    browserid
+    ticketing_client_cert
+
+[composite:default]
+use = egg:Paste#urlmap
+/ = pipeline_default
+/.www-check = www-check
+
+[composite:client_cert]
+use = egg:Paste#urlmap
+/ = pipeline_client_cert
+/.www-check = www-check
+
+[server:main]
+use  = egg:gunicorn#main
+host = 0.0.0.0
+port = %(http_port)s
+workers = 1
+timeout = 3600
+graceful_timeout = 300
+
+[alembic]
+script_location = %(here)s/../../../ticketing/alembic
+get sqlalchemy.url = sqlalchemy.url
+sqlalchemy.echo = true
+
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altair, ticketing, sqlalchemy, alembic
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altair]
+level = DEBUG
+handlers = console, fluent
+qualname = altair
+propagate = 0
+
+[logger_ticketing]
+level = DEBUG
+handlers = console, fluent
+qualname = altair.app.ticketing
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[logger_alembic]
+level = INFO
+handlers = console, sqlalchemy
+qualname = alembic
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = ${altair:console_loglevel}
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.ticketing.userside_famiport.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.ticketing.userside_famiport', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

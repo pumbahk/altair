@@ -158,3 +158,27 @@ class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
         elif self.seat_unselectable_sales_segment is not None and self.seat_unselectable_sales_segment.public:
             return self.seat_unselectable_sales_segment.end_at
         return None
+
+
+class AltairFamiPortNotificationType(Enum):
+    PaymentCompleted = 1
+    TicketingCompleted = 2
+    PaymentAndTicketingCompleted = 3
+    PaymentCanceled  = 4
+    TicketingCanceled  = 8
+    PaymentAndTicketingCanceled = 12
+    OrderCanceled = 16
+    Refunded  = 32
+
+class AltairFamiPortNotification(Base, WithTimestamp):
+    __tablename__ = 'AltairFamiPortNotification'
+
+    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
+    type = sa.Column(sa.Integer, nullable=False)
+    client_code = sa.Column(sa.Unicode(24), nullable=False)
+    order_no = sa.Column(sa.Unicode(12), nullable=False)
+    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)
+    payment_reserve_number = sa.Column(sa.Unicode(13), nullable=True)
+    ticketing_reserve_number = sa.Column(sa.Unicode(13), nullable=True)
+
+    reflected_at = sa.Column(sa.DateTime(), nullable=True, index=True)
