@@ -129,12 +129,13 @@ def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).famiport_only_tickets()
 
 
-def build_ticket_dict(type_, data, template_code, price, logically_subticket):
+def build_ticket_dict(type_, data, template_code, price, token_serial, logically_subticket):
     return dict(
         type=type_,
         data=data,
         template=template_code,
         price=price,
+        userside_id=token_serial,
         logically_subticket=logically_subticket
         )
 
@@ -191,14 +192,14 @@ def build_ticket_dicts_from_order_like(request, order_like):
         for ordered_product_item in ordered_product.elements:
             # XXX: OrderedProductLike is not reachable from OrderedProductItemLike
             if isinstance(ordered_product_item, OrderedProductItem):
-                dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
+                dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer, return_tokens=True)
             elif isinstance(ordered_product_item, CartedProductItem):
-                dicts = build_dicts_from_carted_product_item(ordered_product_item, ticket_number_issuer=issuer)
+                dicts = build_dicts_from_carted_product_item(ordered_product_item, ticket_number_issuer=issuer, return_tokens=True)
             else:
                 raise TypeError('!')
             bundle = ordered_product_item.product_item.ticket_bundle
             xml_builder = FamiPortTicketXMLBuilder(request)
-            for seat, dict_ in dicts:
+            for token, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
                     template_code = get_ticket_template_code_from_ticket_format(ticket_format)
@@ -211,6 +212,7 @@ def build_ticket_dicts_from_order_like(request, order_like):
                         data=xml,
                         template_code=template_code,
                         price=ordered_product_item.price,
+                        token_serial=token.serial,
                         logically_subticket=logically_subticket
                         )
                     tickets.append(ticket)

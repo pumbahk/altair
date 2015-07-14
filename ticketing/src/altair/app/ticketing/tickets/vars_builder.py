@@ -2,6 +2,7 @@
 from lxml import etree
 from altair.svg.constants import SVG_NAMESPACE
 from datetime import datetime
+from collections import namedtuple
 
 def safe_format(formatter, target, default=u""):
     if target is None:
@@ -17,6 +18,8 @@ def datetime_as_dict(dt):
 
 def get_unique_string_for_qr_from_token(token):
     return u"発券時ユニークID: token.id={}".format(token.id)
+
+DummyToken = namedtuple('DummyToken', 'serial seat')
 
 class TicketCoverDictBuilder(object):
     def __init__(self, formatter):
@@ -64,7 +67,13 @@ class TicketDictListBuilder(object):
     def __init__(self, builder):
         self.builder = builder
 
-    def build_dicts_from_ordered_product_item(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
+    def build_dicts_from_ordered_product_item(self, ordered_product_item, user_profile=None, ticket_number_issuer=None, return_tokens=False):
+        if not return_tokens:
+            return self._build_dicts_from_ordered_product_item(ordered_product_item, user_profile, ticket_number_issuer)
+        else:
+            return self._build_dicts_from_ordered_product_item2(ordered_product_item, user_profile, ticket_number_issuer)
+
+    def _build_dicts_from_ordered_product_item(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
         builder = self.builder
         extra = builder.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
         retval = []
@@ -90,7 +99,24 @@ class TicketDictListBuilder(object):
                 retval.append((seat, d))
         return retval
 
-    def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
+    def _build_dicts_from_ordered_product_item2(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
+        builder = self.builder
+        extra = builder.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
+        retval = []
+        for token in ordered_product_item.tokens:
+            d = builder._build_dict_from_ordered_product_item_token(extra, ordered_product_item, token, ticket_number_issuer=ticket_number_issuer)
+            if d is not None:
+                d.update(extra)
+                retval.append((token, d))
+        return retval
+
+    def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None, return_tokens=False):
+        if not return_tokens:
+            return _build_dicts_from_carted_product_item(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
+        else:
+            return _build_dicts_from_carted_product_item2(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
+
+    def _build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
         builder = self.builder
         extra = builder.build_basic_dict_from_carted_product_item(carted_product_item,
                                                                payment_delivery_method_pair=payment_delivery_method_pair,
@@ -113,6 +139,31 @@ class TicketDictListBuilder(object):
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
+        return retval
+
+    def _build_dicts_from_carted_product_item2(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
+        builder = self.builder
+        extra = builder.build_basic_dict_from_carted_product_item(carted_product_item,
+                                                               payment_delivery_method_pair=payment_delivery_method_pair,
+                                                               ordered_product_item_attributes=ordered_product_item_attributes,
+                                                               user_profile=user_profile,
+                                                               now=now
+                                                               )
+        retval = []
+        if carted_product_item.product_item.stock.stock_type.quantity_only:
+            for i in range(0, carted_product_item.quantity):
+                d = {}
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
+                d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
+                d.update(extra)
+                retval.append((DummyToken(serial=i, seat=None), d))
+        else:
+            for seat in carted_product_item.seats:
+                d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
+                d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
+                d.update(extra)
+                retval.append((DummyToken(serial=i, seat=seat), d))
         return retval
 
 

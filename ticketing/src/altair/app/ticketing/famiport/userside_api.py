@@ -9,7 +9,6 @@ from markupsafe import Markup
 from sqlalchemy import sql
 from sqlalchemy.sql import func as sqlf
 from sqlalchemy.orm.exc import NoResultFound
-from jctconv
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
