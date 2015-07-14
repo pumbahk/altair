@@ -344,22 +344,6 @@ class FamiPortDownloadRefundTicketView(object):
         refund_entries = search_refund_ticket_by(self.request, self.request.POST)
         rts_helper = RefundTicketSearchHelper(self.request)
         header = [column[1] for column in rts_helper.get_columns()]
-        # header = [
-        #     u'払戻状況',
-        #     u'地区',
-        #     u'営業所',
-        #     u'発券店番',
-        #     u'発券店舗名',
-        #     u'管理番号',
-        #     u'バーコード',
-        #     u'興行コード-サブコード',
-        #     u'公演日',
-        #     u'興行名',
-        #     u'返金額',
-        #     u'払戻日時',
-        #     u'払戻店番',
-        #     u'払戻店舗名',
-        # ]
 
         rts_helper = RefundTicketSearchHelper(self.request)
         rows = []
