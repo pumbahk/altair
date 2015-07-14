@@ -135,11 +135,13 @@
         % endif
         <td nowrap="nowrap" class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at)}</td>
-        <td nowrap="nowrap" class="first-hidden">${receipt.shop_code}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(receipt.famiport_order.payment_famiport_receipt.shop_code))}</td>
+        <% payment_famiport_receipt = receipt.famiport_order.payment_famiport_receipt %>
+        <td nowrap="nowrap" class="first-hidden">${payment_famiport_receipt.shop_code if payment_famiport_receipt else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_famiport_receipt.shop_code)) if payment_famiport_receipt else u'-'}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at)}</td>
-        <td nowrap="nowrap" class="first-hidden">${receipt.shop_code}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(receipt.famiport_order.ticketing_famiport_receipt.shop_code))}</td>
+        <% ticketing_famiport_receipt = receipt.famiport_order.ticketing_famiport_receipt %>
+        <td nowrap="nowrap" class="first-hidden">${ticketing_famiport_receipt.shop_code if ticketing_famiport_receipt else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(ticketing_famiport_receipt.shop_code)) if ticketing_famiport_receipt else u'-'}</td>
       </tr>
     % endfor
     </tbody>
