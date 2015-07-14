@@ -74,7 +74,7 @@ class ReceiptDetailResource(DetailBaseResource):
 
 class RebookReceiptResource(BaseResource):
     def __init__(self, request):
-        super(ReceiptDetailResource, self).__init__(request)
+        super(RebookReceiptResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         self.fami_session = fami_session
