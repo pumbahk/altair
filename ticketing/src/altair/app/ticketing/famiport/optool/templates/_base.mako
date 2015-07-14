@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <title>運用ツール - <%block name="title"></%block></title>
     <meta name="apple-mobile-web-app-capable" content="yes" />

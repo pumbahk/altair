@@ -228,12 +228,12 @@ class FamiPortDetailView(object):
     @view_config(route_name='performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/performance_detail.mako', permission='operator')
     def show_performance_detail(self):
         performance = self.context.performance
-        return dict(performance=performance, h=ViewHelpers(self.request),)
+        return dict(performance=performance, vh=ViewHelpers(self.request),)
 
     @view_config(route_name='refund_performance.detail', renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_detail.mako')
     def show_refund_performance_detail(self):
         performance = self.context.performance
-        return dict(performance=performance,)
+        return dict(performance=performance, vh=ViewHelpers(self.request))
 
 # TODO Make sure the permission of each operation
 class FamiPortRebookOrderView(object):

@@ -39,11 +39,11 @@
     <tbody>
       <tr>
         <th>開演日</th>
-        <td colspan="3">${h.get_date(performance.start_at)}</td>
+        <td colspan="3">${vh.format_date(performance.start_at)}</td>
       </tr>
       <tr>
         <th>開演時刻</th>
-        <td colspan="3">${h.get_time(performance.start_at)}</td>
+        <td colspan="3">${vh.format_time(performance.start_at)}</td>
       </tr>
     </tbody>
 

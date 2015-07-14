@@ -18,7 +18,7 @@
       </tr>
       <tr>
         <th colspan="1">公演日時</th>
-        <td colspan="3">${performance.start_at}</td>
+        <td colspan="3">${vh.format_datetime(performance.start_at)}</td>
       </tr>
       <tr>
         <th colspan="1">会場名</th>
@@ -29,7 +29,7 @@
         <td colspan="3"><span style="color:red;">公演共通の日付があるか要確認</span></td>
       </tr>
       <tr>
-        <th colspan="1">プライガイド必着日</th>
+        <th colspan="1">プレイガイド必着日</th>
         <td colspan="3"><span style="color:red;">公演共通の日付か要確認</span></td>
       </tr>
     </tbody>

@@ -1,6 +1,6 @@
 # encoding: utf-8
 from webhelpers.paginate import PageURL_WebOb, Page
-import logging
+import logging, locale
 from .api import get_famiport_shop_by_code
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,16 @@ class ViewHelpers(object):
             return datetime.strftime(format)
         else:
             return u'-'
+
+    def format_datetime(cls, datetime, format="%Y/%m/%d %H:%M"):
+        if datetime:
+            return datetime.strftime(format)
+        else:
+            return u'-'
+
+    def format_currency(self, amount):
+        locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
+        return locale.currency(amount, grouping=True).decode("UTF-8")
 
     def format_famiport_order_identifier(self, identifier):
         return identifier[3:12]

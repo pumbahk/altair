@@ -41,7 +41,7 @@ class DetailBaseResource(BaseResource):
 
 class PerformanceDetailResource(DetailBaseResource):
     def __init__(self, request):
-        super(ReceiptDetailResource, self).__init__(request)
+        super(PerformanceDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         performance_id = self.request.matchdict.get('performance_id')
@@ -52,7 +52,7 @@ class PerformanceDetailResource(DetailBaseResource):
 
 class RefundPerformanceDetailResource(DetailBaseResource):
     def __init__(self, request):
-        super(ReceiptDetailResource, self).__init__(request)
+        super(RefundPerformanceDetailResource, self).__init__(request)
         self.request = request
         fami_session = get_db_session(self.request, 'famiport')
         performance_id = self.request.matchdict.get('performance_id')

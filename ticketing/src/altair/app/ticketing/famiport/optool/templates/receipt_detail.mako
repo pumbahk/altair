@@ -10,7 +10,7 @@
     <tbody>
       <tr>
         <th>払込票番号</th>
-        <td>${receipt.barcode_no}</td>
+        <td>${vh.get_barcode_no_text(receipt.barcode_no)}</td>
         <th>発券ステータス</th>
         <td>
             ${receipt.get_issued_status_in_str}
@@ -40,7 +40,7 @@
         <th>申込方法</th>
         <td>${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
         <th>受付日</th>
-        <td>${receipt.famiport_order.created_at}</td>
+        <td>${vh.format_datetime(receipt.famiport_order.created_at)}</td>
       </tr>
       % if request.context.user.has_perm_for_personal_info:
       <tr>
@@ -72,7 +72,7 @@
       </tr>
       <tr>
         <th>公演日時</th>
-        <td colspan="3">${receipt.famiport_order.performance_start_at}</td>
+        <td colspan="3">${vh.format_datetime(receipt.famiport_order.performance_start_at)}</td>
       </tr>
       <tr>
         <th>申込サイト</th>
@@ -84,24 +84,24 @@
     <tbody>
       <tr>
         <th>料金合計</th>
-        <td colspan="3">${receipt.famiport_order.total_amount}</td>
+        <td colspan="3">${vh.format_currency(receipt.famiport_order.total_amount)}</td>
       </tr>
       <tr>
         <th rowspan="3">内訳</th>
         <td colspan="1">チケット代金</td>
-        <td colspan="2">${receipt.famiport_order.ticket_payment}</td>
+        <td colspan="2">${vh.format_currency(receipt.famiport_order.ticket_payment)}</td>
       </tr>
       <tr>
         <td colspan="1">発券手数料</td>
-        <td colspan="2">${receipt.famiport_order.ticketing_fee}</td>
+        <td colspan="2">${vh.format_currency(receipt.famiport_order.ticketing_fee)}</td>
       </tr>
       <tr>
         <td colspan="1">システム利用料</td>
-        <td colspan="2">${receipt.famiport_order.system_fee}</td>
+        <td colspan="2">${vh.format_currency(receipt.famiport_order.system_fee)}</td>
       </tr>
       <tr>
         <th>レジ支払い金額</th>
-        <td colspan="3">${receipt.famiport_order.total_amount}</td>
+        <td colspan="3">${vh.format_currency(receipt.famiport_order.total_amount)}</td>
       </tr>
     </tbody>
 
@@ -109,7 +109,7 @@
     <tbody>
       <tr>
         <th colspan="1">Famiポート受付日時</th>
-        <td colspan="3">${receipt.payment_request_received_at}</td>
+        <td colspan="3">${vh.format_datetime(receipt.payment_request_received_at)}</td>
       </tr>
       <tr>
         <th>発券日時</th>
