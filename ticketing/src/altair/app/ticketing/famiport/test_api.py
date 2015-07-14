@@ -149,7 +149,7 @@ class GetFamiPortOrderTest(unittest.TestCase):
 
     def test_get_famiport_order(self):
         from .api import get_famiport_order
-        famiport_order = get_famiport_order(self.request, u'XX000012345')
+        famiport_order = get_famiport_order(self.request, u'00000000000000000000001', u'XX000012345')
 
 
 class FamiPortCreateOrUpdateFamiPortVenueTest(unittest.TestCase):

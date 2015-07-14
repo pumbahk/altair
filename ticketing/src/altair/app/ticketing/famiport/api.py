@@ -163,11 +163,11 @@ def famiport_order_to_dict(famiport_order):
     return retval
 
 @user_api
-def get_famiport_order(request, order_no):
+def get_famiport_order(request, client_code, order_no):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        famiport_order = internal.get_famiport_order(session, order_no)
+        famiport_order = internal.get_famiport_order(session, client_code, order_no)
         return famiport_order_to_dict(famiport_order)
     except NoResultFound:
         raise FamiPortAPINotFoundError('no such order: %s' % order_no)
@@ -767,4 +767,63 @@ def update_famiport_order_by_order_no(
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
+@user_api
+def get_or_create_refund(
+        request,
+        client_code,
+        send_back_due_at,
+        start_at,
+        end_at,
+        userside_id=None,
+        refund_id=None
+        ):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        famiport_refund, new = internal.get_or_create_refund(
+            session,
+            client_code=client_code,
+            send_back_due_at=send_back_due_at,
+            start_at=start_at,
+            end_at=end_at,
+            userside_id=userside_id,
+            refund_id=refund_id
+            )
+        session.commit()
+        return dict(
+            refund_id=famiport_refund.id,
+            new=new
+            )
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error', client_code)
+
+
+@user_api
+def refund_order_by_order_no(
+        request,
+        client_code,
+        refund_id,
+        per_ticket_fee,
+        per_order_fee,
+        order_no=None,
+        famiport_order_identifier=None,
+        ):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+
+        internal.refund_order_by_order_no(
+            session,
+            client_code=client_code,
+            refund_id=refund_id,
+            order_no=order_no,
+            famiport_order_identifier=famiport_order_identifier,
+            per_ticket_fee=per_ticket_fee,
+            per_order_fee=per_order_fee
+            )
+        session.commit()
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
 

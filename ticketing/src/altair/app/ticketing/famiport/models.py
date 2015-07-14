@@ -335,6 +335,8 @@ class FamiPortRefund(Base, WithTimestamp):
 
     id                   = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
     type                 = sa.Column(sa.Integer, nullable=False, default=FamiPortRefundType.Type1.value)
+    client_code          = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
+    userside_id          = sa.Column(Identifier, nullable=True)
     send_back_due_at     = sa.Column(sa.Date(), nullable=False)
     start_at             = sa.Column(sa.DateTime(), nullable=False)
     end_at               = sa.Column(sa.DateTime(), nullable=False)

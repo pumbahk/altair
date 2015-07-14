@@ -292,7 +292,7 @@ def refund_order(request, tenant, order, refund_record, now=None):
     sej_orders = sej_api.get_valid_sej_orders(order.order_no)
     if order.paid_at is None:
         raise SejPluginFailure(u'cannot refund an order that is not paid yet')
-    if order.issued_at is not None:
+    if order.issued_at is None:
         logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
     performance = order.performance

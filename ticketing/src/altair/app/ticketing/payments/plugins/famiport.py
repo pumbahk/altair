@@ -3,6 +3,8 @@
 """
 import logging
 import pystache
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from lxml import etree
 from sqlalchemy import sql
 from markupsafe import Markup
@@ -300,8 +302,42 @@ def create_famiport_order(request, order_like, plugin, name='famiport'):
 
 def refund_order(request, order, refund_record, now=None):
     """払い戻し"""
-    raise FamiPortPluginFailure('unimplemented', None, None, None)
+    if now is None:
+        now = datetime.now()
+    tenant = lookup_famiport_tenant(request, order)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+    if order.paid_at is None:
+        raise FamiPortPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+    if order.issued_at is None:
+        logger.warning("trying to refund FamiPort order that is not marked issued: %s" % order.order_no)
+    refund = refund_record.refund
 
+    if refund.end_at is not None:
+        base_date = refund.end_at
+    else:
+        base_date = now
+    send_back_due_at = base_date.replace(day=1) + relativedelta(months=6) + timedelta(days=1), # 3ヶ月後の月末
+
+    result = famiport_api.get_or_create_refund(
+        request,
+        client_code=tenant.code,
+        send_back_due_at=send_back_due_at,
+        start_at=refund.start_at,
+        end_at=refund.end_at,
+        userside_id=refund.id
+        )
+    famiport_refund_id = result['refund_id']
+    if result['new']:
+        logger.info("new refund has been registered (%ld)" % famiport_refund_id)
+    famiport_api.refund_order_by_order_no(
+        request,
+        client_code=tenant.code,
+        refund_id=famiport_refund_id,
+        order_no=order.order_no,
+        per_order_fee=refund_record.refund_per_order_fee,
+        per_ticket_fee=refund_record.refund_per_ticket_fee
+        )
 
 def cancel_order(request, order, now=None):
     """キャンセル"""
@@ -320,7 +356,7 @@ def refresh_order(request, order, now=None, name='famiport'):
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_like.order_no, None, None)
     try:
-        existing_order = famiport_api.get_famiport_order(request, order.order_no)
+        existing_order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
         type_ = existing_order['type']
         famiport_api.update_famiport_order_by_order_no(
             request,
@@ -352,8 +388,10 @@ def _overridable_delivery(path, fallback_ua_type=None):
                  renderer=_overridable_payment('famiport_payment_completion.html'))
 def reserved_number_payment_viewlet(context, request):
     """決済方法の完了画面用のhtmlを生成"""
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
-    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 
@@ -371,8 +409,10 @@ def reserved_number_payment_confirm_viewlet(context, request):
                  renderer=_overridable_payment("famiport_payment_mail_complete.html", fallback_ua_type='mail'))
 def payment_mail_viewlet(context, request):
     """購入完了メールの決済方法部分のhtmlを出力する"""
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
-    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 
@@ -444,8 +484,10 @@ def deliver_confirm_viewlet(context, request):
                  renderer=_overridable_delivery('famiport_delivery_complete.html'))
 def deliver_completion_viewlet(context, request):
     """引取方法の完了画面のhtmlを生成"""
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 
@@ -454,8 +496,10 @@ def deliver_completion_viewlet(context, request):
 #                  renderer=_overridable_payment("famiport_delivery_mail_complete.html", fallback_ua_type='mail'))
 # def delivery_mail_viewlet(context, request):
 #     """購入完了メールの決済方法部分のhtmlを出力する"""
+#     tenant = lookup_famiport_tenant(request, context.order)
+#     assert tenant is not None
 #     delivery_method = context.order.payment_delivery_pair.delivery_method
-#     famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+#     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
 #     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
 #                 famiport_order=famiport_order, h=cart_helper)
 
@@ -466,8 +510,10 @@ def deliver_completion_viewlet(context, request):
                  renderer=_overridable_delivery('famiport_delivery_mail_complete.html', fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
     """購入完了メールの配送方法部分のhtmlを出力する"""
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    famiport_order = famiport_api.get_famiport_order(request, context.order.order_no)
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
                 famiport_order=famiport_order, h=cart_helper)
 

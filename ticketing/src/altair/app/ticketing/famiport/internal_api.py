@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import six
 import logging
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
@@ -23,6 +24,8 @@ from .models import (
     FamiPortSalesChannel,
     FamiPortBarcodeNoSequence,
     FamiPortOrderIdentifierSequence,
+    FamiPortRefund,
+    FamiPortRefundEntry,
     )
 from .exc import FamiPortError, FamiPortAPIError, FamiPortAPINotFoundError, FamiPortAlreadyPaidError, FamiPortAlreadyIssuedError, FamiPortAlreadyCanceledError
 from .communication.api import (  # noqa
@@ -81,13 +84,14 @@ def get_famiport_event_by_userside_id(session, client_code, userside_id):
                     .one()
     return retval
 
-def get_famiport_order(session, order_no=None, famiport_order_identifier=None):
+def get_famiport_order(session, client_code, order_no=None, famiport_order_identifier=None):
     if order_no is None:
         if famiport_order_identifier is None:
             raise FamiPortError('order_no and famiport_order_identifier cannot be None at the same time')
         try:
             retval = session.query(FamiPortOrder) \
-                .filter_by(FamiPortOrder.famiport_order_identifier == famiport_order_identifier) \
+                .filter(FamiPortOrder.client_code == client_code) \
+                .filter(FamiPortOrder.famiport_order_identifier == famiport_order_identifier) \
                 .filter(FamiPortOrder.invalidated_at == None) \
                 .one()
         except NoResultFound:
@@ -95,6 +99,7 @@ def get_famiport_order(session, order_no=None, famiport_order_identifier=None):
     else:
         try:
             retval = session.query(FamiPortOrder) \
+                .filter(FamiPortOrder.client_code == client_code) \
                 .filter(FamiPortOrder.order_no == order_no) \
                 .filter(FamiPortOrder.invalidated_at == None) \
                 .one()
@@ -235,7 +240,7 @@ def cancel_famiport_order_by_order_no(
     """FamiPortOrderをキャンセルする"""
     if now is None:
         now = datetime.now()
-    famiport_order = get_famiport_order(session, order_no)
+    famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
     famiport_order.mark_canceled(now, request)
 
 
@@ -252,7 +257,7 @@ def mark_order_reissueable_by_order_no(
     """FamiPortOrderに再発券許可"""
     if now is None:
         now = datetime.now()
-    famiport_order = get_famiport_order(session, order_no)
+    famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
     famiport_order.make_reissueable(now, request, reason, cancel_reason_code, cancel_reason_text)
 
 
@@ -269,7 +274,7 @@ def make_suborder_by_order_no(
     """FamiPortOrderを同席番再予約"""
     if now is None:
         now = datetime.now()
-    famiport_order = get_famiport_order(session, order_no)
+    famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
     famiport_order.make_suborder(now, request, reason, cancel_reason_code, cancel_reason_text)
 
 def update_famiport_order_by_order_no(
@@ -296,7 +301,7 @@ def update_famiport_order_by_order_no(
         ticketing_start_at,
         ticketing_end_at
         ):
-    famiport_order = get_famiport_order(session, order_no=order_no, famiport_order_identifier=famiport_order_identifier)
+    famiport_order = get_famiport_order(session, order_no=order_no, famiport_order_identifier=famiport_order_identifier, client_code=client_code)
 
     if famiport_order.canceled_at is not None:
         raise FamiPortAlreadyCanceledError('FamiPortOrder(id=%ld) is already canceled' % famiport_order.id)
@@ -446,4 +451,128 @@ def update_famiport_order_by_order_no(
     if ticketing_end_at is not None:
         logger.info('updating FamiPortOrder(id=%ld).ticketing_end_at' % famiport_order.id)
         famiport_order.ticketing_end_at = ticketing_end_at
-    
+
+def get_or_create_refund(
+        session,
+        client_code,
+        userside_id,
+        refund_id,
+        send_back_due_at,
+        start_at,
+        end_at):
+    if userside_id is None and refund_id is None:
+        raise FamiPortError('either userside_id or refund_id can be None')
+    q = session.query(FamiPortRefund).filter_by(client_code=client_code)
+    if userside_id is not None:
+        q = q.filter_by(userside_id=userside_id)
+    elif refund_id is not None:
+        q = q.filter_by(id=refund_id)
+    famiport_refund = None
+    try:
+        famiport_refund = q.one()
+    except NoResultFound:
+        pass
+    if famiport_refund is None:
+        famiport_refund = FamiPortRefund(
+            client_code=client_code,
+            userside_id=userside_id,
+            send_back_due_at=send_back_due_at,
+            start_at=start_at,
+            end_at=end_at
+            )
+        session.add(famiport_refund)
+        return famiport_refund, True
+    else:
+        return famiport_refund, False
+
+def refund_order_by_order_no(
+        session,
+        client_code,
+        refund_id,
+        order_no,
+        famiport_order_identifier,
+        per_order_fee,
+        per_ticket_fee):
+    famiport_order = get_famiport_order(session, client_code=client_code, order_no=order_no, famiport_order_identifier=famiport_order_identifier)
+    try:
+        famiport_refund = session.query(FamiPortRefund).filter_by(client_code=client_code, id=refund_id).with_lockmode('update').one()
+    except NoResultFound:
+        raise FamiPortError('no corresponding FamiPortRefund found (refund_id=%ld)' % refund_id)
+    existing_famiport_refund_entries = dict(
+        (famiport_refund_entry.famiport_ticket_id, famiport_refund_entry)
+        for famiport_refund_entry in session.query(FamiPortRefundEntry) \
+            .join(FamiPortRefundEntry.famiport_ticket) \
+            .filter(FamiPortRefundEntry.famiport_refund_id == famiport_refund.id) \
+            .filter(FamiPortTicket.famiport_order_id == famiport_order.id)
+        )
+    famiport_tickets_to_refund = [
+        famiport_ticket
+        for famiport_ticket in famiport_order.famiport_tickets
+        if not famiport_ticket.is_subticket
+        ]
+    if len(famiport_tickets_to_refund) == 0:
+        raise FamiPortError('no tickets can be refunded')
+    famiport_refund_entries_to_update = dict(
+        (
+            famiport_ticket.id,
+            FamiPortRefundEntry(
+                famiport_refund=famiport_refund,
+                famiport_ticket=famiport_ticket,
+                ticket_payment=famiport_ticket.price,
+                ticketing_fee=per_ticket_fee,
+                other_fees=(per_order_fee if i == 0 else 0),
+                shop_code=famiport_order.ticketing_famiport_receipt.shop_code
+                )
+            )
+        for i, famiport_ticket in enumerate(famiport_tickets_to_refund)
+        )
+    famiport_refund_entries_to_add = []
+    serial = famiport_refund.last_serial
+    for famiport_ticket_id, famiport_refund_entry  in list(six.iteritems(famiport_refund_entries_to_update)):
+        existing_famiport_refund_entry = existing_famiport_refund_entries.get(famiport_ticket_id)
+        if existing_famiport_refund_entry is not None:
+            if existing_famiport_refund_entry.refunded_at is not None:
+                raise FamiPortError('FamiPortRefundEntry(id=%ld) is already refunded at %s' % (
+                    existing_famiport_refund_entry.id,
+                    existing_famiport_refund_entry.refunded_at
+                    ))
+            logger.info('FamiPortRefundEntry(id=%ld) will be updated' % existing_famiport_refund_entry.id)
+            if existing_famiport_refund_entry.ticket_payment != famiport_refund_entry.ticket_payment:
+                logger.info('FamiPortRefundEntry(id=%ld).ticket_payment: %s => %s' % (
+                    existing_famiport_refund_entry.id,
+                    existing_famiport_refund_entry.ticket_payment,
+                    famiport_refund_entry.ticket_payment
+                    ))
+                existing_famiport_refund_entry.ticket_payment = famiport_refund_entry.ticket_payment
+            if existing_famiport_refund_entry.ticketing_fee != famiport_refund_entry.ticketing_fee:
+                logger.info('FamiPortRefundEntry(id=%ld).ticketing_fee: %s => %s' % (
+                    existing_famiport_refund_entry.id,
+                    existing_famiport_refund_entry.ticketing_fee,
+                    famiport_refund_entry.ticketing_fee
+                    ))
+                existing_famiport_refund_entry.ticketing_fee = famiport_refund_entry.ticketing_fee
+            if existing_famiport_refund_entry.other_fees != famiport_refund_entry.other_fees:
+                logger.info('FamiPortRefundEntry(id=%ld).other_fees: %s => %s' % (
+                    existing_famiport_refund_entry.id,
+                    existing_famiport_refund_entry.other_fees,
+                    famiport_refund_entry.other_fees
+                    ))
+                existing_famiport_refund_entry.other_fees = famiport_refund_entry.other_fees
+        else:
+            logger.info('FamiPortRefundEntry(famiport_ticket_id=%ld, ticket_payment=%s, ticketing_fee=%s, other_fees=%s, shop_code=%s) will be added' % (
+                famiport_refund_entry.famiport_ticket.id,
+                famiport_refund_entry.ticket_payment,
+                famiport_refund_entry.ticketing_fee,
+                famiport_refund_entry.other_fees,
+                famiport_refund_entry.shop_code
+                ))
+            serial += 1
+            famiport_refund_entry.serial = serial
+            famiport_refund_entries_to_add.append(famiport_refund_entry)
+    logger.info('updated entries: %d, added entries: %d' % (
+        len(famiport_refund_entries_to_update) - len(famiport_refund_entries_to_add), 
+        len(famiport_refund_entries_to_add)
+        ))
+    for famiport_refund_entry in sorted(famiport_refund_entries_to_add, key=lambda famiport_refund_entry: famiport_refund_entry.famiport_ticket_id):
+        session.add(famiport_refund_entry)
+    famiport_refund.last_serial = serial
