@@ -89,16 +89,17 @@
         <tr>
             <!-- <td><input type="radio" value="1" name="radio_gr" form="order"></td> -->
             <td>${rts_helper.get_refund_status_text(famiport_refund_entry.refunded_at)}</td>
-            <td>${famiport_shop.district_code if famiport_shop else ''}</td>
-            <td>${famiport_shop.branch_code if famiport_shop else ''}</td>
-            <td>${famiport_refund_entry.famiport_ticket.famiport_order.issuing_shop_code}</td>
-            <td>${rts_helper.get_shop_name_text(rts_helper.get_famiport_shop_by_code(famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.shop_code))}</td>
+            <td>${famiport_shop.district_code if famiport_shop else '-'}</td>
+            <td>${famiport_shop.branch_code if famiport_shop else '-'}</td>
+            <% ticketing_shop_code = famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.shop_code%>
+            <td>${ticketing_shop_code if ticketing_shop_code else '-'}</td>
+            <td>${rts_helper.get_shop_name_text(rts_helper.get_famiport_shop_by_code(ticketing_shop_code))}</td>
             <td>${rts_helper.get_management_number_from_famiport_order_identifier(famiport_refund_entry.famiport_ticket.famiport_order.famiport_order_identifier)}</td>
             <td>${famiport_refund_entry.famiport_ticket.barcode_number}</td>
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1}</td>
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2}</td>
             <td nowrap="nowrap">${rts_helper.format_date(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)}</td>
-            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1}</td>
+            <td nowrap="nowrap">${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1}</td>
             <td>${famiport_refund_entry.ticket_payment}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_refund_entry.shop_code}</td>
