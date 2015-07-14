@@ -70,8 +70,8 @@ def lookup_performance_by_searchform_data(request, formdata=None):
 
     if formdata.get('event_code_1'):
         query = query.filter(FamiPortEvent.code_1==formdata.get('event_code_1').zfill(6))
-        if formdata.get('event_code_2'):
-            query = query.filter(FamiPortEvent.code_2==formdata.get('event_code_2').zfill(4))
+    if formdata.get('event_code_2'):
+        query = query.filter(FamiPortEvent.code_2==formdata.get('event_code_2').zfill(4))
 
     if formdata.get('event_name_1'):
         pattern = u'%{}%'.format(formdata.get('event_name_1'))

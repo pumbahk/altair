@@ -120,9 +120,9 @@ class SearchPerformanceForm(OurForm):
         label=u'公演日：',
     )
 
-    def validate_event_code_2(form, field):
-        if not form.event_code_1.data and form.event_code_2.data:
-            raise ValidationError(u'code_1とcode_2セットで入力要')
+    # def validate_event_code_2(form, field):
+    #     if not form.event_code_1.data and form.event_code_2.data:
+    #         raise ValidationError(u'code_1とcode_2セットで入力要')
 
 class RebookOrderForm(OurForm):
     cancel_reason_code = OurSelectField(

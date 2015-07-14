@@ -57,19 +57,15 @@
   </form>
 </div>
 <div id="table-content">
+  % if paginator:
   <div class="row">
     <div class="col-md-3 text-center">
       <h4>申込検索結果一覧</h4>
     </div>
     <div class="col-md-9 text-left">
-      % if count:
-      <h4>検索結果件数${count}件</h4>
-      % endif
+      <h4>検索結果件数${paginator.item_count}件</h4>
     </div>
   </div>
-  % if entries:
-  ${entries.pager()}
-  % endif
   <% personal_info = request.context.user.has_perm_for_personal_info %>
   <a href="#" class="toggle-btn pull-right">残り項目表示</a>
   <table class="table table-hover">
@@ -104,9 +100,8 @@
         <th nowrap="nowrap" class="first-hidden">発券店名</th>
       </tr>
     </thead>
-    % if entries:
     <tbody>
-    % for receipt in entries:
+    % for receipt in paginator.items:
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td nowrap="nowrap">
@@ -145,8 +140,10 @@
       </tr>
     % endfor
     </tbody>
-    % endif
   </table>
+  % else:
+    <p>検索条件にマッチする払戻チケットデータはありません</p>
+  % endif
 </div>
 <div class="buttonBoxBottom pull-right">
   <a id="to_rebook" href=""><button type="button" class="btn btn-info">発券指示</button></a>

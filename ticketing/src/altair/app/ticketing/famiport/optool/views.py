@@ -109,93 +109,44 @@ class FamiPortSearchView(object):
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
     @view_config(route_name='search.receipt', renderer='altair.app.ticketing.famiport.optool:templates/receipt_search.mako', permission='operator')
     def search_receipt(self):
-        form = SearchReceiptForm()
-
-        if self.request.params:
-            postdata = self.request.params
-            form = SearchReceiptForm(postdata)
-            if form.validate():
-                receipts = lookup_receipt_by_searchform_data(self.request, postdata)
-                count = len(receipts)
-                if count == 0:
-                    self.request.session.flash(u'該当するデータはありませんでした')
-                page_url = PageURL_WebOb_Ex(self.request)
-                pages = paginate.Page(receipts,
-                                      page=self.request.GET.get('page', '1'),
-                                      item_count=count,
-                                      items_per_page=20,
-                                      url=page_url)
-            else:
-                errors = u'・'.join(sum(form.errors.values(), []))
-                self.request.session.flash(errors)
-                return dict(form=form)
-        else:
-            count = None
-            pages = []
-
-        return dict(form=form,
-                    count=count,
-                    entries=pages,
-                    vh=ViewHelpers(self.request),
-                    now=datetime.now(),)
+        form = SearchReceiptForm(self.request.params)
+        if not self.request.GET:
+            return dict(form=form)
+        if not form.validate():
+            errors = u'・'.join(sum(form.errors.values(), []))
+            self.request.session.flash(errors)
+            return dict(form=form)
+        page = int(self.request.GET.get('page', 1))
+        paginator = get_paginator(self.request, lookup_receipt_by_searchform_data(self.request, self.request.GET), page)
+        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.performance', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako')
     def search_performance(self):
-        form = SearchPerformanceForm()
-
-        if self.request.params:
-            postdata = self.request.params
-            form = SearchPerformanceForm(postdata)
-            if form.validate():
-                performances = lookup_performance_by_searchform_data(self.request, postdata)
-                count = len(performances)
-                page_url = PageURL_WebOb_Ex(self.request)
-                pages = paginate.Page(performances,
-                                     page=self.request.GET.get('page', '1'),
-                                     item_count=count,
-                                     items_per_page=20,
-                                     url=page_url)
-            else:
-                errors = u'・'.join(sum(form.errors.values(), []))
-                self.request.session.flash(errors)
-                return dict(form=form)
-        else:
-            count = None
-            pages = []
-
-        return dict(form=form,
-                    count=count,
-                    entries=pages,
-                    vh=ViewHelpers(self.request))
+        form = SearchPerformanceForm(self.request.params)
+        if not self.request.GET:
+            return dict(form=form)
+        if not form.validate():
+            errors = u'・'.join(sum(form.errors.values(), []))
+            self.request.session.flash(errors)
+            return dict(form=form)
+        page = int(self.request.GET.get('page', 1))
+        paginator = get_paginator(self.request, lookup_performance_by_searchform_data(self.request, self.request.GET), page)
+        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_performance', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako')
     def search_refund_performance(self):
-        form = SearchRefundPerformanceForm()
-        if self.request.params:
-            postdata = self.request.params
-            form = SearchRefundPerformanceForm(postdata)
-            if form.validate():
-                results = lookup_refund_performance_by_searchform_data(self.request, postdata)
-                count = len(results)
-                page_url = PageURL_WebOb_Ex(self.request)
-                pages = paginate.Page(results,
-                                      page=self.request.GET.get('page', '1'),
-                                      item_count=count,
-                                      items_per_page=20,
-                                      url=page_url)
-            else:
-                errors = u'・'.join(sum(form.errors.values(), []))
-                self.request.session.flash(errors)
-                return dict(form=form)
-        else:
-            count = None
-            pages = []
-        return dict(form=form,
-                    count=count,
-                    entries=pages,
-                    vh=ViewHelpers(self.request))
+        form = SearchRefundPerformanceForm(self.request.params)
+        if not self.request.GET:
+            return dict(form=form)
+        if not form.validate():
+            errors = u'・'.join(sum(form.errors.values(), []))
+            self.request.session.flash(errors)
+            return dict(form=form)
+        page = int(self.request.GET.get('page', 1))
+        paginator = get_paginator(self.request, lookup_refund_performance_by_searchform_data(self.request, self.request.GET), page)
+        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_ticket', request_method='GET', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako')

@@ -48,19 +48,16 @@
   </form>
 </div>
 <div id="table-content">
+  % if paginator:
   <div class="row">
     <div class="col-md-3 text-center">
       <h4>公演検索結果</h4>
     </div>
-    % if count is not None:
+  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
     <div class="col-md-9 text-left">
-      <h4>検索結果件数${count}件</h4>
+      <h4>検索結果件数${paginator.item_count}件</h4>
     </div>
-    % endif
   </div>
-  % if entries:
-  ${entries.pager()}
-  % endif
   <table class="table table-hover">
     <thead>
       <tr>
@@ -72,9 +69,8 @@
         <th>会場名</th>
       </tr>
     </thead>
-    % if entries:
     <tbody>
-      % for performance in entries:
+      % for performance in paginator.items:
       <tr>
         <td>${performance.famiport_event_id}</td>
         <td>${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</td>
@@ -85,8 +81,10 @@
       </tr>
       % endfor
     </tbody>
-    % endif
   </table>
+  % else:
+    <p>検索条件にマッチする払戻チケットデータはありません</p>
+  % endif
 </div>
 
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap-datepicker.min.js')}"></script>
