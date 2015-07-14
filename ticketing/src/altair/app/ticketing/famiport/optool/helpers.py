@@ -119,6 +119,10 @@ class RefundTicketSearchHelper(object):
         else:
             return u'-'
 
+    def format_currency(self, amount):
+        locale.setlocale(locale.LC_ALL, 'ja_JP.UTF-8')
+        return locale.currency(amount, grouping=True).decode("UTF-8")
+
     def get_famiport_shop_by_code(self, shop_code):
         return get_famiport_shop_by_code(self.request, shop_code)
 
