@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 altair.sqlahelper.sessions.lot_work_history.url = ${altair:ticketing.db_url.master}
 altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 
-[app:ticketing]
+[app:userside_famiport]
 use = config:%(here)s/../../baseconf/common.ini#userside_famiport
 
 get sqlalchemy.url = sqlalchemy.url
