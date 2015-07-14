@@ -31,7 +31,7 @@
       </div>
       <div class="form-group">
           <div class="col-md-2">${form.old_num.label}</div>
-          <div class="col-md-10">${form.old_num(class_="form-control", value=receipt.famiport_order_identifier, readonly="readonly")}</div>
+          <div class="col-md-10">${form.old_num(class_="form-control", value=vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier), readonly="readonly")}</div>
       </div>
     </div>
     <div class="row pull-right">

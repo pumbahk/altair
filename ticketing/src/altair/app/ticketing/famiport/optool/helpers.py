@@ -62,6 +62,14 @@ class ViewHelpers(object):
         else:
             return u'-'
 
+    def get_management_number_from_famiport_order_identifier(self, famiport_order_identifier):
+        """
+        注文IDの下9桁を取って発券管理番号を返す
+        :param famiport_order_identifier:
+        :return:
+        """
+        return famiport_order_identifier[3:12]
+
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
     return Page(query, page, url=page_url, items_per_page=items_per_page)

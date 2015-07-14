@@ -247,15 +247,16 @@ class FamiPortRebookOrderView(object):
         receipt = self.context.receipt
         form.cancel_reason_code.data = receipt.cancel_reason_code
         form.cancel_reason_text.data = receipt.cancel_reason_text
-        return dict(form=form, receipt=receipt, now=datetime.now())
+        return dict(form=form, receipt=receipt, now=datetime.now(), vh=ViewHelpers(self.request))
 
     @view_config(xhr=True, route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='json', permission='operator')
     def post_rebook_order(self):
         session = get_db_session(self.request, name="famiport")
         receipt = self.context.receipt
         order = receipt.famiport_order
-        old_fami_identifier = receipt.famiport_order_identifier
-        new_fami_identifier = u''
+        vh=ViewHelpers(self.request)
+        old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
+        new_management_number = u''
         error = u''
         form = RebookOrderForm(self.request.POST)
         if form.validate():
@@ -276,7 +277,7 @@ class FamiPortRebookOrderView(object):
                 else:
                     raise FamiPortAPIError(u'make_suborder_by_order_no failed')
 
-                new_fami_identifier = new_receipt.famiport_order_identifier
+                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
             else:
                 error = u'・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
 
@@ -284,8 +285,8 @@ class FamiPortRebookOrderView(object):
             error = u'・'.join(sum(form.errors.values(), []))
 
         session.commit()
-        return dict(old_identifier=old_fami_identifier,
-                    new_identifier=new_fami_identifier,
+        return dict(old_identifier=old_management_number,
+                    new_identifier=new_management_number,
                     error=error)
 
     @view_config(route_name='rebook_order', request_method='POST', match_param='action=fix-reason', renderer='altair.app.ticketing.famiport.optool:templates/rebook_order.mako', permission='operator')
@@ -305,8 +306,9 @@ class FamiPortRebookOrderView(object):
         session = get_db_session(self.request, name="famiport")
         receipt = self.context.receipt
         order = receipt.famiport_order
-        old_fami_identifier = receipt.famiport_order_identifier
-        new_fami_identifier = u''
+        vh=ViewHelpers(self.request)
+        old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
+        new_management_number = u''
         error = u''
         form = RebookOrderForm(self.request.POST)
         if form.validate():
@@ -320,15 +322,15 @@ class FamiPortRebookOrderView(object):
                                                    cancel_reason_code=cancel_code,
                                                    cancel_reason_text=cancel_text)
                 new_receipt = order.ticketing_famiport_receipt
-                new_fami_identifier = new_receipt.famiport_order_identifier
+                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
             else:
                 error = u'・'.join(ValidateUtils.validate_reprint_cond(receipt, datetime.now()))
         else:
             error = u'・'.join(sum(form.errors.values(), []))
 
         session.commit()
-        return dict(old_identifier=old_fami_identifier,
-                    new_identifier=new_fami_identifier,
+        return dict(old_identifier=old_management_number,
+                    new_identifier=new_management_number,
                     error=error,)
 
 class FamiPortDownloadRefundTicketView(object):
