@@ -378,7 +378,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 client_code=tenant.code,
                 id=None,
                 userside_id=altair_famiport_performance_group.altair_famiport_venue.site_id,
-                name=hankaku2zenkaku(altair_famiport_performance_group.altair_famiport_venue.site.name),
+                name=altair_famiport_performance_group.altair_famiport_venue.site.name,
                 name_kana=u'',
                 prefecture=prefecture,
                 update_existing=True
