@@ -1032,7 +1032,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                 else:
                     issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
                     assert issuing_shop_code is not None
-                    if refund_entry.famiport_refund.start_at > now \
+                    if refund_entry.famiport_refund.start_at < now \
                        or refund_entry.famiport_refund.end_at < now:
                         result_code = u'03'
                     elif _strip_zfill(issuing_shop_code) != shop_code:
