@@ -35,12 +35,16 @@ class LoginForm(OurForm):
 class SearchReceiptForm(OurForm):
     barcode_no = OurTextField(
         label=u'払込票番号：',
+        validators=[
+            Optional(),
+            Length(min=13, max=13, message=u'払込票番号は13文字以内で入力して下さい')
+        ]
     )
     reserve_number = OurTextField(
         label=u'引換票番号：',
         validators=[
             Optional(),
-            Length(max=13, message=u'引換票番号は13文字以内で入力して下さい')
+            Length(min=13, max=13, message=u'引換票番号は13文字以内で入力して下さい')
         ]
     )
     management_number = OurTextField(
@@ -61,7 +65,7 @@ class SearchReceiptForm(OurForm):
         label=u'電話番号(ハイフンなし)：',
         validators=[
             Optional(),
-            Length(max=12, message=u'電話番号は12文字以内で入力して下さい')
+            Length(min=12, max=12, message=u'電話番号は12文字以内で入力して下さい')
         ]
     )
     shop_code = OurTextField(

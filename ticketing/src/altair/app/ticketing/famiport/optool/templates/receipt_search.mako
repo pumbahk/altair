@@ -75,33 +75,33 @@
   <table class="table table-hover">
     <thead>
       <tr>
-        <th>選択</th>
-        <th>申込区分</th>
-        <th>発券区分</th>
-        <th>申込ステータス</th>
-        <th>入金ステータス</th>
-        <th>興行名</th>
-        <th>公演日</th>
-        <th>開演時間</th>
-        <th>管理番号</th>
-        <th>払込票番号</th>
-        <th>引換票番号</th>
+        <th nowrap="nowrap">選択</th>
+        <th nowrap="nowrap">申込区分</th>
+        <th nowrap="nowrap">発券区分</th>
+        <th nowrap="nowrap">申込ステータス</th>
+        <th nowrap="nowrap">入金ステータス</th>
+        <th nowrap="nowrap">興行名</th>
+        <th nowrap="nowrap">公演日</th>
+        <th nowrap="nowrap">開演時間</th>
+        <th nowrap="nowrap">管理番号</th>
+        <th nowrap="nowrap">払込票番号</th>
+        <th nowrap="nowrap">引換票番号</th>
         % if personal_info:
-        <th>氏名</th>
+        <th nowrap="nowrap">氏名</th>
         % endif
-        <th>支払期限日時</th>
-        <th>発券期限日時</th>
-        <th>申込日時</th>
+        <th nowrap="nowrap">支払期限日時</th>
+        <th nowrap="nowrap">発券期限日時</th>
+        <th nowrap="nowrap">申込日時</th>
         % if personal_info:
-        <th class="first-hidden">電話番号</th>
+        <th nowrap="nowrap" class="first-hidden">電話番号</th>
         % endif
-        <th class="first-hidden">発券枚数</th>
-        <th class="first-hidden">入金日時</th>
-        <th class="first-hidden">入金店番</th>
-        <th class="first-hidden">入金店名</th>
-        <th class="first-hidden">発券日時</th>
-        <th class="first-hidden">発券店番</th>
-        <th class="first-hidden">発券店名</th>
+        <th nowrap="nowrap" class="first-hidden">発券枚数</th>
+        <th nowrap="nowrap" class="first-hidden">入金日時</th>
+        <th nowrap="nowrap" class="first-hidden">入金店番</th>
+        <th nowrap="nowrap" class="first-hidden">入金店名</th>
+        <th nowrap="nowrap" class="first-hidden">発券日時</th>
+        <th nowrap="nowrap" class="first-hidden">発券店番</th>
+        <th nowrap="nowrap" class="first-hidden">発券店名</th>
       </tr>
     </thead>
     % if entries:
@@ -109,37 +109,37 @@
     % for receipt in entries:
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
-        <td>
+        <td nowrap="nowrap">
             ${receipt.famiport_order.famiport_sales_segment.name}
             % if receipt.canceled_at or receipt.void_at:
                 <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
             % endif
         </td>
-        <td>${receipt.famiport_order.get_type_in_str}</td>
-        <td>${receipt.get_issued_status_in_str}</td>
-        <td>${receipt.get_payment_status_in_str}</td>
-        <td>${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
-        <td>${vh.get_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
-        <td>${vh.get_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
-        <td>${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
-        <td>${receipt.barcode_no}</td>
-        <td>${receipt.reserve_number}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.get_type_in_str}</td>
+        <td nowrap="nowrap">${receipt.get_issued_status_in_str}</td>
+        <td nowrap="nowrap">${receipt.get_payment_status_in_str}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
+        <td nowrap="nowrap">${vh.get_barcode_no_text(receipt.barcode_no)}</td>
+        <td nowrap="nowrap">${receipt.reserve_number}</td>
         % if personal_info:
-        <td>${receipt.famiport_order.customer_name}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.customer_name}</td>
         % endif
-        <td>${receipt.famiport_order.payment_due_at}</td>
-        <td>${receipt.famiport_order.ticketing_end_at}</td>
-        <td>${receipt.famiport_order.created_at}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.payment_due_at)}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.ticketing_end_at)}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.created_at)}</td>
         % if personal_info:
         <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
         % endif
-        <td class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
-        <td class="first-hidden">${receipt.famiport_order.paid_at}</td>
-        <td class="first-hidden">${receipt.shop_code}</td>
-        <td class="first-hidden">${receipt.get_shop_name(request)}</td>
-        <td class="first-hidden">${receipt.famiport_order.issued_at}</td>
-        <td class="first-hidden">${receipt.shop_code}</td>
-        <td class="first-hidden">${receipt.get_shop_name(request)}</td>
+        <td nowrap="nowrap" class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at)}</td>
+        <td nowrap="nowrap" class="first-hidden">${receipt.shop_code}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(receipt.famiport_order.payment_famiport_receipt.shop_code))}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at)}</td>
+        <td nowrap="nowrap" class="first-hidden">${receipt.shop_code}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(receipt.famiport_order.ticketing_famiport_receipt.shop_code))}</td>
       </tr>
     % endfor
     </tbody>

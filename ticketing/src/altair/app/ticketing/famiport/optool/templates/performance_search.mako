@@ -80,7 +80,7 @@
         <td>${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</td>
         <td>${performance.famiport_event.name_1}</td>
         <td><a href="${request.route_url('performance.detail', performance_id=performance.id)}">${performance.name}</a></td>
-        <td>${performance.start_at}</td>
+        <td>${vh.format_date(performance.start_at)}</td>
         <td>${performance.famiport_event.venue.name}</td>
       </tr>
       % endfor

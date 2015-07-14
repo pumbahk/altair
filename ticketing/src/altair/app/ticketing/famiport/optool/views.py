@@ -126,13 +126,9 @@ class FamiPortSearchView(object):
                                       items_per_page=20,
                                       url=page_url)
             else:
-                for error in form.errors.values():
-                    logger.info('validation failed:{}'.format(error))
-
                 errors = u'・'.join(sum(form.errors.values(), []))
                 self.request.session.flash(errors)
-                count = None
-                pages = []
+                return dict(form=form)
         else:
             count = None
             pages = []
@@ -140,7 +136,7 @@ class FamiPortSearchView(object):
         return dict(form=form,
                     count=count,
                     entries=pages,
-                    vh=ViewHelpers(),
+                    vh=ViewHelpers(self.request),
                     now=datetime.now(),)
 
     @view_config(route_name='search.performance', permission='operator',
@@ -161,22 +157,17 @@ class FamiPortSearchView(object):
                                      items_per_page=20,
                                      url=page_url)
             else:
-                for error in form.errors.values():
-                    logger.info('validation failed:{}'.format(error))
-
                 errors = u'・'.join(sum(form.errors.values(), []))
                 self.request.session.flash(errors)
-                if not postdata.get('event_code_1') and postdata.get('event_code_2'):
-                    self.request.session.flash(u'mainとsubセットでご入力下さい')
-                count = None
-                pages = []
+                return dict(form=form)
         else:
             count = None
             pages = []
 
         return dict(form=form,
                     count=count,
-                    entries=pages)
+                    entries=pages,
+                    vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_performance', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako')
@@ -195,20 +186,16 @@ class FamiPortSearchView(object):
                                       items_per_page=20,
                                       url=page_url)
             else:
-                for error in form.errors.values():
-                    logger.info('validation failed:{}'.format(error))
-
                 errors = u'・'.join(sum(form.errors.values(), []))
                 self.request.session.flash(errors)
-                count = None
-                pages = []
+                return dict(form=form)
         else:
             count = None
             pages = []
         return dict(form=form,
                     count=count,
                     entries=pages,
-                    vh=ViewHelpers())
+                    vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_ticket', request_method='GET', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako')

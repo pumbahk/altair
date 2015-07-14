@@ -80,11 +80,11 @@
         <td><a href="${url_with_eventcode}">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</a></td>
         <td><a href="${request.route_url('refund_performance.detail', performance_id=performance.id)}">${performance.name}</a></td>
         <td>${refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.code}</td>
-        <td>${vh.get_date(performance.start_at)}</td>
-        <td>${vh.get_time(performance.start_at)}</td>
-        <td>${refund_entry.famiport_refund.start_at}</td>
-        <td>${refund_entry.famiport_refund.end_at}</td>
-        <td>${refund_entry.famiport_refund.send_back_due_at}</td>
+        <td>${vh.format_date(performance.start_at)}</td>
+        <td>${vh.format_time(performance.start_at)}</td>
+        <td>${vh.format_date(refund_entry.famiport_refund.start_at)}</td>
+        <td>${vh.format_date(refund_entry.famiport_refund.end_at)}</td>
+        <td>${vh.format_date(refund_entry.famiport_refund.send_back_due_at)}</td>
       </tr>
     % endfor
     </tbody>

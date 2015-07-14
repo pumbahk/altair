@@ -13,14 +13,44 @@ class Helpers(object):
         return u'test'
 
 class ViewHelpers(object):
+    def __init__(self, request):
+        self.request = request
+
     def get_date(self, datetime):
         return "{0:%Y-%m-%d}".format(datetime)
 
     def get_time(self, datetime):
         return "{0:%H:%M}".format(datetime)
 
+    def format_date(cls, datetime, format="%Y/%m/%d"):
+        if datetime:
+            return datetime.strftime(format)
+        else:
+            return u'-'
+
+    def format_time(cls, datetime, format="%H:%M"):
+        if datetime:
+            return datetime.strftime(format)
+        else:
+            return u'-'
+
     def format_famiport_order_identifier(self, identifier):
         return identifier[3:12]
+
+    def get_barcode_no_text(self, barcode_no):
+        if barcode_no:
+            return barcode_no
+        else:
+            return u'-'
+
+    def get_famiport_shop_by_code(self, shop_code):
+        return get_famiport_shop_by_code(self.request, shop_code)
+
+    def get_shop_name_text(self, famiport_shop):
+        if famiport_shop:
+            return famiport_shop.name
+        else:
+            return u'-'
 
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
@@ -62,14 +92,14 @@ class RefundTicketSearchHelper(object):
         if datetime:
             return datetime.strftime(format)
         else:
-            return ""
+            return u'-'
 
     @classmethod
     def format_date(cls, datetime, format="%Y/%m/%d"):
         if datetime:
             return datetime.strftime(format)
         else:
-            return ""
+            return u'-'
 
     def get_famiport_shop_by_code(self, shop_code):
         return get_famiport_shop_by_code(self.request, shop_code)
@@ -78,4 +108,4 @@ class RefundTicketSearchHelper(object):
         if famiport_shop:
             return famiport_shop.name
         else:
-            return u''
+            return u'-'
