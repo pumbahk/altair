@@ -142,7 +142,7 @@
     </tbody>
   </table>
   % else:
-    <p>検索条件にマッチする払戻チケットデータはありません</p>
+    <p>検索条件にマッチする申込はありません</p>
   % endif
 </div>
 <div class="buttonBoxBottom pull-right">
