@@ -9,6 +9,7 @@ from markupsafe import Markup
 from sqlalchemy import sql
 from sqlalchemy.sql import func as sqlf
 from sqlalchemy.orm.exc import NoResultFound
+from jctconv
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
@@ -18,6 +19,13 @@ from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, A
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
+
+
+def hankaku2zenkaku(text):
+    """半角英数字を全角に変換する
+    """
+    return jctconv.h2z(text, digit=True, ascii=True)
+
 
 def next_event_code(session, event):
     code_1, code_2 = session.query(AltairFamiPortPerformanceGroup.code_1, sqlf.max(AltairFamiPortPerformanceGroup.code_2)) \
@@ -95,7 +103,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
     logs = []
     client_code = tenant.code
     altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).filter(AltairFamiPortPerformanceGroup.event_id == event.id)
-    performances_by_venue = {} 
+    performances_by_venue = {}
     altair_famiport_venues_just_added = set()
     altair_famiport_performances_just_added = set()
     for performance in event.performances:
@@ -122,7 +130,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     client_code=client_code,
                     id=None,
                     userside_id=performance.venue.site_id,
-                    name=performance.venue.site.name,
+                    name=hankaku2zenkaku(performance.venue.site.name),
                     name_kana=u'',
                     prefecture=prefecture,
                     update_existing=False
@@ -132,7 +140,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 organization_id=event.organization_id,
                 site=performance.venue.site,
                 famiport_venue_id=famiport_venue_id,
-                name=performance.venue.site.name,
+                name=hankaku2zenkaku(performance.venue.site.name),
                 name_kana=u'',
                 status=AltairFamiPortReflectionStatus.Editing.value
                 )
@@ -149,13 +157,13 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
                     logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.site.name)
                     prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
-                    altair_famiport_venue.name = performance.venue.site.name
+                    altair_famiport_venue.name = hankaku2zenkaku(performance.venue.site.name)
                     result = create_or_update_famiport_venue(
                         request,
                         client_code=client_code,
                         id=famiport_venue_id,
                         userside_id=performance.venue.site_id,
-                        name=performance.venue.site.name,
+                        name=hankaku2zenkaku(performance.venue.site.name),
                         name_kana=u'',
                         prefecture=prefecture,
                         update_existing=True
@@ -224,7 +232,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     altair_famiport_performance = AltairFamiPortPerformance(
                         altair_famiport_performance_group=altair_famiport_performance_group,
                         code=code,
-                        name=performance.name,
+                        name=hankaku2zenkaku(performance.name),
                         type=type_,
                         ticket_name=ticket_name,
                         performance=performance,
@@ -242,7 +250,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             logs.append(u'公演「%s」(id=%ld) は、反映済となっており自動更新できません。一度編集状態に戻してください。' % (performance.name, performance.id))
                         elif altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
                             logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
-                            altair_famiport_performance.name = performance.name
+                            altair_famiport_performance.name = hankaku2zenkaku(performance.name)
                             altair_famiport_performance.type = type_
                             altair_famiport_performance.ticket_name = ticket_name
                             altair_famiport_performance.start_at = performance.start_on
@@ -309,7 +317,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                     altair_famiport_sales_segment = AltairFamiPortSalesSegmentPair(
                                         altair_famiport_performance=altair_famiport_performance,
                                         code=code,
-                                        name=non_none_sales_segments[0].sales_segment_group.name,
+                                        name=hankaku2zenkaku(non_none_sales_segments[0].sales_segment_group.name),
                                         published_at=non_none_sales_segments[0].start_at,
                                         auth_required=False,
                                         auth_message=u'',
@@ -339,7 +347,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                                 sales_segment.sales_segment_group.name,
                                                 sales_segment.id
                                                 ))
-                    else: 
+                    else:
                         logs.append(u'公演「%s」(id=%ld) には、連携可能な販売区分がありません' % (performance.name, performance.id))
 
     return logs
@@ -370,7 +378,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 client_code=tenant.code,
                 id=None,
                 userside_id=altair_famiport_performance_group.altair_famiport_venue.site_id,
-                name=altair_famiport_performance_group.altair_famiport_venue.site.name,
+                name=hankaku2zenkaku(altair_famiport_performance_group.altair_famiport_venue.site.name),
                 name_kana=u'',
                 prefecture=prefecture,
                 update_existing=True

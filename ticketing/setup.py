@@ -88,6 +88,7 @@ requires = [
     "enum34",
     "scp",
     "jumon",
+    "jctconv",
     "altair.augus",
     "altair.auth",
     "altair.sqla",
