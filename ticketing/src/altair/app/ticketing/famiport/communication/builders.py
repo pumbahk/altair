@@ -458,6 +458,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         replyClass = ReplyClassEnum.Prepayment.value
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         replyClass = ReplyClassEnum.Paid.value
+                        orderTicketNo = None
+                        ticketingStart = None
+                        ticketingEnd = None
                     else:
                         raise ValueError(u'unknown receipt type: %r' % famiport_receipt.type)
                     if famiport_order.ticketing_start_at:
@@ -467,11 +470,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     exchangeTicketNo = famiport_order.ticketing_famiport_receipt.reserve_number
                 elif famiport_order.type == FamiPortOrderType.Ticketing.value:
                     replyClass = ReplyClassEnum.Paid.value
-                    if famiport_order.ticketing_start_at:
-                        ticketingStart = famiport_order.ticketing_start_at.strftime("%Y%m%d%H%M%S")
-                    if famiport_order.ticketing_end_at:
-                        ticketingEnd = famiport_order.ticketing_end_at.strftime("%Y%m%d%H%M%S")
                     exchangeTicketNo = famiport_receipt.reserve_number
+                    orderTicketNo = None
+                    ticketingStart = None
+                    ticketingEnd = None
                 elif famiport_order.type == FamiPortOrderType.PaymentOnly.value:
                     replyClass = ReplyClassEnum.PrepaymentOnly.value
                     exchangeTicketNo = None
