@@ -4,6 +4,7 @@ import logging
 import itertools
 from urllib import urlencode
 from datetime import datetime, timedelta
+import jctconv
 import sqlalchemy as sa
 from markupsafe import Markup
 from sqlalchemy import sql
