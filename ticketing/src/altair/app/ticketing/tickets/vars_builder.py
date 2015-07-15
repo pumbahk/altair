@@ -112,9 +112,9 @@ class TicketDictListBuilder(object):
 
     def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None, return_tokens=False):
         if not return_tokens:
-            return _build_dicts_from_carted_product_item(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
+            return self._build_dicts_from_carted_product_item(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
         else:
-            return _build_dicts_from_carted_product_item2(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
+            return self._build_dicts_from_carted_product_item2(carted_product_item, payment_delivery_method_pair, ordered_product_item_attributes, user_profile, ticket_number_issuer, now)
 
     def _build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
         builder = self.builder
