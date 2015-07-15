@@ -1,4 +1,4 @@
-from ftplib import FTP_TLS
+from ftplib import FTP_TLS, FTP
 import socket
 import ssl
 
@@ -40,3 +40,91 @@ class FTP_TLS_(object, FTP_TLS):
                 resp = self.voidcmd('AUTH SSL')
             self._wrap_socket()
             return resp
+
+    def ntransfercmd(self, cmd, rest=None):
+        conn, size = FTP.ntransfercmd(self, cmd, rest)
+        if self.implicit or self._prot_p:
+            conn = ssl.wrap_socket(conn, self.keyfile, self.certfile,
+                                   ssl_version=self.ssl_version,
+								   ca_certs=self.ca_certs)
+        return conn, size
+
+    def retrbinary(self, cmd, callback, blocksize=8192, rest=None):
+        self.voidcmd('TYPE I')
+        conn = self.transfercmd(cmd, rest)
+        try:
+            while 1:
+                data = conn.recv(blocksize)
+                if not data:
+                    break
+                callback(data)
+            # shutdown ssl layer
+            if not self.implicit and isinstance(conn, ssl.SSLSocket):
+                conn = conn.unwrap()
+        finally:
+            conn.close()
+        return self.voidresp()
+
+    def retrlines(self, cmd, callback = None):
+        if callback is None: callback = print_line
+        resp = self.sendcmd('TYPE A')
+        conn = self.transfercmd(cmd)
+        fp = conn.makefile('rb')
+        try:
+            while 1:
+                line = fp.readline(self.maxline + 1)
+                if len(line) > self.maxline:
+                    raise Error("got more than %d bytes" % self.maxline)
+                if self.debugging > 2: print '*retr*', repr(line)
+                if not line:
+                    break
+                if line[-2:] == CRLF:
+                    line = line[:-2]
+                elif line[-1:] == '\n':
+                    line = line[:-1]
+                callback(line)
+            # shutdown ssl layer
+            if not self.implicit and isinstance(conn, ssl.SSLSocket):
+                conn = conn.unwrap()
+        finally:
+            fp.close()
+            conn.close()
+        return self.voidresp()
+
+    def storbinary(self, cmd, fp, blocksize=8192, callback=None, rest=None):
+        self.voidcmd('TYPE I')
+        conn = self.transfercmd(cmd, rest)
+        try:
+            while 1:
+                buf = fp.read(blocksize)
+                if not buf: break
+                conn.sendall(buf)
+                if callback: callback(buf)
+            # shutdown ssl layer
+            if not self.implicit and isinstance(conn, ssl.SSLSocket):
+                conn = conn.unwrap()
+        finally:
+            conn.close()
+        return self.voidresp()
+
+    def storlines(self, cmd, fp, callback=None):
+        self.voidcmd('TYPE A')
+        conn = self.transfercmd(cmd)
+        try:
+            while 1:
+                buf = fp.readline(self.maxline + 1)
+                if len(buf) > self.maxline:
+                    raise Error("got more than %d bytes" % self.maxline)
+                if not buf: break
+                if buf[-2:] != CRLF:
+                    if buf[-1] in CRLF: buf = buf[:-1]
+                    buf = buf + CRLF
+                conn.sendall(buf)
+                if callback: callback(buf)
+            # shutdown ssl layer
+            if not self.implicit and isinstance(conn, ssl.SSLSocket):
+                conn = conn.unwrap()
+        finally:
+            conn.close()
+        return self.voidresp()
+
