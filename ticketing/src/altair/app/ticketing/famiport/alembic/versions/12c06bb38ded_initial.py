@@ -220,6 +220,7 @@ def create_schemas():
         'FamiPortRefund',
         sa.Column('id', Identifier, nullable=False, primary_key=True, autoincrement=True),
         sa.Column('type', sa.Integer, nullable=False, server_default=text(unicode(FamiPortRefundType.Type1.value))),
+        sa.Column('client_code', sa.Unicode(24), nullable=True),
         sa.Column('userside_id', Identifier, nullable=True),
         sa.Column('send_back_due_at', sa.Date(), nullable=False),
         sa.Column('start_at', sa.DateTime(), nullable=False),
