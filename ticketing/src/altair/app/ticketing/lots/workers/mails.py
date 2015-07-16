@@ -65,6 +65,7 @@ class RejectionMailResource(object):
 
 @task_config(
     root_factory=ElectionMailResource,
+    name='lots.election_mail',
     consumer='lots.election_mail',
     queue='lots.election_mail',
     timeout=600,
@@ -94,6 +95,7 @@ def send_election_mail_task(context, request):
 
 @task_config(
     root_factory=RejectionMailResource,
+    name='lots.rejection_mail',
     consumer='lots.rejection_mail',
     queue='lots.rejection_mail',
     timeout=600,

@@ -123,6 +123,7 @@ def elect_lot_wish(request, wish, order=None):
     return order
 
 @task_config(root_factory=ElectionWorkerResource,
+             name="lots.election",
              consumer="lots.election",
              queue="lots.election",
              timeout=600)

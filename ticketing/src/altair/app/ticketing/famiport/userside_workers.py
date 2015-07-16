@@ -14,6 +14,7 @@ class SubmissionWorkerResource(object):
         self.request = request
 
 @task_config(root_factory=SubmissionWorkerResource,
+             name="userside_famiport.submit_to_downstream",
              consumer="userside_famiport.submit_to_downstream",
              queue="userside_famiport.submit_to_downstream",
              timeout=600)
