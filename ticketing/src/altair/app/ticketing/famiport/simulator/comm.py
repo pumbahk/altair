@@ -139,7 +139,13 @@ class Communicator(object):
             u'phoneNumber': cd.encrypt(customer_phone_number or u''),
             }
         result = self._do_request(self.endpoints.payment, data)
-        for c in ['koenDate', 'ticketingStart', 'ticketingEnd']:
+
+        if result['koenDate'] and result['koenDate'] not in ('888888888888', '999999999999'):
+            # 888888888888 -> チケット料金の注意事項(下記参照)を表示する（「2：前払い（後日渡し）の前払い時」または「4:前払いのみ」の場合のみ）
+            # 999999999999 -> 期間内有効券と判断して公演日時を表示しない
+            result['koenDate'] = datetime.strptime(result['koenDate'], '%Y%m%d%H%M')
+
+        for c in ['ticketingStart', 'ticketingEnd']:
             if result[c]:
                 result[c] = datetime.strptime(result[c], '%Y%m%d%H%M')
         for c in ['replyClass', 'totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'ticketCountTotal', 'ticketCount']:
