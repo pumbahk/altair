@@ -15,7 +15,10 @@ from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortReflectionStatus, AltairFamiPortSalesSegmentPair
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
-from .communication.utils import validate_convert_famiport_kogyo_name_style
+from .communication.utils import (
+    convert_famiport_kogyo_name_style,
+    validate_convert_famiport_kogyo_name_style,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -224,11 +227,11 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     logs.append(u'公演「%s」(id=%ld) を新たに連携設定しました' % (performance.name, performance.id))
                     code = next_performance_code(session, altair_famiport_performance_group.id)
                     if not validate_convert_famiport_kogyo_name_style(performance.name):
-                        logs.append(u'公演名が長すぎるか使用できない文字が含まれています: 公演「%s」(id=%ld)' % (performance.name, performance.id))
+                        logs.append(u'公演名が長すぎるか使用できない文字が含まれていたので変換しました: 公演「%s」(id=%ld)' % (performance.name, performance.id))
                     altair_famiport_performance = AltairFamiPortPerformance(
                         altair_famiport_performance_group=altair_famiport_performance_group,
                         code=code,
-                        name=performance.name,
+                        name=convert_famiport_kogyo_name_style(performance.name),
                         type=type_,
                         ticket_name=ticket_name,
                         performance=performance,
@@ -247,8 +250,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                         elif altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
                             logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
                             if not validate_convert_famiport_kogyo_name_style(performance.name):
-                                logs.append(u'公演名が長すぎるか使用できない文字が含まれています: 公演「%s」(id=%ld)' % (performance.name, performance.id))
-                            altair_famiport_performance.name = performance.name
+                                logs.append(u'公演名が長すぎるか使用できない文字が含まれていたので変換しました: 公演「%s」(id=%ld)' % (performance.name, performance.id))
+                            altair_famiport_performance.name = convert_famiport_kogyo_name_style(performance.name)
                             altair_famiport_performance.type = type_
                             altair_famiport_performance.ticket_name = ticket_name
                             altair_famiport_performance.start_at = performance.start_on
