@@ -116,8 +116,12 @@ def convert_famiport_kogyo_name_style(text, zenkaku=False, length=40, encoding='
     buf = text.encode(encoding)
     if len(buf) > length and length_error:
         raise ValueError('too long: {}'.format(text))
-    text = buf[:40].decode(encoding)
-    return text
+    for ii in range(len(buf)):
+        try:
+            return buf[:40-ii].encode(encoding)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            continue
+    assert False, text
 
 
 def validate_convert_famiport_kogyo_name_style(*args, **kwds):
