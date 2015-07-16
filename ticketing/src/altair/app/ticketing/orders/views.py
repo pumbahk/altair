@@ -1117,6 +1117,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 performances.append(o.performance)
         refund_params = dict(self.request.session['ticketing.refund.settings'])
         refund_params.update(
+            organization=self.context.organization,
             orders=orders,
             order_count=len(orders),
             performances=performances,
@@ -1294,6 +1295,7 @@ class OrderDetailView(OrderBaseView):
         if f.validate():
             refund_param = f.data
             refund_param.update(dict(
+                organization=self.context.organization,
                 orders=[order],
                 order_count=1,
                 performances=[order.performance],
