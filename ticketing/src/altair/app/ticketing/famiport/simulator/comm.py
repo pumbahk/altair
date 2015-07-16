@@ -112,7 +112,9 @@ class Communicator(object):
             u'authNumber': auth_number,
             }
         result = self._do_request(self.endpoints.inquiry, data)
-        if result['koenDate']:
+        if result['koenDate'] and result['koenDate'] not in ('888888888888', '999999999999'):
+            # 888888888888 -> チケット料金の注意事項(下記参照)を表示する（「2：前払い（後日渡し）の前払い時」または「4:前払いのみ」の場合のみ）
+            # 999999999999 -> 期間内有効券と判断して公演日時を表示しない
             result['koenDate'] = datetime.strptime(result['koenDate'], '%Y%m%d%H%M')
         for c in ['replyClass', 'totalAmount', 'ticketPayment', 'systemFee', 'ticketingFee', 'phoneInput', 'nameInput', 'ticketCountTotal', 'ticketCount']:
             if result[c]:
@@ -144,7 +146,7 @@ class Communicator(object):
             if result[c]:
                 result[c] = int(result[c])
         return result
-    
+
     def complete(self, store_code, mmk_no, ticketing_date, sequence_no, client_code, order_id, barcode_no, total_amount):
         data = {
             u'storeCode': store_code,
@@ -157,7 +159,7 @@ class Communicator(object):
             u'totalAmount': total_amount,
             }
         return self._do_request(self.endpoints.completion, data)
-    
+
     def cancel(self, store_code, mmk_no, ticketing_date, sequence_no, client_code, order_id, barcode_no, cancel_code):
         data = {
             u'storeCode': store_code,
@@ -170,7 +172,7 @@ class Communicator(object):
             u'cancelCode': cancel_code,
             }
         return self._do_request(self.endpoints.cancel, data)
-    
+
     def _refund(self, store_code, pos_no, text_type, timestamp, barcodes):
         data = {
             u'BusinessFlg': u'3',
