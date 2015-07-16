@@ -15,6 +15,7 @@ from .exceptions import (
 from .utils import (
     str_or_blank,
     FamiPortCrypt,
+    convert_famiport_kogyo_name_style,
     )
 from ..models import (
     FamiPortOrder,
@@ -296,6 +297,9 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             else:
                 resultCode = ResultCodeEnum.OtherError.value
 
+            if kogyoName:
+                kogyoName = convert_famiport_kogyo_name_style(kogyoName, zenkaku=False)  # 予約照会は全角変換しない
+
             famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
                 _request=famiport_reservation_inquiry_request,
                 resultCode=resultCode,
@@ -509,6 +513,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyClass = str_or_blank(replyClass)
                 ticketingStart = str_or_blank(ticketingStart)
                 ticketingEnd = str_or_blank(ticketingEnd)
+
+                if kogyoName:
+                    kogyoName = convert_famiport_kogyo_name_style(kogyoName, zenkaku=True)  # 入金発券要求はは全角変換する
 
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     _request=famiport_payment_ticketing_request,

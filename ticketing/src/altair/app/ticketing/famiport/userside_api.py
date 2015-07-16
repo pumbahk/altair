@@ -1,10 +1,8 @@
 # encoding: utf-8
-
 import logging
 import itertools
 from urllib import urlencode
 from datetime import datetime, timedelta
-import jctconv
 import sqlalchemy as sa
 from markupsafe import Markup
 from sqlalchemy import sql
@@ -17,14 +15,10 @@ from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortReflectionStatus, AltairFamiPortSalesSegmentPair
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
+from .communication.utils import validate_convert_famiport_kogyo_name_style
+
 
 logger = logging.getLogger(__name__)
-
-
-def hankaku2zenkaku(text):
-    """半角英数字を全角に変換する
-    """
-    return jctconv.h2z(text, digit=True, ascii=True)
 
 
 def next_event_code(session, event):
@@ -130,7 +124,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     client_code=client_code,
                     id=None,
                     userside_id=performance.venue.site_id,
-                    name=hankaku2zenkaku(performance.venue.site.name),
+                    name=performance.venue.site.name,
                     name_kana=u'',
                     prefecture=prefecture,
                     update_existing=False
@@ -140,7 +134,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 organization_id=event.organization_id,
                 site=performance.venue.site,
                 famiport_venue_id=famiport_venue_id,
-                name=hankaku2zenkaku(performance.venue.site.name),
+                name=performance.venue.site.name,
                 name_kana=u'',
                 status=AltairFamiPortReflectionStatus.Editing.value
                 )
@@ -157,13 +151,13 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
                     logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.site.name)
                     prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
-                    altair_famiport_venue.name = hankaku2zenkaku(performance.venue.site.name)
+                    altair_famiport_venue.name = performance.venue.site.name
                     result = create_or_update_famiport_venue(
                         request,
                         client_code=client_code,
                         id=famiport_venue_id,
                         userside_id=performance.venue.site_id,
-                        name=hankaku2zenkaku(performance.venue.site.name),
+                        name=performance.venue.site.name,
                         name_kana=u'',
                         prefecture=prefecture,
                         update_existing=True
@@ -229,10 +223,12 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 if altair_famiport_performance is None:
                     logs.append(u'公演「%s」(id=%ld) を新たに連携設定しました' % (performance.name, performance.id))
                     code = next_performance_code(session, altair_famiport_performance_group.id)
+                    if not validate_convert_famiport_kogyo_name_style(performance.name):
+                        logs.append(u'公演名が長すぎるか使用できない文字が含まれています: 公演「%s」(id=%ld)' % (performance.name, performance.id))
                     altair_famiport_performance = AltairFamiPortPerformance(
                         altair_famiport_performance_group=altair_famiport_performance_group,
                         code=code,
-                        name=hankaku2zenkaku(performance.name),
+                        name=performance.name,
                         type=type_,
                         ticket_name=ticket_name,
                         performance=performance,
@@ -250,7 +246,9 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             logs.append(u'公演「%s」(id=%ld) は、反映済となっており自動更新できません。一度編集状態に戻してください。' % (performance.name, performance.id))
                         elif altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
                             logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
-                            altair_famiport_performance.name = hankaku2zenkaku(performance.name)
+                            if not validate_convert_famiport_kogyo_name_style(performance.name):
+                                logs.append(u'公演名が長すぎるか使用できない文字が含まれています: 公演「%s」(id=%ld)' % (performance.name, performance.id))
+                            altair_famiport_performance.name = performance.name
                             altair_famiport_performance.type = type_
                             altair_famiport_performance.ticket_name = ticket_name
                             altair_famiport_performance.start_at = performance.start_on
@@ -317,7 +315,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                     altair_famiport_sales_segment = AltairFamiPortSalesSegmentPair(
                                         altair_famiport_performance=altair_famiport_performance,
                                         code=code,
-                                        name=hankaku2zenkaku(non_none_sales_segments[0].sales_segment_group.name),
+                                        name=non_none_sales_segments[0].sales_segment_group.name,
                                         published_at=non_none_sales_segments[0].start_at,
                                         auth_required=False,
                                         auth_message=u'',
