@@ -17,6 +17,7 @@ ${ch.breadcrumbs(
    <thead>
     <tr>
       <th>会員種別名</th>
+      <th>表示名</th>
       <th>種別情報</th>
     </tr>
   </thead>
@@ -24,6 +25,7 @@ ${ch.breadcrumbs(
     %for membership in memberships:
       <tr>
         <td><a href="${request.route_path("members.index", membership_id=membership.id)}">${membership.name}</a></td>
+        <td><a href="${request.route_path("members.index", membership_id=membership.id)}">${membership.display_name if membership.display_name else ""}</a></td>
         <td>${membership.memo if membership.memo else ''}</td>
       </tr>
     %endfor

@@ -177,10 +177,17 @@ class Lots(BaseView):
         lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
             lot.sales_segment.payment_delivery_method_pairs = []
-            for pdmp_id in self.request.POST.getall("pdmp_id"):
-                pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
-                if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
+            if "use_default_pdmp" in self.request.POST:
+                self.context.lot.sales_segment.use_default_payment_delivery_method_pairs = True
+                for pdmp in self.context.lot.sales_segment_group.payment_delivery_method_pairs:
                     lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+            else:
+                # 販売区分グループの値を使用しない場合のみ、個別の設定が可能
+                self.context.lot.sales_segment.use_default_payment_delivery_method_pairs = False
+                for pdmp_id in self.request.POST.getall("pdmp_id"):
+                    pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
+                    if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
+                        lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
         if "action-delete" in self.request.POST:
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
@@ -1164,6 +1171,7 @@ class LotEntries(BaseView):
             shipping_address.address_1 = f.address_1.data
             shipping_address.address_2 = f.address_2.data
             shipping_address.tel_1 = f.tel_1.data
+            shipping_address.tel_2 = f.tel_2.data
             shipping_address.fax = f.fax.data
             shipping_address.save()
             self.request.session.flash(u'配送情報を保存しました')

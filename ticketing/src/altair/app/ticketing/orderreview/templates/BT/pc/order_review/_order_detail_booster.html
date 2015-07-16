@@ -15,7 +15,7 @@
 </div>
 <!-- sectionおわり -->
 
-%if order.status == 'canceled' or order.payment_status == 'refunded':
+%if order.status == 'canceled':
 <div class="section">
   <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
   <p>
@@ -25,6 +25,7 @@
   ・二重注文により、ひとつをキャンセル処理したため<br />
   </p>
 </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
 <%
 pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request, mode='orderreview'))

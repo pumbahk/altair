@@ -10,6 +10,20 @@ h3{
 </style>
 </%block>
 
+% if active_page:
+  ${render_active_page()}
+% else:
+<div class="btn-group">
+  このページセットには、ページがありません。
+  削除してから、作成し直してください。
+  <a class="btn btn-danger"
+	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.route_path("pageset_list", pagetype=pagetype.name), pagetype=pagetype.name))}">
+    <i class="icon-trash"></i> 削除
+  </a>
+</div>
+% endif
+
+<%def name="render_active_page()">
 <div class="row-fluid">
     ${nco.breadcrumbs(
         names=["Top", "Page", active_page.name],
@@ -118,16 +132,21 @@ ${active_page.name}
        message="新しいページを追加します。アップロードされているファイルもまとめてコピーします。よろしいですか？">
 		  <i class="icon-plus"> </i> 選択したページのコピーを追加
     </a>
-      <a class="btn btn-success do-post"
+      %if len(static_pageset.pages) >= 2:
+      <% endpoint_url = request.route_path("static_pageset", pagetype=static_pageset.pagetype.name, static_page_id=static_pageset.id, action="detail") %>
+      <a class="btn btn-success action do-post"
        message="本当に登録されたデータを削除しますか?"
-	   href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
+	   href="${request.route_path("static_page",action="delete",static_page_id=static_pageset.id, child_id="__id__" ,_query=dict(endpoint=endpoint_url))}">
           <i class="icon-trash"></i> 選択したページを削除
-    </a>
+      </a>
+      %else:
+      <span style="font-size:80%; color:red;">※静的ページを削除したい場合は上記の削除ボタンをご使用下さい</span>
+      %endif
   </div>
 </div>
 
-<hr/>
 
+<hr/>
 
 
 <ul class="nav nav-tabs">
@@ -192,11 +211,13 @@ ${active_page.name}
 	   href="${request.route_path("static_page_update", action="input", id=active_page.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
     <i class="icon-cog"></i> 変更
   </a>
+  %if len(static_pageset.pages) >= 2:
   <a class="do-post btn btn-danger"
      message="本当に登録されたデータを削除しますか?"
 	 href="${request.route_path("static_page",action="delete",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
     <i class="icon-trash"></i> 削除
   </a>
+  %endif
   <a class="do-post btn"
      message="本当に${static_pageset.url}のページを横取りしますか？"
 	 href="${request.route_path("static_page",action="intercept",static_page_id=active_page.id, child_id=active_page.id ,_query=dict(endpoint=request.url))}">
@@ -301,3 +322,4 @@ ${active_page.name}
 </script>
 
 </div>
+</%def>

@@ -9,7 +9,7 @@ from sqlalchemy import distinct
 from sqlalchemy.sql import func, and_, or_, exists
 from sqlalchemy.orm import aliased
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 import xml.etree.ElementTree as ElementTree
 
@@ -683,9 +683,26 @@ class ExportableReporter(object):
         self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
         self.event = event
 
+        self.performance_ids = None
+        if request.params.getall('performance_id') is not None:
+            self.performance_ids = request.params.getall('performance_id')
+
         self.performance_codes = None
-        if self.request.params.get('performance_code'):
-            self.performance_codes = self.request.params.get('performance_code').split(',')
+        if request.params.get('performance_code'):
+            self.performance_codes = map(unicode.strip, request.params.get('performance_code').split(','))
+
+        self.ordered_from = None
+        if request.params.get('from'):
+            self.ordered_from = datetime.strptime(request.params.get('from'), '%Y-%m-%d')
+
+        self.ordered_to = None
+        if request.params.get('to'):
+            self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
+
+        # レポート設定を無視する
+        self.without_filter = False
+        if request.params.get('all'):
+            self.without_filter = True if request.params.get('all') else False
 
         self.by_stock = None
 
@@ -693,12 +710,20 @@ class ExportableReporter(object):
         """
         請求明細のデータを出力するクエリを返す
         """
+        cond_order = and_(Order.id==OrderedProduct.order_id, Order.canceled_at==None, Order.refunded_at==None)
+        if self.ordered_from:
+            cond_order = and_(cond_order, Order.created_at>=self.ordered_from)
+        if self.ordered_to:
+            cond_order  = and_(cond_order, Order.created_at<self.ordered_to+timedelta(days=1))
+
         q = self.slave_session.query(
             Performance, Stock, ProductItem, SalesSegmentGroup, SalesSegment,
             func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("ordered"),
             func.sum(func.IF(Order.id==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("ordered_price"),
             func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity, 0)).label("paid"),
-            func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("paid_price")
+            func.sum(func.IF(Order.paid_at==None,0,1)*func.ifnull(OrderedProductItem.quantity*OrderedProductItem.price, 0)).label("paid_price"),
+            func.min(func.IF(Order.paid_at==None,None,Order.created_at)).label("paid_from"),
+            func.max(func.IF(Order.paid_at==None,None,Order.created_at)).label("paid_to")
             )\
             .join(ProductItem, ProductItem.performance_id==Performance.id)\
             .join(Product, Product.id==ProductItem.product_id)\
@@ -707,7 +732,7 @@ class ExportableReporter(object):
             .join(StockHolder, StockHolder.id==Stock.stock_holder_id)\
             .outerjoin(OrderedProductItem, OrderedProductItem.product_item_id==ProductItem.id)\
             .outerjoin(OrderedProduct, OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-            .outerjoin(Order, and_(Order.id==OrderedProduct.order_id, Order.canceled_at==None, Order.refunded_at==None))\
+            .outerjoin(Order, cond_order)\
             .join(SalesSegment, SalesSegment.id==Product.sales_segment_id)\
             .join(SalesSegmentGroup, SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)\
             .group_by(Performance.id, Stock.id, ProductItem.id, SalesSegmentGroup.id)\
@@ -718,6 +743,8 @@ class ExportableReporter(object):
             # Productはsales_segment_idとsales_segment_group_idの両方を持つ
             # SalesSegmentはperformance_idを持つ
 
+        if self.performance_ids:
+            q = q.filter(Performance.id.in_(self.performance_ids))
         if self.performance_codes:
             q = q.filter(Performance.code.in_(self.performance_codes))
 
@@ -731,8 +758,8 @@ class ExportableReporter(object):
         for r in self.make_query().all():
             if not r.Stock.id in by_stock:
                 by_stock[r.Stock.id] = dict(stock=r.Stock, available=r.Stock.quantity, data=[ ])
-            if r.SalesSegmentGroup.reporting:
-                # レポート出力設定されている販売区分グループのみ掲載(クエリで絞りこむと合計がずれる!)
+            if self.without_filter or (r.SalesSegmentGroup.reporting and r.SalesSegment.reporting):
+                # レポート出力設定されている販売区分のみ掲載(クエリで絞りこむと合計がずれる!)
                 by_stock[r.Stock.id]['data'].append(r)
             by_stock[r.Stock.id]['available'] = by_stock[r.Stock.id]['available'] - r.ordered
 
@@ -777,6 +804,10 @@ class ExportableReporter(object):
             ElementTree.SubElement(rec, 'SalesSegment').text = r.SalesSegmentGroup.name
             ElementTree.SubElement(rec, 'UnitPrice').text = "%u" % r.ProductItem.price
             ElementTree.SubElement(rec, 'NumberOfPaidSeats').text = "%u" % r.paid
+            if 0 < r.paid:
+                ordered = ElementTree.SubElement(rec, 'Ordered')
+                ElementTree.SubElement(ordered, 'from').text = r.paid_from.strftime('%Y-%m-%d') if r.paid_from is not None else None
+                ElementTree.SubElement(ordered, 'to').text = r.paid_to.strftime('%Y-%m-%d') if r.paid_to is not None else None
             ElementTree.SubElement(rec, 'MarginRatio').text = "%.2f" % r.SalesSegment.margin_ratio
             ElementTree.SubElement(rec, 'PrintingFee').text = "%.2f" % r.SalesSegment.printing_fee
             root.append(rec)

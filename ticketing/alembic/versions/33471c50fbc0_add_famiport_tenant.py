@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""add_amiport_tenant
+"""add_famiport_tenant
 
 Revision ID: 33471c50fbc0
 Revises: c35141f8f11

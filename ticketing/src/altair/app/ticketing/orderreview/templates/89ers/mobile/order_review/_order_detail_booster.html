@@ -1,7 +1,7 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 ${order.order_no}
-% if order.status == 'canceled' or order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <hr/>
 <font size="-2">
@@ -12,6 +12,7 @@ ${order.order_no}
 </font>
 <br/>
 <hr/>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
 %else:
 <%
 pm = dict((p[0], dp[1]) for p, dp in order.get_order_attribute_pair_pairs(request, mode='orderreview'))

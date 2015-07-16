@@ -72,7 +72,7 @@
     </table>
   </div>
   <% shipping =order.shipping_address %>
-  % if order.status == 'canceled' or order.payment_status == 'refunded':
+  % if order.status == 'canceled':
   <div class="section">
     <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
     <p>キャンセル処理は、下記のような理由によりおこなっております。</p>
@@ -82,6 +82,7 @@
       <li>二重注文により、ひとつをキャンセル処理したため</li>
     </ul>
   </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
   % else:
   <div class="_2columns">
     <div class="column section">

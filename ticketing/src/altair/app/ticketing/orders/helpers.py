@@ -139,11 +139,20 @@ def error_level_to_html(request, error_level):
     label = u''
     style = u''
     if error_level > IMPORT_WARNING:
+        return render_error_label(request, 'error')
+    else:
+        return render_error_label(request, 'warning')
+
+def render_error_label(request, kind):
+    if kind == 'error': 
         label = u'エラー'
         style = u'label-important'
-    else:
+    elif kind == 'warning':
         label = u'警告'
         style = u'label-warning'
+    else:
+        label = u'不明'
+        style = u'label'
     return Markup(
         u'<span class="label {style}">{label}</span>'.format(
             style=style,

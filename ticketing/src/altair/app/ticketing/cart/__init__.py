@@ -18,6 +18,7 @@ from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 from altair.mobile import PC_ACCESS_COOKIE_NAME
 
 from .interfaces import ICartResource
+from .exceptions import CartException
 from ..api.impl import bind_communication_api ## cmsとの通信
 
 logger = logging.getLogger(__name__)
@@ -169,7 +170,10 @@ def decide_auth_types(request, classification):
     if hasattr(request, 'context'):
         context = request.context
         if ICartResource.providedBy(context):
-            return context.cart_setting.auth_types
+            try:
+                return context.cart_setting.auth_types
+            except CartException:
+                pass
     return []
 
 def setup_nogizaka_auth(config):

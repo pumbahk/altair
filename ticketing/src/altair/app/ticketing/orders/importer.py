@@ -303,7 +303,6 @@ class ImportCSVParserContext(object):
         self.payment_methods = {}
         self.delivery_methods = {}
         self.date_time_formatter = create_date_time_formatter(request)
-        self.previous_attributes = {}
 
     def parse_int(self, string, message):
         if string is not None:
@@ -345,7 +344,6 @@ class ImportCSVParserContext(object):
         # create TemporaryCart
         cart = self.carts.get(order_no_or_key)
         if cart is None:
-            self.previous_attributes = attributes
             membership, membergroup, user = self.get_user(row)
             note = re.split(ur'\r\n|\r|\n', row.get(u'order.note', u'').strip())
             # SalesSegment, PaymentDeliveryMethodPair
@@ -529,7 +527,7 @@ class ImportCSVParserContext(object):
                 attributes            = attributes
                 )
         else:
-            if attributes is not None and self.previous_attributes != attributes:
+            if attributes is not None and cart.attributes != attributes:
                 raise self.exc_factory(u'同じキーを持つエントリの間で属性値に相違があります')
 
         return cart

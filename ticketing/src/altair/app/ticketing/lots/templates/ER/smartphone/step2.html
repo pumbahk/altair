@@ -1,4 +1,33 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
 <%block name="javascript">
     <script type="text/javascript">
     $(document).ready(function(){
@@ -226,15 +255,24 @@ ${self.error(form, 'sex')}
 </p>
 </dd>
 
-<dt class="creditHl">メモ欄</dt>
 <dd>
-<p>
-${form['memo'](style="width: 98%")} ${self.error(form, 'error')}
-<div style="font-size: 90%;">
-※ご質問を入力されても返信はいたしかねます。<br>
-ご質問は下記のお問い合わせ先よりお願いいたします。
-</div>
-</p>
+<dt class="creditHl">旅行券の引換に関して</dt>
+    <dd style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
+  ・未定の場合は『未定』をご選択ください。<br/>
+  ・なお、引換場所は、当選後に<a href="https://ehime.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集することが可能です。<br/>
+  ・引換場所が決定した際は<a href="https://ehime.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集ください。
+</dd>
+
+% for field in form['extra']._contained_form:
+% if not field.short_name in {'member_type'}:
+<dt class="creditHl">${field.label}</dt>
+<dd>
+  <p>
+    ${render_field(field)}
+  </p>
+</dd>
+% endif
+% endfor
 </dd>
 
 

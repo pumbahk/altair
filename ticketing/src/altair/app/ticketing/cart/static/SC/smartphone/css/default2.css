@@ -1093,3 +1093,38 @@ input[type="submit"] {
 .settlementNotice p {
 	margin: 0 0;
 }
+
+/** カートのヘッダーリンク **/
+/*
+a:link.headerLink {
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:visited.headerLink {
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:hover.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:focus.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+}
+a:active.headerLink {
+    font-size: 16px;
+    font-weight: bold;
+}
+*/
+
+/** カートのフッター **/
+.footerCopy li {
+    list-style: outside none none;
+    line-height: 1.0em;
+}

@@ -25,6 +25,11 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/copy/' + id);
   }
+  function many_copy_performance() {
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/manycopy/' + id);
+  }
   function mail_info(){
     var id = get_id('performance_id');
     if (!id) return;
@@ -40,6 +45,18 @@
     var modal = '#modal-performance-open';
     var form = '#performance-open-form';
     var url = '/events/performances/open/' + id;
+    post_modal_form(modal, form, url);
+  }
+  function confirm_open_event(id, public){
+    var modal = '#modal-event-open';
+    var form = '#event-open-form';
+    var url = '/events/open/' + id + '/' + public;
+    get_modal_form(modal, form, url);
+  }
+  function open_event(id, public){
+    var modal = '#modal-event-open';
+    var form = '#event-open-form';
+    var url = '/events/open/' + id + '/' + public;
     post_modal_form(modal, form, url);
   }
 </script>
@@ -71,16 +88,23 @@
       url='javascript:copy_performance();',
       icon='icon-plus',
     ),
+    'manycopy':dict(
+      label=u'公演を複数コピー',
+      url='javascript:many_copy_performance();',
+      icon='icon-plus',
+    ),
     'mail': dict(
       label=u"メール付加情報",
       url="javascript:mail_info()",
       icon="icon-envelope",
     )
   }
-  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
+  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy', 'manycopy'])
 %>
 ${HH.action_button(actions, order)}
 
 ${delete_modal()}
 
 <div id="performance-open-form"></div>
+<div id="event-open-form"></div>
+<div id="event-close-form"></div>

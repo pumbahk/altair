@@ -13,6 +13,7 @@ import logging
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
 from sqlalchemy import sql
+from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
@@ -21,6 +22,7 @@ from pyramid.url import route_path
 from pyramid.response import Response
 from pyramid.path import AssetResolver
 from paste.util.multidict import MultiDict
+from pyramid.renderers import render_to_response
 
 from altair.sqlahelper import get_db_session
 from altair.sqla import new_comparator
@@ -39,7 +41,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data, set_visible_event, set_invisible_event
 from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
-from .forms import EventForm, EventSearchForm
+from .forms import EventForm, EventSearchForm, EventPublicForm
 from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
 logger = logging.getLogger()
@@ -128,6 +130,9 @@ class Events(BaseView):
             url=PageURL_WebOb_Ex(self.request)
         )
 
+        if self.request.params.get('format') == 'xml':
+            return self.index_xml(query, 50)
+
         return {
             'form_search': form_search,
             'form':EventForm(context=self.context),
@@ -135,6 +140,32 @@ class Events(BaseView):
             'search_query':search_query,
             'h':EventHelper()
         }
+
+    def index_xml(self, query, limit=50):
+        import xml.etree.ElementTree as ElementTree
+        from pyramid.response import Response
+
+        query = query.add_columns(
+            func.count(Performance.id).label("count"),
+            func.min(Performance.start_on).label("start_from"),
+            func.max(Performance.start_on).label("start_to"),
+        )\
+        .join(Performance, and_(Event.id==Performance.event_id, Performance.deleted_at==None))\
+        .group_by(Event.id)
+        
+        root = ElementTree.Element('Result')
+        for r in query.limit(limit).all():
+            event = ElementTree.SubElement(root, 'Event')
+            ElementTree.SubElement(event, 'id').text = str(r.Event.id)
+            ElementTree.SubElement(event, 'Code').text = r.Event.code
+            ElementTree.SubElement(event, 'Title').text = r.Event.title
+            performance = ElementTree.SubElement(event, 'Performance')
+            ElementTree.SubElement(performance, 'count').text = str(r.count)
+            datetime = ElementTree.SubElement(performance, 'DateTime')
+            ElementTree.SubElement(datetime, 'from').text = str(r.start_from)
+            ElementTree.SubElement(datetime, 'to').text = str(r.start_to)
+
+        return Response(ElementTree.tostring(root), headers=[ ('Content-Type', 'text/xml') ])
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
@@ -152,7 +183,8 @@ class Events(BaseView):
         performances = slave_session.query(Performance) \
             .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id == event_id) \
-            .order_by(Performance.display_order)
+            .order_by(Performance.display_order) \
+            .order_by("Performance.start_on asc")
 
         from altair.app.ticketing.events.performances import VISIBLE_PERFORMANCE_SESSION_KEY
         if not self.request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY, None):
@@ -374,3 +406,59 @@ class Events(BaseView):
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+    @view_config(route_name='events.open', request_method='GET',renderer='altair.app.ticketing:templates/events/_form_open.html')
+    def open_get(self):
+        if 'event_id' not in self.request.matchdict or 'public' not in self.request.matchdict:
+            return HTTPNotFound('events.open GET matchdict parameter Fraud')
+
+        f = EventPublicForm()
+        f.event_id.data = self.request.matchdict['event_id']
+        f.public.data = self.request.matchdict['public']
+        f.public.data = 1 if f.public.data == 'true' else 0
+
+        slave_session = get_db_session(self.request, name="slave")
+        event = slave_session.query(Event).filter_by(id=f.event_id.data).first()
+
+        if not event:
+            return HTTPNotFound('events.open GET event not found')
+
+        return {
+            'form':f,
+            'event':event,
+        }
+
+    @view_config(route_name='events.open', request_method='POST',renderer='altair.app.ticketing:templates/events/_form_open.html')
+    def open_post(self):
+        if 'event_id' not in self.request.matchdict or 'public' not in self.request.matchdict:
+            return HTTPNotFound('events.open POST matchdict parameter Fraud')
+
+        f = EventPublicForm()
+        f.event_id.data = self.request.matchdict['event_id']
+        f.public.data = self.request.matchdict['public']
+        f.public.data = True if f.public.data == '1' else False
+
+        if f.validate():
+            event = Event.get(f.event_id.data, organization_id=self.context.user.organization_id)
+
+            if not event:
+                return HTTPNotFound('events.open POST event not found')
+
+            for perf in event.performances:
+                perf.public = f.public.data
+                perf.save()
+                logger.info("performance public changed %s (event_id=%s)" % (f.public.data, event.id))
+
+            if len(event.performances):
+                if f.public.data:
+                    self.request.session.flash(u'パフォーマンスを全て公開しました')
+                else:
+                    self.request.session.flash(u'パフォーマンスを全て非公開にしました')
+            else:
+                self.request.session.flash(u'パフォーマンスがありません')
+
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
+        return {
+            'form':f,
+        }

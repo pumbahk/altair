@@ -192,11 +192,19 @@
       %endfor
     </table>
   </div>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" value="入力情報の編集" />
+  </form>
+  % endif
 </div>
 % endif
 
 
-% if order.status == 'canceled' or order.payment_status == 'refunded':
+% if order.status == 'canceled':
   <div class="settlementBox2 OrderBox">
     <div class="settlementBoxInner2">
       <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
@@ -209,6 +217,7 @@
       </div>
     </div>
   </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
   <div class="settlementBox2 OrderBox">
     <div class="settlementBoxInner2">

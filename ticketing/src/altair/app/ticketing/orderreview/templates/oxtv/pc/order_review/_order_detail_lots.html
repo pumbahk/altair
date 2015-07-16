@@ -82,11 +82,19 @@
       </tbody>
     </table>
   </div>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" value="入力情報の編集" />
+  </form>
+  % endif
 </div>
 % endif
 
 <% shipping_address = order.shipping_address %>
-% if order.status == 'canceled' or order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <div class="section">
   <div class="section-inner">
     <p class="red" style="font-size: 20px; font-weight: bold">この注文はキャンセルされました</p>
@@ -97,6 +105,7 @@
       ・二重注文により、ひとつをキャンセル処理したため<br />
     </p>
   </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
 <div class="section">
   <h2>お支払</h2>

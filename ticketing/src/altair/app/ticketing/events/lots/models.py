@@ -420,6 +420,9 @@ SELECT
     UserProfile.birthday AS `プロフィールに設定されている誕生日`,
     LotEntry.channel AS `販売チャネル`,
     LotEntry.browserid AS `ブラウザID`,
+    Membership.name AS `会員種別名`,
+    MemberGroup.name AS `会員グループ名`,
+    UserCredential.auth_identifier AS `会員種別ID`,
     NULL
 FROM LotEntryWish
      JOIN LotEntry
@@ -471,6 +474,12 @@ FROM LotEntryWish
      LEFT JOIN LotRejectWork
      ON LotRejectWork.lot_id = Lot.id
      AND LotRejectWork.lot_entry_no = LotEntry.entry_no
+     LEFT JOIN Membership
+     ON LotEntry.membership_id=Membership.id AND Membership.deleted_at IS NULL
+     LEFT JOIN MemberGroup
+     ON LotEntry.membergroup_id=MemberGroup.id AND MemberGroup.deleted_at IS NULL
+     LEFT JOIN UserCredential
+     ON LotEntry.user_id=UserCredential.user_id AND LotEntry.membership_id=UserCredential.membership_id AND UserCredential.deleted_at IS NULL
 WHERE Lot.id = %s
      AND LotEntryWish.deleted_at IS NULL
 
@@ -518,6 +527,9 @@ WHERE Lot.id = %s
         u'プロフィールに設定されている誕生日',
         u'販売チャネル',
         u'ブラウザID',
+        u'会員種別名',
+        u'会員グループ名',
+        u'会員種別ID',
     )
 
     def __init__(self, session, lot_id):

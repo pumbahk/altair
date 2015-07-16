@@ -8,6 +8,8 @@ import lxml.html
 def strip_unnecessary_tags(unistr):
     if not unistr:
         return unistr
+    if not unistr.strip():
+        return unistr.strip()
     tree = lxml.html.fromstring(unistr)
     comment_nodes = []
     for elem in tree.iter():

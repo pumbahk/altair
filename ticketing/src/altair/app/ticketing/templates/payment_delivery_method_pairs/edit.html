@@ -31,8 +31,8 @@
     var issuing_interval_days_default = issuing_interval_days.val();
     var issuing_interval_days_changed = false;
     var is_edit = ${HH.json(is_edit)|n};
-    var default_sytem_fee = ${system_fee or 0};
-    var sytem_fee_type = ${HH.json(system_fee_type or 0)|n};
+    var default_system_fee = ${system_fee or 0};
+    var system_fee_type = ${HH.json(system_fee_type or 0)|n};
     var payment_method_data = ${HH.json(dict((int(pm.id), {'fee': unicode(pm.fee.quantize(0)), 'fee_type': pm.fee_type}) for pm in payment_methods))|n};
     var delivery_method_data = ${HH.json(dict((int(dm.id), {'fee_per_order': unicode(dm.fee_per_order.quantize(0)), 'fee_per_principal_ticket': unicode(dm.fee_per_principal_ticket.quantize(0)), 'fee_per_subticket': unicode(dm.fee_per_subticket.quantize(0))}) for dm in delivery_methods))|n};
 

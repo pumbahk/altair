@@ -34,6 +34,9 @@
         % endif
     % endif
 
+    <button class="btn btn-info btn-mini" type="button" onclick="javascript:confirm_open_event(${event.id}, true);">全て公開にする</button>
+    <button class="btn btn-warning btn-mini" type="button" onclick="javascript:confirm_open_event(${event.id}, false);">全て非公開にする</button>
+
     % if performances:
     <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
       <thead>

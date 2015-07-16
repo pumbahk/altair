@@ -202,6 +202,19 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.canceled_at==None, # キャンセルされていない
         )
 
+    @property
+    def query_not_sent_mail_entries(self):
+        """ メール未送信のエントリ """
+
+        return LotEntry.query.filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+            LotEntry.entry_no!=None,
+        ).filter(
+            LotEntry.ordered_mail_sent_at==None, # メール未送信
+            LotEntry.canceled_at==None, # キャンセルされていない
+        )
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
@@ -439,6 +452,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def accept_core_model_traverser(self, traverser):
         traverser.begin_lot(self)
         traverser.end_lot(self)
+
+    def delete(self):
+        self.deleted_at = datetime.now()
+        if self.lot_entry_report_settings:
+            for setting in self.lot_entry_report_settings:
+                setting.deleted_at = self.deleted_at
 
 
 lot_entry_user_point_account_table = sa.Table(
@@ -680,7 +699,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def cart_setting(self):
-        return self.lot.event.setting.cart_setting or self.organization.setting.cart_setting
+        return self.lot.event.setting.cart_setting or self.lot.event.organization.setting.cart_setting
 
 
 class LotEntryProductSupport(object):

@@ -2,14 +2,14 @@
 """add_famiport_ticket_template
 
 Revision ID: 51b5cda752e5
-Revises: 4ab26bf2ebf2
+Revises: 496e1d9bba37
 Create Date: 2015-07-01 18:08:04.023308
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '51b5cda752e5'
-down_revision = '4ab26bf2ebf2'
+down_revision = '496e1d9bba37'
 
 from alembic import op
 import sqlalchemy as sa

@@ -103,7 +103,8 @@ class PageResource(security.RootFactory):
             pageset.parent = form.data["parent"]
         if form.data["genre"]:
             pageset.genre = form.data["genre"]
-
+        if form.data["url"] is None or form.data["url"] == u'':
+            pageset.url = u''
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, form.data)
 

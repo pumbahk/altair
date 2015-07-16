@@ -19,6 +19,10 @@ old_stg =
     http://\1.stg.altr.jp\2
 
 [rewrite:admin]
+altair.ticketing.checkinstation =
+    http://backend.stg.altr.jp(/checkinstation(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.checkinstation.port}\1
+
 altair.ticketing.qrreader =
     http://backend.stg.altr.jp(/qrreader(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.qrreader.port}\1

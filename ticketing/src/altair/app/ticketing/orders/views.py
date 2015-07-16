@@ -178,6 +178,7 @@ class OrdersAPIView(BaseView):
 
         if formdata['event_id']:
             query = query.filter(Performance.event_id == formdata['event_id'])
+            query = asc_or_desc(query, Performance.start_on, 'asc')
         performances = [
             dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (
                 p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request, with_weekday=True)))
@@ -909,6 +910,7 @@ class OrdersRefundCreateView(OrderBaseView):
             del self.request.session['ticketing.refund.condition']
 
         form_search = OrderRefundSearchForm(organization_id=self.organization_id)
+        form_search.status.data = list(form_search.status.data or ()) + ['delivered']
         page = 0
         orders = []
 
@@ -928,16 +930,15 @@ class OrdersRefundCreateView(OrderBaseView):
             refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
-            query = Order.filter(Order.organization_id==self.organization_id)
             try:
                 builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)
                 query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
+                query._request = self.request # XXX
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
             if self.request.method == 'POST' and self.request.params.get('page', None) is None:
                 # 検索結果のOrder.idはデフォルト選択状態にする
-                query._request = self.request # XXX
                 checked_orders = set()
                 for order in query:
                     checked_orders.add('o:%s' % order.id)
@@ -1048,19 +1049,19 @@ class OrdersRefundSettingsView(OrderBaseView):
                 'form_refund':form_refund,
                 }
 
-        warnings = OrderedDict()
+        errors = OrderedDict()
         # 未発券のコンビニ払戻を警告
         from altair.app.ticketing.core.models import PaymentMethod
         refund_pm = PaymentMethod.query.filter_by(id=form_refund.payment_method_id.data).one()
         if refund_pm.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
             for order in orders:
                 if not order.is_issued():
-                    warnings_for_order = warnings.get(order.order_no, )
-                    if warnings_for_order is None:
-                        warnings_for_order = warnings[order.order_no] = []
-                    warnings_for_order.append(u'未発券の予約をコンビニ払戻しようとしています')
+                    errors_for_order = errors.get(order.order_no, )
+                    if errors_for_order is None:
+                        errors_for_order = errors[order.order_no] = []
+                    errors_for_order.append(dict(type='error', message=u'未発券の予約をコンビニ払戻しようとしています'))
         self.request.session['ticketing.refund.settings'] = form_refund.data
-        self.request.session['warnings'] = warnings
+        self.request.session['errors'] = errors
         return HTTPFound(location=self.request.route_path('orders.refund.confirm'))
 
 
@@ -1076,13 +1077,19 @@ class OrdersRefundConfirmView(OrderBaseView):
         from altair.app.ticketing.core.models import PaymentMethod
         refund_settings = self.request.session['ticketing.refund.settings']
         payment_method = PaymentMethod.query.filter_by(id=refund_settings['payment_method_id']).one()
-        warnings = [
-            (
-                Order.query.filter_by(order_no=order_no).one(),
-                warnings
-                )
-            for order_no, warnings in self.request.session['warnings'].items()
-            ]
+        errors_and_warnings = []
+        error_count = 0
+        warning_count = 0
+        for order_no, errors in self.request.session['errors'].items():
+            order = Order.query.filter_by(order_no=order_no).one()
+            errors_for_order = (order, [])
+            for error in errors:
+                if error['type'] == 'error':
+                    error_count += 1
+                elif error['type'] == 'warning':
+                    warning_count += 1
+                errors_for_order[1].append(error)
+            errors_and_warnings.append(errors_for_order)
         return dict(
             form_refund=OrderRefundForm(_data=refund_settings),
             form_search=OrderRefundSearchForm(
@@ -1091,13 +1098,17 @@ class OrdersRefundConfirmView(OrderBaseView):
                 ),
             payment_method=payment_method,
             is_sej=(payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID),
-            warnings=warnings,
+            errors_and_warnings=errors_and_warnings,
+            error_count=error_count,
+            warning_count=warning_count,
             **refund_settings
             )
 
-
     @view_config(route_name='orders.refund.confirm', request_method='POST')
     def post(self):
+        if self.request.session['errors']:
+            self.request.session.flash(u'払戻できません')
+            raise HTTPFound(location=self.request.route_path('orders.refund.settings'))
         # 払戻予約
         performances = []
         orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
@@ -1116,6 +1127,7 @@ class OrdersRefundConfirmView(OrderBaseView):
         send_refund_reserve_mail(self.request, refund, mail_refund_to_user, orders)
 
         del self.request.session['orders']
+        del self.request.session['errors']
         del self.request.session['ticketing.refund.settings']
         del self.request.session['ticketing.refund.condition']
 
@@ -1532,7 +1544,8 @@ class OrderDetailView(OrderBaseView):
             }))
         ## todo:validation?
         params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
-        OrderAttributeIO(include_undefined_items=True, mode='any').unmarshal(self.request, order, params)
+        for_ = 'lots' if order.created_from_lot_entry else 'cart'
+        OrderAttributeIO(include_undefined_items=True, mode='any', for_=for_).unmarshal(self.request, order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

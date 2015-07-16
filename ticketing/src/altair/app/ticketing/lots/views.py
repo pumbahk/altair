@@ -676,7 +676,14 @@ class LogoutView(object):
         self.context = context
         self.request = request
 
+    @lbr_view_config(request_method="GET", renderer=selectable_renderer("logout.html"))
+    def get(self):
+        return {}
+
     @lbr_view_config(request_method="POST")
     def post(self):
         cart_api.logout(self.request)
-        return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context._event_id, lot_id=self.context._lot_id) or self.context.host_base_url or "/", headers=self.request.response.headers)
+        if self.context.lot is not None:
+            return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context.lot.event.id, lot_id=self.context.lot.id), headers=self.request.response.headers)
+        else:
+            return HTTPFound(self.context.host_base_url or "/", headers=self.request.response.headers)

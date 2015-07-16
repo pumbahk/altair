@@ -240,6 +240,30 @@ class LotForm(Form):
 
         return lot
 
+    def _validate_terms(self):
+        ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
+        ss_start_at = self.start_at.data
+        ss_end_at = self.end_at.data
+        if self.use_default_start_at.data:
+            ss_start_at = ssg.start_at
+        if self.use_default_end_at.data:
+            ss_end_at = ssg.end_at
+
+        # 販売開始日時と販売終了日時の前後関係をチェックする
+        if ss_start_at is not None and ss_end_at is not None and ss_start_at > ss_end_at:
+            self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
+            self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+            return False
+
+        return True
+
+    def validate(self):
+        if super(LotForm, self).validate():
+            if not self._validate_terms():
+                return False
+
+            return True
+
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context')
         super(LotForm, self).__init__(*args, **kwargs)
