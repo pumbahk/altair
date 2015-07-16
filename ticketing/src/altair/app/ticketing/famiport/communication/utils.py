@@ -109,7 +109,7 @@ def hankaku2zenkaku(text):
     return jctconv.h2z(text, digit=True, ascii=True)
 
 
-def convert_famiport_kogyo_name_style(text, zenkaku=False, length=40, encoding='cp932', length_error=False):
+def convert_famiport_kogyo_name_style(text, zenkaku=True, length=40, encoding='cp932', length_error=False):
     """FamiPort用興行名変換処理"""
     if zenkaku:
         text = hankaku2zenkaku(text)
