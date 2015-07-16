@@ -781,7 +781,7 @@ class OrdersRefundIndexView(OrderBaseView):
 
     @view_config(route_name='orders.refund.index')
     def index(self):
-        form = OrderRefundForm()
+        form = OrderRefundForm(context=self.context)
         query = Refund.query.filter(
                 Refund.organization_id==self.context.organization.id
             ).options(
@@ -831,7 +831,7 @@ class OrdersRefundEditView(OrderBaseView):
         if refund is None:
             return HTTPNotFound()
 
-        f = OrderRefundForm(obj=refund, organization_id=self.context.organization.id)
+        f = OrderRefundForm(obj=refund, context=self.context)
         return dict(form=f, refund=refund)
 
     @view_config(route_name='orders.refund.edit', request_method='POST')
@@ -843,8 +843,8 @@ class OrdersRefundEditView(OrderBaseView):
 
         f = OrderRefundForm(
                 self.request.POST,
-                organization_id=self.context.organization.id,
-                orders=refund.orders
+                orders=refund.orders,
+                context=self.context
                 )
         if f.validate():
             refund = merge_session_with_post(refund, f.data)
@@ -865,7 +865,7 @@ class OrdersRefundDetailView(OrderBaseView):
         if refund is None:
             return HTTPNotFound()
 
-        form = OrderRefundForm()
+        form = OrderRefundForm(context=self.context)
         return dict(
             form=form,
             refund=refund,
@@ -1020,7 +1020,7 @@ class OrdersRefundSettingsView(OrderBaseView):
             data = {}
             if self.form_search.payment_method.data:
                 data['payment_method_id'] = self.form_search.payment_method.data
-        form_refund = OrderRefundForm(_data=data, organization_id=self.organization_id)
+        form_refund = OrderRefundForm(_data=data, context=self.context)
 
         return {
             'orders':self.checked_orders,
@@ -1038,7 +1038,7 @@ class OrdersRefundSettingsView(OrderBaseView):
         orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
         form_refund = OrderRefundForm(
             self.request.POST,
-            organization_id=self.organization_id,
+            context=self.context,
             orders=orders
         )
         if not form_refund.validate():
@@ -1091,7 +1091,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 errors_for_order[1].append(error)
             errors_and_warnings.append(errors_for_order)
         return dict(
-            form_refund=OrderRefundForm(_data=refund_settings),
+            form_refund=OrderRefundForm(_data=refund_settings, context=self.context),
             form_search=OrderRefundSearchForm(
                 MultiDict(self.request.session.get('ticketing.refund.condition', [])),
                 organization_id=self.context.organization.id
@@ -1288,7 +1288,7 @@ class OrderDetailView(OrderBaseView):
 
         f = OrderRefundForm(
             self.request.POST,
-            organization_id=self.context.organization.id,
+            context=self.context,
             orders=[order]
         )
         if f.validate():

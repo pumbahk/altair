@@ -819,24 +819,24 @@ class OrderReserveForm(Form):
 class OrderRefundForm(OurForm):
 
     def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
         super(type(self), self).__init__(*args, **kwargs)
-
-        organization_id = kwargs.get('organization_id')
-        if organization_id:
-            payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
-
-            self.payment_method_id.sej_plugin_id = []
-            for pm in payment_methods:
-                if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                    self.payment_method_id.sej_plugin_id.append(int(pm.id))
-
-            self.organization_id.data = organization_id
-
+        self.context = context
+        payment_methods = PaymentMethod.filter_by_organization_id(context.organization.id)
+        self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
         self.orders = kwargs.get('orders', [])
 
     def _get_translations(self):
         return Translations()
+
+    @property
+    def convenience_payment_method_ids(self):
+        payment_method_ids = []
+        payment_methods = PaymentMethod.filter_by_organization_id(self.context.organization.id)
+        for pm in payment_methods:
+            if pm.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
+                payment_method_ids.append(pm.id)
+        return payment_method_ids
 
     payment_method_id = SelectField(
         label=u'払戻方法',
@@ -906,9 +906,6 @@ class OrderRefundForm(OurForm):
         coerce=int,
     )
     id = HiddenField(
-        validators=[Optional()],
-    )
-    organization_id = HiddenField(
         validators=[Optional()],
     )
 
