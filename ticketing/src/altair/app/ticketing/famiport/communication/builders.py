@@ -233,7 +233,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                                     replyClass = ReplyClassEnum.PrepaymentOnly.value
                                 else:
                                     replyClass = ReplyClassEnum.Prepayment.value
-                                replyClass = ReplyClassEnum.Prepayment.value
                             else:
                                 replyCode = ReplyCodeEnum.AlreadyPaidError.value
                                 famiport_receipt = None
