@@ -110,6 +110,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
             start_at=datetime(2015, 1, 1, 10, 0, 0),
             end_at=datetime(2015, 1, 7, 23, 59, 59),
             send_back_due_at=datetime(2015, 2, 1),
+            client_code='00001',
             last_serial=0
             )
         refund_entry = FamiPortRefundEntry(
@@ -226,6 +227,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 start_at=datetime(2015, 1, 1, 10, 0, 0),
                 end_at=datetime(2015, 1, 7, 23, 59, 59),
                 send_back_due_at=date(2015, 2, 1),
+                client_code='00001',
                 last_serial=0
                 )
             for _ in range(0, 10)

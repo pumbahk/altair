@@ -23,6 +23,9 @@ class FamiPortAPIViewTest(TestCase):
         'altair.famiport.sales.stage.dir': '',
         'altair.famiport.sales.pending.dir': '',
         'altair.famiport.sales.sent.dir': '',
+        'altair.famiport.order_status_reflector.endpoint.completed': '',
+        'altair.famiport.order_status_reflector.endpoint.canceled': '',
+        'altair.famiport.order_status_reflector.endpoint.refunded': '',
         }
 
     def setUp(self):

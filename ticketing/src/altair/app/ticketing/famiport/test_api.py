@@ -890,6 +890,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     template=u'TTEV000001',
                     data=u'<ticket>test</ticket>',
                     price=500,
+                    userside_id=1,
                     logically_subticket=False
                     ),
                 dict(
@@ -898,6 +899,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     template=u'TTEV000001',
                     data=u'<ticket>test</ticket>',
                     price=500,
+                    userside_id=2,
                     logically_subticket=False
                     )
                 ],

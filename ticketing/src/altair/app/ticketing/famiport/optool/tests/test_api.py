@@ -843,17 +843,20 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.famiport_refund1 = FamiPortRefund(
             send_back_due_at=datetime(2015, 7, 1, 0, 0, 0),
             start_at=datetime(2015, 6, 1, 0, 0, 0),
-            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            end_at=datetime(2015, 6, 30, 23, 59, 59),
+            client_code=u'00001'
         )
         self.famiport_refund2 = FamiPortRefund(
             send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
             start_at=datetime(2015, 7, 1, 0, 0, 0),
-            end_at=datetime(2015, 7, 31, 23, 59, 59)
+            end_at=datetime(2015, 7, 31, 23, 59, 59),
+            client_code=u'00001'
         )
         self.famiport_refund3 = FamiPortRefund(
             send_back_due_at=datetime(2015, 9, 1, 0, 0, 0),
             start_at=datetime(2015, 8, 1, 0, 0, 0),
-            end_at=datetime(2015, 8, 31, 23, 59, 59)
+            end_at=datetime(2015, 8, 31, 23, 59, 59),
+            client_code=u'00001'
         )
         self.session.add(self.famiport_refund1)
         self.session.add(self.famiport_refund2)
@@ -1347,17 +1350,20 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
         self.famiport_refund1 = FamiPortRefund(
             send_back_due_at=datetime(2015, 7, 1, 0, 0, 0),
             start_at=datetime(2015, 6, 1, 0, 0, 0),
-            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            end_at=datetime(2015, 6, 30, 23, 59, 59),
+            client_code=u'00001'
         )
         self.famiport_refund2 = FamiPortRefund(
             send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
             start_at=datetime(2015, 7, 1, 0, 0, 0),
-            end_at=datetime(2015, 7, 31, 23, 59, 59)
+            end_at=datetime(2014, 7, 31, 23, 59, 59),
+            client_code=u'00001'
         )
         self.famiport_refund3 = FamiPortRefund(
             send_back_due_at=datetime(2015, 9, 1, 0, 0, 0),
             start_at=datetime(2015, 8, 1, 0, 0, 0),
-            end_at=datetime(2015, 8, 31, 23, 59, 59)
+            end_at=datetime(2015, 8, 31, 23, 59, 59),
+            client_code=u'00001'
         )
         self.session.add(self.famiport_refund1)
         self.session.add(self.famiport_refund2)

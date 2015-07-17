@@ -463,7 +463,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
-            client_code=None,
+            client_code=u'00000000000000000000001',
             famiport_order_identifier=None,
             type_=1,
             event_code_1='000001',
@@ -493,7 +493,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             update_famiport_order_by_order_no(
                 self.session,
                 order_no=u'XX000012345',
-                client_code=None,
+                client_code=u'00000000000000000000001',
                 famiport_order_identifier=None,
                 type_=1,
                 event_code_1='000001',
@@ -523,7 +523,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             update_famiport_order_by_order_no(
                 self.session,
                 order_no=u'XX000012346',
-                client_code=None,
+                client_code=u'00000000000000000000001',
                 famiport_order_identifier=None,
                 type_=2,
                 event_code_1='000001',
@@ -552,7 +552,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012346',
-            client_code=None,
+            client_code=u'00000000000000000000001',
             famiport_order_identifier=None,
             type_=2,
             event_code_1='000001',
