@@ -35,6 +35,10 @@
   <h1>公演グループ「${altair_famiport_performance_group.name_1}」</h1>
 </div>
 
+<div>
+<a href="${request.route_path('events.famiport.performance_groups.item.edit', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}" class="btn">編集</a>
+</div>
+
 <table class="table">
   <tbody>
     <tr>
@@ -84,8 +88,8 @@
     <tr>
       <td rowspan="${rows}">${view.status_label(altair_famiport_performance.status)}</td>
       <td rowspan="${rows}">${altair_famiport_performance.code}</td>
-      <td rowspan="${rows}">${altair_famiport_performance.name}</td>
-      <td rowspan="${rows}">${altair_famiport_performance.performance.name}</td>
+      <td rowspan="${rows}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
+      <td rowspan="${rows}"><a href="${request.route_path('performances.show', performance_id=altair_famiport_performance.performance.id)}">${altair_famiport_performance.performance.name}</td>
   % for i, altair_famiport_sales_segment_pair in enumerate(altair_famiport_performance.altair_famiport_sales_segment_pairs):
     % if i > 0:
     </tr>

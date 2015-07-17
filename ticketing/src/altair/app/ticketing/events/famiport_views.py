@@ -14,6 +14,8 @@ from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPer
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortReflectionStatus, AltairFamiPortSalesSegmentPair
 from altair.app.ticketing.famiport.userside_api import build_famiport_performance_groups, submit_to_downstream
 
+from .famiport_forms import AltairFamiPortPerformanceGroupForm, AltairFamiPortPerformanceForm
+
 logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -50,6 +52,15 @@ class FamiPortView(BaseView):
         elif sales_channel == FamiPortSalesChannel.FamiPortAndWeb.value:
             label = u'FP+Web販売'
         return Markup(u'<span class="label">%s</span>' % label)
+
+    def performance_type_label(self, status):
+        if status == FamiPortPerformanceType.Normal.value:
+            label = u'標準'
+        elif status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
+            label = u'期間内有効'
+        else:
+            label = u'???'
+        return label
 
     @view_config(route_name='events.famiport.performance_groups.index', renderer=u'events/famiport/show.html')
     def show(self):
@@ -179,3 +190,139 @@ class FamiPortView(BaseView):
             event=event,
             altair_famiport_performance_group=altair_famiport_performance_group
             )
+
+    @view_config(route_name='events.famiport.performance_groups.item.edit', renderer='events/famiport/performance_groups/edit.html', request_method='GET')
+    def edit_performance_group(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
+        altair_famiport_performance_group = self.slave_session.query(AltairFamiPortPerformanceGroup).filter_by(organization_id=self.context.organization.id, event_id=event.id, id=altair_famiport_performance_group_id).one()
+        form = AltairFamiPortPerformanceGroupForm(
+            context=self.context,
+            _data=dict(
+                name_1=altair_famiport_performance_group.name_1,
+                name_2=altair_famiport_performance_group.name_2,
+                sales_channel=altair_famiport_performance_group.sales_channel,
+                genre_code=altair_famiport_performance_group.genre_1_code + \
+                    (u'-%s' % altair_famiport_performance_group.genre_2_code
+                     if altair_famiport_performance_group.genre_2_code
+                     else u''),
+                keywords=altair_famiport_performance_group.keywords,
+                search_code=altair_famiport_performance_group.search_code
+                )
+            )
+        return dict(
+            event=event,
+            form=form
+            )
+
+    @view_config(route_name='events.famiport.performance_groups.item.edit', renderer='events/famiport/performance_groups/edit.html', request_method='POST')
+    def edit_performance_group_post(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
+        altair_famiport_performance_group = self.session.query(AltairFamiPortPerformanceGroup).filter_by(organization_id=self.context.organization.id, event_id=event.id, id=altair_famiport_performance_group_id).one()
+        form = AltairFamiPortPerformanceGroupForm(
+            formdata=self.request.POST,
+            context=self.context
+            )
+        if not form.validate():
+            return dict(
+                event=event,
+                form=form
+                )
+        genre_1_code, _, genre_2_code = form.genre_code.data.partition(u'-')
+        if genre_2_code == u'':
+            genre_2_code = None
+        altair_famiport_performance_group.name_1 = form.name_1.data
+        altair_famiport_performance_group.name_2 = form.name_2.data
+        altair_famiport_performance_group.genre_1_code = genre_1_code
+        altair_famiport_performance_group.genre_2_code = genre_2_code
+        altair_famiport_performance_group.keywords = form.keywords.data
+        altair_famiport_performance_group.search_code = form.search_code.data
+        return HTTPFound(location=self.request.route_path('events.famiport.performance_groups.item.show', event_id=event_id, altair_famiport_performance_group_id=altair_famiport_performance_group_id))
+
+    @view_config(route_name='events.famiport.performances.item.show', renderer='events/famiport/performances/show.html')
+    def show_performance(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
+        altair_famiport_performance_id = self.request.matchdict['altair_famiport_performance_id']
+        altair_famiport_performance = self.slave_session \
+            .query(AltairFamiPortPerformance) \
+            .join(AltairFamiPortPerformance.altair_famiport_performance_group) \
+            .filter(
+                AltairFamiPortPerformanceGroup.organization_id == self.context.organization.id,
+                AltairFamiPortPerformanceGroup.event_id == event.id,
+                AltairFamiPortPerformance.altair_famiport_performance_group_id == altair_famiport_performance_group_id,
+                AltairFamiPortPerformance.id == altair_famiport_performance_id
+                ).one()
+        return dict(
+            event=event,
+            altair_famiport_performance=altair_famiport_performance
+            )
+
+    @view_config(route_name='events.famiport.performances.item.edit', renderer='events/famiport/performances/edit.html', request_method='GET')
+    def edit_performance(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
+        altair_famiport_performance_id = self.request.matchdict['altair_famiport_performance_id']
+        altair_famiport_performance = self.slave_session \
+            .query(AltairFamiPortPerformance) \
+            .join(AltairFamiPortPerformance.altair_famiport_performance_group) \
+            .filter(
+                AltairFamiPortPerformanceGroup.organization_id == self.context.organization.id,
+                AltairFamiPortPerformanceGroup.event_id == event.id,
+                AltairFamiPortPerformance.altair_famiport_performance_group_id == altair_famiport_performance_group_id,
+                AltairFamiPortPerformance.id == altair_famiport_performance_id
+                ).one()
+        form = AltairFamiPortPerformanceForm(
+            context=self.context,
+            _data=dict(
+                type=altair_famiport_performance.type,
+                name=altair_famiport_performance.name,
+                searchable=altair_famiport_performance.searchable,
+                start_at=altair_famiport_performance.start_at,
+                ticket_name=altair_famiport_performance.ticket_name
+                )
+            )
+        return dict(
+            event=event,
+            altair_famiport_performance=altair_famiport_performance,
+            form=form
+            )
+
+    @view_config(route_name='events.famiport.performances.item.edit', renderer='events/famiport/performances/edit.html', request_method='POST')
+    def edit_performance_post(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
+        altair_famiport_performance_id = self.request.matchdict['altair_famiport_performance_id']
+        altair_famiport_performance = self.session \
+            .query(AltairFamiPortPerformance) \
+            .join(AltairFamiPortPerformance.altair_famiport_performance_group) \
+            .filter(
+                AltairFamiPortPerformanceGroup.organization_id == self.context.organization.id,
+                AltairFamiPortPerformanceGroup.event_id == event.id,
+                AltairFamiPortPerformance.altair_famiport_performance_group_id == altair_famiport_performance_group_id,
+                AltairFamiPortPerformance.id == altair_famiport_performance_id
+                ).one()
+        form = AltairFamiPortPerformanceForm(
+            formdata=self.request.POST,
+            context=self.context
+            )
+        if not form.validate():
+            return dict(
+                event=event,
+                altair_famiport_performance=altair_famiport_performance,
+                form=form
+                )
+        altair_famiport_performance.type = form.type.data
+        altair_famiport_performance.name = form.name.data
+        altair_famiport_performance.searchable = form.searchable.data
+        altair_famiport_performance.start_at = form.start_at.data
+        altair_famiport_performance.ticket_name = form.ticket_name.data
+        return HTTPFound(location=self.request.route_path('events.famiport.performances.item.show', event_id=event_id, altair_famiport_performance_id=altair_famiport_performance_id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id))
+
+

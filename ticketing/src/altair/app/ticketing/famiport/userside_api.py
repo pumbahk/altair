@@ -15,7 +15,7 @@ from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortReflectionStatus, AltairFamiPortSalesSegmentPair
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
-from .communication.utils import (
+from .utils import (
     convert_famiport_kogyo_name_style,
     validate_convert_famiport_kogyo_name_style,
     )

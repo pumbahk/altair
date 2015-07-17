@@ -1,4 +1,5 @@
 import json
+import re
 from wtforms import fields
 from wtforms.fields.core import _unset_value
 from wtforms.compat import iteritems
@@ -41,6 +42,7 @@ __all__ = [
     'SimpleElementNameHandler',
     'OurFormField',
     'JSONField',
+    'DelimitedTextsField',
     ]
 
 field_class_factory = make_class_factory(type)
@@ -343,3 +345,34 @@ class JSONField(fields.Field, RendererMixin, OurFieldMixin):
                 self.data = json.loads(valuelist[0])
             except (TypeError, ValueError):
                 raise ValueError(self.gettext('Invalid JSON value'))
+
+
+class DelimitedTextsField(fields.Field, RendererMixin, OurFieldMixin):
+    def _value(self):
+        if self.raw_data:
+            return self.raw_data[0]
+        elif self.data is not None:
+            return self.canonical_delimiter.join(self.data)
+        else:
+            return u''
+
+    def strip(self, value):
+        return re.sub(
+            self.delimiter_pattern + ur'$', u'',
+            re.sub(ur'^' + self.delimiter_pattern, u'', value)
+            )
+
+    def process_formdata(self, valuelist):
+        self.data = None
+        if valuelist:
+            try:
+                self.data = re.split(self.delimiter_pattern, self.strip(valuelist[0]))
+            except:
+                raise ValueError(self.gettext('Invalid string'))
+
+    def __init__(self, *args, **kwargs):
+        delimiter_pattern = kwargs.pop('delimiter_pattern')
+        canonical_delimiter = kwargs.pop('canonical_delimiter')
+        super(DelimitedTextsField, self).__init__(*args, **kwargs)
+        self.delimiter_pattern = delimiter_pattern
+        self.canonical_delimiter = canonical_delimiter

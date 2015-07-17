@@ -114,6 +114,7 @@ requires = [
     'altair.pyramid_dynamic_renderer',
     'altair.timeparse',
     'altair.mailhelpers',
+    'altair.jis',
     ]
 
 tests_require = [

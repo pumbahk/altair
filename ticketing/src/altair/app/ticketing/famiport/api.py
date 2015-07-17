@@ -827,3 +827,25 @@ def refund_order_by_order_no(
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
+
+@user_api
+def get_genre_1_list(request):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        return session.query(FamiPortGenre1.code, FamiPortGenre1.name).all()
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_genre_2_list(request):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        return session.query(FamiPortGenre2.genre_1_code, FamiPortGenre2.code, FamiPortGenre2.name).all()
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.0.1'
+version = '0.0'
 
 long_description = (
     open('README.txt').read()
@@ -14,7 +14,7 @@ long_description = (
     open('CHANGES.txt').read()
     + '\n')
 
-setup(name='altair.formhelpers',
+setup(name='altair.jis',
       version=version,
       description="",
       long_description=long_description,
@@ -26,22 +26,15 @@ setup(name='altair.formhelpers',
       keywords='',
       author='',
       author_email='',
-      url='',
+      url='https://github.com/ticketstar/altair',
       license='proprietary',
       packages=find_packages('src'),
       package_dir = {'': 'src'},
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
-      test_suite='altair.formhelpers.tests',
       install_requires=[
-          'setuptools>0.7',
-          'wtforms',
-          'pyramid',
-          'zope.deprecation',
-          'altair.viewhelpers',
-          'altair.dynpredicate',
-          'altair.jis',
+          'setuptools',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

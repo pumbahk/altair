@@ -206,7 +206,7 @@ class FamiPortReservedView(object):
             reserve_number=self.request.session.get('reserve_number'),
             auth_number=self.request.session.get('auth_number')
             )
-        if result['resultCode'] == '00':
+        if result['resultCode'] == u'00' and result['replyCode'] == u'00':
             self.request.session['inquiry_result'] = result
             if result['nameInput']:
                 return HTTPFound(self.request.route_path('service.reserved.name_entry')) 
@@ -291,7 +291,7 @@ class FamiPortReservedView(object):
                 tickets = [tickets]
             for ticket in tickets:
                 ticket['ticketData'] = etree.tostring(etree.parse(BytesIO(ticket['ticketData'].encode('CP932'))), encoding='unicode')
-        if result['resultCode'] == u'00':
+        if result['resultCode'] == u'00' and result['replyCode'] == u'00':
             store_payment_result(
                 self.request,
                 store_code=self.context.store_code,
@@ -398,7 +398,7 @@ class FamimaPosTicketingView(object):
             barcode_no=payment_result_dict['valid_barcode_no'],
             total_amount=payment_result_dict['total_amount']
             )
-        if result['resultCode'] == u'00':
+        if result['resultCode'] == u'00' and result['replyCode'] == u'00':
             payment_result = get_payment_result(
                 self.request, 
                 store_code=payment_result_dict['store_code'],
@@ -535,7 +535,7 @@ class FDCCenterTransactionServiceView(object):
                 order_id=order.order_id,
                 cancel_code=cancel_code
                 )
-            if result['resultCode'] != u'00':
+            if result['resultCode'] != u'00' or result['replyCode'] != u'00':
                 self.request.session.flash(u'[%s] エラーが発生しました (%s-%s)' % (order.id, result['resultCode'], result['replyCode']))
             else:
                 order.voided_at = self.context.now

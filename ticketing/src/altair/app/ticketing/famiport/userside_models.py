@@ -1,7 +1,11 @@
+# encoding: utf-8
+
 from enum import Enum
 from datetime import datetime, timedelta
 import sqlalchemy as sa
 from sqlalchemy import orm
+from altair.saannotation import AnnotatedColumn
+from pyramid.i18n import TranslationString as _
 from altair.models import MutationDict, JSONEncodedDict, LogicallyDeleted, Identifier, WithTimestamp
 from altair.app.ticketing.models import Base, BaseModel
 from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType
@@ -19,14 +23,14 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
         sa.UniqueConstraint('organization_id', 'site_id', 'famiport_venue_id'),
         )
    
-    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
-    site_id = sa.Column(Identifier, sa.ForeignKey('Site.id'), nullable=False)
-    famiport_venue_id = sa.Column(Identifier, nullable=False)
-    name  = sa.Column(sa.Unicode(50), nullable=False)
-    name_kana = sa.Column(sa.Unicode(100), nullable=False)
-    status = sa.Column(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
-    last_reflected_at = sa.Column(sa.DateTime(), nullable=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
+    organization_id = AnnotatedColumn(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
+    site_id = AnnotatedColumn(Identifier, sa.ForeignKey('Site.id'), nullable=False)
+    famiport_venue_id = AnnotatedColumn(Identifier, nullable=False)
+    name  = AnnotatedColumn(sa.Unicode(50), nullable=False)
+    name_kana = AnnotatedColumn(sa.Unicode(100), nullable=False)
+    status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
+    last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     organization = orm.relationship('Organization')
     site = orm.relationship('Site')
@@ -34,18 +38,18 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
 class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortPerformanceGroup'
 
-    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
-    event_id = sa.Column(Identifier, sa.ForeignKey('Event.id'), nullable=False)
-    code_1 = sa.Column(sa.Unicode(6), nullable=False)
-    code_2 = sa.Column(sa.Unicode(4), nullable=False)
-    name_1 = sa.Column(sa.Unicode(80), nullable=False, default=u'')
-    name_2 = sa.Column(sa.Unicode(80), nullable=False, default=u'')
-    sales_channel = sa.Column(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value)
-    altair_famiport_venue_id = sa.Column(Identifier, sa.ForeignKey('AltairFamiPortVenue.id'), nullable=False)
-    direct_sales_data = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)))
-    status = sa.Column(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
-    last_reflected_at = sa.Column(sa.DateTime(), nullable=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
+    organization_id = AnnotatedColumn(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
+    event_id = AnnotatedColumn(Identifier, sa.ForeignKey('Event.id'), nullable=False)
+    code_1 = AnnotatedColumn(sa.Unicode(6), nullable=False, _a_label=u'興行コード')
+    code_2 = AnnotatedColumn(sa.Unicode(4), nullable=False, _a_label=u'興行サブコード')
+    name_1 = AnnotatedColumn(sa.Unicode(80), nullable=False, default=u'', _a_label=u'興行名称1')
+    name_2 = AnnotatedColumn(sa.Unicode(80), nullable=False, default=u'', _a_label=u'興行名称2')
+    sales_channel = AnnotatedColumn(sa.Integer, nullable=False, default=FamiPortSalesChannel.FamiPortOnly.value, _a_label=u'販売種別')
+    altair_famiport_venue_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortVenue.id'), nullable=False)
+    direct_sales_data = AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16384)))
+    status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value, _a_label=u'状態')
+    last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True, _a_label=u'最終反映日時')
 
     altair_famiport_venue = orm.relationship('AltairFamiPortVenue', backref='altair_famiport_performance_groups')
     event = orm.relationship('Event')
@@ -79,6 +83,47 @@ class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
             end_at = datetime(2035, 12, 31, 23, 59, 59)
         return end_at
 
+    @property
+    def genre_1_code(self):
+        return self.direct_sales_data and self.direct_sales_data.get('genre_1_code')
+
+    @genre_1_code.setter
+    def genre_1_code(self, value):
+        if self.direct_sales_data is None:
+            self.direct_sales_data = {}
+        self.direct_sales_data['genre_1_code'] = value
+
+    @property
+    def genre_2_code(self):
+        return self.direct_sales_data and self.direct_sales_data.get('genre_2_code')
+
+    @genre_2_code.setter
+    def genre_2_code(self, value):
+        if self.direct_sales_data is None:
+            self.direct_sales_data = {}
+        self.direct_sales_data['genre_2_code'] = value
+
+    @property
+    def keywords(self):
+        return self.direct_sales_data and self.direct_sales_data.get('keywords')
+
+    @keywords.setter
+    def keywords(self, value):
+        if self.direct_sales_data is None:
+            self.direct_sales_data = {}
+        self.direct_sales_data['keywords'] = value
+
+    @property
+    def search_code(self):
+        return self.direct_sales_data and self.direct_sales_data.get('search_code')
+
+    @search_code.setter
+    def search_code(self, value):
+        if self.direct_sales_data is None:
+            self.direct_sales_data = {}
+        self.direct_sales_data['search_code'] = value
+
+
 
 class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortPerformance'
@@ -86,17 +131,17 @@ class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
         sa.UniqueConstraint('performance_id'),
         )
     
-    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    altair_famiport_performance_group_id = sa.Column(Identifier, sa.ForeignKey('AltairFamiPortPerformanceGroup.id', ondelete='CASCADE'), nullable=False)
-    code = sa.Column(sa.Unicode(3))
-    name = sa.Column(sa.Unicode(60))
-    type = sa.Column(sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value)
-    performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'), nullable=False)
-    searchable = sa.Column(sa.Boolean, nullable=False, default=True)
-    start_at = sa.Column(sa.DateTime(), nullable=True)
-    ticket_name = sa.Column(sa.Unicode(20), nullable=True)
-    status = sa.Column(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
-    last_reflected_at = sa.Column(sa.DateTime(), nullable=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
+    altair_famiport_performance_group_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortPerformanceGroup.id', ondelete='CASCADE'), nullable=False)
+    code = AnnotatedColumn(sa.Unicode(3), _a_label=u'公演コード')
+    name = AnnotatedColumn(sa.Unicode(60), _a_label=u'公演名称')
+    type = AnnotatedColumn(sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value, _a_label=u'公演種別')
+    performance_id = AnnotatedColumn(Identifier, sa.ForeignKey('Performance.id'), nullable=False)
+    searchable = AnnotatedColumn(sa.Boolean, nullable=False, default=True, _a_label=u'公演情報開示フラグ')
+    start_at = AnnotatedColumn(sa.DateTime(), nullable=True, _a_label=u'公演日時')
+    ticket_name = AnnotatedColumn(sa.Unicode(20), nullable=True, _a_label=u'チケット名称')
+    status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
+    last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     performance = orm.relationship('Performance')
     altair_famiport_performance_group = orm.relationship('AltairFamiPortPerformanceGroup')
@@ -105,17 +150,17 @@ class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
 class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortSalesSegmentPair'
 
-    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    altair_famiport_performance_id = sa.Column(Identifier, sa.ForeignKey('AltairFamiPortPerformance.id'), nullable=False)
-    code = sa.Column(sa.Unicode(3), nullable=False)
-    name = sa.Column(sa.Unicode(40), nullable=False)
-    seat_unselectable_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'), nullable=True)
-    seat_selectable_sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'), nullable=True)
-    published_at = sa.Column(sa.DateTime(), nullable=True)
-    auth_required = sa.Column(sa.Boolean, nullable=False, default=False)
-    auth_message = sa.Column(sa.Unicode(320), nullable=False, default=u'')
-    status = sa.Column(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
-    last_reflected_at = sa.Column(sa.DateTime(), nullable=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
+    altair_famiport_performance_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortPerformance.id'), nullable=False)
+    code = AnnotatedColumn(sa.Unicode(3), nullable=False)
+    name = AnnotatedColumn(sa.Unicode(40), nullable=False)
+    seat_unselectable_sales_segment_id = AnnotatedColumn(Identifier, sa.ForeignKey('SalesSegment.id'), nullable=True)
+    seat_selectable_sales_segment_id = AnnotatedColumn(Identifier, sa.ForeignKey('SalesSegment.id'), nullable=True)
+    published_at = AnnotatedColumn(sa.DateTime(), nullable=True)
+    auth_required = AnnotatedColumn(sa.Boolean, nullable=False, default=False)
+    auth_message = AnnotatedColumn(sa.Unicode(320), nullable=False, default=u'')
+    status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
+    last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     altair_famiport_performance = orm.relationship('AltairFamiPortPerformance', backref='altair_famiport_sales_segment_pairs')
     seat_unselectable_sales_segment = orm.relationship('SalesSegment', primaryjoin=(seat_unselectable_sales_segment_id==SalesSegment.id), foreign_keys=[seat_unselectable_sales_segment_id])
@@ -173,12 +218,12 @@ class AltairFamiPortNotificationType(Enum):
 class AltairFamiPortNotification(Base, WithTimestamp):
     __tablename__ = 'AltairFamiPortNotification'
 
-    id = sa.Column(Identifier, primary_key=True, autoincrement=True)
-    type = sa.Column(sa.Integer, nullable=False)
-    client_code = sa.Column(sa.Unicode(24), nullable=False)
-    order_no = sa.Column(sa.Unicode(12), nullable=False)
-    famiport_order_identifier = sa.Column(sa.Unicode(12), nullable=False)
-    payment_reserve_number = sa.Column(sa.Unicode(13), nullable=True)
-    ticketing_reserve_number = sa.Column(sa.Unicode(13), nullable=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
+    type = AnnotatedColumn(sa.Integer, nullable=False)
+    client_code = AnnotatedColumn(sa.Unicode(24), nullable=False)
+    order_no = AnnotatedColumn(sa.Unicode(12), nullable=False)
+    famiport_order_identifier = AnnotatedColumn(sa.Unicode(12), nullable=False)
+    payment_reserve_number = AnnotatedColumn(sa.Unicode(13), nullable=True)
+    ticketing_reserve_number = AnnotatedColumn(sa.Unicode(13), nullable=True)
 
-    reflected_at = sa.Column(sa.DateTime(), nullable=True, index=True)
+    reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True, index=True)
