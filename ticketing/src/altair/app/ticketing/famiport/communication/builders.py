@@ -292,8 +292,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
                 replyClass = str_or_blank(replyClass)
                 replyCode = ReplyCodeEnum.Normal.value
-            else:
-                resultCode = ResultCodeEnum.OtherError.value
 
             famiport_reservation_inquiry_response = FamiPortReservationInquiryResponse(
                 _request=famiport_reservation_inquiry_request,
