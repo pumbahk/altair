@@ -156,12 +156,6 @@ class LotForm(Form):
             NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY_LOTS, message=u'範囲外です'),
         ],
     )
-    seat_choice = BooleanField(
-        label=u"席選択可能",
-        validators=[
-            Required(),
-        ],
-    )
     auth3d_notice = TextAreaField(
         label=u'クレジットカード 3D認証フォーム 注記事項',
         validators=[Optional()],
@@ -201,7 +195,7 @@ class LotForm(Form):
             sales_segment.end_at=self.data['end_at']
 
         sales_segment.max_quantity=self.data['max_quantity']
-        sales_segment.seat_choice=self.data['seat_choice']
+        sales_segment.seat_choice=False
         sales_segment.account_id=sales_segment_group.account_id
         sales_segment.auth3d_notice=self.data['auth3d_notice']
 
@@ -212,7 +206,7 @@ class LotForm(Form):
         sales_segment = lot.sales_segment
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
         sales_segment.max_quantity=self.data['max_quantity']
-        sales_segment.seat_choice=self.data['seat_choice']
+        sales_segment.seat_choice=False
         sales_segment.auth3d_notice = self.data['auth3d_notice']
 
         sales_segment_group = sales_segment.sales_segment_group
