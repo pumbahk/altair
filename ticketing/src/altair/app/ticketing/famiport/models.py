@@ -1127,4 +1127,3 @@ class FamiPortReceiptAttribute(Base):
     famiport_receipt_id = sa.Column(Identifier, sa.ForeignKey('FamiPortReceipt.id'), nullable=False)
     name = sa.Column(sa.Unicode(64), nullable=False)
     value = sa.Column(sa.Unicode(1024), nullable=True)
-    

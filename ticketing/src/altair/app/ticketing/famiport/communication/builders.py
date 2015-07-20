@@ -492,13 +492,16 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 tickets = famiport_order.famiport_tickets
 
                 famiport_ticket_responses = []
-                if tickets:
+                if replyClass == ReplyClassEnum.Prepayment.value:  # 前払い後日発券の前払い時はチケット情報は不要
+                    pass
+                elif replyClass == ReplyClassEnum.PrepaymentOnly.value:  # 前払いのみの場合はチケット情報は1つのみ送る
+                    if tickets:
+                        ticket = tickets[0]
+                        ftr = self._create_famiport_ticket_response(ticket)
+                        famiport_ticket_responses.append(ftr)
+                else:  # それ以外ではチケット情報をすべて送る
                     for ticket in tickets:
-                        ftr = FamiPortTicketResponse()
-                        ftr.barCodeNo = ticket.barcode_number
-                        ftr.ticketClass = str(ticket.type)
-                        ftr.templateCode = ticket.template_code
-                        ftr.ticketData = u'<?xml version="1.0" encoding="Shift_JIS" ?>' + ticket.data
+                        ftr = self._create_famiport_ticket_response(ticket)
                         famiport_ticket_responses.append(ftr)
 
                 resultCode = str_or_blank(resultCode)
@@ -563,6 +566,14 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 storeCode=storeCode.zfill(6)
                 )
         return famiport_payment_ticketing_response
+
+    def _create_famiport_ticket_response(self, famiport_ticket):
+        ftr = FamiPortTicketResponse()
+        ftr.barCodeNo = famiport_ticket.barcode_number
+        ftr.ticketClass = str(famiport_ticket.type)
+        ftr.templateCode = famiport_ticket.template_code
+        ftr.ticketData = u'<?xml version="1.0" encoding="Shift_JIS" ?>' + famiport_ticket.data
+        return ftr
 
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
