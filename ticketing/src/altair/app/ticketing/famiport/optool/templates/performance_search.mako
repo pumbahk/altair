@@ -53,11 +53,11 @@
     <div class="col-md-3 text-center">
       <h4>公演検索結果</h4>
     </div>
-  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
     <div class="col-md-9 text-left">
       <h4>検索結果件数${paginator.item_count}件</h4>
     </div>
   </div>
+  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <table class="table table-hover">
     <thead>
       <tr>

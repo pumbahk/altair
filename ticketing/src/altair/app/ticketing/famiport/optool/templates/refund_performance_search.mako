@@ -53,6 +53,7 @@
       <h4>検索結果件数${paginator.item_count}件</h4>
     </div>
   </div>
+  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <table class="table table-hover">
     <thead>
       <tr>

@@ -66,6 +66,7 @@
       <h4>検索結果件数${paginator.item_count}件</h4>
     </div>
   </div>
+  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <% personal_info = request.context.user.has_perm_for_personal_info %>
   <a href="#" class="toggle-btn pull-right">残り項目表示</a>
   <table class="table table-hover">
