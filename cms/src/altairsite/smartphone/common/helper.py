@@ -238,15 +238,14 @@ class SmartPhoneHelper(object):
         helper = EventHelper()
         return helper.get_summary_salessegment_group(event)
 
-    def disp_period(self, open, close):
-        if open is not None and close is not None and \
-           (open.year == close.year and \
-            open.month == close.month and \
-            open.day == close.day):
-            period = self.disp_time(close)
+    def disp_period(self, open_time, close):
+        if open_time is not None and close is not None and \
+           (open_time.year == close.year and open_time.month == close.month and open_time.day == close.day):
+            period = self.disp_time(open_time)
         else:
+            # 公演日と、公演終了日が違う場合は、両方表示する
             period = u'%s〜%s' % (
-                self.disp_date_week(open) if open is not None else u'',
+                self.disp_date_week(open_time) if open_time is not None else u'',
                 self.disp_date_week(close) if close is not None else u'',
                 )
         return period
