@@ -257,7 +257,17 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
     altair_famiport_sales_segment_pair = get_altair_famiport_sales_segment_pair(order_like)
-    famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, client_code, altair_famiport_sales_segment_pair.id)
+    try:
+        famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, client_code, altair_famiport_sales_segment_pair.id)
+    except:
+        raise FamiPortPluginFailure(
+            u'cannot retrieve FamiPortSalesSegment with client_code=%s, altair_famiport_sales_segment_pair_id=%ld. perhaps sales information has not been set to the famiport-side database yet?' % (
+                client_code,
+                altair_famiport_sales_segment_pair.id
+                ),
+            order_no=order_like.order_no,
+            back_url=None
+            )
 
     return dict(
         client_code=client_code,
