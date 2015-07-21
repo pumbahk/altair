@@ -120,7 +120,7 @@ class Communicator(object):
             if result[c]:
                 result[c] = int(result[c])
 
-        if result['resultCode'] == '00':
+        if result['resultCode'] == '00' and result['replyCode'] == u'00':
             cd = FamiPortCrypt(result['barCodeNo'])
             for c in ['name']:
                 result[c] = cd.decrypt(result[c])
