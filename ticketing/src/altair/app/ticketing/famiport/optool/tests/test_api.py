@@ -1036,7 +1036,7 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
         self.shop_codes = (u'00001', u'00002', u'00003', u'00004')
         self.event_codes = (u'000001', u'000002')
         self.event_subcodes = (u'1111', u'2222')
-        self.performance_start_dates = (datetime(2015, 7, 1, 19, 0, 0), datetime(2015, 8, 1, 19, 0, 0))
+        self.performance_start_dates = (datetime.now() - timedelta(days=30), datetime.now() + timedelta(days=30)) # (datetime(2015, 7, 1, 19, 0, 0), datetime(2015, 8, 1, 19, 0, 0))
 
         self.famiport_shop1 = FamiPortShop(
             code=self.shop_codes[0],
@@ -1348,21 +1348,21 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
         self.session.add(self.famiport_order2)
 
         self.famiport_refund1 = FamiPortRefund(
-            send_back_due_at=datetime(2015, 7, 1, 0, 0, 0),
-            start_at=datetime(2015, 6, 1, 0, 0, 0),
-            end_at=datetime(2015, 6, 30, 23, 59, 59),
+            send_back_due_at=datetime.now() + timedelta(days=1),# datetime(2015, 7, 1, 0, 0, 0),
+            start_at=datetime.now() - timedelta(days=30), # datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime.now() - timedelta(days=1),
             client_code=u'00001'
         )
         self.famiport_refund2 = FamiPortRefund(
-            send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
-            start_at=datetime(2015, 7, 1, 0, 0, 0),
-            end_at=datetime(2014, 7, 31, 23, 59, 59),
+            send_back_due_at=datetime.now() + timedelta(days=5),
+            start_at=datetime.now() - timedelta(days=30),
+            end_at=datetime.now() + timedelta(days=1),
             client_code=u'00001'
         )
         self.famiport_refund3 = FamiPortRefund(
-            send_back_due_at=datetime(2015, 9, 1, 0, 0, 0),
-            start_at=datetime(2015, 8, 1, 0, 0, 0),
-            end_at=datetime(2015, 8, 31, 23, 59, 59),
+            send_back_due_at=datetime.now() + timedelta(days=60),
+            start_at=datetime.now() + timedelta(days=1),
+            end_at=datetime.now() + timedelta(days=30),
             client_code=u'00001'
         )
         self.session.add(self.famiport_refund1)
