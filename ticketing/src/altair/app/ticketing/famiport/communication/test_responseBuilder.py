@@ -1255,6 +1255,81 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result.kogyoName, u'7/1公演')
         self.assertEqual(result.koenDate, u'201507011900')
 
+    def test_cash_on_delivery_reissuing(self):
+        """代引"""
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100002',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340123',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result1 = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result1.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result1.replyClass, ReplyClassEnum.CashOnDelivery.value)
+        self.assertEqual(result1.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result1.storeCode, u'000009')
+        self.assertEqual(result1.sequenceNo, u'15052100002')
+        self.assertEqual(result1.barCodeNo, u'01234012340123')
+        self.assertEqual(result1.orderId, u'000011112223')
+        self.assertEqual(result1.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result1.playGuideName, u'チケットスター')
+        self.assertEqual(result1.orderTicketNo, u'01234012340123')
+        self.assertEqual(result1.exchangeTicketNo, u'')
+        self.assertEqual(result1.ticketingStart, u'')
+        self.assertEqual(result1.ticketingEnd, u'')
+        self.assertEqual(result1.totalAmount, u'00010540')
+        self.assertEqual(result1.ticketPayment, u'00010000')
+        self.assertEqual(result1.systemFee, u'00000324')
+        self.assertEqual(result1.ticketingFee, u'00000216')
+        self.assertEqual(result1.ticketCountTotal, u'2')
+        self.assertEqual(result1.ticketCount, u'2')
+        self.assertEqual(result1.kogyoName, u'7/1公演')
+        self.assertEqual(result1.koenDate, u'201507011900')
+
+        self.assertIsNotNone(self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at)
+
+        result2 = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result2.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result2.replyClass, '')
+        self.assertEqual(result2.replyCode, ReplyCodeEnum.SearchKeyError.value)
+
+        self.famiport_order_cash_on_delivery.make_reissueable(
+            datetime(2015, 5, 21, 0, 10, 0),
+            self.request
+            )
+
+        result3 = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result3.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result3.replyClass, ReplyClassEnum.CashOnDelivery.value)
+        self.assertEqual(result3.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result3.storeCode, u'000009')
+        self.assertEqual(result3.sequenceNo, u'15052100002')
+        self.assertEqual(result3.barCodeNo, u'01234012340123')
+        self.assertEqual(result3.orderId, u'000011112223')
+        self.assertEqual(result3.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result3.playGuideName, u'チケットスター')
+        self.assertEqual(result3.orderTicketNo, u'01234012340123')
+        self.assertEqual(result3.exchangeTicketNo, u'')
+        self.assertEqual(result3.ticketingStart, u'')
+        self.assertEqual(result3.ticketingEnd, u'')
+        self.assertEqual(result3.totalAmount, u'00010540')
+        self.assertEqual(result3.ticketPayment, u'00010000')
+        self.assertEqual(result3.systemFee, u'00000324')
+        self.assertEqual(result3.ticketingFee, u'00000216')
+        self.assertEqual(result3.ticketCountTotal, u'2')
+        self.assertEqual(result3.ticketCount, u'2')
+        self.assertEqual(result3.kogyoName, u'7/1公演')
+        self.assertEqual(result3.koenDate, u'201507011900')
+
+
+
 class FamiPortPaymentTicketingCompletionBuilderTest(unittest.TestCase, FamiPortResponseBuilderTestBase):
     # 発券完了
     def setUp(self):

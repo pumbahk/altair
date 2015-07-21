@@ -39,6 +39,16 @@ class FamiPortSalesChannel(Enum):
     FamiPortAndWeb  = 3
 
 
+class FamiPortVoidReason(Enum):
+    InvalidTicketData  =  1 # 券面XML不正
+    LogError           =  2 # 仮取引ログ出力失敗
+    DatabaseError      =  3 # アプリエラー（DBエラー）
+    MiddlewareError    =  4 # アプリエラー（ミドルウェアエラー）
+    UnexpectedError    =  5 # アプリエラー（予期しないエラー）
+    ThirtyMinutesVoid  = 10 # 30分VOID
+    Reissuing          = 99 # 再発券
+
+
 class HardcodedModel(object):
     class __metaclass__(type):
         def __new__(mcs, name, bases, d):
@@ -632,7 +642,6 @@ class FamiPortOrder(Base, WithTimestamp):
         primaryjoin=lambda: \
             (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & \
             FamiPortReceipt.is_payment_receipt & \
-            (FamiPortReceipt.void_at == None) & \
             (FamiPortReceipt.canceled_at == None)
         )
 
@@ -642,7 +651,6 @@ class FamiPortOrder(Base, WithTimestamp):
         primaryjoin=lambda:\
             (FamiPortOrder.id == FamiPortReceipt.famiport_order_id) & \
             FamiPortReceipt.is_ticketing_receipt & \
-            (FamiPortReceipt.void_at == None) & \
             (FamiPortReceipt.canceled_at == None)
         )
 
@@ -676,7 +684,7 @@ class FamiPortOrder(Base, WithTimestamp):
 
     def get_receipt(self, barcode_no):
         for receipt in self.famiport_receipts:
-            if receipt.completed_at is None and receipt.void_at is None and barcode_no == receipt.barcode_no:
+            if receipt.completed_at is None and barcode_no == receipt.barcode_no:
                 return receipt
 
     @property
@@ -726,16 +734,16 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already canceled' % (self.id, self.order_no))
         if any(famiport_receipt.completed_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; already paid / issued' % (self.id, self.order_no))
-        if any(famiport_receipt.payment_request_received_at is not None and famiport_receipt.void_at is None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
+        if any(famiport_receipt.payment_request_received_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; there are pending receipt(s)' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
-            if not famiport_receipt.void_at:
+            if not famiport_receipt.canceled_at:
                 famiport_receipt.mark_canceled(now, request, reason)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
         request.registry.notify(events.OrderCanceled(self, request))
 
-    def make_reissueable(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
+    def make_reissueable(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -745,22 +753,12 @@ class FamiPortOrder(Base, WithTimestamp):
         ticketing_famiport_receipt = None
         for famiport_receipt in self.famiport_receipts:
             if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value):
-                if famiport_receipt.completed_at is None:
-                    if famiport_receipt.void_at is None:
-                        assert ticketing_famiport_receipt is None
-                        ticketing_famiport_receipt = famiport_receipt
-                        famiport_receipt.mark_voided(now, request, reason, cancel_reason_code, cancel_reason_text)
-                else:
-                    if famiport_receipt.canceled_at is None:
-                        assert ticketing_famiport_receipt is None
-                        ticketing_famiport_receipt = famiport_receipt
-                        famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
-        session = object_session(self)
-        new_receipt = FamiPortReceipt.create(
-            session, self.famiport_client,
-            type=ticketing_famiport_receipt.type
-            )
-        self.famiport_receipts.append(new_receipt)
+                if famiport_receipt.completed_at is not None:
+                    logger.info('FamiPortReceipt(id=%ld).completed_at is set to None' % famiport_receipt.id)
+                    famiport_receipt.completed_at = None
+                assert ticketing_famiport_receipt is None
+                ticketing_famiport_receipt = famiport_receipt
+                famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
         self.issued_at = None
 
     def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
@@ -769,11 +767,7 @@ class FamiPortOrder(Base, WithTimestamp):
         if self.canceled_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
         for famiport_receipt in self.famiport_receipts:
-            if famiport_receipt.completed_at is None:
-                if famiport_receipt.void_at is None:
-                    famiport_receipt.mark_voided(now, request, reason, cancel_reason_code, cancel_reason_text)
-            else:
-                famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
+            famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
         self.add_receipts()
         self.paid_at = None
@@ -1018,36 +1012,31 @@ class FamiPortReceipt(Base, WithTimestamp):
         return shop.name if shop else u'-'
 
     def can_payment(self, now):
-        return self.inquired_at \
-            and not self.payment_request_received_at \
-            and not self.completed_at \
-            and not self.void_at
+        return self.inquired_at is not None\
+            and self.payment_request_received_at is None \
+            and self.completed_at is None
 
     def can_completion(self, now):
-        return self.inquired_at \
-            and self.payment_request_received_at \
-            and not self.completed_at \
-            and not self.void_at
+        return self.inquired_at is not None \
+            and self.payment_request_received_at is not None \
+            and self.completed_at is None
 
     def can_cancel(self, now):
-        return self.inquired_at \
-            and self.payment_request_received_at \
-            and not self.completed_at \
-            and not self.void_at
+        return self.inquired_at is not None\
+            and self.payment_request_received_at is not None \
+            and self.completed_at is None
 
     def can_rescue(self, now):
-        return self.inquired_at \
-            and self.payment_request_received_at \
-            and not self.completed_at \
-            and not self.void_at \
-            and not self.rescued_at
+        return self.inquired_at is not None \
+            and self.payment_request_received_at is not None \
+            and self.completed_at is None \
+            and self.rescued_at is None
 
     def can_auto_complete(self, now):
         return self.inquired_at is not None \
            and self.payment_request_received_at is not None \
            and self.rescued_at is None \
            and self.completed_at is None \
-           and self.void_at is None \
            and self.canceled_at is None \
            and self.payment_request_received_at <= now
 
@@ -1058,7 +1047,6 @@ class FamiPortReceipt(Base, WithTimestamp):
             .options(orm.joinedload(cls.famiport_order)) \
             .join(cls.famiport_order) \
             .filter(cls.reserve_number == reserve_number) \
-            .filter(cls.void_at == None) \
             .filter(FamiPortOrder.invalidated_at.is_(None)) \
             .one()
 
@@ -1069,7 +1057,6 @@ class FamiPortReceipt(Base, WithTimestamp):
             .options(orm.joinedload(cls.famiport_order)) \
             .join(cls.famiport_order) \
             .filter(cls.barcode_no == barcode_no) \
-            .filter(cls.void_at == None) \
             .filter(FamiPortOrder.invalidated_at.is_(None)) \
             .one()
 
@@ -1092,10 +1079,11 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def mark_voided(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.void_at is not None:
-            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
+            logger.info('FamiPortReceipt(id=%ld, reserve_number=%s) is already voided' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as voided' % (self.id, self.reserve_number))
         self.void_at = now
         self.void_reason = reason
+        self.payment_request_received_at = None
         self.cancel_reason_code = cancel_reason_code
         self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptVoided(self, request))

@@ -248,7 +248,6 @@ def mark_order_reissueable_by_order_no(
         request,
         session,
         order_no,
-        reason=None,
         cancel_reason_code=None,
         cancel_reason_text=None,
         client_code=None,
@@ -258,7 +257,7 @@ def mark_order_reissueable_by_order_no(
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
-    famiport_order.make_reissueable(now, request, reason, cancel_reason_code, cancel_reason_text)
+    famiport_order.make_reissueable(now, request, cancel_reason_code, cancel_reason_text)
 
 
 def make_suborder_by_order_no(
