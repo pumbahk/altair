@@ -163,7 +163,7 @@ class TicketDictListBuilder(object):
                 builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
-                retval.append((DummyToken(serial=i, seat=seat), d))
+                retval.append((DummyToken(serial=None, seat=seat), d))
         return retval
 
 
