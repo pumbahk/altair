@@ -7,6 +7,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -18,13 +19,14 @@ class DeliveryMethods(BaseView):
 
     @view_config(route_name='delivery_methods.index', renderer='altair.app.ticketing:templates/delivery_methods/index.html')
     def index(self):
-        sort = self.request.GET.get('sort', 'DeliveryMethod.id')
+        sort = self.request.GET.get('sort', 'DeliveryMethod.display_order')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         query = DeliveryMethod.filter_by(organization_id=self.context.user.organization_id)
-        query = query.order_by(sort + ' ' + direction)
+        query = query.order_by('DeliveryMethod.selectable desc') \
+                     .order_by(sort + ' ' + direction)
 
         delivery_methods = paginate.Page(
             query,
@@ -48,7 +50,8 @@ class DeliveryMethods(BaseView):
     def new_post(self):
         f = DeliveryMethodForm(self.request.POST)
         if f.validate():
-            delivery_method = merge_session_with_post(DeliveryMethod(), f.data)
+            delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode'})
+            delivery_method.preferences.setdefault('qr', {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
@@ -62,9 +65,12 @@ class DeliveryMethods(BaseView):
     @view_config(route_name='delivery_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def edit(self):
         delivery_method_id = long(self.request.matchdict.get('delivery_method_id', 0))
+        obj = DeliveryMethod.query.filter_by(id=delivery_method_id).one()
+        form = DeliveryMethodForm(obj=obj)
+        form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
         return {
-            'form': DeliveryMethodForm(obj=DeliveryMethod.query.filter_by(id=delivery_method_id).one()),
-        }
+            'form': form
+            }
 
     @view_config(route_name='delivery_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def edit_post(self):
@@ -75,7 +81,8 @@ class DeliveryMethods(BaseView):
 
         f = DeliveryMethodForm(self.request.POST)
         if f.validate():
-            delivery_method = merge_session_with_post(delivery_method, f.data)
+            delivery_method = merge_session_with_post(delivery_method, f.data, excludes={'single_qr_mode'})
+            delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 

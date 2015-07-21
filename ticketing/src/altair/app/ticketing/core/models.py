@@ -32,7 +32,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 
 from zope.deprecation import deprecation
-
+from altair.types import annotated_property
 from .exceptions import InvalidStockStateError, InvalidRefundStateError
 from .interfaces import (
     ISalesSegmentQueryable,
@@ -1945,8 +1945,25 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
 
-    # 引換票を表示しないオプション（SEJ専用）
-    hide_voucher = AnnotatedColumn(Boolean, default=False, _a_label=_(u'引換票を表示しない'))
+    # Backend内の表示制御項目
+    display_order = Column(Integer, default=0, nullable=False)
+    selectable = Column(Boolean, default=True, nullable=False)
+
+    preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
+    @property
+    def sej_preferences(self):
+        if self.preferences is None:
+            self.preferences = {}
+        return self.preferences.setdefault(unicode(plugins.SEJ_DELIVERY_PLUGIN_ID), {})
+
+    @annotated_property(label=_(u'引換票を表示しない'))
+    def hide_voucher(self):
+        return self.sej_preferences.get('hide_voucher', False)
+
+    @hide_voucher.setter
+    def hide_voucher(self, value):
+        self.sej_preferences['hide_voucher'] = value
 
     @property
     def fee(self):
@@ -2008,7 +2025,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def filter_by_organization_id(id):
-        return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
+        delivery_method = DeliveryMethod.filter(DeliveryMethod.organization_id == id) \
+                                        .filter('DeliveryMethod.selectable is True') \
+                                        .order_by('DeliveryMethod.selectable desc') \
+                                        .order_by('DeliveryMethod.display_order asc') \
+                                        .all()
+        return delivery_method
 
     def deliver_at_store(self):
         """

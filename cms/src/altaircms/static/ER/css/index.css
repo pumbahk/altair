@@ -907,6 +907,15 @@ html {  }
   float: left;
 }
 
+.panel.condensed img.thematic_big,
+.condensed .panel img.thematic_big {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #ccc;
+  margin: 0 5px 0 0;
+  float: left;
+}
+
 .panel.condensed p:first-child,
 .condensed .panel p:first-child,
 .panel.condensed p.first,

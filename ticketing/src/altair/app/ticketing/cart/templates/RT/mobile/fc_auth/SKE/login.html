@@ -1,0 +1,78 @@
+<html lang="ja">
+<head>
+  <title><%block name="title">楽天チケット　ログインページ</%block></title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/mobile/images/logo-small.gif')}" width="160" height="26" alt="楽天チケット" />
+  <hr size="2" noshade="noshade" color="#000000" />
+</div>
+<div>
+<%namespace file="../tags_mobile.html" name="mobile" />
+<%mobile:header>アイア SKE48 スペシャルライブ"一般席当選者"エントリー</%mobile:header>
+
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#FEBF00">■</font>I-SKY登録メールアドレス情報入力</font>
+</div>
+
+</div>
+<form action="${request.current_route_path()}" method="post">
+<div>
+  登録メールアドレス<br/>
+  <input type="text" name="username" value="" istyle="4"><br/>
+  %if message:
+  <br/><span style="color: red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
+  %endif
+
+  <input type="hidden" name="password" value="rakuten">
+</div>
+<input type="submit" value="申込に進む" />
+</form>
+</div>
+
+</p>
+<%mobile:rakuten_header>【登録メールアドレスに関して】</%mobile:rakuten_header>
+<div class="serialatt">
+I-SKYにご登録いただいているメールアドレスをご入力ください。それ以外のメールアドレスを入力しても認証されません。<br/>
+<span style="color:red">※携帯電話等の受信設定でドメイン指定受信を設定している方は、
+「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。</span>
+</div>
+
+<%mobile:rakuten_header>【対象公演】</%mobile:rakuten_header>
+<div class="serialatt">
+公演名：アイア SKE48 スペシャルライブ<br/>
+公演日：2015年7月22日(水)<br/>
+会場：AiiAシアター<br/>
+<span style="color:red;">※本公演は当選者限定のスペシャルライブとなります。</span><br/><br/>
+
+◆エントリー期間：2015年7月7日（火）12:00～7月11日（土）23:59<br/>
+◆エントリー完了案内・確認：2015年7月13日（月）夕方以降<br/>
+エントリー完了結果をメールにてお知らせ致します。<br/>
+◆入金期間：2015年7月13日（月）完了案内連絡後～7月15日（水）23:59<br/>
+但し、エントリー時に手数料等をクレジットカード決済した場合は入金の必要はありません。
+</div>
+<br/>
+
+<%mobile:rakuten_header>【お申込み時の注意事項　≪必ずご確認ください≫】</%mobile:rakuten_header>
+<div class="serialatt">
+※当エントリーは「楽天チケット」の抽選システムを利用しております。
+そのため、一部「抽選」の文言がございますが、お客様は既にご当選されておりますので、再抽選するようなことはございません。<br/>当選者の皆様の発券お申込み手続きになりますので、ご安心ください。<br/>
+※登録メールアドレス情報を不正に入力された場合、お申し込みを取り消す事がございます。<br/>
+※PC/スマートフォン/携帯にてエントリーしていただき、ライブ主催者側にて申込み者の情報を確認した上で、エントリー完了案内をメールにてご連絡させていただきます。<br/>
+※メールが届かない事により、エントリーが確認できない場合や、チケットのお受け取りが出来ない場合でも責任は負いかねます。<br/>
+なりすましメールのフィルター等の設定によって届かない事もございますので、メール受信の設定を事前にご確認お願いいたします。<br/>
+※お申し込み後に発行される受付番号(RT00000～)は、エントリーの確認の際などにも必要となります。必ずお控えください。<br/>
+［エントリー内容履歴確認］<a href="https://rt.tstar.jp/lots/review" target=”_blank”>https://rt.tstar.jp/lots/review</a>
+</div>
+
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2015 &copy; TicketStar, Inc. All rights reserved.</font></div>
+</div>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 ${order.order_no}
-% if order.status == 'canceled' and order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <hr/>
 <font size="-2">

@@ -34,10 +34,11 @@
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
     % if not form.errors:
-    <a href="javascript:open_performance(${performance.id});" class="btn btn-danger">
       % if performance.public:
+        <a href="javascript:open_performance(${performance.id});" class="btn btn-warning">
         非公開にする
       % else:
+        <a href="javascript:open_performance(${performance.id});" class="btn btn-info">
         公開する
       % endif
     </a>

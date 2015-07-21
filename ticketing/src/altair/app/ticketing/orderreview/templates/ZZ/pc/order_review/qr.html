@@ -21,7 +21,9 @@
   注文番号 ${order.order_no} <br />
   パフォーマンス ${performance.code} <br />
   <font size="5">興行日 ${performance.start_on}</font> <br />
-  <font size="5">商品名 ${product.name} (${product.id})</font> <br />
+  %if product:
+  <font size="5">商品名 ${product.name} (${product.id})</font><br />
+  %endif
   %if gate:
   <font size="5">入場ゲート ${gate}</font> <br />
   %endif

@@ -6,14 +6,10 @@ apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
 apmv2.1a.vpc.altr	userapp-usersite
 apmv2.1c.vpc.altr	userapp-usersite
-apmv3.1a.vpc.altr	userapp-cart
-apmv3.1c.vpc.altr	userapp-cart
 apmv4.1a.vpc.altr	userapp-usersite
 apmv4.1c.vpc.altr	userapp-usersite
 apmv5.1a.vpc.altr	userapp-cart
 apmv5.1c.vpc.altr	userapp-cart
-apmv6.1a.vpc.altr	userapp-cart
-apmv6.1c.vpc.altr	userapp-cart
 apmv7.1a.vpc.altr	userapp-cart
 apmv7.1c.vpc.altr	userapp-cart
 apmv8.1a.vpc.altr	userapp-cart
@@ -22,10 +18,6 @@ apmv9.1a.vpc.altr	userapp-cart
 apmv9.1c.vpc.altr	userapp-cart
 apmv10.1a.vpc.altr	userapp-cart
 apmv10.1c.vpc.altr	userapp-cart
-apmv11.1a.vpc.altr	userapp-cart
-apmv11.1c.vpc.altr	userapp-cart
-apmv12.1a.vpc.altr	userapp-cart
-apmv12.1c.vpc.altr	userapp-cart
 btmv1.1c.vpc.altr	batch
 wkmv1.1a.vpc.altr	worker
 wkmv1.1c.vpc.altr	worker

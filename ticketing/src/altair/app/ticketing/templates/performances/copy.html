@@ -1,0 +1,75 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script type="text/javascript">
+$(document).ready(function() {
+  var rowCount = ${len(forms)-1};
+
+  function deleteRow(obj){
+    $(obj.target).parent().parent().empty();
+    deleteTarget = $(obj.target).attr('deleteTarget');
+    if (rowCount > 0) {
+      --rowCount;
+    }
+  }
+  $('.deleteButton').click(deleteRow);
+
+  $('#addButton').click(function (){
+    ++rowCount;
+    $('#addList').append('\
+        <tr>\
+          <td>${origin_performance_form.name}</td>\
+          <td>${origin_performance_form.open_on}</td>\
+          <td>${origin_performance_form.start_on}</td>\
+          <td>${origin_performance_form.display_order}</td>\
+          <td><input deleteTarget="' + rowCount + '" class="deleteButton btn btn-primary" type="button" value="削除"></td>\
+        </tr>');
+    $('[deleteTarget = ' + rowCount+ ']').click(deleteRow);
+  });
+});
+</script>
+
+<div class="page-header">
+  <h1>複数公演コピー</h1>
+</div>
+
+<div class="well">
+  <h2>元にする公演</h2>
+  公演ID:${origin_performance.id}<br/>
+  公演名:${origin_performance.name}<br/>
+  会場:${origin_performance.venue.name}<br/>
+  公演日:${cart_helper.performance_datetime(origin_performance)}<br/>
+  表示順:${origin_performance.display_order}<br/>
+</div>
+
+<div class="well">
+  <input id="addButton" class="btn btn-primary" type="button" value="コピーする公演を追加">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    ${forms[0].id}
+    <table>
+      <thead>
+        <tr>
+          <td>公演名</td>
+          <td>開場時間(例:2015-01-01 17:00:00)</td>
+          <td>開演時間(例:2015-01-01 18:00:00)</td>
+          <td>表示順</td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody id="addList">
+        % for num, form in enumerate(forms):
+        <tr id="${num}">
+          <td>${form.name}</td>
+          <td>${form.open_on}</td>
+          <td>${form.start_on}</td>
+          <td>${form.display_order}</td>
+          <td><input deleteTarget="${num}" class="deleteButton btn btn-primary" type="button" value="削除"></td>
+        </tr>
+        % endfor
+      </tbody>
+    </table>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="コピーを実行する">
+    </div>
+  </form>
+</div>

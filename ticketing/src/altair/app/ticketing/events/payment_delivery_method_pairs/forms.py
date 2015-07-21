@@ -198,7 +198,7 @@ function enableFields(n, v) {
     function _(sn, v) {
         for (; sn != null; sn = sn.nextSibling) {
             if (sn.nodeType == document.ELEMENT_NODE) {
-                if (sn != n) {
+                if (sn != n && sn.nodeName.toUpperCase() != 'LABEL') {
                     if (v)
                         sn.removeAttribute('disabled');
                     else

@@ -8,6 +8,7 @@ from altair.app.ticketing.mails.interfaces import IMailRequest
 from . import api
 from .interfaces import ICartResource
 from .resources import PerformanceOrientedTicketingCartResource
+from .exceptions import CartException
 
 import logging
 
@@ -158,9 +159,13 @@ def get_cart_view_context_factory(default_package):
 def determine_layout(event):
     request = event.request
     if ICartResource.providedBy(request.context):
-        if api.is_booster_cart(request.context.cart_setting):
+        try:
+            cart_setting = request.context.cart_setting
+        except CartException:
+            cart_setting = request.organization.setting.cart_setting
+        if api.is_booster_cart(cart_setting):
             request.layout_manager.use_layout('booster')
-        elif api.is_fc_cart(request.context.cart_setting):
+        elif api.is_fc_cart(cart_setting):
             request.layout_manager.use_layout('fc')
 
 def includeme(config):

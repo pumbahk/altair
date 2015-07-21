@@ -4,7 +4,7 @@
     <tbody>
       <tr>
         <thead>
-          <th colspan="4">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</th>
+          <th colspan="4">${order.performance.event.title}</th>
         </thead>
       </tr>
       <tr>
@@ -83,11 +83,19 @@
     </tr>
     %endfor
   </table>      
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" value="入力情報の編集" />
+  </form>
+  % endif
 </div>
 % endif
 
 <% shipping_address = order.shipping_address %>
-% if order.status == 'canceled' and order.payment_status == 'refunded':
+% if order.status == 'canceled':
 <div class="section">
   <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
   <p>キャンセル処理は、下記のような理由によりおこなっております。</p>

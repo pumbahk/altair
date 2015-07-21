@@ -12,7 +12,8 @@
     <th>${ch.sortable(DeliveryMethod.fee_per_order)}</th>
     <th>${ch.sortable(DeliveryMethod.fee_per_principal_ticket)}</th>
     <th>${ch.sortable(DeliveryMethod.fee_per_subticket)}</th>
-    <th>${HH.label_text_for(DeliveryMethod.hide_voucher)}</th>
+    <th>${form.display_order.label}</th>
+    <th>${form.selectable.label}</th>
   </tr>
   </thead>
   <tbody>
@@ -20,7 +21,6 @@
   <tr id="delivery_method-${delivery_method.id}">
     <td>
       <input name="delivery_method_id" type="radio" value=${delivery_method.id} />
-      <input id="delivery_plugin_id" name="delivery_plugin_id" type="hidden" value=${delivery_method.delivery_plugin_id} />
       <span style="display: none;" class="delivery_method_description">${delivery_method.description or '' | n,x}</span>
   	</td>
     <td><span id="id">${delivery_method.id}</span></td>
@@ -28,7 +28,8 @@
     <td><span id="fee_per_order">${vh.price(delivery_method.fee_per_order)}</span></td>
     <td><span id="fee_per_principal_ticket" value="${delivery_method.fee_per_principal_ticket}">${vh.price(delivery_method.fee_per_principal_ticket)}</span></td>
     <td><span id="fee_per_subticket" value="${delivery_method.fee_per_subticket}">${vh.price(delivery_method.fee_per_subticket)}</span></td>
-    <td><span id="hide_voucher" value="${'y' if delivery_method.hide_voucher else ''}">${u'隠す' if delivery_method.hide_voucher else u'隠さない' }</span></td>
+    <td><span id="display_order">${delivery_method.display_order}</span></td>
+    <td><span id="selectable">${u'使用可' if delivery_method.selectable else u'使用不可'}</span></td>
   </tr>
   % endfor
   </tbody>

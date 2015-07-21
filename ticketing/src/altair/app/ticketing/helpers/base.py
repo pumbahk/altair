@@ -7,6 +7,7 @@ from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.schema import Column
 from datetime import datetime, date, time
 from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
+from altair.types import AnnotatedProperty
 
 date_time_formatter = DefaultDateTimeFormatter()
 date_time_helper = DateTimeHelper(date_time_formatter)
@@ -27,10 +28,15 @@ def label_text_for(misc):
         label = misc.label.text
     elif isinstance(misc, UnboundField):
         label = misc.kwargs.get('label')
+    elif isinstance(misc, AnnotatedProperty):
+        label = misc.__annotations__.get('label')
     else:
-        annotations = get_annotations_for(misc)
-        if annotations:
-            label = annotations.get('label')
+        try:
+            annotations = get_annotations_for(misc)
+            if annotations:
+                label = annotations.get('label')
+        except:
+            pass
     if label is None:
         raise ValueError('no label for %r' % misc)
     return label

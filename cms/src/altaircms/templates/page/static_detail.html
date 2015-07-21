@@ -10,6 +10,20 @@ h3{
 </style>
 </%block>
 
+% if active_page:
+  ${render_active_page()}
+% else:
+<div class="btn-group">
+  このページセットには、ページがありません。
+  削除してから、作成し直してください。
+  <a class="btn btn-danger"
+	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.route_path("pageset_list", pagetype=pagetype.name), pagetype=pagetype.name))}">
+    <i class="icon-trash"></i> 削除
+  </a>
+</div>
+% endif
+
+<%def name="render_active_page()">
 <div class="row-fluid">
     ${nco.breadcrumbs(
         names=["Top", "Page", active_page.name],
@@ -308,3 +322,4 @@ ${active_page.name}
 </script>
 
 </div>
+</%def>
