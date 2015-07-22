@@ -1881,14 +1881,28 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
 
-    # 払込票を表示しないオプション（SEJ専用）
-    hide_voucher = Column(Boolean, default=False)
-
     # Backend内の表示制御項目
     display_order = Column(Integer, default=0, nullable=False)
     selectable = Column(Boolean, default=True, nullable=False)
 
+    preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
     _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
+
+    @property
+    def sej_preferences(self):
+        if self.preferences is None:
+            self.preferences = {}
+        return self.preferences.setdefault(unicode(plugins.SEJ_PAYMENT_PLUGIN_ID), {})
+
+    @annotated_property(label=_(u'払込票を表示しない'))
+    def hide_voucher(self):
+        return self.sej_preferences.get('hide_voucher', False)
+
+    @hide_voucher.setter
+    def hide_voucher(self, value):
+        self.sej_preferences['hide_voucher'] = value
+
     @hybrid_property
     def payment_plugin(self):
         warn_deprecated("deprecated attribute `payment_plugin' is accessed")
@@ -1939,14 +1953,14 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
 
     delivery_plugin_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethodPlugin.id'), _a_label=_(u'引取方法'))
-    _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
-
 
     # Backend内の表示制御項目
     display_order = Column(Integer, default=0, nullable=False)
     selectable = Column(Boolean, default=True, nullable=False)
 
     preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
+    _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
     @property
     def sej_preferences(self):

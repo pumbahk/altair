@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from wtforms.validators import Length, Optional
-from wtforms.widgets import TextArea
 
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, OurDecimalField, OurHiddenField
