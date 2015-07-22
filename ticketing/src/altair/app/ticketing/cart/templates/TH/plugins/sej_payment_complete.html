@@ -1,4 +1,4 @@
-%if payment_method.hide_voucher:
+%if payment_method.hide_voucher or (payment_type == 'CashOnDelivery' and delivery_method.hide_voucher):
 当選の場合、お支払期日までにお支払頂きます。<br>
 お支払が確認できた時点で当選申込が確定となります。<br><br>各種手数料の他、公演によりシステム利用料がかかります。
 %else:
