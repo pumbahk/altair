@@ -1,14 +1,18 @@
 <%inherit file="../layout.html" />
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
-<%mobile:header>マイページ</%mobile:header>
-
-<h3>購入履歴照会</h3>
+<%mobile:header>購入履歴照会</%mobile:header>
 % if orders:
   ${render_orders(orders)}
 % else:
   購入履歴がありません。
 % endif
 
+<%mobile:header>抽選申込み照会</%mobile:header>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
 
 <%def name="render_shipping_address(shipping)">
 氏名（漢字）：
@@ -43,12 +47,47 @@ ${h.get_payment_status(order)}<br/>
 公演名：
 ${order.performance.name}<br/>
 公演開始時間：
-${h.japanese_datetime(order.performance.start_on)}<br/>
+% if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+    ${period}<br/>
+% else:
+    ${h.japanese_datetime(order.performance.start_on)}<br/>
+% endif
 会場名：
 ${order.performance.venue.name}
+<br/>
 <input type="submit" value="チケット詳細">
 </form>
 <hr/>
   % endfor
 ${render_pager(orders)}
 </%def>
+
+<%def name="render_lot_entries(lot_entries)">
+  % for entry in lot_entries:
+受付番号：
+${entry.entry_no}<br/>
+申込日時：
+${h.japanese_datetime(entry.created_at)}<br/>
+ステータス：
+${h.get_entry_status(request, entry)}<br/>
+抽選名称：
+${entry.lot.name}<br/>
+<form name="" action="/lots/review" method="POST">
+  <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+  <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+  % if not h.is_disabled_order(entry):
+  <input type="submit" value="抽選申込み内容詳細">
+  % endif
+</form>
+<hr/>
+  % endfor
+${render_pager(lot_entries)}
+</%def>
+
