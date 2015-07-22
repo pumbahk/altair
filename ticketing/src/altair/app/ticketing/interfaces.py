@@ -13,6 +13,9 @@ class ITicketingFormatter(Interface):
     def format_date_short(date):
         pass
 
+    def format_date_compressed(date):
+        pass
+
     def format_time(time):
         pass
 

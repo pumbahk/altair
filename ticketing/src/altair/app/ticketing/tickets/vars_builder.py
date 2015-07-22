@@ -315,6 +315,7 @@ class TicketDictBuilder(object):
             u'対戦名': performance.name,
             u'公演コード': performance.code,
             u'開催日': safe_format(self.formatter.format_date, performance.start_on),
+            u'開催日c': safe_format(self.formatter.format_date_compressed, performance.start_on),
             u'開催日s': safe_format(self.formatter.format_date_short, performance.start_on),
             u'開場時刻': safe_format(self.formatter.format_time, performance.open_on),
             u'開場時刻s': safe_format(self.formatter.format_time_short, performance.open_on),

@@ -23,6 +23,9 @@ class Japanese_Japan_Formatter(object):
     def format_weekday(self, weekday):
         return self.WEEK_NAMES[weekday]
 
+    def format_date_compressed(self, date):
+        return unicode(date.strftime('%Y年%0m月%0d日'), 'utf-8') + u'(%s)' % self.WEEK_NAMES[date.weekday()]
+
     def format_date_short(self, date):
         return unicode(date.strftime('%Y/%0m/%0d'), 'utf-8') + u' (%s)' % self.WEEK_NAMES[date.weekday()]
 
