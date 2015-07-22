@@ -1,4 +1,4 @@
-"""add_attributes_to_delivery_method
+"""add_preferences_to_delivery_method
 
 Revision ID: 585612b4453b
 Revises: 38e00b9843c3
