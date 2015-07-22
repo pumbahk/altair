@@ -73,7 +73,7 @@ var InfoService = {
     }, 
     get_uniq_id: function(e){
         return $(e).attr("cid");
-    }, 
+    },
     is_dropped_widget: function(e){
         return $(e).hasClass("dropped-widget");
     }, 
@@ -92,7 +92,8 @@ var DroppedWidget = Backbone.Model.extend({
             name: "dummy", 
             jname: "ダミー", 
             page_id: get_page(), 
-            data: {}
+            data: {},
+            detail: ""
         }
     }, 
     isNew: function(){
@@ -202,6 +203,11 @@ var WidgetDialogView = Backbone.View.extend({
             this.model.set("data", data);
             this.close_dialog();
             var self = this;
+
+            self.model.set("detail", "");
+            if ('freetext' in data) {
+                self.model.set("detail", _.escape(data['freetext']));
+            }
             this.model.save().done(function(data){
                 self.model.set("pk", data.pk) // pk
                 self.model.id = self.model.get("pk");
@@ -244,7 +250,7 @@ var DroppedWidgetView = (function(){
             }
         }, 
         template: _.template([
-            '<%= jname%>', 
+            '<%= jname%> <%= detail%>',
             '<a class="close"></a>', 
             '<a class="edit" rel="#overlay"></a>', 
         ].join("\n")), 
@@ -499,7 +505,7 @@ var BlockSheetView = Backbone.View.extend({
     }, 
     drop_from_palet: function(draggable, droppable){
         var block_name = InfoService.get_name(droppable);
-        var widget_name = InfoService.get_name(draggable)
+        var widget_name = InfoService.get_name(draggable);
         var dwmodel = new DroppedWidget({name: widget_name, jname: NameToJName[widget_name]});
         this.model.add(block_name, dwmodel);
     }, 
