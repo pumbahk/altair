@@ -142,7 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="configuration\ReleaseStageType.cs" />
-    <Compile Include="..\packages\DynamicJson.1.2.0.0\Contents\DynamicJson.cs" />
+    <Compile Include="..\packages\DynamicJson.1.2.0.0\Content\DynamicJson.cs" />
     <Compile Include="events\ConfirmAllEvent.cs" />
     <Compile Include="events\ConfirmOneEvent.cs" />
     <Compile Include="events\FailureEvent.cs" />
