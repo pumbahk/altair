@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C960DC6B-F04A-4582-9750-10FE58B8CD67}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>checkin_core</RootNamespace>
+    <AssemblyName>checkin-core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Printing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configurator.cs" />
+    <Compile Include="events\ConfirmListAllEvent.cs" />
+    <Compile Include="events\ConfirmListOneEvent.cs" />
+    <Compile Include="events\OneOrPartEvent.cs" />
+    <Compile Include="events\PartOrAllEvent.cs" />
+    <Compile Include="events\WelcomeEvent.cs" />
+    <Compile Include="FlowDefinitionType.cs" />
+    <Compile Include="flow\CaseConfirmListForPart.cs" />
+    <Compile Include="flow\CaseConfirmListForOne.cs" />
+    <Compile Include="flow\CaseOneOrPart.cs" />
+    <Compile Include="flow\CaseOrdernoConfirmAllHidden.cs" />
+    <Compile Include="flow\CaseQRConfirmForAllHidden.cs" />
+    <Compile Include="flow\CaseWelcome.cs" />
+    <Compile Include="flow\CasePartOrAll.cs" />
+    <Compile Include="flow\OneStepFlowDefinition.cs" />
+    <Compile Include="flow\StandardFlowDefinition.cs" />
+    <Compile Include="flow\CommonFlowDefinition.cs" />
+    <Compile Include="IConfigurator.cs" />
+    <Compile Include="models\TicketRefreshedAtUpdater2.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ReleaseStageType.cs" />
+    <Compile Include="RequestBroker.cs" />
+    <Compile Include="auth\Authentication.cs" />
+    <Compile Include="auth\FakeAuthentication.cs" />
+    <Compile Include="auth\IAuthentication.cs" />
+    <Compile Include="events\AbstractEvent.cs" />
+    <Compile Include="events\AuthenticationEvent.cs" />
+    <Compile Include="events\ConfirmAllEvent.cs" />
+    <Compile Include="events\ConfirmOneEvent.cs" />
+    <Compile Include="events\EmptyEvent.cs" />
+    <Compile Include="events\FailureEvent.cs" />
+    <Compile Include="events\FinishEvent.cs" />
+    <Compile Include="events\GlobalStaticEvent.cs" />
+    <Compile Include="events\IInternalEvent.cs" />
+    <Compile Include="events\OrdernoInputEvent.cs" />
+    <Compile Include="events\PrintingEvent.cs" />
+    <Compile Include="events\QRInputEvent.cs" />
+    <Compile Include="events\SelectInputStragetyEvent.cs" />
+    <Compile Include="flow\AbstractCase.cs" />
+    <Compile Include="flow\AggregateShorthandError.cs" />
+    <Compile Include="flow\CaseAuthDataFetch.cs" />
+    <Compile Include="flow\CaseAuthInput.cs" />
+    <Compile Include="flow\CaseAuthPassword.cs" />
+    <Compile Include="flow\CaseFailureRedirect.cs" />
+    <Compile Include="flow\CaseInputStrategySelect.cs" />
+    <Compile Include="flow\CaseOrdernoConfirmAll.cs" />
+    <Compile Include="flow\CaseOrdernoOrdernoInput.cs" />
+    <Compile Include="flow\CaseOrdernoTelInput.cs" />
+    <Compile Include="flow\CaseOrdernoVerifyRequestData.cs" />
+    <Compile Include="flow\CasePrintFinish.cs" />
+    <Compile Include="flow\CasePrintForAll.cs" />
+    <Compile Include="flow\CasePrintForOne.cs" />
+    <Compile Include="flow\CaseQRCodeInput.cs" />
+    <Compile Include="flow\CaseQRConfirmForAll.cs" />
+    <Compile Include="flow\CaseQRConfirmForOne.cs" />
+    <Compile Include="flow\CaseQRDataFetch.cs" />
+    <Compile Include="flow\FakeFlow.cs" />
+    <Compile Include="flow\Flow.cs" />
+    <Compile Include="flow\FlowDefinitionDefault.cs" />
+    <Compile Include="flow\FlowManager.cs" />
+    <Compile Include="flow\IAutoForwardingCase.cs" />
+    <Compile Include="flow\ICase.cs" />
+    <Compile Include="flow\IFlow.cs" />
+    <Compile Include="flow\IFlowDefinition.cs" />
+    <Compile Include="message\EnumUtil.cs" />
+    <Compile Include="message\MessageResourceUtil.cs" />
+    <Compile Include="message\ResultTuple.cs" />
+    <Compile Include="message\UrlResourceUtil.cs" />
+    <Compile Include="models\AggregateTicketPrinting.cs" />
+    <Compile Include="models\FakeTicketImagePrinting.cs" />
+    <Compile Include="models\IModelValidation.cs" />
+    <Compile Include="models\IResource.cs" />
+    <Compile Include="models\ISVGTicketImageDataFetcher.cs" />
+    <Compile Include="models\ITicketPrinting.cs" />
+    <Compile Include="models\ModelValidation.cs" />
+    <Compile Include="models\Resource.cs" />
+    <Compile Include="models\ResultStatusCollector.cs" />
+    <Compile Include="models\TicketPrintedAtUpdater.cs" />
+    <Compile Include="models\TicketRefreshedAtUpdater.cs" />
+    <Compile Include="models\loader\AdImageCollector.cs" />
+    <Compile Include="models\loader\FakeDataLoader.cs" />
+    <Compile Include="models\loader\IDataFetcher.cs" />
+    <Compile Include="models\loader\SVGFetcher.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataByteArrayFetcher.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataXamlFetcher.cs" />
+    <Compile Include="models\loader\TicketDataCollectionFetcher.cs" />
+    <Compile Include="models\loader\TicketDataFetcher.cs" />
+    <Compile Include="models\loader\VerifiedOrderDataFetcher.cs" />
+    <Compile Include="models\plain\AdditionalData.cs" />
+    <Compile Include="models\plain\AuthInfo.cs" />
+    <Compile Include="models\plain\Endpoint.cs" />
+    <Compile Include="models\plain\LoginUser.cs" />
+    <Compile Include="models\plain\OrdernoRequestData.cs" />
+    <Compile Include="models\plain\TicketData.cs" />
+    <Compile Include="models\plain\TicketDataCollection.cs" />
+    <Compile Include="models\plain\TicketDataCollectionRequestData.cs" />
+    <Compile Include="models\plain\TicketImageData.cs" />
+    <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
+    <Compile Include="support\WpfUtilEx.cs" />
+    <Compile Include="support\DispatchResponse.cs" />
+    <Compile Include="support\EnsureResponse.cs" />
+    <Compile Include="support\EnvironmentName.cs" />
+    <Compile Include="support\ReplaceExecutableNamespaceName.cs" />
+    <Compile Include="support\TransparentMessageException.cs" />
+    <Compile Include="tests\GetMessageFromAppConfigTests.cs" />
+    <Compile Include="tests\IntegrationTests.cs" />
+    <Compile Include="tests\Testing.cs" />
+    <Compile Include="tests\auth\AuthUsingTests.cs" />
+    <Compile Include="tests\case\AuthenticationTests.cs" />
+    <Compile Include="tests\case\CaseRequestingJSONTests.cs" />
+    <Compile Include="tests\case\QRCodeInputTests.cs" />
+    <Compile Include="tests\flow\BackwardForEaglesTests.cs" />
+    <Compile Include="tests\flow\BackwardTests.cs" />
+    <Compile Include="tests\flow\FlowForEaglesTests.cs" />
+    <Compile Include="tests\flow\FlowTests.cs" />
+    <Compile Include="tests\models\GetAdImageTests.cs" />
+    <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
+    <Compile Include="web\CookieUtils.cs" />
+    <Compile Include="web\FakeHttpContent.cs" />
+    <Compile Include="web\FakeHttpMessageHandler.cs" />
+    <Compile Include="web\FakeHttpWrapperFactory.cs" />
+    <Compile Include="web\HttpWrapper.cs" />
+    <Compile Include="web\HttpWrapperFactory.cs" />
+    <Compile Include="web\IHTTPWrapper.cs" />
+    <Compile Include="web\IHttpWrapperFactory.cs" />
+    <Compile Include="web\IUrlBuilder.cs" />
+    <Compile Include="web\TrasparentUrlBuilder.cs" />
+    <Compile Include="web\tests\ClientCreateTests.cs" />
+    <Compile Include="web\tests\FakeGetUrlTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="flow\EaglesFlowDefinition.cs" />
+    <Compile Include="flow\VisselFlowDefinition.cs" />
+    <Compile Include="tests\flow\FlowForVisselTests.cs" />
+    <Compile Include="..\packages\DynamicJson.1.2.0.0\Content\DynamicJson.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="app.manifest" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\sample.qr.svg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューターにはない NuGet パッケージを参照しています。これらをダウンロードするには、NuGet パッケージの復元を有効にしてください。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。不足しているファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

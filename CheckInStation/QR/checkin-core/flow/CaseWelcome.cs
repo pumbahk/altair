@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using checkin.core.support;
+using checkin.core.flow;
+using checkin.core;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core.message;
+using NLog;
+
+namespace checkin.core.flow
+{
+    public class CaseWelcome : AbstractCase, ICase
+    {
+        public int PrintType { set; get; }
+        public CaseWelcome(IResource resource)
+            : base(resource)
+        {
+        }
+        public CaseWelcome(IResource resource, int printtype)
+            : base(resource)
+        {
+            this.PrintType = printtype;
+        }
+        public override async Task<bool> VerifyAsync()
+        {        
+            return true;
+        }
+        public override ICase OnSuccess (IFlow flow)
+        {
+            flow.Finish();
+            return flow.GetFlowDefinition().AfterWelcome(Resource, (this.PresentationChanel as WelcomeEvent).PrintType);
+        }
+
+        public override ICase OnFailure(IFlow flow)
+        {
+            return this;
+        }
+    }
+}

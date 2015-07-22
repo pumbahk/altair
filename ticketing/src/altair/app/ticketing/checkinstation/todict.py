@@ -174,15 +174,15 @@ def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None, refresh
 
 def ticket_data_dict_from_history(history):
     """variant of printqr.todict.data_dict_from_order_and_history"""
-    product_name = history.ordered_product_item.ordered_product.product.name
+    product_name = history.ordered_product_item.ordered_product.product.name if history.ordered_product_item else None
     token = history.item_token
     seat = history.seat
     codeno = history.id
     return {
         "codeno": unicode(codeno), 
-        "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
-        "printed_at": unicode(token.printed_at) if token.is_printed() else None, 
-        "ordered_product_item_token_id": unicode(token.id), 
+        "refreshed_at": unicode(token.refreshed_at) if token and token.refreshed_at else None,
+        "printed_at": unicode(token.printed_at) if token and token.is_printed() else None,
+        "ordered_product_item_token_id": token and unicode(token.id),
         "product": {
             "name":  product_name
         }, 

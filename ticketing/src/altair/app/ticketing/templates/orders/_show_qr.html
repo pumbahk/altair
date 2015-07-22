@@ -2,7 +2,12 @@
 % for ticket in tickets:
   <li>
     <a href="${ticket['url']}" target="_blank">
+    %if ticket['item']:
     <span class="product_name">${ticket['item'].product.name}</span>
+    %else:
+    <span class="product_name">一括発券</span>
+    %endif
+    %if ticket['token']:
     %if ticket['token'].seat:
     <span class="seat_name">${ticket['token'].seat.name}</span>
     %endif
@@ -11,6 +16,7 @@
     <span class="label label-success">発行(印刷orメール送信)済 (${ticket['token'].issued_at})</span>
     % else:
     <span class="label label-info">未発行</span>
+    % endif
     % endif
     </a>
   </li>
@@ -26,9 +32,13 @@ ${vh.datetime(order.performance.start_on, with_weekday=True)}〜 \
 ${order.performance.venue.name}
 %endif
 % for ticket in tickets:
+%if ticket['item']:
 ■${ticket['item'].product.name} \
+% endif
+%if ticket['token']:
 %if ticket['token'].seat:
 ${ticket['token'].seat.name}
+%endif
 %endif
 ${ticket['url']}
 % endfor
