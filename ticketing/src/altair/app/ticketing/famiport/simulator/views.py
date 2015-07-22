@@ -430,20 +430,23 @@ class FamimaPosTicketingView(object):
                     if payment_result.issued_at is None:
                         payment_result.issued_at = self.context.now
                 save_payment_result(self.request, payment_result)
-                images = get_ticket_preview_pictures(
-                    self.request,
-                    discrimination_code='5',
-                    client_code=payment_result_dict['client_code'],
-                    order_id=payment_result_dict['order_id'],
-                    barcode_no=payment_result_dict['valid_barcode_no'],
-                    name=u'name',
-                    member_id=u'member_id',
-                    address_1=u'住所1',
-                    address_2=u'住所2',
-                    identify_no=u'XXXX',
-                    tickets=payment_result_dict['tickets'],
-                    response_image_type='jpeg'
-                    )
+                if payment_result.type == 4:
+                    images = []
+                else:
+                    images = get_ticket_preview_pictures(
+                        self.request,
+                        discrimination_code='5',
+                        client_code=payment_result_dict['client_code'],
+                        order_id=payment_result_dict['order_id'],
+                        barcode_no=payment_result_dict['valid_barcode_no'],
+                        name=u'name',
+                        member_id=u'member_id',
+                        address_1=u'住所1',
+                        address_2=u'住所2',
+                        identify_no=u'XXXX',
+                        tickets=payment_result_dict['tickets'],
+                        response_image_type='jpeg'
+                        )
                 message = u'正常に入金・発券できました'
         else:
             message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result
