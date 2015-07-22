@@ -55,16 +55,24 @@ ${render_mailmagazine(request)}
       <div class="box">
         <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
         <dl>
-          <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
-            <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
-            <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
-            % if h.is_disabled_order(entry):
-              <dt>${entry.lot.name}</dt>
-            % else:
-              <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()">${entry.lot.name}</a></dt>
-            % endif
-            <dd>受付番号：${entry.entry_no}　申込日時：${h.japanese_datetime(entry.created_at)}</dd>
-          </form>
+          % if entry.shipping_address:
+            <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
+              <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+              <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+              % if h.is_disabled_order(entry):
+                <dt>${entry.lot.name}</dt>
+              % else:
+                <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()">${entry.lot.name}</a></dt>
+              % endif
+              <dd>受付番号：${entry.entry_no}　申込日時：${h.japanese_datetime(entry.created_at)}</dd>
+            </form>
+          % else:
+              % if h.is_disabled_order(entry):
+                <dt>${entry.lot.name}</dt>
+              % else:
+                <dt>${entry.lot.name}</dt>
+              % endif
+          % endif
         </dl>
       </div>
     % endfor
