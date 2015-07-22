@@ -1001,10 +1001,19 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now, request):
         shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
+        text_type = None
+        if famiport_refund_entry_request.textTyp == '1':  # 1: 問い合わせ -> 応答では1を応答
+            text_type = '2'
+        elif famiport_refund_entry_request.textTyp == '3':  # 3: 確定 -> 応答では4を応答
+            text_type = '4'
+        else:
+            logger.error('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
+            raise ValueError('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
+
         famiport_refund_entry_response = FamiPortRefundEntryResponse(
             _request=famiport_refund_entry_request,
             businessFlg=famiport_refund_entry_request.businessFlg,
-            textTyp=famiport_refund_entry_request.textTyp,
+            textTyp=text_type,
             entryTyp=famiport_refund_entry_request.entryTyp,
             shopNo=shop_code.zfill(7),
             registerNo=famiport_refund_entry_request.registerNo,
