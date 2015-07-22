@@ -2,14 +2,14 @@
 """create_famiport_related_tables
 
 Revision ID: 2dc08c115933
-Revises: 38e00b9843c3
+Revises: 1e5de91b984b
 Create Date: 2015-07-14 16:56:00.043198
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2dc08c115933'
-down_revision = '38e00b9843c3'
+down_revision = '1e5de91b984b'
 
 from alembic import op
 import sqlalchemy as sa
