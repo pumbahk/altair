@@ -94,7 +94,7 @@ class FamiPortFileManagerFactory(object):
             filename=settings.get(filename_name, default_file_type_mapping and default_file_type_mapping['filename']),
             transfer_complete_filename=settings.get(transfer_complete_filename_name, default_file_type_mapping and default_file_type_mapping['transfer_complete_filename']),
             encoding=settings.get(encoding_name),
-            eor=settings.get(eor_name)
+            eor=settings.get(eor_name).decode('string_escape')
             )
 
     def get_configuration(self, type):
