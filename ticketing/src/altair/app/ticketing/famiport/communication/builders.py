@@ -1002,10 +1002,10 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now, request):
         shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
         text_type = None
-        if famiport_refund_entry_request.textTyp == '1':  # 1: 問い合わせ -> 応答では1を応答
-            text_type = '2'
-        elif famiport_refund_entry_request.textTyp == '3':  # 3: 確定 -> 応答では4を応答
-            text_type = '4'
+        if famiport_refund_entry_request.textTyp == '0':  # 0: 問い合わせ -> 応答では1を応答
+            text_type = '1'
+        elif famiport_refund_entry_request.textTyp == '2':  # 2: 確定 -> 応答では4を応答
+            text_type = '4'  # なぜか4 (textTypは連番ではないらしい)
         else:
             logger.error('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
             raise ValueError('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
