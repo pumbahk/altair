@@ -1,4 +1,4 @@
-using NLog;
+ï»¿using NLog;
 using checkin.presentation.gui.viewmodel;
 using System;
 using System.Collections.Generic;
@@ -186,7 +186,7 @@ namespace checkin.presentation.gui.page
             if (e.PropertyName == "Status" && ctx.Status == ConfirmAllStatus.prepared)
             {
                 ctx.Status = ConfirmAllStatus.requesting;
-                //Œã‚ÌŒp‘±‚ğ“¯Šú“I‚É‘Ò‚Â•K—v‚È‚¢‚Ì‚Åawait‚µ‚È‚¢
+                //å¾Œã®ç¶™ç¶šã‚’åŒæœŸçš„ã«å¾…ã¤å¿…è¦ãªã„ã®ã§awaitã—ãªã„
                 if (ctx.TicketDataCollection != null)
                 {
                     this.Dispatcher.InvokeAsync(this.BuildDisplayItems);
@@ -217,7 +217,7 @@ namespace checkin.presentation.gui.page
                 var dtdata = new DisplayTicketData(ctx, tdata);
                 if (ctx.ReadTicketData != null)
                 {
-                    // QR‚ğ“Ç‚İ‚ñ‚¾‚à‚Ì‚¾‚¯‰Šú”­Œ”—\’è‚Æ‚·‚éB
+                    // QRã‚’èª­ã¿è¾¼ã‚“ã ã‚‚ã®ã ã‘åˆæœŸç™ºåˆ¸äºˆå®šã¨ã™ã‚‹ã€‚
                     if (ctx.ReadTicketData.ordered_product_item_token_id != tdata.ordered_product_item_token_id)
                     {
                         //dtdata.IsSelected = false;
@@ -260,7 +260,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.RefreshModeVisibility = Visibility.Visible;
             }
-            ctx.Description = "ƒf[ƒ^‚ğæ“¾‚µ‚Ä‚¢‚Ü‚·B­X‚¨‘Ò‚¿‚­‚¾‚³‚¢";
+            ctx.Description = "ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã—ã¦ã„ã¾ã™ã€‚å°‘ã€…ãŠå¾…ã¡ãã ã•ã„";
             await ctx.PrepareAsync();
             ctx.Description = ctx.Case.Description;
             var s = await ctx.VerifyAsync();
@@ -286,7 +286,7 @@ namespace checkin.presentation.gui.page
             {
                 if (pageCtx.NumberOfPrintableTicket == 0 && pageCtx.NumberOfSelectableTicket > 0)
                 {
-                    pageCtx.ErrorMessage = "”­Œ”‚µ‚½‚¢ƒ`ƒPƒbƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢";
+                    pageCtx.ErrorMessage = "ç™ºåˆ¸ã—ãŸã„ãƒã‚±ãƒƒãƒˆã‚’é¸æŠã—ã¦ãã ã•ã„";
                     return;
                 }
             }
@@ -308,8 +308,8 @@ namespace checkin.presentation.gui.page
 
                 if (notPrintedCount == 0)
                 {
-                    pageCtx.Description = "‚±‚Ìƒ`ƒPƒbƒg‚Í”­Œ”Ï‚İ‚Å‚·";
-                    pageCtx.ErrorMessage = "‚±‚Ìƒ`ƒPƒbƒg‚Í”­Œ”Ï‚İ‚Å‚·";
+                    pageCtx.Description = "ã“ã®ãƒã‚±ãƒƒãƒˆã¯ç™ºåˆ¸æ¸ˆã¿ã§ã™";
+                    pageCtx.ErrorMessage = "ã“ã®ãƒã‚±ãƒƒãƒˆã¯ç™ºåˆ¸æ¸ˆã¿ã§ã™";
                     this.Backward.Visibility = Visibility.Hidden;
                     return;
                 }
