@@ -54,6 +54,10 @@
         <th>ticket_count_total</th>
         <td>${ticket_count_total}</td>
       </tr>
+      <tr>
+        <th>payment_sheet_text</th>
+        <td>${payment_sheet_text}</td>
+      </tr>
     </tbody>
   </table>
 </div>

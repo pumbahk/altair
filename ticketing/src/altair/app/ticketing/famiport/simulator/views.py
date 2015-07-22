@@ -285,12 +285,20 @@ class FamiPortReservedView(object):
             customer_name=self.request.session.get('customer_name'),
             customer_phone_number=self.request.session.get('customer_phone_number'),
             )
+        try:
+            payment_only = int(result['replyClass']) == int(ReplyClassEnum.PrepaymentOnly.value)
+        except TypeError:
+            payment_only = False
         tickets = result.get('ticket', None)
+        payment_sheet_text = None
         if tickets is not None:
             if not isinstance(tickets, list):
                 tickets = [tickets]
-            for ticket in tickets:
-                ticket['ticketData'] = etree.tostring(etree.parse(BytesIO(ticket['ticketData'].encode('CP932'))), encoding='unicode')
+            if payment_only:
+                payment_sheet_text = tickets[0]['ticketData']
+            else:
+                for ticket in tickets:
+                    ticket['ticketData'] = etree.tostring(etree.parse(BytesIO(ticket['ticketData'].encode('CP932'))), encoding='unicode')
         if result['resultCode'] == u'00' and result['replyCode'] == u'00':
             store_payment_result(
                 self.request,
@@ -309,7 +317,8 @@ class FamiPortReservedView(object):
                 ticketing_end_at=result['ticketingEnd'],
                 kogyo_name=result['kogyoName'],
                 koen_date=result['koenDate'],
-                tickets=tickets
+                tickets=tickets,
+                payment_sheet_text=payment_sheet_text
                 )
 
             return dict(
@@ -328,7 +337,8 @@ class FamiPortReservedView(object):
                 ticket_count=result['ticketCount'],
                 ticket_count_total=result['ticketCountTotal'],
                 tickets=tickets,
-                payment_only=result['replyClass'] == int(ReplyClassEnum.PrepaymentOnly.value)
+                payment_only=payment_only,
+                payment_sheet_text=payment_sheet_text
                 )
         else:
             message = u'エラーが発生しました (%(resultCode)s:%(replyCode)s)' % result

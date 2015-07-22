@@ -9,7 +9,7 @@ from altair.formhelpers import Translations, Required, OurBooleanField
 from altair.formhelpers.validators import DynSwitchDisabled
 from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
 from altair.saannotation import get_annotations_for
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
 
 class DeliveryMethodForm(OurForm):
 
@@ -59,7 +59,7 @@ class DeliveryMethodForm(OurForm):
     hide_voucher = OurBooleanField(
         label=u'引換票を表示しない',
         validators=[
-            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % SEJ_DELIVERY_PLUGIN_ID)
+            DynSwitchDisabled('AND({delivery_plugin_id} <> "%d", {delivery_plugin_id} <> "%d")' % (SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID))
             ]
         )
     single_qr_mode = OurBooleanField(

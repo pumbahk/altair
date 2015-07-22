@@ -15,6 +15,7 @@ from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import PaymentMethod
 from altair.app.ticketing.payment_methods.forms import PaymentMethodForm
+from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class PaymentMethods(BaseView):
@@ -52,8 +53,9 @@ class PaymentMethods(BaseView):
     def new_post(self):
         f = PaymentMethodForm(self.request.POST)
         if f.validate():
-            payment_method = merge_session_with_post(PaymentMethod(), f.data)
+            payment_method = merge_session_with_post(PaymentMethod(), f.data, excludes={'payment_sheet_text'})
             payment_method.organization_id = self.context.user.organization_id
+            payment_method.preferences.setdefault(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {})['payment_sheet_text'] = f.payment_sheet_text.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')
@@ -66,8 +68,11 @@ class PaymentMethods(BaseView):
     @view_config(route_name='payment_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def edit(self):
         payment_method_id = long(self.request.matchdict.get('payment_method_id', 0))
+        obj = PaymentMethod.query.filter_by(id=payment_method_id).one()
+        form = PaymentMethodForm(obj=obj)
+        form.payment_sheet_text.data = obj.preferences.get(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {}).get('payment_sheet_text', u'')
         return {
-            'form': PaymentMethodForm(obj=PaymentMethod.query.filter_by(id=payment_method_id).one()),
+            'form': form,
             }
 
     @view_config(route_name='payment_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -81,6 +86,7 @@ class PaymentMethods(BaseView):
         if f.validate():
             payment_method = merge_session_with_post(payment_method, f.data)
             payment_method.organization_id = self.context.user.organization_id
+            payment_method.preferences.setdefault(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {})['payment_sheet_text'] = f.payment_sheet_text.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')

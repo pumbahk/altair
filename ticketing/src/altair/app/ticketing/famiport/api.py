@@ -613,7 +613,8 @@ def create_famiport_order(
         payment_start_at=None,
         payment_due_at=None,
         ticketing_start_at=None,
-        ticketing_end_at=None):
+        ticketing_end_at=None,
+        payment_sheet_text=None):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
@@ -642,7 +643,8 @@ def create_famiport_order(
             payment_start_at=payment_start_at,
             payment_due_at=payment_due_at,
             ticketing_start_at=ticketing_start_at,
-            ticketing_end_at=ticketing_end_at
+            ticketing_end_at=ticketing_end_at,
+            payment_sheet_text=payment_sheet_text
             )
         return famiport_order_to_dict(famiport_order)
     except FamiPortAPIError:
@@ -734,7 +736,8 @@ def update_famiport_order_by_order_no(
         payment_start_at=None,
         payment_due_at=None,
         ticketing_start_at=None,
-        ticketing_end_at=None):
+        ticketing_end_at=None,
+        payment_sheet_text=None):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
@@ -760,7 +763,8 @@ def update_famiport_order_by_order_no(
             payment_start_at=payment_start_at,
             payment_due_at=payment_due_at,
             ticketing_start_at=ticketing_start_at,
-            ticketing_end_at=ticketing_end_at
+            ticketing_end_at=ticketing_end_at,
+            payment_sheet_text=payment_sheet_text
             )
         session.commit()
     except:

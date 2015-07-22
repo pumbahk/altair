@@ -623,7 +623,9 @@ class FamiPortOrder(Base, WithTimestamp):
     customer_address_2 = sa.Column(sa.Unicode(200), nullable=False, default=u'')  # 住所2
     customer_phone_number = sa.Column(sa.Unicode(12), nullable=False)  # 電話番号
 
-    report_generated_at       = sa.Column(sa.DateTime(), nullable=True)
+    report_generated_at          = sa.Column(sa.DateTime(), nullable=True)
+
+    payment_sheet_text           = sa.Column(sa.Unicode(490), nullable=True)
 
     famiport_sales_segment = orm.relationship(
         'FamiPortSalesSegment',

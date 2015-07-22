@@ -11,9 +11,9 @@ class FDCSideTicket(Base):
 
     id                           = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     fdc_side_order_id            = sa.Column(sa.Integer, sa.ForeignKey('FDCSideOrder.id'), nullable=False)
-    type                         = sa.Column(sa.Integer, nullable=False)
-    barcode_no                   = sa.Column(sa.Unicode(13), nullable=False)
-    template_code                = sa.Column(sa.Unicode(10), nullable=False)
+    type                         = sa.Column(sa.Integer, nullable=True)
+    barcode_no                   = sa.Column(sa.Unicode(13), nullable=True)
+    template_code                = sa.Column(sa.Unicode(10), nullable=True)
     data                         = sa.Column(sa.Unicode(4000), nullable=False)
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
 
@@ -53,6 +53,8 @@ class FDCSideOrder(Base):
     issued_at                    = sa.Column(sa.DateTime(), nullable=True)
 
     voided_at                    = sa.Column(sa.DateTime(), nullable=True)
+
+    payment_sheet_text           = sa.Column(sa.Unicode(490), nullable=True)
 
     @property
     def valid_barcode_no(self):

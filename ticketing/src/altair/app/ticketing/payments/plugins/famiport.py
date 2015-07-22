@@ -49,6 +49,7 @@ from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
+    build_cover_dict_from_order,
     )
 
 from ..interfaces import IOrderDelivery
@@ -244,12 +245,19 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     system_fee = 0
     ticketing_fee = 0
     ticket_payment = 0
+    payment_sheet_text = None
 
     if type_ != FamiPortOrderType.Ticketing.value:
         total_amount = order_like.total_amount
         system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
         ticketing_fee = order_like.delivery_fee
         ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
+
+    if type_ == FamiPortOrderType.PaymentOnly.value:
+        payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
+        if payment_sheet_text_template is not None:
+            dict_ = build_cover_dict_from_order(order_like)
+            payment_sheet_text = pystache.render(payment_sheet_text_template, dict_)
 
     customer_address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
     customer_address_2 = order_like.shipping_address.address_2
@@ -294,6 +302,7 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         payment_due_at=order_like.payment_due_at,
         ticketing_start_at=order_like.issuing_start_at,
         ticketing_end_at=order_like.issuing_end_at,
+        payment_sheet_text=payment_sheet_text
         )
 
 def create_famiport_order(request, order_like, plugin, name='famiport'):

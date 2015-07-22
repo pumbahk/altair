@@ -199,6 +199,7 @@ def create_schemas():
         sa.Column('invalidated_at', sa.DateTime, nullable=True),
         sa.Column('generation', sa.Integer, nullable=False, server_default=text(u"0")),
         sa.Column('report_generated_at', sa.DateTime(), nullable=True),
+        sa.Column('payment_sheet_text', sa.Unicode(490), nullable=True),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table(

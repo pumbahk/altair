@@ -13,7 +13,7 @@ def get_client_configuration_registry(request):
 def get_mmk_sequence(request):
     return request.registry.queryUtility(IMmkSequence)
 
-def store_payment_result(request, store_code, mmk_no, type, client_code, total_amount, ticket_payment, system_fee, ticketing_fee, order_id, barcode_no, exchange_no, ticketing_start_at, ticketing_end_at, kogyo_name, koen_date, tickets):
+def store_payment_result(request, store_code, mmk_no, type, client_code, total_amount, ticket_payment, system_fee, ticketing_fee, order_id, barcode_no, exchange_no, ticketing_start_at, ticketing_end_at, kogyo_name, koen_date, tickets, payment_sheet_text):
     session = get_db_session(request, 'famiport_mmk')
     if session.query(FDCSideOrder) \
        .filter(FDCSideOrder.store_code == store_code) \
@@ -48,7 +48,8 @@ def store_payment_result(request, store_code, mmk_no, type, client_code, total_a
                 data=ticket['ticketData']
                 )
             for ticket in tickets
-            ] if tickets else []
+            ] if tickets else [],
+        payment_sheet_text=payment_sheet_text
         )
     session.add(fdc_side_order)
     session.commit()

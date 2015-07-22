@@ -178,6 +178,7 @@ def create_famiport_order(
         payment_due_at=None,
         ticketing_start_at=None,
         ticketing_end_at=None,
+        payment_sheet_text=None,
         now=None
         ):
     """FamiPortOrderを作成する"""
@@ -221,6 +222,7 @@ def create_famiport_order(
             create_famiport_ticket(session, famiport_client.playguide, ticket_dict)
             for ticket_dict in tickets
             ],
+        payment_sheet_text=payment_sheet_text,
         created_at=now,
         updated_at=now
         )
@@ -298,7 +300,8 @@ def update_famiport_order_by_order_no(
         payment_start_at,
         payment_due_at,
         ticketing_start_at,
-        ticketing_end_at
+        ticketing_end_at,
+        payment_sheet_text
         ):
     famiport_order = get_famiport_order(session, order_no=order_no, famiport_order_identifier=famiport_order_identifier, client_code=client_code)
 
@@ -450,6 +453,10 @@ def update_famiport_order_by_order_no(
     if ticketing_end_at is not None:
         logger.info('updating FamiPortOrder(id=%ld).ticketing_end_at' % famiport_order.id)
         famiport_order.ticketing_end_at = ticketing_end_at
+    if payment_sheet_text is not None:
+        logger.info('updating FamiPortOrder(id=%ld).payment_sheet_text' % famiport_order.id)
+        famiport_order.payment_sheet_text = payment_sheet_text
+
 
 def get_or_create_refund(
         session,
