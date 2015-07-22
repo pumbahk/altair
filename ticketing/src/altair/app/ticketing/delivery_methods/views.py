@@ -51,7 +51,7 @@ class DeliveryMethods(BaseView):
         f = DeliveryMethodForm(self.request.POST)
         if f.validate():
             delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode'})
-            delivery_method.preferences.setdefault('qr', {})['single_qr_mode'] = f.single_qr_mode.data
+            delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
