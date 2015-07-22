@@ -13,7 +13,8 @@ namespace checkin.presentation.gui.control
     public class TelPad  : UniformOnScreenKeyboard
     {
         public TelPad()
-        {            Keys = new ObservableCollection<OnScreenKey>
+        {
+            Keys = new ObservableCollection<OnScreenKey>
                        {
                            new OnScreenKey { GridRow = 0, GridColumn = 0, Key = new VirtualKey(VirtualKeyCode.VK_7, "7") },
                            new OnScreenKey { GridRow = 0, GridColumn = 1, Key = new VirtualKey(VirtualKeyCode.VK_8, "8") },

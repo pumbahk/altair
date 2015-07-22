@@ -66,8 +66,7 @@ namespace checkin.core.models
         public IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
-            //logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
-            logger.Info("*API Response* method=POST, url={0}".WithMachineName(), this.Url);
+            logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
             var r = new List<SVGData> ();
             string token_id = ((long)(json.datalist [0].ordered_product_item_token_id)).ToString ();
             foreach (var data in json.datalist[0].svg_list) {
@@ -115,8 +114,7 @@ namespace checkin.core.models
         public IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
-            //logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
-            logger.Info("*API Response* method=POST, url={0}".WithMachineName(), this.Url);
+            logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
             var r = new List<SVGData> ();
             foreach (var datalist in json.datalist) {
                 string token_id = ((long)(datalist.ordered_product_item_token_id)).ToString ();

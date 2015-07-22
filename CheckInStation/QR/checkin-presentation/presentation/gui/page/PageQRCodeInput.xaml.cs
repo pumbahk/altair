@@ -1,4 +1,4 @@
-using NLog;
+ï»¿using NLog;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -57,7 +57,7 @@ namespace checkin.presentation.gui.page
         {
             var ev = this.Event as QRInputEvent;
             ev.QRCode = this.QRCode;
-            this.QRCode = ""; //QR‚Ìsubmit‚É¸”s‚µ‚½‚Ì‚±‚Æ‚ğŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­
+            this.QRCode = ""; //QRã®submitã«å¤±æ•—ã—ãŸæ™‚ã®ã“ã¨ã‚’è¦‹è¶Šã—ã¦ç©ºã«ã—ã¦ãŠã
             base.OnSubmit();
         }
         private Visibility _refreshModeVisibility;
@@ -118,7 +118,7 @@ namespace checkin.presentation.gui.page
             {
                 ctx.RefreshModeVisibility = Visibility.Visible;
             }
-            ctx.DescriptionInfo = "QRƒŠ[ƒ_[‚ÉQRƒR[ƒh‚ğ‚©‚´‚µ‚Ä‚­‚¾‚³‚¢";
+            ctx.DescriptionInfo = "QRãƒªãƒ¼ãƒ€ãƒ¼ã«QRã‚³ãƒ¼ãƒ‰ã‚’ã‹ã–ã—ã¦ãã ã•ã„";
             this.buttonsubmit.Visibility = Visibility.Hidden;
             if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
             {
@@ -143,7 +143,7 @@ namespace checkin.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 ctx.QRCode = this.QRCodeInput.Text;
-                //QR‚Ìsubmit‚É¸”s‚µ‚½‚Ì‚±‚Æ‚ğŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­            
+                //QRã®submitã«å¤±æ•—ã—ãŸæ™‚ã®ã“ã¨ã‚’è¦‹è¶Šã—ã¦ç©ºã«ã—ã¦ãŠã            
                 this.QRCodeInput.Text= "";
                 var case_ = await ctx.SubmitAsync();
                 ctx.TreatErrorMessage();              
@@ -157,7 +157,7 @@ namespace checkin.presentation.gui.page
                         ctx.IsIdle = Visibility.Visible;
                         ctx.IsWaiting = Visibility.Hidden;
                         this.LoadingAdorner.HideAdorner();
-                        ctx.DescriptionInfo = "QRƒŠ[ƒ_[‚ÉQRƒR[ƒh‚ğ‚©‚´‚µ‚Ä‚­‚¾‚³‚¢";
+                        ctx.DescriptionInfo = "QRãƒªãƒ¼ãƒ€ãƒ¼ã«QRã‚³ãƒ¼ãƒ‰ã‚’ã‹ã–ã—ã¦ãã ã•ã„";
                     }
                     if(AppUtil.GetCurrentResource().FlowDefinition is OneStepFlowDefinition)
                     {
@@ -194,11 +194,11 @@ namespace checkin.presentation.gui.page
             this.LoadingAdorner.ShowAdorner();
             var ctx = this.DataContext as PageQRCodeInputDataContext;
             ctx.IsIdle = Visibility.Hidden;
-            ctx.DescriptionInfo = "‚µ‚Î‚ç‚­‚¨‘Ò‚¿‚­‚¾‚³‚¢";
+            ctx.DescriptionInfo = "ã—ã°ã‚‰ããŠå¾…ã¡ãã ã•ã„";
             if (this.QRCodeInput.Text.Length < 60)
             {
-                ctx.Description = "QRƒR[ƒh‚ğ“Ç’†‚Å‚·";
-                ctx.SubDescription = "“Ç‚İ‚İ‚ÉŠÔ‚ª‚©‚©‚éê‡‚Í\r\n‚à‚¤ˆê“xÅ‰‚©‚ç‚â‚è’¼‚µ‚ÄQRƒR[ƒh‚ğ‚µ‚Á‚©‚è‚©‚´‚µ‚Ä‚­‚¾‚³‚¢";
+                ctx.Description = "QRã‚³ãƒ¼ãƒ‰ã‚’èª­è¾¼ä¸­ã§ã™";
+                ctx.SubDescription = "èª­ã¿è¾¼ã¿ã«æ™‚é–“ãŒã‹ã‹ã‚‹å ´åˆã¯\r\nã‚‚ã†ä¸€åº¦æœ€åˆã‹ã‚‰ã‚„ã‚Šç›´ã—ã¦QRã‚³ãƒ¼ãƒ‰ã‚’ã—ã£ã‹ã‚Šã‹ã–ã—ã¦ãã ã•ã„";
                 ctx.IsWaiting = Visibility.Visible;
             }
             if (this.QRCodeInput.Text.Length >= 50)
