@@ -72,7 +72,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configurator.cs" />
-    <Compile Include="DynamicJson.cs" />
     <Compile Include="events\ConfirmListAllEvent.cs" />
     <Compile Include="events\ConfirmListOneEvent.cs" />
     <Compile Include="events\OneOrPartEvent.cs" />
@@ -210,6 +209,7 @@
     <Compile Include="flow\EaglesFlowDefinition.cs" />
     <Compile Include="flow\VisselFlowDefinition.cs" />
     <Compile Include="tests\flow\FlowForVisselTests.cs" />
+    <Compile Include="..\packages\DynamicJson.1.2.0.0\Content\DynamicJson.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
