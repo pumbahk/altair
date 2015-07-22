@@ -13,7 +13,9 @@
 <div><font color="#16499b">■</font>会場名</div>
 <div>${performance.venue.name}</div>
 <div><font color="#16499b">■</font>券種名</div>
+%if product:
 <div>${product.name}</div>
+%endif
 <%mobile:form_get method="get" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
 <div align="center" border="2px" bordercolor="#b59557" style="background-color:#ffe0d0; border:2px solid #b59557">
 <br />

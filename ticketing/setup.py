@@ -115,6 +115,7 @@ requires = [
     'altair.timeparse',
     'altair.mailhelpers',
     'altair.jis',
+    'altair.types',
     ]
 
 tests_require = [

@@ -1,6 +1,8 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <form action="${request.url}" method="POST">
+<%fh:render_block>
   ${ch.form_item(form.id)}
   ${ch.form_item(form.organization_id, class_='span6')}
   ${ch.form_item(form.delivery_plugin_id)}
@@ -11,5 +13,10 @@
   ${ch.form_item(form.display_order)}
   ${ch.form_item(form.selectable)}
   ${ch.form_item(form.hide_voucher)}
+  ${ch.form_item(form.single_qr_mode)}
   ${ch.form_item(form.description, style='width:500px;height:100px;')}
+<%def name="__post__(registry_var)">
+${fh.inject_js(registry_var)}
+</%def>
+</%fh:render_block>
 </form>

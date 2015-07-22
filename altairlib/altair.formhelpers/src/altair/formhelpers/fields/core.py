@@ -23,6 +23,7 @@ __all__ = [
     'RendererMixin',
     'OurFieldMixin',
     'OurField',
+    'OurHiddenField',
     'OurRadioField',
     'OurTextField',
     'OurTextAreaField',
@@ -146,6 +147,9 @@ class OurFieldMixin(object):
         overridden(self, form, validation_stopped)
 
 class OurField(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
+class OurHiddenField(fields.HiddenField, RendererMixin, OurFieldMixin):
     __metaclass__ = field_class_factory
 
 class OurRadioField(fields.RadioField, RendererMixin, OurFieldMixin):
