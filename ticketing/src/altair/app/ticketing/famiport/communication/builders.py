@@ -194,15 +194,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 famiport_receipt = None
 
             if famiport_receipt is not None:
-                if famiport_receipt.completed_at is not None:
-                    logger.error(
-                        u'tickets for order are already issued at %s',
-                        famiport_receipt.famiport_order.issued_at,
-                        )
-                    replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-                    famiport_receipt = None
-
-            if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
                 if famiport_order.auth_number is not None and famiport_order.auth_number != authNumber:
                     logger.error(u'authNumber differs (%s != %s)' % (famiport_order.auth_number, authNumber))
