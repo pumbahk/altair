@@ -991,6 +991,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
                 famiport_customer_information_response.set_encryptKey(orderId)
             else:
                 famiport_customer_information_response = FamiPortCustomerInformationResponse(
+                    _request=famiport_customer_information_request,
                     resultCode=ResultCodeEnum.OtherError.value,
                     replyCode=ReplyCodeEnum.CustomerNamePrintInformationError.value
                     )
