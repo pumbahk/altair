@@ -51,7 +51,7 @@ class StructureView(object):
         for block in structure_dict:
             for widget in structure_dict[block]:
                 widget['detail'] = u""
-                if widget['name'] == u'freetext':
+                if widget['name'] == u'freetext' and "pk" in widget:
                     target_widget = self.request.allowable(FreetextWidget).filter(FreetextWidget.id==widget['pk']).first()
                     if target_widget:
                         widget['detail'] = escape(target_widget.text[0:200])
