@@ -135,11 +135,11 @@ ${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.specia
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
 注文受付完了と同時に決済され、即時注文確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
-<img src="${request.static_url('altair.app.ticketing.cart:static/GM/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/GM/mobile/images/visa.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/GM/mobile/images/master.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/GM/mobile/images/jcb.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/GM/mobile/images/amex_logo.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/KS/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/KS/mobile/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/KS/mobile/images/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/KS/mobile/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/KS/mobile/images/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
