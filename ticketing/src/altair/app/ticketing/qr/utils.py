@@ -39,7 +39,15 @@ class QRTicketObject(object):
 
     @property
     def order(self):
-        return object_session(self.history).query(Order).filter_by(id=self.history.order_id).one()
+        if self.history.order_id is not None:
+            return object_session(self.history).query(Order).filter_by(id=self.history.order_id).one()
+        elif self.history.item_token_id is not None:
+            return object_session(self.history).query(Order) \
+                    .join(Order.items) \
+                    .join(OrderedProduct.elements) \
+                    .join(OrderedProductItem.tokens) \
+                    .filter(OrderedProductItemToken.id == self.history.item_token_id) \
+                    .one()
 
     @property
     def order_no(self):
