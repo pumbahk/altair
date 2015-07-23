@@ -383,6 +383,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
+                elif famiport_receipt.payment_request_received_at is not None:
+                    logger.error(u'already required payment (%s, %s)' % (famiport_receipt.reserve_number, famiport_receipt.payment_request_received_at))
+                    replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                    famiport_receipt = None
                 elif not famiport_receipt.can_payment(now):
                     logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired or invalid status.' % (famiport_receipt.barcode_no, ))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
@@ -395,7 +399,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
             if famiport_receipt is not None:
                 receipt_type = famiport_receipt.type
                 famiport_order = famiport_receipt.famiport_order
-
                 if receipt_type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
                     if famiport_receipt.completed_at is not None:
                         replyCode = ReplyCodeEnum.AlreadyPaidError.value
