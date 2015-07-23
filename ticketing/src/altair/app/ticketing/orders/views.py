@@ -100,7 +100,7 @@ from altair.app.ticketing.cart.reserving import InvalidSeatSelectionException, N
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 from altair.app.ticketing.sej.api import get_sej_order
-from altair.app.ticketing.qr.utils import build_qr_by_token
+from altair.app.ticketing.qr.utils import build_qr_by_token, build_qr_by_order
 from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
 
 from . import utils
@@ -1198,16 +1198,28 @@ class OrderDetailView(OrderBaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
         url_builder = get_orderreview_qr_url_builder(self.request)
-        tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
+        qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
+        single_qr_mode = qr_preferences.get('single_qr_mode', False)
         tickets = []
-        for token, element, item in tokens:
-            qr = build_qr_by_token(self.request, order.order_no, token)
+        if single_qr_mode:
+            qr = build_qr_by_order(self.request, order)
             tickets.append({
-                'token': token,
-                'element': element,
-                'item': item,
-                'qr': qr,
+                'token': None,
+                'element': None,
+                'item': None,
+                'qr': qr, 
                 'url': url_builder.build(self.request, qr.id, qr.sign)
+                })
+        else:
+            tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
+            for token, element, item in tokens:
+                qr = build_qr_by_token(self.request, order.order_no, token)
+                tickets.append({
+                    'token': token,
+                    'element': element,
+                    'item': item,
+                    'qr': qr,
+                    'url': url_builder.build(self.request, qr.id, qr.sign)
                 })
         return { 'order': order, 'tickets': tickets }
 

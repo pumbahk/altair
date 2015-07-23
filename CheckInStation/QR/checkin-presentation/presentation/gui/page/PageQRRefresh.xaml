@@ -1,0 +1,111 @@
+﻿<Page x:Class="checkin.presentation.gui.page.PageQRRefresh"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:c="clr-namespace:checkin.presentation.gui.control"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:control="clr-namespace:checkin.presentation.gui.control"
+      mc:Ignorable="d" 
+      d:DesignHeight="364" d:DesignWidth="683"  
+    FocusManager.FocusedElement="{Binding ElementName=QRCodeInput}"
+    ShowsNavigationUI="False"     
+    Loaded="OnLoaded"
+    Title="PageQRRefresh">
+    <Page.Resources>
+        <Style x:Key="MainBorder" TargetType="Border">
+            <Setter Property="CornerRadius" Value="24.5"/>
+            <Setter Property="Height" Value="500"/>
+            <Setter Property="Width" Value="1100"/>
+            <Setter Property="BorderThickness" Value="10"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBorderBrush}"/>
+        </Style>
+    </Page.Resources>
+    <Grid Background="LightGray">
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
+
+                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
+
+                    <!-- メインコンテンツ -->
+                    <Border 
+                        Canvas.Left="140"
+                        Canvas.Top="143"
+                        Style="{StaticResource MainBorder}">
+                        <Grid>
+                            <Border Background="White" Width="717" Height="477"
+                            CornerRadius="24"
+                            Padding="40,20,40,20"
+                            Canvas.Left="327" 
+                            Canvas.Top="169">
+                                <StackPanel HorizontalAlignment="Stretch">
+                                    <Image Stretch="Uniform" MaxHeight="350" Source="/Resource/qr.input.new.jpg"/>
+                                    <TextBox
+                                        Width="400"
+                                        HorizontalAlignment="Center"
+                                        KeyDown="OnKeyDownHandler"                 
+                                        x:Name="QRCodeInput"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="90"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
+                    </StackPanel>
+
+
+                    <Button
+                     Canvas.Right="60"
+                     Canvas.Top="655"
+                     Click="OnSubmitWithBoundContext"
+                     Style="{StaticResource NextSubmitButton}">
+                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}" TextWrapping="Wrap">
+                            QRコード読み込み ▶
+                        </TextBlock>
+                    </Button>
+
+                    <!-- 戻る-->
+                    <Button
+                    Canvas.Left="60"
+                    Canvas.Top="655"
+                    Click="OnBackward"
+                    Style="{StaticResource BackwardButton}"
+                    >
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">◀︎ 戻る</TextBlock>
+                    </Button>
+                    <!-- エラーダイアログ -->
+                    <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
+                                      MessageDialogComplete="ErrorDialog_MessageDialogComplete"
+                                      MessageText="{Binding ErrorMessage}"
+                                      ButtonText="OK"/>
+
+                    <!-- 終了ボタン-->
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
+                </Canvas>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</Page>

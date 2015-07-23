@@ -2,6 +2,7 @@
 
 import json
 import logging
+from datetime import datetime
 import webhelpers.paginate as paginate
 import sqlalchemy.orm as orm
 from sqlalchemy import func
@@ -20,7 +21,6 @@ from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
 from decimal import Decimal
-
 logger = logging.getLogger(__name__)
 
 
@@ -194,6 +194,10 @@ class ProductAndProductItem(BaseView):
         parent_id = 0
         for product in products:
             row = dict(
+                performance=dict(
+                    start_on=product.performance.start_on.strftime('%Y/%m/%d %H:%M:%S') if product.performance.start_on else "",
+                    end_on=product.performance.end_on.strftime('%Y/%m/%d %H:%M:%S') if product.performance.end_on else ""
+                ),
                 product=dict(
                     id=product.id,
                     name=product.name,

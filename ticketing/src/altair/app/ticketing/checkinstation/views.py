@@ -94,7 +94,7 @@ def ticket_data_from_signed_string(context, request):
             signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "").decode("utf-8")
             order, history = ticket_data.get_order_and_history_from_signed(signed)
         except TypeError:
-            logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
+            logger.exception("*qr ticketdata: history not found: json=%s", request.json_body)
             raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!")
         except InvalidSignedString as e:
             logger.error(repr(e))

@@ -40,17 +40,23 @@ class UnmatchEventException(Exception):
     pass
 
 def order_and_history_from_qrdata(qrdata):
-    qs =  DBSession.query(Order, TicketPrintHistory)\
-        .filter(TicketPrintHistory.id==qrdata["serial"])\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == qrdata["order"])\
-        .options(orm.joinedload(Order.performance), 
-                 orm.joinedload(Order.shipping_address), 
-                 orm.joinedload(TicketPrintHistory.ordered_product_item), 
-                 orm.joinedload(TicketPrintHistory.item_token), 
-                 orm.joinedload(TicketPrintHistory.seat))
+    qs = DBSession.query(TicketPrintHistory)
+    if qrdata.get("serial"):
+        qs = qs.filter(TicketPrintHistory.id == qrdata["serial"])
+    if qrdata.get("order"):
+        qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItemToken.id == TicketPrintHistory.item_token_id) \
+               .outerjoin(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+               .outerjoin(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+               .outerjoin(Order, (OrderedProduct.order_id == Order.id) | (TicketPrintHistory.order_id == Order.id)) \
+               .filter(Order.order_no == qrdata["order"])
+    qs = qs.with_entities(Order, TicketPrintHistory)
+    qs = qs.options(
+        orm.joinedload(Order.performance),
+        orm.joinedload(Order.shipping_address),
+        orm.joinedload(TicketPrintHistory.ordered_product_item),
+        orm.joinedload(TicketPrintHistory.item_token),
+        orm.joinedload(TicketPrintHistory.seat)
+        )
     return qs.first()
 
 def order_from_token(token, order):
@@ -60,8 +66,8 @@ def order_from_token(token, order):
         .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
         .filter(OrderedProduct.order_id == Order.id)\
         .filter(Order.order_no == order)\
-        .options(orm.joinedload(Order.performance), 
-                 orm.joinedload(Order.shipping_address), 
+        .options(orm.joinedload(Order.performance),
+                 orm.joinedload(Order.shipping_address),
                  orm.joinedload(OrderedProductItemToken.seat))
     return qs.first()
 
@@ -75,8 +81,8 @@ def verify_order(order, event_id="*"):
 
 def history_from_token(request, operator_id, order_id, token, template_id=None):
     return TicketPrintHistory(
-        operator_id=operator_id, 
-        seat_id=token.seat_id, 
+        operator_id=operator_id,
+        seat_id=token.seat_id,
         item_token_id=token.id,
         ordered_product_item_id=token.item.id,
         order_id=order_id,
@@ -90,7 +96,7 @@ def add_history(request, operator_id, params):
     order_id = params.get(u'order_id')
     ticket_id = params.get(u'ticket_id')
     return TicketPrintHistory(
-        operator_id=operator_id, 
+        operator_id=operator_id,
         seat_id=seat_id,
         item_token_id=ordered_product_item_token_id,
         ordered_product_item_id=ordered_product_item_id,
@@ -99,10 +105,10 @@ def add_history(request, operator_id, params):
         )
 
 def ordered_product_item_token_query_on_organization(organization_id):
-    return (DBSession.query(OrderedProductItemToken) 
-            .join(OrderedProductItem) 
-            .join(OrderedProduct) 
-            .filter(Order.id==OrderedProduct.order_id) 
+    return (DBSession.query(OrderedProductItemToken)
+            .join(OrderedProductItem)
+            .join(OrderedProduct)
+            .filter(Order.id==OrderedProduct.order_id)
             .filter(Order.organization_id==organization_id))
 
 def get_matched_ordered_product_item_token(ordered_product_item_token_id, organization_id):
@@ -136,8 +142,8 @@ def performance_data_from_performance_id(event_id, performance_id):
     performance = c_models.Performance.query.join(c_models.Event)\
         .filter(c_models.Event.id==event_id, c_models.Performance.id==performance_id)\
         .first()
-    return {"name": performance.name, 
-            "start_on": h.japanese_datetime(performance.start_on), 
+    return {"name": performance.name,
+            "start_on": h.japanese_datetime(performance.start_on),
             "pk": performance.id}
 
 from altair.app.ticketing.print_progress.progress import PerformancePrintProgress
