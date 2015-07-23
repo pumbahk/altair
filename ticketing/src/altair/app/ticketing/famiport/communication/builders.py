@@ -992,7 +992,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
             else:
                 famiport_customer_information_response = FamiPortCustomerInformationResponse(
                     _request=famiport_customer_information_request,
-                    resultCode=ResultCodeEnum.OtherError.value,
+                    resultCode=ResultCodeEnum.Normal.value,
                     replyCode=ReplyCodeEnum.CustomerNamePrintInformationError.value
                     )
         except Exception:
