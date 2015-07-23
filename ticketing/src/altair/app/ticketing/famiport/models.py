@@ -1015,7 +1015,7 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def can_payment(self, now):
         return self.inquired_at is not None\
-            and self.payment_request_received_at is None \
+            and (self.payment_request_received_at is None or self.payment_request_received_at < self.inquired_at) \
             and self.completed_at is None
 
     def can_completion(self, now):

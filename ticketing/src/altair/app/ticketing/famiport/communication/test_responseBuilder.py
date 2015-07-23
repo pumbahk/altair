@@ -1314,7 +1314,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             customerName=u'カスタマ　太郎',
             phoneNumber=u'0123456789'
             )
-        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 9, 39, 12)
         builder = get_response_builder(self.request, f_request)
         result1 = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result1.resultCode, ResultCodeEnum.Normal.value)
