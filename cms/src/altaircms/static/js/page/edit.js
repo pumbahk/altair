@@ -206,7 +206,7 @@ var WidgetDialogView = Backbone.View.extend({
 
             self.model.set("detail", "");
             if ('freetext' in data) {
-                self.model.set("detail", _.escape(data['freetext']));
+                self.model.set("detail", _.escape(data['freetext']).substring(0,200));
             }
             this.model.save().done(function(data){
                 self.model.set("pk", data.pk) // pk
