@@ -56,7 +56,7 @@ class PaymentPluginRendererHelperFactory(object):
         self.default_renderer_factories = default_renderer_factories
 
     def __call__(self, env, package, registry, request=None, system_values=None, **kwargs):
-        # try to retrieve request from the system vars when not directly provided 
+        # try to retrieve request from the system vars when not directly provided
         if request is None:
             if system_values is not None:
                 request = system_values.get('request')

@@ -3,6 +3,7 @@
   pager template
 </%doc>
 <%!  from webhelpers.paginate import Page %>
+<%!  from wtforms.fields import HiddenField %>
 <%def name="pager(items, url='%s')">
   % if isinstance(items, Page):
   <p>${max(items.items_per_page * (items.page-1) + 1,0)}～${min(items.items_per_page * items.page, items.item_count)} / ${items.item_count}件</p>
@@ -105,7 +106,7 @@
         ${validate_errors(item)}
       </div>
     % else:
-      % if item.type != 'HiddenField':
+      % if not isinstance(item, HiddenField):
 
         %if label:
         <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">

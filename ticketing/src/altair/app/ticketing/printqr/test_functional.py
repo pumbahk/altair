@@ -259,7 +259,7 @@ def qrsigned_from_token(token):
     history.ordered_product_item = token.item
     assert history.ordered_product_item_id
     assert history.ordered_product_item
-    params = make_data_for_qr(history)
+    params, ticket = make_data_for_qr(history)
     return builder.sign(builder.make(params))
 
 

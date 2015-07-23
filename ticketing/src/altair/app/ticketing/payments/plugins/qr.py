@@ -15,10 +15,9 @@ from altair.app.ticketing.mails.interfaces import (
 from . import models as m
 from altair.app.ticketing.core import models as core_models
 from . import logger
-import qrcode
 import StringIO
 from pyramid.response import Response
-from altair.app.ticketing.qr import qr
+from altair.app.ticketing.qr import utils as qr_utils
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core.interfaces import IOrderLike
@@ -50,18 +49,34 @@ def deliver_completion_viewlet(context, request):
     logger.debug(u"order_no = %s" % order.order_no)
     delivery_method = order.payment_delivery_pair.delivery_method
 
+    preferences = delivery_method.preferences
+    qr_preferences = preferences.get(unicode(DELIVERY_PLUGIN_ID), {})
+    single_qr_mode = qr_preferences.get('single_qr_mode', False)
+
     tickets = [ ]
-    for op in order.ordered_products:
-        for opi in op.ordered_product_items:
-            for t in opi.tokens:
-                ticket = QRTicket(
-                    order = context.order,
-                    performance = context.order.performance,
-                    product = op.product,
-                    seat = t.seat,
-                    token = t,
-                    printed_at = t.issued_at)
-                tickets.append(ticket)
+    if single_qr_mode:
+        qr_utils.get_matched_history_from_order(context.order)
+        ticket = QRTicket(
+            order=context.order,
+            performance=context.order.performance,
+            product=None,
+            seat=None,
+            token=None,
+            printed_at=None
+            )
+        tickets.append(ticket)
+    else:
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                for t in opi.tokens:
+                    ticket = QRTicket(
+                        order = context.order,
+                        performance = context.order.performance,
+                        product = op.product,
+                        seat = t.seat,
+                        token = t,
+                        printed_at = t.issued_at)
+                    tickets.append(ticket)
     
     # TODO: orderreviewから呼ばれた場合とcartの完了画面で呼ばれた場合で
     # 処理を分岐したい
