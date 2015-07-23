@@ -746,13 +746,17 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
             elif famiport_receipt.completed_at is not None:  # 支払済
                 logger.info('paid / ticketed')
                 if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
-                    famiport_response.replyCode = ReplyCodeEnum.AlreadyPaidError.value
+                    famiport_response.replyCode = ReplyCodeEnum.AlreadyPaidError.value  # 支払い済み
                 else:
-                    famiport_response.replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                    famiport_response.replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value  # 発券済み
                 famiport_receipt = None
             elif famiport_receipt.void_at is not None:  # 支払取消済みエラー
                 logger.info('already canceled')
-                famiport_response.replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value
+                if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
+                    famiport_response.replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value  # 支払い取り消し済みエラー
+                else:
+                    famiport_response.replyCode = ReplyCodeEnum.TicketingAlreadyCanceledError.value  # 発券取り消し済みエラー
+
                 famiport_receipt = None
             else:  # 正常
                 famiport_response.resultCode = ResultCodeEnum.Normal.value
