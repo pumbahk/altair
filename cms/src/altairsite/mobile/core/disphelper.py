@@ -21,4 +21,4 @@ class DispHelper(object):
 
     def disp_period(self, open, close):
         h = SmartPhoneHelper()
-        return h.disp_period(open=open, close=close)
+        return h.disp_period(open_time=open, close=close)

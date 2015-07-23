@@ -309,9 +309,11 @@ class LotEntryStatus(object):
                            count=r[0])
                       for r in sql.select([sql.func.count(LotEntryWish.id), LotEntryWish.performance_id, LotEntryWish.wish_order]
                                           ).where(sql.and_(LotEntryWish.lot_entry_id==LotEntry.id,
+                                                           LotEntryWish.deleted_at==None,
                                                            LotEntry.lot_id==self.lot.id,
                                                            LotEntry.canceled_at==None,
                                                            LotEntry.entry_no!=None,
+                                                           LotEntry.deleted_at==None
                                                            )
                                                   ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
                                                              ).execute()]
