@@ -738,7 +738,7 @@ class FamiPortCustomerInformationResponseBuilderTest(unittest.TestCase, FamiPort
             )
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
-        self.assertEqual(result.resultCode, ResultCodeEnum.OtherError.value)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result.replyCode, ReplyCodeEnum.CustomerNamePrintInformationError.value)
         self.assertEqual(result.name, None)
         self.assertEqual(result.memberId, None)
