@@ -1935,8 +1935,8 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _fee_type = Column('fee_type', Integer, nullable=True, default=FeeTypeEnum.Once.v[0])
 
     fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (予約ごと)'))
-    fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (主券)'))
-    fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (副券)'))
+    fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:主券)'))
+    fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:副券)'))
 
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), _a_label=_(u'オーガニゼーション'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
