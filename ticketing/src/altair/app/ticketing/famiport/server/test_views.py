@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase, skip
 import mock
+from lxml import etree
 from pyramid.testing import (
     DummyModel,
     )
@@ -72,8 +73,8 @@ class FamiPortAPIViewTest(TestCase):
             else:
                 self.assertEqual(
                     _strip(res_elm.text), _strip(exp_elm.text),
-                    u'tag={}, res={}, exp={}'.format(
-                        tag, res_elm.text, exp_elm.text))
+                    u'tag={}, res={}, exp={}\nXML:\n{}'.format(
+                        tag, res_elm.text, exp_elm.text, etree.tostring(res)))
 
 
 class InquiryTest(FamiPortAPIViewTest):
@@ -282,6 +283,7 @@ class PaymentTest(FamiPortAPIViewTest):
             barcode_no=u'1000000000000',
             famiport_order_identifier=u'430000000002',
             mark_payment_request_received=lambda *args: None,
+            payment_request_received_at=None,
             famiport_order=DummyModel(
                 famiport_order_identifier=u'430000000001',
                 type=3,
@@ -307,7 +309,7 @@ class PaymentTest(FamiPortAPIViewTest):
                         ),
                     ),
                 ticketing_famiport_receipt=DummyModel(
-                    reserve_number=u'4310000000002'
+                    reserve_number=u'4310000000002',
                     ),
                 famiport_client=DummyModel(
                     name=u'クライアント１',
