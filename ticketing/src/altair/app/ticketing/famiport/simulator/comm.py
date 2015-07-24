@@ -244,6 +244,7 @@ class FamiPortTicketPreviewAPI(object):
                     E.playGuideCode(discrimination_code.zfill(2)),
                     E.clientId(client_code.zfill(24)),
                     E.barCodeNo(barcode_no),
+                    E.orderId(order_id),
                     E.name(c.encrypt(name)),
                     E.memberId(c.encrypt(member_id)),
                     E.address1(c.encrypt(address_1)),
@@ -254,7 +255,7 @@ class FamiPortTicketPreviewAPI(object):
                         E.ticket(
                             E.barCodeNo(ticket['barcode_no']),
                             E.templateCode(ticket['template_code']),
-                            E.ticketData(ticket['data'])
+                            E.ticketData('<?xml version="1.0" encoding="Shift_JIS" ?>' + ticket['data'])
                             )
                         for ticket in tickets
                         )

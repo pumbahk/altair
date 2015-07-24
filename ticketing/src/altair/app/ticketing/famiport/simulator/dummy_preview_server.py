@@ -90,7 +90,7 @@ def preview(context, request):
         barcode_no = req['barCodeNo']
         logger.info('barCodeNo=%(barcode_no)s, len(tickets)=%(num_tickets)d' % dict(barcode_no=barcode_no, num_tickets=len(tickets)))
         for ticket in tickets:
-            x = etree.fromstring(ticket['ticketData'])
+            x = etree.fromstring(ticket['ticketData'].encode('Shift_JIS'))
             text = (u'barcodeNo: %s\n' % ticket['barCodeNo']) + u' '.join([u'%s: %s' % (n.tag, n.text.strip() if n.text is not None else u'') for n in x])
             im = new_image('RGB', (600, 200))
             d = Draw(im)
