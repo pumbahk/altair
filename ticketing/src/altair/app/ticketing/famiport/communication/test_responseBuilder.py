@@ -1344,7 +1344,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         result2 = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result2.resultCode, ResultCodeEnum.Normal.value)
         self.assertEqual(result2.replyClass, '')
-        self.assertEqual(result2.replyCode, ReplyCodeEnum.SearchKeyError.value)
+        self.assertEqual(result2.replyCode, ReplyCodeEnum.TicketAlreadyIssuedError.value)
 
         self.famiport_order_cash_on_delivery.make_reissueable(
             datetime(2015, 5, 21, 0, 10, 0),
