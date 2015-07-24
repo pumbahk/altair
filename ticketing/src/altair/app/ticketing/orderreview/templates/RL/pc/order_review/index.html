@@ -1,38 +1,41 @@
 <%inherit file="../layout.html" />
+
 <h2>購入履歴の確認</h2>
-<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
-  <!-- wrapper -->
-  <div class="formWrapper">
-    <table cellpadding="0" cellspacing="0" class="formeagles">
-      <colgroup>
-        <col style="width:180px;">
-        <col style="width:310px;">
-      </colgroup>
-      <tbody>
-        <tr>
-          <th>受付番号 <span class="red">*</span></th>
-          <td>
-            ${form.order_no}
-            (例: RL00000000AB)
-            <span class="red">${h.error('order_no')}</span>
-          </td>
-        </tr>
-        <tr>
-          <th>電話番号 <span class="red">*</span></th>
-          <td>
-            ${form.tel}
-            (例: 080xxxxyyyy)
-            <span class="red">${h.error('tel')}</span><br/>
-            ご予約時に登録した電話番号をご入力してください。
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" style="text-align:center">
-            <input type="submit" value="次に進む" class="submit btnLogin" style="width:400px;height:50px;" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+
+<div class="ticketConfirm clearfix">
+
+<div class="ticketConfirmLogin">
+<dl>
+<dt>一般の方のチケット確認<small>はこちらから</small></dt>
+<dd>
+<form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
+<input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
 </form>
+</dd>
+<dt>抽選の方のチケット確認<small>はこちらから</small></dt>
+<dd>
+<form id="form2" name="form2" action="https://leisure.tstar.jp/lots/review" method="get">
+<input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+</form>
+</dd>
+</dl>
+</div>
+
+<div class="memberLogin">
+<dl>
+<dt>楽天会員の方<small>はこちらから</small></dt>
+<dd>
+<form action="${request.route_path('mypage.show')}" method="get">
+<p><input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;"></p>
+</form>
+</dd>
+</dl>
+</div>
+
+</div>
+<br clear="both">
+<h3>注意事項</h3>
+<ul class="notes">
+    <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
+</ul>
+    <!-- wrapperおわり -->
