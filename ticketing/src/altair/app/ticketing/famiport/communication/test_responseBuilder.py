@@ -1374,6 +1374,77 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
         self.assertEqual(result3.kogyoName, u'7/1公演')
         self.assertEqual(result3.koenDate, u'201507011900')
 
+    def test_regression_fifty_five(self):
+        """No.55のリグレッション (2度目以降の入金発券要求で発券済みエラーを返す)"""
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100002',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340123',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, ReplyClassEnum.CashOnDelivery.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100002')
+        self.assertEqual(result.barCodeNo, u'01234012340123')
+        self.assertEqual(result.orderId, u'000011112223')
+        self.assertEqual(result.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result.playGuideName, u'チケットスター')
+        self.assertEqual(result.orderTicketNo, u'01234012340123')
+        self.assertEqual(result.exchangeTicketNo, u'')
+        self.assertEqual(result.ticketingStart, u'')
+        self.assertEqual(result.ticketingEnd, u'')
+        self.assertEqual(result.totalAmount, u'00010540')
+        self.assertEqual(result.ticketPayment, u'00010000')
+        self.assertEqual(result.systemFee, u'00000324')
+        self.assertEqual(result.ticketingFee, u'00000216')
+        self.assertEqual(result.ticketCountTotal, u'2')
+        self.assertEqual(result.ticketCount, u'2')
+        self.assertEqual(result.kogyoName, u'7/1公演')
+        self.assertEqual(result.koenDate, u'201507011900')
+
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100002',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340123',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, u'')
+        self.assertEqual(result.replyCode, ReplyCodeEnum.TicketAlreadyIssuedError.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100002')
+        self.assertEqual(result.barCodeNo, u'01234012340123')
+        self.assertEqual(result.orderId, None)
+        self.assertEqual(result.playGuideId, None)
+        self.assertEqual(result.playGuideName, None)
+        self.assertEqual(result.orderTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, None)
+        self.assertEqual(result.ticketingStart, None)
+        self.assertEqual(result.ticketingEnd, None)
+        self.assertEqual(result.totalAmount, None)
+        self.assertEqual(result.ticketPayment, None)
+        self.assertEqual(result.systemFee, None)
+        self.assertEqual(result.ticketingFee, None)
+        self.assertEqual(result.ticketCountTotal, None)
+        self.assertEqual(result.ticketCount, None)
+        self.assertEqual(result.kogyoName, None)
+        self.assertEqual(result.koenDate, None)
 
 
 class FamiPortPaymentTicketingCompletionBuilderTest(unittest.TestCase, FamiPortResponseBuilderTestBase):

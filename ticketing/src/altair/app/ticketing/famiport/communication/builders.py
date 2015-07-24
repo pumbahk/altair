@@ -396,6 +396,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired or invalid status.' % (famiport_receipt.barcode_no, ))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
+                elif famiport_receipt.payment_request_received_at is not None:
+                    logger.error(u'FamiPortReceipt(barCodeNo=%s) already got the corresponding payment-ticketing request received.' % (famiport_receipt.barcode_no, ))
+                    replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                    famiport_receipt = None
                 else:
                     famiport_receipt.mark_payment_request_received(now, request)
                     session.commit()
