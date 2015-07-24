@@ -762,22 +762,22 @@ class FamiPortPaymentTicketingCancelResponseBuilder(FamiPortResponseBuilder):
                 logger.info('store code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                 famiport_response.replyCode = ReplyCodeEnum.OtherError.value
                 famiport_receipt = None
-            elif not famiport_receipt.can_cancel(now):  # 入金発券取消が行えない
-                logger.info('not cancellable')
-                famiport_response.replyCode = ReplyCodeEnum.OtherError.value
-                famiport_receipt = None
             elif famiport_receipt.completed_at is not None:  # 支払済
                 logger.info('paid / ticketed')
                 if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
+                    famiport_response.resultCode = ResultCodeEnum.Normal.value
                     famiport_response.replyCode = ReplyCodeEnum.AlreadyPaidError.value  # 支払い済み
                 else:
+                    famiport_response.resultCode = ResultCodeEnum.Normal.value
                     famiport_response.replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value  # 発券済み
                 famiport_receipt = None
-            elif famiport_receipt.void_at is not None:  # 支払取消済みエラー
+            elif famiport_receipt.canceled_at is not None:  # 支払取消済みエラー
                 logger.info('already canceled')
                 if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Payment.value):
+                    famiport_response.resultCode = ResultCodeEnum.Normal.value
                     famiport_response.replyCode = ReplyCodeEnum.PaymentAlreadyCanceledError.value  # 支払い取り消し済みエラー
                 else:
+                    famiport_response.resultCode = ResultCodeEnum.Normal.value
                     famiport_response.replyCode = ReplyCodeEnum.TicketingAlreadyCanceledError.value  # 発券取り消し済みエラー
 
                 famiport_receipt = None
