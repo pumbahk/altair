@@ -389,16 +389,12 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
                 elif famiport_receipt.payment_request_received_at is not None:
-                    logger.error(u'already required payment (%s, %s)' % (famiport_receipt.reserve_number, famiport_receipt.payment_request_received_at))
+                    logger.error(u'FamiPortReceipt(barCodeNo=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.barcode_no, famiport_receipt.payment_request_received_at))
                     replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                     famiport_receipt = None
                 elif not famiport_receipt.can_payment(now):
                     logger.error(u'FamiPortReceipt(barCodeNo=%s) is not marked inquired or invalid status.' % (famiport_receipt.barcode_no, ))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
-                    famiport_receipt = None
-                elif famiport_receipt.payment_request_received_at is not None:
-                    logger.error(u'FamiPortReceipt(barCodeNo=%s) already got the corresponding payment-ticketing request received.' % (famiport_receipt.barcode_no, ))
-                    replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                     famiport_receipt = None
                 else:
                     famiport_receipt.mark_payment_request_received(now, request)
