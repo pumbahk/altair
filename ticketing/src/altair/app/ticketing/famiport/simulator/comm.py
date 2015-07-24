@@ -272,7 +272,7 @@ class FamiPortTicketPreviewAPI(object):
         if result_code_node.text != u'00':
             raise FDCAPIError('server returned error status (%s)' % result_code_node.text)
         return [
-            b64decode(encoded_ticket_preview_pictures.text)
+            b64decode(encoded_ticket_preview_pictures.text.replace(u' ', u'+').replace(u'-', u'/'))
             for encoded_ticket_preview_pictures in xml.findall('kenmenImage')
             ]
 
