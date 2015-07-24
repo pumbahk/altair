@@ -211,6 +211,11 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                             logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
+                        elif famiport_order.payment_due_at is not None and \
+                             famiport_order.payment_due_at < ticketingDate:
+                            logger.error(u'ticketingDate is later than payment_due_at (%r)' % (famiport_order.payment_due_at, ))
+                            replyCode = ReplyCodeEnum.PaymentDueError.value
+                            famiport_receipt = None
                         else:
                             if famiport_receipt.completed_at is None:
                                 replyClass = ReplyClassEnum.CashOnDelivery.value
@@ -222,6 +227,11 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                            famiport_order.payment_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than payment_start_at (%r)' % (famiport_order.payment_start_at, ))
                             replyCode = ReplyCodeEnum.SearchKeyError.value
+                            famiport_receipt = None
+                        elif famiport_order.payment_due_at is not None and \
+                             famiport_order.payment_due_at < ticketingDate:
+                            logger.error(u'ticketingDate is later than payment_due_at (%r)' % (famiport_order.payment_due_at, ))
+                            replyCode = ReplyCodeEnum.PaymentDueError.value
                             famiport_receipt = None
                         else:
                             if famiport_receipt.completed_at is None:
@@ -237,6 +247,11 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                            famiport_order.ticketing_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than ticketing_start_at (%r)' % (famiport_order.ticketing_start_at, ))
                             replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
+                            famiport_receipt = None
+                        elif famiport_order.ticketing_end_at is not None and \
+                             famiport_order.ticketing_end_at < ticketingDate:
+                            logger.error(u'ticketingDate is later than ticketing_end_at (%r)' % (famiport_order.ticketing_end_at, ))
+                            replyCode = ReplyCodeEnum.TicketingDueError.value
                             famiport_receipt = None
                         else:
                             if famiport_receipt.completed_at is None:

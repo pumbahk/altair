@@ -32,7 +32,8 @@ class FamiPortResponseBuilderTestBase(object):
     barcode_no_payment = u'01234012340124'
     barcode_no_payment_ticketing = u'01234012340125'
     barcode_no_payment_only = u'01234012340126'
-    barcode_no_name = u'01234012340127'
+    barcode_no_ticketing_only = u'01234012340127'
+    barcode_no_name = u'01234012340128'
 
     def setUp(self):
         self.request = DummyRequest()
@@ -317,10 +318,64 @@ class FamiPortResponseBuilderTestBase(object):
             )
         self.session.add(self.famiport_order_payment_only)
 
+        self.famiport_order_ticketing_only = FamiPortOrder(
+            type=FamiPortOrderType.Ticketing.value,
+            order_no=u'RT0000000001',
+            famiport_order_identifier=u'000011112228',
+            famiport_sales_segment=self.famiport_sales_segment,
+            famiport_client=self.famiport_client,
+            generation=0,
+            invalidated_at=None,
+            total_amount=Decimal(10540),
+            ticket_payment=Decimal(10000),
+            ticketing_fee=Decimal(216),
+            system_fee=Decimal(324),
+            paid_at=None,
+            issued_at=None,
+            canceled_at=None,
+            ticketing_start_at=datetime(2015, 5, 22, 12, 34, 56),
+            ticketing_end_at=datetime(2015, 5, 23, 23, 59, 59),
+            payment_start_at=None,
+            payment_due_at=None,
+            customer_name=u'チケット　太郎',
+            customer_address_1=u'東京都品川区西五反田7-1-9',
+            customer_address_2=u'五反田HSビル9F',
+            customer_phone_number=u'0123456789',
+            famiport_receipts=[
+                FamiPortReceipt(
+                    type=FamiPortReceiptType.Ticketing.value,
+                    famiport_order_identifier=u'000011112229',
+                    barcode_no=self.barcode_no_ticketing_only,
+                    shop_code=u'00009',
+                    reserve_number=u'4321043210436'
+                    ),
+                ],
+            famiport_tickets=[
+                FamiPortTicket(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_number=u'0000000000007',
+                    template_code=u'TTTS000001',
+                    data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    issued_at=None
+                    ),
+                FamiPortTicket(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_number=u'0000000000008',
+                    template_code=u'TTTS000001',
+                    data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    issued_at=None
+                    )
+                ],
+            customer_name_input=True,
+            customer_phone_input=False,
+            created_at=datetime(2015, 5, 22, 12, 34, 56)
+            )
+        self.session.add(self.famiport_order_ticketing_only)
+
         self.famiport_order_no_name = FamiPortOrder(
             type=FamiPortOrderType.CashOnDelivery.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=u'000011112228',
+            famiport_order_identifier=u'000011112230',
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -343,23 +398,23 @@ class FamiPortResponseBuilderTestBase(object):
             famiport_receipts=[
                 FamiPortReceipt(
                     type=FamiPortReceiptType.CashOnDelivery.value,
-                    famiport_order_identifier=u'000011112229',
+                    famiport_order_identifier=u'000011112231',
                     barcode_no=self.barcode_no_name,
                     shop_code=u'00009',
-                    reserve_number=u'4321043210436'
+                    reserve_number=u'4321043210437'
                     ),
                 ],
             famiport_tickets=[
                 FamiPortTicket(
                     type=FamiPortTicketType.TicketWithBarcode.value,
-                    barcode_number=u'0000000000007',
+                    barcode_number=u'0000000000009',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
                     issued_at=None
                     ),
                 FamiPortTicket(
                     type=FamiPortTicketType.TicketWithBarcode.value,
-                    barcode_number=u'0000000000008',
+                    barcode_number=u'0000000000010',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
                     issued_at=None
@@ -808,6 +863,84 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.nameInput, u'0')
         self.assertEqual(result.phoneInput, u'0')
 
+    def test_too_late_ticketing(self):
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortReservationInquiryRequest(
+            storeCode=u'000009',
+            ticketingDate=u'20150524000000',
+            reserveNumber=self.famiport_order_ticketing_only.famiport_receipts[0].reserve_number,
+            authNumber=u''
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.TicketingDueError.value)
+        self.assertEqual(result.playGuideId, u'')
+        self.assertEqual(result.barCodeNo, u'')
+        self.assertEqual(result.totalAmount, u'')
+        self.assertEqual(result.ticketPayment, u'')
+        self.assertEqual(result.systemFee, u'')
+        self.assertEqual(result.ticketingFee, u'')
+        self.assertEqual(result.ticketCountTotal, u'')
+        self.assertEqual(result.ticketCount, u'')
+        self.assertEqual(result.kogyoName, u'')
+        self.assertEqual(result.koenDate, u'')
+        self.assertEqual(result.name, u'')
+        self.assertEqual(result.nameInput, u'0')
+        self.assertEqual(result.phoneInput, u'0')
+
+    def test_too_late_payment(self):
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortReservationInquiryRequest(
+            storeCode=u'000009',
+            ticketingDate=u'20150524000000',
+            reserveNumber=self.famiport_order_payment.famiport_receipts[0].reserve_number,
+            authNumber=u''
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.PaymentDueError.value)
+        self.assertEqual(result.playGuideId, u'')
+        self.assertEqual(result.barCodeNo, u'')
+        self.assertEqual(result.totalAmount, u'')
+        self.assertEqual(result.ticketPayment, u'')
+        self.assertEqual(result.systemFee, u'')
+        self.assertEqual(result.ticketingFee, u'')
+        self.assertEqual(result.ticketCountTotal, u'')
+        self.assertEqual(result.ticketCount, u'')
+        self.assertEqual(result.kogyoName, u'')
+        self.assertEqual(result.koenDate, u'')
+        self.assertEqual(result.name, u'')
+        self.assertEqual(result.nameInput, u'0')
+        self.assertEqual(result.phoneInput, u'0')
+
+    def test_too_late_cash_on_delivery(self):
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortReservationInquiryRequest(
+            storeCode=u'000009',
+            ticketingDate=u'20150524000000',
+            reserveNumber=self.famiport_order_cash_on_delivery.famiport_receipts[0].reserve_number,
+            authNumber=u''
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.PaymentDueError.value)
+        self.assertEqual(result.playGuideId, u'')
+        self.assertEqual(result.barCodeNo, u'')
+        self.assertEqual(result.totalAmount, u'')
+        self.assertEqual(result.ticketPayment, u'')
+        self.assertEqual(result.systemFee, u'')
+        self.assertEqual(result.ticketingFee, u'')
+        self.assertEqual(result.ticketCountTotal, u'')
+        self.assertEqual(result.ticketCount, u'')
+        self.assertEqual(result.kogyoName, u'')
+        self.assertEqual(result.koenDate, u'')
+        self.assertEqual(result.name, u'')
+        self.assertEqual(result.nameInput, u'0')
+        self.assertEqual(result.phoneInput, u'0')
+
     def test_invalid_ticket_date(self):
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortReservationInquiryRequest(
@@ -866,7 +999,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         f_request = FamiPortReservationInquiryRequest(
             storeCode=u'000009',
             ticketingDate=u'20150521134001',
-            reserveNumber=u'4321043210436',
+            reserveNumber=u'4321043210437',
             authNumber=u''
             )
         builder = get_response_builder(self.request, f_request)
