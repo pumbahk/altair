@@ -196,11 +196,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
 
-                if famiport_receipt.payment_request_received_at is not None:
-                    logger.error(u'already required payment (%s, %s)' % (famiport_receipt.reserve_number, famiport_receipt.payment_request_received_at))
-                    replyCode = ReplyCodeEnum.SearchKeyError.value
-                    famiport_receipt = None
-                elif famiport_order.auth_number is not None and famiport_order.auth_number != authNumber:
+                if famiport_order.auth_number is not None and famiport_order.auth_number != authNumber:
                     logger.error(u'authNumber differs (%s != %s)' % (famiport_order.auth_number, authNumber))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
