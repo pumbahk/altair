@@ -194,21 +194,28 @@ class Communicator(object):
             )
         result = self._do_request(self.endpoints.refund, data)
         per_barcode_data = []
+        no_more_data = False
         for i, _ in enumerate(barcodes):
             suffix = u'%d' % (i + 1)
-            per_barcode_data.append(
-                dict(
-                    barCodeNo=result.pop('BarCode%s' % suffix),
-                    resultCode=result.pop('ResultCode%s' % suffix),
-                    mainTitle=result.pop('MainTitle%s' % suffix),
-                    perfDay=result.pop('PerfDay%s' % suffix),
-                    repayment=result.pop('Repayment%s' % suffix),
-                    refundStart=result.pop('RefundStart%s' % suffix),
-                    refundEnd=result.pop('RefundEnd%s' % suffix),
-                    ticketTyp=result.pop('TicketTyp%s' % suffix),
-                    charge=result.pop('Charge%s' % suffix)
+            barcode_no = result.pop('BarCode%s' % suffix, None)
+            if barcode_no is None:
+                no_more_data = True
+            else:
+                if no_more_data:
+                    raise CommunicationError('invalid payload')
+                per_barcode_data.append(
+                    dict(
+                        barCodeNo=barcode_no,
+                        resultCode=result.pop('ResultCode%s' % suffix),
+                        mainTitle=result.pop('MainTitle%s' % suffix),
+                        perfDay=result.pop('PerfDay%s' % suffix),
+                        repayment=result.pop('Repayment%s' % suffix),
+                        refundStart=result.pop('RefundStart%s' % suffix),
+                        refundEnd=result.pop('RefundEnd%s' % suffix),
+                        ticketTyp=result.pop('TicketTyp%s' % suffix),
+                        charge=result.pop('Charge%s' % suffix)
+                        )
                     )
-                )
         retval = dict(
             businessFlg=result['BusinessFlg'],
             textTyp=result['TextTyp'],
