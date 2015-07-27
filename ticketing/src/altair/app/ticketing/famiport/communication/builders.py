@@ -1079,15 +1079,24 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                     )
                 for barcode_number in barcode_numbers
                 ]
-            def build_per_ticket_record(barcode_number, refund_entry):
+            def build_per_ticket_record(barcode_number, refund_entry, fill_with_blank=False):
                 result_code = None
-                main_title = None
-                perf_day = None
-                repayment = None
-                refund_start = None
-                refund_end = None
-                ticket_typ = None
-                charge = None
+                if fill_with_blank:
+                    main_title = u''
+                    perf_day = u''
+                    repayment = u''
+                    refund_start = u''
+                    refund_end = u''
+                    ticket_typ = u''
+                    charge = u''
+                else:
+                    main_title = None
+                    perf_day = None
+                    repayment = None
+                    refund_start = None
+                    refund_end = None
+                    ticket_typ = None
+                    charge = None
                 if barcode_number is None:
                     pass
                 elif refund_entry is None:
@@ -1099,8 +1108,8 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                         issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
                         assert issuing_shop_code is not None
                         famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
-                        main_title = famiport_performance.name
-                        perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
+                        main_title = famiport_performance.name or u''
+                        perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u''
                         repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.other_fees)
                         refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
                         refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
@@ -1130,8 +1139,8 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                     )
 
             famiport_refund_entry_response.per_ticket_records = [
-                build_per_ticket_record(barcode_number, refund_entry)
-                for barcode_number, refund_entry in refund_entries
+                build_per_ticket_record(barcode_number, refund_entry, fill_with_blank=(i == 0))
+                for i, (barcode_number, refund_entry) in enumerate(refund_entries)
                 ]
             famiport_refund_entry_response.errorCode = u'%02d' % FamiPortRefundEntryResponseErrorCodeEnum.Success.value
         except:
