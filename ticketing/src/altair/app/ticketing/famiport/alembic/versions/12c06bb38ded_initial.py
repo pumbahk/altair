@@ -490,6 +490,7 @@ def create_schemas():
         sa.Column('shopNo', sa.Unicode(7)),
         sa.Column('registerNo', sa.Unicode(2)),
         sa.Column('timeStamp', sa.Unicode(8)),
+        sa.Column('errorCode', sa.Unicode(2)),
         sa.Column('barCode1', sa.Unicode(13)),
         sa.Column('resultCode1', sa.Unicode(2)),
         sa.Column('mainTitle1', sa.Unicode(30)),

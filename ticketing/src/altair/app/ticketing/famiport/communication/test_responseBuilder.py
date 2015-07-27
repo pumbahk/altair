@@ -189,6 +189,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000001',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     ),
                 FamiPortTicket(
@@ -196,6 +197,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000002',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     )
                 ],
@@ -249,6 +251,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000003',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     ),
                 FamiPortTicket(
@@ -256,6 +259,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000004',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     )
                 ],
@@ -302,6 +306,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000005',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     ),
                 FamiPortTicket(
@@ -309,6 +314,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000006',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     )
                 ],
@@ -356,6 +362,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000007',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     ),
                 FamiPortTicket(
@@ -363,6 +370,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000008',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     )
                 ],
@@ -410,6 +418,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000009',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     ),
                 FamiPortTicket(
@@ -417,6 +426,7 @@ class FamiPortResponseBuilderTestBase(object):
                     barcode_number=u'0000000000010',
                     template_code=u'TTTS000001',
                     data=u'<?xml version="1.0" encoding="Shift_JIS"><TICKET></TICKET>',
+                    price=5000,
                     issued_at=None
                     )
                 ],
@@ -1734,3 +1744,365 @@ class FamiPortPaymentTicketingCancelResponseBuilderTest(unittest.TestCase, FamiP
         self.assertEqual(result.orderId, u'000011112223')
         self.assertEqual(self.famiport_order_cash_on_delivery.famiport_receipts[0].void_at, self.now)
         self.assertEqual(self.famiport_order_cash_on_delivery.famiport_receipts[0].void_reason, 1)
+
+
+
+class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponseBuilderTestBase):
+    # 払戻
+    def setUp(self):
+        FamiPortResponseBuilderTestBase.setUp(self)
+
+    def tearDown(self):
+        FamiPortResponseBuilderTestBase.tearDown(self)
+
+    def test_it(self):
+        from ..models import FamiPortRefund, FamiPortRefundEntry, FamiPortRefundType
+        from .models import (
+            FamiPortRefundEntryResponseTextTypeEnum,
+            FamiPortRefundEntryResponseEntryTypeEnum,
+            FamiPortRefundEntryResponseErrorCodeEnum,
+            FamiPortRefundEntryRequest,
+            FamiPortRefundEntryResponse,
+            )
+        # self.famiport_order_cash_on_delivery
+        f_request = FamiPortRefundEntryRequest(
+            businessFlg=u'3',
+            textTyp=u'%d' % FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value,
+            entryTyp=u'%d' % FamiPortRefundEntryResponseEntryTypeEnum.Register.value,
+            shopNo=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            registerNo=u'01',
+            timeStamp=u'20150601',
+            barCode1=self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = datetime(2015, 5, 21, 13, 39, 13)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at = \
+            self.famiport_order_cash_on_delivery.issued_at = \
+            self.famiport_order_cash_on_delivery.paid_at = \
+                datetime(2015, 5, 21, 13, 50, 0)
+        refund = FamiPortRefund(
+            type=FamiPortRefundType.Type1.value,
+            client_code=self.famiport_order_cash_on_delivery.client_code,
+            send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
+            start_at=datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            )
+        refund_entry = FamiPortRefundEntry(
+            famiport_ticket=self.famiport_order_cash_on_delivery.famiport_tickets[0],
+            serial=0,
+            shop_code=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
+            ticketing_fee=0,
+            other_fees=0,
+            famiport_refund=refund
+            )
+        self.session.add(refund_entry)
+        self.session.flush()
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, datetime(2015, 6, 1, 0, 0, 0), self.request)
+        self.assertEqual(result.businessFlg, u'3')
+        self.assertEqual(result.textTyp, u'1')
+        self.assertEqual(result.entryTyp, u'1')
+        self.assertEqual(result.shopNo, u'0000009')
+        self.assertEqual(result.errorCode, u'00')
+        self.assertEqual(result.barCode1, self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number)
+        self.assertEqual(result.resultCode1, u'00')
+        self.assertEqual(result.mainTitle1, u'7/1公演')
+        self.assertEqual(result.perfDay1, u'20150701')
+        self.assertEqual(result.repayment1, u'005000')
+        self.assertEqual(result.refundStart1, u'20150601')
+        self.assertEqual(result.refundEnd1, u'20150630')
+        self.assertEqual(result.ticketTyp1, u'1')
+        self.assertEqual(result.charge1, u'000000')
+        self.assertEqual(result.barCode2, None)
+        self.assertEqual(result.resultCode2, None)
+        self.assertEqual(result.mainTitle2, None)
+        self.assertEqual(result.perfDay2, None)
+        self.assertEqual(result.repayment2, None)
+        self.assertEqual(result.refundStart2, None)
+        self.assertEqual(result.refundEnd2, None)
+        self.assertEqual(result.ticketTyp2, None)
+        self.assertEqual(result.charge2, None)
+        self.assertEqual(result.barCode3, None)
+        self.assertEqual(result.resultCode3, None)
+        self.assertEqual(result.mainTitle3, None)
+        self.assertEqual(result.perfDay3, None)
+        self.assertEqual(result.repayment3, None)
+        self.assertEqual(result.refundStart3, None)
+        self.assertEqual(result.refundEnd3, None)
+        self.assertEqual(result.ticketTyp3, None)
+        self.assertEqual(result.charge3, None)
+        self.assertEqual(result.barCode4, None)
+        self.assertEqual(result.resultCode4, None)
+        self.assertEqual(result.mainTitle4, None)
+        self.assertEqual(result.perfDay4, None)
+        self.assertEqual(result.repayment4, None)
+        self.assertEqual(result.refundStart4, None)
+        self.assertEqual(result.refundEnd4, None)
+        self.assertEqual(result.ticketTyp4, None)
+        self.assertEqual(result.charge4, None)
+
+    def test_out_of_term(self):
+        from ..models import FamiPortRefund, FamiPortRefundEntry, FamiPortRefundType
+        from .models import (
+            FamiPortRefundEntryResponseTextTypeEnum,
+            FamiPortRefundEntryResponseEntryTypeEnum,
+            FamiPortRefundEntryResponseErrorCodeEnum,
+            FamiPortRefundEntryRequest,
+            FamiPortRefundEntryResponse,
+            )
+        # self.famiport_order_cash_on_delivery
+        f_request = FamiPortRefundEntryRequest(
+            businessFlg=u'3',
+            textTyp=u'%d' % FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value,
+            entryTyp=u'%d' % FamiPortRefundEntryResponseEntryTypeEnum.Register.value,
+            shopNo=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            registerNo=u'01',
+            timeStamp=u'20150601',
+            barCode1=self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = datetime(2015, 5, 21, 13, 39, 13)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at = \
+            self.famiport_order_cash_on_delivery.issued_at = \
+            self.famiport_order_cash_on_delivery.paid_at = \
+                datetime(2015, 5, 21, 13, 50, 0)
+        refund = FamiPortRefund(
+            type=FamiPortRefundType.Type1.value,
+            client_code=self.famiport_order_cash_on_delivery.client_code,
+            send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
+            start_at=datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            )
+        refund_entry = FamiPortRefundEntry(
+            famiport_ticket=self.famiport_order_cash_on_delivery.famiport_tickets[0],
+            serial=0,
+            shop_code=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
+            ticketing_fee=0,
+            other_fees=0,
+            famiport_refund=refund
+            )
+        self.session.add(refund_entry)
+        self.session.flush()
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, datetime(2015, 7, 1, 0, 0, 0), self.request)
+        self.assertEqual(result.businessFlg, u'3')
+        self.assertEqual(result.textTyp, u'1')
+        self.assertEqual(result.entryTyp, u'1')
+        self.assertEqual(result.shopNo, u'0000009')
+        self.assertEqual(result.errorCode, u'00')
+        self.assertEqual(result.barCode1, self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number)
+        self.assertEqual(result.resultCode1, u'03')
+        self.assertEqual(result.mainTitle1, u'7/1公演')
+        self.assertEqual(result.perfDay1, u'20150701')
+        self.assertEqual(result.repayment1, u'005000')
+        self.assertEqual(result.refundStart1, u'20150601')
+        self.assertEqual(result.refundEnd1, u'20150630')
+        self.assertEqual(result.ticketTyp1, u'1')
+        self.assertEqual(result.charge1, u'000000')
+        self.assertEqual(result.barCode2, None)
+        self.assertEqual(result.resultCode2, None)
+        self.assertEqual(result.mainTitle2, None)
+        self.assertEqual(result.perfDay2, None)
+        self.assertEqual(result.repayment2, None)
+        self.assertEqual(result.refundStart2, None)
+        self.assertEqual(result.refundEnd2, None)
+        self.assertEqual(result.ticketTyp2, None)
+        self.assertEqual(result.charge2, None)
+        self.assertEqual(result.barCode3, None)
+        self.assertEqual(result.resultCode3, None)
+        self.assertEqual(result.mainTitle3, None)
+        self.assertEqual(result.perfDay3, None)
+        self.assertEqual(result.repayment3, None)
+        self.assertEqual(result.refundStart3, None)
+        self.assertEqual(result.refundEnd3, None)
+        self.assertEqual(result.ticketTyp3, None)
+        self.assertEqual(result.charge3, None)
+        self.assertEqual(result.barCode4, None)
+        self.assertEqual(result.resultCode4, None)
+        self.assertEqual(result.mainTitle4, None)
+        self.assertEqual(result.perfDay4, None)
+        self.assertEqual(result.repayment4, None)
+        self.assertEqual(result.refundStart4, None)
+        self.assertEqual(result.refundEnd4, None)
+        self.assertEqual(result.ticketTyp4, None)
+        self.assertEqual(result.charge4, None)
+
+    def test_different_shop_out_of_term(self):
+        from ..models import FamiPortRefund, FamiPortRefundEntry, FamiPortRefundType
+        from .models import (
+            FamiPortRefundEntryResponseTextTypeEnum,
+            FamiPortRefundEntryResponseEntryTypeEnum,
+            FamiPortRefundEntryResponseErrorCodeEnum,
+            FamiPortRefundEntryRequest,
+            FamiPortRefundEntryResponse,
+            )
+        # self.famiport_order_cash_on_delivery
+        f_request = FamiPortRefundEntryRequest(
+            businessFlg=u'3',
+            textTyp=u'%d' % FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value,
+            entryTyp=u'%d' % FamiPortRefundEntryResponseEntryTypeEnum.Register.value,
+            shopNo=u'0000010',
+            registerNo=u'01',
+            timeStamp=u'20150601',
+            barCode1=self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = datetime(2015, 5, 21, 13, 39, 13)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at = \
+            self.famiport_order_cash_on_delivery.issued_at = \
+            self.famiport_order_cash_on_delivery.paid_at = \
+                datetime(2015, 5, 21, 13, 50, 0)
+        refund = FamiPortRefund(
+            type=FamiPortRefundType.Type1.value,
+            client_code=self.famiport_order_cash_on_delivery.client_code,
+            send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
+            start_at=datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            )
+        refund_entry = FamiPortRefundEntry(
+            famiport_ticket=self.famiport_order_cash_on_delivery.famiport_tickets[0],
+            serial=0,
+            shop_code=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
+            ticketing_fee=0,
+            other_fees=0,
+            famiport_refund=refund
+            )
+        self.session.add(refund_entry)
+        self.session.flush()
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, datetime(2015, 7, 1, 0, 0, 0), self.request)
+        self.assertEqual(result.businessFlg, u'3')
+        self.assertEqual(result.textTyp, u'1')
+        self.assertEqual(result.entryTyp, u'1')
+        self.assertEqual(result.shopNo, u'0000010')
+        self.assertEqual(result.errorCode, u'00')
+        self.assertEqual(result.barCode1, self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number)
+        self.assertEqual(result.resultCode1, u'03')
+        self.assertEqual(result.mainTitle1, u'7/1公演')
+        self.assertEqual(result.perfDay1, u'20150701')
+        self.assertEqual(result.repayment1, u'005000')
+        self.assertEqual(result.refundStart1, u'20150601')
+        self.assertEqual(result.refundEnd1, u'20150630')
+        self.assertEqual(result.ticketTyp1, u'1')
+        self.assertEqual(result.charge1, u'000000')
+        self.assertEqual(result.barCode2, None)
+        self.assertEqual(result.resultCode2, None)
+        self.assertEqual(result.mainTitle2, None)
+        self.assertEqual(result.perfDay2, None)
+        self.assertEqual(result.repayment2, None)
+        self.assertEqual(result.refundStart2, None)
+        self.assertEqual(result.refundEnd2, None)
+        self.assertEqual(result.ticketTyp2, None)
+        self.assertEqual(result.charge2, None)
+        self.assertEqual(result.barCode3, None)
+        self.assertEqual(result.resultCode3, None)
+        self.assertEqual(result.mainTitle3, None)
+        self.assertEqual(result.perfDay3, None)
+        self.assertEqual(result.repayment3, None)
+        self.assertEqual(result.refundStart3, None)
+        self.assertEqual(result.refundEnd3, None)
+        self.assertEqual(result.ticketTyp3, None)
+        self.assertEqual(result.charge3, None)
+        self.assertEqual(result.barCode4, None)
+        self.assertEqual(result.resultCode4, None)
+        self.assertEqual(result.mainTitle4, None)
+        self.assertEqual(result.perfDay4, None)
+        self.assertEqual(result.repayment4, None)
+        self.assertEqual(result.refundStart4, None)
+        self.assertEqual(result.refundEnd4, None)
+        self.assertEqual(result.ticketTyp4, None)
+        self.assertEqual(result.charge4, None)
+
+
+
+    def test_different_shop(self):
+        from ..models import FamiPortRefund, FamiPortRefundEntry, FamiPortRefundType
+        from .models import (
+            FamiPortRefundEntryResponseTextTypeEnum,
+            FamiPortRefundEntryResponseEntryTypeEnum,
+            FamiPortRefundEntryResponseErrorCodeEnum,
+            FamiPortRefundEntryRequest,
+            FamiPortRefundEntryResponse,
+            )
+        # self.famiport_order_cash_on_delivery
+        f_request = FamiPortRefundEntryRequest(
+            businessFlg=u'3',
+            textTyp=u'%d' % FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value,
+            entryTyp=u'%d' % FamiPortRefundEntryResponseEntryTypeEnum.Register.value,
+            shopNo=u'0000010',
+            registerNo=u'01',
+            timeStamp=u'20150601',
+            barCode1=self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at = datetime(2015, 5, 21, 13, 39, 13)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at = \
+            self.famiport_order_cash_on_delivery.issued_at = \
+            self.famiport_order_cash_on_delivery.paid_at = \
+                datetime(2015, 5, 21, 13, 50, 0)
+        refund = FamiPortRefund(
+            type=FamiPortRefundType.Type1.value,
+            client_code=self.famiport_order_cash_on_delivery.client_code,
+            send_back_due_at=datetime(2015, 8, 1, 0, 0, 0),
+            start_at=datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime(2015, 6, 30, 23, 59, 59)
+            )
+        refund_entry = FamiPortRefundEntry(
+            famiport_ticket=self.famiport_order_cash_on_delivery.famiport_tickets[0],
+            serial=0,
+            shop_code=self.famiport_order_cash_on_delivery.famiport_receipts[0].shop_code,
+            ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
+            ticketing_fee=0,
+            other_fees=0,
+            famiport_refund=refund
+            )
+        self.session.add(refund_entry)
+        self.session.flush()
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, datetime(2015, 6, 1, 0, 0, 0), self.request)
+        self.assertEqual(result.businessFlg, u'3')
+        self.assertEqual(result.textTyp, u'1')
+        self.assertEqual(result.entryTyp, u'1')
+        self.assertEqual(result.shopNo, u'0000010')
+        self.assertEqual(result.errorCode, u'00')
+        self.assertEqual(result.barCode1, self.famiport_order_cash_on_delivery.famiport_tickets[0].barcode_number)
+        self.assertEqual(result.resultCode1, u'07')
+        self.assertEqual(result.mainTitle1, u'7/1公演')
+        self.assertEqual(result.perfDay1, u'20150701')
+        self.assertEqual(result.repayment1, u'005000')
+        self.assertEqual(result.refundStart1, u'20150601')
+        self.assertEqual(result.refundEnd1, u'20150630')
+        self.assertEqual(result.ticketTyp1, u'1')
+        self.assertEqual(result.charge1, u'000000')
+        self.assertEqual(result.barCode2, None)
+        self.assertEqual(result.resultCode2, None)
+        self.assertEqual(result.mainTitle2, None)
+        self.assertEqual(result.perfDay2, None)
+        self.assertEqual(result.repayment2, None)
+        self.assertEqual(result.refundStart2, None)
+        self.assertEqual(result.refundEnd2, None)
+        self.assertEqual(result.ticketTyp2, None)
+        self.assertEqual(result.charge2, None)
+        self.assertEqual(result.barCode3, None)
+        self.assertEqual(result.resultCode3, None)
+        self.assertEqual(result.mainTitle3, None)
+        self.assertEqual(result.perfDay3, None)
+        self.assertEqual(result.repayment3, None)
+        self.assertEqual(result.refundStart3, None)
+        self.assertEqual(result.refundEnd3, None)
+        self.assertEqual(result.ticketTyp3, None)
+        self.assertEqual(result.charge3, None)
+        self.assertEqual(result.barCode4, None)
+        self.assertEqual(result.resultCode4, None)
+        self.assertEqual(result.mainTitle4, None)
+        self.assertEqual(result.perfDay4, None)
+        self.assertEqual(result.repayment4, None)
+        self.assertEqual(result.refundStart4, None)
+        self.assertEqual(result.refundEnd4, None)
+        self.assertEqual(result.ticketTyp4, None)
+        self.assertEqual(result.charge4, None)
+
+

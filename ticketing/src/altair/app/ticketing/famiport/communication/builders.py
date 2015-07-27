@@ -42,6 +42,9 @@ from .models import (
     InformationResultCodeEnum,
     NameRequestInputEnum,
     PhoneRequestInputEnum,
+    FamiPortRefundEntryResponseErrorCodeEnum,
+    FamiPortRefundEntryResponseTextTypeEnum,
+    FamiPortRefundEntryResponseResultCodeEnum,
     FamiPortReservationInquiryRequest,
     FamiPortPaymentTicketingRequest,
     FamiPortPaymentTicketingCompletionRequest,
@@ -1029,66 +1032,72 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now, request):
-        shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
-        text_type = None
-        if famiport_refund_entry_request.textTyp == '0':  # 0: 問い合わせ -> 応答では1を応答
-            text_type = '1'
-        elif famiport_refund_entry_request.textTyp == '2':  # 2: 確定 -> 応答では4を応答
-            text_type = '4'  # なぜか4 (textTypは連番ではないらしい)
-        else:
-            logger.error('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
-            raise ValueError('invalid text type: {}'.format(famiport_refund_entry_request.textTyp))
-
-        famiport_refund_entry_response = FamiPortRefundEntryResponse(
-            _request=famiport_refund_entry_request,
-            businessFlg=famiport_refund_entry_request.businessFlg,
-            textTyp=text_type,
-            entryTyp=famiport_refund_entry_request.entryTyp,
-            shopNo=shop_code.zfill(7),
-            registerNo=famiport_refund_entry_request.registerNo,
-            timeStamp=famiport_refund_entry_request.timeStamp,
-            )
-        barcode_numbers = famiport_refund_entry_request.barcode_numbers
-        refund_entries = [
-            (
-                barcode_number,
-                (
-                    session.query(FamiPortRefundEntry) \
-                        .options(orm.joinedload(FamiPortRefundEntry.famiport_ticket)) \
-                        .join(FamiPortRefundEntry.famiport_ticket) \
-                        .filter(FamiPortTicket.barcode_number == barcode_number) \
-                        .first() \
-                    if barcode_number \
-                    else None
-                    )
-                )
-            for barcode_number in barcode_numbers
-            ]
-        def build_per_ticket_record(barcode_number, refund_entry):
-            main_title = u''
-            perf_day = u''
-            repayment = u''
-            refund_start = u''
-            refund_end = u''
-            ticket_typ = u''
-            charge=u''
-            if refund_entry is None:
-                result_code = u'01'
+        shop_code = _strip_zfill(famiport_refund_entry_request.shopNo).zfill(7)[2:]
+        text_type = FamiPortRefundEntryResponseTextTypeEnum.ResponseToInquiry.value
+        error_code = FamiPortRefundEntryResponseErrorCodeEnum.OutOfService.value
+        try:
+            given_text_type = None
+            try:
+                given_text_type = int(famiport_refund_entry_request.textTyp)
+            except (ValueError, TypeError):
+                logger.exception(u"invalid TextTyp (%s)" % famiport_refund_entry_request.textTyp)
+                error_code = FamiPortRefundEntryResponseErrorCodeEnum.InvalidParameter.value
+                raise
+            if len(shop_code) != 5:
+                raise ValueError(u"invalid ShopNo (%s)" % famiport_refund_entry_request.shopNo)
+            text_type = None
+            if given_text_type == FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value:  # 0: 問い合わせ -> 応答では1を応答
+                text_type = FamiPortRefundEntryResponseTextTypeEnum.ResponseToInquiry.value
+            elif given_text_type == FamiPortRefundEntryResponseTextTypeEnum.Settlement.value:  # 2: 確定 -> 応答では4を応答
+                text_type = FamiPortRefundEntryResponseTextTypeEnum.ResponseToSettlement.value  # なぜか4 (textTypは連番ではないらしい)
             else:
-                if refund_entry.refunded_at is not None:
-                    result_code = u'02'
+                error_code = FamiPortRefundEntryResponseErrorCodeEnum.InvalidParameter.value
+                raise ValueError(u"invalid TextTyp (%s)" % famiport_refund_entry_request.textTyp)
+
+            famiport_refund_entry_response = FamiPortRefundEntryResponse(
+                _request=famiport_refund_entry_request,
+                businessFlg=famiport_refund_entry_request.businessFlg,
+                textTyp=u'%d' % text_type,
+                entryTyp=famiport_refund_entry_request.entryTyp,
+                shopNo=shop_code.zfill(7),
+                registerNo=famiport_refund_entry_request.registerNo,
+                timeStamp=famiport_refund_entry_request.timeStamp
+                )
+            barcode_numbers = famiport_refund_entry_request.barcode_numbers
+            refund_entries = [
+                (
+                    barcode_number,
+                    (
+                        session.query(FamiPortRefundEntry) \
+                            .options(orm.joinedload(FamiPortRefundEntry.famiport_ticket)) \
+                            .join(FamiPortRefundEntry.famiport_ticket) \
+                            .filter(FamiPortTicket.barcode_number == barcode_number) \
+                            .first() \
+                        if barcode_number \
+                        else None
+                        )
+                    )
+                for barcode_number in barcode_numbers
+                ]
+            def build_per_ticket_record(barcode_number, refund_entry):
+                result_code = None
+                main_title = None
+                perf_day = None
+                repayment = None
+                refund_start = None
+                refund_end = None
+                ticket_typ = None
+                charge = None
+                if barcode_number is None:
+                    pass
+                elif refund_entry is None:
+                    result_code = FamiPortRefundEntryResponseResultCodeEnum.NoData.value
                 else:
-                    issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
-                    assert issuing_shop_code is not None
-                    if refund_entry.famiport_refund.start_at > now \
-                       or refund_entry.famiport_refund.end_at < now:
-                        result_code = u'03'
-                    elif _strip_zfill(issuing_shop_code) != shop_code:
-                        result_code = u'07'
+                    if refund_entry.refunded_at is not None:
+                        result_code = FamiPortRefundEntryResponseResultCodeEnum.AlreadyMarkedRefunded.value
                     else:
-                        result_code = u'00'
-                        if famiport_refund_entry_request.textTyp == u'2':
-                            refund_entry.refunded_at = now
+                        issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
+                        assert issuing_shop_code is not None
                         famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
                         main_title = famiport_performance.name
                         perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u'19700101'
@@ -1097,23 +1106,49 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                         refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
                         ticket_typ = u'{0}'.format(refund_entry.famiport_ticket.type)
                         charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.other_fees)
-            session.commit()
-            return dict(
-                barCode=barcode_number,
-                resultCode=result_code,
-                mainTitle=main_title,
-                perfDay=perf_day,
-                repayment=repayment,
-                refundStart=refund_start,
-                refundEnd=refund_end,
-                ticketTyp=ticket_typ,
-                charge=charge
-                )
+                        if refund_entry.famiport_refund.start_at > now \
+                           or refund_entry.famiport_refund.end_at < now:
+                            result_code = FamiPortRefundEntryResponseResultCodeEnum.OutOfTerm.value
+                        else:
+                            if issuing_shop_code != shop_code:
+                                result_code = FamiPortRefundEntryResponseResultCodeEnum.IssuedAtDifferentShop.value
+                            else:
+                                result_code = FamiPortRefundEntryResponseResultCodeEnum.Refundable.value
+                            if given_text_type == FamiPortRefundEntryResponseTextTypeEnum.Settlement.value:
+                                refund_entry.refunded_at = now
+                            session.commit()
+                return dict(
+                    barCode=barcode_number,
+                    resultCode=u'%02d' % result_code if result_code is not None else None,
+                    mainTitle=main_title,
+                    perfDay=perf_day,
+                    repayment=repayment,
+                    refundStart=refund_start,
+                    refundEnd=refund_end,
+                    ticketTyp=ticket_typ,
+                    charge=charge
+                    )
 
-        famiport_refund_entry_response.per_ticket_records = [
-            build_per_ticket_record(barcode_number, refund_entry)
-            for barcode_number, refund_entry in refund_entries
-            ]
+            famiport_refund_entry_response.per_ticket_records = [
+                build_per_ticket_record(barcode_number, refund_entry)
+                for barcode_number, refund_entry in refund_entries
+                ]
+            famiport_refund_entry_response.errorCode = u'%02d' % FamiPortRefundEntryResponseErrorCodeEnum.Success.value
+        except:
+            famiport_refund_entry_response = FamiPortRefundEntryResponse(
+                _request=famiport_refund_entry_request,
+                businessFlg=famiport_refund_entry_request.businessFlg,
+                entryTyp=famiport_refund_entry_request.entryTyp,
+                shopNo=famiport_refund_entry_request.shopNo,
+                registerNo=famiport_refund_entry_request.registerNo,
+                timeStamp=famiport_refund_entry_request.timeStamp,
+                errorCode=u'%02d' % error_code
+                )
+            logger.exception(
+                u"an exception occurred at FamiPortRefundEntryResponseBuilder.build_response(). "
+                u'処理区分: %s, 店舗コード: %s, レジ番号: %s, オペレーション開始日: %s' \
+                % (famiport_refund_entry_request.textTyp, famiport_refund_entry_request.shopNo, famiport_refund_entry_request.registerNo, famiport_refund_entry_request.timeStamp)
+                )
         return famiport_refund_entry_response
 
 

@@ -441,6 +441,7 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             shop_code='99999',
             can_cancel=lambda now: True,
             completed_at=None,
+            canceled_at=None,
             void_at=None,
             barcode_no=u'1000000000000',
             mark_voided=lambda *args: None,

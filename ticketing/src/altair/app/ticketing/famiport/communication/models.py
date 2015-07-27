@@ -537,6 +537,31 @@ class FamiPortCustomerInformationResponse(Base, WithCreatedAt, FamiPortResponse)
     def encrypt_key(self):
         return self._encrypt_key
 
+class FamiPortRefundEntryResponseErrorCodeEnum(Enum):
+    Success                    = 0
+    NonBusinessHour            = 1
+    OutOfService               = 2
+    InvalidParameter           = 3
+
+
+class FamiPortRefundEntryResponseTextTypeEnum(Enum):
+    Inquiry                    = 0
+    ResponseToInquiry          = 1
+    Settlement                 = 2
+    ResponseToSettlement       = 4
+
+
+class FamiPortRefundEntryResponseResultCodeEnum(Enum):
+    Refundable                 = 0
+    NoData                     = 1
+    AlreadyMarkedRefunded      = 2
+    OutOfTerm                  = 3
+    IssuedAtDifferentShop        = 7
+
+
+class FamiPortRefundEntryResponseEntryTypeEnum(Enum):
+    Register                   = 1
+
 
 class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     """払戻レコード問い合わせ / 確定
@@ -549,6 +574,7 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
         ('shopNo', 'ShopNo'),
         ('registerNo', 'RegisterNo'),
         ('timeStamp', 'TimeStamp'),
+        ('errorCode', 'ErrorCode'),
         ('barCode1', 'BarCode1'),
         ('resultCode1', 'ResultCode1'),
         ('mainTitle1', 'MainTitle1'),
@@ -646,6 +672,7 @@ class FamiPortRefundEntryResponse(Base, WithCreatedAt, FamiPortResponse):
     shopNo = sa.Column(sa.Unicode(7)) # 店No
     registerNo = sa.Column(sa.Unicode(2)) # レジNo
     timeStamp = sa.Column(sa.Unicode(8)) # オペレーション開始日
+    errorCode = sa.Column(sa.Unicode(1)) # エラーコード
     barCode1 = sa.Column(sa.Unicode(13)) # バーコード番号[0]
     resultCode1 = sa.Column(sa.Unicode(2)) # 終了コード[0]
     mainTitle1 = sa.Column(sa.Unicode(30)) # メインタイトル(公演名)[0]
