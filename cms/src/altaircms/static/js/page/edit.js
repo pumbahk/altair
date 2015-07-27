@@ -205,8 +205,13 @@ var WidgetDialogView = Backbone.View.extend({
             var self = this;
 
             self.model.set("detail", "");
-            if ('freetext' in data) {
-                self.model.set("detail", _.escape(data['freetext']).substring(0,200));
+            if (typeof data !== "undefined") {
+                if ('freetext' in data) {
+                    self.model.set("detail", _.escape(data['freetext']).substring(0,200));
+                }
+                if ('imagefile' in data) {
+                    self.model.set("detail", "<img style='height:40px' src='" + data['imagefile'] + "' />");
+                }
             }
             this.model.save().done(function(data){
                 self.model.set("pk", data.pk) // pk
