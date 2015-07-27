@@ -1032,7 +1032,7 @@ class FamiPortCustomerInformationResponseBuilder(FamiPortResponseBuilder):
 
 class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_refund_entry_request, session, now, request):
-        shop_code = _strip_zfill(famiport_refund_entry_request.shopNo).zfill(7)[2:]
+        shop_code = _strip_zfill(famiport_refund_entry_request.shopNo)
         text_type = FamiPortRefundEntryResponseTextTypeEnum.ResponseToInquiry.value
         error_code = FamiPortRefundEntryResponseErrorCodeEnum.OutOfService.value
         try:
@@ -1043,8 +1043,6 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                 logger.exception(u"invalid TextTyp (%s)" % famiport_refund_entry_request.textTyp)
                 error_code = FamiPortRefundEntryResponseErrorCodeEnum.InvalidParameter.value
                 raise
-            if len(shop_code) != 5:
-                raise ValueError(u"invalid ShopNo (%s)" % famiport_refund_entry_request.shopNo)
             text_type = None
             if given_text_type == FamiPortRefundEntryResponseTextTypeEnum.Inquiry.value:  # 0: 問い合わせ -> 応答では1を応答
                 text_type = FamiPortRefundEntryResponseTextTypeEnum.ResponseToInquiry.value
@@ -1107,6 +1105,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                     else:
                         issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
                         assert issuing_shop_code is not None
+                        issuing_shop_code = _strip_zfill(issuing_shop_code)
                         famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
                         main_title = famiport_performance.name or u''
                         perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u''
