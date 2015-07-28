@@ -255,24 +255,30 @@ class MailInfoTemplate(object):
     def as_formclass(self):
         return MailInfoFormFactory(self, mutil=self.mutil, request=self.request)
 
-    payment_choices = [#("header", u"ヘッダ"), 
-                       ("notice", u"決済：注意事項"), 
-                       #("footer", u"フッタ"), 
+    payment_choices = [#("header", u"ヘッダ"),
+                       ("notice", u"決済：注意事項"),
+                       #("footer", u"フッタ"),
                        ]
-    delivery_choices = [#("header", u"ヘッダー"), 
-                       ("notice", u"受取：注意事項"), 
-                       #("footer", u"フッター"), 
+    delivery_choices = [#("header", u"ヘッダー"),
+                       ("notice", u"受取：注意事項"),
+                       #("footer", u"フッター"),
                        ]
     common_choices = [
         PluginInfo("", "header", u"メールヘッダー"),
-        PluginInfo("", "notice", u"共通注意事項"), 
+        PluginInfo("", "notice", u"共通注意事項"),
         PluginInfo("", "footer", u"メールフッター"),
         ]
+
+    address_choices = [
+        PluginInfo("", "inquiry_link", u"お問い合わせ先"),
+        PluginInfo("", "history_link", u"購入履歴確認先"),
+        PluginInfo("", "magazine_link", u"メールマガジンの配信をご希望される方はこちら"),
+    ]
 
     def __init__(self, request, organization, mutil=None):
         self.request = request
         self.organization = organization
-        self.mutil = mutil 
+        self.mutil = mutil
 
     payment_key_fmt = "P%s%s"
     delivery_key_fmt = "D%s%s"
@@ -312,14 +318,18 @@ class MailInfoTemplate(object):
 
             for k, v in self.delivery_choices:
                 yield PluginInfo(name=self.delivery_key_fmt % (plugin_id, k),
-                                 method=delivery_type, 
+                                 method=delivery_type,
                                  label=u"%s(%s)" % (v, plugin_name))
 
     def common_methods_keys(self):
         return self.common_choices
 
+    def common_address_keys(self):
+        return self.address_choices
+
     def template_keys(self, payment_plugin_id=None, delivery_plugin_id=None):
         return itertools.chain(
-            self.common_methods_keys(), 
-            self.payment_methods_keys(payment_plugin_id), 
+            self.common_methods_keys(),
+            self.common_address_keys(),
+            self.payment_methods_keys(payment_plugin_id),
             self.delivery_methods_keys(delivery_plugin_id))
