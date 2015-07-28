@@ -8,3 +8,7 @@ class FamiPortRequestTypeError(FamiPortError):
 
 class FamiPortResponseBuilderLookupError(FamiPortError):
     pass
+
+
+class FamiPortInvalidResponseError(FamiPortError):
+    pass
