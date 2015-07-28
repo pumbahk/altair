@@ -1,0 +1,137 @@
+<%inherit file="./base.html"/>
+<%block name="css">
+<style type="text/css">
+  .confirm-message{
+    margin-left: 7px;
+  }
+  .next-action{
+    margin-top: 20px;
+  }
+</style>
+</%block>
+
+${self.widget.flow_widget(4)}
+
+<p><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
+<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_order_number.gif')}" alt="注文番号" width="103" height="30" /></h2>
+    <div class="confirm-message">
+      ${order.order_no}
+    </div>
+  </div>
+</div>
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
+    <h3 id="name">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}</h3>
+    <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
+      %for product in order.ordered_products:
+      <tr>
+        <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
+        <td><strong>${product.seat_quantity}</strong>枚</td>
+        <td>
+          % if product.product.sales_segment.setting.display_seat_no:
+            % for seat in product.seats:
+              ${seat['name']}<br/>
+            % endfor
+          % endif
+        </td>
+        <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+      </tr>
+      %endfor
+      <tr id="commission">
+        <th scope="row">決済手数料</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+      <tr id="commission">
+        <th scope="row">発券/引取手数料</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
+      </tr>
+      <tr id="commission">
+        <th scope="row">システム利用料</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="align1">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+      %if order.special_fee > 0:
+      <tr id="commission">
+        <th scope="row">${order.special_fee_name}</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="align1">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+      %endif
+      <tr id="total">
+        <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="align1">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
+% if extra_form_data:
+<div class="confirmBox">
+	<div class="confirmBoxInner">
+    <h2>追加情報</h2>
+	  <table id="contentsOfShopping">
+    % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${h.sensible_coerce(request, display_value)}</td>
+      </tr>
+    % endfor
+    </table>
+  </div>
+</div>
+% endif
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
+    <div class="confirm-message">
+      ${h.render_payment_finished_viewlet(request, order)}
+    </div>
+  </div>
+</div>
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_reception.gif')}" alt="お引き取り" width="103" height="30" /></h2>
+    <div class="confirm-message">
+      ${h.render_delivery_finished_viewlet(request, order)}
+    </div>
+  </div>
+</div>
+
+## todo: pluggable
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h3>注意事項</h3>
+    <div class="confirm-message">
+      <ul>
+
+        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:leisure@mail.rakuten.com">こちら</a> までご連絡ください。<br />
+        <li>お申込内容は、「<a target="_blank" href="https://leisure.tstar.jp/orderreview/">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+<div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
+  <div class="next-action">
+    <a href="${request.context.host_base_url}"><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/btn_back_to_top.gif')}"/></a>
+    <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}"
+       ><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/btn_other_ticket.gif')}"/></a>
+  </div>
+</div>

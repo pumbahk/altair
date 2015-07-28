@@ -1,0 +1,10 @@
+<%def name="header(markercolor='#cc0000')">
+<h3 class="glitter cart">${caller.body()}</h3>
+</%def>
+<%def name="line(width=1,color='#cc0000')">
+<div
+% if color:
+  style="background-color:${color}" bgcolor="${color}"
+% endif
+><img src="${request.static_url('cart:static/KS/smartphone/images/mobile/clear.gif')}" width="1" height="${width}" /></div>
+</%def>

@@ -1,0 +1,23 @@
+<html>
+<head>
+  <title>楽天レジャーチケット 購入確認ページ</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+  <div style="text-align: center; background-color: #46D21B">
+    <a href="http://leisure.tstar.jp/">
+      <img src="${request.static_url('altair.app.ticketing.orderreview:static/RL/mobile/images/logo_mobile.gif')}"
+           alt="楽天レジャーチケット" width="100%"/>
+    </a>
+  </div>
+  
+<%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a>
+  <div>
+    Copyright &copy; 2010-2015 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>
