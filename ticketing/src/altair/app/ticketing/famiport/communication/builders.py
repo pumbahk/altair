@@ -298,7 +298,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
                 kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
-                name = famiport_order.customer_name if famiport_order.customer_name_input else ''
+                name = famiport_order.customer_name if not famiport_order.customer_name_input else u''
 
                 totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
                 ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
