@@ -199,9 +199,15 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
 
-                if famiport_receipt.payment_request_received_at is not None:
+                if famiport_receipt.payment_request_received_at is not None and \
+                   famiport_receipt.completed_at is None:
                     logger.error(u'FamiPortReceipt(barCodeNo=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.barcode_no, famiport_receipt.payment_request_received_at))
                     replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
+                    famiport_receipt = None
+                elif famiport_receipt.payment_request_received_at is not None and \
+                    famiport_receipt.completed_at is not None:
+                    logger.error(u'FamiPortReceipt(barCodeNo=%s) is already completed (%s).' % (famiport_receipt.barcode_no, famiport_receipt.completed_at))
+                    replyCode = ReplyCodeEnum.AlreadyPaidError.value
                     famiport_receipt = None
                 elif famiport_order.auth_number is not None and famiport_order.auth_number != authNumber:
                     logger.error(u'authNumber differs (%s != %s)' % (famiport_order.auth_number, authNumber))
@@ -222,9 +228,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                         else:
                             if famiport_receipt.completed_at is None:
                                 replyClass = ReplyClassEnum.CashOnDelivery.value
-                            else:
-                                replyCode = ReplyCodeEnum.AlreadyPaidError.value
-                                famiport_receipt = None
                     elif famiport_receipt.type == FamiPortReceiptType.Payment.value:
                         if famiport_order.payment_start_at is not None and  \
                            famiport_order.payment_start_at > ticketingDate:
@@ -242,9 +245,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                                     replyClass = ReplyClassEnum.PrepaymentOnly.value
                                 else:
                                     replyClass = ReplyClassEnum.Prepayment.value
-                            else:
-                                replyCode = ReplyCodeEnum.AlreadyPaidError.value
-                                famiport_receipt = None
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         if famiport_order.ticketing_start_at is not None and  \
                            famiport_order.ticketing_start_at > ticketingDate:
@@ -259,9 +259,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                         else:
                             if famiport_receipt.completed_at is None:
                                 replyClass = ReplyClassEnum.Paid.value
-                            else:
-                                replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
-                                famiport_receipt = None
                     else:
                         raise AssertionError('invalid FamiPortReceiptType: %d' % famiport_receipt.type)
 
