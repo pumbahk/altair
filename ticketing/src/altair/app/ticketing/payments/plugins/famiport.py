@@ -673,16 +673,16 @@ def validate_order_like(request, order_like, plugin):
             FamiPortOrderType.Payment.value,
             ]:
         if len(tickets) > FAMIPORT_MAX_TICKET_COUNT:
-            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'ordered_product_item.quantity')
 
     # お客様氏名
     if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_name')
+        raise OrderLikeValidationFailure(u'too long', 'shipping_address.last_name')
 
     # 住所1
     if len(famiport_order_dict.get('customer_address_1', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_1_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_address_1')
+        raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_1')
 
     # 住所2
     if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_address_2')
+        raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_2')
