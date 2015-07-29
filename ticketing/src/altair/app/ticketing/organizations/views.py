@@ -240,6 +240,7 @@ class OrganizationSettings(BaseView):
         organization_setting.point_rate = f.point_rate.data
         organization_setting.notify_point_granting_failure = f.notify_point_granting_failure.data
         organization_setting.notify_remind_mail = f.notify_remind_mail.data
+        organization_setting.notify_print_remind_mail = f.notify_print_remind_mail.data
         organization_setting.bcc_recipient = f.bcc_recipient.data
         organization_setting.default_mail_sender = f.default_mail_sender.data
         organization_setting.enable_smartphone_cart = f.enable_smartphone_cart.data
@@ -348,6 +349,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.mail_refund_to_user = f['mail_refund_to_user'].data
 
                     organization_setting.notify_remind_mail = f.notify_remind_mail.data
+                    organization_setting.notify_print_remind_mail = f.notify_print_remind_mail.data
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',

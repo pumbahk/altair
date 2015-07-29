@@ -66,7 +66,9 @@ ${order.performance.name}<br/>
 会場名：
 ${order.performance.venue.name}
 <br/>
-<input type="submit" value="チケット詳細">
+% if order.shipping_address:
+  <input type="submit" value="チケット詳細">
+% endif
 </form>
 <hr/>
   % endfor
@@ -83,6 +85,7 @@ ${h.japanese_datetime(entry.created_at)}<br/>
 ${h.get_entry_status(request, entry)}<br/>
 抽選名称：
 ${entry.lot.name}<br/>
+% if entry.shipping_address:
 <form name="" action="/lots/review" method="POST">
   <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
   <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
@@ -90,6 +93,7 @@ ${entry.lot.name}<br/>
   <input type="submit" value="抽選申込み内容詳細">
   % endif
 </form>
+% endif
 <hr/>
   % endfor
 ${render_pager(lot_entries)}

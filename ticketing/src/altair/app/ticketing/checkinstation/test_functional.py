@@ -274,8 +274,9 @@ def qrsigned_from_token(token):
     history.ordered_product_item = token.item
     assert history.ordered_product_item_id
     assert history.ordered_product_item
-    params = make_data_for_qr(history)
-    return builder.sign(builder.make(params))
+    params, _ = make_data_for_qr(history)
+    data = builder.make(params)
+    return builder.sign(data)
 
 
 ## todo: assertion strictly

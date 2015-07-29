@@ -31,7 +31,7 @@ class AnnotatedColumn(_Column):
         return new_instance
 
 def get_annotations_for(misc):
-    if not isinstance(misc, (AssociationProxy, QueryableAttribute, ColumnProperty, RelationshipProperty)):
+    if not isinstance(misc, (_Column, AssociationProxy, QueryableAttribute, ColumnProperty, RelationshipProperty)):
         raise Exception('unsupported type: %s' % misc.__class__.__name__)
     annotations = annotations_dict.get(misc)
     if annotations is None:

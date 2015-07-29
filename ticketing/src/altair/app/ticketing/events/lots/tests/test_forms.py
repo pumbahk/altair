@@ -87,7 +87,6 @@ class LotFormTests(unittest.TestCase):
         target.end_at.data = None
         target.use_default_end_at.data = True
         target.max_quantity.data = 1
-        target.seat_choice.data = True
         target.auth3d_notice.data = ''
 
         lot = target.create_lot(event)

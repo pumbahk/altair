@@ -193,6 +193,7 @@ setup(name='altair.app.ticketing',
       augus_venue_sync_request=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_request:main
       augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
       send_sej_remind_mail=altair.app.ticketing.mails.scripts.send_sej_remind_mail:main
+      send_print_remind_mail=altair.app.ticketing.mails.scripts.send_print_remind_mail:main
       sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
       famiport_send_sales_file=altair.app.ticketing.famiport.scripts.famiport_send_sales_file:main

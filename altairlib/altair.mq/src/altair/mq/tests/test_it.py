@@ -19,6 +19,7 @@ class TestIt(unittest.TestCase):
     def test_it(self):
         from altair.mq.interfaces import IConsumer
         self.config.include('altair.mq')
+        self.config.add_publisher_consumer('', 'altair.mq')
         self.config.include('altair.mq.example')
 
         reg = self.config.registry

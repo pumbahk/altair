@@ -79,6 +79,10 @@
       <td>${u'コンビニ入金期限前をメールで通知する' if organization_setting.notify_remind_mail else u'コンビニ入金期限前をメールで通知しない'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.notify_print_remind_mail)}</th>
+      <td>${u'コンビニ未発券をメールで通知する' if organization_setting.notify_print_remind_mail else u'コンビニ未発券をメールで通知しない'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.bcc_recipient)}</th>
       <td>${organization_setting.bcc_recipient or u'-'}</td>
     </tr>

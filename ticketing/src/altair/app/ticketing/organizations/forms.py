@@ -296,6 +296,10 @@ class OrganizationSettingSimpleForm(OurForm):
         label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
         )
 
+    notify_print_remind_mail = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.notify_print_remind_mail)['label']
+        )
+
     contact_pc_url = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.contact_pc_url)['label']
         )
