@@ -231,7 +231,8 @@ class FamiPortRebookOrderView(object):
                 else:
                     raise FamiPortAPIError(u'make_suborder_by_order_no failed')
 
-                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
+                new_management_number = u'test'
+                # vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
             else:
                 error = u'・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
 
@@ -278,7 +279,8 @@ class FamiPortRebookOrderView(object):
                                                    cancel_reason_code=cancel_code,
                                                    cancel_reason_text=cancel_text)
                 new_receipt = order.ticketing_famiport_receipt
-                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
+                new_management_number = u'test'
+                # vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
             else:
                 error = u'・'.join(ValidateUtils.validate_reprint_cond(receipt, datetime.now()))
         else:
