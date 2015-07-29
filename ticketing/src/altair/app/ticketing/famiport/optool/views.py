@@ -206,6 +206,7 @@ class FamiPortRebookOrderView(object):
         session = get_db_session(self.request, name="famiport")
         receipt = self.context.receipt
         order = receipt.famiport_order
+        client_code = order.client_code
         vh=ViewHelpers(self.request)
         old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
         new_management_number = u''
@@ -218,6 +219,7 @@ class FamiPortRebookOrderView(object):
             if not ValidateUtils.validate_rebook_cond(receipt, datetime.now()):
                 make_suborder_by_order_no(request=self.request,
                                           session=session,
+                                          client_code=client_code,
                                           order_no=order.order_no,
                                           cancel_reason_code=cancel_code,
                                           cancel_reason_text=cancel_text)
@@ -258,6 +260,7 @@ class FamiPortRebookOrderView(object):
         session = get_db_session(self.request, name="famiport")
         receipt = self.context.receipt
         order = receipt.famiport_order
+        client_code = order.client_code
         vh=ViewHelpers(self.request)
         old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
         new_management_number = u''
@@ -270,6 +273,7 @@ class FamiPortRebookOrderView(object):
             if not ValidateUtils.validate_reprint_cond(receipt, datetime.now()):
                 mark_order_reissueable_by_order_no(request=self.request,
                                                    session=session,
+                                                   client_code=client_code,
                                                    order_no=order.order_no,
                                                    cancel_reason_code=cancel_code,
                                                    cancel_reason_text=cancel_text)
