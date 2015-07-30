@@ -13,9 +13,8 @@ except ImportError:
 from pyramid.paster import (
     bootstrap,
     )
-from altair.app.ticketing.famiport.builders import TextFamiPortResponseGenerator
 from altair.app.ticketing.famiport.communication.models import FamiPortRefundEntryResponse
-
+from altair.app.ticketing.famiport.communication.builders import TextFamiPortResponseGenerator
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
