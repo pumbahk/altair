@@ -189,7 +189,22 @@ class ReservationView(object):
         famiport_request = self._create_famiport_request(params, type_)
         return self._build_response(famiport_request)
 
-    @view_config(route_name='famiport.api.reservation.refund', request_method='POST')
+    def _build_response2(self, famiport_request):
+        """responseのpayloadを生成する
+        """
+        response_builder = get_response_builder(self.request, famiport_request)
+        famiport_response = response_builder.build_response(famiport_request, self.session, self.now, self.request)
+        self.comm_session.add(famiport_response)
+        self.comm_session.commit()
+        from ..communication.builders import TextFamiPortResponseGenerator
+        serializer = TextFamiPortResponseGenerator(famiport_response)
+        return Response(
+            body=serializer.serialize(famiport_response),
+            content_type='text/plain charset=shift_jis',
+            charset='cp932',
+            )
+
+    @view_config(route_name='famiport.api.reservation.refund', request_method='POST', renderer='famiport-text')
     def refund(self):
         type_ = FamiPortRequestType.RefundEntry
         request_params = dict(self.request.params)
@@ -210,4 +225,4 @@ class ReservationView(object):
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()
         famiport_request = self._create_famiport_request(params, type_)
-        return self._build_response(famiport_request)
+        return self._build_response2(famiport_request)

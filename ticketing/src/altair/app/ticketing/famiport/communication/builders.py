@@ -1237,3 +1237,49 @@ class XmlFamiPortResponseGenerator(object):
                 self._build_xmlTree(element, value)
 
         return root
+
+
+class TextFamiPortResponseGenerator(object):
+    def __init__(self, famiport_response, xml_encoding='Shift_JIS', encoding='CP932', crypted_part_encoding='UTF-8'):
+        self.famiport_crypt = None
+        if famiport_response.encrypt_key:
+            self.famiport_crypt = FamiPortCrypt(famiport_response.encrypt_key, encoding=crypted_part_encoding)
+        self.xml_encoding = xml_encoding
+        self.encoding = encoding
+
+    def serialize(self, famiport_response, *args, **kwds):
+        """
+        """
+        key_value = self._build(famiport_response)
+        return '\r\n'.join('{}={}'.format(key, value) for key, value in key_value.items())
+
+    def _build(self, obj):
+        """Build XML tree from object"""
+        if obj is None:
+            return ''
+
+        key_value = {}
+        for attribute_name_or_pair in obj._serialized_attrs:
+            if isinstance(attribute_name_or_pair, basestring):
+                attribute_name = attribute_name_or_pair
+                element_name = attribute_name_or_pair
+            else:
+                attribute_name = attribute_name_or_pair[0]
+                element_name = attribute_name_or_pair[1]
+            attribute_value = getattr(obj, attribute_name)
+            if attribute_value is not None:
+                key_value[element_name] = attribute_value
+                if attribute_name not in obj.encrypted_fields:
+                    try:
+                        key_value[element_name] = attribute_value
+                    except (TypeError, ValueError) as err:
+                        raise err.__class__('illigal type: {}: {}'.format(attribute_name, err))
+                elif self.famiport_crypt:
+                    key_value[element_name] = self.famiport_crypt.encrypt(attribute_value)
+
+        # とりあえずrefundでは使わない(あとで考える)
+        # for attribute_name, element_name in obj._serialized_collection_attrs:
+        #     attribute_value = getattr(obj, attribute_name)
+        #     for value in attribute_value:
+        #         key_value[element_name] = value
+        return key_value

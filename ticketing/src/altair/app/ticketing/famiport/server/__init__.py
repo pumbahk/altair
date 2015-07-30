@@ -42,3 +42,4 @@ def includeme(config):
     config.include('..datainterchange')
 
     config.add_renderer('famiport-xml', '.renderers.famiport_renderer_factory')
+    config.add_renderer('famiport-text', '.renderers.famiport_text_renderer_factory')
