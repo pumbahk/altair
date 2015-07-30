@@ -1251,7 +1251,10 @@ class TextFamiPortResponseGenerator(object):
         """
         """
         key_value = self._build(famiport_response)
-        return '\r\n'.join('{}={}'.format(key, value) for key, value in key_value.items())
+        buf = u'\r\n'.join(
+            u'{}={}'.format(key, (value or u''))
+            for key, value in key_value.items())
+        return buf.encode(self.encoding)
 
     def _build(self, obj):
         """Build XML tree from object"""
