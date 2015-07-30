@@ -460,7 +460,6 @@ class FamiPortPaymentPlugin(object):
 
     def validate_order(self, request, order_like):
         """予約を作成する前にvalidationする"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """前処理"""
@@ -472,12 +471,13 @@ class FamiPortPaymentPlugin(object):
         self.finish2(request, order)
         return order
 
-    def finish2(self, request, cart):
+    def finish2(self, request, order_like):
         """確定処理2"""
+        validate_order_like(request, order_like, self)
         try:
-            create_famiport_order(request, cart, plugin=self)
+            create_famiport_order(request, order_like, plugin=self)
         except FamiPortAPIError:
-            raise FamiPortPluginFailure('payment failed', order_no=cart.order_no, back_url=None)
+            raise FamiPortPluginFailure('payment failed', order_no=order_like.order_no, back_url=None)
 
     def finished(self, requrst, order):
         """支払状態遷移済みかどうかを判定"""
@@ -558,7 +558,6 @@ def delivery_notice_viewlet(context, request):
 class FamiPortDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -569,6 +568,7 @@ class FamiPortDeliveryPlugin(object):
 
     def finish2(self, request, order_like):
         """確定時処理"""
+        validate_order_like(request, order_like, self)
         try:
             create_famiport_order(request, order_like, plugin=self)  # noqa
         except FamiPortAPIError:
@@ -595,7 +595,6 @@ class FamiPortDeliveryPlugin(object):
 class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -609,6 +608,7 @@ class FamiPortPaymentDeliveryPlugin(object):
 
     def finish2(self, request, order_like):
         """ 確定時処理 """
+        validate_order_like(request, order_like, self)
         try:
             create_famiport_order(request, order_like, plugin=self)  # noqa
         except FamiPortAPIError:
@@ -651,38 +651,39 @@ def validate_order_like(request, order_like, plugin):
     - 住所2: 200
     """
     famiport_order_type = select_famiport_order_type(order_like, plugin)
-    tickets = build_ticket_dicts_from_order_like(request, order_like)
-    tenant = lookup_famiport_tenant(request, order_like)
-    if tenant is None:
-        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
-    famiport_order_dict = build_famiport_order_dict(request, order_like, tenant.code, famiport_order_type)
+    if order_like.shipping_address is not None:
+        tenant = lookup_famiport_tenant(request, order_like)
+        if tenant is None:
+            raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+        famiport_order_dict = build_famiport_order_dict(request, order_like, tenant.code, famiport_order_type)
+        # お客様氏名
+        if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
+            raise OrderLikeValidationFailure(u'too long', 'shipping_address.last_name')
 
-    # 合計金額
-    if famiport_order_type in [
-            FamiPortOrderType.CashOnDelivery.value,
-            FamiPortOrderType.PaymentOnly.value,
-            FamiPortOrderType.Payment.value,
-            ]:
-        if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
-            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+        # 住所1
+        if len(famiport_order_dict.get('customer_address_1', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_1_LENGTH:
+            raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_1')
 
-    # チケット枚数
-    if famiport_order_type in [
-            FamiPortOrderType.CashOnDelivery.value,
-            FamiPortOrderType.Ticketing.value,
-            FamiPortOrderType.Payment.value,
-            ]:
-        if len(tickets) > FAMIPORT_MAX_TICKET_COUNT:
-            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'ordered_product_item.quantity')
+        # 住所2
+        if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
+            raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_2')
 
-    # お客様氏名
-    if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'shipping_address.last_name')
+        tickets = build_ticket_dicts_from_order_like(request, order_like)
+        # チケット枚数
+        if famiport_order_type in [
+                FamiPortOrderType.CashOnDelivery.value,
+                FamiPortOrderType.Ticketing.value,
+                FamiPortOrderType.Payment.value,
+                ]:
+            if len(tickets) > FAMIPORT_MAX_TICKET_COUNT:
+                raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'ordered_product_item.quantity')
 
-    # 住所1
-    if len(famiport_order_dict.get('customer_address_1', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_1_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_1')
-
-    # 住所2
-    if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_2')
+    if order_like.payment_delivery_pair is not None:
+        # 合計金額
+        if famiport_order_type in [
+                FamiPortOrderType.CashOnDelivery.value,
+                FamiPortOrderType.PaymentOnly.value,
+                FamiPortOrderType.Payment.value,
+                ]:
+            if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
+                raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
