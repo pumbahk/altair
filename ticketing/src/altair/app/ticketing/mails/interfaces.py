@@ -69,6 +69,9 @@ class IRemindMail(IPurchaseInfoMail):
     """ 支払いリマインドメールを送る
     """
 
+class IPrintRemindMail(IPurchaseInfoMail):
+    """ 発券リマインドメールを送る"""
+
 class IPointGrantHistoryEntryInfoMail(IMailBuilder):
     pass
 
@@ -93,6 +96,9 @@ class IOrderRefundMailResource(IOrderMailResource):
 
 class IRemindMailResource(IOrderMailResource):
     """ リマインドメールのビューレットのコンテキスト"""
+
+class IPrintRemindMailResource(IOrderMailResource):
+    """ 発券リマインドメールのビューレットのコンテキスト"""
 
 class ILotMailResource(IMailResource):
     lot_entry = Attribute(u"抽選注文")
