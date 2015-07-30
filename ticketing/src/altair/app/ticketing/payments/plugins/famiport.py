@@ -6,13 +6,11 @@ import pystache
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from lxml import etree
-from decimal import Decimal
 from sqlalchemy import sql
 from markupsafe import Markup
 from zope.interface import implementer
 import sqlalchemy as sa
 from pyramid.response import Response
-
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.sqlahelper import get_db_session
 from altair.models import Identifier, MutationDict, JSONEncodedDict
@@ -55,10 +53,7 @@ from altair.app.ticketing.tickets.utils import (
     )
 
 from ..interfaces import IOrderDelivery
-from ..exceptions import (
-    PaymentPluginException,
-    OrderLikeValidationFailure,
-    )
+from ..exceptions import PaymentPluginException
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
@@ -320,7 +315,7 @@ def create_famiport_order(request, order_like, plugin, name='famiport'):
     type_ = select_famiport_order_type(order_like, plugin)
     return famiport_api.create_famiport_order(
         request,
-        **build_famiport_order_dict(request, order_like, tenant.code, type_, name)
+        **build_famiport_order_dict(request, order_like, tenant.code, type_, name) 
         )
 
 
@@ -460,7 +455,6 @@ class FamiPortPaymentPlugin(object):
 
     def validate_order(self, request, order_like):
         """予約を作成する前にvalidationする"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """前処理"""
@@ -558,7 +552,6 @@ def delivery_notice_viewlet(context, request):
 class FamiPortDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -595,7 +588,6 @@ class FamiPortDeliveryPlugin(object):
 class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -629,60 +621,3 @@ class FamiPortPaymentDeliveryPlugin(object):
     def refund(self, request, order, refund_record):
         """払い戻し"""
         return refund_order(request, order, refund_record)
-
-
-FAMIPORT_MAX_ALLOWED_AMOUNT = Decimal('999999')
-FAMIPORT_MAX_TICKET_COUNT = 23
-FAMIPORT_MAX_CUSTOMER_NAME_LENGTH = 42
-FAMIPORT_MAX_ADDRESS_1_LENGTH = 200
-FAMIPORT_MAX_ADDRESS_2_LENGTH = 200
-
-
-def validate_order_like(request, order_like, plugin):
-    """FamiPort用の予約として作成しても問題ないかどうか検証する
-
-    検証するポイント
-
-    - 合計金額: 999999
-    - チケット枚数: 23 (本券副券合わせて最大23)
-    - 本券購入枚数: 23
-    - お客様氏名: 42 (暗号化前) (半角/全角)
-    - 住所1: 200
-    - 住所2: 200
-    """
-    famiport_order_type = select_famiport_order_type(order_like, plugin)
-    tickets = build_ticket_dicts_from_order_like(request, order_like)
-    tenant = lookup_famiport_tenant(request, order_like)
-    if tenant is None:
-        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
-    famiport_order_dict = build_famiport_order_dict(request, order_like, tenant.code, famiport_order_type)
-
-    # 合計金額
-    if famiport_order_type in [
-            FamiPortOrderType.CashOnDelivery.value,
-            FamiPortOrderType.PaymentOnly.value,
-            FamiPortOrderType.Payment.value,
-            ]:
-        if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
-            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
-
-    # チケット枚数
-    if famiport_order_type in [
-            FamiPortOrderType.CashOnDelivery.value,
-            FamiPortOrderType.Ticketing.value,
-            FamiPortOrderType.Payment.value,
-            ]:
-        if len(tickets) > FAMIPORT_MAX_TICKET_COUNT:
-            raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
-
-    # お客様氏名
-    if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_name')
-
-    # 住所1
-    if len(famiport_order_dict.get('customer_address_1', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_1_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_address_1')
-
-    # 住所2
-    if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
-        raise OrderLikeValidationFailure(u'too long', 'FamiPortOrder.customer_address_2')
