@@ -1,0 +1,176 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="m" />
+<%block name="css">
+<style type="text/css">
+  .confirm-message{
+    margin-left: 7px;
+  }
+  th {
+      text-align: left;
+  }
+  .dispBox {
+    margin: 10px;
+  }
+  .dispBoxInner {
+    margin-left: 17px;
+  }
+  .methodArea {
+    border: 1px solid #000000;
+    background-color: cornsilk;
+    width: 100%;
+  }
+  .align1 {
+    text-align: right;
+  }
+</style>
+</%block>
+
+購入を完了いたしました。<br/>
+下記の受付番号はとても大切な番号です。すぐにメモして保管してください。
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <div class="dispBox">
+      <%m:header>受付番号</%m:header>
+      <div class="dispBoxInner">
+        <div class="confirm-message">
+          ${order.order_no}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <div class="dispBox">
+      <%m:header>お買い物内容</%m:header>
+      <div class="dispBoxInner">
+        <div id="name">
+            ${order.performance.event.title}<br/>
+            ${h.performance_datetime(order.performance)}<br/>
+            ${order.performance.venue.name}
+        </div>
+
+        <table id="contentsOfShopping" class="methodArea" summary="席種、金額などのお買い物内容">
+          %for product in order.ordered_products:
+            <tr id="commission">
+              <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/BC/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+            </tr>
+            % if product.product.sales_segment.setting.display_seat_no:
+              % for seat in product.seats:
+                <tr id="commission">
+                  <th scope="row" colspan="4">　　${seat['name']}</th>
+                </tr>
+              % endfor
+            % endif
+          %endfor
+          <tr id="commission">
+            <th scope="row">決済手数料</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
+          </tr>
+          <tr id="commission">
+            <th scope="row">発券/引取手数料</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
+          </tr>
+          <tr id="commission">
+            <th scope="row">システム利用料</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.system_fee)}</td>
+          </tr>
+
+          %if order.special_fee > 0:
+          <tr id="commission">
+            <th scope="row">${order.special_fee_name}</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.special_fee)}</td>
+          </tr>
+          %endif
+
+          <tr id="total">
+            <th scope="row">合計金額</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.total_amount)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
+% if extra_form_data:
+<div class="confirmBox">
+	<div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>追加情報</%m:header>
+        <div class="dispBoxInner">
+          <table id="confirmDelivery" summary="配送先情報" class="methodArea">
+          % for _, (display_name, display_value) in extra_form_data:
+            <tr>
+              <th scope="row">${display_name}</th>
+              <td>${h.sensible_coerce(request, display_value)}</td>
+            </tr>
+          % endfor
+          </table>
+        </div>
+      </div>
+	</div>
+</div>
+% endif
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <div class="dispBox">
+      <%m:header>お支払い</%m:header>
+      <div class="confirm-message dispBoxInner">
+      ${h.render_payment_finished_viewlet(request, order)}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <div class="dispBox">
+      <%m:header>お引き取り</%m:header>
+      <div class="confirm-message dispBoxInner">
+        ${h.render_delivery_finished_viewlet(request, order)}
+      </div>
+    </div>
+  </div>
+</div>
+
+## todo: pluggable
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <div class="dispBox">
+      <%m:header>注意事項</%m:header>
+      <div class="confirm-message dispBoxInner">
+        <div class="methodArea">
+        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:b-corsairs@tstar.jp">こちら</a> までご連絡ください。<br />
+        お申込内容は、「<a target="_blank" href="https://b-corsairs.tstar.jp/orderreview/">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="next-action">
+  <a href="${request.context.host_base_url}"  >
+    <button class="btn btn-primary" style="width: 49%; height: 46px">チケットTOP</button>
+  </a>
+  <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance':order.performance_id})}">
+    <button class="btn btn-primary" style="width: 49%; height: 46px">他のチケットを購入</button>
+  </a>
+</div>

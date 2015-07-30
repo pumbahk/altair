@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/RL/pc/images/favicon.ico')}">
+  <title>楽天レジャーチケット ログインページ</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/RL/pc/css/style2.css')}" media="all" />
+</head>
+<body>
+<div class="header" id="top">
+  <div class="header-inner">
+    <h1>
+      <a href="/">
+        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/RL/pc/images/logo.png')}" alt="楽天レジャーチケット" height="64"/>
+      </a>
+    </h1>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="kadomaru">
+            <table class="nobdr">
+            <tr>
+                <td>
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>一般の方<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td style="text-align:center">
+                              <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+                                <input type="submit" class="btnLogin" value="申し込む" /><br/>
+                                  <div>
+                                      
+                                  </div>
+                              </form>
+                            </td>
+                        </tr>
+                    </table>
+                  </form>
+                </td>
+                <td>
+                  <form action="${request.path}" method="post">
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>会員の方<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td>
+                                <table width="323" cellpadding="0" cellspacing="0" class="member nobdr">
+                                  <tbody>
+                                    <tr>
+                                      <th style="text-align:right">会員番号</th>
+                                      <td style="text-align:left">
+                                        <div class="tal">
+                                            <input type="text" class="text" name="username">
+                                            %if message:
+                                            <br/><span class="small red">会員番号またはパスワードが一致しません</span>
+                                            %endif
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <th style="text-align:right">パスワード</th>
+                                      <td style="text-align:left">
+                                        <div class="tal">
+                                            <input type="password" class="text" name="password">
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+<div id="btn_login" style="text-align:center">
+<input type="submit" value="ログイン" class="btnLogin">
+</div>
+                            </td>
+                        </tr>
+                    </table>
+                  </form>
+                </td>
+            </tr>
+        </table>
+<h3>注意事項</h3>
+<ul class="notes">
+    <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
+<span style="color:#f00;">leisure@mail.rakuten.comのドメイン指定受信許可設定を行ってください</span>。</li>
+    <li>受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
+    <li>会員番号・パスワードは半角でご入力ください。</li>
+</ul>
+<h3>その他</h3>
+<ul class="notes">
+    <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
+    <li>パスワードをお忘れの場合<a href="mailto:leisure@mail.rakuten.com" target="_blank">こちら</a>からお問合せください。</li>
+</ul>
+
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footernav">
+      <ul>
+        <li><a class="first" href="http://www.ticketstar.jp" target="_blank">運営会社</a></li>
+        <li><a href="mailto:leisure@mail.rakuten.com" target="_blank">お問い合わせ</a></li>
+        <li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
+        <li><a class="last" href="http://www.ticketstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
+      </ul>
+    </div>
+    <div class="copyright clear">
+        Copyright © 2010-2015 TicketStar Inc. All Rights Reserved.
+    </div>
+  </div>
+</div>
+</body>
+</html>

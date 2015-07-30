@@ -1,0 +1,148 @@
+<%inherit file="${context['main_template'].uri}" />
+<p class="pageTitle">申込内容をご確認ください。</p>
+<div class="settlementBox2" id="settlementEventDetail">
+  <div class="settlementBoxInner2">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+    <table class="border" summary="イベント詳細情報">
+      <tr>
+        <th colspan="2" scope="row"><span>${cart.performance.name}</span></th>
+      </tr>
+      <tr class="none">
+        <th scope="row">公演日</th>
+        <td>${cart.performance.open_on} 開演</td>
+      </tr>
+      <tr>
+        <th scope="row">会場</th>
+        <td>${cart.performance.venue.name}</td>
+      </tr>
+      <tr>
+        <td colspan="2" scope="row">
+          <table border="0">
+            %for cp in cart.items:
+            <tr>
+              <th>${cp.product.name}　${cp.quantity}枚</th>
+              <td>${cp.product.price}</td>
+            </tr>
+            %endfor
+            <tr>
+              <th>決済手数料</th>
+              <td>${h.format_currency(cart.payment_delivery_pair.transaction_fee)}</td>
+            </tr>
+            <tr>
+              <th>発券/配達手数料</th>
+              <td>${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</td>
+            </tr>
+            <tr>
+              <th class="line">システム利用料</th>
+              <td class="line">${h.format_currency(cart.payment_delivery_pair.system_fee)}</td>
+            </tr>
+            %if cart.payment_derivery_pair.special_fee > 0:
+            <tr>
+              <th class="line">${cart.payment_derivery_pair.special_fee_name}</th>
+              <td class="line">${h.format_currency(cart.payment_delivery_pair.special_fee)}</td>
+            </tr>
+            %endif
+            <tr>
+              <th><strong>合計金額</strong></th>
+              <td><strong>${h.format_currency(cart.total_amount)}</strong></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<form id="form1" name="form1" method="post" action="">
+  <div class="confirmBox">
+    <div class="confirmBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+      <div class="confirmBoxText">
+        <p>${cart.payment_delivery_pair.payment_method.name}　${h.format_currency(cart.payment_delivery_pair.transaction_fee)}</p>
+        <p>${cart.payment_delivery_pair.delivery_method.name}　${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <div id="settlementSelectBox">
+        <div id="settlementSelectBoxInner02">
+          <table summary="お支払・お引取り方法選択">
+            <tr>
+              <th><label>購入者氏名（全角）</label></th>
+              <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
+            </tr>
+            <tr>
+              <th><label>購入者氏名（カナ）</label></th>
+              <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
+            </tr>
+            <tr>
+              <th><label>電話番号</label></th>
+              <td>${cart.shipping_address.tel_1}</td>
+            </tr>
+            <tr>
+              <th><label>住所</label></th>
+              <td>${cart.shipping_address.zip} ${cart.shipping_address.prefecture}${cart.shipping_address.city} ${cart.shipping_address.address_1}${cart.shipping_address.address_2}</td>
+            </tr>
+            <tr>
+              <th><label>生年月日</label></th>
+              <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(lot_entry.birthday)}</td>
+            </tr>
+            <tr>
+              <th><label>性別</label></th>
+              <td>${h.format_gender(request, lot_entry.gender)}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_magazine.gif')}" alt="メールマガジンの登録" width="177" height="30" /></h2>
+      <div id="mailMagazineBox">
+        <div id="mailMagazineBoxInner">
+          <ul>
+            <li><strong>ご利用いただいた方には、楽天レジャーチケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</strong></li>
+            <li>
+              <label>
+                <input type="checkbox" name="checkbox" id="checkbox" />
+                楽天レジャーチケットからのお知らせ</label>
+            </li>
+            <li>
+              <dl>
+                <dt>楽天からのメルマガ</dt>
+                <dd>
+                  <ul>
+                    <li>
+                      <label>
+                        <input type="checkbox" name="checkbox2" id="checkbox2" />
+                        バーゲン情報（楽天市場バーゲンニュース）</label>
+                    </li>
+                    <li>
+                      <label>
+                        <input type="checkbox" name="checkbox3" id="checkbox3" />
+                        クーポン情報（楽天市場 Rakuponニュース）</label>
+                    </li>
+                    <li>
+                      <label>
+                        <input type="checkbox" name="checkbox4" id="checkbox4" />
+                        プラチナ会員限定優待情報（楽天プラチナ優待ニュース）</label>
+                    </li>
+                  </ul>
+                </dd>
+              </dl>
+            </li>
+            <li>　　<a href="#">全ての選択を解除</a>　<a href="#">全てのメルマガを選択</a></li>
+            <li class="attention1"><strong>※既に配信されているメルマガの配信停止をしたい場合は、次のページの「配信停止ページへ」のリンクから停止作業を行ってください。</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/btn_back.gif')}" value="back" alt="戻る" width="236" height="46" />　<input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
+</form>
