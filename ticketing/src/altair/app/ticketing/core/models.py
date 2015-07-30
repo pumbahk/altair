@@ -935,7 +935,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
                 .filter(or_(MemberGroup.is_guest == user.get('is_guest', False),
                             MemberGroup.id == None)) \
                 .filter(or_(Membership.organization_id == user['organization_id'],
-                            Membership.id == None)) 
+                            Membership.id == None))
     return q
 
 @implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)
@@ -1884,14 +1884,28 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
 
-    # 払込票を表示しないオプション（SEJ専用）
-    hide_voucher = Column(Boolean, default=False)
-
     # Backend内の表示制御項目
     display_order = Column(Integer, default=0, nullable=False)
     selectable = Column(Boolean, default=True, nullable=False)
 
+    preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
     _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
+
+    @property
+    def sej_preferences(self):
+        if self.preferences is None:
+            self.preferences = {}
+        return self.preferences.setdefault(unicode(plugins.SEJ_PAYMENT_PLUGIN_ID), {})
+
+    @annotated_property(label=_(u'払込票を表示しない'))
+    def hide_voucher(self):
+        return self.sej_preferences.get('hide_voucher', False)
+
+    @hide_voucher.setter
+    def hide_voucher(self, value):
+        self.sej_preferences['hide_voucher'] = value
+
     @hybrid_property
     def payment_plugin(self):
         warn_deprecated("deprecated attribute `payment_plugin' is accessed")
@@ -1935,21 +1949,21 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _fee_type = Column('fee_type', Integer, nullable=True, default=FeeTypeEnum.Once.v[0])
 
     fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (予約ごと)'))
-    fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (主券)'))
-    fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (副券)'))
+    fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:主券)'))
+    fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:副券)'))
 
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), _a_label=_(u'オーガニゼーション'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
 
     delivery_plugin_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethodPlugin.id'), _a_label=_(u'引取方法'))
-    _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
-
 
     # Backend内の表示制御項目
     display_order = Column(Integer, default=0, nullable=False)
     selectable = Column(Boolean, default=True, nullable=False)
 
     preferences = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}))
+
+    _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
     @property
     def sej_preferences(self):
@@ -3389,16 +3403,18 @@ class MailTypeEnum(StandardEnum):
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
     PurchaseRefundMail = 31
+    TicketPrintRemindMail = 41
 
 _mail_type_labels = {
-    MailTypeEnum.PurchaseCompleteMail.v: u"購入完了メール",
-    MailTypeEnum.PurchaseCancelMail.v: u"購入キャンセルメール",
-    MailTypeEnum.PurcacheSejRemindMail.v: u"リマインドメール",
-    MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了メール",
-    MailTypeEnum.LotsElectedMail.v: u"抽選当選通知メール",
-    MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知メール",
-    MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知メール",
-    MailTypeEnum.PurchaseRefundMail.v: u"払戻通知メール",
+    MailTypeEnum.PurchaseCompleteMail.v: u"購入完了",
+    MailTypeEnum.PurchaseCancelMail.v: u"購入キャンセル",
+    MailTypeEnum.PurcacheSejRemindMail.v: u"コンビニ入金期限前リマインド",
+    MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了",
+    MailTypeEnum.LotsElectedMail.v: u"抽選当選通知",
+    MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知",
+    MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知",
+    MailTypeEnum.PurchaseRefundMail.v: u"払戻通知",
+    MailTypeEnum.TicketPrintRemindMail.v: u"コンビニ未発券リマインド",
     }
 
 MailTypeChoices = [(str(e) , _mail_type_labels[e.v]) for e in sorted(iter(MailTypeEnum), key=lambda e: e.v)]
@@ -3882,7 +3898,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
-    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ入金期限前リマインドメールのメール通知on/off", _a_label=u"コンビニ入金期限前リマインドメールのメール通知を有効にする")
+    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ入金期限リマインドのメール通知on/off", _a_label=u"コンビニ入金期限リマインドのメール通知を有効にする")
+    notify_print_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ未発券リマインドのメール通知on/off", _a_label=u"コンビニ未発券リマインドのメール通知を有効にする")
     sales_report_type = AnnotatedColumn(Integer, nullable=False, default=1, server_default='1', _a_label=u"売上レポートタイプ")
 
     # augus

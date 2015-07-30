@@ -32,6 +32,9 @@ def install_mail_utility(config):
     from altair.app.ticketing.mails.remindmail import SejRemindMail
     config.add_order_mail_utility(MailTypeEnum.PurcacheSejRemindMail,
                                   ".remindmail", SejRemindMail, "altair.app.ticketing:templates/mail/remindmail.txt")
+    from altair.app.ticketing.mails.printremindmail import PrintRemindMail
+    config.add_order_mail_utility(MailTypeEnum.TicketPrintRemindMail,
+                                  ".printremindmail", PrintRemindMail, "altair.app.ticketing:templates/mail/printremindmail.txt")
 
     ## lots
     from altair.app.ticketing.mails.lots_mail import LotsAcceptedMail

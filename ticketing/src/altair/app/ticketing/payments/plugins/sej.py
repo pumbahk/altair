@@ -742,7 +742,8 @@ def payment_type_to_string(payment_type):
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = sej_api.get_sej_order(order.order_no)
-    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    payment_plugin_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    payment_method = context.order.payment_delivery_pair.payment_method
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
     now = datetime.now()
@@ -752,8 +753,9 @@ def sej_delivery_viewlet(context, request):
         payment_type=payment_type,
         can_receive_from_next_day= can_receive_from_next_day(now, sej_order),
         sej_order=sej_order,
-        delivery_method=delivery_method,
-    )
+        payment_method=payment_method,
+        delivery_method=delivery_method
+        )
 
 def can_receive_from_next_day(now, sej_order):
     if sej_order is None:
@@ -782,13 +784,15 @@ def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = sej_api.get_sej_order(order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
     return dict(
         order=order,
         sej_order=sej_order,
         payment_type=payment_type,
         payment_method=payment_method,
-    )
+        delivery_method=delivery_method
+        )
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
@@ -807,6 +811,7 @@ def payment_mail_viewlet(context, request):
         sej_order = sej_api.get_sej_order(context.order.order_no)
     delivery_plugin_id = context.order.payment_delivery_pair.delivery_method.delivery_plugin_id
     payment_method = context.order.payment_delivery_pair.payment_method
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     if sej_order is not None:
         payment_type = payment_type_to_string(sej_order.payment_type)
     else:
@@ -821,7 +826,8 @@ def payment_mail_viewlet(context, request):
         notice=context.mail_data("P", "notice"),
         payment_type=payment_type,
         payment_method=payment_method,
-    )
+        delivery_method=delivery_method
+        )
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html', fallback_ua_type='mail'))
 def delivery_mail_viewlet(context, request):
@@ -833,7 +839,8 @@ def delivery_mail_viewlet(context, request):
         sej_order = provided_sej_order
     else:
         sej_order = sej_api.get_sej_order(context.order.order_no)
-    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    payment_plugin_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    payment_method = context.order.payment_delivery_pair.payment_method
     delivery_method = context.order.payment_delivery_pair.delivery_method
     now = datetime.now()
     _can_receive_from_next_day = None
@@ -845,10 +852,10 @@ def delivery_mail_viewlet(context, request):
     else:
         payment_type = (
             SejPaymentType.CashOnDelivery
-            if payment_id == PAYMENT_PLUGIN_ID
+            if payment_plugin_id == PAYMENT_PLUGIN_ID
             else SejPaymentType.Paid
             )
-        _can_receive_from_next_day = (payment_id != PAYMENT_PLUGIN_ID)
+        _can_receive_from_next_day = (payment_plugin_id != PAYMENT_PLUGIN_ID)
 
     return dict(
         sej_order=sej_order,
@@ -856,6 +863,7 @@ def delivery_mail_viewlet(context, request):
         payment_type=payment_type,
         can_receive_from_next_day=_can_receive_from_next_day,
         notice=context.mail_data("D", "notice"),
+        payment_method=payment_method,
         delivery_method=delivery_method
         )
 
