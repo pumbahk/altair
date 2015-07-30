@@ -4,12 +4,11 @@ import urllib
 import logging
 from datetime import datetime
 from urlparse import urljoin
-from urllib2 import urlopen, Request
-from base64 import b64decode
-from lxml import etree, builder
+from lxml import etree
 from email.message import Message
 from zope.interface import implementer
-from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator, IFamiPortTicketPreviewAPI
+from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator
+from ..communication.interfaces import IFamiPortTicketPreviewAPI
 from ..communication.utils import FamiPortCrypt
 from .exceptions import FDCAPIError
 
@@ -233,57 +232,6 @@ class Communicator(object):
     def refund_settlement(self, store_code, pos_no, timestamp, barcodes):
         return self._refund(store_code, pos_no, u'2', timestamp, barcodes)
 
-@implementer(IFamiPortTicketPreviewAPI)
-class FamiPortTicketPreviewAPI(object):
-    def __init__(self, endpoint_url):
-        self.endpoint_url = endpoint_url
-
-    def __call__(self, request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
-        if response_image_type == 'pdf':
-            response_image_type = u'1'
-        elif response_image_type == 'jpeg':
-            response_image_type = u'2'
-        c = FamiPortCrypt(order_id)
-        E = builder.E
-        request_body = '<?xml version="1.0" encoding="Shift_JIS" ?>' + \
-            etree.tostring(
-                E.FMIF(
-                    E.playGuideCode(discrimination_code.zfill(2)),
-                    E.clientId(client_code.zfill(24)),
-                    E.barCodeNo(barcode_no),
-                    E.orderId(order_id),
-                    E.name(c.encrypt(name)),
-                    E.memberId(c.encrypt(member_id)),
-                    E.address1(c.encrypt(address_1)),
-                    E.address2(c.encrypt(address_2)),
-                    E.identifyNo(identify_no),
-                    E.responseImageType(response_image_type),
-                    *(
-                        E.ticket(
-                            E.barCodeNo(ticket['barcode_no']),
-                            E.templateCode(ticket['template_code']),
-                            E.ticketData('<?xml version="1.0" encoding="Shift_JIS" ?>' + ticket['data'])
-                            )
-                        for ticket in tickets
-                        )
-                    ),
-                encoding='unicode'
-                ).encode('CP932')
-        logger.info('sending request to %s' % self.endpoint_url)
-        request = Request(self.endpoint_url, request_body, headers={'Content-Type': 'text/xml; charset=Shift_JIS'})
-        response = urlopen(request)
-        xml = etree.parse(response)
-        result_code_node = xml.find('resultCode')
-        if result_code_node is None:
-            raise FDCAPIError('invalid response')
-        if result_code_node.text != u'00':
-            raise FDCAPIError('server returned error status (%s)' % result_code_node.text)
-        return [
-            b64decode(encoded_ticket_preview_pictures.text.replace(u' ', u'+').replace(u'-', u'/'))
-            for encoded_ticket_preview_pictures in xml.findall('kenmenImage')
-            ]
-
-
 def includeme(config):
     import urllib2
     settings = config.registry.settings
@@ -291,5 +239,6 @@ def includeme(config):
     opener = urllib2.build_opener()
     communicator = Communicator(endpoints, opener, 'Shift_JIS')
     config.registry.registerUtility(communicator, IFamiPortCommunicator)
-    ticket_preview_api = FamiPortTicketPreviewAPI(settings['altair.famiport.ticket_preview_api.endpoint_url'])
+    from ..communication.preview import FamiPortTicketPreviewAPI
+    ticket_preview_api = FamiPortTicketPreviewAPI(opener, settings['altair.famiport.ticket_preview_api.endpoint_url'])
     config.registry.registerUtility(ticket_preview_api, IFamiPortTicketPreviewAPI)

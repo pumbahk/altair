@@ -21,3 +21,9 @@ class IXmlFamiPortResponseGenerator(Interface):
     # Generate XML text from famiport_response with encrypted_fields encrypted
     def generate_xmlResponse(famiport_response=None, encrypted_fields=[]):
         pass
+
+
+class IFamiPortTicketPreviewAPI(Interface):
+    def __call__(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+        pass
+

@@ -14,12 +14,11 @@ from .api import (
     get_payment_result,
     get_payment_result_by_id,
     save_payment_result,
-    get_ticket_preview_pictures,
     get_payment_results,
     gen_serial_for_store
     )
-from ..communication.models import InfoKubunEnum, ResultCodeEnum, InformationResultCodeEnum
-from ..communication.models import ReplyClassEnum
+from ..communication.api import get_ticket_preview_pictures
+from ..communication.models import InfoKubunEnum, ReplyClassEnum, ResultCodeEnum, InformationResultCodeEnum
 
 logger = logging.getLogger(__name__)
 

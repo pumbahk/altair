@@ -69,7 +69,8 @@ def preview_get(context, request):
 
 @view_config(route_name='preview', request_method='POST')
 def preview(context, request):
-    if request.content_type != 'text/xml':
+    if request.content_type not in ('text/xml', 'application/xml'):
+        logger.error('invalid content type: %s' % request.content_type)
         raise HTTPBadRequest()
     result_code = u'00'
     images = []

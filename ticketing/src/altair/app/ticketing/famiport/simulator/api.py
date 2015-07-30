@@ -1,7 +1,6 @@
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-from ..communication.utils import FamiPortCrypt
-from .interfaces import IFamiPortCommunicator, IFamiPortClientConfigurationRegistry, IMmkSequence, IFamiPortTicketPreviewAPI
+from .interfaces import IFamiPortCommunicator, IFamiPortClientConfigurationRegistry, IMmkSequence
 from .models import FDCSideOrder, FDCSideTicket
 
 def get_communicator(request):
@@ -80,15 +79,10 @@ def get_payment_results(request):
     q = session.query(FDCSideOrder)
     return q
 
-
 def save_payment_result(request, payment_result):
     session = get_db_session(request, 'famiport_mmk')
     session.add(payment_result)
     session.commit()
-
-def get_ticket_preview_pictures(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
-    preview_api = request.registry.queryUtility(IFamiPortTicketPreviewAPI)
-    return preview_api(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
 
 def gen_serial_for_store(request, now, store_code):
     mmk_seq = get_mmk_sequence(request) 
