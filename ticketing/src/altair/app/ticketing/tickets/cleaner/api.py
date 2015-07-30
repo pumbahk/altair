@@ -9,7 +9,7 @@ from lxml import etree
 from StringIO import StringIO
 
 from altair.svg.constants import SVG_NAMESPACE
-
+from altair.app.ticketing.sej.ticket import TicketDataLargeError
 from . import cleanup_svg
 from .normalize import normalize
 from ..constants import TS_SVG_EXT_NAMESPACE, INKSCAPE_NAMESPACE
@@ -184,8 +184,13 @@ class TicketSVGValidator(object):
 
     def _validate_on_converting_to_sej_xml(self, xmltree):
         try:
-            if not SejTicketDataXml(etree.tostring(convert_svg(xmltree), encoding=unicode)).validate():
-                raise Exception('Ticket data too large')
+            SejTicketDataXml(etree.tostring(convert_svg(xmltree), encoding=unicode)).validate()
+        except UnicodeEncodeError, e:
+            err = str(e)
+            raise self.exc_class(u"不正な文字列が入っています。Unicode「{0}」".format(err[err.index('character'):].split("\'")[1]))
+        except TicketDataLargeError, e:
+            logger.exception(e)
+            raise self.exc_class(u"チケットデータのサイズが制限を超えています。")
         except Exception, e:
             logger.exception(e)
-            raise self.exc_class("sej_xml:" + unicode(e))
+            raise self.exc_class("sej_xml:" + e)
