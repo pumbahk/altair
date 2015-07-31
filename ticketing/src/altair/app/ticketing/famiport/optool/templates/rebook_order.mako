@@ -3,7 +3,7 @@
   <form id="rebookform" class="form re_order_form" action="${request.route_url('rebook_order', action='rebook', receipt_id=receipt.id)}" method="post">
     <div class="row" style="margin-bottom:10px;">
       <h3 class="form-heading">発券方法</h3>
-      %if receipt.canceled_at is None and receipt.void_at is None:
+      %if receipt.canceled_at is None:
       <div class="form-group">
         <label class="radio-inline">
           <input type="radio" name="optradio" value="rebook" checked="checked"><span class="text-lg">同席番再予約</span>
