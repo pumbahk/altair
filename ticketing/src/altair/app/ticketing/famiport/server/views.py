@@ -220,7 +220,9 @@ class ReservationView(object):
                 }
             for barcode_key in ['BarCode1', 'BarCode2', 'BarCode3', 'BarCode4']:
                 if barcode_key in request_params:
-                    params[barcode_key] = request_params[barcode_key]
+                    barcode = request_params[barcode_key]
+                    if barcode:
+                        params[barcode_key] = barcode
         except KeyError as err:
             _logger.error('parameter error: {}'.format(err))
             return HTTPBadRequest()

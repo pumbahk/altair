@@ -1,5 +1,5 @@
 # encoding: utf-8
-
+import re
 import urllib
 import logging
 from datetime import datetime
@@ -80,6 +80,32 @@ class Communicator(object):
                 raise CommunicationError("content_type is not 'text/xml' (got %s)" % mime_type)
             retval = parse_response(etree.parse(resp).getroot())
             logger.debug('result=%r' % retval)
+            return retval
+        except Exception as e:
+            raise CommunicationError('error occurred during accessing to %s (data=%r): %s' % (endpoint, data, e))
+
+    def _do_refund_request(self, endpoint, data):
+        try:
+            logger.debug('making request to %s with %r' % (endpoint, data))
+            resp = self.opener.open(
+                endpoint,
+                data=urllib.urlencode([
+                    (k.encode(self.encoding), unicode(v).encode(self.encoding))
+                    for k, v in data.items()
+                    ])
+                )
+            mime_type, charset = parse_content_type(resp.info()['content-type'])
+            if mime_type != 'text/plain':
+                # 仕様書がおかしいので変なヘッダが来る可能性がある
+                mime_type, charset = parse_content_type(';'.join(re.split(' +', mime_type, 1)))
+                if mime_type != 'text/plain':
+                    raise CommunicationError("content_type is not 'text/plain' (got %s)" % mime_type)
+            encoded = resp.read().decode(charset or self.encoding)
+            logger.debug('result=%r' % encoded)
+            retval = dict(
+                (k, v)
+                for k, _, v in (pair.partition(u'=') for pair in re.split(ur'\r\n|\r|\n', encoded))
+                )
             return retval
         except Exception as e:
             raise CommunicationError('error occurred during accessing to %s (data=%r): %s' % (endpoint, data, e))
@@ -191,13 +217,13 @@ class Communicator(object):
             (u'BarCode%d' % (i + 1), barcode)
             for i, barcode in enumerate(barcodes)
             )
-        result = self._do_request(self.endpoints.refund, data)
+        result = self._do_refund_request(self.endpoints.refund, data)
         per_barcode_data = []
         no_more_data = False
         for i, _ in enumerate(barcodes):
             suffix = u'%d' % (i + 1)
             barcode_no = result.pop('BarCode%s' % suffix, None)
-            if barcode_no is None:
+            if barcode_no is None or barcode_no == u'':
                 no_more_data = True
             else:
                 if no_more_data:

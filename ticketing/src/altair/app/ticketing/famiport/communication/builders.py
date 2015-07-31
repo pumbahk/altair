@@ -1113,11 +1113,11 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                         famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
                         main_title = famiport_performance.name or u''
                         perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u''
-                        repayment = u'{0:06}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.other_fees)
+                        repayment = u'{0}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.other_fees)
                         refund_start = six.text_type(refund_entry.famiport_refund.start_at.strftime('%Y%m%d'))
                         refund_end = six.text_type(refund_entry.famiport_refund.end_at.strftime('%Y%m%d'))
                         ticket_typ = u'{0}'.format(refund_entry.famiport_ticket.type)
-                        charge = u'{0:06}'.format(refund_entry.ticketing_fee + refund_entry.other_fees)
+                        charge = u'{0}'.format(refund_entry.ticketing_fee + refund_entry.other_fees)
                         if refund_entry.famiport_refund.start_at > now \
                            or refund_entry.famiport_refund.end_at < now:
                             result_code = FamiPortRefundEntryResponseResultCodeEnum.OutOfTerm.value
@@ -1131,7 +1131,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                                 session.commit()
                 return dict(
                     barCode=barcode_number,
-                    resultCode=u'%02d' % result_code if result_code is not None else None,
+                    resultCode=u'%d' % result_code if result_code is not None else None,
                     mainTitle=main_title,
                     perfDay=perf_day,
                     repayment=repayment,
@@ -1145,7 +1145,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                 build_per_ticket_record(barcode_number, refund_entry, fill_with_blank=(i == 0))
                 for i, (barcode_number, refund_entry) in enumerate(refund_entries)
                 ]
-            famiport_refund_entry_response.errorCode = u'%02d' % FamiPortRefundEntryResponseErrorCodeEnum.Success.value
+            famiport_refund_entry_response.errorCode = u'%d' % FamiPortRefundEntryResponseErrorCodeEnum.Success.value
         except:
             famiport_refund_entry_response = FamiPortRefundEntryResponse(
                 _request=famiport_refund_entry_request,
@@ -1154,7 +1154,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                 shopNo=famiport_refund_entry_request.shopNo,
                 registerNo=famiport_refund_entry_request.registerNo,
                 timeStamp=famiport_refund_entry_request.timeStamp,
-                errorCode=u'%02d' % error_code
+                errorCode=u'%d' % error_code
                 )
             logger.exception(
                 u"an exception occurred at FamiPortRefundEntryResponseBuilder.build_response(). "
