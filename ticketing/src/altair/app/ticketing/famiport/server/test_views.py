@@ -605,9 +605,10 @@ class RefundTest(FamiPortAPIViewTest):
                 get_response_builder, get_xmlResponse_generator):
         payload_builder = mock.Mock(
             encoding='cp932',
-            generate_xmlResponse=mock.Mock(return_value='<xml></xml>'),
+            generate_xmlResponse=mock.Mock(return_value='<xml></xml>')
             )
         get_xmlResponse_generator.return_value = payload_builder
+        get_response_builder.return_value.build_response.return_value.encrypt_key = None
         self._callFUT({
             'BusinessFlg': '3',
             'TextTyp': '0',

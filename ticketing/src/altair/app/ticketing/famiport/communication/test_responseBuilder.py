@@ -201,7 +201,7 @@ class FamiPortResponseBuilderTestBase(object):
                     issued_at=None
                     )
                 ],
-            customer_name_input=False,
+            customer_name_input=True,
             customer_phone_input=False,
             created_at=datetime(2015, 5, 20, 12, 34, 56)
             )
@@ -263,7 +263,7 @@ class FamiPortResponseBuilderTestBase(object):
                     issued_at=None
                     )
                 ],
-            customer_name_input=False,
+            customer_name_input=True,
             customer_phone_input=False,
             created_at=datetime(2015, 5, 20, 12, 34, 56)
             )
@@ -844,7 +844,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.kogyoName, u'7/1公演') # 興行名なので、「テスト公演」であるべきでは? 確認
         self.assertEqual(result.koenDate, u'201507011900')
         self.assertEqual(result.name, u'')
-        self.assertEqual(result.nameInput, u'0')
+        self.assertEqual(result.nameInput, u'1')
         self.assertEqual(result.phoneInput, u'0')
 
     def test_too_early(self):
@@ -1004,7 +1004,6 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.phoneInput, u'0')
 
     def test_no_name_input(self):
-        """name_inputがFalseの場合は名前を返してはいけない"""
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortReservationInquiryRequest(
             storeCode=u'000009',
@@ -1027,7 +1026,7 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.ticketCount, u'2')
         self.assertEqual(result.kogyoName, u'7/1公演')  # 興行名なので、「テスト公演」であるべきでは? 確認
         self.assertEqual(result.koenDate, u'201507011900')
-        self.assertEqual(result.name, u'')
+        self.assertEqual(result.name, u'チケット　太郎')
         self.assertEqual(result.nameInput, u'0')
         self.assertEqual(result.phoneInput, u'0')
 
