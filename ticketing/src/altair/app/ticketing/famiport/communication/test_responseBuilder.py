@@ -2101,3 +2101,24 @@ class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponse
         self.assertEqual(result.refundEnd4, None)
         self.assertEqual(result.ticketTyp4, None)
         self.assertEqual(result.charge4, None)
+
+
+class TextFamiPortResponseGeneratorTest(unittest.TestCase):
+    def test_it(self):
+        from .builders import TextFamiPortResponseGenerator
+        response = mock.Mock(
+            _serialized_attrs=[
+                ('a', 'A'),
+                'b',
+                'c',
+                ],
+            encrypt_key=None,
+            encrypted_fields=[],
+            a=u'123',
+            b=u'456',
+            c=None
+            )
+        x = TextFamiPortResponseGenerator(response)
+        self.assertEqual(x.serialize(response), u'A=123\r\nb=456\r\nc=')
+
+
