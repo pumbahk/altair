@@ -1250,10 +1250,10 @@ class TextFamiPortResponseGenerator(object):
     def serialize(self, famiport_response, *args, **kwds):
         """
         """
-        key_value = self._build(famiport_response)
+        key_value_pairs = self._build(famiport_response)
         buf = u'\r\n'.join(
             u'{}={}'.format(key, (value or u''))
-            for key, value in key_value.items())
+            for key, value in key_value_pairs)
         return buf.encode(self.encoding)
 
     def _build(self, obj):
@@ -1261,7 +1261,7 @@ class TextFamiPortResponseGenerator(object):
         if obj is None:
             return ''
 
-        key_value = {}
+        key_value_pairs = []
         for attribute_name_or_pair in obj._serialized_attrs:
             if isinstance(attribute_name_or_pair, basestring):
                 attribute_name = attribute_name_or_pair
@@ -1270,16 +1270,10 @@ class TextFamiPortResponseGenerator(object):
                 attribute_name = attribute_name_or_pair[0]
                 element_name = attribute_name_or_pair[1]
             attribute_value = getattr(obj, attribute_name)
-            key_value[element_name] = attribute_value
             if attribute_name not in obj.encrypted_fields:
-                key_value[element_name] = attribute_value
+                key_value_pairs.append((element_name, attribute_value))
             elif self.famiport_crypt:
                 assert attribute_value is not None
-                key_value[element_name] = self.famiport_crypt.encrypt(attribute_value)
+                key_value_pairs.append((element_name, self.famiport_crypt.encrypt(attribute_value)))
 
-        # とりあえずrefundでは使わない(あとで考える)
-        # for attribute_name, element_name in obj._serialized_collection_attrs:
-        #     attribute_value = getattr(obj, attribute_name)
-        #     for value in attribute_value:
-        #         key_value[element_name] = value
-        return key_value
+        return key_value_pairs
