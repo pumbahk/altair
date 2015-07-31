@@ -148,7 +148,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
                         .join(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
-                        .join(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
+                        .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
                         .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
                         .group_by(FamiPortReceipt.id)
 
