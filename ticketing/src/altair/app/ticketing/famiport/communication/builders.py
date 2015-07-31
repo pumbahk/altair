@@ -1270,15 +1270,12 @@ class TextFamiPortResponseGenerator(object):
                 attribute_name = attribute_name_or_pair[0]
                 element_name = attribute_name_or_pair[1]
             attribute_value = getattr(obj, attribute_name)
-            if attribute_value is not None:
+            key_value[element_name] = attribute_value
+            if attribute_name not in obj.encrypted_fields:
                 key_value[element_name] = attribute_value
-                if attribute_name not in obj.encrypted_fields:
-                    try:
-                        key_value[element_name] = attribute_value
-                    except (TypeError, ValueError) as err:
-                        raise err.__class__('illigal type: {}: {}'.format(attribute_name, err))
-                elif self.famiport_crypt:
-                    key_value[element_name] = self.famiport_crypt.encrypt(attribute_value)
+            elif self.famiport_crypt:
+                assert attribute_value is not None
+                key_value[element_name] = self.famiport_crypt.encrypt(attribute_value)
 
         # とりあえずrefundでは使わない(あとで考える)
         # for attribute_name, element_name in obj._serialized_collection_attrs:
