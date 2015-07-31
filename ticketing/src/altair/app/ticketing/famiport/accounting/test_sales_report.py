@@ -34,6 +34,37 @@ class SalesReportTest(unittest.TestCase):
             })
         self.assertEqual(len(out.getvalue()), 236)
 
+    def test_halfwidth(self):
+        from .sales_report import make_marshaller
+        from io import BytesIO
+        from datetime import datetime, date
+        from decimal import Decimal
+        out = BytesIO()
+        target = make_marshaller(out, encoding='CP932', eor='\n')
+        target({
+            'unique_key': u'0',
+            'type': 0,
+            'management_number': u'0',
+            'event_code': u'0',
+            'event_code_sub': u'0',
+            'sales_segment_code': u'0',
+            'performance_code': u'0',
+            'event_name': u'イベント123',
+            'performance_date': datetime(2015, 1, 1, 0, 0, 0),
+            'ticket_payment': Decimal(1000),
+            'ticketing_fee': Decimal(50),
+            'other_fees': Decimal(100),
+            'shop': u'0000',
+            'settlement_date': date(2015, 1, 1),
+            'processed_at': datetime(2015, 1, 1, 0, 0, 0),
+            'valid': True,
+            'ticket_count': 1,
+            'subticket_count': 2,
+            })
+        result = out.getvalue()
+        self.assertEqual(len(result), 236)
+        self.assertTrue(u'イベント１２３'.encode('CP932') in result)
+
 
 class GenRecordsFromOrderModelTest(unittest.TestCase):
     def setUp(self):

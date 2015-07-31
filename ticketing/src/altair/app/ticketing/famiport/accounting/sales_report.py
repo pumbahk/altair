@@ -34,7 +34,7 @@ sales_report_schema = [
     Column('event_code_sub', ZeroPaddedNumericString(length=4)),  # 興行コード (サブ)
     Column('sales_segment_code', ZeroPaddedNumericString(length=3)),  # 受付情報コード
     Column('performance_code', ZeroPaddedNumericString(length=3)),# 公演コード
-    Column('event_name', WideWidthString(length=60)),             # 興行名称
+    Column('event_name', WideWidthString(length=60, conversion=True)),             # 興行名称
     Column('performance_date', DateTime(length=12, format=u'%Y%m%d%H%M')), # 開演日時
     Column('ticket_payment', ZeroPaddedInteger(length=9, pytype=decimal.Decimal)),        # チケット料金
     Column('ticketing_fee', ZeroPaddedInteger(length=8, pytype=decimal.Decimal)),         # 発券料金

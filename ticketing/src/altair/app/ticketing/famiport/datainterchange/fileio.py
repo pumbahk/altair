@@ -10,6 +10,7 @@ import six
 from zope.interface import implementer
 from altair.timeparse import parse_duration, build_duration
 from altair.jis.sjis import sjis_iterator, multibyte_in_sjis, len_in_sjis
+from ..utils import hankaku2zenkaku
 from .interfaces import ITabularDataColumn, ITabularDataColumnSpecification, ITabularDataMarshaller, ITabularDataUnmarshaller
 
 Column = implementer(ITabularDataColumn)(namedtuple('Column', ('name', 'spec')))
@@ -192,13 +193,16 @@ class Boolean(object):
 class WideWidthString(object):
     rpad = u'　'
 
-    def __init__(self, length, constraints=[]):
+    def __init__(self, length, conversion=False, constraints=[]):
         self.length = length
+        self.conversion = conversion
         self.constraints = []
 
     def marshal(self, context, pyval):
         if not isinstance(pyval, unicode):
             raise TypeError('unicode type expected')
+        if self.conversion:
+            pyval = hankaku2zenkaku(pyval)
         if not multibyte_in_sjis(pyval):
             raise ValueError('non-widewidth character contained in the string (%r)' % pyval)
         if len(pyval) > self.length:
