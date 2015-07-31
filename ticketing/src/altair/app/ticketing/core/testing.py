@@ -88,18 +88,51 @@ class CoreTestMixin(object):
         return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_holder=StockHolder(name='holder of %s' % stock_type.name), stock_status=StockStatus(quantity=quantity)) for stock_type, quantity in stock_type_quantity_pairs]
 
     def _create_seats(self, stocks):
-        from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
-        return [
-            Seat(
-                name=u"Seat %s-%d" % (stock.stock_type.name, i),
-                l0_id="seat-%s-%d" % (stock.stock_type.name, i),
-                stock=stock,
-                venue=stock.performance and stock.performance.venue,
-                status_=SeatStatus(status=SeatStatusEnum.Vacant.v)
-                )
-            for stock in stocks for i in range(stock.quantity)
-            if not stock.stock_type.quantity_only
-            ]
+        from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum, SeatIndexType, SeatIndex
+        retval = []
+        for stock in stocks:
+            venue = stock.performance and stock.performance.venue
+            seat_index_type = SeatIndexType(venue=venue, name=stock.stock_type.name)
+            if not stock.stock_type.quantity_only:
+                for i in range(stock.quantity):
+                    retval.append(
+                        Seat(
+                            name=u"Seat %s-%d" % (stock.stock_type.name, i),
+                            l0_id="seat-%s-%d" % (stock.stock_type.name, i),
+                            stock=stock,
+                            venue=venue,
+                            status_=SeatStatus(status=SeatStatusEnum.Vacant.v),
+                            indexes=[SeatIndex(seat_index_type=seat_index_type, index=0)]
+                            )
+                        )
+        return retval
+
+    def _create_seat_adjacency_sets(self, seats):
+        from altair.app.ticketing.core.models import SeatAdjacencySet, SeatAdjacency
+        seats_for_site_map = {}
+        for seat in seats:
+            seats_for_site = seats_for_site_map.get(seat.venue.site)
+            if seats_for_site is None:
+                seats_for_site = seats_for_site_map[seat.venue.site] = []
+            seats_for_site.append(seat)
+
+        return sum(
+            (
+                [
+                    SeatAdjacencySet(
+                        site=site,
+                        seat_count=i,
+                        adjacencies=[
+                            SeatAdjacency(seats=seats_for_site[j:j + i])
+                            for j in range(0, len(seats_for_site) + 1 - i)
+                            ]
+                        )
+                    for i in range(2, len(seats_for_site) + 1)
+                    ]
+                for site, seats_for_site in seats_for_site_map.items()
+                ),
+            []
+            )
 
     def _create_ticket_format(self, name='ticket_format', delivery_methods=None):
         from altair.app.ticketing.core.models import TicketFormat

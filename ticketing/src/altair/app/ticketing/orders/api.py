@@ -905,33 +905,70 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         assert prev_order.order_no == proto_order.order_no
         assert prev_order.ordered_from == proto_order.organization
 
-    def build_element(stock_status_pairs, orig_element):
+    def take_stock_and_find_out_required_seats(proto_order):
+        # XXX: 商品はすべて販売区分単位となったので、performance_id は不要では?
+        stock_status_pairs = stocker.take_stock(proto_order.performance_id, [(item.product, item.quantity) for item in proto_order.items])
+        stock_status_for_stock = {}
+        for stock_status, quantity in stock_status_pairs:
+            stock_status_for_stock[stock_status.stock_id] = stock_status
+        logger.debug('stock_status_pairs=%r' % stock_status_pairs)
+        num_seats_required_for_stock = {}
+        seats_required_for_stock = {}
+        seats_required_for_element = {}
+        for item in proto_order.items:
+            for orig_element in item.elements:
+                assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld / orig_element.quantity (%d) != len(orig_element.tokens) (%d)' % (orig_element.id, orig_element.quantity, len(orig_element.tokens))
+                stock = orig_element.product_item.stock
+                quantity_only = stock.stock_type.quantity_only
+                if not quantity_only:
+                    assert orig_element.seats is not None
+                    seats = orig_element.seats
+                    num_seats_newly_required = len(orig_element.tokens) - len(seats)
+                    logger.info('len(seats)=%d, num_seats_newly_required=%d' % (len(seats), num_seats_newly_required))
+                    _seats = seats_required_for_element.get(orig_element.product_item)
+                    if _seats is None:
+                        seats_required_for_element[orig_element.product_item] = _seats = []
+                    if len(seats) > 0:
+                        reserving.reserve_selected_seats(
+                            stockstatus=[(stock_status_for_stock[stock.id], len(seats))],
+                            performance_id=proto_order.performance_id,
+                            selected_seat_l0_ids=[seat.l0_id for seat in seats],
+                            reserve_status=SeatStatusEnum.Ordered.v
+                            )
+                        _seats.extend(seats)
+                    # もし token の数より seat の数が少なければ、おまかせで座席を取得して足す
+                    if num_seats_newly_required > 0:
+                        num_seats_required_for_stock[stock.id] = num_seats_required_for_stock.get(stock.id, 0) + num_seats_newly_required
+                        _seats.extend([None] * num_seats_newly_required)
+                else:
+                    assert orig_element.seats is None or len(orig_element.seats) == 0
+        for stock_id, num_seats_required in num_seats_required_for_stock.items():
+            _seats = seats_required_for_stock.get(stock_id)
+            if _seats is None:
+                seats_required_for_stock[stock_id] = _seats = []
+            _seats.extend(
+                reserving.reserve_seats(
+                    stock_id=stock_id,
+                    quantity=num_seats_required,
+                    reserve_status=SeatStatusEnum.Ordered.v,
+                    separate_seats=entrust_separate_seats
+                    )
+                )
+        for product_item, _seats in seats_required_for_element.items():
+            for i in range(0, len(_seats)):
+                seat = _seats[i]
+                if seat is None:
+                    _seats[i] = seats_required_for_stock[product_item.stock.id].pop(0)
+        return seats_required_for_element
+
+    def build_element(seats_required_for_element, orig_element):
         assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld / orig_element.quantity (%d) != len(orig_element.tokens) (%d)' % (orig_element.id, orig_element.quantity, len(orig_element.tokens))
         seats = []
         tokens = []
         quantity_only = orig_element.product_item.stock.stock_type.quantity_only
         if not quantity_only:
             assert orig_element.seats is not None
-            num_seats_newly_required = len(orig_element.tokens) - len(orig_element.seats)
-            seats = list(orig_element.seats) # リスト自体をmutateしていくのでコピー必要
-            logger.info('len(seats)=%d, num_seats_newly_required=%d' % (len(seats), num_seats_newly_required))
-            if len(seats) > 0:
-                reserving.reserve_selected_seats(
-                    stockstatus=stock_status_pairs,
-                    performance_id=proto_order.performance_id,
-                    selected_seat_l0_ids=[seat.l0_id for seat in seats],
-                    reserve_status=SeatStatusEnum.Ordered.v
-                    )
-            # もし token の数より seat の数が少なければ、おまかせで座席を取得して足す
-            if num_seats_newly_required > 0:
-                seats.extend(
-                    reserving.reserve_seats(
-                        stock_id=orig_element.product_item.stock_id,
-                        quantity=num_seats_newly_required,
-                        reserve_status=SeatStatusEnum.Ordered.v,
-                        separate_seats=entrust_separate_seats
-                        )
-                    )
+            seats = seats_required_for_element.pop(orig_element.product_item)
         else:
             assert orig_element.seats is None or len(orig_element.seats) == 0
 
@@ -951,19 +988,18 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
             ]
         return retval
 
-    def build_item(item):
-        # XXX: 商品はすべて販売区分単位となったので、performance_id は不要では?
-        stock_status_pairs = stocker.take_stock(proto_order.performance_id, [(item.product, item.quantity)])
-        logger.debug('stock_status_pairs=%r' % stock_status_pairs)
+    def build_item(seats_required_for_element, item):
         return OrderedProduct(
             product=item.product,
             price=item.price,
             quantity=item.quantity,
             elements=[
-                build_element(stock_status_pairs, element)
+                build_element(seats_required_for_element, element)
                 for element in item.elements
                 ]
             )
+
+    seats_required_for_element = take_stock_and_find_out_required_seats(proto_order)
 
     order = Order(
         order_no=proto_order.order_no,
@@ -988,7 +1024,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         payment_due_at=proto_order.payment_due_at,
         note=proto_order.note,
         attributes=proto_order.attributes or {},
-        items=[build_item(item) for item in proto_order.items],
+        items=[build_item(seats_required_for_element, item) for item in proto_order.items],
         created_at=proto_order.new_order_created_at or (prev_order and prev_order.created_at),
         paid_at=proto_order.new_order_paid_at or (prev_order and prev_order.paid_at),
         cart_setting_id=proto_order.cart_setting_id,
