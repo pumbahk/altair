@@ -769,7 +769,8 @@ class FamiPortOrder(Base, WithTimestamp):
         if self.canceled_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
         for famiport_receipt in self.famiport_receipts:
-            famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
+            if famiport_receipt.canceled_at is None:
+                famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
         self.add_receipts()
         self.paid_at = None
