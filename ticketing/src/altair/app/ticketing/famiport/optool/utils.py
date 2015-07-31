@@ -29,7 +29,7 @@ class ValidateUtils(object):
     def validate_reprint_cond(self, receipt, now):
         errors = []
         # キャンセル済みの場合
-        if receipt.void_at is not None or receipt.canceled_at is not None:
+        if receipt.canceled_at is not None:
             logger.info('canceled receipt is not reprintable')
             errors.append(u'当予約はキャンセル済みです')
         # 払込レシートの場合
