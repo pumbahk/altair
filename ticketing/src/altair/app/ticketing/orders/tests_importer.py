@@ -2472,6 +2472,9 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         self.stock_types = self._create_stock_types(4)
         self.stocks = self._create_stocks(self.stock_types, 10)
         self.seats = self._create_seats(self.stocks)
+        seat_adjacency_sets = self._create_seat_adjacency_sets(self.seats)
+        for seat_adjacency_set in seat_adjacency_sets:
+            self.session.add(seat_adjacency_set)
         self.sales_segment_group = SalesSegmentGroup(name=u'存在する販売区分グループ', event=self.event)
         self.session.add(self.sales_segment_group)
         self.another_sales_segment_group = SalesSegmentGroup(name=u'存在する販売区分グループ', event=self.another_event)
@@ -2529,11 +2532,15 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
             'altair.cart.completion_page.temporary_store.secret': 'xxx',
             })
         self.config.include('altair.app.ticketing.cart.setup_components')
-        self._lookup_plugin_patch = mock.patch('altair.app.ticketing.orders.importer.lookup_plugin')
-        self._lookup_plugin = self._lookup_plugin_patch.start()
+        self._lookup_plugin = mock.MagicMock()
+        self._lookup_plugin_patch1 = mock.patch('altair.app.ticketing.orders.importer.lookup_plugin', new_callable=lambda: self._lookup_plugin)
+        self._lookup_plugin_patch2 = mock.patch('altair.app.ticketing.orders.api.lookup_plugin', new_callable=lambda: self._lookup_plugin)
+        self._lookup_plugin_patch1.start()
+        self._lookup_plugin_patch2.start()
 
     def tearDown(self):
-        self._lookup_plugin_patch.stop()
+        self._lookup_plugin_patch1.stop()
+        self._lookup_plugin_patch2.stop()
         testing.tearDown()
         _teardown_db()
     
@@ -2876,6 +2883,86 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         task, errors = importer(reader, self.operator, self.organization, self.performance)
         self.assertEquals(len(task.proto_orders), 1)
         self.assertEquals(len(errors), 0)
+
+    def test_update_keep_one(self):
+        from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum, Order
+        from altair.app.ticketing.orders.importer import run_import_task
+        importer = self._makeOne(self.request, ImportTypeEnum.Update.v, 0, False, session=self.session)
+        reader = [
+            {
+                u'order.order_no': u'YY0000000000',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'130',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.auth_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': self.payment_delivery_method_pairs[0].payment_method.name,
+                u'delivery_method.name': self.payment_delivery_method_pairs[0].delivery_method.name,
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'performance.start_on': u'',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'3',
+                u'ordered_product.product.name': u'A',
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': u'product_item_of_A',
+                u'ordered_product_item.price': u'10',
+                u'ordered_product_item.quantity': u'3',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-5',
+                },
+            ]
+        task, errors = importer(reader, self.operator, self.organization, self.performance)
+        self.assertEquals(len(task.proto_orders), 1)
+        self.assertEquals(len(errors), 1)
+        self.assertEquals(errors[u'YY0000000000'][0].message, u'座席は自動的に決定されます (予定配席数=3)')
+        proto_order = task.proto_orders[0]
+        self.assertEquals(proto_order.items[0].elements[0].quantity, 3)
+        self._lookup_plugin.return_value = (mock.Mock(), mock.Mock(), mock.Mock())
+        run_import_task(self.request, task) 
+        order = self.session.query(Order).filter(Order.order_no == proto_order.order_no).one()
+        seats = set(seat.name for seat in order.items[0].elements[0].seats)
+        self.assertEquals(len(seats), 3)
+        self.assertIn(u'Seat A-5', seats)
 
     def test_create_or_update_fail_creation(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
