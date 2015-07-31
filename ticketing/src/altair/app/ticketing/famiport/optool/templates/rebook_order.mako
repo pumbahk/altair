@@ -35,7 +35,7 @@
       </div>
     </div>
     <div class="row pull-right">
-      %if receipt.canceled_at is None and receipt.void_at is None:
+      %if receipt.canceled_at is None:
         <button id="exe-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">実行</button>
       %else:
         <button id="fix-reason" type="button" class="btn btn-default">理由修正</button>
