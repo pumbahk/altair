@@ -760,7 +760,7 @@ class FamiPortOrder(Base, WithTimestamp):
                     famiport_receipt.completed_at = None
                 assert ticketing_famiport_receipt is None
                 ticketing_famiport_receipt = famiport_receipt
-                if famiport_receipt.canceled_at is None:
+                if famiport_receipt.void_at is None:
                     famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
         self.issued_at = None
 
