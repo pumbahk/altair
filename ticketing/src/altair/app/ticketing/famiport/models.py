@@ -754,7 +754,8 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisfiedPreconditionError(u'order is payment-only')
         ticketing_famiport_receipt = None
         for famiport_receipt in self.famiport_receipts:
-            if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value):
+            if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value) and \
+               famiport_receipt.canceled_at is None:
                 if famiport_receipt.completed_at is not None:
                     logger.info('FamiPortReceipt(id=%ld).completed_at is set to None' % famiport_receipt.id)
                     famiport_receipt.completed_at = None

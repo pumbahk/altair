@@ -35,7 +35,7 @@ class ValidateUtils(object):
         # 払込レシートの場合
         if receipt.type == FamiPortReceiptType.Payment.value:
             logger.info('payment receipt is not reprintable')
-            errors.append(u'当予約は払込のみです')
+            errors.append(u'当予約番号は払込のものです。発券用の番号でお試し下さい')
         # 期限超過の場合
         if receipt.type == FamiPortReceiptType.CashOnDelivery.value:
             if receipt.famiport_order.payment_due_at < now:
