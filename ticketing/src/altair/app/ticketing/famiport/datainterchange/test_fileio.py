@@ -133,6 +133,18 @@ class WideWidthStringColumnSpecificationTest(unittest.TestCase):
         result = target.marshal(None, u'テスト')
         self.assertEqual(result, u'テスト')
 
+    def test_marshal_fail(self):
+        from .fileio import WideWidthString
+        target = WideWidthString(3)
+        with self.assertRaises(ValueError):
+            target.marshal(None, u'AAA')
+
+    def test_marshal_conversion(self):
+        from .fileio import WideWidthString
+        target = WideWidthString(3, conversion=True)
+        result = target.marshal(None, u'AAA')
+        self.assertEqual(result, u'ＡＡＡ')
+
 
 class DateTimeColumnSpecificationTest(unittest.TestCase):
     def test_marshal_basic(self):
