@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
+    parser.add_argument('--image-type', metavar='image_type', type=str, dest='image_type', required=False, default='jpeg', choices=['jpeg', 'pdf'], help='image type')
     parser.add_argument('--endpoint', metavar='endpoint', type=str, dest='endpoint', required=False, help='endpoint')
     parser.add_argument('--user-name', metavar='user_name', type=str, dest='user_name', required=False, help='user name')
     parser.add_argument('--user-id', metavar='user_id', type=str, dest='user_id', required=False, help='member id')
@@ -56,10 +57,10 @@ def main(argv=sys.argv):
                     )
                 for famiport_ticket in famiport_receipt.famiport_order.famiport_tickets
                 ],
-            response_image_type='jpeg'
+            response_image_type=args.image_type
             )
         for i, image in enumerate(images):
-            path = '%(reserve_number)s_%(serial)02d.jpg' % dict(reserve_number=famiport_receipt.reserve_number, serial=i)
+            path = '%(reserve_number)s_%(serial)02d.%(ext)s' % dict(reserve_number=famiport_receipt.reserve_number, serial=i, ext=args.image_type)
             logger.info('saving image to %s' % path)
             with open(path, 'w') as f:
                 f.write(image)
