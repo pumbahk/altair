@@ -8,13 +8,15 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.paster import bootstrap, setup_logging
 from altair.sqlahelper import get_global_db_session
-from ..communication.api import get_ticket_preview_pictures
+import urllib2
+from ..communication.preview import FamiPortTicketPreviewAPI
 
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
+    parser.add_argument('--endpoint', metavar='endpoint', type=str, dest='endpoint', required=False, help='endpoint')
     parser.add_argument('--user-name', metavar='user_name', type=str, dest='user_name', required=False, help='user name')
     parser.add_argument('--user-id', metavar='user_id', type=str, dest='user_id', required=False, help='member id')
     parser.add_argument('--user-address1', metavar='user_address1', type=str, dest='user_address1', required=False, help='address1')
@@ -32,8 +34,10 @@ def main(argv=sys.argv):
     from ..models import FamiPortReceipt
     session = get_global_db_session(registry, 'famiport')
 
+    preview_api = FamiPortTicketPreviewAPI(urllib2.build_opener(), args.endpoint or settings['altair.famiport.ticket_preview_api.endpoint_url'])
+
     for famiport_receipt in session.query(FamiPortReceipt).filter(FamiPortReceipt.reserve_number.in_(args.reserve_number)).all():
-        images = get_ticket_preview_pictures(
+        images = preview_api(
             request,
             discrimination_code=unicode(famiport_receipt.famiport_order.famiport_client.playguide.discrimination_code_2),
             client_code=famiport_receipt.famiport_order.famiport_client.code,
