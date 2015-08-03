@@ -111,7 +111,7 @@ def preview(context, request):
         image_n = etree.Element(u'kenmenImage')
         f = BytesIO()
         image.save(f, format=format)
-        image_n.text = unicode(b64encode(f.getvalue()).replace('+', ' ').replace('/', '-'), 'ASCII')
+        image_n.text = unicode(b64encode(f.getvalue()).replace('+', '.').replace('/', '-'), 'ASCII')
         root_n.append(image_n)
     return Response(body=etree.tostring(root_n, encoding='Shift_JIS'), content_type='text/xml', charset='Shift_JIS')
 
