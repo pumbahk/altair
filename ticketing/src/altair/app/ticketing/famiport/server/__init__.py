@@ -15,6 +15,8 @@ def main(global_config, **local_config):
     config = pyramid.config.Configurator(
         settings=settings, root_factory='.resources.famiport_resource_factory')
 
+    config.include('pyramid_mako')
+    config.add_mako_renderer('.txt')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
     config.include('altair.app.ticketing.famiport.communication')
