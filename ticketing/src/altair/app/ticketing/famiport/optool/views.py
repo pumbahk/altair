@@ -11,6 +11,7 @@ from altair.app.ticketing.famiport.models import (
     FamiPortEvent,
     FamiPortOrder,
     FamiPortOrderType,
+    FamiPortReceiptType,
     FamiPortRefundEntry
 )
 from .api import (
@@ -223,16 +224,15 @@ class FamiPortRebookOrderView(object):
                                           order_no=order.order_no,
                                           cancel_reason_code=cancel_code,
                                           cancel_reason_text=cancel_text)
-                if order.type == FamiPortOrderType.PaymentOnly.value:
-                    new_receipt = order.payment_famiport_receipt
-                elif order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value, FamiPortOrderType.CashOnDelivery.value):
-                    # Ordertype.Paymentの時はticketing側のレシートが取得される
-                    new_receipt = order.ticketing_famiport_receipt
-                else:
-                    raise FamiPortAPIError(u'make_suborder_by_order_no failed')
 
-                new_management_number = u'test'
-                # vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
+                if receipt.type == FamiPortReceiptType.Payment.value:
+                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Payment.value, order.famiport_receipts).pop()
+                elif receipt.type == FamiPortReceiptType.Ticketing.value:
+                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Ticketing.value, order.famiport_receipts).pop()
+                else:
+                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.CashOnDelivery.value, order.famiport_receipts).pop()
+
+                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
             else:
                 error = u'・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
 
@@ -262,9 +262,6 @@ class FamiPortRebookOrderView(object):
         receipt = self.context.receipt
         order = receipt.famiport_order
         client_code = order.client_code
-        vh=ViewHelpers(self.request)
-        old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
-        new_management_number = u''
         error = u''
         form = RebookOrderForm(self.request.POST)
         if form.validate():
@@ -278,18 +275,14 @@ class FamiPortRebookOrderView(object):
                                                    order_no=order.order_no,
                                                    cancel_reason_code=cancel_code,
                                                    cancel_reason_text=cancel_text)
-                new_receipt = order.ticketing_famiport_receipt
-                new_management_number = u'test'
-                # vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
+
             else:
                 error = u'・'.join(ValidateUtils.validate_reprint_cond(receipt, datetime.now()))
         else:
             error = u'・'.join(sum(form.errors.values(), []))
 
         session.commit()
-        return dict(old_identifier=old_management_number,
-                    new_identifier=new_management_number,
-                    error=error,)
+        return dict(error=error,)
 
 class FamiPortDownloadRefundTicketView(object):
     def __init__(self, context, request):

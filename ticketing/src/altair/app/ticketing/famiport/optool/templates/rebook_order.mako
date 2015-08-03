@@ -89,13 +89,16 @@ $(document).ready(function() {
             },
 
             success: function(result, textStatus, xhr) {
-                console.log(result['error']);
+                var $action = $("input[type='radio']:checked").val();
                 if(result['error']) {
                     $('#mbody-title').html('エラー');
                     $('#mbody-msg').html('<span style="color:red;">' + result['error'] + '</span>');
-                } else {
+                } else if ($action==='rebook') {
                     $('#mbody-title').html('正常に終了しました');
                     $('#mbody-msg').html($('input#old_num_type').val() + 'が「' + result['old_identifier'] + '」から「' + result['new_identifier'] + '」に変更されました');
+                } else if ($action==='reprint') {
+                    $('#mbody-title').html('正常に終了しました');
+                    $('#mbody-msg').html('当予約のステータスを発券可能状態にしました');
                 }
             },
             error: function(xhr, textStatus, error) {
