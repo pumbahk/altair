@@ -112,7 +112,10 @@ def main(argv=sys.argv):
                 ) \
             .all()
         with open(path, 'w') as f:
+            logger.info('writing sales records to %s...' % path)
             receipts = build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
+            logger.info('finished writing sales records')
+            logger.info('reflecting changes to the database')
             for receipt in receipts:
                 receipt.report_generated_at = now
             for order in orders:
@@ -121,6 +124,11 @@ def main(argv=sys.argv):
     except:
         import sys
         exc_info = sys.exc_info()
+        try:
+            logger.info('removing %s' % path)
+            os.unlink(path)
+        except:
+            logger.exception('ignored exception')
         session.rollback()
         raise exc_info[1], None, exc_info[2]
 

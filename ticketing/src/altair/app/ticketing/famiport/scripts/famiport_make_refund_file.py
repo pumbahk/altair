@@ -49,13 +49,21 @@ def main(argv=sys.argv):
     try:
         refund_entries = session.query(FamiPortRefundEntry).filter_by(report_generated_at=None).all()
         with open(path, 'w') as f:
+            logger.info('writing refund records to %s...' % path)
             build_refund_file(f, refund_entries, encoding=encoding, eor=eor)
+            logger.info('finished writing refund records')
+            logger.info('reflecting changes to the database')
             for refund_entry in refund_entries:
                 refund_entry.report_generated_at = now
             session.commit()
     except:
         import sys
         exc_info = sys.exc_info()
+        try:
+            logger.info('removing %s' % path)
+            os.unlink(path)
+        except:
+            logger.exception('ignored exception')
         session.rollback()
         raise exc_info[1], None, exc_info[2]
 
