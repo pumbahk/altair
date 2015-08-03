@@ -46,7 +46,7 @@ def main(argv=sys.argv[1:]):
 
     recipients = None
     if args.recipients:
-        recipients = args.recipients.split(',')
+        recipients = [recipient.strip() for recipient in args.recipients.split(',')]
 
     env = bootstrap(args.config)
     registry = env['registry']

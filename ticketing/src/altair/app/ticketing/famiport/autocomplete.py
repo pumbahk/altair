@@ -4,6 +4,7 @@
 - 申込を行いPOSで入金を行わず30分VOID処理も行われない場合はプレイガイド側で90分自動確定処理を行う
 - 確定したものはメールを送信する
 """
+import re
 import enum
 import logging
 from zope.interface import implementer
@@ -221,7 +222,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
         elif self._recipients is None:
             try:
                 recipients = self.settings['altair.famiport.mail.recipients']
-                recipients = recipients.split(',')
+                recipients = [recipient.strip() for recipient in re.split(ur'\s*,\s*|\s+', recipients)]
                 if recipients:
                     return recipients
                 else:
