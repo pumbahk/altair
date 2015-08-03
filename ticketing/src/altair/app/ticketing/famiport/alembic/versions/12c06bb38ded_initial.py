@@ -54,6 +54,7 @@ def create_schemas():
         sa.Column('id', Identifier, primary_key=True, autoincrement=True, nullable=False),
         sa.Column('name', sa.Unicode(50), nullable=False),
         sa.Column('discrimination_code', sa.Integer, nullable=False),
+        sa.Column('discrimination_code_2', sa.Integer, nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False)
         )
@@ -647,7 +648,7 @@ def seeding():
         dict(genre_1_code=genre_1_code, code=code, name=name)
         for genre_1_code, code, name in genre_2
         ])
-    op.execute(FamiPortPlayguide.__table__.insert().values(code=u'000000000000000000000000', discrimination_code=5, name=u'楽天チケット', prefix=u'000'))
+    op.execute(FamiPortPlayguide.__table__.insert().values(code=u'000000000000000000000000', discrimination_code=5, discrimination_code_2=4, name=u'楽天チケット', prefix=u'000'))
 
 
 def upgrade():

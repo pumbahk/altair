@@ -155,9 +155,10 @@ class FamiPortPrefecture(HardcodedModel):
 class FamiPortPlayguide(Base, WithTimestamp):
     __tablename__ = 'FamiPortPlayguide'
 
-    id                  = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
-    name                = sa.Column(sa.Unicode(50), nullable=False, default=u'')
-    discrimination_code = sa.Column(sa.Integer, nullable=False)
+    id                    = sa.Column(Identifier, nullable=False, primary_key=True, autoincrement=True)
+    name                  = sa.Column(sa.Unicode(50), nullable=False, default=u'')
+    discrimination_code   = sa.Column(sa.Integer, nullable=False)
+    discrimination_code_2 = sa.Column(sa.Integer, nullable=False) # 券面プレビューでのみ利用
 
 
 class FamiPortClient(Base, WithTimestamp):

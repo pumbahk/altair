@@ -434,7 +434,7 @@ class FamimaPosTicketingView(object):
                 else:
                     images = get_ticket_preview_pictures(
                         self.request,
-                        discrimination_code='5',
+                        discrimination_code='4',
                         client_code=payment_result_dict['client_code'],
                         order_id=payment_result_dict['order_id'],
                         barcode_no=payment_result_dict['valid_barcode_no'],

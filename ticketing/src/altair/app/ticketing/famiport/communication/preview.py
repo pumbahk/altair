@@ -28,11 +28,11 @@ class FamiPortTicketPreviewAPI(object):
                     E.clientId(client_code.zfill(24)),
                     E.barCodeNo(barcode_no),
                     E.orderId(order_id),
-                    E.name(c.encrypt(name)),
-                    E.memberId(c.encrypt(member_id)),
-                    E.address1(c.encrypt(address_1)),
-                    E.address2(c.encrypt(address_2)),
-                    E.identifyNo(identify_no),
+                    E.name(c.encrypt(name) if name else u''),
+                    E.memberId(c.encrypt(member_id) if member_id else u''),
+                    E.address1(c.encrypt(address_1) if address_1 else u''),
+                    E.address2(c.encrypt(address_2) if address_2 else u''),
+                    E.identifyNo(identify_no if identify_no else u''),
                     E.responseImageType(response_image_type),
                     *(
                         E.ticket(
