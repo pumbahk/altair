@@ -163,11 +163,13 @@
         });
         $('#sales_from').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
             });
         $('#sales_to').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
         });
         $('.toggle-btn').on('click', function(e) {
             e.preventDefault();

@@ -68,6 +68,9 @@ body {
 
 #table-content {
   padding: 0px　10px 10px 10px;
+  min-height: 300px;
+  height: auto !important;
+  height: 300px;
 }
 
 .search-table {

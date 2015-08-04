@@ -93,11 +93,13 @@
       $(document).ready(function () {
             $('#performance_from').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
             });
             $('#performance_to').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
             });
       });
 </script>

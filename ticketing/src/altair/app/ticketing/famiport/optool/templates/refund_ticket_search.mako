@@ -143,11 +143,13 @@
       $(document).ready(function () {
             $('#datepicker1').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
             });
             $('#datepicker2').datepicker({
               format: "yyyy-mm-dd",
-              language: "ja"
+              language: "ja",
+              autoclose: true
             });
             $("#modal_ok").on('click', function() {
               $('.modal-title').html('実行結果');
