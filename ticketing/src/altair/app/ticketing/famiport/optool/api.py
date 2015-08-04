@@ -226,7 +226,7 @@ def search_refund_ticket_by(request, params):
     if barcode_number:
         query = query.filter(FamiPortTicket.barcode_number == barcode_number)
     if management_number:
-        query = query.filter(FamiPortOrder.famiport_order_identifier.endswith(management_number))
+        query = query.filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))
     if refunded_shop_code:
         query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code)
     if event_code:
