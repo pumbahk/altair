@@ -65,7 +65,7 @@ class SearchReceiptForm(OurForm):
         label=u'電話番号(ハイフンなし)：',
         validators=[
             Optional(),
-            Length(min=12, max=12, message=u'電話番号は12文字以内で入力して下さい')
+            Length(min=9, max=11, message=u'電話番号は9-11文字で入力して下さい')
         ]
     )
     shop_code = OurTextField(
