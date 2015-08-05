@@ -1128,6 +1128,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                                 result_code = FamiPortRefundEntryResponseResultCodeEnum.Refundable.value
                             if given_text_type == FamiPortRefundEntryResponseTextTypeEnum.Settlement.value:
                                 refund_entry.refunded_at = now
+                                refund_entry.shop_code = shop_code
                                 session.commit()
                 return dict(
                     barCode=barcode_number,
