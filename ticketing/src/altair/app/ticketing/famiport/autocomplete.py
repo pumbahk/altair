@@ -173,7 +173,7 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
 
 
 class FamiPortOrderAutoCompleteNotifier(object):
-    template_path = u'altair.app.ticketing:templates/famiport/famiport_auto_complete.txt'
+    template_path = u'altair.app.ticketing.famiport:mail_templates/famiport_auto_complete.txt'
 
     def __init__(self, registry, recipients=None):
         self._registry = registry
