@@ -65,7 +65,8 @@ class ReprintTest(TestCase):
                 )
 
         famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         famiport_client = FamiPortClient(
             playguide=famiport_playguide,
@@ -254,7 +255,8 @@ class ReprintTest(TestCase):
                 )
 
         famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         famiport_client = FamiPortClient(
             playguide=famiport_playguide,
@@ -440,7 +442,8 @@ class ReprintTest(TestCase):
                 )
 
         famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         famiport_client = FamiPortClient(
             playguide=famiport_playguide,
@@ -625,7 +628,8 @@ class ReprintTest(TestCase):
                 )
 
         famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         famiport_client = FamiPortClient(
             playguide=famiport_playguide,
@@ -811,7 +815,8 @@ class ReprintTest(TestCase):
                 )
 
         famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         famiport_client = FamiPortClient(
             playguide=famiport_playguide,

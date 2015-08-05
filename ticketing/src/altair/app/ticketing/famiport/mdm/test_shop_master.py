@@ -2,6 +2,7 @@
 
 import unittest
 import six
+from decimal import Decimal
 
 class ShopMasterTest(unittest.TestCase):
     maxDiff = 16384
@@ -46,9 +47,9 @@ class ShopMasterTest(unittest.TestCase):
             'zip_updated': 1,                                   # 郵便番号変更フラグ
             'business_run_from': date(2015, 1, 30),             # 店舗運営開始日
             'business_run_from_updated': 1,                     # 店舗運営開始日変更フラグ
-            'shop_open_at': time(0, 0),                         # 開店時刻
+            'shop_open_at': u'0000',                            # 開店時刻
             'shop_open_at_updated': 1,                          # 開店時刻変更フラグ
-            'shop_close_at': time(23, 59),                      # 閉店時刻
+            'shop_close_at': u'2359',                           # 閉店時刻
             'shop_close_at_updated': 1,                         # 閉店時刻変更フラグ
             'business_hours': timedelta(days=1),                # 営業時間
             'business_hours_updated': 1,                        # 営業時間変更フラグ
@@ -68,9 +69,9 @@ class ShopMasterTest(unittest.TestCase):
             'business_paused_at_updated': 0,                    # 一時閉鎖日変更フラグ
             'business_continued_at': None,                      # 店舗再開店日
             'business_continued_at_updated': 0,                 # 店舗再開店日変更フラグ
-            'latitude': 35.,                                    # 緯度
+            'latitude': Decimal(35.),                           # 緯度
             'latitude_updated': 0,                              # 緯度変更フラグ
-            'longitude': 135.,                                  # 経度
+            'longitude': Decimal(135.),                         # 経度
             'longitude_updated': 0,                             # 経度変更フラグ
             'atm_available': 1,                                 # ATM有無
             'atm_available_updated': 1,                         # ATM有無変更フラグ

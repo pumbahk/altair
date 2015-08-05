@@ -259,7 +259,7 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         u"""senderは設定ファイルから取得する"""
         exp_sender = u'SENDER'
         registry = mock.Mock()
-        registry.settings = {'altair.famiport.mail.sender': exp_sender}
+        registry.settings = {'altair.famiport.auto_complete.mail.sender': exp_sender}
         session = mock.Mock()
         target = self._create(registry, session)
         self.assertEqual(target.sender, exp_sender)
@@ -278,7 +278,7 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         u"""メールのsubjectも設定ファイルで設定する"""
         exp_subject = u'90分確定通知メール %Y/%m/%d %H:%M:%S'.encode('utf8')
         registry = mock.Mock()
-        registry.settings = {'altair.famiport.mail.subject': exp_subject}
+        registry.settings = {'altair.famiport.auto_complete.mail.subject': exp_subject}
         session = mock.Mock()
         now_ = datetime.now()
         target = self._create(registry, session)
@@ -299,7 +299,7 @@ class FamiPortOrderAutoCompleteNotifierTeset(TestCase, FamiPortOrderAutoComplete
         u"""メールのsubjectが設定されていない場合は例外を送出(空白でもダメ)"""
         from ..autocomplete import InvalidMailSubjectError
         registry = mock.Mock()
-        registry.settings = {'altair.famiport.mail.subject': ''}
+        registry.settings = {'altair.famiport.auto_complete.mail.subject': ''}
         session = mock.Mock()
         target = self._create(registry, session)
         now_ = datetime.now()

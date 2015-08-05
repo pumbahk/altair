@@ -84,7 +84,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.famiport_client = FamiPortClient(
             name=u'チケットスター',
             code=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=1),
+            playguide=FamiPortPlayguide(discrimination_code=1, discrimination_code_2=1),
             prefix=u'XXX'
             )
         self.famiport_event = FamiPortEvent(

@@ -91,7 +91,8 @@ class FamiPortResponseBuilderTestBase(object):
             )
         self.session.add(self.famiport_shop)
         self.famiport_playguide = FamiPortPlayguide(
-            discrimination_code=u'5'
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         self.famiport_client = FamiPortClient(
             playguide=self.famiport_playguide,

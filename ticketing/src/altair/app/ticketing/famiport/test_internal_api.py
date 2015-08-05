@@ -39,7 +39,7 @@ class CancelFamiPortOrderTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(
@@ -290,7 +290,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(

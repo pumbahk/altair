@@ -130,7 +130,7 @@ class InquiryTest(FamiPortAPIViewTest):
             code=u'00001',
             name=u'クライアント１',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code='5')
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         get_by_reserve_number.return_value = FamiPortReceipt(
             type=FamiPortReceiptType.CashOnDelivery.value,

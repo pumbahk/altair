@@ -32,7 +32,7 @@ class TestFamiPortEvent(TestCase):
             client=FamiPortClient(
                 name=u'チケットスター',
                 code=u'000',
-                playguide=FamiPortPlayguide(discrimination_code=1),
+                playguide=FamiPortPlayguide(discrimination_code=1, discrimination_code_2=1),
                 prefix=u'XXX'
                 ),
             venue=FamiPortVenue(name=u'venue', client_code=u'000000', name_kana=u'ヴェニュー'),
@@ -279,7 +279,8 @@ class FamiPortOrderTest(TestCase):
             )
         self.session.add(self.famiport_shop)
         self.famiport_playguide = FamiPortPlayguide(
-            discrimination_code=u'5'
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         self.famiport_client = FamiPortClient(
             playguide=self.famiport_playguide,

@@ -35,7 +35,7 @@ class GetFamiPortOrderTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(
@@ -168,7 +168,7 @@ class FamiPortCreateOrUpdateFamiPortVenueTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.session.flush()
@@ -289,7 +289,7 @@ class FamiPortCreateOrUpdateFamiPortEventTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(
@@ -450,7 +450,7 @@ class FamiPortCreateOrUpdateFamiPortPerformanceTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(
@@ -633,7 +633,7 @@ class FamiPortCreateOrUpdateFamiPortSalesSegmentTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(
@@ -766,7 +766,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
             code=u'00000000000000000000001',
             name=u'チケットスター',
             prefix=u'000',
-            playguide=FamiPortPlayguide(discrimination_code=5)
+            playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
         self.session.add(self.client)
         self.venue = FamiPortVenue(

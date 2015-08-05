@@ -165,7 +165,8 @@ class ReceiptSearchTest(APITestBase, TestCase):
         self.session.add(self.famiport_shop3)
         self.session.add(self.famiport_shop4)
         self.famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         self.famiport_client = FamiPortClient(
             playguide=self.famiport_playguide,
@@ -622,7 +623,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.session.add(self.famiport_shop4)
 
         self.famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         self.famiport_client = FamiPortClient(
             playguide=self.famiport_playguide,
@@ -1124,7 +1126,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
         self.session.add(self.famiport_shop4)
 
         self.famiport_playguide = FamiPortPlayguide(
-            discrimination_code=5
+            discrimination_code=5,
+            discrimination_code_2=4
             )
         self.famiport_client = FamiPortClient(
             playguide=self.famiport_playguide,
