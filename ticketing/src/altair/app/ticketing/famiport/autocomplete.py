@@ -195,6 +195,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
     def notify(self, now_, **kwds):
         """送信処理"""
         mailer = self.get_mailer()
+        _logger.info('sending mail to %r...' % self.recipients)
         mailer.create_message(
             sender=self.sender,
             recipient=', '.join(self.recipients),
