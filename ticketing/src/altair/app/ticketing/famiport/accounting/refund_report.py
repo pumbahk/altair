@@ -82,7 +82,7 @@ def gen_record_from_refund_model(refund_entry):
         other_fees=refund_entry.other_fees,
         start_at=famiport_refund.start_at,
         end_at=famiport_refund.end_at,
-        processed_at=famiport_order.created_at,
+        processed_at=refund_entry.refunded_at,
         shop=refund_entry.shop_code,
         shop_of_issue=famiport_order.ticketing_famiport_receipt.shop_code,
         issued_at=famiport_ticket.issued_at,
