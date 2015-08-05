@@ -17,7 +17,7 @@ from pyramid.testing import (
     DummyRequest,
     DummyResource,
     )
-from altair.app.ticketing.famiport.tests.base import FamiPortTestBase
+from altair.app.ticketing.famiport.communication.testing import FamiPortTestBase
 
 
 class FamiPortTestCase(FamiPortTestBase, TestCase):
@@ -967,18 +967,48 @@ class CreateFamiPortOrderTest(TestCase):
             customer_address_2=customer_address_2,
             customer_name=customer_name,
             customer_phone_number=customer_phone_number,
-            total_amount=total_amount,
-            system_fee=system_fee,
-            ticketing_fee=ticketing_fee,
-            ticket_payment=ticket_payment,
+            total_amount=0, # total_amount,
+            system_fee=0, # system_fee,
+            ticketing_fee=0, # ticketing_fee,
+            ticket_payment=0, # ticket_payment,
             tickets=build_ticket_dicts_from_order_like(request, order_like),
             payment_start_at=order_like.payment_start_at,
             payment_due_at=order_like.payment_due_at,
             ticketing_start_at=order_like.issuing_start_at,
             ticketing_end_at=order_like.issuing_end_at,
+            payment_sheet_text=None,
             )
+        attrs = [
+                'client_code',
+                'type_',
+                'order_no',
+                'event_code_1',
+                'event_code_2',
+                'performance_code',
+                'sales_segment_code',
+                'customer_address_1',
+                'customer_address_2',
+                'customer_name',
+                'customer_phone_number',
+                'total_amount',
+                'system_fee',
+                'ticketing_fee',
+                'ticket_payment',
+                'tickets',
+                'payment_start_at',
+                'payment_due_at',
+                'ticketing_start_at',
+                'ticketing_end_at',
+                'payment_sheet_text',
+                ]
 
-        self.assertEqual(create_famiport_order.call_args, exp_call_args)
+        for attr in attrs:
+            val = create_famiport_order.call_args[1][attr]
+            exp = exp_call_args[2][attr]
+            self.assertEqual(val, exp, u'error {}: {} != {}'.format(
+                attr, val, exp,
+                ))
+
         self.assertTrue(famiport_order)
 
 
