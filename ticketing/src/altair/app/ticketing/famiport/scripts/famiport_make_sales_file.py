@@ -10,8 +10,13 @@ from sqlalchemy import orm
 from sqlalchemy import sql
 from pyramid.paster import bootstrap, setup_logging
 from dateutil.parser import parse as parsedatetime
+from altair import multilock
 from altair.sqlahelper import get_global_db_session
-from ..accounting.sales_report import build_sales_record
+
+from ..accounting.sales_report import (
+    LOCK_NAME,
+    build_sales_record,
+    )
 from ..datainterchange.api import get_famiport_file_manager_factory
 from ..datainterchange.utils import make_room
 
@@ -85,7 +90,6 @@ def main(argv=sys.argv):
 
     datetime_dir_name = now.strftime("%Y%m%d")
     base_dir = os.path.join(pending_dir, datetime_dir_name)
-    from ..models import FamiPortRefundEntry
 
     make_room(base_dir)
     try:
@@ -95,32 +99,36 @@ def main(argv=sys.argv):
     path = os.path.join(base_dir, filename)
     from ..models import FamiPortOrder, FamiPortReceipt
     try:
-        orders = session.query(FamiPortOrder) \
-            .options(orm.joinedload(FamiPortOrder.famiport_receipts)) \
-            .join(FamiPortOrder.famiport_receipts) \
-            .filter(
-                sql.or_(
-                    sql.and_(
-                        FamiPortReceipt.completed_at >= start_date,
-                        FamiPortReceipt.completed_at < end_date
+        with multilock.MultiStartLock(LOCK_NAME, engine=session.bind):
+            orders = session.query(FamiPortOrder) \
+                .options(orm.joinedload(FamiPortOrder.famiport_receipts)) \
+                .join(FamiPortOrder.famiport_receipts) \
+                .filter(
+                    sql.or_(
+                        sql.and_(
+                            FamiPortReceipt.completed_at >= start_date,
+                            FamiPortReceipt.completed_at < end_date
                         ),
-                    sql.and_(
-                        FamiPortReceipt.canceled_at >= start_date,
-                        FamiPortReceipt.canceled_at < end_date
+                        sql.and_(
+                            FamiPortReceipt.canceled_at >= start_date,
+                            FamiPortReceipt.canceled_at < end_date
                         )
                     )
                 ) \
-            .all()
-        with open(path, 'w') as f:
-            logger.info('writing sales records to %s...' % path)
-            receipts = build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
-            logger.info('finished writing sales records')
-            logger.info('reflecting changes to the database')
-            for receipt in receipts:
-                receipt.report_generated_at = now
-            for order in orders:
-                order.report_generated_at = now
-            session.commit()
+                .all()
+
+            with open(path, 'w') as f:
+                logger.info('writing sales records to %s...' % path)
+                receipts = build_sales_record(f, orders, start_date, end_date, encoding=encoding, eor=eor)
+                logger.info('finished writing sales records')
+                logger.info('reflecting changes to the database')
+                for receipt in receipts:
+                    receipt.report_generated_at = now
+                for order in orders:
+                    order.report_generated_at = now
+                session.commit()
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('multi lock: {}'.format(repr(err)))
     except:
         import sys
         exc_info = sys.exc_info()
@@ -134,5 +142,3 @@ def main(argv=sys.argv):
 
 if __name__ == u"__main__":
     main(sys.argv)
-
-

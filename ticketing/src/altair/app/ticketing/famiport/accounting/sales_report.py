@@ -19,6 +19,8 @@ from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
+LOCK_NAME = __name__  # batch用のロック名
+
 class SalesReportEntryType(Enum):
     Payment                   = 1
     Ticketing                 = 2

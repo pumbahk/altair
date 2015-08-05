@@ -7,8 +7,12 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.paster import bootstrap, setup_logging
+from altair import multilock
 from altair.sqlahelper import get_global_db_session
-from ..accounting.refund_report import build_refund_file
+from ..accounting.refund_report import (
+    LOCK_NAME,
+    build_refund_file,
+    )
 from ..datainterchange.api import get_famiport_file_manager_factory
 from ..datainterchange.utils import make_room
 
@@ -47,15 +51,18 @@ def main(argv=sys.argv):
         logger.error('failed to create directory %s (%s)' % (base_dir, e.message))
     path = os.path.join(base_dir, filename)
     try:
-        refund_entries = session.query(FamiPortRefundEntry).filter_by(report_generated_at=None).all()
-        with open(path, 'w') as f:
-            logger.info('writing refund records to %s...' % path)
-            build_refund_file(f, refund_entries, encoding=encoding, eor=eor)
-            logger.info('finished writing refund records')
-            logger.info('reflecting changes to the database')
-            for refund_entry in refund_entries:
-                refund_entry.report_generated_at = now
-            session.commit()
+        with multilock.MultiStartLock(LOCK_NAME, engine=session.bind):
+            refund_entries = session.query(FamiPortRefundEntry).filter_by(report_generated_at=None).all()
+            with open(path, 'w') as f:
+                logger.info('writing refund records to %s...' % path)
+                build_refund_file(f, refund_entries, encoding=encoding, eor=eor)
+                logger.info('finished writing refund records')
+                logger.info('reflecting changes to the database')
+                for refund_entry in refund_entries:
+                    refund_entry.report_generated_at = now
+                session.commit()
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('multi lock: {}'.format(repr(err)))
     except:
         import sys
         exc_info = sys.exc_info()
@@ -69,5 +76,3 @@ def main(argv=sys.argv):
 
 if __name__ == u"__main__":
     main(sys.argv)
-
-

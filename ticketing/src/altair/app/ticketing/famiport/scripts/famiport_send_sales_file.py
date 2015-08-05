@@ -4,7 +4,11 @@ import argparse
 import sys
 import logging
 from pyramid.paster import bootstrap, setup_logging
+from altair import multilock
+from altair.sqlahelper import get_global_db_session
+from ..accounting.sales_report import LOCK_NAME
 from ..datainterchange.api import get_famiport_file_manager_factory
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +20,16 @@ def main(argv=sys.argv):
     setup_logging(args.config)
     env = bootstrap(args.config)
     registry = env['registry']
+    session = get_global_db_session(registry, 'famiport')
+    timeout = 60 * 60  # 1H
 
     sales_file_manager = get_famiport_file_manager_factory(registry)('sales')
     logger.info("sending sales file.")
     try:
-        sales_file_manager.send_staged_file()
+        with multilock.MultiStartLock(LOCK_NAME, timeout=timeout, engine=session.bind):
+            sales_file_manager.send_staged_file()
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('multi lock: {}'.format(repr(err)))
     except:
         logger.exception('error occurred during sending file.')
         raise

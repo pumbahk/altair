@@ -14,6 +14,8 @@ from ..datainterchange.fileio import (
     Boolean,
     )
 
+LOCK_NAME = __name__
+
 refund_report_schema = [
     Column('unique_key', ZeroPaddedNumericString(length=17)),     # ユニークキー
     Column('type', Integer(length=1)),                            # 処理区分
@@ -56,7 +58,7 @@ def gen_record_from_refund_model(refund_entry):
     famiport_event = famiport_performance.famiport_event
     famiport_client = famiport_event.client
     playguide = famiport_client.playguide
-    
+
     management_number = famiport_order.famiport_order_identifier[3:12]
     unique_key = '%d%s%02d%05d' % (
         playguide.discrimination_code,
@@ -93,4 +95,3 @@ def build_refund_file(f, refund_entries, **kwargs):
     marshaller = make_marshaller(f, **kwargs)
     for refund_entry in refund_entries:
         marshaller(gen_record_from_refund_model(refund_entry))
-
