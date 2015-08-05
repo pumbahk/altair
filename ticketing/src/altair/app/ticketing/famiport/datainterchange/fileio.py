@@ -341,6 +341,9 @@ class Duration(object):
 class MarshalError(Exception):
     pass
 
+class UnmarshalError(Exception):
+    pass
+
 @implementer(ITabularDataMarshaller)
 class FixedRecordMarshaller(object):
     def __init__(self, schema):
@@ -384,4 +387,10 @@ class RecordUnmarshaller(object):
 
     def __call__(self, in_):
         for row in in_:
-            yield dict((name, spec.unmarshal(self, v)) for (name, spec), v in zip(self.schema, row))
+            retval = {} 
+            for (name, spec), v in zip(self.schema, row):
+                try:
+                    retval[name] = spec.unmarshal(self, v)
+                except Exception as e:
+                    raise UnmarshalError('%s for column "%s"' % (e.message, name))
+            yield retval
