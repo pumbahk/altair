@@ -356,7 +356,6 @@ class FamiPortOrderAutoCompleteRunner(object):
             .filter(FamiPortReceipt.inquired_at.isnot(None)) \
             .filter(FamiPortReceipt.payment_request_received_at.isnot(None)) \
             .filter(FamiPortReceipt.completed_at.is_(None)) \
-            .filter(FamiPortReceipt.void_at.is_(None)) \
             .filter(FamiPortReceipt.canceled_at.is_(None)) \
             .filter(FamiPortReceipt.rescued_at.is_(None)) \
             .filter(FamiPortReceipt.payment_request_received_at < self.time_point) \
