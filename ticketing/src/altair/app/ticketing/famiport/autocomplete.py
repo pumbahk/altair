@@ -208,7 +208,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
     @reify
     def sender(self):
         try:
-            return self.settings['altair.famiport.mail.sender']
+            return self.settings['altair.famiport.auto_complete.mail.sender']
         except KeyError:
             raise InvalidMailAddressError()
 
@@ -222,7 +222,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
             return self._recipients
         elif self._recipients is None:
             try:
-                recipients = self.settings['altair.famiport.mail.recipients']
+                recipients = self.settings['altair.famiport.auto_complete.mail.recipients']
                 recipients = [recipient.strip() for recipient in re.split(ur'\s*,\s*|\s+', recipients)]
                 if recipients:
                     return recipients
@@ -239,7 +239,7 @@ class FamiPortOrderAutoCompleteNotifier(object):
     def create_subject(self, now_):
         fmt = ''
         try:
-            fmt = self.settings['altair.famiport.mail.subject']
+            fmt = self.settings['altair.famiport.auto_complete.mail.subject']
         except KeyError as err:
             raise InvalidMailSubjectError('invalid mail subject: {}'.format(err))
         fmt = fmt.strip()

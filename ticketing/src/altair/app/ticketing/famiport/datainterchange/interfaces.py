@@ -19,7 +19,7 @@ class ITabularDataMarshaller(Interface):
         pass
 
 class ITabularDataUnmarshaller(Interface):
-    def __call__(in_):
+    def __call__(in_, exc_handler=None):
         pass
 
 class IFileSender(Interface):
