@@ -1,11 +1,11 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title><%block name="title">金沢武士団</%block></title>
+  <title><%block name="title">サムライズオンラインチケット</%block></title>
 </head>
 <body>
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.lots:static/KS/mobile/img/logo.gif')}" width="240" height="96" alt="金沢武士団" />
+  <img src="${request.static_url('altair.app.ticketing.lots:static/KS/mobile/img/logo.gif')}" width="240" height="96" alt="サムライズオンラインチケット" />
     % if lot:
       <!--
       <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
