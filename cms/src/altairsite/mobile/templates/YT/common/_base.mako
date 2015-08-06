@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS" />
-<title>ユースシアタージャパン-<%block name="title" /></title>
+<title>Youth Theatre Japan（YTJ）公演・イベント チケット情報</title>
+<meta name="description" content="Youth Theatre Japan（YTJ）の最新の公演・イベントチケット情報のご案内！Youth Theatre Japan（YTJ）では、ミュージカルやコンサート、ダンスフェスなど多岐に渡る公演・イベントを実施しています。">
+<meta name="keywords" content="YTJ,Youth Theatre Japan,公演,チケット,ユースシアタージャパン,劇団,ミュージカル,イベント,コンサート">
 </head>
 <body>
 <div align="center" style="text-align:center">

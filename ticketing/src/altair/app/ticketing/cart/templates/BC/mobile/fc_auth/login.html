@@ -1,0 +1,58 @@
+<html lang="ja">
+<head>
+  <title>横浜ビー・コルセアーズ</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/BC/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="横浜ビー・コルセアーズ" />
+</div>
+<div>
+<div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">お申込み</font></div>
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#E60048">■</font>会員の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.path}" method="post">
+<input type="hidden" name="membership" value="BC" />
+<div>
+  会員番号<br/>
+  <input type="text" name="username" size="22" value="" istyle="4">
+  %if message:
+  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+  %endif
+  <br/>
+  パスワード<br/>
+  <input type="password" name="password" size="22" value="" istyle="4">
+</div>
+<input type="submit" value="ログイン" />
+</form>
+</div>
+
+<div>
+<div><font color="#E60048">■</font>一般の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+<div style="text-align:center;">
+<br/>
+<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
+<div>
+
+</div>
+</div>
+</div>
+</form>
+</p>
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2015 &copy; TicketStar, Inc. All rights reserved.</font></div>
+</div>
+</body>
+</html>
