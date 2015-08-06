@@ -573,22 +573,26 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.order_models.Order.create_from_cart')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
-    def test_finish(self, create_famiport_order, create_from_cart):
+    def test_finish(self, create_famiport_order, create_from_cart, lookup_famiport_tenant,
+                    build_famiport_order_dict, build_ticket_dicts_from_order_like):
         """確定処理成功"""
-        exp_order = create_from_cart.return_value = mock.Mock()
+        exp_order = create_from_cart.return_value = mock.Mock(total_amount=100)
         create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
         cart = self.orders[0].cart
         plugin = self._makeOne()
-
+        build_famiport_order_dict.return_value = {}
+        build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
+        lookup_famiport_tenant.return_value = self.famiport_tenant
         order = plugin.finish(request, cart)
-        exp_call_args_create_famiport_order = mock.call(request, exp_order, plugin=plugin, in_payment=True)
 
         self.assertEqual(order, exp_order)
         self.assertTrue(create_famiport_order.called)
-        self.assertEqual(create_famiport_order.call_args, exp_call_args_create_famiport_order)
 
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
@@ -766,11 +770,13 @@ class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
         from .famiport import reserved_number_payment_viewlet as func
         return func
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
-    def test_it(self, get_famiport_order, cart_helper):
+    def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
         exp_famiport_order = mock.Mock()
         get_famiport_order.return_value = exp_famiport_order
+        lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'payment_name': self.name,

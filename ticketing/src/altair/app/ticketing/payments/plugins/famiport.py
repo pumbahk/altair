@@ -686,4 +686,6 @@ def validate_order_like(request, order_like, plugin):
                 FamiPortOrderType.Payment.value,
                 ]:
             if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
-                raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
+                raise OrderLikeValidationFailure(
+                    u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
+                    'order.total_amount')
