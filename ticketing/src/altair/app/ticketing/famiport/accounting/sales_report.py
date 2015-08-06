@@ -172,7 +172,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 logger.warning('FamiPortOrder(id=%d) paid_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
             if famiport_order.issued_at is None:
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
-            logger.debug('valid=%s, payment_famiport_receipt=FamiPortReceipt(id=%d, reserve_number=%s), famiport_receipt=FamiPortReceipt(id=%d, reserve_number=%s)' % (valid, payment_famiport_receipt and payment_famiport_receipt.id, payment_famiport_receipt and payment_famiport_receipt.reserve_number, famiport_receipt.id, famiport_receipt.reserve_number))
+            logger.debug('valid=%s, payment_famiport_receipt=FamiPortReceipt(id=%s, reserve_number=%s), famiport_receipt=FamiPortReceipt(id=%s, reserve_number=%s)' % (valid, payment_famiport_receipt and payment_famiport_receipt.id, payment_famiport_receipt and payment_famiport_receipt.reserve_number, famiport_receipt.id, famiport_receipt.reserve_number))
             if not valid or (payment_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.CashOnDelivery.value,
