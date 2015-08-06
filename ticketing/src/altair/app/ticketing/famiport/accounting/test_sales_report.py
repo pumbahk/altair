@@ -430,3 +430,64 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], False)
 
+    def test_canceled_reissued_again(self):
+        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
+        from datetime import date, datetime
+        famiport_order = FamiPortOrder(
+            famiport_order_identifier=u'123000000000',
+            type=FamiPortOrderType.CashOnDelivery.value,
+            famiport_sales_segment=self.famiport_sales_segment,
+            created_at=datetime(2014, 12, 31),
+            paid_at=datetime(2014, 12, 31),
+            issued_at=datetime(2014, 12, 31),
+            famiport_receipts=[
+                FamiPortReceipt(
+                    id=1,
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    barcode_no=u'1000000000000',
+                    reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'100000000000',
+                    shop_code=u'000000',
+                    created_at=datetime(2014, 12, 31),
+                    completed_at=datetime(2014, 12, 31),
+                    canceled_at=datetime(2015, 1, 1)
+                    ),
+                FamiPortReceipt(
+                    id=1,
+                    type=FamiPortReceiptType.CashOnDelivery.value,
+                    barcode_no=u'1000000000001',
+                    reserve_number=u'0000000000002',
+                    famiport_order_identifier=u'100000000001',
+                    shop_code=u'000000',
+                    created_at=datetime(2015, 1, 1),
+                    completed_at=datetime(2015, 1, 1),
+                    canceled_at=datetime(2015, 1, 2)
+                    )
+                ],
+            famiport_tickets=[
+                FamiPortTicket(
+                    barcode_number=u'0000000000000'
+                    ),
+                ]
+            )
+        from .sales_report import gen_records_from_order_model
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], True)
+
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 2))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], True)
+
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 3))
+        self.assertEqual(len(records), 0)
+
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2015, 1, 1), datetime(2015, 1, 2))
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]['valid'], False)
+        self.assertEqual(records[1]['valid'], True)
+
+        records, _ = gen_records_from_order_model(famiport_order, datetime(2015, 1, 2), datetime(2015, 1, 3))
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['valid'], False)
+
