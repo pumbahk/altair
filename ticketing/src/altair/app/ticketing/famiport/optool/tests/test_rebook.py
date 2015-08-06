@@ -72,7 +72,8 @@ class RebookTest(TestCase):
                     shop_code=u'00000',
                     reserve_number=u'4321043210430',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
         voided_ticketing_receipt = FamiPortReceipt(
@@ -82,7 +83,8 @@ class RebookTest(TestCase):
                     shop_code=u'00000',
                     reserve_number=u'4321043210431',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
         voided_cash_on_delivery_receipt = FamiPortReceipt(
@@ -92,7 +94,8 @@ class RebookTest(TestCase):
                     shop_code=u'00009',
                     reserve_number=u'4321043210432',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
         voided_payment_receipt_errors = ValidateUtils.validate_rebook_cond(voided_payment_receipt, datetime.now())

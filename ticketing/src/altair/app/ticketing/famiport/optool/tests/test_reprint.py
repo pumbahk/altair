@@ -234,24 +234,26 @@ class ReprintTest(TestCase):
         self.assertTrue(canceled_cash_on_delivery_receipt_errors, msg='Canceled cache on delivery receipt should not be reprintable.')
 
     def test_voided_receipt(self):
-        voided_payment_receipt = FamiPortReceipt(
+        canceled_payment_receipt = FamiPortReceipt(
                     type=FamiPortReceiptType.Payment.value,
                     famiport_order_identifier=u'RT0000000000',
                     barcode_no=u'01234012340123',
                     shop_code=u'00000',
                     reserve_number=u'4321043210430',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
-        voided_ticketing_receipt = FamiPortReceipt(
+        canceled_ticketing_receipt = FamiPortReceipt(
                     type=FamiPortReceiptType.Ticketing.value,
                     famiport_order_identifier=u'RT0000000001',
                     barcode_no=u'01234012340124',
                     shop_code=u'00000',
                     reserve_number=u'4321043210431',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
         famiport_playguide = FamiPortPlayguide(
@@ -340,7 +342,7 @@ class ReprintTest(TestCase):
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0301234567',
-            famiport_receipts=[voided_payment_receipt, voided_ticketing_receipt],
+            famiport_receipts=[canceled_payment_receipt, canceled_ticketing_receipt],
             famiport_tickets=[
                 FamiPortTicket(
                     type=FamiPortTicketType.TicketWithBarcode.value,
@@ -364,14 +366,15 @@ class ReprintTest(TestCase):
 
         self.session.add(famiport_order_payment)
 
-        voided_cash_on_delivery_receipt = FamiPortReceipt(
+        canceled_cash_on_delivery_receipt = FamiPortReceipt(
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     famiport_order_identifier=u'RT0000000003',
                     barcode_no=u'01234012340125',
                     shop_code=u'00009',
                     reserve_number=u'4321043210432',
                     payment_request_received_at=datetime.now() -  timedelta(days=1),
-                    void_at=datetime.now() - timedelta(minutes=10)
+                    void_at=None,
+                    canceled_at=datetime.now() - timedelta(minutes=10)
                 )
 
         famiport_order_cash_on_delivery = FamiPortOrder(
@@ -397,7 +400,7 @@ class ReprintTest(TestCase):
             customer_address_1=u'東京都品川区西五反田7-1-9',
             customer_address_2=u'五反田HSビル9F',
             customer_phone_number=u'0301234567',
-            famiport_receipts=[voided_cash_on_delivery_receipt],
+            famiport_receipts=[canceled_cash_on_delivery_receipt],
             famiport_tickets=[
                 FamiPortTicket(
                     type=FamiPortTicketType.TicketWithBarcode.value,
@@ -416,13 +419,13 @@ class ReprintTest(TestCase):
 
         self.session.commit()
 
-        voided_payment_receipt_errors = ValidateUtils.validate_reprint_cond(voided_payment_receipt, datetime.now())
-        voided_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(voided_ticketing_receipt, datetime.now())
-        voided_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(voided_cash_on_delivery_receipt, datetime.now())
+        canceled_payment_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_payment_receipt, datetime.now())
+        canceled_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_ticketing_receipt, datetime.now())
+        canceled_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_cash_on_delivery_receipt, datetime.now())
 
-        self.assertTrue(voided_payment_receipt_errors, msg='Canceled payment receipt should not be reprintable.')
-        self.assertTrue(voided_ticketing_receipt_errors, msg='Canceled ticketing receipt should not be reprintable.')
-        self.assertTrue(voided_cash_on_delivery_receipt_errors, msg='Canceled cache on delivery receipt should not be reprintable.')
+        self.assertTrue(canceled_payment_receipt_errors, msg='Canceled payment receipt should not be reprintable.')
+        self.assertTrue(canceled_ticketing_receipt_errors, msg='Canceled ticketing receipt should not be reprintable.')
+        self.assertTrue(canceled_cash_on_delivery_receipt_errors, msg='Canceled cache on delivery receipt should not be reprintable.')
 
     def test_unpaid_receipt(self):
         unpaid_payment_receipt = FamiPortReceipt(

@@ -3,6 +3,7 @@ import hashlib
 import six
 import logging
 from datetime import datetime
+from dateutil.parser import parse as parsedate
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import and_, not_, or_
 from altair.sqlahelper import get_db_session
@@ -102,7 +103,9 @@ def lookup_performance_by_searchform_data(request, formdata=None):
     performances = query.all()
     return performances
 
-def lookup_refund_performance_by_searchform_data(request, formdata=None):
+def lookup_refund_performance_by_searchform_data(request, formdata=None, now=None):
+    if now is None:
+        now = datetime.now()
     fami_session = get_db_session(request, name='famiport')
     query = fami_session.query(FamiPortRefundEntry, FamiPortPerformance)\
                         .join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
@@ -117,22 +120,26 @@ def lookup_refund_performance_by_searchform_data(request, formdata=None):
     during_refund = formdata.get('during_refund')
     after_refund = formdata.get('after_refund')
     performance_from = formdata.get('performance_from')
+    if performance_from is not None:
+        performance_from = parsedate(performance_from)
     performance_to = formdata.get('performance_to')
+    if performance_to is not None:
+        performance_to = parsedate(performance_to)
 
     if before_refund and during_refund and after_refund:
         pass
     elif before_refund and during_refund: # <=> Not after_refund
-        query = query.filter(not_(FamiPortRefund.end_at < datetime.now()))
+        query = query.filter(not_(FamiPortRefund.end_at < now))
     elif during_refund and after_refund: # <=> Not before_refund
-        query = query.filter(not_(FamiPortRefund.start_at > datetime.now()))
+        query = query.filter(not_(FamiPortRefund.start_at > now))
     elif before_refund and after_refund: # <=> Not during_refund
-        query = query.filter(not_(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at)))
+        query = query.filter(not_(and_(FamiPortRefund.start_at < now, now < FamiPortRefund.end_at)))
     elif before_refund:
-        query = query.filter(FamiPortRefund.start_at > datetime.now())
+        query = query.filter(FamiPortRefund.start_at > now)
     elif during_refund:
-        query = query.filter(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at))
+        query = query.filter(and_(FamiPortRefund.start_at < now, now < FamiPortRefund.end_at))
     elif after_refund:
-        query = query.filter(FamiPortRefund.end_at < datetime.now())
+        query = query.filter(FamiPortRefund.end_at < now)
 
     if performance_from:
         query = query.filter(performance_from <= FamiPortPerformance.start_at)
@@ -186,7 +193,9 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
     receipts = query.all()
     return receipts
 
-def search_refund_ticket_by(request, params):
+def search_refund_ticket_by(request, params, now=None):
+    if now is None:
+        now = datetime.now()
     session = get_db_session(request, 'famiport')
     query = session.query(FamiPortRefundEntry, FamiPortReceipt).join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                                               .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
@@ -212,17 +221,17 @@ def search_refund_ticket_by(request, params):
     if (before_refund and during_refund and after_refund) or not (before_refund or during_refund or after_refund):
         pass
     elif before_refund and during_refund: # <=> Not after_refund
-        query = query.filter(not_(FamiPortRefund.end_at < datetime.now()))
+        query = query.filter(not_(FamiPortRefund.end_at < now))
     elif during_refund and after_refund: # <=> Not before_refund
-        query = query.filter(not_(FamiPortRefund.start_at > datetime.now()))
+        query = query.filter(not_(FamiPortRefund.start_at > now))
     elif before_refund and after_refund: # <=> Not during_refund
-        query = query.filter(not_(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at)))
+        query = query.filter(not_(and_(FamiPortRefund.start_at < now, now < FamiPortRefund.end_at)))
     elif before_refund:
-        query = query.filter(FamiPortRefund.start_at > datetime.now())
+        query = query.filter(FamiPortRefund.start_at > now)
     elif during_refund:
-        query = query.filter(and_(FamiPortRefund.start_at < datetime.now(), datetime.now() < FamiPortRefund.end_at))
+        query = query.filter(and_(FamiPortRefund.start_at < now, now < FamiPortRefund.end_at))
     elif after_refund:
-        query = query.filter(FamiPortRefund.end_at < datetime.now())
+        query = query.filter(FamiPortRefund.end_at < now)
 
     if barcode_number:
         query = query.filter(FamiPortTicket.barcode_number == barcode_number)

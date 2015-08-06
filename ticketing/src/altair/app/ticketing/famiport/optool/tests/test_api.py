@@ -724,7 +724,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.famiport_order1 = FamiPortOrder(
             type=FamiPortOrderType.CashOnDelivery.value,
             order_no=u'RT0000000000',
-            famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[0],
+            famiport_order_identifier=self.famiport_client.prefix + u'000011112200',
             famiport_sales_segment=self.famiport_sales_segment1,
             famiport_client=self.famiport_client,
             generation=0,
@@ -748,7 +748,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
                 FamiPortReceipt(
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     barcode_no=u'01234012340123',
-                    famiport_order_identifier=self.famiport_client.prefix + u'000011112200',
+                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[0],
                     shop_code=self.shop_codes[0],
                     reserve_number=u'4321043210432'
                     ),
@@ -776,7 +776,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.famiport_order2 = FamiPortOrder(
             type=FamiPortOrderType.Payment.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[1],
+            famiport_order_identifier=self.famiport_client.prefix + u'000011112201',
             famiport_sales_segment=self.famiport_sales_segment2,
             famiport_client=self.famiport_client,
             generation=0,
@@ -800,7 +800,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
                 FamiPortReceipt(
                     type=FamiPortReceiptType.Payment.value,
                     barcode_no=u'01234012340124',
-                    famiport_order_identifier=self.famiport_client.prefix + u'000011112201',
+                    famiport_order_identifier=self.management_numbers[1],
                     shop_code=self.shop_codes[1],
                     reserve_number=u'4321043210433',
                     ),
@@ -921,8 +921,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             params['before_refund'] = refund_term_flag[0]
             params['during_refund'] = refund_term_flag[1]
             params['after_refund'] = refund_term_flag[2]
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by refund term. before_refund: %s, during_refund: %s, after_refund: %s' % refund_term_flag)
+            refund_ticket = search_refund_ticket_by(self.request, params, now=datetime(2015, 7, 30, 0, 0, 0))
+            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by refund term. %r' % params)
 
     def test_search_refund_ticket_by_management_number(self):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
