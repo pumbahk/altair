@@ -202,6 +202,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             playGuideId='',
             phoneInput=0,
             nameInput=0,
+            code='001',
             )
 
         self.organization = DummyModel(
@@ -213,7 +214,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
         orders = []
 
         for ii, payment_delivery_pair in enumerate(self.pdmps):
-            for shipping_address in self.shipping_addresses:
+            for jj, shipping_address in enumerate(self.shipping_addresses):
                 operator = DummyModel()
 
                 event = DummyModel(
@@ -234,6 +235,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                     )
 
                 sales_segment = DummyModel(
+                    id=int(str(ii) + str(jj)),
                     event=performance.event,
                     performance=performance,
                     sales_segment_group=sales_segment_group,
@@ -263,6 +265,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                     ordered_products.append(ordered_product)
 
                 cart = DummyCart(
+                    organization_id=self.organization.id,
                     order_no=order_no,
                     performance=performance,
                     shipping_address=shipping_address,
