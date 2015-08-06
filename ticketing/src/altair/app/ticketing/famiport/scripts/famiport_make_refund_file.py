@@ -52,7 +52,11 @@ def main(argv=sys.argv):
     path = os.path.join(base_dir, filename)
     try:
         with multilock.MultiStartLock(LOCK_NAME, engine=session.bind):
-            refund_entries = session.query(FamiPortRefundEntry).filter_by(report_generated_at=None).all()
+            refund_entries = session \
+                .query(FamiPortRefundEntry) \
+                .filter_by(report_generated_at=None) \
+                .filter(FamiPortRefundEntry.report_generated_at.isnot(None)) \
+                .all()
             with open(path, 'w') as f:
                 logger.info('writing refund records to %s...' % path)
                 build_refund_file(f, refund_entries, encoding=encoding, eor=eor)
