@@ -29,6 +29,18 @@ def register_template_globals(event):
         ])
     event.update(h=h)
 
+def setup_preview(config):
+    import urllib2
+    settings = config.registry.settings
+    opener = urllib2.build_opener()
+    from ..communication.interfaces import IFamiPortTicketPreviewAPI
+    from ..communication.preview import FamiPortTicketPreviewAPI, CachingFamiPortTicketPreviewAPIAdapterFactory
+    ticket_preview_api = FamiPortTicketPreviewAPI(opener, settings['altair.famiport.ticket_preview_api.endpoint_url'])
+    ticket_preview_cache_region = settings.get('altair.famiport.ticket_preview_api.cache_region')
+    if ticket_preview_cache_region is not None:
+        config.include('pyramid_dogpile_cache')
+        ticket_preview_api = CachingFamiPortTicketPreviewAPIAdapterFactory(ticket_preview_cache_region)(ticket_preview_api)
+    config.registry.registerUtility(ticket_preview_api, IFamiPortTicketPreviewAPI)
 
 def main(global_conf, **local_conf):
     settings = dict(global_conf)
@@ -41,10 +53,12 @@ def main(global_conf, **local_conf):
     config.add_subscriber(register_template_globals, 'pyramid.events.BeforeRender')
     config.include('pyramid_mako')
     config.include('pyramid_fanstatic')
+    config.include('pyramid_dogpile_cache')
     config.include('altair.httpsession.pyramid')
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
+    config.include(setup_preview)
 
     config.add_renderer('csv', '.renderers.CSVRenderer')
     config.add_static_view('static', '%s:static' % __name__, cache_max_age=3600)
@@ -66,6 +80,8 @@ def main(global_conf, **local_conf):
     config.add_route('refund_performance.detail',  '/show/refund_performance/{performance_id}/{refund_entry_id}', factory='.resources.RefundPerformanceDetailResource')
     # Rebook or reprint
     config.add_route('rebook_order', '/rebook_order/{action}/{receipt_id}', factory='.resources.RebookReceiptResource') # action = (show, rebook, reprint)
+    config.add_route('receipt.ticket.info', '/receipt/{receipt_id}/ticket', factory='.resources.APIResource')
+    config.add_route('receipt.ticket.render', '/receipt/{receipt_id}/ticket/page{page}', factory='.resources.APIResource')
     config.include('..subscribers')
     config.scan('.views')
     return config.make_wsgi_app()

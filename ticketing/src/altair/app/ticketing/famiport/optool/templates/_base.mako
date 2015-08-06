@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.famiport.optool:static/css/main.css')}" />
     <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery-1.11.3.min.js')}"></script>
     <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/bootstrap.min.js')}"></script>
+    <%block name="head_extras"></%block>
 </head>
 <body>
   <div class="container">

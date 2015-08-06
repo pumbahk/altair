@@ -99,3 +99,6 @@ class DetailResource(BaseResource):
 
 class RebookResource(BaseResource):
     pass
+
+class APIResource(BaseResource):
+    pass

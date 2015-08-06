@@ -145,5 +145,42 @@
   </table>
 </div>
 <div class="buttonBoxBottom pull-right">
-  <a href="${request.route_url('rebook_order', action="show", receipt_id=request.matchdict['receipt_id'])}"><button type="button" class="btn btn-info">発券指示</button></a>
+  <a href="${request.route_url('rebook_order', action="show", receipt_id=receipt.id)}"><button type="button" class="btn btn-info">発券指示</button></a>
 </div>
+<div id="tickets" class="well clearfix" style="height:400px; clear:both">
+  <div style="overflow:scroll; width:100%; height:100%; box-sizing:border-box; padding:5px 5px"></div>
+</div>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/pdf.min.js')}"></script>
+<script type="text/javascript">
+PDFJS.workerSrc = ${h.json(request.static_url('altair.app.ticketing.famiport.optool:static/js/pdf.worker.min.js'))|n};
+</script>
+<script type="text/javascript">
+var endpoints = ${h.json({'tickets':request.route_path('receipt.ticket.info', receipt_id=receipt.id)})|n};
+$(function () {
+(function ($tickets) {
+var $viewport = $tickets.children(":first");
+$.ajax({
+  url: endpoints['tickets'],
+  success: function (result) {
+    $.each(result.pages, function (_, pageUrl) {
+      PDFJS.getDocument(pageUrl).then(function (pdf) {
+        for (var i = 0; i < pdf.numPages; i++) {
+          pdf.getPage(i + 1).then(function (page) {
+            var vp = page.getViewport(2.);
+            console.log(vp.width, vp.height);
+            var c = $('<canvas></canvas>') \
+              .css({ width: vp.width + "px", height: vp.height + "px" }) \
+              .attr({ width: vp.width, height: vp.height });
+            var ctx = c.get(0).getContext('2d');
+            page.render({ canvasContext: ctx, viewport: vp }).then(function () {
+              $viewport.append(c);
+            });
+          });
+        }
+      });
+    });
+  }
+});
+})($('#tickets'));
+});
+</script>

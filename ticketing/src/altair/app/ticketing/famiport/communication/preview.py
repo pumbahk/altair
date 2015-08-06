@@ -1,10 +1,13 @@
 import logging
+import pickle
 from zope.interface import implementer
 from urllib2 import Request
 from lxml import etree, builder
 from base64 import b64decode
 from .interfaces import IFamiPortTicketPreviewAPI
 from .utils import FamiPortCrypt
+from .exceptions import FDCAPIError
+from pyramid_dogpile_cache import get_region
 
 logger = logging.getLogger(__name__)
 
@@ -63,4 +66,18 @@ class FamiPortTicketPreviewAPI(object):
             for encoded_ticket_preview_pictures in xml.findall('kenmenImage')
             ]
 
+
+class CachingFamiPortTicketPreviewAPIAdapterFactory(object):
+    def __init__(self, cache_region):
+        self.cache = get_region(cache_region)
+        
+    def gen_key(self, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+        return pickle.dumps((discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type))
+
+    def __call__(self, api):
+        def _(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
+            k = self.gen_key(discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
+            v = self.cache.get_or_create(k, lambda: api(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type))
+            return v
+        return _
 

@@ -1,6 +1,7 @@
 # encoding: utf-8
 from webhelpers.paginate import PageURL_WebOb, Page
 import logging, locale
+import json
 from .api import get_famiport_shop_by_code
 
 logger = logging.getLogger(__name__)
@@ -9,8 +10,8 @@ class Helpers(object):
     def __init__(self, request):
         self.request = request
 
-    def test_helper(self):
-        return u'test'
+    def json(self, v):
+        return json.dumps(v, ensure_ascii=True)
 
 class ViewHelpers(object):
     def __init__(self, request):

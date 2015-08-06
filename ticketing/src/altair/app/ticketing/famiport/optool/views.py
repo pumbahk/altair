@@ -1,19 +1,29 @@
 # encoding: utf-8
 
 import logging
+import json
 from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
+from pyramid.response import Response
+from pyramid.decorator import reify
+from webhelpers import paginate
+from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.famiport.models import (
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+from ..models import (
     FamiPortPerformance,
+    FamiPortReceipt,
     FamiPortEvent,
     FamiPortOrder,
     FamiPortOrderType,
     FamiPortReceiptType,
     FamiPortRefundEntry
 )
+from ..internal_api import make_suborder_by_order_no, mark_order_reissueable_by_order_no
+from ..communication.api import get_ticket_preview_pictures
+from ..exc import FamiPortAPIError
 from .api import (
     lookup_user_by_credentials,
     lookup_performance_by_searchform_data,
@@ -21,7 +31,6 @@ from .api import (
     lookup_receipt_by_searchform_data,
     search_refund_ticket_by
 )
-from ..internal_api import make_suborder_by_order_no, mark_order_reissueable_by_order_no
 from .forms import (
     LoginForm,
     SearchPerformanceForm,
@@ -30,15 +39,12 @@ from .forms import (
     SearchRefundPerformanceForm,
     RefundTicketSearchForm
 )
-from webhelpers import paginate
-from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from .utils import ValidateUtils
 from .helpers import (
     ViewHelpers,
     get_paginator,
     RefundTicketSearchHelper,
 )
-from ..exc import FamiPortAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -322,4 +328,183 @@ class FamiPortDownloadRefundTicketView(object):
         return {'header':header, 'rows': rows}
 
 
+class APIError(Exception):
+    pass
 
+
+class APIBadParameterError(APIError):
+    pass
+
+class APINotFoundError(APIError):
+    pass
+
+
+@view_defaults(permission='authenticated')
+class FamiPortAPIView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @reify
+    def session(self):
+        return get_db_session(self.request, 'famiport')
+
+    def preview_pictures(self, **kwargs):
+        return get_ticket_preview_pictures(self.request, **kwargs)
+
+    def _render_ticket_common(self):
+        try:
+            famiport_receipt_id = self.request.matchdict['receipt_id']
+        except KeyError:
+            raise APIBadParameterError('missing receipt_id')
+        try:
+            famiport_receipt = self.session.query(FamiPortReceipt).filter(FamiPortReceipt.id == famiport_receipt_id, FamiPortReceipt.canceled_at.is_(None)).one()
+        except NoResultFound:
+            raise APINotFoundError()
+        famiport_client = famiport_receipt.famiport_order.famiport_client
+        famiport_tickets = famiport_receipt.famiport_order.famiport_tickets
+        images = self.preview_pictures(
+            discrimination_code=unicode(famiport_client.playguide.discrimination_code_2),
+            client_code=famiport_client.code,
+            order_id=famiport_receipt.famiport_order_identifier,
+            barcode_no=famiport_receipt.barcode_no or u'0000000000000',
+            name=famiport_receipt.famiport_order.customer_name or u'',
+            member_id=u'',
+            address_1=famiport_receipt.famiport_order.customer_address_1 or u'',
+            address_2=famiport_receipt.famiport_order.customer_address_2 or u'',
+            identify_no=u'',
+            response_image_type='pdf',
+            tickets=[
+                dict(
+                    barcode_no=famiport_ticket.barcode_number,
+                    template_code=famiport_ticket.template_code,
+                    data=famiport_ticket.data
+                    )
+                for famiport_ticket in famiport_tickets
+                ]
+            )
+        return images, famiport_receipt
+
+    @view_config(route_name='receipt.ticket.info')
+    def render_ticket_info(self):
+        try:
+            images, famiport_receipt = self._render_ticket_common()
+        except APINotFoundError:
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=404,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': 'not found'
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        except APIBadParameterError:
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=400,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': 'bad request'
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        except Exception as e:
+            logger.exception('error')
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=500,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': e.message
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        return Response(
+            content_type='application/json',
+            charset='utf-8',
+            status=200,
+            body=json.dumps(
+                {
+                    'status': 'ok',
+                    'pages': [
+                        self.request.route_path('receipt.ticket.render', receipt_id=famiport_receipt.id, page=page)
+                        for page in range(0, len(images))
+                        ]
+                    },
+                ensure_ascii=False,
+                encoding='utf-8'
+                )
+            )
+
+    @view_config(route_name='receipt.ticket.render')
+    def render_ticket_render(self):
+        try:
+            try:
+                page = self.request.matchdict['page']
+                page = int(page)
+            except (TypeError, ValueError, KeyError):
+                raise APIBadParameterError('missingmissing  page')
+            images, famiport_receipt = self._render_ticket_common()
+            if page < 0 or page >= len(images):
+                raise APIBadParameterError('page')
+        except APINotFoundError:
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=404,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': 'not found'
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        except APIBadParameterError as e:
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=400,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': e.message
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        except Exception as e:
+            logger.exception('error')
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=500,
+                body=json.dumps(
+                    {
+                        'status': 'error',
+                        'message': e.message
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        return Response(
+            content_type='application/pdf',
+            status=200,
+            body=images[page]
+            )

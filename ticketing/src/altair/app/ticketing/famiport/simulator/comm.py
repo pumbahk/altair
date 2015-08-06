@@ -10,7 +10,6 @@ from zope.interface import implementer
 from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator
 from ..communication.interfaces import IFamiPortTicketPreviewAPI
 from ..communication.utils import FamiPortCrypt
-from .exceptions import FDCAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +264,10 @@ def includeme(config):
     opener = urllib2.build_opener()
     communicator = Communicator(endpoints, opener, 'Shift_JIS')
     config.registry.registerUtility(communicator, IFamiPortCommunicator)
-    from ..communication.preview import FamiPortTicketPreviewAPI
+    from ..communication.preview import FamiPortTicketPreviewAPI, CachingFamiPortTicketPreviewAPIAdapterFactory
     ticket_preview_api = FamiPortTicketPreviewAPI(opener, settings['altair.famiport.ticket_preview_api.endpoint_url'])
+    ticket_preview_cache_region = settings.get('altair.famiport.ticket_preview_api.cache_region')
+    if ticket_preview_cache_region is not None:
+        config.include('pyramid_dogpile_cache')
+        ticket_preview_api = CachingFamiPortTicketPreviewAPIAdapterFactory(ticket_preview_cache_region)(ticket_preview_api)
     config.registry.registerUtility(ticket_preview_api, IFamiPortTicketPreviewAPI)

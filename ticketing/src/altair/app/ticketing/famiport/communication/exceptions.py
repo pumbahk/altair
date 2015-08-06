@@ -12,3 +12,7 @@ class FamiPortResponseBuilderLookupError(FamiPortError):
 
 class FamiPortInvalidResponseError(FamiPortError):
     pass
+
+
+class FDCAPIError(Exception):
+    pass

@@ -7,7 +7,14 @@ altair.sqlahelper.sessions.famiport_mmk.url = sqlite:///%(here)s/../var/altair/f
 altair.sqlahelper.sessions.famiport_mmk.pool_class = null
 
 altair.famiport.simulator.endpoint_url = http://localhost:${altair:famiport.port}/famiport
-altair.famiport.ticket_preview_api.endpoint_url = http://localhost:${altair:famiport_simulator.port}/.dummy_preview_server/
+altair.famiport.ticket_preview_api.endpoint_url = ${altair:famiport_ticket_preview_api_endpoint_url}
+altair.famiport.ticket_preview_api.cache_region = famiport_ticket_preview
+
+dogpile_cache.famiport_ticket_preview.backend = dogpile.cache.dbm
+dogpile_cache.famiport_ticket_preview.expire = 86400
+dogpile_cache.famiport_ticket_preview.arguments.filename = %(here)s/../tmp/famiport_ticket_preview
+dogpile_cache.famiport_ticket_preview.arguments.host = 127.0.0.1
+dogpile_cache.famiport_ticket_preview.arguments.db = 1
 
 altair.httpsession.persistence = altair.httpsession.beaker.factory
 altair.httpsession.persistence.type = file
