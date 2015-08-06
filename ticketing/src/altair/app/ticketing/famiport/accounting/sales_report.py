@@ -1,5 +1,5 @@
 # encoding: utf-8
-from codecs import getencoder
+from codecs import getencoder, getdecoder
 from datetime import date
 import decimal
 import logging
@@ -7,6 +7,8 @@ from enum import Enum
 from ..datainterchange.fileio import (
     Column,
     FixedRecordMarshaller,
+    FixedRecordChunkerFactory,
+    RecordUnmarshaller,
     ZeroPaddedNumericString,
     Integer,
     ZeroPaddedInteger,
@@ -55,6 +57,11 @@ def make_marshaller(f, encoding='cp932', eor='\n'):
     def _(row):
         marshaller(row, out)
     return _
+
+def make_unmarshaller(f, encoding='cp932', eor='\n', exc_handler=None):
+    chunker = FixedRecordChunkerFactory(sales_report_schema)(f, encoding, eor)
+    unmarshaller = RecordUnmarshaller(sales_report_schema, exc_handler)
+    return unmarshaller(chunker)
 
 def gen_records_from_order_model(famiport_order, start_date, end_date):
     famiport_sales_segment = famiport_order.famiport_sales_segment

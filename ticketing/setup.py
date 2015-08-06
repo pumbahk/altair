@@ -200,6 +200,7 @@ setup(name='altair.app.ticketing',
       famiport_send_refund_file=altair.app.ticketing.famiport.scripts.famiport_send_refund_file:main
       famiport_make_sales_file=altair.app.ticketing.famiport.scripts.famiport_make_sales_file:main
       famiport_make_refund_file=altair.app.ticketing.famiport.scripts.famiport_make_refund_file:main
+      famiport_parse_sales_file=altair.app.ticketing.famiport.scripts.famiport_parse_sales_file:main
       famiport_import_shop_master=altair.app.ticketing.famiport.scripts.famiport_import_shop_master:main
       famiport_auto_complete=altair.app.ticketing.famiport.scripts.famiport_auto_complete:main
       famiport_gen_preview_picture=altair.app.ticketing.famiport.scripts.famiport_gen_preview_picture:main

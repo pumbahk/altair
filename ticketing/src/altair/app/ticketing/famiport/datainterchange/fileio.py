@@ -5,6 +5,7 @@ import re
 import io
 import csv
 import decimal
+from codecs import lookup as lookup_codec
 from collections import namedtuple
 from datetime import date, time, datetime, timedelta
 import six
@@ -12,6 +13,7 @@ from zope.interface import implementer
 from altair.timeparse import parse_duration, build_duration
 from altair.jis.sjis import sjis_iterator, multibyte_in_sjis, len_in_sjis
 from ..utils import hankaku2zenkaku
+from .utils import BufferedIOWrapper
 from .interfaces import ITabularDataColumn, ITabularDataColumnSpecification, ITabularDataMarshaller, ITabularDataUnmarshaller
 
 Column = implementer(ITabularDataColumn)(namedtuple('Column', ('name', 'spec')))
@@ -560,7 +562,6 @@ class UnmarshalErrorCollection(MarshalErrorBase):
         return self.args[1]
 
     def __str__(self):
-        print u'%s: %s' % (self.message, u', '.join(unicode(error) for error in self.errors))
         return u'%s: %s' % (self.message, u', '.join(unicode(error) for error in self.errors))
 
 
@@ -608,6 +609,58 @@ class CSVRecordMarshaller(object):
         w = csv.writer(x)
         w.writerow(encoded_row)
         out(six.text_type(x.getvalue(), 'utf-8'))
+
+
+class RecordLengthCalculator(object):
+    def __init__(self, encoding, reference_char=u'■'):
+        codec = lookup_codec(encoding)
+        self.wide_char_len = 1
+        try:
+            wide_char, _ = codec.encode(reference_char)
+            self.wide_char_len = len(wide_char)
+        except:
+            pass
+
+    def __call__(self, spec):
+        c = 1
+        if isinstance(spec, WideWidthString):
+            c = self.wide_char_len
+        return c * spec.length
+
+
+class FixedRecordChunkerFactory(object):
+    def __init__(self, schema):
+        self.schema = schema
+
+    def __call__(self, f, encoding, eor):
+        bufio = BufferedIOWrapper(f)
+        codec = lookup_codec(encoding)
+        length_calculator = RecordLengthCalculator(encoding)
+        record_length = 0
+        byte_lengths = []
+        for _, spec in self.schema:
+            l = length_calculator(spec)
+            record_length += l
+            byte_lengths.append(l)
+        def _():
+            while True:
+                n = record_length + len(eor)
+                data_for_row = bufio.read(n)
+                if data_for_row == u'':
+                    break
+                if len(data_for_row) != n:
+                    raise IOError(u'unexpected end of file (%d bytes to read, got %d)' % (n, len(data_for_row)))
+                if data_for_row[-len(eor):] != eor:
+                    raise IOError(u'record does not ends with %r (got %r)' % (eor, data_for_row[-len(eor):]))
+                i = 0
+                retval = []
+                for bl, (name, spec) in zip(byte_lengths, self.schema):
+                    u, _ = codec.decode(data_for_row[i:i + bl])
+                    retval.append(u)
+                    i += bl
+                yield retval 
+        return _()
+
 
 @implementer(ITabularDataUnmarshaller)
 class RecordUnmarshaller(object):
