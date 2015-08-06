@@ -521,7 +521,7 @@ class MarshalError(RespectiveMarshalErrorBase):
 
     @property
     def value(self):
-        return self.value
+        return self.args[2]
 
     def __str__(self):
         return u'%s: %s (value=%s)' % (self.field, self.message, self.value)
@@ -533,7 +533,7 @@ class UnmarshalError(RespectiveMarshalErrorBase):
 
     @property
     def value(self):
-        return self.value
+        return self.args[2]
 
     def __str__(self):
         return u'%s: %s (value=%s)' % (self.field, self.message, self.value)
