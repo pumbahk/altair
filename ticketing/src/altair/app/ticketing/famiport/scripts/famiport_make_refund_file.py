@@ -9,14 +9,13 @@ from sqlalchemy.orm.exc import NoResultFound
 from pyramid.paster import bootstrap, setup_logging
 from altair import multilock
 from altair.sqlahelper import get_global_db_session
-from ..accounting.refund_report import (
-    LOCK_NAME,
-    build_refund_file,
-    )
+from ..accounting.refund_report import build_refund_file
 from ..datainterchange.api import get_famiport_file_manager_factory
 from ..datainterchange.utils import make_room
 
 logger = logging.getLogger(__name__)
+
+LOCK_NAME = __name__
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()

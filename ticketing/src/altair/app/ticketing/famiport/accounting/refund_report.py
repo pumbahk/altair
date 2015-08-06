@@ -14,8 +14,6 @@ from ..datainterchange.fileio import (
     Boolean,
     )
 
-LOCK_NAME = __name__
-
 refund_report_schema = [
     Column('unique_key', ZeroPaddedNumericString(length=17)),     # ユニークキー
     Column('type', Integer(length=1)),                            # 処理区分

@@ -13,12 +13,11 @@ from dateutil.parser import parse as parsedatetime
 from altair import multilock
 from altair.sqlahelper import get_global_db_session
 
-from ..accounting.sales_report import (
-    LOCK_NAME,
-    build_sales_record,
-    )
+from ..accounting.sales_report import build_sales_record
 from ..datainterchange.api import get_famiport_file_manager_factory
 from ..datainterchange.utils import make_room
+
+LOCK_NAME = __name__  # batch用のロック名
 
 def parse_start_and_end_date(args, now):
     start_date = None

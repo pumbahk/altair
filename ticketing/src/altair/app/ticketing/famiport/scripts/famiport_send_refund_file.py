@@ -7,7 +7,7 @@ from pyramid.paster import bootstrap, setup_logging
 from altair import multilock
 from altair.sqlahelper import get_global_db_session
 from ..datainterchange.api import get_famiport_file_manager_factory
-from ..accounting.refund_report import LOCK_NAME
+from .famiport_make_refund_file import LOCK_NAME
 
 logger = logging.getLogger(__name__)
 # TODO Test

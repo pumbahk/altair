@@ -6,9 +6,8 @@ import logging
 from pyramid.paster import bootstrap, setup_logging
 from altair import multilock
 from altair.sqlahelper import get_global_db_session
-from ..accounting.sales_report import LOCK_NAME
 from ..datainterchange.api import get_famiport_file_manager_factory
-
+from .famiport_make_sales_file import LOCK_NAME
 
 logger = logging.getLogger(__name__)
 
