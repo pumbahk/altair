@@ -274,6 +274,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 ticketing_fee=Decimal(10),
                 other_fees=Decimal(20),
                 shop_code=u'0000000',
+                refunded_at=datetime(2015, 1, 3, 0, 0, 0),
                 famiport_ticket=FamiPortTicket(
                     template_code=u'TTXX000000',
                     barcode_number=u'0000000000000',
