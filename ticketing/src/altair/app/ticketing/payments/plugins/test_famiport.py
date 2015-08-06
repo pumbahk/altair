@@ -423,17 +423,24 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         res = plugin.finish(request, cart)
         self.assertEqual(res, None)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
-    def test_finish2_success(self, create_famiport_order):
+    def test_finish2_success(self, create_famiport_order, lookup_famiport_tenant,
+                             build_famiport_order_dict, build_ticket_dicts_from_order_like):
         """確定処理2成功"""
         request = DummyRequest()
         exp_famiport_order = mock.Mock()
         create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
+        build_famiport_order_dict.return_value = {}
+        build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
+        lookup_famiport_tenant.return_value = self.famiport_tenant
 
         for order in self.orders:
             cart = order.cart
-            exp_call_args = mock.call(request, cart, plugin=plugin, in_payment=plugin._in_payment)
+            exp_call_args = mock.call(request, cart, plugin=plugin)
             plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
 
@@ -608,9 +615,9 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
 
         build_famiport_order_dict.return_value = {}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
+        lookup_famiport_tenant.return_value = self.famiport_tenant
         for order in self.orders:
             cart = order.cart
-            lookup_famiport_tenant.return_value = self.famiport_tenant
             exp_call_args = mock.call(request, cart, plugin=plugin)
             plugin.finish2(request, cart)
             self.assertEqual(create_famiport_order.call_args, exp_call_args)
