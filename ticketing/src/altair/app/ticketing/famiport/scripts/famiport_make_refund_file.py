@@ -55,7 +55,7 @@ def main(argv=sys.argv):
             refund_entries = session \
                 .query(FamiPortRefundEntry) \
                 .filter_by(report_generated_at=None) \
-                .filter(FamiPortRefundEntry.refuned_at.isnot(None)) \
+                .filter(FamiPortRefundEntry.refuneded_at.isnot(None)) \
                 .all()
             with open(path, 'w') as f:
                 logger.info('writing refund records to %s...' % path)
