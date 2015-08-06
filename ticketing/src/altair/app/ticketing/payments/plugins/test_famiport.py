@@ -411,14 +411,21 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         res = self._callFUT(plugin.prepare, request, cart)
         self.assert_(res is None)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.order_models.Order.create_from_cart')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.create_famiport_order')
-    def test_finish(self, create_famiport_order, create_from_cart):
+    def test_finish(self, create_famiport_order, create_from_cart, lookup_famiport_tenant,
+                    build_famiport_order_dict, build_ticket_dicts_from_order_like):
         """確定処理成功"""
         create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
         cart = self.orders[0].cart
         plugin = self._makeOne()
+        build_famiport_order_dict.return_value = {}
+        build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
+        lookup_famiport_tenant.return_value = self.famiport_tenant
 
         res = plugin.finish(request, cart)
         self.assertEqual(res, None)
@@ -878,11 +885,13 @@ class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import deliver_completion_viewlet as func
         return func
 
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
-    def test_it(self, get_famiport_order, cart_helper):
+    def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
         exp_famiport_order = mock.Mock()
         get_famiport_order.return_value = exp_famiport_order
+        lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'delivery_name': self.name,
@@ -897,13 +906,16 @@ class FamiPortDeliveryCompletionMailViewletTest(FamiPortDeliveryViewletTest):
         from .famiport import deliver_completion_mail_viewlet as func
         return func
 
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
-    def test_it(self, cart_helper):
+    def test_it(self, cart_helper, lookup_famiport_tenant, get_famiport_order):
+        get_famiport_order.return_value = mock.Mock()
+        lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {
-            'notice': self.notice,
-            'h': cart_helper,
-            })
+        for key, value in {'description': self.description, 'h': cart_helper}.items():
+            self.assertEqual(value, res.get(key), 'invalid value: key={}, exp_value={} != {}'.format(
+                key, repr(value), repr(res.get(key))))
 
 
 class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
