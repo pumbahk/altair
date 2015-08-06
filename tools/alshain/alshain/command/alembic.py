@@ -4,15 +4,25 @@ import jumon
 from .. import utils
 
 
-TARGET_CURRENTDIR = {'ticketing': 'ticketing',
-                     'cms': 'cms',
-                     }
+TARGET_CURRENTDIR = {
+    'ticketing': 'ticketing',
+    'cms': 'cms',
+    'famiport': 'ticketing/src/altair/app/ticketing/famiport/alembic',
+    }
+
+
+CONFIG_NAME = {
+    'ticketing': 'altair.ticketing.admin.ini',
+    'cms': 'altair.cms.admin.ini',
+    'famiport': 'altair.famiport.ini',
+    }
 
 
 def get_alembic(target):
     altair_path = utils.AltairPath()
     cmd = altair_path.bin_('altair_alembic_paste')
-    conf_file = altair_path.conf('altair.{}.admin.ini'.format(target))
+    conf_file_name = CONFIG_NAME[target]
+    conf_file = altair_path.conf(conf_file_name)
     cmd += ' -c {} '.format(conf_file)
     return cmd
 
@@ -35,7 +45,7 @@ def main(argv):
         parser.error()
 
     altair_path = utils.AltairPath()
-    cur = altair_path.root(target)
+    cur = altair_path.root(TARGET_CURRENTDIR[target])
     os.chdir(cur)
     clean_alembic(cur)
     alembic = get_alembic(target)

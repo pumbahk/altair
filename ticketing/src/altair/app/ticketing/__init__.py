@@ -155,6 +155,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.multicheckout')
         config.include('altair.app.ticketing.checkout')
         config.include('altair.app.ticketing.sej')
+        config.include('altair.app.ticketing.famiport')
         config.include('altair.app.ticketing.sej.userside_impl')
         config.include('altair.app.ticketing.operators' , route_prefix='/operators')
         config.include('altair.app.ticketing.login' , route_prefix='/login')
@@ -202,6 +203,8 @@ def main(global_config, **local_config):
         config.include('.renderers')
 
         config.scan('altair.app.ticketing.cart.workers')
+        config.include('altair.app.ticketing.famiport.userside_workers')
+        config.scan('altair.app.ticketing.famiport.userside_workers')
     
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
 

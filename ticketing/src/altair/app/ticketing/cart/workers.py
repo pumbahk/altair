@@ -17,7 +17,7 @@ class WorkerResource(object):
     def cart_id(self):
         return self.request.params.get('cart_id')
 
-@task_config(root_factory=WorkerResource, consumer="cart", queue="cart")
+@task_config(root_factory=WorkerResource, name="cart", consumer="cart", queue="cart")
 def cart_release(context, request):
     from .models import Cart
     from altair.app.ticketing.models import DBSession

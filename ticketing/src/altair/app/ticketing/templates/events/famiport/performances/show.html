@@ -1,0 +1,124 @@
+<%inherit file="/layout_2cols.html" />
+<% from altair.app.ticketing.famiport.models import FamiPortPerformanceType %>
+<%namespace file="/common/modal.html" name="common_modal" />
+<%namespace file="/common/helpers.html" name="ch" />
+<style type="text/css">
+.attached-action {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgb(230, 230, 230);
+  background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+  padding: 4px 4px;
+  line-height: 1em;
+}
+
+.attached-action-inner {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.attached-action input,
+.attached-action textarea,
+.attached-action select,
+.attached-action .uneditable-input,
+.attached-action .input-append {
+  margin: 0 0;
+}
+
+</style>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'ファミポート連携', u'公演グループ「%s」' % altair_famiport_performance.altair_famiport_performance_group.name_1, u'公演「%s」' % altair_famiport_performance.name],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.famiport.performance_groups.index', event_id=event.id),
+        request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id)
+        ]
+  )}
+</%block>
+<div class="page-header">
+  <h1>公演「${altair_famiport_performance.name}」</h1>
+</div>
+
+<div>
+<a href="${request.route_path('events.famiport.performances.item.edit', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id, altair_famiport_performance_id=altair_famiport_performance.id)}" class="btn">編集</a>
+</div>
+
+<table class="table">
+  <tbody>
+    <tr>
+      <th>ステータス</th>
+      <td>${view.status_label(altair_famiport_performance.status)}</td>
+    </tr>
+    <tr>
+      <th>Altair公演名</th>
+      <td>${altair_famiport_performance.performance.name}</td>
+    </tr>
+    <tr>
+      <th>公演コード</th>
+      <td>${altair_famiport_performance.code}</td>
+    </tr>
+    <tr>
+      <th>公演名</th>
+      <td>${altair_famiport_performance.name}</td>
+    </tr>
+    <tr>
+      <th>公演情報開示フラグ (直販のみ)</th>
+      <td>${u'公開する' if altair_famiport_performance.searchable else u'公開しない'}</td>
+    </tr>
+    <tr>
+      <th>公演種別</th>
+      <td>${view.performance_type_label(altair_famiport_performance.type)}</td>
+    </tr>
+    <tr>
+      <th>公演日時</th>
+      <td>
+        % if altair_famiport_performance.type == FamiPortPerformanceType.Normal.value:
+          ${vh.datetime(altair_famiport_performance.start_at)}
+        % else:
+          - 
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>チケット名称</th>
+      <td>
+        % if altair_famiport_performance.type == FamiPortPerformanceType.Spanned.value:
+          ${altair_famiport_performance.tickete_name}
+        % else:
+          - 
+        % endif
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>受付区分</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>受付区分コード</th>
+      <th>受付名称</th>
+      <th>販売期間</th>
+      <th>公開日時 (直販用)</th>
+      <th>ステータス</th>
+    </tr>
+  </thead>
+  <tbody>
+    % for altair_famiport_sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
+    <tr>
+      <td>${altair_famiport_sales_segment_pair.code}</td>
+      <td>${altair_famiport_sales_segment_pair.name}</td>
+      <td>
+        ${vh.term(altair_famiport_sales_segment_pair.start_at, altair_famiport_sales_segment_pair.end_at)}
+        % if altair_famiport_sales_segment_pair.seat_selection_start_at is not None:
+          (座席選択可能期間 ${vh.datetime(altair_famiport_sales_segment_pair.seat_selection_start_at)}〜)
+        % endif
+      </td>
+      <td>${vh.datetime(altair_famiport_sales_segment_pair.published_at)}</td>
+      <td>${altair_famiport_sales_segment_pair.status}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>

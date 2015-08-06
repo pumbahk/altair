@@ -130,7 +130,7 @@ class OrderShowFormProvider(object):
 
     def get_order_refund_form(self):
         order = self.order        
-        return OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), organization_id=order.organization_id)
+        return OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), context=self.context)
 
     def get_order_edit_attribute(self):
         return OrderMemoEditFormFactory(3)()

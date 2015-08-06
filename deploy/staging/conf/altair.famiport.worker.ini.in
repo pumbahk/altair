@@ -1,0 +1,81 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.famiport
+
+altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
+altair.sqlahelper.sessions.famiport_slave.url = ${altair:famiport.db_url.slave}
+altair.sqlahelper.sessions.famiport_comm.url = ${altair:famiport.db_url.master}
+
+[app:main]
+use = config:%(here)s/../../baseconf/common.ini#famiport.worker
+
+get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
+get altair.sqlahelper.sessions.famiport_slave.url = altair.sqlahelper.sessions.famiport_slave.url
+get altair.sqlahelper.sessions.famiport_comm.url = altair.sqlahelper.sessions.famiport_comm.url
+
+; altair.mq
+altair.ticketing.famiport.mq = altair.mq.consumer.pika_client_factory
+                               altair.mq.publisher.pika_publisher_factory
+altair.ticketing.famiport.mq.url = ${altair:ticketing.mq_url}
+
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altair, ticketing, famiport, sqlalchemy
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altair]
+level = DEBUG
+handlers = console, fluent
+qualname = altair
+propagate = 0
+
+[logger_ticketing]
+level = DEBUG
+handlers = console, fluent
+qualname = altair.app.ticketing
+propagate = 0
+
+[logger_famiport]
+level = DEBUG
+handlers = console, fluent
+qualname = famiport_payment
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = ${altair:console_loglevel}
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.famiport.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = fluent.handler.FluentHandler
+args = ('altair.famiport.worker', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

@@ -1,7 +1,9 @@
-# This package may contain traces of nuts
 import logging
-from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDispatcher
+import urllib
+import json
+import six
 from pyramid.config import ConfigurationError
+from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher, ITaskDiscovery, ITaskDispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -10,12 +12,11 @@ class QueueSettings(object):
     def __init__(self,
                  queue='',
                  passive=False,
-                 durable=False,
+                 durable=True,
                  exclusive=False,
                  auto_delete=False,
                  nowait=False,
                  arguments=None):
-
         self.queue = queue
         self.passive = passive
         self.durable = durable
@@ -24,14 +25,39 @@ class QueueSettings(object):
         self.nowait = nowait
         self.arguments = arguments
 
+    def queue_declare(self, task_mapper, channel, callback):
+        logger.info("task[{name}]: declaring queue {queue} ({settings})".format(name=task_mapper.name, queue=self.queue, settings=repr(self)))
+        def _(frame):
+            logger.info("task[{name}] queue {queue} declared".format(name=task_mapper.name, queue=self.queue))
+            callback(frame, self.queue)
+            
+        channel.queue_declare(
+            queue=self.queue, 
+            passive=self.passive,
+            durable=self.durable, 
+            exclusive=self.exclusive,
+            auto_delete=self.auto_delete,
+            nowait=self.nowait,
+            arguments=self.arguments,
+            callback=_
+            )
+
+    @property
+    def script_name(self):
+        return self.queue
+
+    @property
+    def exchange_and_direct_routing_key(self):
+        return ('', self.queue)
+
     def __repr__(self):
-        return ("queue = {0.queue}; "
-                "passive = {0.passive}; "
-                "durable = {0.durable}; "
-                "exclusive = {0.exclusive}; "
-                "auto_delete = {0.auto_delete}; "
-                "nowait = {0.nowait}; "
-                "arguments = {0.arguments}; ").format(self)
+        return ("queue={0.queue}, "
+                "passive={0.passive}, "
+                "durable={0.durable}, "
+                "exclusive={0.exclusive}, "
+                "auto_delete={0.auto_delete}, "
+                "nowait={0.nowait}, "
+                "arguments={0.arguments}").format(self)
 
 
 prefetch_size_setting_name = '%s.qos.prefetch_size' % __name__
@@ -41,15 +67,24 @@ def add_task(config, task,
              name,
              root_factory=None,
              timeout=None,
-             queue="test",
              consumer="",
-             durable=True, 
-             exclusive=False, 
-             auto_delete=False,
-             nowait=False,
+             queue=None,
              prefetch_size=None,
-             prefetch_count=None):
+             prefetch_count=None,
+             **queue_params):
     from .consumer import TaskMapper
+    if queue is None:
+        queue = name
+    elif name == "":
+        if isinstance(queue, basestring):
+            logger.warning("specifying empty string to `name' parameter with non-empty `queue' parameter is deprecated.  the name of the task will be the same as the queue name (%s)" % queue)
+            name = queue
+        else:
+            raise ConfigurationError("`name' parameter is empty and non-string was specified to `queue' (%r)" % queue)
+    if callable(queue):
+        queue_settings_factory = queue
+    else:
+        queue_settings_factory = lambda **rest_of_queue_params: QueueSettings(queue=queue, **rest_of_queue_params)
 
     if root_factory is not None:
         root_factory = config.maybe_dotted(root_factory)
@@ -61,11 +96,6 @@ def add_task(config, task,
 
     def register():
         pika_consumer = get_consumer(config.registry, consumer)
-        queue_settings = QueueSettings(queue=queue,
-                                       durable=durable,
-                                       exclusive=exclusive,
-                                       auto_delete=auto_delete,
-                                       nowait=nowait)
         if pika_consumer is None:
             raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
@@ -89,26 +119,28 @@ def add_task(config, task,
 
         task_dispatcher = pika_consumer.modify_task_dispatcher(task_dispatcher)
 
-        pika_consumer.add_task(
-            TaskMapper(
-                registry=reg,
-                task=task,
-                name=name,
-                root_factory=root_factory,
-                queue_settings=queue_settings,
-                task_dispatcher=task_dispatcher,
-                timeout=timeout,
-                prefetch_size=_prefetch_size,
-                prefetch_count=_prefetch_count
-                )
+        queue_settings = queue_settings_factory(**queue_params)
+
+        task_mapper = TaskMapper(
+            registry=reg,
+            task=task,
+            name=name,
+            root_factory=root_factory,
+            queue_settings=queue_settings,
+            task_dispatcher=task_dispatcher,
+            timeout=timeout,
+            prefetch_size=_prefetch_size,
+            prefetch_count=_prefetch_count
             )
+
+        pika_consumer.add_task(task_mapper)
         logger.info("register task {name} {root_factory} {queue_settings} {timeout}".format(name=name,
                                                                    root_factory=root_factory,
                                                                    queue_settings=queue_settings,
                                                                    timeout=timeout))
-        reg.registerUtility(task, ITask, name=name)
+        reg.registerUtility(task, ITask, name='%s:%s' %(consumer, name))
 
-    config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),
+    config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue_settings_factory),
                   register, order=2)
 
 
@@ -125,6 +157,34 @@ def get_publisher(request_or_registry, name=''):
     else:
         reg = request_or_registry
     return reg.queryUtility(IPublisher, name)
+
+def dispatch_task(request_or_registry, task_name, body={}, content_type='application/x-www-form-urlencoded', consumer_name='', properties=None, mandatory=False, immediate=False):
+    consumer = get_consumer(request_or_registry, name=consumer_name)
+    if not ITaskDiscovery.providedBy(consumer):
+        raise RuntimeError('consumer %s does not implement ITaskDiscovery' % consumer_name)
+    publisher = consumer.companion_publisher
+    if publisher is None:
+        raise RuntimeError('consumer %s does not have a companion publisher' % consumer_name)
+    task_mapper = consumer.lookup_task(task_name)
+    exchange, routing_key = task_mapper.queue_settings.exchange_and_direct_routing_key
+    if not isinstance(body, basestring):
+        if content_type == 'application/x-www-form-urlencoded':
+            body = urllib.urlencode([(six.text_type(k).encode('utf-8'), six.text_type(v).encode('utf-8')) for k, v in body.items()])
+        elif content_type == 'application/json':
+            body = json.dumps(body, ensure_ascii=False)
+    if properties is not None:
+        properties = dict(properties)
+    else:
+        properties = {}
+    properties['content_type'] = content_type
+    publisher.publish(
+        exchange=exchange,
+        routing_key=routing_key,
+        body=body,
+        mandatory=mandatory,
+        immediate=immediate,
+        properties=properties
+        )
 
 def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
     if dotted_names is None:
@@ -149,7 +209,10 @@ def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
         config.registry.registerUtility(publisher, IPublisher, name)
     if consumer is not None:
         config.registry.registerUtility(consumer, IConsumer, name)
-
+        if ITaskDiscovery.providedBy(consumer):
+            config.registry.registerUtility(consumer, ITaskDiscovery, name)
+        if publisher is not None:
+            consumer.companion_publisher = publisher
 
 def includeme(config):
     import sys

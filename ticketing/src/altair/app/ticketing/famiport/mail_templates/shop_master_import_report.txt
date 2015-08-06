@@ -1,0 +1,14 @@
+送信日：${now}
+-------------------------------------------------------------
+これはシステムからの自動送信メッセージです
+
+総レコード数: ${num_records}
+エラーのあったレコードの数: ${num_errors}
+
+% if num_errors > 0:
+エラーの詳細:
+
+% for error in errors:
+${error['line']}行 項目「${error['localized_field_name']}」: ${error['message']}
+% endfor
+% endif

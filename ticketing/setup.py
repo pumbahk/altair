@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 from setuptools import setup, find_packages
@@ -74,7 +75,7 @@ requires = [
     'beaker-extensions == 0.2.0.post1',
     'boto',
     'fluent-logger == 0.3.3.post1',
-    'Pillow', # for qrcode.image.pil
+    'Pillow',  # for qrcode.image.pil
     'altair.findable_label',
     'altair.log',
     "jsonrpclib",
@@ -86,6 +87,8 @@ requires = [
     "paramiko",
     "enum34",
     "scp",
+    "jumon",
+    "jctconv",
     "altair.augus",
     "altair.auth",
     "altair.sqla",
@@ -110,6 +113,8 @@ requires = [
     'altair.samarker',
     'altair.pyramid_dynamic_renderer',
     'altair.timeparse',
+    'altair.mailhelpers',
+    'altair.jis',
     'altair.types',
     ]
 
@@ -127,7 +132,7 @@ setup(name='altair.app.ticketing',
       version='0.0',
       use_date_versioning=True,
       description='altair.app.ticketing',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -147,10 +152,11 @@ setup(name='altair.app.ticketing',
       tests_require=tests_require,
       extras_require=extras_require,
       test_suite="altair.app.ticketing",
-      entry_points = """\
+      entry_points="""\
       [paste.app_factory]
       main = altair.app.ticketing:main
       zea-admin = altair.app.ticketing.project_specific.zea:main
+      userside-famiport = altair.app.ticketing.famiport.userside_notification_handler:main
       [console_scripts]
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
       release_carts=altair.app.ticketing.cart.commands:release_carts
@@ -190,11 +196,21 @@ setup(name='altair.app.ticketing',
       send_print_remind_mail=altair.app.ticketing.mails.scripts.send_print_remind_mail:main
       sej_send_refund_file=altair.app.ticketing.sej.scripts.sej_send_refund_file:main
       sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
+      famiport_send_sales_file=altair.app.ticketing.famiport.scripts.famiport_send_sales_file:main
+      famiport_send_refund_file=altair.app.ticketing.famiport.scripts.famiport_send_refund_file:main
+      famiport_make_sales_file=altair.app.ticketing.famiport.scripts.famiport_make_sales_file:main
+      famiport_make_refund_file=altair.app.ticketing.famiport.scripts.famiport_make_refund_file:main
+      famiport_parse_sales_file=altair.app.ticketing.famiport.scripts.famiport_parse_sales_file:main
+      famiport_import_shop_master=altair.app.ticketing.famiport.scripts.famiport_import_shop_master:main
+      famiport_auto_complete=altair.app.ticketing.famiport.scripts.famiport_auto_complete:main
+      famiport_gen_preview_picture=altair.app.ticketing.famiport.scripts.famiport_gen_preview_picture:main
+      altair_famiport_process_notifications=altair.app.ticketing.famiport.userside_notification_handler.scripts.altair_famiport_process_notifications:main
       download_orders=altair.app.ticketing.scripts.download_orders:main
       send_mail=altair.app.ticketing.scripts.send_mail:main
       laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main
+      famic=altair.app.ticketing.famiport.client.commands:main
       """,
-      dependency_links = [
+      dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
         ],
       paster_plugins=['pyramid'],

@@ -819,24 +819,24 @@ class OrderReserveForm(Form):
 class OrderRefundForm(OurForm):
 
     def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
         super(type(self), self).__init__(*args, **kwargs)
-
-        organization_id = kwargs.get('organization_id')
-        if organization_id:
-            payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
-
-            self.payment_method_id.sej_plugin_id = []
-            for pm in payment_methods:
-                if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                    self.payment_method_id.sej_plugin_id.append(int(pm.id))
-
-            self.organization_id.data = organization_id
-
+        self.context = context
+        payment_methods = PaymentMethod.filter_by_organization_id(context.organization.id)
+        self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
         self.orders = kwargs.get('orders', [])
 
     def _get_translations(self):
         return Translations()
+
+    @property
+    def convenience_payment_method_ids(self):
+        payment_method_ids = []
+        payment_methods = PaymentMethod.filter_by_organization_id(self.context.organization.id)
+        for pm in payment_methods:
+            if pm.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
+                payment_method_ids.append(pm.id)
+        return payment_method_ids
 
     payment_method_id = SelectField(
         label=u'払戻方法',
@@ -908,9 +908,6 @@ class OrderRefundForm(OurForm):
     id = HiddenField(
         validators=[Optional()],
     )
-    organization_id = HiddenField(
-        validators=[Optional()],
-    )
 
     def validate_payment_method_id(form, field):
         refund_pm = PaymentMethod.get(field.data)
@@ -925,12 +922,17 @@ class OrderRefundForm(OurForm):
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
                         raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
-            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            elif settlement_delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
+                if refund_order.is_issued():
+                    # 発券済ならコンビニ払戻のみ可能
+                    if refund_pm.payment_plugin_id != plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or refund_pm.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
                 # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))
 
             # 決済方法=払戻方法 または払戻方法がコンビニ払戻/銀行振込ならOK
-            if refund_pm.payment_plugin_id not in [settlement_payment_plugin_id, plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
+            if refund_pm.payment_plugin_id not in [settlement_payment_plugin_id, plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
                 raise ValidationError('%s: (%s)' % (error_msg, refund_order.order_no))
 
     def validate(self):
