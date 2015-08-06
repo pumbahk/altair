@@ -788,13 +788,18 @@ class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
 
 class FamiPortPaymentCompletionMailViewletTest(FamiPortPaymentViewletTest):
     def _target(self):
-        from .famiport import complete_mail as func
+        from .famiport import payment_mail_viewlet as func
         return func
 
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
-    def test_it(self, cart_helper):
+    def test_it(self, cart_helper, lookup_famiport_tenant, get_famiport_order):
+        lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {'notice': self.notice, 'h': cart_helper})
+        for key, value in {'description': self.description, 'h': cart_helper}.items():
+            self.assertEqual(value, res.get(key), 'invalid value: key={}, exp_value={} != {}'.format(
+                key, repr(value), repr(res.get(key))))
 
 
 class FamiPortPaymentCancelMailViewletTest(FamiPortPaymentViewletTest):
