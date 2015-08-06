@@ -1924,7 +1924,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def filter_by_organization_id(id):
         payment_method = PaymentMethod.filter(PaymentMethod.organization_id == id) \
-                                      .filter('PaymentMethod.selectable is True') \
+                                      .filter(PaymentMethod.selectable != False) \
                                       .order_by('PaymentMethod.selectable desc') \
                                       .order_by('PaymentMethod.display_order asc') \
                                       .all()
