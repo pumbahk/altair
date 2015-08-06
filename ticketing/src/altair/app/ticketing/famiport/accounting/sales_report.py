@@ -82,35 +82,45 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
     payment_famiport_receipt = None
     ticketing_famiport_receipt = None
     for famiport_receipt in famiport_order.famiport_receipts:
-        if famiport_receipt.completed_at is None:
+        if famiport_receipt.created_at >= end_date:
             continue
-        applicable_for_valid_entry = (
-            famiport_receipt.completed_at >= start_date and \
-            famiport_receipt.completed_at < end_date)
+        if famiport_receipt.completed_at is None or \
+           famiport_receipt.completed_at >= end_date:
+            continue
+        applicable_for_valid_entry = \
+            famiport_receipt.completed_at >= start_date
         applicable_for_invalidated_entry = False
         if famiport_receipt.canceled_at is not None:
             applicable_for_invalidated_entry = (
                 famiport_receipt.canceled_at >= start_date and \
                 famiport_receipt.canceled_at < end_date
                 )
-        if not applicable_for_invalidated_entry:
+        if famiport_receipt.canceled_at is None or \
+           famiport_receipt.canceled_at >= end_date:
             if famiport_receipt.is_payment_receipt:
                 payment_famiport_receipt = famiport_receipt
             if famiport_receipt.is_ticketing_receipt:
                 ticketing_famiport_receipt = famiport_receipt
-        # 同日の発券・払込とキャンセルは打消し合う
+        # 同日の発券・払込とキャンセルは打消し合うので除外する
         if applicable_for_valid_entry ^ applicable_for_invalidated_entry:
-            completed_or_canceled_famiport_receipts_during_the_period.append(famiport_receipt)
+            # 除外の対象でなければ以下
+            if famiport_receipt.canceled_at is not None and \
+               famiport_receipt.canceled_at >= start_date and \
+               famiport_receipt.canceled_at < end_date:
+                processed_at = famiport_receipt.canceled_at
+            else:
+                processed_at = famiport_receipt.completed_at
+            completed_or_canceled_famiport_receipts_during_the_period.append((processed_at, famiport_receipt))
 
     completed_or_canceled_famiport_receipts_during_the_period = sorted(
         completed_or_canceled_famiport_receipts_during_the_period,
-        key=lambda famiport_receipt: famiport_receipt.canceled_at or famiport_receipt.completed_at
+        key=lambda processed_at_and_famiport_receipt: processed_at_and_famiport_receipt[0]
         )
 
     dicts = []
     reported_famiport_receipts = []
-    for famiport_receipt in completed_or_canceled_famiport_receipts_during_the_period:
-        processed_at = famiport_receipt.canceled_at or famiport_receipt.completed_at
+    for processed_at, famiport_receipt in completed_or_canceled_famiport_receipts_during_the_period:
+        logger.info('processing FamiPortReceipt(id=%d, reserve_number=%s)' % (famiport_receipt.id, famiport_receipt.reserve_number))
         valid = famiport_receipt.canceled_at is None or (famiport_receipt.canceled_at >= end_date)
         management_number = famiport_order.famiport_order_identifier[3:12]
         unique_key = '%d%s' % (
@@ -162,6 +172,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 logger.warning('FamiPortOrder(id=%d) paid_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
             if famiport_order.issued_at is None:
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
+            logger.debug('valid=%d, payment_famiport_receipt=FamiPortReceipt(id=%d, reserve_number=%s), famiport_receipt=FamiPortReceipt(id=%d, reserve_number=%s)' % (valid, payment_famiport_receipt and payment_famiport_receipt.id, payment_famiport_receipt and payment_famiport_receipt.reserve_number, famiport_receipt.id, famiport_receipt.reserve_number))
             if not valid or (payment_famiport_receipt is famiport_receipt):
                 dict_ = dict(
                     type=SalesReportEntryType.CashOnDelivery.value,
@@ -186,7 +197,9 @@ def build_sales_record(f, famiport_orders, start_date, end_date, **kwargs):
     marshaller = make_marshaller(f, **kwargs)
     reported_famiport_receipts = []
     for order in famiport_orders:
+        logger.info('processing FamiPortOrder(id=%d)' % order.id)
         records, reported_famiport_receipts_for_order = gen_records_from_order_model(order, start_date, end_date)
+        logger.info('%d records generated for %d receipts' % (len(records), len(reported_famiport_receipts_for_order)))
         for record in records:
             marshaller(record)
         reported_famiport_receipts.extend(reported_famiport_receipts_for_order)
