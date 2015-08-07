@@ -34,7 +34,7 @@ altair.ticketing.famiport.mq = altair.mq.consumer.pika_client_factory
 altair.ticketing.famiport.mq.url = ${altair:ticketing.mq_url}
 
 ; altair.famiport
-altair.famiport.mail.recipients = ${altair:famiport_mail_recipients}
+altair.famiport.auto_complete.mail.recipients = ${altair:famiport_mail_recipients}
 
 altair.famiport.send_file.ftp.host = ${altair:famiport_ftp_host}
 altair.famiport.send_file.ftp.username = ${altair:famiport_ftp_username}
