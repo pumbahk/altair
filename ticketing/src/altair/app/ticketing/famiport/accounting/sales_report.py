@@ -136,15 +136,16 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             assert famiport_order.type in (FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value)
             if famiport_order.paid_at is None:
                 logger.warning('FamiPortOrder(id=%d) paid_at=None while FamiPortReceipt.type=Payment' % (famiport_order.id, ))
+            _, ticket_payment, other_fees, ticketing_fee = famiport_receipt.calculate_total_and_fees()
             dict_ = dict(
                 type=SalesReportEntryType.Payment.value,
                 unique_key=unique_key,
                 management_number=management_number,
                 processed_at=processed_at,
                 settlement_date=processed_at.date(),
-                ticket_payment=famiport_order.ticket_payment,
-                ticketing_fee=decimal.Decimal(0),
-                other_fees=famiport_order.system_fee,
+                ticket_payment=ticket_payment,
+                ticketing_fee=ticketing_fee,
+                other_fees=other_fees,
                 shop=famiport_receipt.shop_code,
                 valid=valid,
                 **basic_dict
@@ -156,15 +157,16 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
             if famiport_order.issued_at is None:
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=Ticketing' % (famiport_order.id, ))
             if not valid or (ticketing_famiport_receipt is famiport_receipt):
+                _, ticket_payment, other_fees, ticketing_fee = famiport_receipt.calculate_total_and_fees()
                 dict_ = dict(
                     type=SalesReportEntryType.Ticketing.value,
                     unique_key=unique_key,
                     management_number=management_number,
                     processed_at=processed_at,
                     settlement_date=processed_at.date(),
-                    ticket_payment=decimal.Decimal(0),
-                    ticketing_fee=famiport_order.ticketing_fee,
-                    other_fees=decimal.Decimal(0),
+                    ticket_payment=ticket_payment,
+                    ticketing_fee=ticketing_fee,
+                    other_fees=other_fees,
                     shop=famiport_receipt.shop_code,
                     valid=valid,
                     **basic_dict
@@ -179,15 +181,16 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 logger.warning('FamiPortOrder(id=%d) issued_at=None while FamiPortReceipt.type=CashOnDelivery' % (famiport_order.id, ))
             logger.debug('valid=%s, payment_famiport_receipt=FamiPortReceipt(id=%s, reserve_number=%s), famiport_receipt=FamiPortReceipt(id=%s, reserve_number=%s)' % (valid, payment_famiport_receipt and payment_famiport_receipt.id, payment_famiport_receipt and payment_famiport_receipt.reserve_number, famiport_receipt.id, famiport_receipt.reserve_number))
             if not valid or (payment_famiport_receipt is famiport_receipt):
+                _, ticket_payment, other_fees, ticketing_fee = famiport_receipt.calculate_total_and_fees()
                 dict_ = dict(
                     type=SalesReportEntryType.CashOnDelivery.value,
                     unique_key=unique_key,
                     management_number=management_number,
                     processed_at=processed_at,
                     settlement_date=processed_at.date(),
-                    ticket_payment=famiport_order.ticket_payment,
-                    ticketing_fee=famiport_order.ticketing_fee,
-                    other_fees=famiport_order.system_fee,
+                    ticket_payment=ticket_payment,
+                    ticketing_fee=ticketing_fee,
+                    other_fees=other_fees,
                     shop=famiport_receipt.shop_code,
                     valid=valid,
                     **basic_dict

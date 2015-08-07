@@ -579,7 +579,8 @@ class FamiPortOrderTest(TestCase):
             cancel_reason_code=u'00',
             cancel_reason_text=u'canceled'
             )
-        self.assertIsNone(self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at)
+        self.assertIsNotNone(self.famiport_order_cash_on_delivery.famiport_receipts[0].completed_at)
+        self.assertIsNotNone(self.famiport_order_cash_on_delivery.famiport_receipts[0].made_reissueable_at)
         self.assertIsNone(self.famiport_order_cash_on_delivery.famiport_receipts[0].payment_request_received_at)
 
     def test_mark_reissueable_on_payment_only(self):

@@ -628,6 +628,8 @@ class FamiPortOrder(Base, WithTimestamp):
 
     payment_sheet_text           = sa.Column(sa.Unicode(490), nullable=True)
 
+    require_ticketing_fee_on_ticketing = sa.Column(sa.Boolean(), nullable=False, default=False)
+
     famiport_sales_segment = orm.relationship(
         'FamiPortSalesSegment',
         primaryjoin=lambda: FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id
@@ -757,13 +759,11 @@ class FamiPortOrder(Base, WithTimestamp):
         for famiport_receipt in self.famiport_receipts:
             if famiport_receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value) and \
                famiport_receipt.canceled_at is None:
-                if famiport_receipt.completed_at is not None:
-                    logger.info('FamiPortReceipt(id=%ld).completed_at is set to None' % famiport_receipt.id)
-                    famiport_receipt.completed_at = None
                 assert ticketing_famiport_receipt is None
                 ticketing_famiport_receipt = famiport_receipt
-                famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
-        self.issued_at = None
+        if ticketing_famiport_receipt is not None:
+            ticketing_famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
+            ticketing_famiport_receipt.make_reissueable(now, request)
 
     def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
@@ -946,6 +946,8 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
 
+    made_reissueable_at = sa.Column(sa.DateTime(), nullable=True)
+
     attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt', collection_class=attribute_mapped_collection('name'), )
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: FamiPortReceiptAttribute(name=k, value=v))
 
@@ -1019,12 +1021,12 @@ class FamiPortReceipt(Base, WithTimestamp):
     def can_payment(self, now):
         return self.inquired_at is not None\
             and (self.payment_request_received_at is None or self.payment_request_received_at < self.inquired_at) \
-            and self.completed_at is None
+            and (self.completed_at is None or self.made_reissueable_at is not None)
 
     def can_completion(self, now):
         return self.inquired_at is not None \
             and self.payment_request_received_at is not None \
-            and self.completed_at is None
+            and (self.completed_at is None or self.made_reissueable_at is not None)
 
     def can_cancel(self, now):
         return self.inquired_at is not None\
@@ -1089,6 +1091,7 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.void_at = now
         self.void_reason = reason
         self.payment_request_received_at = None
+        self.made_reissueable_at = None
         self.cancel_reason_code = cancel_reason_code
         self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptVoided(self, request))
@@ -1102,6 +1105,37 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.cancel_reason_code = cancel_reason_code
         self.cancel_reason_text = cancel_reason_text
         request.registry.notify(events.ReceiptCanceled(self, request))
+
+    def make_reissueable(self, now, request):
+        logger.info('FamiPortReceipt(id=%ld).made_reissueable_at is set to %s' % (self.id, now))
+        self.made_reissueable_at = now
+
+    def calculate_total_and_fees(self):
+        ticket_payment = 0
+        system_fee = 0
+        ticketing_fee = 0
+        famiport_order = self.famiport_order
+
+        if self.type == FamiPortReceiptType.CashOnDelivery.value:
+            ticket_payment = famiport_order.ticket_payment
+            system_fee = famiport_order.system_fee
+            ticketing_fee = famiport_order.ticketing_fee
+        elif self.type == FamiPortReceiptType.Payment.value:
+            ticket_payment = famiport_order.ticket_payment
+            system_fee = famiport_order.system_fee
+            if famiport_order.require_ticketing_fee_on_ticketing:
+                ticketing_fee = 0
+            else:
+                ticketing_fee = famiport_order.ticketing_fee
+        elif self.type == FamiPortReceiptType.Ticketing.value:
+            ticket_payment = 0
+            system_fee = 0
+            if famiport_order.require_ticketing_fee_on_ticketing:
+                ticketing_fee = famiport_order.ticketing_fee
+            else:
+                ticketing_fee = 0
+        total_amount = ticket_payment + system_fee + ticketing_fee
+        return total_amount, ticket_payment, system_fee, ticketing_fee
 
     @classmethod
     def create(cls, session, famiport_client, **kwargs):
