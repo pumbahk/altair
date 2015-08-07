@@ -201,6 +201,7 @@ def create_schemas():
         sa.Column('generation', sa.Integer, nullable=False, server_default=text(u"0")),
         sa.Column('report_generated_at', sa.DateTime(), nullable=True),
         sa.Column('payment_sheet_text', sa.Unicode(490), nullable=True),
+        sa.Column('require_ticketing_fee_on_ticketing', sa.Boolean(), nullable=False, server_default=text(u"FALSE")),
         sa.PrimaryKeyConstraint('id')
         )
     op.create_table(

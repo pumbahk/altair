@@ -312,12 +312,10 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     # 期間内有効券と判断して公演日時を表示しない。
                     koenDate = '99999999999999'
 
+                totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+
                 playGuideId = famiport_order.famiport_client.code
                 barCodeNo = famiport_receipt.barcode_no
-                totalAmount = famiport_order.total_amount
-                ticketPayment = str_or_blank(famiport_order.ticket_payment)
-                systemFee = str_or_blank(famiport_order.system_fee)
-                ticketingFee = str_or_blank(famiport_order.ticketing_fee)
                 ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
                 kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
@@ -532,11 +530,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 else:
                     raise ValueError(u'unknown order type: %r' % famiport_order.type)
 
+                totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+
                 orderId = famiport_receipt.famiport_order_identifier
-                totalAmount = str_or_blank(famiport_order.total_amount, 8, fillvalue='0')
-                ticketPayment = str_or_blank(famiport_order.ticket_payment, 8, fillvalue='0')
-                systemFee = str_or_blank(famiport_order.system_fee, 8, fillvalue='0')
-                ticketingFee = str_or_blank(famiport_order.ticketing_fee, 8, fillvalue='0')
+                totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
+                ticketPayment = str_or_blank(ticketPayment, 8, fillvalue='0')
+                systemFee = str_or_blank(systemFee, 8, fillvalue='0')
+                ticketingFee = str_or_blank(ticketingFee, 8, fillvalue='0')
                 ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 exchangeTicketNo = str_or_blank(exchangeTicketNo)
                 ticketCount = str_or_blank(famiport_order.ticket_count)

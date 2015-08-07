@@ -628,6 +628,8 @@ class FamiPortOrder(Base, WithTimestamp):
 
     payment_sheet_text           = sa.Column(sa.Unicode(490), nullable=True)
 
+    require_ticketing_fee_on_ticketing = sa.Column(sa.Boolean(), nullable=False, default=False)
+
     famiport_sales_segment = orm.relationship(
         'FamiPortSalesSegment',
         primaryjoin=lambda: FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id
@@ -1107,6 +1109,33 @@ class FamiPortReceipt(Base, WithTimestamp):
     def make_reissueable(self, now, request):
         logger.info('FamiPortReceipt(id=%ld).made_reissueable_at is set to %s' % (self.id, now))
         self.made_reissueable_at = now
+
+    def calculate_total_and_fees(self):
+        ticket_payment = 0
+        system_fee = 0
+        ticketing_fee = 0
+        famiport_order = self.famiport_order
+
+        if self.type == FamiPortReceiptType.CashOnDelivery.value:
+            ticket_payment = famiport_order.ticket_payment
+            system_fee = famiport_order.system_fee
+            ticketing_fee = famiport_order.ticketing_fee
+        elif self.type == FamiPortReceiptType.Payment.value:
+            ticket_payment = famiport_order.ticket_payment
+            system_fee = famiport_order.system_fee
+            if famiport_order.require_ticketing_fee_on_ticketing:
+                ticketing_fee = 0
+            else:
+                ticketing_fee = famiport_order.ticketing_fee
+        elif self.type == FamiPortReceiptType.Ticketing.value:
+            ticket_payment = 0
+            system_fee = 0
+            if famiport_order.require_ticketing_fee_on_ticketing:
+                ticketing_fee = famiport_order.ticketing_fee
+            else:
+                ticketing_fee = 0
+        total_amount = ticket_payment + system_fee + ticketing_fee
+        return total_amount, ticket_payment, system_fee, ticketing_fee
 
     @classmethod
     def create(cls, session, famiport_client, **kwargs):
