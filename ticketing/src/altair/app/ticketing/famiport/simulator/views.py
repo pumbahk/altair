@@ -377,7 +377,7 @@ class FamimaPosTicketingView(object):
             barcode_no=barcode_no
             )
         if payment_result is None:
-            self.request.session.flash(u'引換票番号または払込票番号に該当する予約がみつかりません')
+            self.request.session.flash(u'引換票番号または払込票番号に該当する予約が見つかりません')
             return dict(barcode_no=barcode_no)
 
         self.request.session['payment_result'] = payment_result.to_dict()

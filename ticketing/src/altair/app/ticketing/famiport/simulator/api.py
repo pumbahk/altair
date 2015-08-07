@@ -1,3 +1,4 @@
+# encoding: utf-8
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
 from .interfaces import IFamiPortCommunicator, IFamiPortClientConfigurationRegistry, IMmkSequence
@@ -14,43 +15,45 @@ def get_mmk_sequence(request):
 
 def store_payment_result(request, store_code, mmk_no, type, client_code, total_amount, ticket_payment, system_fee, ticketing_fee, order_id, barcode_no, exchange_no, ticketing_start_at, ticketing_end_at, kogyo_name, koen_date, tickets, payment_sheet_text):
     session = get_db_session(request, 'famiport_mmk')
-    if session.query(FDCSideOrder) \
+    fdc_side_order = session.query(FDCSideOrder) \
        .filter(FDCSideOrder.store_code == store_code) \
        .filter(FDCSideOrder.barcode_no == barcode_no) \
        .filter(FDCSideOrder.exchange_no == exchange_no) \
-       .first() is not None:
-        return 
-
-    fdc_side_order = FDCSideOrder(
-        store_code=store_code,
-        mmk_no=mmk_no,
-        client_code=client_code,
-        total_amount=total_amount,
-        ticket_payment=ticket_payment,
-        system_fee=system_fee,
-        ticketing_fee=ticketing_fee,
-        type=type,
-        order_id=order_id,
-        barcode_no=barcode_no,
-        exchange_no=exchange_no,
-        kogyo_name=kogyo_name,
-        koen_date=koen_date,
-        ticketing_start_at=ticketing_start_at,
-        ticketing_end_at=ticketing_end_at,
-        paid_at=None,
-        issued_at=None,
-        fdc_side_tickets=[
-            FDCSideTicket(
-                type=ticket['ticketClass'],
-                barcode_no=ticket['barCodeNo'],
-                template_code=ticket['templateCode'],
-                data=ticket['ticketData']
-                )
-            for ticket in tickets
-            ] if tickets else [],
-        payment_sheet_text=payment_sheet_text
-        )
-    session.add(fdc_side_order)
+       .first()
+    if fdc_side_order is not None:
+        # 再発券のケース
+        fdc_side_order.issued_at = None
+    else:
+        fdc_side_order = FDCSideOrder(
+            store_code=store_code,
+            mmk_no=mmk_no,
+            client_code=client_code,
+            total_amount=total_amount,
+            ticket_payment=ticket_payment,
+            system_fee=system_fee,
+            ticketing_fee=ticketing_fee,
+            type=type,
+            order_id=order_id,
+            barcode_no=barcode_no,
+            exchange_no=exchange_no,
+            kogyo_name=kogyo_name,
+            koen_date=koen_date,
+            ticketing_start_at=ticketing_start_at,
+            ticketing_end_at=ticketing_end_at,
+            paid_at=None,
+            issued_at=None,
+            fdc_side_tickets=[
+                FDCSideTicket(
+                    type=ticket['ticketClass'],
+                    barcode_no=ticket['barCodeNo'],
+                    template_code=ticket['templateCode'],
+                    data=ticket['ticketData']
+                    )
+                for ticket in tickets
+                ] if tickets else [],
+            payment_sheet_text=payment_sheet_text
+            )
+        session.add(fdc_side_order)
     session.commit()
 
 def get_payment_result_by_id(request, order_id):
