@@ -688,31 +688,38 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     famiport_order = famiport_receipt.famiport_order
                     replyCode = ReplyCodeEnum.Normal.value
                     if famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
-                        if famiport_receipt.completed_at is not None:
+                        if famiport_receipt.made_reissueable_at is None and famiport_receipt.completed_at is not None:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
+                            logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment and ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            if famiport_receipt.made_reissueable_at is not None:
+                                logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             famiport_order.mark_paid(now, request)
                             session.commit()
                     elif famiport_receipt.type == FamiPortReceiptType.Payment.value:
                         # 前払後日の支払 / 支払いのみ
-                        if famiport_receipt.completed_at is not None:
+                        if famiport_receipt.made_reissueable_at is None and famiport_receipt.completed_at is not None:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already paid" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            if famiport_receipt.made_reissueable_at is not None:
+                                logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_paid(now, request)
                             session.commit()
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         # 前払後日の発券 / 発券のみ
-                        if famiport_receipt.completed_at is not None:
+                        if famiport_receipt.made_reissueable_at is None and famiport_receipt.completed_at is not None:
                             logger.error(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already issued" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            if famiport_receipt.made_reissueable_at is not None:
+                                logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             session.commit()

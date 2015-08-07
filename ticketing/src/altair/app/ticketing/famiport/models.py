@@ -764,6 +764,7 @@ class FamiPortOrder(Base, WithTimestamp):
         if ticketing_famiport_receipt is not None:
             ticketing_famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
             ticketing_famiport_receipt.make_reissueable(now, request)
+            self.issued_at = None
 
     def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
@@ -1078,10 +1079,15 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptPaymentRequestReceived(self, request))
 
     def mark_completed(self, now, request):
-        if self.completed_at is not None:
-            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as completed' % (self.id, self.reserve_number))
-        self.completed_at = now
+        if self.completed_at is not None:
+            if self.made_reissueable_at is None:
+                raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
+            else:
+                logger.info('FamiPortReceipt(id=%ld, reserve_number=%s) is marked reissueable' % (self.id, self.reserve_number))
+        else:
+            self.completed_at = now
+        self.made_reissueable_at = None
         request.registry.notify(events.ReceiptCompleted(self, request))
 
     def mark_voided(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
