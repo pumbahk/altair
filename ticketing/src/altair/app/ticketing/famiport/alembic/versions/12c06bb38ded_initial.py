@@ -596,6 +596,7 @@ def create_schemas():
         sa.Column('void_reason', sa.Integer, nullable=True), # VOID事由 (入金発券取消要求のcancelCodeに相当)
         sa.Column('rescued_at', sa.DateTime(), nullable=True),  # 90分救済措置にて救済された時刻
         sa.Column('report_generated_at', sa.DateTime(), nullable=True),
+        sa.Column('made_reissueable_at', sa.DateTime(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=sqlf.current_timestamp()),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
