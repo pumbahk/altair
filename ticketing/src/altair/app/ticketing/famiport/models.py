@@ -762,6 +762,7 @@ class FamiPortOrder(Base, WithTimestamp):
         if ticketing_famiport_receipt is not None:
             ticketing_famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
             ticketing_famiport_receipt.make_reissueable(now, request)
+            self.paid_at = None
             self.issued_at = None
 
     def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
