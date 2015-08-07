@@ -1202,7 +1202,7 @@ class OrderDetailView(OrderBaseView):
                 'token': None,
                 'element': None,
                 'item': None,
-                'qr': qr, 
+                'qr': qr,
                 'url': url_builder.build(self.request, qr.id, qr.sign)
                 })
         else:
@@ -2061,6 +2061,9 @@ class OrdersReserveView(OrderBaseView):
                 if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
                     order.paid_at = datetime.now()
 
+            payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+            if payment_plugin_id == payments_plugins.FREE_PAYMENT_PLUGIN_ID:
+                order.paid_at = datetime.now()
             ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
