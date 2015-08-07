@@ -60,4 +60,12 @@
                 % endif
               </td>
             </tr>
+% if delivery_plugin_info is not None:
+            % for k, (display_name, v) in delivery_plugin_info.items():
+            <tr>
+              <th>${display_name or k}</th>
+              <td>${v or u''}</td>
+            </tr>
+            % endfor
+% endif
           </table>

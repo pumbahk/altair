@@ -17,7 +17,6 @@ from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from altair.sqlahelper import get_db_session
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from . import events
@@ -26,7 +25,6 @@ from .exc import (
     FamiPortNumberingError,
     FamiPortUnsatisfiedPreconditionError,
     )
-from altair.sqlahelper import get_db_session
 
 Base = declarative.declarative_base()
 
@@ -764,6 +762,8 @@ class FamiPortOrder(Base, WithTimestamp):
         if ticketing_famiport_receipt is not None:
             ticketing_famiport_receipt.mark_voided(now, request, FamiPortVoidReason.Reissuing.value, cancel_reason_code, cancel_reason_text)
             ticketing_famiport_receipt.make_reissueable(now, request)
+            self.paid_at = None
+            self.issued_at = None
 
     def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
@@ -947,6 +947,8 @@ class FamiPortReceipt(Base, WithTimestamp):
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
 
     made_reissueable_at = sa.Column(sa.DateTime(), nullable=True)
+ 
+    shop = orm.relationship('FamiPortShop', primaryjoin=FamiPortShop.code == shop_code, foreign_keys=FamiPortShop.code, uselist=False)
 
     attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt', collection_class=attribute_mapped_collection('name'), )
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: FamiPortReceiptAttribute(name=k, value=v))
@@ -1009,7 +1011,7 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def get_shop_name(self, request):
         if self.payment_request_received_at:
-            session = get_db_session(request, name="famiport")
+            session = object_session(self)
             shop = session.query(FamiPortShop)\
                                .filter(FamiPortShop.code == self.shop_code)\
                                .first()
@@ -1078,10 +1080,15 @@ class FamiPortReceipt(Base, WithTimestamp):
         request.registry.notify(events.ReceiptPaymentRequestReceived(self, request))
 
     def mark_completed(self, now, request):
-        if self.completed_at is not None:
-            raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
         logger.info('marking FamiPortReceipt(id=%ld, reserve_number=%s) as completed' % (self.id, self.reserve_number))
-        self.completed_at = now
+        if self.completed_at is not None:
+            if self.made_reissueable_at is None:
+                raise FamiPortUnsatisfiedPreconditionError('FamiPortReceipt(id=%ld, reserve_number=%s) is already completed' % (self.id, self.reserve_number))
+            else:
+                logger.info('FamiPortReceipt(id=%ld, reserve_number=%s) is marked reissueable' % (self.id, self.reserve_number))
+        else:
+            self.completed_at = now
+        self.made_reissueable_at = None
         request.registry.notify(events.ReceiptCompleted(self, request))
 
     def mark_voided(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):

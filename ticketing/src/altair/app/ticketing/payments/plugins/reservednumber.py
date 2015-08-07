@@ -111,6 +111,10 @@ class ReservedNumberDeliveryPlugin(object):
     def refund(self, request, order, refund_record):
         pass
 
+    def get_order_info(self, request, order):
+        return {}
+
+
 @view_defaults(context=ICompleteMailResource)
 class CompletionMailViewlet(object):
     def __init__(self, context, request):
@@ -210,3 +214,7 @@ class ReservedNumberPaymentPlugin(object):
 
     def refund(self, request, order, refund_record):
         pass
+
+    def get_order_info(self, request, order):
+        return {}
+

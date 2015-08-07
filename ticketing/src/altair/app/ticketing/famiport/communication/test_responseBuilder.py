@@ -2274,6 +2274,194 @@ class FamiPortPaymentTicketingCompletionBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.barCodeNo, u'01234012340123')
         self.assertEqual(result.orderId, u'000011112223')
 
+    def test_payment_and_ticketing_and_reissuing(self):
+        u"""前払後日の支払と発券を両方"""
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100003',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340124',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, ReplyClassEnum.Prepayment.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100003')
+        self.assertEqual(result.barCodeNo, u'01234012340124')
+        self.assertEqual(result.orderId, u'000011112224')
+        self.assertEqual(result.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result.playGuideName, u'チケットスター')
+        self.assertEqual(result.orderTicketNo, u'01234012340124')
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')
+        self.assertEqual(result.ticketingStart, u'20150522000000')
+        self.assertEqual(result.ticketingEnd, u'20150523235959')
+        self.assertEqual(result.totalAmount, u'00010540')
+        self.assertEqual(result.ticketPayment, u'00010000')
+        self.assertEqual(result.systemFee, u'00000324')
+        self.assertEqual(result.ticketingFee, u'00000216')
+        self.assertEqual(result.ticketCountTotal, u'2')
+        self.assertEqual(result.ticketCount, u'2')
+        self.assertEqual(result.kogyoName, u'7/1公演')
+        self.assertEqual(result.koenDate, u'201507011900')
+
+        f_request = FamiPortPaymentTicketingCompletionRequest(
+            storeCode=u'00009',
+            mmkNo=u'1',
+            ticketingDate=u'20150522134001',
+            sequenceNo=u'15052100004',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340124',
+            orderId=u'000011112224',
+            totalAmount=u'00010540'
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, '00')
+        self.assertEqual(result.replyCode, u'00')
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100004')
+        self.assertEqual(result.barCodeNo, u'01234012340124')
+        self.assertEqual(result.orderId, u'000011112224')
+
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150522211234',
+            sequenceNo=u'15052100005',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340125',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, ReplyClassEnum.Paid.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100005')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, u'000011112225')
+        self.assertEqual(result.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result.playGuideName, u'チケットスター')
+        self.assertEqual(result.orderTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')  # reserve number
+        self.assertEqual(result.ticketingStart, u'20150522000000')
+        self.assertEqual(result.ticketingEnd, u'20150523235959')
+        self.assertEqual(result.totalAmount, u'00000000')
+        self.assertEqual(result.ticketPayment, u'00000000')
+        self.assertEqual(result.systemFee, u'00000000')
+        self.assertEqual(result.ticketingFee, u'00000000')
+        self.assertEqual(result.ticketCountTotal, u'2')
+        self.assertEqual(result.ticketCount, u'2')
+        self.assertEqual(result.kogyoName, u'7/1公演')
+        self.assertEqual(result.koenDate, u'201507011900')
+
+        f_request = FamiPortPaymentTicketingCompletionRequest(
+            storeCode=u'00009',
+            mmkNo=u'1',
+            ticketingDate=u'20150522134001',
+            sequenceNo=u'15052100006',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340125',
+            orderId=u'000011112225',
+            totalAmount=u'00010540'
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, '00')
+        self.assertEqual(result.replyCode, u'00')
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100006')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, u'000011112225')
+
+        # 再発券許可
+        self.famiport_order_payment.make_reissueable(self.now, self.request)
+
+        # 支払いはやり直せないことを確認
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100007',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340124',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_payment.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, u'')
+        self.assertEqual(result.replyCode, ReplyCodeEnum.AlreadyPaidError.value)
+
+        # 発券はやり直せることを確認
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100008',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340125',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, ReplyClassEnum.Paid.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.Normal.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100008')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, u'000011112225')
+        self.assertEqual(result.playGuideId, u'012340123401234012340123')
+        self.assertEqual(result.playGuideName, u'チケットスター')
+        self.assertEqual(result.orderTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, u'4321043210434')  # reserve number
+        self.assertEqual(result.ticketingStart, u'20150522000000')
+        self.assertEqual(result.ticketingEnd, u'20150523235959')
+        self.assertEqual(result.totalAmount, u'00000000')
+        self.assertEqual(result.ticketPayment, u'00000000')
+        self.assertEqual(result.systemFee, u'00000000')
+        self.assertEqual(result.ticketingFee, u'00000000')
+        self.assertEqual(result.ticketCountTotal, u'2')
+        self.assertEqual(result.ticketCount, u'2')
+        self.assertEqual(result.kogyoName, u'7/1公演')
+        self.assertEqual(result.koenDate, u'201507011900')
+
+        f_request = FamiPortPaymentTicketingCompletionRequest(
+            storeCode=u'00009',
+            mmkNo=u'1',
+            ticketingDate=u'20150522134001',
+            sequenceNo=u'15052100009',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340125',
+            orderId=u'000011112225',
+            totalAmount=u'00010540'
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, '00')
+        self.assertEqual(result.replyCode, u'00')
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100009')
+        self.assertEqual(result.barCodeNo, u'01234012340125')
+        self.assertEqual(result.orderId, u'000011112225')
+
+
 class FamiPortPaymentTicketingCancelResponseBuilderTest(unittest.TestCase, FamiPortResponseBuilderTestBase):
     # キャンセル (VOID)
     def setUp(self):

@@ -389,6 +389,17 @@ def refresh_order(request, order, now=None, name='famiport'):
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to refresh order', order_no=order.order_no, back_url=None)
 
+def get_famiport_order_info(request, order):
+    tenant = lookup_famiport_tenant(request, order)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
+    order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
+    return {
+        u'famiport_order.payment_reserve_number': order['payment_reserve_number'],
+        u'famiport_order.ticketing_reserve_number': order['ticketing_reserve_number'],
+        u'famiport_order.payment_shop_name': order['payment_shop_name'],
+        u'famiport_order.ticketing_shop_name': order['ticketing_shop_name'],
+        }
 
 def _overridable_payment(path, fallback_ua_type=None):
     """ここがどこに作用してくるのかわからない
@@ -495,6 +506,9 @@ class FamiPortPaymentPlugin(object):
         """払戻処理"""
         return refund_order(request, order, refund_record)
 
+    def get_order_info(self, request, order):
+        return get_famiport_order_info(request, order)
+
 
 @lbr_view_config(context=ICartDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_delivery_confirm.html'))
@@ -590,6 +604,9 @@ class FamiPortDeliveryPlugin(object):
         """払い戻し"""
         return refund_order(request, order, refund_record)
 
+    def get_order_info(self, request, order):
+        return get_famiport_order_info(request, order)
+
 
 @implementer(IPaymentDeliveryPlugin)
 class FamiPortPaymentDeliveryPlugin(object):
@@ -629,6 +646,9 @@ class FamiPortPaymentDeliveryPlugin(object):
     def refund(self, request, order, refund_record):
         """払い戻し"""
         return refund_order(request, order, refund_record)
+
+    def get_order_info(self, request, order):
+        return get_famiport_order_info(request, order)
 
 
 FAMIPORT_MAX_ALLOWED_AMOUNT = Decimal('999999')

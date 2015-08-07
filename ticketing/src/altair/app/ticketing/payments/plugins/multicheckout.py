@@ -409,6 +409,26 @@ class MultiCheckoutPlugin(object):
                     card_error_code=res.CardErrorCd
                     )
 
+    def get_order_info(self, request, order):
+        if order.payment_delivery_pair.payment_method.payment_plugin_id != PLUGIN_ID:
+            raise ValueError('payment_delivery_method_pair.payment_method.payment_plugin_is not MULTICHECKOUT_PAYMENT_PLUGIN_ID')
+        info = None
+        organization = order.organization
+        multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
+        recs, _ = multicheckout_api.get_transaction_info(order.order_no)
+        for rec in recs:
+            if rec['status'] == str(MultiCheckoutStatusEnum.Authorized): # authorization successful
+                info = rec
+                break
+        if info is not None:
+            info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
+        return {
+            u'order.approval_no': info and info['approval_no'],
+            u'order.card_brand': info and info['card_brand'],
+            u'order.card_ahead_com_code': info and info['ahead_com_cd'],
+            u'order.card_ahead_com_name': info and info['ahead_com_name'],
+            }
+
 def card_number_mask(number):
     """ 下4桁以外をマスク"""
     return "*" * (len(number) - 4) + number[-4:]
