@@ -13,9 +13,6 @@ get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famipor
 get altair.sqlahelper.sessions.famiport_slave.url = altair.sqlahelper.sessions.famiport_slave.url
 get altair.sqlahelper.sessions.famiport_comm.url = altair.sqlahelper.sessions.famiport_comm.url
 
-; altair:site-data
-altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
-
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 session.data_dir = %(here)s/tmp/beaker/data
