@@ -13,10 +13,16 @@ from ..communication.preview import FamiPortTicketPreviewAPI
 
 logger = logging.getLogger(__name__)
 
+def message(msg):
+    sys.stderr.write(msg)
+    sys.stderr.write("\n")
+    sys.stderr.flush()
+
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
     parser.add_argument('--image-type', metavar='image_type', type=str, dest='image_type', required=False, default='jpeg', choices=['jpeg', 'pdf'], help='image type')
+    parser.add_argument('--barcode-no', metavar='barcode_no', type=str, dest='barcode_no', required=False, help='barcode_no')
     parser.add_argument('--endpoint', metavar='endpoint', type=str, dest='endpoint', required=False, help='endpoint')
     parser.add_argument('--user-name', metavar='user_name', type=str, dest='user_name', required=False, help='user name')
     parser.add_argument('--user-id', metavar='user_id', type=str, dest='user_id', required=False, help='member id')
@@ -38,12 +44,17 @@ def main(argv=sys.argv):
     preview_api = FamiPortTicketPreviewAPI(urllib2.build_opener(), args.endpoint or settings['altair.famiport.ticket_preview_api.endpoint_url'])
 
     for famiport_receipt in session.query(FamiPortReceipt).filter(FamiPortReceipt.reserve_number.in_(args.reserve_number)).all():
+        if famiport_receipt.barcode_no is None:
+            if args.barcode_no is None:
+                message('FamiPortReceipt(reserve_number=%s).barcode_no is None; specify --barcode-no' % famiport_receipt.barcode_no)
+                continue
+        barcode_no = args.barcode_no or famiport_receipt.barcode_no
         images = preview_api(
             request,
             discrimination_code=unicode(famiport_receipt.famiport_order.famiport_client.playguide.discrimination_code_2),
             client_code=famiport_receipt.famiport_order.famiport_client.code,
             order_id=famiport_receipt.famiport_order_identifier,
-            barcode_no=famiport_receipt.barcode_no,
+            barcode_no=barcode_no,
             name=args.user_name,
             member_id=args.user_id,
             address_1=args.user_address1,
