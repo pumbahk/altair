@@ -419,6 +419,23 @@ def determine_payment_type(current_date, order_like):
         payment_type = SejPaymentType.CashOnDelivery
     return payment_type
 
+
+def _build_order_info(sej_order):
+    return {
+        u'sej_order.billing_number': sej_order.billing_number,
+        u'sej_order.exchange_number': sej_order.exchange_number,
+        }
+
+def get_sej_order_info(request, order):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    retval = _build_order_info(sej_order)
+    retval.update({
+        u'sej_order.pay_store_name': sej_order.pay_store_name,
+        u'sej_order.ticketing_store_name': sej_order.ticketing_store_name,
+        u'branches': [_build_order_info(branch) for branch in sej_order.branches(sej_order.order_no) if branch != sej_order]
+        })
+    return retval
+
 # http://www.unicode.org/charts/PDF/U30A0.pdf
 katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
@@ -563,6 +580,9 @@ class SejPaymentPlugin(object):
         sej_order = sej_api.get_sej_order(order.order_no)
         assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
 
 @implementer(ISejDeliveryPlugin)
 class SejDeliveryPluginBase(object):
@@ -651,6 +671,10 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             refund_record=refund_record
             )
 
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
+
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
@@ -730,6 +754,10 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             order=order,
             refund_record=refund_record
             )
+
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
 
 
 def payment_type_to_string(payment_type):

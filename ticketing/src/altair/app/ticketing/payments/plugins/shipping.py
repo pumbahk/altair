@@ -69,6 +69,9 @@ class ShippingDeliveryPlugin(object):
     def refund(self, request, order, refund_record):
         pass
 
+    def get_order_info(self, request, order):
+        return {}
+
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html", fallback_ua_type='mail'))
 @lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html", fallback_ua_type='mail'))

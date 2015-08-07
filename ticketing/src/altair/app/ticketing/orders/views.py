@@ -99,7 +99,6 @@ from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
-from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.qr.utils import build_qr_by_token, build_qr_by_order
 from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
 
@@ -119,12 +118,11 @@ from .api import (
     save_order_modification,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
-    get_anshin_checkout_object,
     get_order_by_order_no,
     get_order_by_id,
     refresh_order,
-    get_multicheckout_info,
     OrderAttributeIO,
+    get_payment_delivery_plugin_info
 )
 from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
 from .utils import NumberIssuer
@@ -1169,8 +1167,8 @@ class OrderDetailView(OrderBaseView):
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
-        checkout_object = get_anshin_checkout_object(self.request, order)
-        multicheckout_info = get_multicheckout_info(self.request, order)
+        payment_plugin_info, delivery_plugin_info = get_payment_delivery_plugin_info(self.request, order)
+
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -1178,9 +1176,8 @@ class OrderDetailView(OrderBaseView):
             'order_attributes': order_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
-            'sej_order':get_sej_order(order.order_no),
-            'checkout': checkout_object,
-            'multicheckout_info': multicheckout_info,
+            'payment_plugin_info': payment_plugin_info,
+            'delivery_plugin_info': delivery_plugin_info,
             'mail_magazines':mail_magazines,
             'form_order_info':form_order_info,
             'form_shipping_address':form_shipping_address,

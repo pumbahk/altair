@@ -2127,3 +2127,30 @@ class OrderAttributeIO(object):
             for field_name in remaining_attributes:
                 stored_value = params.get(field_name)
                 order_like.attributes[field_name] = stored_value
+
+def get_payment_delivery_plugin_info(request, order):
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_method_pair)
+
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+
+    from .export import japanese_columns
+    if payment_plugin is not None:
+        _payment_plugin_info = payment_plugin.get_order_info(request, order)
+        payment_plugin_info = dict(
+            (k, (japanese_columns.get(k, u''), v))
+            for k, v in _payment_plugin_info.items()
+            )
+    else:
+        payment_plugin_info = None
+    if delivery_plugin is not None:
+        _delivery_plugin_info = delivery_plugin.get_order_info(request, order)
+        delivery_plugin_info = dict(
+            (k, (japanese_columns.get(k, u''), v))
+            for k, v in _delivery_plugin_info.items()
+            )
+    else:
+        delivery_plugin_info = None
+    return payment_plugin_info, delivery_plugin_info
+

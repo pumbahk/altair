@@ -17,7 +17,6 @@ from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from altair.sqlahelper import get_db_session
 from altair.models.nervous import NervousList
 from altair.models import Identifier, WithTimestamp
 from . import events
@@ -26,7 +25,6 @@ from .exc import (
     FamiPortNumberingError,
     FamiPortUnsatisfiedPreconditionError,
     )
-from altair.sqlahelper import get_db_session
 
 Base = declarative.declarative_base()
 
@@ -948,6 +946,8 @@ class FamiPortReceipt(Base, WithTimestamp):
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
 
     made_reissueable_at = sa.Column(sa.DateTime(), nullable=True)
+ 
+    shop = orm.relationship('FamiPortShop', primaryjoin=FamiPortShop.code == shop_code, foreign_keys=FamiPortShop.code, uselist=False)
 
     attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt', collection_class=attribute_mapped_collection('name'), )
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: FamiPortReceiptAttribute(name=k, value=v))
@@ -1010,7 +1010,7 @@ class FamiPortReceipt(Base, WithTimestamp):
 
     def get_shop_name(self, request):
         if self.payment_request_received_at:
-            session = get_db_session(request, name="famiport")
+            session = object_session(self)
             shop = session.query(FamiPortShop)\
                                .filter(FamiPortShop.code == self.shop_code)\
                                .first()
