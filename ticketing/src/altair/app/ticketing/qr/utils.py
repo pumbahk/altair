@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import sqlahelper
 from sqlalchemy.orm.session import object_session
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, UnmappedInstanceError
 from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.orders.models import (
     Order,
@@ -20,8 +20,9 @@ DBSession = sqlahelper.get_session()
 
 
 class QRTicketObject(object):
-    def __init__(self, history):
+    def __init__(self, history, session):
         self.history = history
+        self.session = session
         self.qr = None
         self.sign = None
 
@@ -40,9 +41,9 @@ class QRTicketObject(object):
     @property
     def order(self):
         if self.history.order_id is not None:
-            return object_session(self.history).query(Order).filter_by(id=self.history.order_id).one()
+            return self.session.query(Order).filter_by(id=self.history.order_id).one()
         elif self.history.item_token_id is not None:
-            return object_session(self.history).query(Order) \
+            return self.session.query(Order) \
                     .join(Order.items) \
                     .join(OrderedProduct.elements) \
                     .join(OrderedProductItem.tokens) \
@@ -186,8 +187,14 @@ def get_or_create_matched_history_from_order(order):
         DBSession.flush()
     return history
 
+def _get_db_session(history):
+    try:
+        return object_session(history)
+    except UnmappedInstanceError:
+        return DBSession
+
 def make_data_for_qr(history):
-    qr_ticket_obj = QRTicketObject(history)
+    qr_ticket_obj = QRTicketObject(history, _get_db_session(history))
     params = dict(serial=str(qr_ticket_obj.id),
                   performance=qr_ticket_obj.performance and qr_ticket_obj.performance.code,
                   order=qr_ticket_obj.order_no,
@@ -204,7 +211,7 @@ def make_data_for_qr(history):
     return params, qr_ticket_obj
 
 def make_data_for_orion(history, serial):
-    qr_ticket_obj = QRTicketObject(history)
+    qr_ticket_obj = QRTicketObject(history, _get_db_session(history))
     params = dict(serial=serial,
                   performance=qr_ticket_obj.performance and qr_ticket_obj.performance.code,
                   order=qr_ticket_obj.order.order_no,
