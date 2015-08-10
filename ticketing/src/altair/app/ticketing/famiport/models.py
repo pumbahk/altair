@@ -5,6 +5,7 @@ import time
 import random
 import hashlib
 import struct
+from decimal import Decimal
 from datetime import time as _time
 from enum import Enum
 import sqlalchemy as sa
@@ -1117,9 +1118,9 @@ class FamiPortReceipt(Base, WithTimestamp):
         self.made_reissueable_at = now
 
     def calculate_total_and_fees(self):
-        ticket_payment = 0
-        system_fee = 0
-        ticketing_fee = 0
+        ticket_payment = Decimal(0)
+        system_fee = Decimal(0)
+        ticketing_fee = Decimal(0)
         famiport_order = self.famiport_order
 
         if self.type == FamiPortReceiptType.CashOnDelivery.value:
@@ -1130,16 +1131,16 @@ class FamiPortReceipt(Base, WithTimestamp):
             ticket_payment = famiport_order.ticket_payment
             system_fee = famiport_order.system_fee
             if famiport_order.require_ticketing_fee_on_ticketing:
-                ticketing_fee = 0
+                ticketing_fee = Decimal(0)
             else:
                 ticketing_fee = famiport_order.ticketing_fee
         elif self.type == FamiPortReceiptType.Ticketing.value:
-            ticket_payment = 0
-            system_fee = 0
+            ticket_payment = Decimal(0)
+            system_fee = Decimal(0)
             if famiport_order.require_ticketing_fee_on_ticketing:
                 ticketing_fee = famiport_order.ticketing_fee
             else:
-                ticketing_fee = 0
+                ticketing_fee = Decimal(0)
         total_amount = ticket_payment + system_fee + ticketing_fee
         return total_amount, ticket_payment, system_fee, ticketing_fee
 
