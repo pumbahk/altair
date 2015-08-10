@@ -131,7 +131,9 @@ def main(global_config, **local_config):
         config.add_mako_renderer('.txt')
     
         config.add_route("index", "/")
-   
+  
+        config.add_translation_dirs('%s:locale' % __name__)
+
         config.include('altair.httpsession.pyramid')
         config.include('altair.browserid')
         config.include('altair.exclog')

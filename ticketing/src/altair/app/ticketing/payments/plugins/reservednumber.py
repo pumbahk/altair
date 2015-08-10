@@ -112,8 +112,11 @@ class ReservedNumberDeliveryPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        return {}
-
+        reserved_number = m.DBSession.query(m.ReservedNumber).filter(
+            m.ReservedNumber.order_no==order.order_no).one()
+        return {
+            u'reserved_number': reserved_number.number,
+            }
 
 @view_defaults(context=ICompleteMailResource)
 class CompletionMailViewlet(object):
@@ -216,5 +219,9 @@ class ReservedNumberPaymentPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        return {}
+        reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
+            m.PaymentReservedNumber.order_no==order.order_no).one()
+        return {
+            u'reserved_number': reserved_number.number,
+            }
 

@@ -70,7 +70,9 @@ class ShippingDeliveryPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        return {}
+        return {
+            u'delivered': order.delivered_at is not None
+            }
 
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html", fallback_ua_type='mail'))

@@ -89,6 +89,7 @@ requires = [
     "scp",
     "jumon",
     "jctconv",
+    "babel",
     "altair.augus",
     "altair.auth",
     "altair.sqla",

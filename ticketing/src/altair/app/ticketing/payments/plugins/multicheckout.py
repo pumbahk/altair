@@ -424,10 +424,10 @@ class MultiCheckoutPlugin(object):
         if info is not None:
             info['ahead_com_name'] = get_multicheckout_ahead_com_name(info['ahead_com_cd'])
         return {
-            u'order.approval_no': info and info['approval_no'],
-            u'order.card_brand': info and info['card_brand'],
-            u'order.card_ahead_com_code': info and info['ahead_com_cd'],
-            u'order.card_ahead_com_name': info and info['ahead_com_name'],
+            u'approval_no': info and info['approval_no'],
+            u'card_brand': info and info['card_brand'],
+            u'ahead_com_code': info and info['ahead_com_cd'],
+            u'ahead_com_name': info and info['ahead_com_name'],
             }
 
 def card_number_mask(number):

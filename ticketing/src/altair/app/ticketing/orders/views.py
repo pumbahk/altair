@@ -1813,7 +1813,8 @@ class OrderDetailView(OrderBaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
-    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh") #print.queueの操作ではなくrefreshする操作
+    #print.queueの操作ではなくrefreshする操作
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh")
     def order_tokens_refresh(self):
         from .helpers import decode_candidate_id
         now = datetime.now()

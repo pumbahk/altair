@@ -395,10 +395,10 @@ def get_famiport_order_info(request, order):
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
     order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
     return {
-        u'famiport_order.payment_reserve_number': order['payment_reserve_number'],
-        u'famiport_order.ticketing_reserve_number': order['ticketing_reserve_number'],
-        u'famiport_order.payment_shop_name': order['payment_shop_name'],
-        u'famiport_order.ticketing_shop_name': order['ticketing_shop_name'],
+        u'payment_reserve_number': order['payment_reserve_number'],
+        u'ticketing_reserve_number': order['ticketing_reserve_number'],
+        u'payment_shop_name': order['payment_shop_name'],
+        u'ticketing_shop_name': order['ticketing_shop_name'],
         }
 
 def _overridable_payment(path, fallback_ua_type=None):

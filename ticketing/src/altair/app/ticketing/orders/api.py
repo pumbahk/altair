@@ -76,7 +76,7 @@ from .models import (
     ProtoOrder,
     ImportTypeEnum,
     )
-
+from .interfaces import IOrderDescriptorRegistry, IOrderDescriptorRenderer
 ## backward compatibility
 from altair.app.ticketing.orders.models import OrderedProductAttribute
 from .metadata import (
@@ -2128,28 +2128,58 @@ class OrderAttributeIO(object):
                 stored_value = params.get(field_name)
                 order_like.attributes[field_name] = stored_value
 
-def get_payment_delivery_plugin_info(request, order):
+def get_order_info_descriptor_registry(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IOrderDescriptorRegistry)
+
+def get_payment_delivery_plugin_info(request, order, flavor='html'):
     payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_method_pair)
 
     if payment_delivery_plugin is not None:
         payment_plugin = payment_delivery_plugin
         delivery_plugin = None
 
-    from .export import japanese_columns
+    descr_registry = get_order_info_descriptor_registry(request)
+
     if payment_plugin is not None:
         _payment_plugin_info = payment_plugin.get_order_info(request, order)
-        payment_plugin_info = dict(
-            (k, (japanese_columns.get(k, u''), v))
-            for k, v in _payment_plugin_info.items()
-            )
+        payment_plugin_info = {}
+        for k, v in _payment_plugin_info.items():
+            descr = descr_registry.get_descriptor(payment_plugin, k)
+            pair = None
+            if descr is not None:
+                renderer = descr.get_renderer(flavor)
+                if renderer is not None:
+                    pair = (
+                        descr.get_display_name(request),
+                        renderer(request, descr_registry, descr, v)
+                        )
+            if pair is None:
+                default_renderer = request.registry.queryUtility(IOrderDescriptorRenderer, name=flavor)
+                pair = (k, default_renderer(request, descr_registry, None, v) if default_renderer else u'(unrenderable)')
+            payment_plugin_info[k] = pair
     else:
         payment_plugin_info = None
     if delivery_plugin is not None:
         _delivery_plugin_info = delivery_plugin.get_order_info(request, order)
-        delivery_plugin_info = dict(
-            (k, (japanese_columns.get(k, u''), v))
-            for k, v in _delivery_plugin_info.items()
-            )
+        delivery_plugin_info = {}
+        for k, v in _delivery_plugin_info.items():
+            descr = descr_registry.get_descriptor(delivery_plugin, k)
+            pair = None
+            if descr is not None:
+                renderer = descr.get_renderer(flavor)
+                if renderer is not None:
+                    pair = (
+                        descr.get_display_name(request),
+                        renderer(request, descr_registry, descr, v)
+                        )
+            if pair is None:
+                default_renderer = request.registry.queryUtility(IOrderDescriptorRenderer, name=flavor)
+                pair = (k, default_renderer(request, descr_registry, None, v) if default_renderer else u'(unrenderable)')
+            delivery_plugin_info[k] = pair
     else:
         delivery_plugin_info = None
     return payment_plugin_info, delivery_plugin_info

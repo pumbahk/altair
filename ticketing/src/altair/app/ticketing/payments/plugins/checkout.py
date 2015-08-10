@@ -209,10 +209,10 @@ class CheckoutPlugin(object):
         service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
         co = service.get_checkout_object_by_order_no(order.order_no)
         return {
-            u'anshin_checkout.order_id': co.orderId,
-            u'anshin_checkout.order_control_id': co.orderControlId,
-            u'anshin_checkout.used_point': co.usedPoint,
-            u'anshin_checkout.sales_at': co.sales_at,
+            u'order_id': co.orderId,
+            u'order_control_id': co.orderControlId,
+            u'used_point': co.usedPoint,
+            u'sales_at': co.sales_at,
             }
 
 
