@@ -19,6 +19,9 @@
       % endif
       金額: &yen;${product['price']}<br />
       数量:
+      % if product['quantity_power'] > 1:
+        ${product['quantity_power']}x
+      % endif
       <select name="product-${product['id']}">
         % for num in product['possible_quantities']:
         <option value="${num}">${num}</option>
