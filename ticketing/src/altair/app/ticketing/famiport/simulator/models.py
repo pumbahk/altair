@@ -59,7 +59,7 @@ class FDCSideOrder(Base):
     @property
     def valid_barcode_no(self):
         if self.type == 1:
-            if self.paid_at is None and self.issued_at is None:
+            if self.issued_at is None:
                 return self.barcode_no
         elif self.type == 2:
             if self.paid_at is None:
