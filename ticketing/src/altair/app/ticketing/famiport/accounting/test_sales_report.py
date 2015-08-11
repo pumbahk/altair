@@ -1,5 +1,6 @@
 # encoding: utf-8
 import unittest
+from decimal import Decimal
 from pyramid.testing import setUp, tearDown
 from altair.sqlahelper import get_global_db_session
 from ..testing import _setup_db, _teardown_db
@@ -127,6 +128,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             type=FamiPortOrderType.CashOnDelivery.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -156,6 +161,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -184,6 +193,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             type=FamiPortOrderType.Payment.value,
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -220,6 +233,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             famiport_sales_segment=self.famiport_sales_segment,
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -258,6 +275,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -296,6 +317,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     type=FamiPortReceiptType.CashOnDelivery.value,
@@ -329,6 +354,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -364,6 +393,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -399,6 +432,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
@@ -440,6 +477,10 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
             created_at=datetime(2014, 12, 31),
             paid_at=datetime(2014, 12, 31),
             issued_at=datetime(2014, 12, 31),
+            total_amount=Decimal(0),
+            ticket_payment=Decimal(0),
+            system_fee=Decimal(0),
+            ticketing_fee=Decimal(0),
             famiport_receipts=[
                 FamiPortReceipt(
                     id=1,
