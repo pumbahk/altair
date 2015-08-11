@@ -32,6 +32,9 @@ class Japanese_Japan_Formatter(object):
     def format_time(self, time):
         return unicode(time.strftime('%H時 %M分'), 'utf-8')
 
+    def format_time_compressed(self, time):
+        return unicode(time.strftime('%H時%M分'), 'utf-8')
+
     def format_time_short(self, time):
         return unicode(time.strftime('%H:%M'), 'utf-8')
 
