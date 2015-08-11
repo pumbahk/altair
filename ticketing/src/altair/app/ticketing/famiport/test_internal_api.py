@@ -483,7 +483,8 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             payment_due_at=None,
             ticketing_start_at=None,
             ticketing_end_at=None,
-            payment_sheet_text=None
+            payment_sheet_text=None,
+            require_ticketing_fee_on_ticketing=False
             )
 
     def test_cash_on_delivery_unupdatable(self):
@@ -514,7 +515,8 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 payment_due_at=None,
                 ticketing_start_at=None,
                 ticketing_end_at=None,
-                payment_sheet_text=None
+                payment_sheet_text=None,
+                require_ticketing_fee_on_ticketing=False
                 )
 
     def test_payment_unupdatable(self):
@@ -545,7 +547,8 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 payment_due_at=None,
                 ticketing_start_at=None,
                 ticketing_end_at=None,
-                payment_sheet_text=None
+                payment_sheet_text=None,
+                require_ticketing_fee_on_ticketing=False
                 )
 
     def test_payment_updatable(self):
@@ -575,5 +578,6 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             payment_due_at=None,
             ticketing_start_at=datetime(2015, 6, 6),
             ticketing_end_at=datetime(2015, 6, 7),
-            payment_sheet_text=None
+            payment_sheet_text=None,
+            require_ticketing_fee_on_ticketing=False
             )

@@ -2,6 +2,7 @@
 from unittest import TestCase, skip
 import mock
 from lxml import etree
+from decimal import Decimal
 from pyramid.testing import (
     DummyModel,
     )
@@ -140,6 +141,7 @@ class InquiryTest(FamiPortAPIViewTest):
             barcode_no=u'4110000000006',
             famiport_order_identifier=u'430000000002',
             mark_inquired=lambda *args: None,
+            made_reissueable_at=None,
             famiport_order=FamiPortOrder(
                 order_no=u'XX0000000000',
                 famiport_order_identifier=u'000000000000',
@@ -284,6 +286,8 @@ class PaymentTest(FamiPortAPIViewTest):
             famiport_order_identifier=u'430000000002',
             mark_payment_request_received=lambda *args: None,
             payment_request_received_at=None,
+            made_reissueable_at=None,
+            calculate_total_and_fees=lambda: (Decimal(200), Decimal(0), Decimal(0), Decimal(200)),
             famiport_order=DummyModel(
                 famiport_order_identifier=u'430000000001',
                 type=3,
@@ -293,15 +297,17 @@ class PaymentTest(FamiPortAPIViewTest):
                 ticketing_start_at=ticketing_start_at,
                 ticketing_end_at=ticketing_end_at,
                 barcode_number=u'1000000000000',
-                total_amount=200,
-                ticket_payment=0,
-                system_fee=0,
-                ticketing_fee=200,
+                total_amount=Decimal(200),
+                ticket_payment=Decimal(0),
+                system_fee=Decimal(0),
+                ticketing_fee=Decimal(200),
                 ticket_total_count=len(famiport_tickets),
                 ticket_count=len(famiport_tickets),
                 payment_start_at=ticketing_start_at,
                 payment_end_at=ticketing_end_at,
                 famiport_tickets=famiport_tickets,
+                made_reissueable_at=None,
+                require_ticketing_fee_on_ticketing=True,
                 famiport_sales_segment=DummyModel(
                     famiport_performance=DummyModel(
                         name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
@@ -310,6 +316,7 @@ class PaymentTest(FamiPortAPIViewTest):
                     ),
                 ticketing_famiport_receipt=DummyModel(
                     reserve_number=u'4310000000002',
+                    made_reissueable_at=None
                     ),
                 famiport_client=DummyModel(
                     name=u'クライアント１',
@@ -361,16 +368,19 @@ ticketingDate=20150331184114&orderId=123456789012&totalAmount=1000&playGuideId=&
         from ..testing import FamiPortPaymentTicketingCompletionResponseFakeFactory as FakeFactory
         from ..models import FamiPortReceiptType
         get_by_barcode_no.return_value = DummyModel(
+            id=1,
             type=FamiPortReceiptType.CashOnDelivery.value,
             completed_at=None,
             shop_code=u'99999',
+            reserve_number=u'0000000000000',
             can_completion=lambda now: True,
             mark_completed=lambda *args: None,
             famiport_order_identifier=u'000000000000',
             famiport_order=DummyModel(
                 mark_issued=lambda *args: None,
                 mark_paid=lambda *args: None
-                )
+                ),
+            made_reissueable_at=None
             )
         res = self._callFUT({
             'ticketingDate': '20150331184114',

@@ -2,6 +2,7 @@
 import six
 import logging
 import datetime
+from decimal import Decimal
 from lxml import etree
 from sqlalchemy import orm
 from sqlalchemy.orm.exc import NoResultFound
@@ -312,7 +313,10 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     # 期間内有効券と判断して公演日時を表示しない。
                     koenDate = '99999999999999'
 
-                totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+                if famiport_receipt.made_reissueable_at is None:
+                    totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+                else:
+                    totalAmount = ticketPayment = systemFee = ticketingFee = Decimal(0)
 
                 playGuideId = famiport_order.famiport_client.code
                 barCodeNo = famiport_receipt.barcode_no
@@ -530,7 +534,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 else:
                     raise ValueError(u'unknown order type: %r' % famiport_order.type)
 
-                totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+                if famiport_receipt.made_reissueable_at is None:
+                    totalAmount, ticketPayment, systemFee, ticketingFee = famiport_receipt.calculate_total_and_fees()
+                else:
+                    totalAmount = ticketPayment = systemFee = ticketingFee = Decimal(0)
 
                 orderId = famiport_receipt.famiport_order_identifier
                 totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')

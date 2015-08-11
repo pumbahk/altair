@@ -4,10 +4,13 @@ import logging
 import transaction
 
 from zope.interface import directlyProvides
+from pyramid.interfaces import IRequest
+from zope.deprecation import deprecation
+
 from .interfaces import ICartInterface
 from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
-from zope.deprecation import deprecation
+from .directives import Discriminator
 
 logger = logging.getLogger(__name__)
 
@@ -54,19 +57,29 @@ def get_confirm_url(request):
     cart_if = request.registry.getUtility(ICartInterface)
     return cart_if.get_success_url(request)
 
-def get_delivery_plugin(request, plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
+def get_delivery_plugin(request_or_registry, plugin_id):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    key = str(Discriminator(None, plugin_id))
+    return registry.utilities.lookup([], IDeliveryPlugin, name=key)
 
-def get_payment_plugin(request, plugin_id):
-    logger.debug("get_payment_plugin: %s" % plugin_id)
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
+def get_payment_plugin(request_or_registry, plugin_id):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    key = str(Discriminator(plugin_id, None))
+    return registry.utilities.lookup([], IPaymentPlugin, name=key)
 
-def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
-        "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
+def get_payment_delivery_plugin(request_or_registry, payment_plugin_id, delivery_plugin_id):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    key = str(Discriminator(payment_plugin_id, delivery_plugin_id))
+    return registry.utilities.lookup([], IPaymentDeliveryPlugin, key)
 
 def get_preparer(request, payment_delivery_pair):
     if payment_delivery_pair is None:

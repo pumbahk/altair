@@ -37,7 +37,7 @@ from altair.app.ticketing.tickets.utils import (
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
 
-from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
+from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymentDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
@@ -421,19 +421,21 @@ def determine_payment_type(current_date, order_like):
 
 
 def _build_order_info(sej_order):
-    return {
-        u'sej_order.billing_number': sej_order.billing_number,
-        u'sej_order.exchange_number': sej_order.exchange_number,
-        }
+    retval = {}
+    if sej_order.billing_number:
+        retval['billing_number'] = sej_order.billing_number
+    if sej_order.exchange_number:
+        retval[u'exchange_number'] = sej_order.exchange_number
+    return retval
 
 def get_sej_order_info(request, order):
     sej_order = sej_api.get_sej_order(order.order_no)
     retval = _build_order_info(sej_order)
-    retval.update({
-        u'sej_order.pay_store_name': sej_order.pay_store_name,
-        u'sej_order.ticketing_store_name': sej_order.ticketing_store_name,
-        u'branches': [_build_order_info(branch) for branch in sej_order.branches(sej_order.order_no) if branch != sej_order]
-        })
+    if sej_order.pay_store_name:
+        retval[u'pay_store_name'] = sej_order.pay_store_name
+    if sej_order.ticketing_store_name:
+        retval[u'ticketing_store_name'] = sej_order.ticketing_store_name
+    retval[u'branches'] = [_build_order_info(branch) for branch in sej_order.branches(sej_order.order_no) if branch != sej_order]
     return retval
 
 # http://www.unicode.org/charts/PDF/U30A0.pdf
@@ -675,7 +677,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         return get_sej_order_info(request, order)
 
 
-@implementer(IDeliveryPlugin)
+@implementer(IPaymentDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(datetime.now(), order_like, update)

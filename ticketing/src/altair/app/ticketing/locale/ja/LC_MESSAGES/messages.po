@@ -1,0 +1,760 @@
+#
+# English translations for PACKAGE package
+# This file is distributed under the same license as the PACKAGE package.
+# Moriyoshi Koizumi <moriyoshi@verbatim.local>, 2015.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2015-08-10 22:16+0900\n"
+"PO-Revision-Date: 2015-08-10 23:17+0900\n"
+"Last-Translator: Moriyoshi Koizumi <moriyoshi@ticketstar.jp>\n"
+"Language-Team: English\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 3.11\n"
+
+#: src/altair/app/ticketing/security.py:22
+msgid "楽天会員認証"
+msgstr "楽天会員認証"
+
+#: src/altair/app/ticketing/security.py:23
+msgid "FC会員認証"
+msgstr "FC会員認証"
+
+#: src/altair/app/ticketing/security.py:24
+msgid "キーワード認証"
+msgstr "キーワード認証"
+
+#: src/altair/app/ticketing/security.py:155
+msgid "(なし)"
+msgstr "(なし)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:121
+msgid "キーワード認証のキー"
+msgstr "キーワード認証のキー"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:131
+msgid "カートのタイトル"
+msgstr "カートのタイトル"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:135
+msgid "入会フォームを使った場合の種別名称（デフォルト：会員種別）"
+msgstr "入会フォームを使った場合の種別名称（デフォルト：会員種別）"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:139
+msgid "入会フォームの氏名のラベル名（デフォルト：氏名）"
+msgstr "入会フォームの氏名のラベル名（デフォルト：氏名）"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:143
+msgid "抽選での日付と会場のラベル名（デフォルト：公演日・会場）"
+msgstr "抽選での日付と会場のラベル名（デフォルト：公演日・会場）"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:147
+msgid "お問い合わせ先URL"
+msgstr "お問い合わせ先URL"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:151
+msgid "お問い合わせ先URL (携帯)"
+msgstr "お問い合わせ先URL (携帯)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:155
+msgid "お問い合わせ先電話番号"
+msgstr "お問い合わせ先電話番号"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:159
+msgid "お問い合わせ先営業時間"
+msgstr "お問い合わせ先営業時間"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:163
+msgid "お問い合わせ先の名称"
+msgstr "お問い合わせ先の名称"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:167
+msgid "プライバシーポリシーページのURL (PC / スマートフォン)"
+msgstr "プライバシーポリシーページのURL (PC / スマートフォン)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:171
+msgid "プライバシーポリシーページのURL (携帯)"
+msgstr "プライバシーポリシーページのURL (携帯)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:175
+msgid "「特商法に基づく表示」ページのURL (PC / スマートフォン)"
+msgstr "「特商法に基づく表示」ページのURL (PC / スマートフォン)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:179
+msgid "「特商法に基づく表示」ページのURL (携帯)"
+msgstr "「特商法に基づく表示」ページのURL (携帯)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:183
+msgid "メールフィルターの設定確認文言"
+msgstr "メールフィルターの設定確認文言"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:188
+msgid "購入履歴確認ページのURL"
+msgstr "購入履歴確認ページのURL"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:191
+msgid "抽選の購入履歴確認ページのURL"
+msgstr "抽選の購入履歴確認ページのURL"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:195
+msgid "携帯向けカートの見出しにつく「■」の色"
+msgstr "携帯向けカートの見出しにつく「■」の色"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:199
+msgid "携帯向けカートの必須項目名の横につく「*」の色"
+msgstr "携帯向けカートの必須項目名の横につく「*」の色"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:203
+msgid "携帯向けカートのヘッダの背景色"
+msgstr "携帯向けカートのヘッダの背景色"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:247
+msgid "デフォルトの都道府県"
+msgstr "デフォルトの都道府県"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:252
+msgid "お好み設定"
+msgstr "お好み設定"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:271
+msgid "ヘッダ画像のURL (PC)"
+msgstr "ヘッダ画像のURL (PC)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:275
+msgid "ヘッダ画像のURL (モバイル)"
+msgstr "ヘッダ画像のURL (モバイル)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:279
+msgid "座席選択がない場合、会場図を表示しているところに表示したいHTML"
+msgstr "座席選択がない場合、会場図を表示しているところに表示したいHTML"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:284
+msgid "埋め込みHTML文言(PC)"
+msgstr "埋め込みHTML文言(PC)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:289
+msgid "埋め込みHTML文言(モバイル)"
+msgstr "埋め込みHTML文言(モバイル)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:294
+msgid "埋め込みHTML文言(スマートフォン)"
+msgstr "埋め込みHTML文言(スマートフォン)"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:51
+msgid "未設定"
+msgstr "未設定"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:254
+msgid "日本の都道府県名を強制する"
+msgstr "日本の都道府県名を強制する"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:255
+msgid "固定電話と携帯電話番号の両方を入力させる"
+msgstr "固定電話と携帯電話番号の両方を入力させる"
+
+#: src/altair/app/ticketing/admin/cart_settings/forms.py:256
+msgid "PCメールアドレスと携帯メールアドレスの両方を入力させる"
+msgstr "PCメールアドレスと携帯メールアドレスの両方を入力させる"
+
+#: src/altair/app/ticketing/admin/cart_settings/views.py:134
+msgid "設定を登録しました"
+msgstr "設定を登録しました"
+
+#: src/altair/app/ticketing/admin/cart_settings/views.py:165
+msgid "設定を編集しました"
+msgstr "設定を編集しました"
+
+#: src/altair/app/ticketing/cart/models.py:92
+msgid "カート生成日時"
+msgstr "カート生成日時"
+
+#: src/altair/app/ticketing/cart/models.py:95
+msgid "カート処理日時"
+msgstr "カート処理日時"
+
+#: src/altair/app/ticketing/cart/models.py:102
+msgid "注文番号"
+msgstr "注文番号"
+
+#: src/altair/app/ticketing/cart/models.py:579
+msgid "設定名称"
+msgstr "設定名称"
+
+#: src/altair/app/ticketing/cart/models.py:580
+msgid "設定のタイプ"
+msgstr "設定のタイプ"
+
+#: src/altair/app/ticketing/cart/models.py:582
+msgid "公演絞り込み方式"
+msgstr "公演絞り込み方式"
+
+#: src/altair/app/ticketing/cart/models.py:583
+msgid "絞り込みラベル1"
+msgstr "絞り込みラベル1"
+
+#: src/altair/app/ticketing/cart/models.py:584
+msgid "絞り込みラベル2"
+msgstr "絞り込みラベル2"
+
+#: src/altair/app/ticketing/cart/view_support.py:842
+#: src/altair/app/ticketing/cart/view_support.py:844
+#: src/altair/app/ticketing/cart/view_support.py:846
+msgid "未入力"
+msgstr "未入力"
+
+#: src/altair/app/ticketing/checkinstation/models.py:24
+msgid "解放時間"
+msgstr "解放時間"
+
+#: src/altair/app/ticketing/core/models.py:92
+msgid "会場の表示/非表示"
+msgstr "会場の表示/非表示"
+
+#: src/altair/app/ticketing/core/models.py:131
+msgid "会場名"
+msgstr "会場名"
+
+#: src/altair/app/ticketing/core/models.py:512
+msgid "名称"
+msgstr "名称"
+
+#: src/altair/app/ticketing/core/models.py:521
+msgid "開場"
+msgstr "開場"
+
+#: src/altair/app/ticketing/core/models.py:522
+msgid "開演"
+msgstr "開演"
+
+#: src/altair/app/ticketing/core/models.py:523
+msgid "終了"
+msgstr "終了"
+
+#: src/altair/app/ticketing/core/models.py:535
+#: src/altair/app/ticketing/core/models.py:963
+#: src/altair/app/ticketing/core/models.py:2595
+msgid "表示順"
+msgstr "表示順"
+
+#: src/altair/app/ticketing/core/models.py:947
+msgid "イベント名称"
+msgstr "イベント名称"
+
+#: src/altair/app/ticketing/core/models.py:948
+msgid "イベント略称"
+msgstr "イベント略称"
+
+#: src/altair/app/ticketing/core/models.py:950
+#: src/altair/app/ticketing/core/models.py:1444
+#: src/altair/app/ticketing/core/models.py:3576
+msgid "配券元"
+msgstr "配券元"
+
+#: src/altair/app/ticketing/core/models.py:1427
+#: src/altair/app/ticketing/core/models.py:1664
+#: src/altair/app/ticketing/core/models.py:1942
+#: src/altair/app/ticketing/core/models.py:2592
+#: src/altair/app/ticketing/loyalty/models.py:40
+msgid "ID"
+msgstr "ID"
+
+#: src/altair/app/ticketing/core/models.py:1428
+msgid "名前"
+msgstr "名前"
+
+#: src/altair/app/ticketing/core/models.py:1429
+msgid "種別"
+msgstr "種別"
+
+#: src/altair/app/ticketing/core/models.py:1430
+msgid "販売開始日時"
+msgstr "販売開始日時"
+
+#: src/altair/app/ticketing/core/models.py:1431
+msgid "販売終了日時"
+msgstr "販売終了日時"
+
+#: src/altair/app/ticketing/core/models.py:1432
+#: src/altair/app/ticketing/core/models.py:3551
+msgid "購入上限枚数"
+msgstr "購入上限枚数"
+
+#: src/altair/app/ticketing/core/models.py:1434
+#: src/altair/app/ticketing/core/models.py:3553
+msgid "商品購入上限数"
+msgstr "商品購入上限数"
+
+#: src/altair/app/ticketing/core/models.py:1436
+#: src/altair/app/ticketing/core/models.py:3556
+msgid "座席選択可"
+msgstr "座席選択可"
+
+#: src/altair/app/ticketing/core/models.py:1437
+#: src/altair/app/ticketing/core/models.py:1700
+#: src/altair/app/ticketing/core/models.py:3558
+msgid "一般公開"
+msgstr "一般公開"
+
+#: src/altair/app/ticketing/core/models.py:1438
+#: src/altair/app/ticketing/core/models.py:3560
+msgid "レポート対象"
+msgstr "レポート対象"
+
+#: src/altair/app/ticketing/core/models.py:1440
+msgid "販売手数料率(%)"
+msgstr "販売手数料率(%)"
+
+#: src/altair/app/ticketing/core/models.py:1441
+msgid "払戻手数料率(%)"
+msgstr "払戻手数料率(%)"
+
+#: src/altair/app/ticketing/core/models.py:1442
+#: src/altair/app/ticketing/core/models.py:3572
+msgid "印刷代金(円/枚)"
+msgstr "印刷代金(円/枚)"
+
+#: src/altair/app/ticketing/core/models.py:1443
+#: src/altair/app/ticketing/core/models.py:3574
+msgid "登録手数料(円/公演)"
+msgstr "登録手数料(円/公演)"
+
+#: src/altair/app/ticketing/core/models.py:1447
+#: src/altair/app/ticketing/core/models.py:3590
+msgid "イベント"
+msgstr "イベント"
+
+#: src/altair/app/ticketing/core/models.py:1449
+#: src/altair/app/ticketing/core/models.py:3587
+msgid "クレジットカード 3D認証フォーム 注記事項"
+msgstr "クレジットカード 3D認証フォーム 注記事項"
+
+#: src/altair/app/ticketing/core/models.py:1666
+msgid "システム利用料"
+msgstr "システム利用料"
+
+#: src/altair/app/ticketing/core/models.py:1667
+msgid "システム利用料計算単位"
+msgstr "システム利用料計算単位"
+
+#: src/altair/app/ticketing/core/models.py:1669
+msgid "決済手数料"
+msgstr "決済手数料"
+
+#: src/altair/app/ticketing/core/models.py:1670
+msgid "引取手数料"
+msgstr "引取手数料"
+
+#: src/altair/app/ticketing/core/models.py:1671
+msgid "引取手数料 (予約ごと)"
+msgstr "引取手数料 (予約ごと)"
+
+#: src/altair/app/ticketing/core/models.py:1672
+msgid "引取手数料 (主券)"
+msgstr "引取手数料 (主券)"
+
+#: src/altair/app/ticketing/core/models.py:1673
+msgid "引取手数料 (副券)"
+msgstr "引取手数料 (副券)"
+
+#: src/altair/app/ticketing/core/models.py:1674
+msgid "割引額"
+msgstr "割引額"
+
+#: src/altair/app/ticketing/core/models.py:1675
+msgid "割引数"
+msgstr "割引数"
+
+#: src/altair/app/ticketing/core/models.py:1678
+msgid "支払開始日時の計算基準"
+msgstr "支払開始日時の計算基準"
+
+#: src/altair/app/ticketing/core/models.py:1679
+msgid "コンビニでの支払開始までの日数"
+msgstr "コンビニでの支払開始までの日数"
+
+#: src/altair/app/ticketing/core/models.py:1680
+msgid "支払開始日時"
+msgstr "支払開始日時"
+
+#: src/altair/app/ticketing/core/models.py:1683
+msgid "支払期限日時の計算基準"
+msgstr "支払期限日時の計算基準"
+
+#: src/altair/app/ticketing/core/models.py:1684
+msgid "コンビニでの支払期限日数"
+msgstr "コンビニでの支払期限日数"
+
+#: src/altair/app/ticketing/core/models.py:1685
+msgid "支払期日"
+msgstr "支払期日"
+
+#: src/altair/app/ticketing/core/models.py:1688
+#: src/altair/app/ticketing/core/models.py:1693
+msgid "発券開始日時の計算基準"
+msgstr "発券開始日時の計算基準"
+
+#: src/altair/app/ticketing/core/models.py:1689
+msgid "コンビニでの発券が可能となるまでの日数"
+msgstr "コンビニでの発券が可能となるまでの日数"
+
+#: src/altair/app/ticketing/core/models.py:1690
+msgid "コンビニ発券開始日時"
+msgstr "コンビニ発券開始日時"
+
+#: src/altair/app/ticketing/core/models.py:1694
+msgid "コンビニでの発券終了までの日数"
+msgstr "コンビニでの発券終了までの日数"
+
+#: src/altair/app/ticketing/core/models.py:1695
+msgid "コンビニ発券期限日時"
+msgstr "コンビニ発券期限日時"
+
+#: src/altair/app/ticketing/core/models.py:1698
+msgid "選択不可期間"
+msgstr "選択不可期間"
+
+#: src/altair/app/ticketing/core/models.py:1702
+#: src/altair/app/ticketing/core/models.py:3565
+msgid "販売区分グループ"
+msgstr "販売区分グループ"
+
+#: src/altair/app/ticketing/core/models.py:1704
+msgid "決済方法"
+msgstr "決済方法"
+
+#: src/altair/app/ticketing/core/models.py:1706
+#: src/altair/app/ticketing/core/models.py:1955
+msgid "引取方法"
+msgstr "引取方法"
+
+#: src/altair/app/ticketing/core/models.py:1709
+msgid "特別手数料名"
+msgstr "特別手数料名"
+
+#: src/altair/app/ticketing/core/models.py:1711
+msgid "特別手数料"
+msgstr "特別手数料"
+
+#: src/altair/app/ticketing/core/models.py:1712
+msgid "特別手数料計算単位"
+msgstr "特別手数料計算単位"
+
+#: src/altair/app/ticketing/core/models.py:1898
+msgid "払込票を表示しない"
+msgstr "払込票を表示しない"
+
+#: src/altair/app/ticketing/core/models.py:1943
+msgid "表示名称"
+msgstr "表示名称"
+
+#: src/altair/app/ticketing/core/models.py:1944
+msgid "説明文 (HTML)"
+msgstr "説明文 (HTML)"
+
+#: src/altair/app/ticketing/core/models.py:1948
+msgid "手数料 (予約ごと)"
+msgstr "手数料 (予約ごと)"
+
+#: src/altair/app/ticketing/core/models.py:1949
+msgid "手数料 (チケットごと:主券)"
+msgstr "手数料 (チケットごと:主券)"
+
+#: src/altair/app/ticketing/core/models.py:1950
+msgid "手数料 (チケットごと:副券)"
+msgstr "手数料 (チケットごと:副券)"
+
+#: src/altair/app/ticketing/core/models.py:1952
+msgid "オーガニゼーション"
+msgstr "オーガニゼーション"
+
+#: src/altair/app/ticketing/core/models.py:1971
+msgid "引換票を表示しない"
+msgstr "引換票を表示しない"
+
+#: src/altair/app/ticketing/core/models.py:2593
+msgid "商品名"
+msgstr "商品名"
+
+#: src/altair/app/ticketing/core/models.py:2594
+msgid "価格"
+msgstr "価格"
+
+#: src/altair/app/ticketing/core/models.py:2600
+msgid "販売区分"
+msgstr "販売区分"
+
+#: src/altair/app/ticketing/core/models.py:2605
+msgid "席種"
+msgstr "席種"
+
+#: src/altair/app/ticketing/core/models.py:2616
+msgid "公開"
+msgstr "公開"
+
+#: src/altair/app/ticketing/core/models.py:2617
+msgid "必須"
+msgstr "必須"
+
+#: src/altair/app/ticketing/core/models.py:3549
+msgid "販売開始"
+msgstr "販売開始"
+
+#: src/altair/app/ticketing/core/models.py:3550
+msgid "販売終了"
+msgstr "販売終了"
+
+#: src/altair/app/ticketing/core/models.py:3562
+msgid "パフォーマンス"
+msgstr "パフォーマンス"
+
+#: src/altair/app/ticketing/core/models.py:3568
+msgid "販売手数料率"
+msgstr "販売手数料率"
+
+#: src/altair/app/ticketing/core/models.py:3570
+msgid "払戻手数料率"
+msgstr "払戻手数料率"
+
+#: src/altair/app/ticketing/core/models.py:3875
+#: src/altair/app/ticketing/core/models.py:3908
+msgid "カートの種類"
+msgstr "カートの種類"
+
+#: src/altair/app/ticketing/core/models.py:3904
+#: src/altair/app/ticketing/core/models.py:3933
+#: src/altair/app/ticketing/core/models.py:3955
+#: src/altair/app/ticketing/core/models.py:4000
+msgid "購入回数制限"
+msgstr "購入回数制限"
+
+#: src/altair/app/ticketing/core/models.py:3906
+msgid "カート在庫閾値 (残席数)"
+msgstr "カート在庫閾値 (残席数)"
+
+#: src/altair/app/ticketing/core/models.py:3907
+msgid "カート在庫閾値 (%)"
+msgstr "カート在庫閾値 (%)"
+
+#: src/altair/app/ticketing/core/models.py:3910
+msgid "イベントの表示／非表示"
+msgstr "イベントの表示／非表示"
+
+#: src/altair/app/ticketing/core/models.py:3936
+#: src/altair/app/ticketing/core/models.py:3958
+msgid "マイページへの購入履歴表示／非表示"
+msgstr "マイページへの購入履歴表示／非表示"
+
+#: src/altair/app/ticketing/core/models.py:3937
+#: src/altair/app/ticketing/core/models.py:3959
+msgid "規約の表示／非表示"
+msgstr "規約の表示／非表示"
+
+#: src/altair/app/ticketing/core/models.py:3938
+#: src/altair/app/ticketing/core/models.py:3960
+msgid "規約内容"
+msgstr "規約内容"
+
+#: src/altair/app/ticketing/core/models.py:3939
+#: src/altair/app/ticketing/core/models.py:3961
+msgid "座席番号の表示可否"
+msgstr "座席番号の表示可否"
+
+#: src/altair/app/ticketing/core/models.py:3940
+#: src/altair/app/ticketing/core/models.py:3962
+msgid "窓口業務で閲覧可能"
+msgstr "窓口業務で閲覧可能"
+
+#: src/altair/app/ticketing/core/models.py:4001
+msgid "申込回数制限"
+msgstr "申込回数制限"
+
+#: src/altair/app/ticketing/core/models.py:4003
+msgid "パフォーマンスの表示/非表示"
+msgstr "パフォーマンスの表示/非表示"
+
+#: src/altair/app/ticketing/core/models.py:3941
+#: src/altair/app/ticketing/core/models.py:3963
+msgid "追加フィールド"
+msgstr "追加フィールド"
+
+#: src/altair/app/ticketing/loyalty/models.py:46
+msgid "キャンペーン名"
+msgstr "キャンペーン名"
+
+#: src/altair/app/ticketing/loyalty/models.py:47
+msgid "ポイント種別"
+msgstr "ポイント種別"
+
+#: src/altair/app/ticketing/loyalty/models.py:48
+msgid "固定付与ポイント"
+msgstr "固定付与ポイント"
+
+#: src/altair/app/ticketing/loyalty/models.py:49
+msgid "ポイント付与率"
+msgstr "ポイント付与率"
+
+#: src/altair/app/ticketing/loyalty/models.py:50
+msgid "開始日時"
+msgstr "開始日時"
+
+#: src/altair/app/ticketing/loyalty/models.py:51
+msgid "終了日時"
+msgstr "終了日時"
+
+#: src/altair/app/ticketing/orders/api.py:623
+#: src/altair/app/ticketing/orders/api.py:676
+msgid "インナー予約のキャンセルなので決済払戻処理をスキップします"
+msgstr "インナー予約のキャンセルなので決済払戻処理をスキップします"
+
+#: src/altair/app/ticketing/orders/api.py:602
+#, python-format
+msgid ""
+"予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ス"
+"テータス: ${payment_status})"
+msgstr ""
+"予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ス"
+"テータス: ${payment_status})"
+
+#: src/altair/app/ticketing/orders/api.py:652
+#, python-format
+msgid ""
+"予約が払戻できる状態ではありません (予約ステータス: ${status}, 支払ステータ"
+"ス: ${payment_status})"
+msgstr ""
+"予約が払戻できる状態ではありません (予約ステータス: ${status}, 支払ステータ"
+"ス: ${payment_status})"
+
+#: src/altair/app/ticketing/orders/api.py:1587
+#, python-format
+msgid ""
+"商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません "
+"(${element_total} ≠ ${item_total})"
+msgstr ""
+"商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません "
+"(${element_total} ≠ ${item_total})"
+
+#: src/altair/app/ticketing/orders/api.py:1512
+#, python-format
+msgid "商品「${product_name}」の価格が0に設定されています"
+msgstr "商品「${product_name}」の価格が0に設定されています"
+
+#: src/altair/app/ticketing/orders/api.py:1544
+#, python-format
+msgid ""
+"商品「${product_name}」の商品明細「${product_item_name}」の価格が0に設定され"
+"ています"
+msgstr ""
+"商品「${product_name}」の商品明細「${product_item_name}」の価格が0に設定され"
+"ています"
+
+#: src/altair/app/ticketing/users/models.py:211
+msgid "表示名"
+msgstr "表示名"
+
+#: src/altair/app/ticketing/users/models.py:212
+msgid "自動フォーム入力"
+msgstr "自動フォーム入力"
+
+#: src/altair/app/ticketing/users/models.py:213
+msgid "楽天ポイント手入力"
+msgstr "楽天ポイント手入力"
+
+#: src/altair/app/ticketing/users/models.py:242
+msgid "会員区分名"
+msgstr "会員区分名"
+
+#: src/altair/app/ticketing/users/models.py:243
+msgid "会員種別"
+msgstr "会員種別"
+
+#: src/altair/app/ticketing/users/models.py:245
+msgid "ゲストログイン"
+msgstr "ゲストログイン"
+
+msgid "payment-1:approval_no"
+msgstr "マルチ決済受領番号"
+
+msgid "payment-1:ahead_com_name"
+msgstr "仕向先"
+
+msgid "payment-1:ahead_com_code"
+msgstr "仕向先コード"
+
+msgid "payment-1:card_brand"
+msgstr "カードブランド"
+
+msgid "payment-6:payment_reserve_number"
+msgstr "FM予約番号"
+
+msgid "payment-6:payment_shop_name"
+msgstr "FM払込店舗"
+
+msgid "delivery-6:ticketing_shop_name"
+msgstr "FM発券店舗"
+
+msgid "delivery-6:ticketing_reserve_number"
+msgstr "FM発券店舗"
+
+msgid "payment-6:delivery-6:payment_reserve_number"
+msgstr "FM予約番号"
+
+msgid "payment-6:delivery-6:payment_shop_name"
+msgstr "FM払込店舗"
+
+msgid "payment-6:delivery-6:ticketing_shop_name"
+msgstr "FM発券店舗"
+
+msgid "payment-6:delivery-6:ticketing_reserve_number"
+msgstr "FM引換用予約番号"
+
+msgid "payment-3:pay_store_name"
+msgstr "SEJ払込店舗"
+
+msgid "payment-3:billing_number"
+msgstr "SEJ払込票番号"
+
+msgid "delivery-2:ticketing_store_name"
+msgstr "SEJ発券店舗"
+
+msgid "delivery-2:exchange_number"
+msgstr "SEJ引換票番号"
+
+msgid "payment-3:delivery-2:pay_store_name"
+msgstr "SEJ払込店舗"
+
+msgid "payment-3:delivery-2:billing_number"
+msgstr "SEJ払込票番号"
+
+msgid "payment-3:delivery-2:ticketing_store_name"
+msgstr "SEJ発券店舗"
+
+msgid "payment-3:delivery-2:exchange_number"
+msgstr "SEJ引換票番号"
+
+msgid "payment-3:branches"
+msgstr "再付番前の情報"
+
+msgid "delivery-2:branches"
+msgstr "再付番前の情報"
+
+msgid "payment-3:delivery-2:branches"
+msgstr "再付番前の情報"
+
+#, fuzzy
+msgid "payment-2:order_id"
+msgstr "楽天ID決済注文ID"
+
+#, fuzzy
+msgid "payment-2:order_control_id"
+msgstr "楽天ID決済注文管理ID"
+
+#, fuzzy
+msgid "payment-2:used_point"
+msgstr "楽天IO決済利用ポイント"
+
+#, fuzzy
+msgid "payment-2:sales_at"
+msgstr "楽天ID決済売上確定日時"
