@@ -16,6 +16,7 @@ import markupsafe
 
 from altair.multicheckout import helpers as m_h
 from altair.multicheckout.api import get_multicheckout_3d_api
+from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import (
     MultiCheckoutStatusEnum,
 )
@@ -421,7 +422,7 @@ class MultiCheckoutPlugin(object):
                 info = rec
                 break
         if info is not None:
-            info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
+            info['ahead_com_name'] = get_multicheckout_ahead_com_name(info['ahead_com_cd'])
         return {
             u'order.approval_no': info and info['approval_no'],
             u'order.card_brand': info and info['card_brand'],

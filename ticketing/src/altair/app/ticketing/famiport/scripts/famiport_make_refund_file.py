@@ -67,6 +67,7 @@ def main(argv=sys.argv):
     except multilock.AlreadyStartUpError as err:
         logger.warn('multi lock: {}'.format(repr(err)))
     except:
+        logger.exception('failed to refund sales records')
         import sys
         exc_info = sys.exc_info()
         try:
