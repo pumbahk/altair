@@ -35,5 +35,7 @@ wkfm1.1a.vpc.altr	famiport-worker
 wkfm1.1c.vpc.altr	famiport-worker
 apcv2.1a.vpc.altr	famiport-userside-api
 apcv2.1c.vpc.altr	famiport-userside-api
+wkmv2.1a.vpc.altr	famiport-userside-worker
+wkmv2.1c.vpc.altr	famiport-userside-worker
 
 # vim: noet
