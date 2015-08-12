@@ -2,6 +2,7 @@
 import decimal
 from codecs import getencoder
 from datetime import date
+from ..models import FamiPortOrderType
 from ..datainterchange.fileio import (
     Column,
     FixedRecordMarshaller,
@@ -57,7 +58,10 @@ def gen_record_from_refund_model(refund_entry):
     famiport_client = famiport_event.client
     playguide = famiport_client.playguide
 
-    management_number = famiport_order.famiport_order_identifier[3:12]
+    if famiport_order.type == FamiPortOrderType.Payment.value:
+        management_number = famiport_order.ticketing_famiport_receipt.famiport_order_identifier[3:12]
+    else:
+        management_number = famiport_order.famiport_receipts[0].famiport_order_identifier[3:12]
     unique_key = '%d%s%02d%05d' % (
         playguide.discrimination_code,
         management_number,
