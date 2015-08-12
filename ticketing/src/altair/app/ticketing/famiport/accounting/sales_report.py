@@ -127,7 +127,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
     for processed_at, famiport_receipt in completed_or_canceled_famiport_receipts_during_the_period:
         logger.info('processing FamiPortReceipt(id=%d, reserve_number=%s)' % (famiport_receipt.id, famiport_receipt.reserve_number))
         valid = famiport_receipt.canceled_at is None or (famiport_receipt.canceled_at >= end_date)
-        management_number = famiport_order.famiport_order_identifier[3:12]
+        management_number = famiport_receipt.famiport_order_identifier[3:12]
         unique_key = '%d%s' % (
             playguide.discrimination_code,
             management_number,
