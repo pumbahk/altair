@@ -1,5 +1,5 @@
 # encoding: utf-8
-from wtforms.validators import Required, Length, Regexp
+from wtforms.validators import Required, Length, Regexp, Optional
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, DelimitedTextsField, OurDateTimeField, OurBooleanField
 from altair.formhelpers.widgets import OurTextArea
@@ -89,6 +89,7 @@ class AltairFamiPortPerformanceGroupForm(OurForm):
     name_2 = OurTextField(
         label=label_text_for(AltairFamiPortPerformanceGroup.name_2),
         validators=[
+            Optional(),
             Zenkaku,
             LengthInSJIS(max=80)
             ]

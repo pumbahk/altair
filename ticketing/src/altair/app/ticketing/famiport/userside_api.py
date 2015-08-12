@@ -189,6 +189,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 name_1 = u'%s など%d公演' % (performances_for_venue[0].name, len(performances_for_venue))
             else:
                 name_1 = performances_for_venue[0].name
+            name_1 = convert_famiport_kogyo_name_style(name_1)
             logs.append(u'公演グループ「%s」を新たに連携設定しました' % name_1)
             altair_famiport_performance_group = AltairFamiPortPerformanceGroup(
                 altair_famiport_venue=altair_famiport_venue,
