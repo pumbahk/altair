@@ -144,7 +144,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             session.add(altair_famiport_venue)
             session.flush()
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
-            logs.append(u'会場「%s」はファミポート未連携のために自動的に連携対象としました' % performance.venue.site.name)
+            logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.site.name)
         else:
             if not altair_famiport_venue.id not in altair_famiport_venues_just_added:
                 if altair_famiport_venue.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:

@@ -177,7 +177,7 @@ class FamiPortView(BaseView):
         event_id = self.request.matchdict['event_id']
         event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
         submit_to_downstream(self.request, event.id)
-        self.request.session.flash(u'ファミポートに送信しました')
+        self.request.session.flash(u'Famiポートに送信しました')
         return HTTPFound(self.request.route_path('events.famiport.performance_groups.index', event_id=event.id))
 
     @view_config(route_name='events.famiport.performance_groups.item.show', renderer='events/famiport/performance_groups/show.html')

@@ -28,7 +28,7 @@
 </style>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', event.title, u'ファミポート連携', u'公演グループ「%s」' % altair_famiport_performance.altair_famiport_performance_group.name_1, u'公演「%s」' % altair_famiport_performance.name],
+      names=[u'イベント', event.title, u'Famiポート連携', u'公演グループ「%s」' % altair_famiport_performance.altair_famiport_performance_group.name_1, u'公演「%s」' % altair_famiport_performance.name],
       urls=[
         request.route_path('events.index'),
         request.route_path('events.show', event_id=event.id),

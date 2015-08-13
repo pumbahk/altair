@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""ファミポート用WebAPI
+"""Famiポート用WebAPI
 """
 import pyramid.config
 import sqlalchemy as sa
@@ -8,7 +8,7 @@ import sqlahelper
 
 
 def main(global_config, **local_config):
-    """ファミポートAPIサーバのエントリーポイント"""
+    """FamiポートAPIサーバのエントリーポイント"""
     settings = dict(global_config)
     settings.update(local_config)
 

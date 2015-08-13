@@ -27,12 +27,12 @@
 </style>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', event.title, u'ファミポート連携'],
+      names=[u'イベント', event.title, u'Famiポート連携'],
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
 </%block>
 <div class="page-header">
-  <h1>ファミポート連携</h1>
+  <h1>Famiポート連携</h1>
 </div>
 
 <form method="POST" action="${request.route_path('events.famiport.performance_groups.action', event_id=event.id, traverse='action_dispatch')}">
@@ -50,7 +50,7 @@
       </div>
       <div class="attached-action-form pull-right">
         <button name="do_auto_add" class="btn btn-success">既存の登録内容から自動追加</button>
-        <button name="do_submit_to_downstream" class="btn btn-danger">ファミポートに反映</button>
+        <button name="do_submit_to_downstream" class="btn btn-danger">Famiポートに反映</button>
       </div>
     </div>
   </div>

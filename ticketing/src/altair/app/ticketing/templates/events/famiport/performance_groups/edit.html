@@ -4,7 +4,7 @@
 <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-    names=[u'イベント', event.title, u'ファミポート連携'],
+    names=[u'イベント', event.title, u'Famiポート連携'],
     urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
 )}
 </%block>

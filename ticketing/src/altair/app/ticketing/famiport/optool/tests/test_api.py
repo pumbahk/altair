@@ -674,7 +674,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             name_2=u'テスト公演副題2',
             start_at=datetime(2015, 8, 1, 19, 0, 0),
             end_at=datetime(2015, 8, 10, 23, 59, 59),
-            keywords=[u'ファミポート', u'博品館', u'イベント2'],
+            keywords=[u'Famiポート', u'博品館', u'イベント2'],
             purchasable_prefectures=[u'%02d' % FamiPortPrefecture.Nationwide.id],
             )
         self.famiport_performance1 = FamiPortPerformance(
@@ -1177,7 +1177,7 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             name_2=u'テスト公演副題2',
             start_at=datetime(2015, 8, 1, 19, 0, 0),
             end_at=datetime(2015, 8, 10, 23, 59, 59),
-            keywords=[u'ファミポート', u'博品館', u'イベント2'],
+            keywords=[u'Famiポート', u'博品館', u'イベント2'],
             purchasable_prefectures=[u'%02d' % FamiPortPrefecture.Nationwide.id],
             )
         self.famiport_performance1 = FamiPortPerformance(

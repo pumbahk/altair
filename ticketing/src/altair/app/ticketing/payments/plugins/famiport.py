@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""ファミポート決済/引取プラグイン
+"""Famiポート決済/引取プラグイン
 """
 import logging
 import pystache
@@ -472,7 +472,7 @@ def lot_payment_notice_viewlet(context, request):
 
 @implementer(IPaymentPlugin)
 class FamiPortPaymentPlugin(object):
-    """ファミポート用決済プラグイン"""
+    """Famiポート用決済プラグイン"""
 
     def validate_order(self, request, order_like, update=False):
         """予約を作成する前にvalidationする"""
@@ -565,7 +565,7 @@ def deliver_completion_mail_viewlet(context, request):
 @lbr_view_config(context=ILotsAcceptedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsElectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
-    return Response(text=u'ファミポート受け取り')
+    return Response(text=u'Famiポート受け取り')
 
 
 @implementer(IDeliveryPlugin)

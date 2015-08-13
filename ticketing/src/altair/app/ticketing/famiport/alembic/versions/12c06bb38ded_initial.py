@@ -284,7 +284,7 @@ def create_schemas():
         'FamiPortPaymentTicketingRequest',
         sa.Column('id', Identifier),
         sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券Famiポート番号
         sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
         sa.Column('playGuideId', sa.Unicode(24), nullable=False),  # クライアントID
@@ -298,7 +298,7 @@ def create_schemas():
         'FamiPortPaymentTicketingCompletionRequest',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券Famiポート番号
         sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
         sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
@@ -312,7 +312,7 @@ def create_schemas():
         'FamiPortPaymentTicketingCancelRequest',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('storeCode', sa.Unicode(6), nullable=False),  # 店舗コード
-        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券ファミポート番号
+        sa.Column('mmkNo', sa.Unicode(1), nullable=False),  # 発券Famiポート番号
         sa.Column('ticketingDate', sa.Unicode(14), nullable=False),  # 利用日時
         sa.Column('sequenceNo', sa.Unicode(11), nullable=False),  # 処理通番
         sa.Column('barCodeNo', sa.Unicode(13), nullable=False),  # 支払番号
@@ -583,7 +583,7 @@ def create_schemas():
         'FamiPortReceipt',
         sa.Column('id', Identifier, autoincrement=True),
         sa.Column('type', sa.Integer, nullable=False),
-        sa.Column('barcode_no', sa.Unicode(255), nullable=True, unique=True),  # ファミポート側で使用するバーコード番号 barCodeNo
+        sa.Column('barcode_no', sa.Unicode(255), nullable=True, unique=True),  # Famiポート側で使用するバーコード番号 barCodeNo
         sa.Column('famiport_order_id', Identifier, sa.ForeignKey('FamiPortOrder.id'), nullable=False),
         sa.Column('shop_code', sa.Unicode(7), nullable=True),
         sa.Column('famiport_order_identifier', sa.String(12), nullable=False, unique=True),

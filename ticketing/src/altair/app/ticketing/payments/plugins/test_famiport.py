@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""ファミポート決済pluginテスト
+"""Famiポート決済pluginテスト
 
 支払番号: barCodeNo(13) 入金発券要求の「支払番号」にセットする番号で予約照会時に裁判
 注文ID: orderId(12) 下9桁を管理番号として扱う（会計実績ファイルに出力）
@@ -737,7 +737,7 @@ class FamiPortViewletTest(TestCase):
 
 class FamiPortPaymentViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'ファミポート'
+        self.name = u'Famiポート'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.payment_method = DummyModel(
@@ -838,7 +838,7 @@ class FamiPortPaymentNoticeViewletTest(FamiPortPaymentViewletTest):
 
 class FamiPortDeliveryViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'ファミポート'
+        self.name = u'Famiポート'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.delivery_method = DummyModel(
@@ -926,7 +926,7 @@ class FamiPortDeliveryNoticeViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res.text, u'ファミポート受け取り')
+        self.assertEqual(res.text, u'Famiポート受け取り')
 
 
 class CreateFamiPortOrderTest(TestCase):
@@ -1067,7 +1067,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         return target(*args, **kwds)
 
     def test_it(self):
-        """ファミポート決済の場合は前払"""
+        """Famiポート決済の場合は前払"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentPlugin as PluginClass
         exp_type = FamiPortOrderType.PaymentOnly.value
@@ -1088,7 +1088,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_payment_plugin(self):
-        """ファミポート決済の場合は前払"""
+        """Famiポート決済の場合は前払"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentPlugin as PluginClass
         exp_type = FamiPortOrderType.PaymentOnly.value
@@ -1109,7 +1109,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_delivery_plugin(self):
-        """ファミポート引き取りの場合は代済"""
+        """Famiポート引き取りの場合は代済"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.Ticketing.value
@@ -1130,7 +1130,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_payment_delivery_plugin_normal(self):
-        """ファミポート決済/ファミポート引き取で支払期限も発券開始日時も指定されていない場合は代引"""
+        """Famiポート決済/Famiポート引き取で支払期限も発券開始日時も指定されていない場合は代引"""
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
         exp_type = FamiPortOrderType.CashOnDelivery.value
@@ -1151,7 +1151,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_payment_delivery_plugin_payment_start_at(self):
-        """ファミポート決済/ファミポート引き取で支払期限のみ指定されている場合は代引"""
+        """Famiポート決済/Famiポート引き取で支払期限のみ指定されている場合は代引"""
         from datetime import datetime
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
@@ -1174,7 +1174,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_payment_delivery_plugin_issuing_start_at(self):
-        """ファミポート決済/ファミポート引き取で発券開始日時のみ指定されている場合は代引"""
+        """Famiポート決済/Famiポート引き取で発券開始日時のみ指定されている場合は代引"""
         from datetime import datetime
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
@@ -1197,7 +1197,7 @@ class SelectFamiportOrderTypeTest(TestCase):
         self.assertEqual(res, exp_type)
 
     def test_payment_delivery_plugin_later_ticketing(self):
-        """ファミポート決済/ファミポート引き取で支払期限が発券開始日時よりも前の場合は前払後日前払"""
+        """Famiポート決済/Famiポート引き取で支払期限が発券開始日時よりも前の場合は前払後日前払"""
         from datetime import datetime, timedelta
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass

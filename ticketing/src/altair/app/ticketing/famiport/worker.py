@@ -46,7 +46,7 @@ def includeme(config):
 
 def main(global_config, **local_config):
     from pyramid.config import Configurator
-    """ファミポートAPIサーバのエントリーポイント"""
+    """FamiポートAPIサーバのエントリーポイント"""
     settings = dict(global_config)
     settings.update(local_config)
 

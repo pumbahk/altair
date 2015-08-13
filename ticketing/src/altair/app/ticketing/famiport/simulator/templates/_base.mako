@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>ファミポートシミュレータ</title>
+  <title>Famiポートシミュレータ</title>
   <style type="text/css">
 body {
   padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -21,7 +21,7 @@ body {
   <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
       <div class="container">
-        <a class="brand" href="/">ファミポートシミュレータ</a>
+        <a class="brand" href="/">Famiポートシミュレータ</a>
         <div class="nav-collapse">
         <ul class="nav pull-right">
           % if hasattr(_context, 'client_code') and _context.client_code:

@@ -119,7 +119,7 @@ class FamiPortPaymentTicketingRequest(Base, WithCreatedAt, FamiPortRequest):
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     storeCode = sa.Column(sa.Unicode(6))  # 店舗コード
-    mmkNo = sa.Column(sa.Unicode(1))  # 発券ファミポート番号
+    mmkNo = sa.Column(sa.Unicode(1))  # 発券Famiポート番号
     ticketingDate = sa.Column(sa.Unicode(14))  # 利用日時
     sequenceNo = sa.Column(sa.Unicode(11))  # 処理通番
     playGuideId = sa.Column(sa.Unicode(24), nullable=False, default=u'')  # クライアントID
@@ -138,7 +138,7 @@ class FamiPortPaymentTicketingCompletionRequest(Base, WithCreatedAt, FamiPortReq
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     storeCode = sa.Column(sa.Unicode(6))  # 店舗コード
-    mmkNo = sa.Column(sa.Unicode(1))  # 発券ファミポート番号
+    mmkNo = sa.Column(sa.Unicode(1))  # 発券Famiポート番号
     ticketingDate = sa.Column(sa.Unicode(14))  # 利用日時
     sequenceNo = sa.Column(sa.Unicode(11))  # 処理通番
     barCodeNo = sa.Column(sa.Unicode(13))  # 支払番号
@@ -157,7 +157,7 @@ class FamiPortPaymentTicketingCancelRequest(Base, WithCreatedAt, FamiPortRequest
 
     id = sa.Column(Identifier, primary_key=True, autoincrement=True)
     storeCode = sa.Column(sa.Unicode(6))  # 店舗コード
-    mmkNo = sa.Column(sa.Unicode(1))  # 発券ファミポート番号
+    mmkNo = sa.Column(sa.Unicode(1))  # 発券Famiポート番号
     ticketingDate = sa.Column(sa.Unicode(14))  # 利用日時
     sequenceNo = sa.Column(sa.Unicode(11))  # 処理通番
     barCodeNo = sa.Column(sa.Unicode(13))  # 支払番号

@@ -60,7 +60,7 @@ class PaymentMethodForm(OurForm):
             ]
         )
     payment_sheet_text = OurTextField(
-        label=u'ファミポート払込票に印刷する文言',
+        label=u'Famiポート払込票に印刷する文言',
         validators=[
             LengthInSJIS(max=490),
             DynSwitchDisabled('{payment_plugin_id} <> "%d"' % FAMIPORT_PAYMENT_PLUGIN_ID)

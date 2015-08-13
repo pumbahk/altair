@@ -42,7 +42,7 @@ class ApplicableTicketsProducer(object):
         return self.include_delivery_id_ticket_iter([SEJ_DELIVERY_PLUGIN_ID], format_id=format_id)
 
     def famiport_only_tickets(self, format_id=None):
-        """ファミポート発券"""
+        """Famiポート発券"""
         return self.include_delivery_id_ticket_iter([FAMIPORT_DELIVERY_PLUGIN_ID], format_id=format_id)
 
     def will_issued_by_own_tickets(self, format_id=None, delivery_plugin_ids=None):
