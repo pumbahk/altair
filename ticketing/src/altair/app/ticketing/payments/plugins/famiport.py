@@ -469,7 +469,7 @@ def lot_payment_notice_viewlet(context, request):
 class FamiPortPaymentPlugin(object):
     """ファミポート用決済プラグイン"""
 
-    def validate_order(self, request, order_like):
+    def validate_order(self, request, order_like, update=False):
         """予約を作成する前にvalidationする"""
 
     def prepare(self, request, cart):
