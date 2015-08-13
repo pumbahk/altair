@@ -79,7 +79,7 @@ class GenericBooleanRenderer(object):
         self.false_value = false_value
         self.true_value = true_value
 
-    def __call__(self, request, descr, value):
+    def __call__(self, request, descr_registry, descr, value):
         return get_localizer(request).translate(self.true_value if value else self.false_value)
 
 def render_html_exchange_sheet_form(request, descr_registry, descr, exchange_sheet):
