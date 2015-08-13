@@ -418,6 +418,11 @@ def _overridable_delivery(path, fallback_ua_type=None):
         plugin_id=DELIVERY_PLUGIN_ID, fallback_ua_type=fallback_ua_type,
         )
 
+def order_type_to_string(type_):
+    for entry in FamiPortOrderType:
+        if int(type_) == entry.value:
+            return entry.name
+    return None
 
 @lbr_view_config(context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID,
                  renderer=_overridable_payment('famiport_payment_completion.html'))
@@ -527,23 +532,13 @@ def deliver_completion_viewlet(context, request):
     assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
-                famiport_order=famiport_order, h=cart_helper)
-
-
-# @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID,
-#                  renderer=_overridable_payment("famiport_delivery_mail_complete.html", fallback_ua_type='mail'))
-# def delivery_mail_viewlet(context, request):
-#     """購入完了メールの決済方法部分のhtmlを出力する"""
-#     tenant = lookup_famiport_tenant(request, context.order)
-#     assert tenant is not None
-#     delivery_method = context.order.payment_delivery_pair.delivery_method
-#     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
-#     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
-#                 famiport_order=famiport_order, h=cart_helper)
-
-
-
+    return dict(
+        delivery_name=delivery_method.name,
+        description=Markup(delivery_method.description),
+        famiport_order=famiport_order,
+        payment_type=order_type_to_string(famiport_order['type']),
+        h=cart_helper
+        )
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_delivery_mail_complete.html', fallback_ua_type='mail'))
@@ -553,8 +548,13 @@ def deliver_completion_mail_viewlet(context, request):
     assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description),
-                famiport_order=famiport_order, h=cart_helper)
+    return dict(
+        delivery_name=delivery_method.name,
+        description=Markup(delivery_method.description),
+        famiport_order=famiport_order,
+        payment_type=order_type_to_string(famiport_order['type']),
+        h=cart_helper
+        )
 
     # notice = context.mail_data("P", "notice")
     # return dict(notice=notice, h=cart_helper)
