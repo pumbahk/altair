@@ -4,6 +4,11 @@
 <div>
   <h4>Famiポートでお引き取り</h4>
   <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
-  <p>発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong> 〜　<strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong></p>
+  <p>
+    発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong>〜
+    %if famiport_order['ticketing_end_at']:
+    <strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong>
+    %endif
+  </p>
 </div>
 %endif
