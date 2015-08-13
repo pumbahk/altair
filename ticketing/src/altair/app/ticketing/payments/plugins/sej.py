@@ -423,7 +423,7 @@ def determine_payment_type(current_date, order_like):
 def _build_order_info(sej_order):
     retval = {}
     if sej_order.billing_number:
-        retval['billing_number'] = sej_order.billing_number
+        retval[u'billing_number'] = sej_order.billing_number
     if sej_order.exchange_number:
         retval[u'exchange_number'] = sej_order.exchange_number
     return retval
@@ -435,6 +435,10 @@ def get_sej_order_info(request, order):
         retval[u'pay_store_name'] = sej_order.pay_store_name
     if sej_order.ticketing_store_name:
         retval[u'ticketing_store_name'] = sej_order.ticketing_store_name
+    retval[u'exchange_sheet'] = dict(
+        url=sej_order.exchange_sheet_url,
+        number=sej_order.exchange_sheet_number
+        )
     retval[u'branches'] = [_build_order_info(branch) for branch in sej_order.branches(sej_order.order_no) if branch != sej_order]
     return retval
 

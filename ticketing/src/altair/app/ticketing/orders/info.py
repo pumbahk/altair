@@ -82,6 +82,12 @@ class GenericBooleanRenderer(object):
     def __call__(self, request, descr, value):
         return get_localizer(request).translate(self.true_value if value else self.false_value)
 
+def render_html_exchange_sheet_form(request, descr_registry, descr, exchange_sheet):
+    return Markup(u'''<form action="{exchange_sheet_url}" method="POST">
+  <input type="hidden" name="iraihyo_id_00" value="{exchange_sheet_number}">
+  <input type="submit" name="submit" value="引換票を表示" class="btn"/>
+  </form>'''.format(exchange_sheet_url=escape(exchange_sheet['url']), exchange_sheet_number=escape(exchange_sheet['number'])))
+
 def render_html_sej_branches(request, descr_registry, descr, branches):
     items = []
     for branch in reversed(branches):
@@ -185,6 +191,9 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
+                    u'exchange_sheet': {
+                        'html': render_html_exchange_sheet_form,
+                        },
                     u'branches': {
                         'html': render_html_sej_branches,
                         },
@@ -200,6 +209,9 @@ def register_descriptors(config):
                         },
                     u'exchange_number': {
                         'html': render_html_text_generic,
+                        },
+                    u'exchange_sheet': {
+                        'html': render_html_exchange_sheet_form,
                         },
                     u'branches': {
                         'html': render_html_sej_branches,

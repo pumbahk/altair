@@ -703,11 +703,23 @@ msgstr "SEJ払込店舗"
 msgid "payment-3:billing_number"
 msgstr "SEJ払込票番号"
 
+msgid "payment-3:exchange_sheet"
+msgstr "払込票・引換票"
+
+msgid "payment-3:branches"
+msgstr "再付番前の情報"
+
 msgid "delivery-2:ticketing_store_name"
 msgstr "SEJ発券店舗"
 
 msgid "delivery-2:exchange_number"
 msgstr "SEJ引換票番号"
+
+msgid "delivery-2:exchange_sheet"
+msgstr "払込票・引換票"
+
+msgid "delivery-2:branches"
+msgstr "再付番前の情報"
 
 msgid "payment-3:delivery-2:pay_store_name"
 msgstr "SEJ払込店舗"
@@ -721,11 +733,8 @@ msgstr "SEJ発券店舗"
 msgid "payment-3:delivery-2:exchange_number"
 msgstr "SEJ引換票番号"
 
-msgid "payment-3:branches"
-msgstr "再付番前の情報"
-
-msgid "delivery-2:branches"
-msgstr "再付番前の情報"
+msgid "payment-3:delivery-2:exchange_sheet"
+msgstr "払込票・引換票"
 
 msgid "payment-3:delivery-2:branches"
 msgstr "再付番前の情報"
@@ -741,4 +750,3 @@ msgstr "楽天ID決済利用ポイント数"
 
 msgid "payment-2:sales_at"
 msgstr "楽天ID決済売上確定日時"
-
