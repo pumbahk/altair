@@ -59,6 +59,8 @@ class TicketCoverDictBuilder(object):
     def build_dict_from_order(self, order):
         extra = self.ticket_dict_builder.build_basic_dict_from_order(order)
         extra = self.ticket_dict_builder.build_dict_from_performance(order.performance, retval=extra)
+        extra = self.ticket_dict_builder.build_dict_from_order_attributes(order.attributes, retval=extra)
+        extra = self.ticket_dict_builder.build_dict_from_payment_delivery_method_pair(order.payment_delivery_method_pair, retval=extra)
         extra = self.build_dict_from_order_total_information(order, retval=extra)
         extra = self.build_dict_from_shipping_address_information(order.shipping_address, retval=extra)
         return extra
