@@ -104,7 +104,7 @@ formatter = generic
 
 [handler_fluent]
 class = altair.log.filters.BrowserIdFluentHandler
-args = ('altair.famiport_simulator', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+args = ('altair.famiport.simulator', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
 level = NOTSET
 formatter = generic
 
