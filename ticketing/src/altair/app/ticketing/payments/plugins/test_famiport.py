@@ -12,6 +12,7 @@ from unittest import (
     TestCase,
     )
 import mock
+from markupsafe import Markup
 from pyramid.testing import (
     DummyModel,
     DummyRequest,
@@ -726,10 +727,6 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
 
 
 class FamiPortViewletTest(TestCase):
-    def _target(self):
-        from .famiport import FamiPortPaymentDeliveryPlugin
-        return FamiPortPaymentDeliveryPlugin
-
     def _callFUT(self, *args, **kwds):
         func = self._target()
         return func(*args, **kwds)
@@ -788,7 +785,7 @@ class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
     def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
-        exp_famiport_order = mock.Mock()
+        exp_famiport_order = mock.MagicMock()
         get_famiport_order.return_value = exp_famiport_order
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
@@ -889,13 +886,14 @@ class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
     def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
-        exp_famiport_order = mock.Mock()
+        exp_famiport_order = mock.MagicMock()
         get_famiport_order.return_value = exp_famiport_order
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
+            'payment_type': 'CashOnDelivery',
             'delivery_name': self.name,
-            'description': self.description,
+            'description': Markup(self.description),
             'famiport_order': exp_famiport_order,
             'h': cart_helper,
             })
@@ -910,7 +908,7 @@ class FamiPortDeliveryCompletionMailViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper, lookup_famiport_tenant, get_famiport_order):
-        get_famiport_order.return_value = mock.Mock()
+        get_famiport_order.return_value = mock.MagicMock()
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         for key, value in {'description': self.description, 'h': cart_helper}.items():
