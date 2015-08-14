@@ -719,10 +719,8 @@ def create_inner_order(request, order_like, note, session=None):
         from altair.app.ticketing.models import DBSession
         session = DBSession
 
-    payment_plugin_id = order_like.payment_delivery_pair.payment_method.payment_plugin_id
-
     payment = Payment(order_like, request)
-    if payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+    if order_like.payment_delivery_pair.payment_method.pay_at_store():
         # コンビニ決済のみ決済処理を行う
         order = payment.call_payment()
     else:
@@ -1234,7 +1232,8 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 included_payment_plugin_ids=[
                     payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
                     payments_plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
-                    payments_plugins.FREE_PAYMENT_PLUGIN_ID
+                    payments_plugins.FREE_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID
                     ]
                 )
         except Exception as e:
