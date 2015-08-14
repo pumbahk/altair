@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime, date, timedelta
-from unittest import TestCase
+from unittest import TestCase, skip
 from pyramid.testing import DummyRequest, setUp, tearDown
 from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.famiport.testing import _setup_db, _teardown_db
@@ -73,7 +73,8 @@ class ReceiptSearchTest(APITestBase, TestCase):
 
         self.barcode_nos = (u'01234012340123', u'01234012340124', u'01234012340126')
         self.reserve_numbers = (u'4321043210432', u'4321043210433', u'4321043210434', u'4321043210435')
-        self.management_numbers = (u'000011112222', u'000011112223', u'000011112224', u'000011112225', u'000011112226', u'000011112227', u'000011112228')
+        self.order_management_numbers = (u'000011112222', u'000011112224', u'000011112227')
+        self.management_numbers = (u'000011112223', u'000011112225', u'000011112226', u'000011112228')
         self.barcode_numbers = (u'0000000000001', u'0000000000002', u'0000000000003', u'0000000000004', u'0000000000005', u'0000000000006')
         self.customer_phone_numbers = (u'0301234567', u'0312345678', u'0323456789')
         self.shop_codes = (u'00001', u'00002', u'00003', u'00004')
@@ -229,7 +230,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
         self.famiport_order_cash_on_delivery = FamiPortOrder(
             type=FamiPortOrderType.CashOnDelivery.value,
             order_no=u'RT0000000000',
-            famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[0],
+            famiport_order_identifier=self.famiport_client.prefix + self.order_management_numbers[0],
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -253,7 +254,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
                 FamiPortReceipt(
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     barcode_no=self.barcode_nos[0],
-                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[1],
+                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[0],
                     shop_code=self.shop_codes[0],
                     reserve_number=self.reserve_numbers[0]
                     ),
@@ -282,7 +283,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
         self.famiport_order_payment = FamiPortOrder(
             type=FamiPortOrderType.Payment.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[2],
+            famiport_order_identifier=self.famiport_client.prefix + self.order_management_numbers[1],
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -306,14 +307,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
                 FamiPortReceipt(
                     type=FamiPortReceiptType.Payment.value,
                     barcode_no=self.barcode_nos[1],
-                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[3],
+                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[1],
                     shop_code=self.shop_codes[1],
                     reserve_number=self.reserve_numbers[1],
                     ),
                 FamiPortReceipt(
                     type=FamiPortReceiptType.Ticketing.value,
                     barcode_no=u'01234012340125',
-                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[4],
+                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[2],
                     shop_code=self.shop_codes[2],
                     reserve_number=self.reserve_numbers[2],
                     )
@@ -342,7 +343,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
         self.famiport_order_payment_only = FamiPortOrder(
             type=FamiPortOrderType.PaymentOnly.value,
             order_no=u'RT0000000002',
-            famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[5],
+            famiport_order_identifier=self.famiport_client.prefix + self.order_management_numbers[2],
             famiport_sales_segment=self.famiport_sales_segment,
             famiport_client=self.famiport_client,
             generation=0,
@@ -365,7 +366,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
             famiport_receipts=[
                 FamiPortReceipt(
                     type=FamiPortReceiptType.Payment.value,
-                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[6],
+                    famiport_order_identifier=self.famiport_client.prefix + self.management_numbers[3],
                     barcode_no=self.barcode_nos[2],
                     shop_code=self.shop_codes[3],
                     reserve_number=self.reserve_numbers[3]
@@ -493,23 +494,23 @@ class ReceiptSearchTest(APITestBase, TestCase):
             receipts = lookup_receipt_by_searchform_data(self.request, formdata)
             self.assertFalse(receipts, msg=u'Failed to lookup receipt by shop_name: %s' % shop_name)
 
-    def test_search_receipt_by_sales_date(self):
+    @skip
+    def test_search_receipt_by_completed_date(self):
         formdata = {'barcode_no': None, 'reserve_number': None, 'management_number': None, 'barcode_number': None, \
                     'customer_phone_number': None, 'shop_code': None, 'shop_name': None, 'sales_from': None, 'sales_to': None}
         # Search hit
         formdata['sales_from'] = RefundTicketSearchHelper.format_date(self.sales_from - timedelta(days=10), format="%Y-%m-%d")
         receipts = lookup_receipt_by_searchform_data(self.request, formdata)
-        self.assertTrue(receipts, msg='Failed to lookup receipt by sales_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
+        self.assertTrue(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
         formdata['sales_to'] = RefundTicketSearchHelper.format_date(self.sales_from + timedelta(days=10), format="%Y-%m-%d")
         receipts = lookup_receipt_by_searchform_data(self.request, formdata)
-        self.assertTrue(receipts, msg='Failed to lookup receipt by sales_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
+        self.assertTrue(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
         # Search does not hit
         formdata['sales_from'] = RefundTicketSearchHelper.format_date(self.sales_from + timedelta(days=10), format="%Y-%m-%d")
         receipts = lookup_receipt_by_searchform_data(self.request, formdata)
-        self.assertFalse(receipts, msg='Failed to lookup receipt by sales_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
-        formdata['sales_to'] = RefundTicketSearchHelper.format_date(self.sales_from + timedelta(days=10), format="%Y-%m-%d")
+        self.assertFalse(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
         receipts = lookup_receipt_by_searchform_data(self.request, formdata)
-        self.assertFalse(receipts, msg='Failed to lookup receipt by sales_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
+        self.assertFalse(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
 
     def test_search_receipt_by_customer_phone_number_and_shop_code(self):
         formdata = {'barcode_no': None, 'reserve_number': None, 'management_number': None, 'barcode_number': None, \

@@ -138,6 +138,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'123000000001',
                     created_at=datetime(2014, 12, 31)
                     ),
                 ],
@@ -171,6 +172,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'123000000001',
                     created_at=datetime(2014, 12, 31),
                     completed_at=datetime(2014, 12, 31)
                     ),
@@ -203,6 +205,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.Payment.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'123000000001',
                     created_at=datetime(2014, 12, 31),
                     completed_at=None
                     ),
@@ -210,6 +213,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     id=2,
                     type=FamiPortReceiptType.Ticketing.value,
                     reserve_number=u'0000000000002',
+                    famiport_order_identifier=u'123000000002',
                     created_at=datetime(2014, 12, 31),
                     completed_at=None
                     ),
@@ -243,6 +247,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.Payment.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'123000000001',
                     created_at=datetime(2014, 12, 31),
                     completed_at=datetime(2014, 12, 31)
                     ),
@@ -251,6 +256,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.Ticketing.value,
                     shop_code=u'',
                     reserve_number=u'0000000000002',
+                    famiport_order_identifier=u'123000000002',
                     created_at=datetime(2014, 12, 31),
                     completed_at=None
                     ),
@@ -285,6 +291,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.Payment.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000001',
+                    famiport_order_identifier=u'123000000001',
                     created_at=datetime(2014, 12, 31),
                     completed_at=datetime(2014, 12, 31)
                     ),
@@ -293,6 +300,7 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
                     type=FamiPortReceiptType.Ticketing.value,
                     shop_code=u'000000',
                     reserve_number=u'0000000000002',
+                    famiport_order_identifier=u'123000000002',
                     created_at=datetime(2014, 12, 31),
                     completed_at=datetime(2014, 12, 31)
                     ),
