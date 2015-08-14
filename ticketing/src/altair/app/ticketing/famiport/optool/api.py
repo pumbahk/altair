@@ -165,7 +165,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         query = query.filter(FamiPortReceipt.reserve_number == formdata.get('reserve_number'))
     if formdata.get('management_number'):
         pattern = u'%{}'.format(formdata.get('management_number'))
-        query = query.filter(or_(FamiPortOrder.famiport_order_identifier.like(pattern), FamiPortReceipt.famiport_order_identifier.like(pattern)))
+        query = query.filter(FamiPortReceipt.famiport_order_identifier.like(pattern))
     if formdata.get('barcode_number'):
         pattern = u'%{}'.format(formdata.get('barcode_number'))
         query = query.filter(FamiPortTicket.barcode_number.like(pattern))
