@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import altair.app.ticketing.csvutils as csv
 from StringIO import StringIO
 from datetime import datetime
