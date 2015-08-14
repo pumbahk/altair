@@ -78,10 +78,10 @@ class SearchReceiptForm(OurForm):
     shop_name = OurTextField(
         label=u'店名：',
     )
-    sales_from = OurTextField(
-        label=u'販売開始日：',
+    completed_from = OurTextField(
+        label=u'入金・発券日：',
     )
-    sales_to = OurTextField(
+    completed_to = OurTextField(
         label=u'販売終了日',
     )
 

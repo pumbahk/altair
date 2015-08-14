@@ -176,19 +176,19 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
     if formdata.get('shop_name'):
         pattern = u'%{}%'.format(formdata.get('shop_name'))
         query = query.filter(FamiPortShop.name.like(pattern))
-    if formdata.get('sales_from'):
-        req_from = formdata.get('sales_from') + ' 00:00:00'
-        if formdata.get('sales_to'):
-            req_to = formdata.get('sales_to') + ' 23:59:59'
-            query = query.filter(FamiPortSalesSegment.start_at >= req_from,
-                                 FamiPortSalesSegment.start_at <= req_to)
+    if formdata.get('completed_from'):
+        req_from = formdata.get('completed_from') + ' 00:00:00'
+        if formdata.get('completed_to'):
+            req_to = formdata.get('completed_to') + ' 23:59:59'
+            query = query.filter(FamiPortReceipt.completed_at >= req_from,
+                                 FamiPortReceipt.completed_at <= req_to)
         else:
-            query = query.filter(FamiPortSalesSegment.start_at >= req_from)
-    elif formdata.get('sales_to'):
+            query = query.filter(FamiPortReceipt.completed_at >= req_from)
+    elif formdata.get('completed_to'):
         req_from = '1900-01-01 00:00:00'
-        req_to = formdata.get('sales_to') + ' 23:59:59'
-        query = query.filter(FamiPortSalesSegment.start_at >= req_from,
-                             FamiPortSalesSegment.start_at <= req_to)
+        req_to = formdata.get('completed_to') + ' 23:59:59'
+        query = query.filter(FamiPortReceipt.completed_at >= req_from,
+                             FamiPortReceipt.completed_at <= req_to)
 
     receipts = query.all()
     return receipts

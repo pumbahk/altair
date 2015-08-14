@@ -32,15 +32,15 @@
               <td></td>
             </tr>
             <tr>
-                <th class="pull-right">${form.sales_from.label}</th>
+                <th class="pull-right">${form.completed_from.label}</th>
                 <td colspan="3">
                   <div class="form-inline">
                     <div class="input-group date">
-                      ${form.sales_from(class_='form-control')}
+                      ${form.completed_from(class_='form-control')}
                     </div>
                     ~
                     <div class="input-group date">
-                      ${form.sales_to(class_='form-control')}
+                      ${form.completed_to(class_='form-control')}
                     </div>
                   </div>
                 </td>
@@ -161,12 +161,12 @@
         $("#to_detail").attr("href", '${request.route_url('receipt.detail', receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
         $("#to_rebook").attr("href", '${request.route_url('rebook_order', action="show", receipt_id='{receipt_id}')}'.replace(encodeURIComponent('{receipt_id}'), receipt_id));
         });
-        $('#sales_from').datepicker({
+        $('#completed_from').datepicker({
               format: "yyyy-mm-dd",
               language: "ja",
               autoclose: true
             });
-        $('#sales_to').datepicker({
+        $('#completed_to').datepicker({
               format: "yyyy-mm-dd",
               language: "ja",
               autoclose: true
