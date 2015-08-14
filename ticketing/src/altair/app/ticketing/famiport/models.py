@@ -599,7 +599,8 @@ class FamiPortOrder(Base, WithTimestamp):
     type                         = sa.Column(sa.Integer, nullable=False)
     order_no                     = sa.Column(sa.Unicode(12), nullable=False)
     famiport_order_identifier    = sa.Column(sa.Unicode(12), nullable=False, unique=True)  # 注文ID
-    famiport_sales_segment_id    = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=False)
+    famiport_sales_segment_id    = sa.Column(Identifier, sa.ForeignKey('FamiPortSalesSegment.id'), nullable=True)
+    famiport_performance_id      = sa.Column(Identifier, sa.ForeignKey('FamiPortPerformance.id'), nullable=False)
     client_code                  = sa.Column(sa.Unicode(24), sa.ForeignKey('FamiPortClient.code'), nullable=False)
     generation                   = sa.Column(sa.Integer, nullable=False, default=0)
     invalidated_at               = sa.Column(sa.DateTime(), nullable=True)
@@ -632,6 +633,10 @@ class FamiPortOrder(Base, WithTimestamp):
     famiport_sales_segment = orm.relationship(
         'FamiPortSalesSegment',
         primaryjoin=lambda: FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id
+        )
+    famiport_performance = orm.relationship(
+        'FamiPortPerformance',
+        primaryjoin=lambda: FamiPortOrder.famiport_performance_id == FamiPortPerformance.id
         )
     famiport_client = orm.relationship('FamiPortClient')
 

@@ -128,6 +128,7 @@ class GetFamiPortOrderTest(unittest.TestCase):
         self.order = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
+            famiport_performance=self.performance,
             order_no=u'XX000012345',
             famiport_order_identifier=u'012301230123',
             type=FamiPortOrderType.CashOnDelivery.value,
@@ -906,4 +907,51 @@ class CreateFamiPortOrderTest(unittest.TestCase):
             payment_start_at=datetime(2015, 6, 1, 0, 0, 0),
             payment_due_at=datetime(2015, 6, 4, 0, 0, 0)
             )
+
+    def test_without_sales_segment(self):
+        from .models import FamiPortOrderType, FamiPortTicketType
+        from decimal import Decimal
+        from datetime import datetime
+        from .api import create_famiport_order
+        create_famiport_order(
+            self.request,
+            client_code=self.client.code,
+            type_=FamiPortOrderType.CashOnDelivery.value,
+            event_code_1=self.event.code_1,
+            event_code_2=self.event.code_2,
+            performance_code=self.performance.code,
+            sales_segment_code=None,
+            order_no=u'XX0000000000',
+            customer_name=u'購入者　氏名',
+            customer_phone_number=u'0123456789',
+            customer_address_1=u'住所1',
+            customer_address_2=u'住所2',
+            total_amount=Decimal(1432),
+            ticketing_fee=Decimal(216),
+            system_fee=Decimal(216),
+            ticket_payment=Decimal(1000),
+            tickets=[
+                dict(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_no=u'0000000000001',
+                    template=u'TTEV000001',
+                    data=u'<ticket>test</ticket>',
+                    price=500,
+                    userside_id=1,
+                    logically_subticket=False
+                    ),
+                dict(
+                    type=FamiPortTicketType.TicketWithBarcode.value,
+                    barcode_no=u'0000000000001',
+                    template=u'TTEV000001',
+                    data=u'<ticket>test</ticket>',
+                    price=500,
+                    userside_id=2,
+                    logically_subticket=False
+                    )
+                ],
+            payment_start_at=datetime(2015, 6, 1, 0, 0, 0),
+            payment_due_at=datetime(2015, 6, 4, 0, 0, 0)
+            )
+
 

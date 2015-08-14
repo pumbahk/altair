@@ -133,6 +133,17 @@ class InquiryTest(FamiPortAPIViewTest):
             prefix=u'000',
             playguide=FamiPortPlayguide(discrimination_code=5, discrimination_code_2=4)
             )
+        famiport_performance = FamiPortPerformance(
+            name=u'サンプル興行',
+            start_at=performance_start_at,
+            code=u'000',
+            famiport_event=FamiPortEvent(
+                venue=FamiPortVenue(name=u'', name_kana=u'', client_code=famiport_client.code),
+                client=famiport_client,
+                code_1=u'00000',
+                code_2=u'000',
+                )
+            )
         get_by_reserve_number.return_value = FamiPortReceipt(
             type=FamiPortReceiptType.CashOnDelivery.value,
             shop_code='99999',
@@ -162,21 +173,12 @@ class InquiryTest(FamiPortAPIViewTest):
                 customer_name_input=0,
                 customer_phone_input=0,
                 auth_number=u'',
+                famiport_performance=famiport_performance,
                 famiport_sales_segment=FamiPortSalesSegment(
                     code=u'000',
                     start_at=datetime(2015, 1, 1),
                     end_at=datetime(2015, 1, 1),
-                    famiport_performance=FamiPortPerformance(
-                        name=u'サンプル興行',
-                        start_at=performance_start_at,
-                        code=u'000',
-                        famiport_event=FamiPortEvent(
-                            venue=FamiPortVenue(name=u'', name_kana=u'', client_code=famiport_client.code),
-                            client=famiport_client,
-                            code_1=u'00000',
-                            code_2=u'000',
-                            )
-                        ),
+                    famiport_performance=famiport_performance
                     ),
                 famiport_client=famiport_client,
                 )

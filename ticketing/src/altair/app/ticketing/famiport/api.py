@@ -72,7 +72,7 @@ def famiport_sales_segment_to_dict(famiport_sales_segment):
         seat_selection_start_at=famiport_sales_segment.seat_selection_start_at
         )
 
-def famiport_performance_dict(famiport_performance):
+def famiport_performance_to_dict(famiport_performance):
     famiport_event = famiport_performance.famiport_event
     return dict(
         client_code=famiport_event.client_code,
@@ -87,7 +87,7 @@ def famiport_performance_dict(famiport_performance):
         ticket_name=famiport_performance.ticket_name,
         )
 
-def famiport_event_dict(famiport_event):
+def famiport_event_to_dict(famiport_event):
     return dict(
         client_code=famiport_event.client_code,
         code_1=famiport_event.code_1,
@@ -159,12 +159,18 @@ def famiport_order_to_dict(famiport_order):
             for famiport_ticket in famiport_order.famiport_tickets
             ]
         )
-    sales_segment_dict = famiport_sales_segment_to_dict(famiport_order.famiport_sales_segment)
+    assert famiport_order.famiport_performance is not None
+    performance_dict = famiport_performance_to_dict(famiport_order.famiport_performance)
+    if famiport_order.famiport_sales_segment is not None:
+        sales_segment_dict = famiport_sales_segment_to_dict(famiport_order.famiport_sales_segment)
+        sales_segment_code = sales_segment_dict['code']
+    else:
+        sales_segment_code = None
     retval.update(
-        event_code_1=sales_segment_dict['event_code_1'],
-        event_code_2=sales_segment_dict['event_code_2'],
-        performance_code=sales_segment_dict['performance_code'],
-        sales_segment_code=sales_segment_dict['code']
+        event_code_1=performance_dict['event_code_1'],
+        event_code_2=performance_dict['event_code_2'],
+        performance_code=performance_dict['code'],
+        sales_segment_code=sales_segment_code
         )
     return retval
 
@@ -624,18 +630,31 @@ def create_famiport_order(
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        famiport_sales_segment = internal.get_famiport_sales_segment_by_code(
-            session,
-            event_code_1=event_code_1,
-            event_code_2=event_code_2,
-            performance_code=performance_code,
-            code=sales_segment_code
-            )
+        if sales_segment_code is not None:
+            famiport_sales_segment = internal.get_famiport_sales_segment_by_code(
+                session,
+                client_code=client_code,
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                code=sales_segment_code
+                )
+            famiport_performance = famiport_sales_segment.famiport_performance
+        else:
+            famiport_sales_segment = None
+            famiport_performance = internal.get_famiport_performance_by_code(
+                session,
+                client_code=client_code,
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                code=performance_code,
+                )
         famiport_order = internal.create_famiport_order(
             session,
             client_code=client_code,
             type_=type_,
             famiport_sales_segment=famiport_sales_segment,
+            famiport_performance=famiport_performance,
             order_no=order_no,
             customer_name=customer_name,
             customer_phone_number=customer_phone_number,

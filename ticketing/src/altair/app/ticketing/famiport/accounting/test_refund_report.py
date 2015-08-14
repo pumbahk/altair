@@ -170,6 +170,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
                     customer_name=u'',
                     customer_phone_number=u'',
                     famiport_sales_segment=self.famiport_sales_segment,
+                    famiport_performance=self.famiport_performance,
                     famiport_receipts=[
                         FamiPortReceipt(
                             type=FamiPortReceiptType.CashOnDelivery.value,
@@ -286,6 +287,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                         client_code=u'0',
                         famiport_order_identifier=u'123%09d' % (j * 10 + i),
                         famiport_sales_segment=self.famiport_sales_segment,
+                        famiport_performance=self.famiport_performance,
                         total_amount=Decimal(130),
                         ticket_payment=Decimal(100),
                         ticketing_fee=Decimal(10),

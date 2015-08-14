@@ -35,10 +35,11 @@ from .communication.api import (  # noqa
 
 logger = logging.getLogger(__name__)
 
-def get_famiport_sales_segment_by_code(session, event_code_1, event_code_2, performance_code, code):
+def get_famiport_sales_segment_by_code(session, client_code, event_code_1, event_code_2, performance_code, code):
     retval = session.query(FamiPortSalesSegment) \
                     .join(FamiPortSalesSegment.famiport_performance) \
                     .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code) \
                     .filter(FamiPortEvent.code_1 == event_code_1, FamiPortEvent.code_2 == event_code_2) \
                     .filter(FamiPortPerformance.code == performance_code) \
                     .filter(FamiPortSalesSegment.code == code) \
@@ -63,6 +64,17 @@ def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id)
                     .filter(FamiPortEvent.invalidated_at == None) \
                     .filter(FamiPortPerformance.invalidated_at == None) \
                     .filter(FamiPortSalesSegment.invalidated_at == None) \
+                    .one()
+    return retval
+
+def get_famiport_performance_by_code(session, client_code, event_code_1, event_code_2, code):
+    retval = session.query(FamiPortPerformance) \
+                    .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code) \
+                    .filter(FamiPortEvent.code_1 == event_code_1, FamiPortEvent.code_2 == event_code_2) \
+                    .filter(FamiPortPerformance.code == code) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
                     .one()
     return retval
 
@@ -163,6 +175,7 @@ def create_famiport_order(
         session, 
         client_code,
         type_,
+        famiport_performance,
         famiport_sales_segment,
         order_no,
         customer_name,
@@ -205,6 +218,7 @@ def create_famiport_order(
         client_code=client_code,
         type=type_,
         order_no=order_no,
+        famiport_performance=famiport_performance,
         famiport_sales_segment=famiport_sales_segment,
         famiport_order_identifier=famiport_order_identifier,
         customer_name=customer_name,
@@ -315,13 +329,14 @@ def update_famiport_order_by_order_no(
         raise FamiPortError(u'type differs')
 
     famiport_sales_segment = famiport_order.famiport_sales_segment
-    famiport_performance = famiport_sales_segment.famiport_performance
+    famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
 
     if famiport_event.code_1 != event_code_1 or \
        famiport_event.code_2 != event_code_2 or \
        famiport_performance.code != performance_code or \
-       famiport_sales_segment.code != sales_segment_code:
+       ((famiport_sales_segment is not None and famiport_sales_segment.code != sales_segment_code) or \
+        (famiport_sales_segment is None and sales_segment_code is not None)):
         raise FamiPortError(u'event_code_1, event_code_2, performance_code or sales_segment_code differs')
 
     def check_updatable(payment_related=False, ticketing_related=False):

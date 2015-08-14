@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 from lxml import etree
 from decimal import Decimal
 from sqlalchemy import sql
+from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
 from zope.interface import implementer
 import sqlalchemy as sa
@@ -41,8 +42,10 @@ from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.famiport.exc import FamiPortAPIError
 from altair.app.ticketing.orders.models import OrderedProductItem
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
-from altair.app.ticketing.famiport.userside_models import AltairFamiPortSalesSegmentPair
-
+from altair.app.ticketing.famiport.userside_models import (
+    AltairFamiPortSalesSegmentPair,
+    AltairFamiPortPerformance,
+    )
 from altair.app.ticketing.famiport.models import (
     FamiPortOrderType,
     FamiPortTicketType,
@@ -232,14 +235,31 @@ def lookup_famiport_tenant(request, order_like):
 
 
 def get_altair_famiport_sales_segment_pair(order_like):
-    return DBSession.query(AltairFamiPortSalesSegmentPair) \
-        .filter(
-            sql.or_(
-                AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
-                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
-                )
-            ) \
-        .one()
+    if order_like.sales_segment_id is not None:
+        try:
+            return DBSession.query(AltairFamiPortSalesSegmentPair) \
+                .filter(
+                    sql.or_(
+                        AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == order_like.sales_segment.id,
+                        AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == order_like.sales_segment.id
+                        )
+                    ) \
+                .one()
+        except NoResultFound:
+            pass
+    return None
+            
+
+def get_altair_famiport_performance(order_like):
+    if order_like.performance_id is not None:
+        try:
+            return DBSession.query(AltairFamiPortPerformance) \
+                .filter(AltairFamiPortPerformance.performance_id == order_like.performance_id) \
+                .one()
+        except NoResultFound:
+            pass
+    return None
+
 
 def build_famiport_order_dict(request, order_like, client_code, type_, name='famiport'):
     """FamiPortOrderを作成する
@@ -269,27 +289,63 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
     customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
 
+    event_code_1 = None
+    event_code_2 = None
+    performance_code = None
+    sales_segment_code = None
+
     altair_famiport_sales_segment_pair = get_altair_famiport_sales_segment_pair(order_like)
-    try:
-        famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, client_code, altair_famiport_sales_segment_pair.id)
-    except:
-        raise FamiPortPluginFailure(
-            u'cannot retrieve FamiPortSalesSegment with client_code=%s, altair_famiport_sales_segment_pair_id=%ld. perhaps sales information has not been set to the famiport-side database yet?' % (
-                client_code,
-                altair_famiport_sales_segment_pair.id
-                ),
-            order_no=order_like.order_no,
-            back_url=None
-            )
+    if altair_famiport_sales_segment_pair is not None:
+        try:
+            famiport_sales_segment = famiport_api.get_famiport_sales_segment_by_userside_id(request, client_code, altair_famiport_sales_segment_pair.id)
+            event_code_1 = famiport_sales_segment['event_code_1']
+            event_code_2 = famiport_sales_segment['event_code_2']
+            performance_code = famiport_sales_segment['performance_code']
+            sales_segment_code = famiport_sales_segment['code']
+        except:
+            raise FamiPortPluginFailure(
+                u'cannot retrieve FamiPortSalesSegment with client_code=%s, altair_famiport_sales_segment_pair_id=%ld. perhaps sales information has not been set to the famiport-side database yet?' % (
+                    client_code,
+                    altair_famiport_sales_segment_pair.id
+                    ),
+                order_no=order_like.order_no,
+                back_url=None
+                )
+    else:
+        altair_famiport_performance = get_altair_famiport_performance(order_like)
+        if altair_famiport_performance is None:
+            raise FamiPortPluginFailure(
+                u'cannot retrieve AltairFamiPortPerformance with performance_id=%ld.' % (
+                    client_code,
+                    order_like.performance_id
+                    ),
+                order_no=order_like.order_no,
+                back_url=None
+                )
+        try:
+            famiport_performance = famiport_api.get_famiport_performance_by_userside_id(request, client_code, altair_famiport_performance.id)
+
+            event_code_1 = famiport_performance['event_code_1']
+            event_code_2 = famiport_performance['event_code_2']
+            performance_code = famiport_performance['code']
+        except:
+            raise FamiPortPluginFailure(
+                u'cannot retrieve FamiPortPerformance with client_code=%s, altair_famiport_performance_id=%ld. perhaps sales information has not been set to the famiport-side database yet?' % (
+                    client_code,
+                    altair_famiport_performance.id
+                    ),
+                order_no=order_like.order_no,
+                back_url=None
+                )
 
     return dict(
         client_code=client_code,
         type_=type_,
         order_no=order_like.order_no,
-        event_code_1=famiport_sales_segment['event_code_1'],
-        event_code_2=famiport_sales_segment['event_code_2'],
-        performance_code=famiport_sales_segment['performance_code'],
-        sales_segment_code=famiport_sales_segment['code'],
+        event_code_1=event_code_1,
+        event_code_2=event_code_2,
+        performance_code=performance_code,
+        sales_segment_code=sales_segment_code,
         customer_address_1=customer_address_1,
         customer_address_2=customer_address_2,
         customer_name=customer_name,

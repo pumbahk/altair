@@ -132,6 +132,7 @@ class CancelFamiPortOrderTest(unittest.TestCase):
         self.order_cash_on_delivery = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
+            famiport_performance=self.performance,
             order_no=u'XX000012345',
             famiport_order_identifier=u'012301230123',
             type=FamiPortOrderType.CashOnDelivery.value,
@@ -177,6 +178,7 @@ class CancelFamiPortOrderTest(unittest.TestCase):
         self.order_payment = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
+            famiport_performance=self.performance,
             order_no=u'XX000012346',
             famiport_order_identifier=u'012301230124',
             type=FamiPortOrderType.Payment.value,
@@ -383,6 +385,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         self.order_cash_on_delivery = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
+            famiport_performance=self.performance,
             order_no=u'XX000012345',
             famiport_order_identifier=u'012301230123',
             type=FamiPortOrderType.CashOnDelivery.value,
@@ -419,6 +422,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         self.order_payment = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
+            famiport_performance=self.performance,
             order_no=u'XX000012346',
             famiport_order_identifier=u'012301230124',
             type=FamiPortOrderType.Payment.value,
