@@ -791,40 +791,17 @@ class OrderReserveForm(OurForm):
         )
 
     def validate_payment_delivery_method_pair_id(form, field):
-        if field.data and field.data in field.sej_plugin_id:
+        if field.data and any(True for payment_delivery_method_pair in form.context.convenience_payment_delivery_method_pairs if field.data == payment_delivery_method_pair.id):
             for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
                 f = getattr(form, field_name)
                 if not f.data:
                     raise ValidationError(u'購入者情報を入力してください')
 
             # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
-            pdmp = PaymentDeliveryMethodPair.get(field.data)
-            if pdmp\
-                and pdmp.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID\
-                and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
-                and not isinstance(has_permission('event_editor', form.request.context, form.request), ACLAllowed):
+            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=field.data).one()
+            if (not pdmp.payment_method.pay_at_store() and pdmp.delivery_method.deliver_at_store()) \
+                and not form.context._is_event_editor:
                     raise ValidationError(u'この決済引取方法を選択する権限がありません')
-
-            # Sej発券の場合は20枚まで
-            if pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-                count = 0
-                post_data = MultiDict(form.request.json_body)
-                for product_id, product_name in form.products.choices:
-                    product = Product.query.filter_by(id=product_id).one()
-                    quantity = None
-                    try:
-                        quantity_str = post_data.get('product_quantity-%d' % product_id)
-                        if quantity_str is not None:
-                            quantity_str = quantity_str.strip()
-                            if quantity_str:
-                                quantity = int(quantity_str)
-                    except (ValueError, TypeError):
-                        raise ValidationError(u'個数には正しい数値を入力してください')
-                    if not quantity:
-                        continue
-                    count += product.num_tickets(pdmp) * quantity
-                if count > 20:
-                    raise ValidationError(u'コンビニ引取の場合、1予約あたり発券枚数が20枚以内になるよう指定してください')
 
 
 class OrderRefundForm(OurForm):

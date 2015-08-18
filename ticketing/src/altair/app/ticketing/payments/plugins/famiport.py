@@ -195,6 +195,11 @@ def get_ticket_template_code_from_ticket_format(ticket_format):
         retval = u'TTTSTR0001'  # XXX: デフォルト
     return retval
 
+def get_ticket_count(request, order_like):
+    return sum(element.quantity * sum(1 for ticket in applicable_tickets_iter(element.product_item.ticket_bundle))
+        for item in order_like.items
+        for element in item.elements
+        )
 
 def build_ticket_dicts_from_order_like(request, order_like):
     tickets = []
@@ -235,7 +240,7 @@ def lookup_famiport_tenant(request, order_like):
 
 
 def get_altair_famiport_sales_segment_pair(order_like):
-    if order_like.sales_segment_id is not None:
+    if order_like.sales_segment is not None:
         try:
             return DBSession.query(AltairFamiPortSalesSegmentPair) \
                 .filter(
@@ -261,6 +266,36 @@ def get_altair_famiport_performance(order_like):
     return None
 
 
+def build_famiport_order_dict_customer_address(request, order_like, client_code, type_, name='famiport'):
+    return dict(
+        customer_address_1=(
+            order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
+            if order_like.shipping_address is not None and \
+               order_like.shipping_address.prefecture is not None and \
+               order_like.shipping_address.city is not None and \
+               order_like.shipping_address.address_1 is not None
+            else u''
+            ),
+        customer_address_2=(
+            order_like.shipping_address.address_2
+            if order_like.shipping_address is not None and \
+               order_like.shipping_address.address_2 is not None
+            else u''
+            ),
+        customer_name=(
+            order_like.shipping_address.last_name + order_like.shipping_address.first_name
+            if order_like.shipping_address is not None and \
+               order_like.shipping_address.last_name is not None and \
+               order_like.shipping_address.first_name is not None
+            else u''
+            ),
+        customer_phone_number=(
+            (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
+            if order_like.shipping_address is not None
+            else u''
+            )
+        )
+
 def build_famiport_order_dict(request, order_like, client_code, type_, name='famiport'):
     """FamiPortOrderを作成する
     """
@@ -284,32 +319,6 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
             dict_ = build_cover_dict_from_order(order_like)
             payment_sheet_text = pystache.render(payment_sheet_text_template, dict_)
 
-    customer_address_1 = (
-        order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
-        if order_like.shipping_address is not None and \
-           order_like.shipping_address.prefecture is not None and \
-           order_like.shipping_address.city is not None and \
-           order_like.shipping_address.address_1 is not None
-        else u''
-        )
-    customer_address_2 = (
-        order_like.shipping_address.address_2
-        if order_like.shipping_address is not None and \
-           order_like.shipping_address.address_2 is not None
-        else u''
-        )
-    customer_name = (
-        order_like.shipping_address.last_name + order_like.shipping_address.first_name
-        if order_like.shipping_address is not None and \
-           order_like.shipping_address.last_name is not None and \
-           order_like.shipping_address.first_name is not None
-        else u''
-        )
-    customer_phone_number = (
-        (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
-        if order_like.shipping_address is not None
-        else u''
-        )
     event_code_1 = None
     event_code_2 = None
     performance_code = None
@@ -359,7 +368,7 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
                 back_url=None
                 )
 
-    return dict(
+    retval = dict(
         client_code=client_code,
         type_=type_,
         order_no=order_like.order_no,
@@ -367,10 +376,6 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         event_code_2=event_code_2,
         performance_code=performance_code,
         sales_segment_code=sales_segment_code,
-        customer_address_1=customer_address_1,
-        customer_address_2=customer_address_2,
-        customer_name=customer_name,
-        customer_phone_number=customer_phone_number,
         total_amount=total_amount,
         system_fee=system_fee,
         ticketing_fee=ticketing_fee,
@@ -386,6 +391,8 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         ticketing_end_at=order_like.issuing_end_at,
         payment_sheet_text=payment_sheet_text
         )
+    retval.update(build_famiport_order_dict_customer_address(request, order_like, client_code, type_, name))
+    return retval
 
 def create_famiport_order(request, order_like, plugin, name='famiport'):
     """FamiPortOrderを作成する
@@ -553,6 +560,7 @@ class FamiPortPaymentPlugin(object):
 
     def validate_order(self, request, order_like, update=False):
         """予約を作成する前にvalidationする"""
+        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """前処理"""
@@ -649,6 +657,7 @@ def delivery_notice_viewlet(context, request):
 class FamiPortDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
+        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -689,6 +698,7 @@ class FamiPortDeliveryPlugin(object):
 class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
+        validate_order_like(request, order_like, self)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -748,11 +758,11 @@ def validate_order_like(request, order_like, plugin):
     - 住所2: 200
     """
     famiport_order_type = select_famiport_order_type(order_like, plugin)
+    tenant = lookup_famiport_tenant(request, order_like)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+    famiport_order_dict = build_famiport_order_dict_customer_address(request, order_like, tenant.code, famiport_order_type)
     if order_like.shipping_address is not None:
-        tenant = lookup_famiport_tenant(request, order_like)
-        if tenant is None:
-            raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
-        famiport_order_dict = build_famiport_order_dict(request, order_like, tenant.code, famiport_order_type)
         # お客様氏名
         if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
             raise OrderLikeValidationFailure(u'too long', 'shipping_address.last_name')
@@ -765,15 +775,11 @@ def validate_order_like(request, order_like, plugin):
         if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
             raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_2')
 
-        tickets = build_ticket_dicts_from_order_like(request, order_like)
-        # チケット枚数
-        if famiport_order_type in [
-                FamiPortOrderType.CashOnDelivery.value,
-                FamiPortOrderType.Ticketing.value,
-                FamiPortOrderType.Payment.value,
-                ]:
-            if len(tickets) > FAMIPORT_MAX_TICKET_COUNT:
-                raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'ordered_product_item.quantity')
+    # チケット枚数
+    if famiport_order_type != FamiPortOrderType.PaymentOnly.value:
+        num_tickets = get_ticket_count(request, order_like)
+        if num_tickets > FAMIPORT_MAX_TICKET_COUNT:
+            raise OrderLikeValidationFailure(u'could not handle more than 23 tickets', u'')
 
     if order_like.payment_delivery_pair is not None:
         # 合計金額

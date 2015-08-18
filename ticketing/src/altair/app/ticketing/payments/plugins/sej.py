@@ -99,6 +99,13 @@ def get_ticket_template_id_from_ticket_format(ticket_format):
         retval = u'TTTS000001' # XXX: デフォルト
     return retval
 
+def get_ticket_count(request, order_like):
+    return sum(
+        element.quantity * sum(1 for ticket in applicable_tickets_iter(element.product_item.ticket_bundle))
+        for item in order_like.items
+        for element in item.elements
+        )
+
 def get_tickets(request, order, ticket_template_id=None):
     tickets = []
     issuer = NumberIssuer()
@@ -447,7 +454,9 @@ katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
-def validate_order_like(current_date, order_like, update=False):
+def validate_order_like(request, current_date, order_like, update=False, ticketing=True):
+    if ticketing and get_ticket_count(request, order_like) > 20:
+        raise OrderLikeValidationFailure(u'cannot handle more than 20 tickets', '')
     if order_like.shipping_address is not None:
         tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
         if not tel:
@@ -517,7 +526,7 @@ def validate_order_like(current_date, order_like, update=False):
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=False)
 
     def prepare(self, request, cart):
         """  """
@@ -600,7 +609,7 @@ class SejDeliveryPluginBase(object):
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
 
     def prepare(self, request, cart):
         """  """
@@ -684,7 +693,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 @implementer(IPaymentDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
 
     def prepare(self, request, cart):
         """  """

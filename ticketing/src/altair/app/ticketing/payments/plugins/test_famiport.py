@@ -217,10 +217,36 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
     def _callFUT(self, func, *args, **kwds):
         return func(*args, **kwds)
 
-    def test_validate_order_success(self):
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
+    def test_validate_order_success(self, lookup_famiport_tenant, build_famiport_order_dict):
         """FamiPortOrder作成可能なorder_like"""
+        from . import FAMIPORT_PAYMENT_PLUGIN_ID
         request = DummyRequest()
-        cart = DummyModel()
+        cart = DummyModel(
+            total_amount=0,
+            delivery_fee=0,
+            transaction_fee=0,
+            system_fee=0,
+            special_fee=0,
+            payment_delivery_pair=DummyModel(
+                payment_method=DummyModel(
+                    preferences={ unicode(FAMIPORT_PAYMENT_PLUGIN_ID): {} }
+                    )
+                ),
+            shipping_address=DummyModel(
+                last_name=u'a',
+                first_name=u'b',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田7-1-9',
+                address_2=u'五反田HSビル9F',
+                tel_1=u'0123456789'
+                ),
+            items=[]
+            )
+        lookup_famiport_tenant.return_value = DummyModel(code=u'00001')
+        build_famiport_order_dict = {}
         plugin = self._makeOne()
         res = self._callFUT(plugin.validate_order, request, cart)
         self.assert_(res is None)
@@ -272,7 +298,7 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         exp_famiport_order = mock.Mock()
         create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
-        build_famiport_order_dict.return_value = {}
+        build_famiport_order_dict.return_value = {'tickets': []}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
 
         for order in self.orders:
@@ -424,7 +450,7 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         request = DummyRequest()
         cart = self.orders[0].cart
         plugin = self._makeOne()
-        build_famiport_order_dict.return_value = {}
+        build_famiport_order_dict.return_value = {'tickets': []}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
         lookup_famiport_tenant.return_value = self.famiport_tenant
 
@@ -442,7 +468,7 @@ class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixi
         exp_famiport_order = mock.Mock()
         create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
-        build_famiport_order_dict.return_value = {}
+        build_famiport_order_dict.return_value = {'tickets': []}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
         lookup_famiport_tenant.return_value = self.famiport_tenant
 
@@ -596,12 +622,12 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
     def test_finish(self, create_famiport_order, create_from_cart, lookup_famiport_tenant,
                     build_famiport_order_dict, build_ticket_dicts_from_order_like):
         """確定処理成功"""
-        exp_order = create_from_cart.return_value = mock.Mock(total_amount=100)
+        exp_order = create_from_cart.return_value = self.orders[0]
         create_famiport_order.return_value = mock.Mock()
         request = DummyRequest()
         cart = self.orders[0].cart
         plugin = self._makeOne()
-        build_famiport_order_dict.return_value = {}
+        build_famiport_order_dict.return_value = {'tickets': []}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
         lookup_famiport_tenant.return_value = self.famiport_tenant
         order = plugin.finish(request, cart)
@@ -621,7 +647,7 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         create_famiport_order.return_value = exp_famiport_order
         plugin = self._makeOne()
 
-        build_famiport_order_dict.return_value = {}
+        build_famiport_order_dict.return_value = {'tickets': []}
         build_ticket_dicts_from_order_like.return_value = [mock.Mock()]
         lookup_famiport_tenant.return_value = self.famiport_tenant
         for order in self.orders:

@@ -52,7 +52,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_due_at=None
+                payment_due_at=None,
+                payment_method=DummyModel(payment_plugin_id=1),
+                delivery_method=DummyModel(delivery_plugin_id=1)
                 ),
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
@@ -66,7 +68,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_due_at=None
+                payment_due_at=None,
+                payment_method=DummyModel(payment_plugin_id=1),
+                delivery_method=DummyModel(delivery_plugin_id=1)
                 ),
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
@@ -80,7 +84,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_due_at=None
+                payment_due_at=None,
+                payment_method=DummyModel(payment_plugin_id=1),
+                delivery_method=DummyModel(delivery_plugin_id=1)
                 ),
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
@@ -94,7 +100,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=3,
-                payment_due_at=None
+                payment_due_at=None,
+                payment_method=DummyModel(payment_plugin_id=1),
+                delivery_method=DummyModel(delivery_plugin_id=1)
                 ),
             ]
 
@@ -243,25 +251,40 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
 
                 order_no = 'XX00000001'
 
-                products = []
                 ordered_products = []
 
                 for ii in range(5):
-                    product_items = [DummyModel() for jj in range(5)]
-                    ordered_product_items = [DummyModel(product_item=product_item) for product_item in product_items]
-
+                    product_items = [
+                        DummyModel(
+                            ticket_bundle=DummyModel(
+                                tickets=[
+                                    DummyModel(
+                                        ticket_format=DummyModel(
+                                            delivery_methods=[
+                                                payment_delivery_pair.delivery_method
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                        for _ in range(0, 5)
+                        ]
                     product = DummyModel(
                         num_tickets=mock.Mock(return_value=len(product_items)),
                         num_principal_tickets=mock.Mock(return_value=len(product_items)),
-                        items=product_items,
-                        elements=product_items,
+                        items=product_items
                         )
                     ordered_product = DummyModel(
                         product=product,
-                        items=ordered_product_items,
-                        elements=product_items,
+                        elements=[
+                            DummyModel(
+                                quantity=1,
+                                product_item=product_item
+                                )
+                            for product_item in product_items
+                            ],
                         )
-                    products.append(product)
                     ordered_products.append(ordered_product)
 
                 cart = DummyCart(

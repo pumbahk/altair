@@ -89,7 +89,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin
+from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin, validate_order_like
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
@@ -1953,6 +1953,8 @@ class OrdersReserveView(OrderBaseView):
         api.remove_cart(self.request, release=True, async=False)
         post_data = self.request.POST
         try:
+            if not self.context.form.validate():
+                self.context.raise_error(self.context.form.errors)
             ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
@@ -1997,6 +1999,7 @@ class OrdersReserveView(OrderBaseView):
                     last_name_kana=self.context.form.last_name_kana.data,
                     tel_1=self.context.form.tel_1.data,
                 )
+            validate_order_like(self.request, cart)
 
             DBSession.add(cart)
             DBSession.flush()
@@ -2022,6 +2025,9 @@ class OrdersReserveView(OrderBaseView):
         except InnerCartSessionException as e:
             logger.exception("oops")
             self.context.raise_error(u'エラーが発生しました。もう一度選択してください。')
+        except OrderLikeValidationFailure as e:
+            logger.exception("oops")
+            self.context.raise_error(e.message)
         except Exception, e:
             if isinstance(e, Response):
                 raise

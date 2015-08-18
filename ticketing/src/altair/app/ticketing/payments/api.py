@@ -110,3 +110,11 @@ def lookup_plugin(request, payment_delivery_pair):
        (payment_plugin is None or delivery_plugin is None):
         raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
     return payment_delivery_plugin, payment_plugin, delivery_plugin
+
+def validate_order_like(request, order_like, update=False):
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order_like.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        payment_delivery_plugin.validate_order(request, order_like, update=update)
+    else:
+        payment_plugin.validate_order(request, order_like, update=update)
+        delivery_plugin.validate_order(request, order_like, update=update)

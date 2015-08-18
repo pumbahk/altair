@@ -42,7 +42,7 @@ class Payment(object):
         """
         preparer = self.get_preparer(self.request, self.cart.payment_delivery_pair)
         if preparer is None:
-            raise Exception
+            raise Exception(u'get_preparer() returned None (payment_method_id=%d, delivery_method_id=%d)' % (self.cart.payment_delivery_pair.payment_method.id, self.cart.payment_delivery_pair.delivery_method.id))
         res = preparer.prepare(self.request, self.cart)
         return res
 

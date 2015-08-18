@@ -2143,7 +2143,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         try:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
             self.assertTrue(True)
         except OrderLikeValidationFailure as e:
             self.fail(e)
@@ -2177,7 +2177,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.tel_1')
 
     def test_shipping_address_no_zip(self):
@@ -2209,7 +2209,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         try:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
             self.assertTrue(True)
         except OrderLikeValidationFailure as e:
             self.fail(e)
@@ -2243,7 +2243,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.zip')
 
         order_like = mock.Mock(
@@ -2271,7 +2271,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.zip')
 
     def test_shipping_address_no_email(self):
@@ -2303,7 +2303,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         try:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
             self.assertTrue(True)
         except OrderLikeValidationFailure as e:
             self.fail(e)
@@ -2337,7 +2337,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.email_1')
 
     def test_shipping_address_invalid_name(self):
@@ -2369,7 +2369,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.last_name')
 
     def test_shipping_address_name_too_long(self):
@@ -2401,7 +2401,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.last_name')
 
         order_like = mock.Mock(
@@ -2429,7 +2429,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.last_name')
 
     def test_shipping_address_invalid_name_kana(self):
@@ -2461,7 +2461,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
         self.assertEquals(e.exception.path, 'shipping_address.last_name_kana')
 
     def test_no_shipping_address(self):
@@ -2483,7 +2483,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         try:
-            self._callFUT(current_date, order_like)
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
             self.assertTrue(True)
         except OrderLikeValidationFailure as e:
             self.fail(e)
