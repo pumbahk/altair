@@ -215,7 +215,7 @@ class FamiPortRebookOrderView(object):
         order = receipt.famiport_order
         client_code = order.client_code
         vh=ViewHelpers(self.request)
-        old_management_number = vh.get_management_number_from_famiport_order_identifier(receipt.famiport_order_identifier)
+        old_management_number = receipt.reserve_number
         new_management_number = u''
         error = u''
         form = RebookOrderForm(self.request.POST)
@@ -238,7 +238,7 @@ class FamiPortRebookOrderView(object):
                 else:
                     new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.CashOnDelivery.value, order.famiport_receipts).pop()
 
-                new_management_number = vh.get_management_number_from_famiport_order_identifier(new_receipt.famiport_order_identifier)
+                new_management_number = new_receipt.reserve_number
             else:
                 error = u'・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
 
