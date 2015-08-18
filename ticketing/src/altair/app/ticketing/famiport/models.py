@@ -237,7 +237,7 @@ class FamiPortEvent(Base, WithTimestamp):
     __tablename__ = 'FamiPortEvent'
     __table_args__ = (
         sa.ForeignKeyConstraint(['genre_1_code', 'genre_2_code'], ['FamiPortGenre2.genre_1_code', 'FamiPortGenre2.code']),
-        sa.UniqueConstraint('code_1', 'code_2', 'revision'),
+        sa.UniqueConstraint('client_code', 'code_1', 'code_2', 'revision'),
         )
 
     id                      = sa.Column(Identifier, primary_key=True, autoincrement=True)
@@ -952,7 +952,7 @@ class FamiPortReceipt(Base, WithTimestamp):
     report_generated_at = sa.Column(sa.DateTime(), nullable=True)
 
     made_reissueable_at = sa.Column(sa.DateTime(), nullable=True)
- 
+
     shop = orm.relationship('FamiPortShop', primaryjoin=FamiPortShop.code == shop_code, foreign_keys=FamiPortShop.code, uselist=False)
 
     attributes_ = orm.relationship('FamiPortReceiptAttribute', backref='famiport_receipt', collection_class=attribute_mapped_collection('name'), )
