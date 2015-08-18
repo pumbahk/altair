@@ -394,7 +394,7 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
             stock_ids = [long(stock_id) for stock_id in self.settings_form.stocks.data]
         except (TypeError, ValueError):
             pass
-        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type)).filter(Stock.id.in_(stock_ids)).all()
+        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type), joinedload(Stock.stock_status)).filter(Stock.id.in_(stock_ids)).all()
         self.seats_form = OrderReserveSeatsForm(self.request.POST, context=self)
         if not self.seats_form.validate():
             logger.debug('%r' % self.seats_form.errors)

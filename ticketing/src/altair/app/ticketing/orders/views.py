@@ -1921,7 +1921,7 @@ class OrdersReserveView(OrderBaseView):
             try:
                 reserving = api.get_reserving(self.request)
                 seats = reserving.reserve_selected_seats(
-                   None,
+                   [(stock.stock_status, 0) for stock in self.context.stocks],
                    self.context.performance.id,
                    seat_l0_ids,
                    reserve_status=SeatStatusEnum.Keep
