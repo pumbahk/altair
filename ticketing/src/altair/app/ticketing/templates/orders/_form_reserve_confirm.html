@@ -1,4 +1,5 @@
 <%page args="form, cart" />
+<% from altair.formhelpers.widgets import OurHiddenInput %>
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
@@ -123,13 +124,9 @@
       </table>
 
       <div class="control-group">
-        <label class="control-label">${form.sales_segment_id.label.text}</label>
+        <label class="control-label">${_context.settings_form.sales_segment_id.label.text}</label>
         <div class="controls">
-          % for id, name in form.sales_segment_id.choices:
-            % if id == form.sales_segment_id.data:
-              ${name}
-            % endif
-          % endfor
+          ${_context.sales_segment.sales_segment_group.name}
         </div>
       </div>
       <div class="control-group">
@@ -142,7 +139,7 @@
           % endfor
         </div>
       </div>
-      % if form.payment_delivery_method_pair_id.data in form.payment_delivery_method_pair_id.sej_plugin_id:
+      % if cart.shipping_address is not None:
       <div class="shipping-address">
         <div class="control-group">
           <label class="control-label">氏名</label>
@@ -168,7 +165,8 @@
       % endif
 
       ${ch.form_item(form.sales_counter_payment_method_id)}
-      ${ch.form_item(form.performance_id)}
+      ${_context.settings_form.performance_id(_widget=OurHiddenInput())}
+      ${_context.settings_form.stocks}
       </div>
 
       <div class="memo-area" style="display:none">

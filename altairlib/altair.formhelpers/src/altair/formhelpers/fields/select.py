@@ -93,6 +93,9 @@ class LazyWrapper(object):
     def __iter__(self):
         return iter(self._get_impl())
 
+    def __getitem__(self, k):
+        return self._get_impl()[k]
+
     def __repr__(self):
         return '<%s wrapping %r at %p>' % (self.__class__.__name__, self._get_impl(), id(self))
 
@@ -117,6 +120,13 @@ class WTFormsChoicesWrapper(object):
 
     def __len__(self):
         return len(self.choices)
+
+    def __getitem__(self, v):
+        encoded_v = self.encoder(v)
+        for encoded_value, _ in self.choices:
+            if encoded_v == encoded_value or v == encoded_value:
+                return encoded_value
+        raise KeyError(v)
 
     def __contains__(self, v):
         encoded_v = self.encoder(v)
@@ -169,6 +179,14 @@ class WTFormsChoiceGroupsWrapper(object):
                     return True
         else:
             return False
+
+    def __getitem__(self, v):
+        encoded_v = self.encoder(v)
+        for _, group in self.choice_groups:
+            for encoded_value, _ in group:
+                if encoded_v == encoded_value or v == encoded_value:
+                    return encoded_value
+        raise KeyError(v)
 
     def __iter__(self):
         for _, group in self.choice_groups:
@@ -307,7 +325,6 @@ class LazySelectFieldBase(fields.SelectFieldBase):
 
     choices = property(_get_choices, _set_choices)
 
-
     @property
     def model(self):
         return self._model
@@ -320,6 +337,9 @@ class LazySelectFieldBase(fields.SelectFieldBase):
     def pre_validate(self, form):
         if self.model and self.data not in self.model:
             raise ValueError(self.gettext('Not a valid choice'))
+
+    def _value(self):
+        return self.model[self.data]
 
 class LazySelectField(SelectFieldDataMixin, LazySelectFieldBase):
     pass

@@ -44,19 +44,19 @@ class Reserving(object):
     def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids, reserve_status=SeatStatusEnum.InCart):
         """ ユーザー選択座席予約 """
         logger.debug('user select seats %s, performance_id %s' % (selected_seat_l0_ids, performance_id))
-        logger.debug('stock %s' % [s[0].stock_id for s in stockstatus])
 
-        selected_seats = self.session.query(Seat).filter(
-            Seat.l0_id.in_(selected_seat_l0_ids),
-        ).filter(
-            Venue.id==Seat.venue_id,
-        ).filter(
-            Performance.id==Venue.performance_id
-        ).filter(
-            Stock.id==Seat.stock_id
-        ).filter(
-            Stock.id.in_([s[0].stock_id for s in stockstatus])
-        ).all()
+        q = self.session.query(Seat) \
+            .join(Seat.venue) \
+            .join(Venue.performance) \
+            .filter(Seat.l0_id.in_(selected_seat_l0_ids)) \
+            .filter(Venue.performance_id == performance_id)
+        if stockstatus is not None:
+            q = q.filter(Seat.stock_id.in_([s[0].stock_id for s in stockstatus]))
+            logger.debug('stock %s' % [s[0].stock_id for s in stockstatus])
+        else:
+            logger.info('no restrictions for stocks are applied')
+
+        selected_seats = q.all()
 
         seat_group_ids = [
             t[0] for t in self.session.query(SeatGroup.id) \

@@ -1,8 +1,11 @@
 import json
 import re
+import itertools
+from collections import OrderedDict
 from wtforms import fields
 from wtforms.fields.core import _unset_value
 from wtforms.compat import iteritems
+from wtforms.widgets import html_params, HTMLString
 from ..widgets import OurInput, OurTextInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget, OurTableWidget
 from ..widgets.select import SelectRendrant
 from zope.deprecation import deprecation
@@ -23,6 +26,7 @@ __all__ = [
     'RendererMixin',
     'OurFieldMixin',
     'OurField',
+    'OurLabel',
     'OurHiddenField',
     'OurRadioField',
     'OurTextField',
@@ -44,6 +48,8 @@ __all__ = [
     'OurFormField',
     'JSONField',
     'DelimitedTextsField',
+    'OurGenericFieldList',
+    'OurPHPCompatibleFieldList',
     ]
 
 field_class_factory = make_class_factory(type)
@@ -113,6 +119,7 @@ class OurFieldMixin(object):
         return self._form
 
     def __mixin_init_post__(self, **kwargs):
+        self.label = OurLabel(self.label.field_id, self.label.text)
         self.reset_name_builder()
 
     def reset_name_builder(self):
@@ -145,6 +152,36 @@ class OurFieldMixin(object):
     def post_validate(self, overridden, form, validation_stopped):
         self._validation_stopped = validation_stopped
         overridden(self, form, validation_stopped)
+
+class Singleton(object):
+    def __init__(self, key, value):
+        self.key = [key]
+        self.value = [value]
+
+    def getlist(self, k):
+        if self.key[0] != k:
+            return []
+        else:
+            return self.value
+
+    def __getitem__(self, k):
+        if self.key[0] != k:
+            raise KeyError(k)
+        return self.value[0]
+
+    def __len__(self):
+        return 1
+
+    def __iter__(self):
+        return iter(self.key)
+
+
+class OurLabel(fields.Label):
+    def __call__(self, text=None, field_id=None, **kwargs):
+        kwargs['for'] = self.field_id if field_id is None else field_id
+        attributes = html_params(**kwargs)
+        return HTMLString('<label %s>%s</label>' % (attributes, text or self.text))
+
 
 class OurField(fields.Field, RendererMixin, OurFieldMixin):
     __metaclass__ = field_class_factory
@@ -380,3 +417,222 @@ class DelimitedTextsField(fields.Field, RendererMixin, OurFieldMixin):
         super(DelimitedTextsField, self).__init__(*args, **kwargs)
         self.delimiter_pattern = delimiter_pattern
         self.canonical_delimiter = canonical_delimiter
+
+
+class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
+    class _fake(object):
+        __slot__ = ['data']
+
+    widget = OurListWidget()
+
+    def __init__(self, unbound_field, label=None, validators=None, default={}, **kwargs):
+        _prefix = kwargs.pop('_prefix', None)
+        name_handler = kwargs.pop('name_handler', None)
+        super(OurFieldList, self).__init__(
+            label=label,
+            validators=validators,
+            default=default,
+            **kwargs
+            )
+        if name_handler is None and _prefix is not None:
+            name_handler = _prefix
+        if isinstance(name_handler, basestring):
+            name_handler = SimpleElementNameHandler(name_handler)
+        self._name_handler = name_handler
+
+
+    def _build_subfield_name(self, subfield_name):
+        return self._name_handler.build(self.name, subfield_name)
+
+    def process(self, formdata, data=_unset_value):
+        if data is _unset_value or not data:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+
+        self.object_data = data
+
+        entries = OrderedDict()
+        if formdata:
+            indices = [
+                (subfield_name, k)
+                for field_name, subfield_name in (
+                    self._name_handler.resolve(k)
+                    for k in formdata
+                    )
+                if field_name is not None and field_name == self.name
+                ]
+            for subfield_name, k in indices:
+                subfield_raw_values = formdata.getlist(k)
+                obj_data = data.get(subfield_name, [])
+                for subfield_raw_value, subfield_data in itertools.izip_longest(subfield_raw_values, obj_data, fillvalue=_unset_value):
+                    field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations, name_builder=self._build_subfield_name)
+                    field.process(
+                        Singleton(k, subfield_raw_value) if subfield_raw_value is not _unset_value else None,
+                        subfield_data
+                        )
+                    entries.setdefault(subfield_name, []).append(field)
+        else:
+            for subfield_name, obj_data in data.items():
+                for subfield_data in obj_data:
+                    field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations, name_builder=self._build_subfield_name)
+                    field.process(None, subfield_data)
+                    entries.setdefault(subfield_name, []).append(field)
+        self.entries = entries
+
+    def validate(self, form, extra_validators=tuple()):
+        self.errors = []
+        success = True
+        for _, subfields in self.entries.items():
+            for subfield in subfields:
+                if not subfield.validate(form):
+                    success = False
+                    self.errors.append(subfield.errors)
+        return success
+
+    def populate_obj(self, obj, name):
+        data = getattr(obj, name, None)
+        output = OrderedDict()
+        for subfield_name, obj_data in data.items():
+            obj_data = []
+            subfields = self.entries[subfield_name]
+            for subfield, subfield_data in itertools.izip(obj_data, itertools.chain(subfields, itertools.repeat(None))):
+                if subfield is not None:
+                    fake_obj = self._fake(data)
+                    subfield.populate_obj(fake_obj, 'data')
+                obj_data.append(fake_obj.data)
+            output[subfield_name] = obj_data
+        setattr(obj, name, output)
+
+    def __iter__(self):
+        return iter(self.entries)
+
+    def __len__(self):
+        return len(self.entries)
+
+    @property
+    def data(self):
+        return OrderedDict(
+            (subfield_name, 
+                [
+                    subfield.data
+                    for subfield in subfields
+                    ]
+                )
+            for subfield_name, subfields in self.entries.items()
+            )
+
+
+class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
+    class _fake(object):
+        __slot__ = ['data']
+
+    widget = OurListWidget()
+
+    def __init__(self, unbound_field, label=None, validators=None, default=(), min_entries=0, max_entries=None, **kwargs):
+        self.min_entries = min_entries
+        self.max_entries = max_entries
+        self._subfield_name = None
+        self.unbound_field = unbound_field
+        super(OurPHPCompatibleFieldList, self).__init__(
+            label=label,
+            validators=validators,
+            default=default,
+            **kwargs
+            )
+
+    def _build_subfield_name(self):
+        if self._subfield_name is None:
+            self._subfield_name = u'%s[]' % self.name
+        return self._subfield_name
+
+    def process(self, formdata, data=_unset_value):
+        if data is _unset_value or not data:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+
+        data = list(data)
+        subfield_name = self._build_subfield_name()
+
+        entries = []
+        if formdata:
+            subfield_raw_values = []
+            for k in formdata:
+                if k.startswith(self.name) and k[len(self.name):] == u'[]':
+                    subfield_raw_values = formdata.getlist(k)
+            if self.max_entries:
+                subfield_raw_values = subfield_raw_values[:self.max_entries]
+                data = data[:self.max_entries]
+
+            if len(subfield_raw_values) < self.min_entries:
+                for i in range(0, self.min_entries - len(values)):
+                    subfield_raw_values.append(_unset_value)
+            if len(data) < self.min_entries:
+                for i in range(0, self.min_entries - len(data)):
+                    data.append(_unset_value)
+
+            for subfield_raw_value, subfield_data in itertools.izip_longest(subfield_raw_values, data, fillvalue=_unset_value):
+                field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
+                field.process(
+                    Singleton(
+                        subfield_name,
+                        subfield_raw_value
+                        ) \
+                        if subfield_raw_value is not _unset_value \
+                        else None,
+                    subfield_data
+                    )
+                entries.append(field)
+        else:
+            if self.max_entries:
+                data = data[:self.max_entries]
+            if len(data) < self.min_entries:
+                for i in range(0, self.min_entries - len(data)):
+                    data.append(_unset_value)
+            for subfield_data in data:
+                field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
+                field.process(
+                    None,
+                    subfield_data
+                    )
+                entries.append(field)
+        self.object_data = data
+        self.entries = entries
+
+    def validate(self, form, extra_validators=tuple()):
+        self.errors = []
+        success = True
+        for subfield in self.entries:
+            if not subfield.validate(form):
+                success = False
+                self.errors.append(subfield.errors)
+        return success
+
+    def populate_obj(self, obj, name):
+        output = []
+        for subfield in self.entries:
+            if subfield is not None:
+                fake_obj = self._fake(data)
+                subfield.populate_obj(fake_obj, 'data')
+                data = fake_obj.data
+            else:
+                data = _unset_value
+            output.append(fake_obj.data)
+        setattr(obj, name, output)
+
+    def __iter__(self):
+        return iter(self.entries)
+
+    def __len__(self):
+        return len(self.entries)
+
+    @property
+    def data(self):
+        return [
+            subfield.data
+            for subfield in self.entries
+            ]
+

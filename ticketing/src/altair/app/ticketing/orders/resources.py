@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 import logging
-logger = logging.getLogger(__name__)
-
+import json
+from datetime import datetime
+from pyramid.decorator import reify
+from pyramid.httpexceptions import HTTPBadRequest
 from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer, aliased
-from pyramid.decorator import reify
 
 # from paste.util.multidict import MultiDict
 from webob.multidict import MultiDict
@@ -15,9 +16,14 @@ from altair.app.ticketing.models import (
     )
 
 from altair.app.ticketing.core.models import (
+    Performance,
+    StockType,
+    Stock,
+    SalesSegment,
     ProductItem,
     Product,
     Seat,
+    Venue,
     Ticket,
     Ticket_TicketBundle,
     TicketFormat_DeliveryMethod,
@@ -38,6 +44,8 @@ from altair.app.ticketing.mailmags.models import(
 from .forms import (
     OrderInfoForm,
     OrderForm,
+    OrderReserveSettingsForm,
+    OrderReserveSeatsForm,
     OrderReserveForm,
     OrderRefundForm,
     OrderMemoEditFormFactory,
@@ -48,8 +56,12 @@ from .enqueue import (
     get_enqueue_each_print_action, 
     JoinedObjectsForProductItemDependentsProvider
 )
+from altair.app.ticketing.payments import plugins
 from .helpers import decode_candidate_id
 from .api import OrderAttributeIO
+
+logger = logging.getLogger(__name__)
+
 
 class OrderDependentsProvider(object):
     def __init__(self, request, order):
@@ -123,10 +135,6 @@ class OrderShowFormProvider(object):
     def get_order_form(self):
         order = self.order        
         return OrderForm(record_to_multidict(order), context=self.context)
-
-    def get_order_reserve_form(self):
-        order = self.order        
-        return OrderReserveForm(performance_id=order.performance_id, request=self.context.request)
 
     def get_order_refund_form(self):
         order = self.order        
@@ -352,3 +360,103 @@ class CoverPreviewResource(OrderResource):
             return None
         else:
             return TicketFormat.query.filter_by(id=self.ticket_format_id).one()
+
+from altair.app.ticketing.events.performances.resources import SalesCounterResourceMixin
+
+class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
+    def __init__(self, request):
+        super(OrderReserveResource, self).__init__(request)
+        self.now = datetime.now()
+        performance_id = None
+        try:
+            performance_id = long(request.POST['performance_id'])
+        except (TypeError, ValueError):
+            pass
+        self.performance = DBSession.query(Performance).filter(Performance.id == performance_id).one()
+        stock_ids = []
+        self.settings_form = OrderReserveSettingsForm(self.request.POST, context=self)
+        if not self.settings_form.validate():
+            logger.debug('%r' % self.settings_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+        sales_segment_id = self.settings_form.sales_segment_id.data
+        sales_segment = None
+        if sales_segment_id is not None:
+            sales_segment = DBSession.query(SalesSegment) \
+                .filter(SalesSegment.performance_id == self.performance.id) \
+                .filter(SalesSegment.id == sales_segment_id) \
+                .one()
+            if sales_segment not in self.available_sales_segments:
+                raise HTTPBadRequest()
+        else:
+            sales_segment = self.available_sales_segments[0]
+        self.sales_segment = sales_segment
+        try:
+            stock_ids = [long(stock_id) for stock_id in self.settings_form.stocks.data]
+        except (TypeError, ValueError):
+            pass
+        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type)).filter(Stock.id.in_(stock_ids)).all()
+        self.seats_form = OrderReserveSeatsForm(self.request.POST, context=self)
+        if not self.seats_form.validate():
+            logger.debug('%r' % self.seats_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+        seat_l0_ids =  self.seats_form.seats.data
+        if seat_l0_ids:
+            q = DBSession.query(Product) \
+                .join(Product.seat_stock_type) \
+                .join(StockType.stocks) \
+                .join(Stock.seats) \
+                .join(Seat.venue) \
+                .filter(Stock.performance_id == self.performance.id) \
+                .filter(Venue.performance_id == self.performance.id) \
+                .filter(Seat.l0_id.in_(seat_l0_ids)) \
+                .filter(Product.sales_segment_id == self.sales_segment.id)
+        else:
+            q = DBSession.query(Product) \
+                .join(Product.seat_stock_type) \
+                .filter(Product.sales_segment_id == self.sales_segment.id)
+        if len(stock_ids) > 0:
+            q = q.join(Product.items).filter(ProductItem.stock_id.in_(stock_ids))
+        self.products = q.distinct().all()
+        self.form = OrderReserveForm(self.request.POST, context=self)
+
+    @reify
+    def stock_types(self):
+        return set(product.seat_stock_type for product in self.products) 
+
+    @reify
+    def seats(self):
+        return list(DBSession.query(Seat).filter(Seat.venue_id == self.performance.venue.id, Seat.l0_id.in_(self.seats_form.seats.data)))
+
+    @reify
+    def sales_segments(self):
+        if self.sales_segment is not None:
+            sales_segments = [self.sales_segment]
+        else:
+            sales_segments = self.available_sales_segments
+        return sales_segments
+
+    def raise_error(self, message, klass=HTTPBadRequest):
+        raise klass(
+            content_type='application/json',
+            text=json.dumps(dict(message=message), ensure_ascii=False)
+            )
+
+    @reify
+    def payment_delivery_method_pairs(self):
+        return sorted(
+            (
+                payment_delivery_method_pair
+                for payment_delivery_method_pair in self.sales_segment.payment_delivery_method_pairs
+                ),
+            key=lambda x: (x.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
+            reverse=True
+            )
+
+    @reify
+    def convenience_payment_delivery_method_pairs(self):
+        return [
+            payment_delivery_method_pair
+            for payment_delivery_method_pair in self.payment_delivery_method_pairs
+            if payment_delivery_method_pair.payment_method.pay_at_store() or \
+               payment_delivery_method_pair.delivery_method.deliver_at_store()
+            ]

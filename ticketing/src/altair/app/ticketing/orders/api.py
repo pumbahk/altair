@@ -720,8 +720,9 @@ def create_inner_order(request, order_like, note, session=None):
         session = DBSession
 
     payment = Payment(order_like, request)
-    if order_like.payment_delivery_pair.payment_method.pay_at_store():
-        # コンビニ決済のみ決済処理を行う
+    if order_like.payment_delivery_pair.payment_method.pay_at_store() or \
+       order_like.payment_delivery_pair.payment_method.cash_on_reservation():
+        # コンビニ決済か窓口支払か無料のみ決済処理を行う
         order = payment.call_payment()
     else:
         if IPaymentCart.providedBy(order_like):

@@ -1931,11 +1931,12 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return payment_method
 
     def pay_at_store(self):
-        """
-        コンビニ支払かどうかを判定する。
-        """
+        """ コンビニ支払かどうかを判定する。"""
         return self.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID)
 
+    def cash_on_reservation(self):
+        """ 窓口支払かどうか """
+        return self.payment_plugin_id in (plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FREE_PAYMENT_PLUGIN_ID)
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'

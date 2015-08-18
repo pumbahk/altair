@@ -284,11 +284,32 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
             dict_ = build_cover_dict_from_order(order_like)
             payment_sheet_text = pystache.render(payment_sheet_text_template, dict_)
 
-    customer_address_1 = order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
-    customer_address_2 = order_like.shipping_address.address_2
-    customer_name = order_like.shipping_address.last_name + order_like.shipping_address.first_name
-    customer_phone_number = (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
-
+    customer_address_1 = (
+        order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
+        if order_like.shipping_address is not None and \
+           order_like.shipping_address.prefecture is not None and \
+           order_like.shipping_address.city is not None and \
+           order_like.shipping_address.address_1 is not None
+        else u''
+        )
+    customer_address_2 = (
+        order_like.shipping_address.address_2
+        if order_like.shipping_address is not None and \
+           order_like.shipping_address.address_2 is not None
+        else u''
+        )
+    customer_name = (
+        order_like.shipping_address.last_name + order_like.shipping_address.first_name
+        if order_like.shipping_address is not None and \
+           order_like.shipping_address.last_name is not None and \
+           order_like.shipping_address.first_name is not None
+        else u''
+        )
+    customer_phone_number = (
+        (order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2 or u'').replace(u'-', u'')
+        if order_like.shipping_address is not None
+        else u''
+        )
     event_code_1 = None
     event_code_2 = None
     performance_code = None
