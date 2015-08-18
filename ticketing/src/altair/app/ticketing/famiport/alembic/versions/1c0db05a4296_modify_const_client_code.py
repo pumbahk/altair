@@ -25,7 +25,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_constraint('famiportevent_ibfk_2', 'FamiPortEvent', type='foreignkey')
+    op.drop_constraint('FamiPortEvent_ibfk_2', 'FamiPortEvent', type='foreignkey')
     op.drop_constraint('code_1', 'FamiPortEvent', type='unique')
-    op.create_foreign_key('famiportevent_ibfk_2', 'FamiPortEvent', 'FamiPortClient', ['client_code'], ['code'])
+    op.create_foreign_key('FamiPortEvent_ibfk_2', 'FamiPortEvent', 'FamiPortClient', ['client_code'], ['code'])
     op.create_unique_constraint('code_1', 'FamiPortEvent', ['code_1', 'code_2', 'revision'])
