@@ -378,13 +378,15 @@ class SalesSegmentGroupCreator(Part):
         else:
             raise BackendOperationError()
 
+        time.sleep(2)
         self.operate_modal_create_sales_segment_group(browser, status)
+        time.sleep(2)
         if not self.could_register_sales_segment_group(browser, status):
             raise BackendOperationError()
 
     def operate_modal_create_sales_segment_group(self, browser, status):
         modal = browser.find_element_by_id('modal-sales_segment_group')
-
+        time.sleep(1)  # <=_(-_-;) fm
         name = modal.find_element_by_id('name')
         name.send_keys(Keys.BACK_SPACE * 50)
         name.send_keys(u'TEST')
@@ -531,7 +533,7 @@ class SalesSegmentGroupEdit(Part, SalesSegmentGroupShowPageMixin):
 
     def operate_modal_sales_segment_group(self, browser, status):
         modal = browser.find_element_by_id('modal-sales_segment_group')
-
+        time.sleep(1)
         public = modal.find_element_by_css_selector('input#public')
         public.click()
 
@@ -589,6 +591,7 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
             raise BackendOperationError()
 
     def edit_pdmp_page(self, browser, status):
+        time.sleep(1)
         method = browser.find_element_by_css_selector('#payment_method_id')
         options = method.find_elements_by_tag_name('option')
         for option in options:
@@ -810,7 +813,7 @@ class ProductCreator(Part, BreadCrumbMixin):
     def create_product(self, browser, status):
         script_ = 'new_product(get_selected_sales_segment_id())'
         browser.execute_script(script_)
-
+        time.sleep(1)
         input_ = browser.find_element_by_id('price')
         input_.send_keys('1')
 
@@ -818,20 +821,20 @@ class ProductCreator(Part, BreadCrumbMixin):
         browser.execute_script(script_)
 
 
-class PerformancePublicChanger(Part):
+class PerformancePublicChanger(Part, BreadCrumbMixin):
     @url_match('/events/performances/(?P<event_id>\d+)$')
     def is_target(self, browser, status):
         return True
 
     def run(self, browser, status):
         while True:
-            btn = browser.find_element_by_css_selector('.btn.btn-warning.btn-mini')
-            if btn:
-                btn.click()
+            public_btns = browser.find_elements_by_css_selector('.btn.btn-warning.btn-mini')[1:]  # 1個目はすべて非表示にする
+            for pub_btn in public_btns:
+                pub_btn.click()
                 time.sleep(1)
-                btns = browser.find_elements_by_css_selector('.btn.btn-danger')
+                btns = browser.find_elements_by_css_selector('.btn')
                 for btn in btns:
-                    if 'delete' != btn.get_attribute('id'):
+                    if btn.text == u'公開する':
                         btn.click()
                         break
                 time.sleep(3)
@@ -856,7 +859,7 @@ def main(argv=sys.argv[1:]):
     url = opts.url
 
     basic_auth_pair = ''
-    if 'stg2' in url or 'dev' in url:
+    if 'stg' in url or 'dev' in url:
         backendtest = Pit.get('backendtest',
                               {'require': {'basic_username': '',
                                            'basic_password': '',
