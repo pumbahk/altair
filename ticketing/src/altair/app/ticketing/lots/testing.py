@@ -82,8 +82,8 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
     event = Event(id=event_id)
 
     # payment_delivery_method
-    payment_method = PaymentMethod(fee=0)
-    delivery_method = DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0)
+    payment_method = PaymentMethod(fee=0, payment_plugin_id=1)
+    delivery_method = DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=1)
     payment_delivery_method_pair = PaymentDeliveryMethodPair( 
         payment_method=payment_method, delivery_method=delivery_method,
         system_fee=0, transaction_fee=0, delivery_fee_per_order=0,

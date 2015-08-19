@@ -2,9 +2,10 @@
 
 import logging
 import re
+import itertools
+import decimal
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
-import decimal
 from wtforms import Form, ValidationError
 from wtforms.fields import (
     Field,
@@ -14,7 +15,6 @@ from wtforms.fields import (
     SelectMultipleField,
     TextAreaField,
     RadioField,
-    FieldList,
     FormField,
     DecimalField,
     IntegerField,
@@ -27,12 +27,27 @@ import  altair.viewhelpers.datetime_
 from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 from altair.formhelpers import (
     Translations,
-    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget, OurSelectField,
-    CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
+    Max,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
 from altair.formhelpers.fields import (
     OurBooleanField,
+    OurPHPCompatibleFieldList, 
+    DateTimeField,
+    DateField, 
+    OurSelectField,
+    OurSelectMultipleField,
+    BugFreeSelectField,
+    BugFreeSelectMultipleField,
+    OurTextField,
+    OurHiddenField,
+    OurTextAreaField,
+    )
+from altair.formhelpers.widgets import (
+    OurDateWidget,
+    OurDateTimeWidget,
+    CheckboxMultipleSelect,
+    OurListWidget,
     )
 from altair.app.ticketing.core.models import (
     Organization,
@@ -65,6 +80,7 @@ from altair.app.ticketing.orders.helpers import (
     )
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
+from altair.app.ticketing.models import DBSession
 from .export import OrderAttributeRenderer
 from .models import OrderedProduct, OrderedProductItem
 from sqlalchemy import orm
@@ -624,58 +640,59 @@ class SalesSegmentGroupSearchForm(Form):
     )
 
 
-class OrderReserveForm(Form):
+class OrderReserveSettingsForm(OurForm):
+    sales_segment_id = OurSelectField(
+        label=u'販売区分',
+        validators=[Optional()],
+        choices=lambda field: [
+            (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(field.form.context.request)).term(sales_segment.start_at, sales_segment.end_at)))
+            for sales_segment in field.form.context.available_sales_segments
+            ],
+        encoder=lambda x : u'' if x is None else u'%d' % x,
+        coerce=lambda x : int(x) if x else None
+        )
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(OrderReserveForm, self).__init__(formdata, obj, prefix, **kwargs)
-        self.request = kwargs.pop('request', None)
+    performance_id = OurSelectField(
+        label=u'公演',
+        validators=[Required()],
+        choices=lambda field: [ (field.form.context.performance.id, u'') ],
+        coerce=lambda x: int(x)
+        )
 
-        if 'performance_id' in kwargs:
-            performance = Performance.get(kwargs['performance_id'])
-            self.performance_id.data = performance.id
-
-            query = Product.query.filter(Product.performance_id==performance.id)
-            if 'stocks' in kwargs and kwargs['stocks']:
-                query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
-
-            sales_segments = set(product.sales_segment for product in query.distinct())
-
-            self.sales_segment_id.choices = [
-                (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(self.request)).term(sales_segment.start_at, sales_segment.end_at)))
-                for sales_segment in \
-                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments, request=self.request)
-                ]
-
-            if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
-                self.sales_segment_id.default = kwargs['sales_segment_id']
-            elif len(self.sales_segment_id.choices) > 0:
-                self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
-
-            self.products.choices = []
-            if 'stocks' in kwargs and kwargs['stocks']:
-                query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
-                for p in query.all():
-                    self.products.choices += [(p.id, p)]
-
-            self.payment_delivery_method_pair_id.choices = []
-            self.payment_delivery_method_pair_id.sej_plugin_id = []
-            sales_segment = SalesSegment.get(self.sales_segment_id.default)
-            pdmps = sorted(
-                sales_segment.payment_delivery_method_pairs,
-                key=lambda x: (x.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
-                reverse=True
+    stocks = OurPHPCompatibleFieldList(
+        OurHiddenField(),
+        widget=OurListWidget(
+            outer_html_tag=None,
+            inner_html_tag=None,
+            omit_labels=True
             )
-            for pdmp in pdmps:
-                self.payment_delivery_method_pair_id.choices.append(
-                    (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
-                )
-                if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
-                   pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-                    self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
+        )
 
-            self.sales_counter_payment_method_id.choices = [(0, '')]
-            for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
-                self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
+    def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
+        self.context = context
+        super(OrderReserveSettingsForm, self).__init__(*args, **kwargs)
+
+
+class OrderReserveSeatsForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        self.context = kwargs.pop('context', None)
+        super(OrderReserveSeatsForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+    seats = OurPHPCompatibleFieldList(
+        OurHiddenField(),
+        widget=OurListWidget(
+            outer_html_tag=None,
+            inner_html_tag=None,
+            omit_labels=True
+            )
+        )
+
+
+class OrderReserveForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        self.context = kwargs.pop('context', None)
+        super(OrderReserveForm, self).__init__(formdata, obj, prefix, **kwargs)
 
     def _get_translations(self):
         return Translations()
@@ -687,156 +704,127 @@ class OrderReserveForm(Form):
                 return pm_id
         return 0
 
-    performance_id = HiddenField(
-        validators=[Required()],
-    )
-    stocks = HiddenField(
-        label='',
-        validators=[Optional()],
-    )
-    note = TextAreaField(
+    note = OurTextAreaField(
         label=u'備考・メモ',
         validators=[
             Optional(),
             Length(max=2000, message=u'2000文字以内で入力してください'),
-        ],
-    )
-    products = SelectMultipleField(
+            ]
+        )
+    products = OurSelectMultipleField(
         label=u'商品',
         validators=[Optional()],
-        choices=[],
+        choices=lambda field: [(product.id, product.name) for product in field.form.context.products],
         coerce=int
-    )
-    sales_segment_id = SelectField(
-        label=u'販売区分',
-        validators=[Required()],
-        choices=[],
-        coerce=lambda x : int(x) if x else u'',
-    )
-    payment_delivery_method_pair_id = SelectField(
+        )
+    payment_delivery_method_pair_id = OurSelectField(
         label=u'決済・引取方法',
         validators=[Required(u'決済・引取方法を選択してください')],
-        choices=[],
+        choices=lambda field: \
+            [
+                (
+                    payment_delivery_method_pair.id,
+                    '%s  -  %s' % (payment_delivery_method_pair.payment_method.name, payment_delivery_method_pair.delivery_method.name)
+                    )
+                for payment_delivery_method_pair in field.form.context.payment_delivery_method_pairs
+                ],
         coerce=lambda x : int(x) if x else u'',
-    )
-    sales_counter_payment_method_id = SelectField(
+        )
+    sales_counter_payment_method_id = OurSelectField(
         label=u'当日窓口決済',
         validators=[Optional()],
-        choices=[],
-        coerce=int,
-    )
-    last_name = TextField(
+        choices=lambda field: list(
+            itertools.chain(
+                [(0, '')],
+                (
+                    (pm.id, pm.name)
+                    for pm in DBSession.query(PaymentMethod).filter(PaymentMethod.organization_id == field.form.context.organization.id)
+                    )
+                )
+            ),
+        coerce=int
+        )
+    last_name = OurTextField(
         label=u'姓',
         filters=[strip_spaces],
         validators=[
             Optional(),
             Zenkaku,
             Length(max=10, message=u'10文字以内で入力してください'),
-        ],
-    )
-    last_name_kana = TextField(
+            ]
+        )
+    last_name_kana = OurTextField(
         label=u'姓(カナ)',
         filters=[strip_spaces, NFKC],
         validators=[
             Optional(),
             Katakana,
             Length(max=10, message=u'10文字以内で入力してください'),
-        ]
-    )
-    first_name = TextField(
+            ]
+        )
+    first_name = OurTextField(
         label=u'名',
         filters=[strip_spaces],
         validators=[
             Optional(),
             Zenkaku,
             Length(max=10, message=u'10文字以内で入力してください'),
-        ]
-    )
-    first_name_kana = TextField(
+            ]
+        )
+    first_name_kana = OurTextField(
         label=u'名(カナ)',
         filters=[strip_spaces, NFKC],
         validators=[
             Optional(),
             Katakana,
             Length(max=10, message=u'10文字以内で入力してください'),
-        ]
-    )
-    tel_1 = TextField(
+            ]
+        )
+    tel_1 = OurTextField(
         label=u'TEL',
         filters=[ignore_space_hyphen],
         validators=[
             Optional(),
             Length(min=1, max=11),
             Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
-        ]
-    )
-
-    def validate_stocks(form, field):
-        if len(field.data) == 0:
-            raise ValidationError(u'座席および席種を選択してください')
-        #if len(field.data) > 1:
-        #    raise ValidationError(u'複数の席種を選択することはできません')
-        if not form.products.choices:
-            raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+            ]
+        )
 
     def validate_payment_delivery_method_pair_id(form, field):
-        if field.data and field.data in field.sej_plugin_id:
+        if field.data and any(True for payment_delivery_method_pair in form.context.convenience_payment_delivery_method_pairs if field.data == payment_delivery_method_pair.id):
             for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
                 f = getattr(form, field_name)
                 if not f.data:
                     raise ValidationError(u'購入者情報を入力してください')
 
             # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
-            pdmp = PaymentDeliveryMethodPair.get(field.data)
-            if pdmp\
-                and pdmp.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID\
-                and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
-                and not isinstance(has_permission('event_editor', form.request.context, form.request), ACLAllowed):
+            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=field.data).one()
+            if (not pdmp.payment_method.pay_at_store() and pdmp.delivery_method.deliver_at_store()) \
+                and not form.context._is_event_editor:
                     raise ValidationError(u'この決済引取方法を選択する権限がありません')
-
-            # Sej発券の場合は20枚まで
-            if pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-                count = 0
-                post_data = MultiDict(form.request.json_body)
-                for product_id, product_name in form.products.choices:
-                    product = Product.query.filter_by(id=product_id).one()
-                    quantity = None
-                    try:
-                        quantity_str = post_data.get('product_quantity-%d' % product_id)
-                        if quantity_str is not None:
-                            quantity_str = quantity_str.strip()
-                            if quantity_str:
-                                quantity = int(quantity_str)
-                    except (ValueError, TypeError):
-                        raise ValidationError(u'個数には正しい数値を入力してください')
-                    if not quantity:
-                        continue
-                    count += product.num_tickets(pdmp) * quantity
-                if count > 20:
-                    raise ValidationError(u'コンビニ引取の場合、1予約あたり発券枚数が20枚以内になるよう指定してください')
 
 
 class OrderRefundForm(OurForm):
 
     def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
         super(type(self), self).__init__(*args, **kwargs)
-
-        organization_id = kwargs.get('organization_id')
-        if organization_id:
-            payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
-
-            self.payment_method_id.sej_plugin_id = []
-            for pm in payment_methods:
-                if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                    self.payment_method_id.sej_plugin_id.append(int(pm.id))
-
-            self.organization_id.data = organization_id
-
+        self.context = context
+        payment_methods = PaymentMethod.filter_by_organization_id(context.organization.id)
+        self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
         self.orders = kwargs.get('orders', [])
 
     def _get_translations(self):
         return Translations()
+
+    @property
+    def convenience_payment_method_ids(self):
+        payment_method_ids = []
+        payment_methods = PaymentMethod.filter_by_organization_id(self.context.organization.id)
+        for pm in payment_methods:
+            if pm.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
+                payment_method_ids.append(pm.id)
+        return payment_method_ids
 
     payment_method_id = SelectField(
         label=u'払戻方法',
@@ -908,9 +896,6 @@ class OrderRefundForm(OurForm):
     id = HiddenField(
         validators=[Optional()],
     )
-    organization_id = HiddenField(
-        validators=[Optional()],
-    )
 
     def validate_payment_method_id(form, field):
         refund_pm = PaymentMethod.get(field.data)
@@ -925,12 +910,17 @@ class OrderRefundForm(OurForm):
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
                         raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
-            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            elif settlement_delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
+                if refund_order.is_issued():
+                    # 発券済ならコンビニ払戻のみ可能
+                    if refund_pm.payment_plugin_id != plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or refund_pm.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
                 # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))
 
             # 決済方法=払戻方法 または払戻方法がコンビニ払戻/銀行振込ならOK
-            if refund_pm.payment_plugin_id not in [settlement_payment_plugin_id, plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
+            if refund_pm.payment_plugin_id not in [settlement_payment_plugin_id, plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
                 raise ValidationError('%s: (%s)' % (error_msg, refund_order.order_no))
 
     def validate(self):
@@ -946,13 +936,14 @@ class OrderRefundForm(OurForm):
 
             # コンビニ払戻なら必須
             refund_pm = PaymentMethod.get(self.payment_method_id.data)
-            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            if refund_pm.payment_plugin_id in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
                 if not self.start_at.data:
                     self.start_at.errors.append(u'入力してください')
                     status = False
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
                     status = False
+            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                 if self.need_stub.data is None:
                     self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')
                     status = False
@@ -1175,9 +1166,6 @@ class SejOrderForm(Form):
         choices=[(u'1', u'項目変更'), (u'2', u'公演中止')],
         validators=[Optional()],
     )
-
-    #tickets = FieldList(FormField(SejTicketForm), min_entries=20)
-
 
 
 class SejRefundEventForm(OurForm):

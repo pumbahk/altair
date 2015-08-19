@@ -76,7 +76,7 @@ from .models import (
     ProtoOrder,
     ImportTypeEnum,
     )
-
+from .interfaces import IOrderDescriptorRegistry, IOrderDescriptorRenderer
 ## backward compatibility
 from altair.app.ticketing.orders.models import OrderedProductAttribute
 from .metadata import (
@@ -719,11 +719,10 @@ def create_inner_order(request, order_like, note, session=None):
         from altair.app.ticketing.models import DBSession
         session = DBSession
 
-    payment_plugin_id = order_like.payment_delivery_pair.payment_method.payment_plugin_id
-
     payment = Payment(order_like, request)
-    if payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
-        # コンビニ決済のみ決済処理を行う
+    if order_like.payment_delivery_pair.payment_method.pay_at_store() or \
+       order_like.payment_delivery_pair.payment_method.cash_on_reservation():
+        # コンビニ決済か窓口支払か無料のみ決済処理を行う
         order = payment.call_payment()
     else:
         if IPaymentCart.providedBy(order_like):
@@ -1234,7 +1233,8 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 included_payment_plugin_ids=[
                     payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
                     payments_plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
-                    payments_plugins.FREE_PAYMENT_PLUGIN_ID
+                    payments_plugins.FREE_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID
                     ]
                 )
         except Exception as e:
@@ -2127,3 +2127,60 @@ class OrderAttributeIO(object):
             for field_name in remaining_attributes:
                 stored_value = params.get(field_name)
                 order_like.attributes[field_name] = stored_value
+
+def get_order_info_descriptor_registry(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IOrderDescriptorRegistry)
+
+def get_payment_delivery_plugin_info(request, order, flavor='html'):
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_method_pair)
+
+    if payment_delivery_plugin is not None:
+        payment_plugin = payment_delivery_plugin
+        delivery_plugin = None
+
+    descr_registry = get_order_info_descriptor_registry(request)
+
+    if payment_plugin is not None:
+        _payment_plugin_info = payment_plugin.get_order_info(request, order)
+        payment_plugin_info = {}
+        for k, v in _payment_plugin_info.items():
+            descr = descr_registry.get_descriptor(payment_plugin, k)
+            pair = None
+            if descr is not None:
+                renderer = descr.get_renderer(flavor)
+                if renderer is not None:
+                    pair = (
+                        descr.get_display_name(request),
+                        renderer(request, descr_registry, descr, v)
+                        )
+            if pair is None:
+                default_renderer = request.registry.queryUtility(IOrderDescriptorRenderer, name=flavor)
+                pair = (k, default_renderer(request, descr_registry, None, v) if default_renderer else u'(unrenderable)')
+            payment_plugin_info[k] = pair
+    else:
+        payment_plugin_info = None
+    if delivery_plugin is not None:
+        _delivery_plugin_info = delivery_plugin.get_order_info(request, order)
+        delivery_plugin_info = {}
+        for k, v in _delivery_plugin_info.items():
+            descr = descr_registry.get_descriptor(delivery_plugin, k)
+            pair = None
+            if descr is not None:
+                renderer = descr.get_renderer(flavor)
+                if renderer is not None:
+                    pair = (
+                        descr.get_display_name(request),
+                        renderer(request, descr_registry, descr, v)
+                        )
+            if pair is None:
+                default_renderer = request.registry.queryUtility(IOrderDescriptorRenderer, name=flavor)
+                pair = (k, default_renderer(request, descr_registry, None, v) if default_renderer else u'(unrenderable)')
+            delivery_plugin_info[k] = pair
+    else:
+        delivery_plugin_info = None
+    return payment_plugin_info, delivery_plugin_info
+

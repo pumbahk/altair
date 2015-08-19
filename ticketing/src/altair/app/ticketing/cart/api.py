@@ -620,7 +620,7 @@ def get_cart_setting_by_name(request, name, organization_id=None, session=None):
 
 def get_cart_setting_from_order_like(request, order_like):
     session = get_db_session(request, 'slave')
-    cart_setting_id = order_like.cart_setting_id 
+    cart_setting_id = order_like.cart_setting_id
     if cart_setting_id is None:
         cart_setting = session.query(CartSetting) \
             .join(c_models.OrganizationSetting.cart_setting) \
@@ -644,7 +644,10 @@ def is_fc_cart(cart_setting):
 
 
 class _DummyCart(c_models.CartMixin):
-    def __init__(self, created_at, items, sales_segment, payment_delivery_pair):
+    order_no = u'ZZ0000000000'
+
+    def __init__(self, organization_id, created_at, items, sales_segment, payment_delivery_pair):
+        self.organization_id = organization_id
         self.created_at = created_at
         self.items = items
         self.sales_segment = sales_segment
@@ -689,6 +692,7 @@ class _DummyCart(c_models.CartMixin):
 
 def check_if_payment_delivery_method_pair_is_applicable(request, cart, payment_delivery_pair):
     dummy_cart = _DummyCart(
+        organization_id=request.organization.id,
         created_at=cart.created_at,
         items=cart.items,
         sales_segment=cart.sales_segment,
@@ -706,7 +710,8 @@ def check_if_payment_delivery_method_pair_is_applicable(request, cart, payment_d
                 payment_plugin.validate_order(request, dummy_cart)
             if delivery_plugin is not None:
                 delivery_plugin.validate_order(request, dummy_cart)
-    except OrderLikeValidationFailure:
+    except OrderLikeValidationFailure as e:
+        logger.debug(e.message)
         return False
     return True
 

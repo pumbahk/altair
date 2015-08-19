@@ -123,8 +123,7 @@ def validate_issuing_start_at(
         ).issuing_start_at
     # 複数日にまたがる公演のケースがあるので公演終了日で算出
     logger.debug('performance_end_on={}, issuing_start_at={}'.format(performance_end_on, issuing_start_at))
-    delivery_plugin_id = pdmp.delivery_method.delivery_plugin_id
-    if delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID and performance_end_on < issuing_start_at:
+    if pdmp.delivery_method.deliver_at_store() and performance_end_on < issuing_start_at:
         pdmp_name = u'{0} - {1}'.format(pdmp.payment_method.name, pdmp.delivery_method.name)
         message = u'決済引取方法「{}」のコンビニ発券開始日時が公演終了日時より後になる可能性があります'.format(pdmp_name)
         raise IssuingStartAtOutTermException(message)

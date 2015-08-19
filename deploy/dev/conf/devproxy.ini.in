@@ -35,10 +35,25 @@ altair.cms.admin =
     http://cms.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:${altair:cms.admin.port}\1
 
+[rewrite:zea-admin]
+zea-admin = 
+    http://zea-admin.stg.altr.jp(/.*)
+    http://%(_proxy_target)s:8071\1
+
 [rewrite:dummy-checkout-server]
 dummy-checkout-server = 
     http://dummy-checkout-server.stg.altr.jp(/.*)
-    http://%(_proxy_target)s:8071\1
+    http://%(_proxy_target)s:8041\1
+
+[rewrite:famiport-simulator]
+famiport-simulator = 
+    http://famiport-simulator.stg.altr.jp(/.*)
+    http://%(_proxy_target)s:8042\1
+
+[rewrite:famiport-optool]
+famiport-optool = 
+    http://famiport-optool.stg.altr.jp(/.*)
+    http://%(_proxy_target)s:8043\1
 
 [rewrite:usersite]
 altair.ticketing.orderreview = 

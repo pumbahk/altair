@@ -107,6 +107,10 @@ pshellの起動::
 
      $ alshain pshell
 
+backendtest(管理画面のE2Eテスト)を実行する::
+
+     $ alshain backendtest
+
 altairpyを使う::
 
      $ alshain py

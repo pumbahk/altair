@@ -1,0 +1,10 @@
+<div>
+  <h4>Famiポートでお支払い</h4>
+  <p>Famiポート予約番号: <strong>${famiport_order['payment_reserve_number']}</strong></p>
+  <p>
+    支払期限: <strong>${h.japanese_datetime(famiport_order['payment_start_at'])}</strong>〜
+    %if famiport_order['payment_due_at']:
+    <strong>${h.japanese_datetime(famiport_order['payment_due_at'])}</strong>
+    %endif
+  </p>
+</div>

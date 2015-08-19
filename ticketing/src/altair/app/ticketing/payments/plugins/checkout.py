@@ -205,6 +205,17 @@ class CheckoutPlugin(object):
                 error_code=e.error_code
                 )
 
+    def get_order_info(self, request, order):
+        service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
+        co = service.get_checkout_object_by_order_no(order.order_no)
+        return {
+            u'order_id': co.orderId,
+            u'order_control_id': co.orderControlId,
+            u'used_point': co.usedPoint,
+            u'sales_at': co.sales_at,
+            }
+
+
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):
     """ 確認画面表示

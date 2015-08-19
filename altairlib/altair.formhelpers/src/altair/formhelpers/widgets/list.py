@@ -65,7 +65,7 @@ def default_subfield_id_formatter(id_, subfield, i):
     return u'%s-%s-%d' % (id_, subfield.short_name, i)
 
 class OurListWidget(object):
-    def __init__(self, outer_html_tag='ul', inner_html_tag='li', inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None, prefix_label=True, rendrant_factory=None, subfield_id_formatter=None):
+    def __init__(self, outer_html_tag='ul', inner_html_tag='li', inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None, prefix_label=True, rendrant_factory=None, subfield_id_formatter=None, omit_labels=False):
         if rendrant_factory is None:
             rendrant_factory = ListRendrant
         if subfield_id_formatter is None:
@@ -80,6 +80,7 @@ class OurListWidget(object):
         self.prefix_label = prefix_label
         self.rendrant_factory = rendrant_factory
         self.subfield_id_formatter = subfield_id_formatter
+        self.omit_labels = omit_labels
 
     def __call__(self, field, **kwargs):
         id_ = kwargs.setdefault('id', field.id)
@@ -107,10 +108,13 @@ class OurListWidget(object):
                 html.append(self.inner_html_pre)
             subfield_id = self.subfield_id_formatter(id_, subfield, i)
             subfield_html = subfield(id=subfield_id)
-            if self.prefix_label:
-                html.append('%s: %s' % (subfield.label, subfield_html))
+            if subfield.label and not self.omit_labels:
+                if self.prefix_label:
+                    html.append('%s: %s' % (subfield.label(field_id=subfield_id), subfield_html))
+                else:
+                    html.append('%s %s' % (subfield_html, subfield.label(field_id=subfield_id)))
             else:
-                html.append('%s %s' % (subfield_html, subfield.label))
+                html.append(subfield_html)
             if self.inner_html_post:
                 html.append(self.inner_html_post)
             if self.inner_html_tag:

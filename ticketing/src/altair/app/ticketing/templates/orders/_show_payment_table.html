@@ -1,96 +1,15 @@
-<%page args="order,checkout,sej_order"/>
+<%page args="order,payment_plugin_info"/>
+% if payment_plugin_info is not None:
           <table class="table table-striped table-bordered">
             <tr>
               <th class="span2">決済方法</th>
-              <td class="span3">${order.payment_delivery_pair.payment_method.name}</td>
+              <td class="span3">${order.payment_delivery_method_pair.payment_method.name}</td>
             </tr>
-            % if multicheckout_info:
+            % for k, (display_name, v) in payment_plugin_info.items():
             <tr>
-              <th>マルチ決済受領番号</th>
-              <td>${multicheckout_info['approval_no'] or u''}</td>
+              <th>${display_name}</th>
+              <td>${v or u''}</td>
             </tr>
-            <tr>
-              <th>カードブランド</th>
-              <td>${multicheckout_info['card_brand'] or u''}</td>
-            </tr>
-            <tr>
-              <th>仕向け先</th>
-              <td>
-                ${multicheckout_info['ahead_com_name'] or u''} (${multicheckout_info['ahead_com_cd'] or u''})
-              </td>
-            </tr>
-            % endif
-            % if checkout:
-            <tr>
-              <th>楽天ID決済 注文番号</th>
-              <td>${checkout.orderId}</td>
-            </tr>
-            <tr>
-              <th>楽天ID決済 注文管理番号</th>
-              <td>${checkout.orderControlId}</td>
-            </tr>
-            <tr>
-              <th>楽天ID決済 利用ポイント数</th>
-              <td>${vh.price(int(checkout.usedPoint or 0))}</td>
-            </tr>
-            <tr>
-              <th>楽天ID決済 売上日時</th>
-              <td>${vh.datetime(checkout.sales_at, with_weekday=True)}</td>
-            </tr>
-            % endif
-            % if sej_order:
-            <% branches = [_sej_order for _sej_order in sej_order.branches(sej_order.order_no) if _sej_order != sej_order] %>
-            <tr>
-              <th>支払票番号</th>
-              <td>
-                % if sej_order.billing_number:
-                  ${sej_order.billing_number}
-                  % if branches:
-                    (再付番前の番号: ${u', '.join(_sej_order.billing_number or u'-' for _sej_order in branches)})
-                  % endif
-                % else:
-                  -
-                %endif
-              </td>
-            </tr>
-            <tr>
-              <th>引換票番号</th>
-              <td>
-                % if sej_order.exchange_number:
-                  ${sej_order.exchange_number}
-                  % if branches:
-                    (再付番前の番号: ${u', '.join(_sej_order.exchange_number or u'-' for _sej_order in branches)})
-                  % endif
-                % else:
-                  -
-                % endif
-              </td>
-            </tr>
-            <tr>
-              <th>支払店舗</th>
-              <td>
-                % if sej_order.pay_store_name:
-                  ${sej_order.pay_store_name}
-                  % if branches:
-                    (再付番前の店舗: ${u', '.join(_sej_order.pay_store_name or u'-' for _sej_order in branches)})
-                  % endif
-                % else:
-                  -
-                % endif
-              </td>
-            </tr>
-            <tr>
-              <th>受取店舗</th>
-              <td>
-                % if sej_order.ticketing_store_name:
-                  ${sej_order.ticketing_store_name}
-                  % if branches:
-                    (再付番前の店舗: ${u', '.join(_sej_order.ticketing_store_name or u'-' for _sej_order in branches)})
-                  % endif
-                % else:
-                  -
-                % endif
-              </td>
-            </tr>
-            % endif
+            % endfor
           </table>
+% endif

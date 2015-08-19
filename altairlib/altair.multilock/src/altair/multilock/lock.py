@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 """多重起動防止用のユーティリティ
 """
-import sqlahelper
 from .errors import AlreadyStartUpError
 
 GRASP = True
@@ -24,9 +23,13 @@ class MultiStartLock(object):
     >>> except AlreadyStartUpError as err:
     >>>     pass # statements
     """
-    def __init__(self, name, timeout=10):
+    def __init__(self, name, timeout=10, engine=None):
         self.name = name
         self.timeout = int(timeout)
+        if engine is None:
+            import sqlahelper
+            engine = sqlahelper.get_engine()
+        self.engine = engine
 
     def __enter__(self):
         rc = self.get_lock()
@@ -39,7 +42,7 @@ class MultiStartLock(object):
         self.release_lock()
 
     def get_lock(self):
-        self._conn = sqlahelper.get_engine().connect()
+        self._conn = self.engine.connect()
         rc = self._conn.scalar('select get_lock(%s,%s)',
                                (self.name, self.timeout))
         return GRASP if rc == 1 else NOT_GRASP

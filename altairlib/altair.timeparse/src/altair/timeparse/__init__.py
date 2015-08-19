@@ -1,16 +1,24 @@
 import parsedatetime
 from dateutil.parser import parse as parsedate
 from datetime import datetime, date, time, timedelta
+from .duration import parse_duration, build_duration
 
 __all__ = (
     'parse_time_spec',
     'parse_date_or_time',
+    'parse_duration',
+    'build_duration',
     'LazyDateTime',
     )
 
-def parse_time_spec(spec):
+def parse_time_spec(spec, default_unit='seconds'):
     s = datetime(1900, 1, 1, 0, 0, 0)
-    result, _ = parsedatetime.Calendar().parse(spec, s)
+    result, flags = parsedatetime.Calendar().parse(spec, s)
+    if flags == 0:
+        # try with the default unit
+        result, flags = parsedatetime.Calendar().parse(spec + ' ' + default_unit, s)
+        if flags == 0:
+            return None
     return datetime(
         year=result.tm_year,
         month=result.tm_mon,

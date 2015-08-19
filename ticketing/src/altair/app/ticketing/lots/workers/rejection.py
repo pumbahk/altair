@@ -50,6 +50,7 @@ class RejectionWorkerResource(object):
 
 
 @task_config(root_factory=RejectionWorkerResource,
+             name="lots.rejection",
              consumer="lots.rejection",
              queue="lots.rejection",
              timeout=600)
