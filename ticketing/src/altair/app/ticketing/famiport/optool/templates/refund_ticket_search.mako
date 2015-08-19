@@ -104,7 +104,7 @@
             <td nowrap="nowrap">${famiport_receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1}</td>
             <td>${rts_helper.format_currency(famiport_refund_entry.ticket_payment)}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
-            <td>${famiport_refund_entry.shop_code}</td>
+            <td>${famiport_refund_entry.shop_code if famiport_refund_entry.refunded_at else '-'}</td>
             <td>${rts_helper.get_shop_name_text(famiport_shop)}</td>
         </tr>
         % endfor
