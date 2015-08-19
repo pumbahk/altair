@@ -114,6 +114,7 @@ $(document).ready(function() {
         $('#mbody-title').html('');
         $('#mbody-msg').html('実行してもよろしいですか');
         $('.modal-footer button').show();
+        location.reload();
     });
     $("#fix-reason").on('click', function() {
         $("#rebookform").attr('action', '${request.route_url('rebook_order', action='fix-reason', receipt_id=receipt.id)}').submit();
