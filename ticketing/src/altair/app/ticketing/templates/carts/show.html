@@ -114,7 +114,7 @@
   <div class="page-header">
     <h3>配送情報</h3>
   </div>
-  <%include file="../orders/_show_shipping_table.html" args="order_like=cart,shipping_address=cart.shipping_address"/>
+  <%include file="../orders/_show_shipping_table.html" args="order_like=cart,shipping_address=cart.shipping_address, delivery_plugin_info=None"/>
   % endif
   % if multicheckout_records:
   <div class="page-header">
