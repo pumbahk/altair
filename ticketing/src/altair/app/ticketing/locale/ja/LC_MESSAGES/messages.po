@@ -702,7 +702,7 @@ msgid "delivery-6:ticketing_shop_name"
 msgstr "FM発券店舗"
 
 msgid "delivery-6:ticketing_reserve_number"
-msgstr "FM発券店舗"
+msgstr "FM引換用予約番号"
 
 msgid "payment-6:delivery-6:payment_reserve_number"
 msgstr "FM予約番号"
