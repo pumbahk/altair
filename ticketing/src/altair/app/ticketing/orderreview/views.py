@@ -3,6 +3,7 @@ import logging
 import sqlahelper
 import json
 from datetime import datetime
+from collections import namedtuple
 
 from pyramid.view import view_defaults
 from pyramid.request import Request
@@ -57,6 +58,7 @@ DBSession = sqlahelper.get_session()
 suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketstar.jp/issues/10873 で問題が発生しだしたと思われる30分前
 suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
 
+FakeTicketPrintHistory = namedtuple('FakeTicketPrintHistory', ['id', 'item_token', 'item_token_id', 'performance', 'order', 'order_no', 'ordered_product_item', 'ordered_product_item_id', 'order_id', 'seat'])
 
 def is_suspicious_order(orderlike):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
@@ -500,13 +502,18 @@ class QRView(object):
         if data is None:
             return HTTPNotFound()
 
-        ticket = type('FakeTicketPrintHistory', (), {
-            'id': serial,
-            'performance': data.item.ordered_product.order.performance,
-            'ordered_product_item': data.item,
-            'order': data.item.ordered_product.order,
-            'seat': data.seat,
-        })
+        ticket = FakeTicketPrintHistory(
+            id=serial,
+            item_token=data,
+            item_token_id=data.id,
+            performance=data.item.ordered_product.order.performance,
+            ordered_product_item=data.item,
+            ordered_product_item_id=data.item.id,
+            order=data.item.ordered_product.order,
+            order_no=data.item.ordered_product.order.order_no,
+            order_id=data.item.ordered_product.order.id,
+            seat=data.seat
+            )
         qr = build_qr_by_orion(self.request, ticket, serial)
 
         if sign == qr.sign:
@@ -577,13 +584,18 @@ class QRView(object):
                     raise HTTPNotFound()
 
                 if response['result'] == u"OK" and response.has_key('serial'):
-                    ticket = type('FakeTicketPrintHistory', (), {
-                        'id': response['serial'],
-                        'performance': token.item.ordered_product.order.performance,
-                        'ordered_product_item': token.item,
-                        'order': token.item.ordered_product.order,
-                        'seat': token.seat,
-                    })
+                    ticket = FakeTicketPrintHistory(
+                        id=response['serial'],
+                        item_token=token,
+                        item_token_id=token.id,
+                        performance=token.item.ordered_product.order.performance,
+                        ordered_product_item=token.item,
+                        ordered_product_item_id=token.item.id,
+                        order=token.item.ordered_product.order,
+                        order_no=token.item.ordered_product.order.order_no,
+                        order_id=token.item.ordered_product.order_id,
+                        seat=token.seat
+                        )
                     qr = build_qr_by_orion(self.request, ticket, response['serial'])
                 else:
                     if response.has_key('message'):
