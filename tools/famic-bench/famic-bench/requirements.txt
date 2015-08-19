@@ -1,0 +1,5 @@
+funkload
+konbu
+lxml
+zope.interface
+zope.component

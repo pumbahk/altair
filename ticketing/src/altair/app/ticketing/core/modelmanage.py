@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 ## todo rename. 
 from altair.app.ticketing.payments.plugins import(
-    SEJ_DELIVERY_PLUGIN_ID, 
+    SEJ_DELIVERY_PLUGIN_ID,
+    FAMIPORT_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID
 )
 
@@ -39,6 +40,10 @@ class ApplicableTicketsProducer(object):
     def sej_only_tickets(self, format_id=None):
         """SEJ発券"""
         return self.include_delivery_id_ticket_iter([SEJ_DELIVERY_PLUGIN_ID], format_id=format_id)
+
+    def famiport_only_tickets(self, format_id=None):
+        """Famiポート発券"""
+        return self.include_delivery_id_ticket_iter([FAMIPORT_DELIVERY_PLUGIN_ID], format_id=format_id)
 
     def will_issued_by_own_tickets(self, format_id=None, delivery_plugin_ids=None):
         """自社発券"""

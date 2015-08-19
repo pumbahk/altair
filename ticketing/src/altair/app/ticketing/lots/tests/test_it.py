@@ -3,6 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
+from zope.interface import implementer
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from ..testing import DummyAuthenticatedResource
 
@@ -152,7 +153,7 @@ class EntryLotViewTests(unittest.TestCase):
         return lot, products
 
     def test_post(self):
-        from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin
+        from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin, IPaymentPreparer
         self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
@@ -165,6 +166,7 @@ class EntryLotViewTests(unittest.TestCase):
         payment_delivery_method_pair = pdmp = sales_segment.payment_delivery_method_pairs[0]
         preparer_name = "payment-%s:delivery-%s" % (pdmp.payment_method.payment_plugin_id,
                                                     pdmp.delivery_method.delivery_plugin_id,)
+        @implementer(IPaymentPreparer)
         class DummyPaymentDeliveryPlugin(object):
             def __init__(self):
                 self.called = []
@@ -212,6 +214,7 @@ class EntryLotViewTests(unittest.TestCase):
         request = DummyRequest(
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
+            registry=self.config.registry
         )
         context = testing.DummyResource(
             request=request,

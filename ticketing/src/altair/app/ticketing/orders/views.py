@@ -89,7 +89,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin
+from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin, validate_order_like
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
@@ -99,7 +99,6 @@ from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
-from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.qr.utils import build_qr_by_token, build_qr_by_order
 from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
 
@@ -119,12 +118,11 @@ from .api import (
     save_order_modification,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
-    get_anshin_checkout_object,
     get_order_by_order_no,
     get_order_by_id,
     refresh_order,
-    get_multicheckout_info,
     OrderAttributeIO,
+    get_payment_delivery_plugin_info
 )
 from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
 from .utils import NumberIssuer
@@ -136,7 +134,6 @@ from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticke
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
-from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -781,7 +778,7 @@ class OrdersRefundIndexView(OrderBaseView):
 
     @view_config(route_name='orders.refund.index')
     def index(self):
-        form = OrderRefundForm()
+        form = OrderRefundForm(context=self.context)
         query = Refund.query.filter(
                 Refund.organization_id==self.context.organization.id
             ).options(
@@ -831,7 +828,7 @@ class OrdersRefundEditView(OrderBaseView):
         if refund is None:
             return HTTPNotFound()
 
-        f = OrderRefundForm(obj=refund, organization_id=self.context.organization.id)
+        f = OrderRefundForm(obj=refund, context=self.context)
         return dict(form=f, refund=refund)
 
     @view_config(route_name='orders.refund.edit', request_method='POST')
@@ -843,8 +840,8 @@ class OrdersRefundEditView(OrderBaseView):
 
         f = OrderRefundForm(
                 self.request.POST,
-                organization_id=self.context.organization.id,
-                orders=refund.orders
+                orders=refund.orders,
+                context=self.context
                 )
         if f.validate():
             refund = merge_session_with_post(refund, f.data)
@@ -865,7 +862,7 @@ class OrdersRefundDetailView(OrderBaseView):
         if refund is None:
             return HTTPNotFound()
 
-        form = OrderRefundForm()
+        form = OrderRefundForm(context=self.context)
         return dict(
             form=form,
             refund=refund,
@@ -1020,7 +1017,7 @@ class OrdersRefundSettingsView(OrderBaseView):
             data = {}
             if self.form_search.payment_method.data:
                 data['payment_method_id'] = self.form_search.payment_method.data
-        form_refund = OrderRefundForm(_data=data, organization_id=self.organization_id)
+        form_refund = OrderRefundForm(_data=data, context=self.context)
 
         return {
             'orders':self.checked_orders,
@@ -1038,7 +1035,7 @@ class OrdersRefundSettingsView(OrderBaseView):
         orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
         form_refund = OrderRefundForm(
             self.request.POST,
-            organization_id=self.organization_id,
+            context=self.context,
             orders=orders
         )
         if not form_refund.validate():
@@ -1091,7 +1088,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 errors_for_order[1].append(error)
             errors_and_warnings.append(errors_for_order)
         return dict(
-            form_refund=OrderRefundForm(_data=refund_settings),
+            form_refund=OrderRefundForm(_data=refund_settings, context=self.context),
             form_search=OrderRefundSearchForm(
                 MultiDict(self.request.session.get('ticketing.refund.condition', [])),
                 organization_id=self.context.organization.id
@@ -1117,6 +1114,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 performances.append(o.performance)
         refund_params = dict(self.request.session['ticketing.refund.settings'])
         refund_params.update(
+            organization=self.context.organization,
             orders=orders,
             order_count=len(orders),
             performances=performances,
@@ -1164,12 +1162,11 @@ class OrderDetailView(OrderBaseView):
         form_order_info = forms.get_order_info_form()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
-        form_order_reserve = forms.get_order_reserve_form()
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
-        checkout_object = get_anshin_checkout_object(self.request, order)
-        multicheckout_info = get_multicheckout_info(self.request, order)
+        payment_plugin_info, delivery_plugin_info = get_payment_delivery_plugin_info(self.request, order)
+
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -1177,14 +1174,12 @@ class OrderDetailView(OrderBaseView):
             'order_attributes': order_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
-            'sej_order':get_sej_order(order.order_no),
-            'checkout': checkout_object,
-            'multicheckout_info': multicheckout_info,
+            'payment_plugin_info': payment_plugin_info,
+            'delivery_plugin_info': delivery_plugin_info,
             'mail_magazines':mail_magazines,
             'form_order_info':form_order_info,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
-            'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
             'form_each_print': form_each_print,
             'form_order_edit_attribute': forms.get_order_edit_attribute(),
@@ -1300,12 +1295,13 @@ class OrderDetailView(OrderBaseView):
 
         f = OrderRefundForm(
             self.request.POST,
-            organization_id=self.context.organization.id,
+            context=self.context,
             orders=[order]
         )
         if f.validate():
             refund_param = f.data
             refund_param.update(dict(
+                organization=self.context.organization,
                 orders=[order],
                 order_count=1,
                 performances=[order.performance],
@@ -1664,26 +1660,17 @@ class OrderDetailView(OrderBaseView):
 
     @view_config(route_name='orders.sales_summary', renderer='altair.app.ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
     def sales_summary(self):
-        performance_id = int(self.request.params.get('performance_id') or 0)
-        performance = Performance.get(performance_id, self.context.organization.id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        sales_segments = build_sales_segment_list_for_inner_sales(performance.sales_segments, request=self.request)
-        sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
-        if sales_segment_id:
-            sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
-
+        sales_segments = self.context.sales_segments
         sales_summary = []
-        for stock_type in performance.stock_types:
+        for stock_type in self.context.performance.stock_types:
             stock_data = []
-            stocks = Stock.filter(Stock.performance_id==performance_id)\
+            stocks = Stock.filter(Stock.performance_id == self.context.performance.id) \
                 .options(joinedload('stock_status'))\
                 .filter(Stock.stock_type_id==stock_type.id)\
                 .filter(Stock.quantity>0)\
-                .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
+                .filter(exists().where(and_(ProductItem.performance_id == self.context.performance.id, ProductItem.stock_id==Stock.id))).all()
             for stock in stocks:
-                products = [p for p in performance.products if stock in p.stocks and p.sales_segment in sales_segments]
+                products = [p for p in self.context.performance.products if stock in p.stocks and p.sales_segment in sales_segments]
                 if products:
                     stock_data.append(dict(
                         stock=stock,
@@ -1814,7 +1801,8 @@ class OrderDetailView(OrderBaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
-    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh") #print.queueの操作ではなくrefreshする操作
+    #print.queueの操作ではなくrefreshする操作
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh")
     def order_tokens_refresh(self):
         from .helpers import decode_candidate_id
         now = datetime.now()
@@ -1915,165 +1903,103 @@ class OrdersReserveView(OrderBaseView):
                 seat_status.status = int(SeatStatusEnum.Vacant)
                 seat_status.save()
 
-    def get_inner_cart_session(self):
-        inner_cart_session = self.request.session.get('altair.app.ticketing.inner_cart')
-        logger.info("inner cart session : %s" % inner_cart_session)
-        if inner_cart_session is None:
-            raise InnerCartSessionException('Inner cart session is expired')
-        return inner_cart_session
-
-    def clear_inner_cart_session(self):
-        inner_cart_session = self.request.session.get('altair.app.ticketing.inner_cart')
-        logger.info("clear cart session : %s" % inner_cart_session)
-
-        if inner_cart_session:
-            if inner_cart_session.get('seats'):
-                venue = Venue.get(inner_cart_session.get('venue_id'))
-                self.release_seats(venue, inner_cart_session.get('seats'))
-            del self.request.session['altair.app.ticketing.inner_cart']
-
     @view_config(route_name='orders.reserve.form', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve.html')
     def reserve_form(self):
-        post_data = MultiDict(self.request.json_body)
+        post_data = self.request.POST
         logger.debug('order reserve post_data=%s' % post_data)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        sales_segment_id = int(post_data.get('sales_segment_id', 0))
-        performance = Performance.get(performance_id, self.context.organization.id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
 
         # 古いカートのセッションが残っていたら削除
         api.remove_cart(self.request, release=True, async=False)
 
-        # 古い確保座席がセッションに残っていたら削除
-        self.clear_inner_cart_session()
+        form_reserve = self.context.form
 
-        stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id, request=self.request)
-        form_reserve.sales_segment_id.validators = [Optional()]
-        form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
-        form_reserve.validate()
+        seat_l0_ids = self.context.seats_form.seats.data
 
         # 選択されたSeatがあるならステータスをKeepにして確保する
-        seats = []
-        if post_data.get('seats'):
+        seats = None
+        if seat_l0_ids:
             try:
                 reserving = api.get_reserving(self.request)
-                stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
-                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
+                seats = reserving.reserve_selected_seats(
+                   [(stock.stock_status, 0) for stock in self.context.stocks],
+                   self.context.performance.id,
+                   seat_l0_ids,
+                   reserve_status=SeatStatusEnum.Keep
+                   )
             except InvalidSeatSelectionException:
                 logger.info("seat selection is invalid.")
-                raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+                self.context.raise_error(u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')
             except Exception, e:
                 logger.exception('save error (%s)' % e.message)
-                raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
+                self.context.raise_error(u'エラーが発生しました')
 
-        # セッションに保存
-        self.request.session['altair.app.ticketing.inner_cart'] = {
-            'venue_id':performance.venue.id,
-            'stocks':post_data.get('stocks'),
-            'seats':post_data.get('seats'),
-        }
         return {
-            'seats':seats,
             'form':form_reserve,
             'form_order_edit_attribute': OrderMemoEditFormFactory(3)(),
-            'performance':performance,
+            'performance': self.context.performance,
         }
 
     @view_config(route_name='orders.reserve.form.reload', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve.html')
     def reserve_form_reload(self):
-        post_data = MultiDict(self.request.json_body)
-        post_data.update(self.get_inner_cart_session())
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.organization.id)
-
-        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
-        selected_seats = Seat.query.filter(and_(
-            Seat.l0_id.in_(post_data.get('seats')),
-            Seat.venue_id==post_data.get('venue_id')
-        )).all()
-
         return {
-            'seats':selected_seats,
-            'form':f,
-            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(post_data),
-            'performance':performance,
+            'form': self.context.form,
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(self.request.POST),
+            'performance': self.context.performance,
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve_confirm.html')
     def reserve_confirm(self):
-        post_data = MultiDict(self.request.json_body)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.organization.id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
-
         # 古いカートのセッションが残っていたら削除
         api.remove_cart(self.request, release=True, async=False)
-
+        post_data = self.request.POST
         try:
-            post_data.update(self.get_inner_cart_session())
-            logger.debug('order reserve confirm post_data=%s' % post_data)
-
-            # validation
-            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
-            f.process(post_data)
-            if not f.validate():
-                raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
-
+            if not self.context.form.validate():
+                self.context.raise_error(self.context.form.errors)
             ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
-                raise ValidationError(form_order_edit_attribute.get_error_messages())
+                self.context.raise_error(form_order_edit_attribute.get_error_messages())
 
-            seats = post_data.get('seats')
+            seats = self.context.seats_form.seats.data
             order_items = []
             total_quantity = 0
-            for product_id, product_name in f.products.choices:
+            for product_id, product_name in self.context.form.products.choices:
                 quantity = post_data.get('product_quantity-%d' % product_id)
                 if not quantity:
                     continue
                 quantity = quantity.encode('utf-8')
                 if not quantity.isdigit():
-                    raise ValidationError(u'個数が不正です')
+                    self.context.raise_error(u'個数が不正です')
                 product_quantity = int(quantity)
                 product = DBSession.query(Product).filter_by(id=product_id).one()
-                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, performance_id)
+                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
                 order_items.append((product, product_quantity))
 
             if not total_quantity:
-                raise ValidationError(u'個数を入力してください')
+                self.context.raise_error(u'個数を入力してください')
             elif seats and total_quantity != len(seats):
-                raise ValidationError(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
+                self.context.raise_error(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
-            self.release_seats(performance.venue, seats)
+            self.release_seats(self.context.performance.venue, seats)
 
             # create cart
-            sales_segment = SalesSegment.get(f.sales_segment_id.data)
-            cart = api.order_products(self.request, sales_segment, order_items, selected_seats=seats)
-            cart.sales_segment = sales_segment
-            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
+            cart = api.order_products(self.request, self.context.sales_segment, order_items, selected_seats=seats)
+            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=self.context.form.payment_delivery_method_pair_id.data).one()
             cart.payment_delivery_pair = pdmp
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
             # コンビニ決済は通知を行うので購入者情報が必要
-            if cart.payment_delivery_pair.id in f.payment_delivery_method_pair_id.sej_plugin_id:
+            if cart.payment_delivery_pair in self.context.convenience_payment_delivery_method_pairs:
                 cart.shipping_address = ShippingAddress(
-                    first_name=f.first_name.data,
-                    last_name=f.last_name.data,
-                    first_name_kana=f.first_name_kana.data,
-                    last_name_kana=f.last_name_kana.data,
-                    tel_1=f.tel_1.data,
+                    first_name=self.context.form.first_name.data,
+                    last_name=self.context.form.last_name.data,
+                    first_name_kana=self.context.form.first_name_kana.data,
+                    last_name_kana=self.context.form.last_name_kana.data,
+                    tel_1=self.context.form.tel_1.data,
                 )
+            validate_order_like(self.request, cart)
 
             DBSession.add(cart)
             DBSession.flush()
@@ -2081,39 +2007,38 @@ class OrdersReserveView(OrderBaseView):
 
             return {
                 'cart':cart,
-                'form':f,
-                'performance': performance,
+                'form': self.context.form,
+                'performance': self.context.performance,
                 'form_order_edit_attribute': form_order_edit_attribute
             }
         except ValidationError, e:
-            raise HTTPBadRequest(body=json.dumps({'message':e.message}))
+            self.context.raise_error(e.message)
         except NotEnoughAdjacencyException:
             logger.info("not enough adjacency")
-            raise HTTPBadRequest(body=json.dumps({'message':u'連席で座席を確保できません。座席を直接指定するか、席数を減らして確保してください。'}))
+            raise self.context.raise_error(u'連席で座席を確保できません。座席を直接指定するか、席数を減らして確保してください。')
         except InvalidSeatSelectionException:
             logger.info("seat selection is invalid.")
-            raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+            self.context.raise_error(u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')
         except NotEnoughStockException as e:
             logger.info("not enough stock quantity :%s" % e)
-            raise HTTPBadRequest(body=json.dumps({'message':u'在庫がありません'}))
+            self.context.raise_error(u'在庫がありません')
         except InnerCartSessionException as e:
-            logger.info("%s" % e.message)
-            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました。もう一度選択してください。'}))
+            logger.exception("oops")
+            self.context.raise_error(u'エラーが発生しました。もう一度選択してください。')
+        except OrderLikeValidationFailure as e:
+            logger.exception("oops")
+            self.context.raise_error(e.message)
         except Exception, e:
-            logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
+            if isinstance(e, Response):
+                raise
+            else:
+                logger.exception('save error (%s)' % e.message)
+                self.context.raise_error(u'エラーが発生しました')
 
     @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json')
     def reserve_complete(self):
-        post_data = MultiDict(self.request.json_body)
+        post_data = self.request.POST
         with_enqueue = post_data.get('with_enqueue', False)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.organization.id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
 
         try:
             # create order
@@ -2123,9 +2048,7 @@ class OrdersReserveView(OrderBaseView):
                 order = create_inner_order(self.request, cart, note)
             except Exception as e:
                 logger.exception('call payment/delivery plugin error')
-                raise HTTPInternalServerError(body=json.dumps({
-                    u'message': u'決済・配送プラグインでエラーが発生しました (%s)' % e
-                    }))
+                self.context.raise_error(u'決済・配送プラグインでエラーが発生しました (%s)' % e, HTTPInternalServerError)
 
             # 窓口での決済方法
             attr = 'sales_counter_payment_method_id'
@@ -2141,9 +2064,7 @@ class OrdersReserveView(OrderBaseView):
             ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
-                raise HTTPBadRequest(body=json.dumps({
-                    "message": u"文言・メモの設定でエラーが発生しました",
-                }))
+                self.context.raise_error(u"文言・メモの設定でエラーが発生しました")
             for k, v in form_order_edit_attribute.get_result():
                 if v:
                     order.attributes[k] = v
@@ -2160,26 +2081,21 @@ class OrdersReserveView(OrderBaseView):
             return dict(order_id=order.id)
         except NoCartError, e:
             logger.info("%s" % e.message)
-            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました。もう一度選択してください。'}))
+            self.context.raise_error(u'エラーが発生しました。もう一度選択してください。', HTTPInternalServerError)
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
+            self.context.raise_error(u'エラーが発生しました', HTTPInternalServerError)
 
     @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json')
     def reserve_reselect(self):
         try:
             # release cart
+            self.release_seats(self.context.performance.venue, self.context.seats_form.seats.data)
             api.remove_cart(self.request, release=True, async=False)
-
-            # clear session
-            self.clear_inner_cart_session()
-
             return {}
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'エラーが発生しました',
-            }))
+            self.context.raise_error(u'エラーが発生しました', HTTPInternalServerError)
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')

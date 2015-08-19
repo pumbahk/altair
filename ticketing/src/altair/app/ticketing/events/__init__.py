@@ -16,6 +16,12 @@ def includeme(config):
     config.add_route('events.delete', '/delete/{event_id}', factory=factory)
     config.add_route('events.send', '/send/{event_id}', factory=factory)
     config.add_route('events.open', '/open/{event_id}/{public}', factory=factory)
+    config.add_route('events.famiport.performance_groups.index', '/{event_id}/famiport/performance_groups', factory=factory)
+    config.add_route('events.famiport.performance_groups.item.show', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/show', factory=factory)
+    config.add_route('events.famiport.performance_groups.item.edit', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/edit', factory=factory)
+    config.add_route('events.famiport.performances.item.show', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/performances/{altair_famiport_performance_id}/show', factory=factory)
+    config.add_route('events.famiport.performances.item.edit', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/performances/{altair_famiport_performance_id}/edit', factory=factory)
+    config.add_route('events.famiport.performance_groups.action', '/{event_id}/famiport/performance_groups/*traverse', factory=factory)
 
     config.include('altair.app.ticketing.events.performances', route_prefix='performances')
     config.include('altair.app.ticketing.events.sales_segment_groups', route_prefix='sales_segment_groups')

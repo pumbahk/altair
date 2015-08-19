@@ -45,6 +45,11 @@ class OrderRefundFormTests(unittest.TestCase):
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
         ])
+        from altair.app.ticketing.core.models import Organization
+        self.organization = Organization(short_name=u'XX')
+        self.context = testing.DummyModel(
+            organization=self.organization
+            )
         self._add_payment_methods()
 
     def tearDown(self):
@@ -60,21 +65,25 @@ class OrderRefundFormTests(unittest.TestCase):
     def _add_payment_methods(self):
         from altair.app.ticketing.core.models import PaymentMethod
         self.session.add(PaymentMethod(
+            organization=self.organization,
             payment_plugin_id=1,
             name=u'クレジットカード決済',
             fee=100,
         ))
         self.session.add(PaymentMethod(
+            organization=self.organization,
             payment_plugin_id=2,
             name=u'楽天ID決済',
             fee=200,
         ))
         self.session.add(PaymentMethod(
+            organization=self.organization,
             payment_plugin_id=3,
             name=u'コンビニ決済',
             fee=300,
         ))
         self.session.add(PaymentMethod(
+            organization=self.organization,
             payment_plugin_id=4,
             name=u'窓口支払',
             fee=400,
@@ -130,7 +139,7 @@ class OrderRefundFormTests(unittest.TestCase):
 
     def test_validate_payment_method_id_no_orders(self):
         orders = []
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=1)
         try:
@@ -144,7 +153,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=1,
             delivery_plugin_id=1
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=1)
         try:
@@ -158,7 +167,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=1,
             delivery_plugin_id=1
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=4)
         try:
@@ -172,7 +181,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=2,
             delivery_plugin_id=1
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=2)
         try:
@@ -186,7 +195,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=2,
             delivery_plugin_id=1
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=4)
         try:
@@ -200,7 +209,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=3,
             delivery_plugin_id=2,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=3)
         try:
@@ -214,7 +223,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=3,
             delivery_plugin_id=1,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=4)
         try:
@@ -228,7 +237,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=4,
             delivery_plugin_id=1,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=4)
         try:
@@ -243,7 +252,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=1,
             delivery_plugin_id=2,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=3)
         try:
@@ -258,7 +267,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=1,
             delivery_plugin_id=2,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=1)
         try:
@@ -275,7 +284,7 @@ class OrderRefundFormTests(unittest.TestCase):
             delivery_plugin_id=2,
             issued_at=None,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=1)
         try:
@@ -290,7 +299,7 @@ class OrderRefundFormTests(unittest.TestCase):
             payment_plugin_id=2,
             delivery_plugin_id=1,
         )]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=3)
         try:
@@ -315,7 +324,7 @@ class OrderRefundFormTests(unittest.TestCase):
                 order_no='DMY2'
             )
         ]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=1)
         try:
@@ -337,7 +346,7 @@ class OrderRefundFormTests(unittest.TestCase):
                 order_no='DMY2'
             )
         ]
-        target = self._makeOne(orders=orders)
+        target = self._makeOne(orders=orders, context=self.context)
 
         field = testing.DummyModel(data=3)
         try:

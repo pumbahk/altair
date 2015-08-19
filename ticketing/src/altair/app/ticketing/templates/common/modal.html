@@ -25,7 +25,7 @@
 <%doc>
   confirm dialog with confirm question
 </%doc>
-<%def name="confirm_modal(label_confirm=u'実行', label_return=u'戻る')">
+<%def name="confirm_modal(label_confirm=u'実行', label_return=u'戻る', no_outer_form_element=False)">
 <div id="modal-confirm" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close" data-dismiss="modal">&times;</a>
@@ -42,10 +42,14 @@
         $('form[name="modal-confirm-form"]').disableOnSubmit();
       });
     </script>
+    % if not no_outer_form_element:
     <form name="modal-confirm-form" action="" method="get" style="margin-bottom: 0;">
+    % endif
       <input type="button" value="${label_return}" class="btn secondary" onclick="$('#modal-confirm').modal('hide'); return false;">
       <input type="submit" value="${label_confirm}" class="btn btn-danger" />
+    % if not no_outer_form_element:
     </form>
+    % endif
   </div>
 </div>
 </%def>

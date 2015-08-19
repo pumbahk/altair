@@ -28,4 +28,4 @@ class TestIt(unittest.TestCase):
 
         self.assertIsNotNone(consumer)
         self.assertTrue(consumer.tasks)
-        self.assertEqual(consumer.tasks[0].root_factory, None)
+        self.assertEqual(consumer.tasks.popitem()[1].root_factory, None)

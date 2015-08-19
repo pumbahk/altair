@@ -91,3 +91,7 @@ class FreePaymentPlugin(object):
 
     def refund(self, request, order, refund_record):
         pass
+
+    def get_order_info(self, request, order):
+        return {}
+

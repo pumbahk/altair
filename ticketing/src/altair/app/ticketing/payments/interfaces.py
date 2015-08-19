@@ -101,6 +101,9 @@ class IDeliveryPlugin(Interface):
     def refund(request, order, refund_record):
         """ 払戻 """
 
+    def get_order_info(request, order):
+        pass
+
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
     def validate_order(request, order_like, update=False):
@@ -130,6 +133,9 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
     def refund(request, order, refund_record):
         """ 払戻 """
 
+    def get_order_info(request, order):
+        pass
+
 class IPaymentDeliveryPlugin(Interface):
     """ 決済配送を一度に行うプラグイン"""
     def validate_order(request, order_like, update=False):
@@ -149,6 +155,9 @@ class IPaymentDeliveryPlugin(Interface):
 
     def refund(request, order, refund_record):
         """ 払戻 """
+
+    def get_order_info(request, order):
+        pass
 
 class IOrderPayment(Interface):
     """ 完了画面の決済ビューレットのコンテキスト"""

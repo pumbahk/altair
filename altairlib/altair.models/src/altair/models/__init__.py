@@ -52,15 +52,19 @@ class Identifier(Integer):
     def _expression_adaptations(self):
         return self.inner._expression_adaptations
 
-
-class WithTimestamp(object):
-    __clone_excluded__ = ['created_at', 'updated_at']
+class WithCreatedAt(object):
+    __clone_excluded__ = ['created_at']
 
     @declared_attr
     def created_at(self):
         return deferred(Column(TIMESTAMP, nullable=False,
                                default=datetime.now,
                                server_default=sqlf.current_timestamp()))
+
+
+class WithTimestamp(WithCreatedAt):
+    __clone_excluded__ = WithCreatedAt.__clone_excluded__ + ['updated_at']
+
     @declared_attr
     def updated_at(self):
         return deferred(Column(TIMESTAMP, nullable=False,

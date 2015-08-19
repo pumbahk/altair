@@ -299,6 +299,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             self.assertEqual(result[u'対戦名'],  ":name")
             self.assertEqual(result[u'公演コード'],  ":code")
             self.assertEqual(result[u'開催日'],  target.formatter.format_date(model.start_on))
+            self.assertEqual(result[u'開催日c'],  target.formatter.format_date_compressed(model.start_on))
             self.assertEqual(result[u'開催日s'],  target.formatter.format_date_short(model.start_on))
             self.assertEqual(result[u'開場時刻'],  target.formatter.format_time(model.open_on))
             self.assertEqual(result[u'開場時刻s'],  target.formatter.format_time_short(model.open_on))

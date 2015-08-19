@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from pyramid.security import has_permission, ACLAllowed
 from sqlalchemy.orm.properties import RelationshipProperty
 from zope.interface import implementer
 from markupsafe import Markup, escape
@@ -22,21 +21,6 @@ refund_status_labels = {
 
 def get_refund_status_label(status):
     return refund_status_labels.get(int(status), u'?')
-
-def build_sales_segment_list_for_inner_sales(sales_segments, now=None, request=None):
-    if now is None:
-        now = datetime.now()
-    def sales_segment_sort_key_func(ss):
-        return (
-            ss.kind == u'sales_counter',
-            ss.start_at is None or ss.start_at <= now,
-            ss.end_at is None or now <= ss.end_at,
-            -ss.start_at.toordinal() if ss.start_at else 0,
-            ss.id
-            )
-    if request and not isinstance(has_permission('event_editor', request.context, request), ACLAllowed):
-        sales_segments = [ss for ss in sales_segments if ss.setting.sales_counter_selectable]
-    return sorted(sales_segments, key=sales_segment_sort_key_func, reverse=True)
 
 @implementer(ISettingRenderer)
 class DefaultSettingRenderer(object):

@@ -263,7 +263,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     $.ajax({
       type: 'post',
       url: '${request.route_path('orders.reserve.form')}',
-      data: JSON.stringify(param),
+      data: param,
       dataType: 'html',
       complete: function () {
         orderFormOpening = false;
@@ -283,14 +283,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   function confirmOrder() {
     var modal = $('#modal-reserve');
     modal.find('.modal-body .alert').remove();
-    var param = {};
-    $(modal.find('form').serializeArray()).each(function(i, v) {
-      param[v.name] = v.value;
-    });
+    var $form = modal.find('form');
+    var param = build_form_params($form)
     $.ajax({
       type: 'post',
       url: "${request.route_path('orders.reserve.confirm')}",
-      data: JSON.stringify(param),
+      data: param,
       dataType: 'html',
       success: function(data) {
         $('#modal-reserve').modal('hide');
@@ -317,19 +315,16 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   function completeOrder() {
     var modal = $('#modal-reserve');
     modal.find('.modal-body .alert').remove();
-    var param = {};
-    $(modal.find('form').serializeArray()).each(function(i, v) {
-      param[v.name] = v.value;
-    });
+    var $form = modal.find('form');;
+    var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
     }
     $.ajax({
       type: 'post',
       url: "${request.route_path('orders.reserve.complete')}",
-      contentType: 'application/json; charset=utf-8',
       dataType: 'json',
-      data: JSON.stringify(param),
+      data: param,
       success: function(result) {
         $('#modal-reserve').modal('hide');
         onReservationComplete(result);
@@ -350,10 +345,14 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   }
 
   function reselectOrder() {
+    var modal = $('#modal-reserve');
+    var $form = modal.find('form');;
+    var param = build_form_params($form);
     $.ajax({
       type: 'post',
       url: '${request.route_path('orders.reserve.reselect')}',
       dataType: 'html',
+      data: param,
       success: function(data) {
         $('#modal-reserve').modal('hide');
       },
@@ -910,8 +909,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 
       var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em; margin-left:3px;" />');
       select.append($('<option value=""></option>'));
-      <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
-      % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments, request=request):
+      % for sales_segment in _context.available_sales_segments:
       select.append($('<option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>'));
       % endfor
       this.$el.append(select);

@@ -1,0 +1,41 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%namespace file="/common/helpers.html" name="ch" />
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'Famiポート連携', u'公演グループ「%s」' % altair_famiport_performance.altair_famiport_performance_group.name_1, u'公演「%s」' % altair_famiport_performance.name, u'編集'],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.famiport.performance_groups.index', event_id=event.id),
+        request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id),
+        request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id, altair_famiport_performance_id=altair_famiport_performance.id)
+        ]
+  )}
+</%block>
+<div class="page-header">
+  <h3>公演編集</h3>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${request.current_route_path()}" method="POST">
+  <%fh:render_block>
+    <fieldset>
+      ${ch.form_item(form.type)}
+      ${ch.form_item(form.name)}
+      ${ch.form_item(form.searchable)}
+      ${ch.form_item(form.start_at)}
+      ${ch.form_item(form.ticket_name)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="編集">
+    </div>
+  <%def name="__post__(registry_var)">
+  ${fh.inject_js(registry_var)}
+  </%def>
+  </%fh:render_block>
+  </form>
+</div>
+

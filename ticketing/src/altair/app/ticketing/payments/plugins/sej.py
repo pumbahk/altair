@@ -37,7 +37,7 @@ from altair.app.ticketing.tickets.utils import (
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
 
-from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
+from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymentDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
@@ -98,6 +98,13 @@ def get_ticket_template_id_from_ticket_format(ticket_format):
     if retval is None:
         retval = u'TTTS000001' # XXX: デフォルト
     return retval
+
+def get_ticket_count(request, order_like):
+    return sum(
+        element.quantity * sum(1 for ticket in applicable_tickets_iter(element.product_item.ticket_bundle))
+        for item in order_like.items
+        for element in item.elements
+        )
 
 def get_tickets(request, order, ticket_template_id=None):
     tickets = []
@@ -292,7 +299,7 @@ def refund_order(request, tenant, order, refund_record, now=None):
     sej_orders = sej_api.get_valid_sej_orders(order.order_no)
     if order.paid_at is None:
         raise SejPluginFailure(u'cannot refund an order that is not paid yet')
-    if order.issued_at is not None:
+    if order.issued_at is None:
         logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
     performance = order.performance
@@ -419,12 +426,37 @@ def determine_payment_type(current_date, order_like):
         payment_type = SejPaymentType.CashOnDelivery
     return payment_type
 
+
+def _build_order_info(sej_order):
+    retval = {}
+    if sej_order.billing_number:
+        retval[u'billing_number'] = sej_order.billing_number
+    if sej_order.exchange_number:
+        retval[u'exchange_number'] = sej_order.exchange_number
+    return retval
+
+def get_sej_order_info(request, order):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    retval = _build_order_info(sej_order)
+    if sej_order.pay_store_name:
+        retval[u'pay_store_name'] = sej_order.pay_store_name
+    if sej_order.ticketing_store_name:
+        retval[u'ticketing_store_name'] = sej_order.ticketing_store_name
+    retval[u'exchange_sheet'] = dict(
+        url=sej_order.exchange_sheet_url,
+        number=sej_order.exchange_sheet_number
+        )
+    retval[u'branches'] = [_build_order_info(branch) for branch in sej_order.branches(sej_order.order_no) if branch != sej_order]
+    return retval
+
 # http://www.unicode.org/charts/PDF/U30A0.pdf
 katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
-def validate_order_like(current_date, order_like, update=False):
+def validate_order_like(request, current_date, order_like, update=False, ticketing=True):
+    if ticketing and get_ticket_count(request, order_like) > 20:
+        raise OrderLikeValidationFailure(u'cannot handle more than 20 tickets', '')
     if order_like.shipping_address is not None:
         tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
         if not tel:
@@ -494,7 +526,7 @@ def validate_order_like(current_date, order_like, update=False):
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=False)
 
     def prepare(self, request, cart):
         """  """
@@ -563,6 +595,9 @@ class SejPaymentPlugin(object):
         sej_order = sej_api.get_sej_order(order.order_no)
         assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
 
 @implementer(ISejDeliveryPlugin)
 class SejDeliveryPluginBase(object):
@@ -574,7 +609,7 @@ class SejDeliveryPluginBase(object):
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
 
     def prepare(self, request, cart):
         """  """
@@ -651,10 +686,14 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             refund_record=refund_record
             )
 
-@implementer(IDeliveryPlugin)
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
+
+@implementer(IPaymentDeliveryPlugin)
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
-        validate_order_like(datetime.now(), order_like, update)
+        validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
 
     def prepare(self, request, cart):
         """  """
@@ -730,6 +769,10 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             order=order,
             refund_record=refund_record
             )
+
+    def get_order_info(self, request, order):
+        return get_sej_order_info(request, order)
+
 
 
 def payment_type_to_string(payment_type):

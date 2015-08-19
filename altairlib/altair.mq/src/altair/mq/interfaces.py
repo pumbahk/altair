@@ -15,6 +15,9 @@ class IConsumer(Interface):
     def connect():
         """ connect and start Continuation-Passing flow"""
 
+    def add_task(task_mapper):
+        pass
+
 
 class ITask(Interface):
     def __call__(context, message):
@@ -36,6 +39,13 @@ class IPublisher(Interface):
 
 class ITaskDispatcher(Interface):
     def __call__(task, channel, method, properties, body):
+        pass
+
+class ITaskDiscovery(Interface):
+    def add_task(task_mapper):
+        pass
+
+    def lookup_task(name):
         pass
 
 class IWorkers(Interface):
