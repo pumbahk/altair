@@ -48,7 +48,7 @@
           </table>
       </div>
       <div class="col-md-2 buttonBox">
-        <button type="reset" class="btn btn-default">クリア<span class="glyphicon glyphicon-erase"></span></button>
+        <button type="reset" class="btn btn-default reset-btn">クリア<span class="glyphicon glyphicon-erase"></span></button>
         <button type="submit" class="btn btn-lg btn-default">検索
           <span class="glyphicon glyphicon-search"></span>
         </button>
@@ -175,6 +175,9 @@
             e.preventDefault();
             console.log('push toggle');
             $('td.first-hidden, th.first-hidden').show();
+        });
+        $('.reset-btn').click(function() {
+            $('.search-table input').attr('value', '');
         });
       });
 </script>

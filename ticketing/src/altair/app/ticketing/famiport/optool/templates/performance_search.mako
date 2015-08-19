@@ -39,7 +39,7 @@
         </table>
       </div>
       <div class="buttonBox col-md-2">
-        <button type="reset" class="btn btn-default">クリア<span class="glyphicon glyphicon-erase"></span></button>
+        <button type="reset" class="btn btn-default reset-btn">クリア<span class="glyphicon glyphicon-erase"></span></button>
         <button type="submit" class="btn btn-lg btn-default">検索
           <span class="glyphicon glyphicon-search"></span>
         </button>
@@ -100,6 +100,9 @@
               format: "yyyy-mm-dd",
               language: "ja",
               autoclose: true
+            });
+            $('.reset-btn').click(function() {
+                $('.search-table input').attr('value', '');
             });
       });
 </script>

@@ -54,7 +54,7 @@
     </div>
 
     <div class="buttonBox col-md-2">
-      <button type="reset" class="btn btn-default">クリア<span class="glyphicon glyphicon-erase"></span></button>
+      <button type="reset" class="btn btn-default reset-btn">クリア<span class="glyphicon glyphicon-erase"></span></button>
       <button type="submit" class="btn btn-lg btn-default">検索
         <span class="glyphicon glyphicon-search"></span>
       </button>
@@ -160,6 +160,10 @@
             });
             $("#csv-download").on('click', function() {
                 $("#search-form").attr('action', '${request.route_url('download.refund_ticket')}').submit();
+            });
+            $('.reset-btn').click(function() {
+                $('.search-table input').attr('value', '');
+                $('.search-table :checkbox').attr('checked', false);
             });
       });
 </script>
