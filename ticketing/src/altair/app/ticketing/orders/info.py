@@ -172,7 +172,7 @@ def register_descriptors(config):
             (
                 [
                     get_payment_plugin(config.registry, RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
-                    get_payment_plugin(config.registry, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
+                    get_delivery_plugin(config.registry, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
                     ],
                 {
                     u'reserved_number': {

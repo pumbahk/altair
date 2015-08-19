@@ -6,6 +6,7 @@ from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from zope.interface import implementer
+from sqlalchemy.orm.exc import NoResultFound
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
@@ -112,10 +113,13 @@ class ReservedNumberDeliveryPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        reserved_number = m.DBSession.query(m.ReservedNumber).filter(
-            m.ReservedNumber.order_no==order.order_no).one()
+        try:
+            reserved_number = m.DBSession.query(m.ReservedNumber).filter(
+                m.ReservedNumber.order_no==order.order_no).one().number
+        except NoResultFound:
+            reserved_number = u''
         return {
-            u'reserved_number': reserved_number.number,
+            u'reserved_number': reserved_number,
             }
 
 @view_defaults(context=ICompleteMailResource)
@@ -219,9 +223,12 @@ class ReservedNumberPaymentPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
-            m.PaymentReservedNumber.order_no==order.order_no).one()
+        try:
+            reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
+                m.PaymentReservedNumber.order_no==order.order_no).one().number
+        except NoResultFound:
+            reserved_number = u'' 
         return {
-            u'reserved_number': reserved_number.number,
+            u'reserved_number': reserved_number,
             }
 
