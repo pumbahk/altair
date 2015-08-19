@@ -180,15 +180,16 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         req_from = formdata.get('completed_from') + ' 00:00:00'
         if formdata.get('completed_to'):
             req_to = formdata.get('completed_to') + ' 23:59:59'
-            query = query.filter(FamiPortReceipt.completed_at >= req_from,
-                                 FamiPortReceipt.completed_at <= req_to)
+            query = query.filter(or_(and_(FamiPortOrder.paid_at >= req_from, FamiPortOrder.paid_at <= req_to),
+                                     and_(FamiPortOrder.issued_at >= req_from, FamiPortOrder.issued_at <= req_to)))
         else:
-            query = query.filter(FamiPortReceipt.completed_at >= req_from)
+            query = query.filter(or_(FamiPortOrder.paid_at >= req_from,
+                                     FamiPortOrder.issued_at >= req_from))
     elif formdata.get('completed_to'):
         req_from = '1900-01-01 00:00:00'
         req_to = formdata.get('completed_to') + ' 23:59:59'
-        query = query.filter(FamiPortReceipt.completed_at >= req_from,
-                             FamiPortReceipt.completed_at <= req_to)
+        query = query.filter(or_(and_(FamiPortOrder.paid_at >= req_from, FamiPortOrder.paid_at <= req_to),
+                                 and_(FamiPortOrder.issued_at >= req_from, FamiPortOrder.issued_at <= req_to)))
 
     receipts = query.all()
     return receipts
