@@ -77,11 +77,9 @@ class SalesSegmentFormTests(unittest.TestCase):
         target = self._makeOne(formdata=formdata, context=context)
 
         target.validate()
-        for name, errors in target.errors.items():
-            print name,
-            for e in errors:
-                print e.encode('utf-8')
-
+        self.assertEqual(target.errors['sales_segment_group_id'], [u'入力してください'])
+        self.assertEqual(target.errors['payment_delivery_method_pairs'], [u'入力してください'])
+        self.assertEqual(target.errors['account_id'], [u'選択してください'])
         self.assertNotIn('start_at', target.errors)
 
 
@@ -112,8 +110,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
-            payment_method=Mock(name=u'コンビニ決済'),
-            delivery_method=Mock(name=u'配送', delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID)
+            payment_method=DummyResource(name=u'コンビニ決済'),
+            delivery_method=DummyResource(name=u'配送', delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID, deliver_at_store=lambda: False)
             )
         try:
             self._callFUT(
@@ -128,6 +126,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 )
             self.assert_(True)
         except:
+            raise
             self.fail()
 
     def test_validate_issuing_start_at_in_term(self):

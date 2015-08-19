@@ -936,13 +936,14 @@ class OrderRefundForm(OurForm):
 
             # コンビニ払戻なら必須
             refund_pm = PaymentMethod.get(self.payment_method_id.data)
-            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            if refund_pm.payment_plugin_id in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
                 if not self.start_at.data:
                     self.start_at.errors.append(u'入力してください')
                     status = False
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
                     status = False
+            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                 if self.need_stub.data is None:
                     self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')
                     status = False
