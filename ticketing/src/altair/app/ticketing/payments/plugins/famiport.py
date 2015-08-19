@@ -478,12 +478,14 @@ def get_famiport_order_info(request, order):
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
     order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
-    return {
-        u'payment_reserve_number': order['payment_reserve_number'],
-        u'ticketing_reserve_number': order['ticketing_reserve_number'],
-        u'payment_shop_name': order['payment_shop_name'],
-        u'ticketing_shop_name': order['ticketing_shop_name'],
-        }
+    retval = {}
+    if order['type'] in (FamiPortOrderType.Payment.value, FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.PaymentOnly.value):
+        retval[u'payment_reserve_number'] = order['payment_reserve_number']
+        retval[u'payment_shop_name'] = order['payment_shop_name']
+    if order['type'] in (FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value, FamiPortOrderType.CashOnDelivery.value):
+        retval[u'ticketing_reserve_number'] = order['ticketing_reserve_number']
+        retval[u'ticketing_shop_name'] = order['ticketing_shop_name']
+    return retval
 
 def _overridable_payment(path, fallback_ua_type=None):
     """ここがどこに作用してくるのかわからない

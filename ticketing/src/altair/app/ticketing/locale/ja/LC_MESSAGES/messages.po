@@ -686,6 +686,12 @@ msgstr "仕向先コード"
 msgid "payment-1:card_brand"
 msgstr "カードブランド"
 
+msgid "delivery-3:reserved_number"
+msgstr "受取番号"
+
+msgid "payment-4:reserved_number"
+msgstr "支払番号"
+
 msgid "payment-6:payment_reserve_number"
 msgstr "FM予約番号"
 

@@ -62,7 +62,14 @@ class OrderDescriptor(object):
 
 @provider(IOrderDescriptorRenderer)
 def render_html_text_generic(request, descr_registry, descr, value):
-    return Markup(escape(value))
+    if value is None:
+        return Markup(u'')
+    elif isinstance(value, unicode):
+        return Markup(escape(value))
+    elif isinstance(value, (int, long, Decimal)):
+        return Markup(escape(unicode(value)))
+    else:
+        return Markup(u'unrenderable value <i>%s</i>' % escape(repr(value)))
 
 @provider(IOrderDescriptorRenderer)
 def render_html_datetime_generic(request, descr_registry, descr, value):

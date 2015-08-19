@@ -198,10 +198,10 @@ class ReservedNumberPaymentPlugin(object):
                 reserved_number = m.PaymentReservedNumber(order_no=order_like.order_no, number=number)
                 break
         m.DBSession.add(reserved_number)
-        logger.debug(u"支払い番号: %s" % reserved_number.number)
+        logger.debug(u"支払番号: %s" % reserved_number.number)
 
     def finished(self, request, order):
-        """ 支払い番号が発行されていること """
+        """ 支払番号が発行されていること """
         reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
             m.PaymentReservedNumber.order_no==order.order_no).first()
         return bool(reserved_number)
