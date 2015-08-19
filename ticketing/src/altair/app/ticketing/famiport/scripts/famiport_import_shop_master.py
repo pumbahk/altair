@@ -139,7 +139,7 @@ class ReportMailSender(object):
                 num_errors=len(errors),
                 errors=(
                     dict(
-                        line=(i + 1),
+                        line=i,
                         localized_field_name=localized_field_names[error.field],
                         message=error.message
                         )
@@ -187,7 +187,7 @@ class ShopMasterProcessor(object):
                         logger.info('error: %s' % errors_for_row[0])
                         errors.append((i, errors_for_row[0]))
                         continue
-                    logger.info('importing line %d (shop_code: %s)' % (i + 1, row['shop_code']))
+                    logger.info('importing line %d (shop_code: %s)' % (i, row['shop_code']))
                     try:
                         shop = self.session.query(FamiPortShop).filter_by(code=row['shop_code']).one()
                     except NoResultFound:
