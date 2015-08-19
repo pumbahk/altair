@@ -41,7 +41,7 @@ class SearchReceiptForm(OurForm):
         ]
     )
     reserve_number = OurTextField(
-        label=u'引換票番号：',
+        label=u'引換票番号(予約番号)：',
         validators=[
             Optional(),
             Length(min=13, max=13, message=u'引換票番号は13文字以内で入力して下さい')
