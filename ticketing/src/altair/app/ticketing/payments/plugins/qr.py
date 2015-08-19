@@ -142,3 +142,8 @@ class QRTicketDeliveryPlugin(object):
 
     def refund(self, request, order, refund_record):
         pass
+
+    def get_order_info(self, request, order):
+        qr_preferences = order.payment_delivery_method_pair.delivery_method.preferences.get(unicode(DELIVERY_PLUGIN_ID), {})
+        single_qr_mode = qr_preferences.get('single_qr_mode', False)
+        return {}

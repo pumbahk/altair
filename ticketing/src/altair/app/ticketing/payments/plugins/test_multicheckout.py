@@ -113,7 +113,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             payment_delivery_pair=testing.DummyModel(id=1),
             )
 
-        request = DummyRequest(_cart=dummy_cart)
+        request = DummyRequest(_cart=dummy_cart, registry=self.config.registry)
         target = self._makeOne(request)
         result = target.card_info_secure3d_form()
         params = {
@@ -127,7 +127,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'csrf_token': result['form'].csrf_token._value()
             }
 
-        request = DummyRequest(params=params, _cart=dummy_cart, session=request.session)
+        request = DummyRequest(params=params, _cart=dummy_cart, session=request.session, registry=self.config.registry)
         request.session['order'] = {}
         target = self._makeOne(request)
         result = target.card_info_secure3d()
@@ -189,7 +189,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             payment_delivery_pair=testing.DummyModel(id=1),
             )
 
-        request = DummyRequest(_cart=dummy_cart)
+        request = DummyRequest(_cart=dummy_cart, registry=self.config.registry)
         target = self._makeOne(request)
         result = target.card_info_secure3d_form()
 
@@ -209,7 +209,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=request.session
+            session=request.session,
+            organization=self.organization,
+            registry=self.config.registry
             )
         target = self._makeOne(request)
 
@@ -259,7 +261,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             payment_delivery_pair=testing.DummyModel(id=1),
             )
         from altair.app.ticketing.cart.api import new_order_session
-        request = DummyRequest(_cart=dummy_cart)
+        request = DummyRequest(_cart=dummy_cart, registry=self.config.registry)
         new_order_session(request, 
             client_name=u'楽天太郎',
             email_1=u'ticketstar@example.com'
@@ -278,7 +280,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=request.session
+            organization=self.organization,
+            session=request.session,
+            registry=self.config.registry,
             )
         target = self._makeOne(request)
         from multicheckout import MultiCheckoutSettlementFailure
@@ -345,7 +349,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            organization=self.organization,
+            registry=self.config.registry
             )
         target = self._makeOne(request)
 
@@ -407,7 +413,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            organization=self.organization,
+            registry=self.config.registry
             )
 
         for error_code, return_code in [('000000', '4'), ('000001', '0')]:
@@ -546,7 +554,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            registry=self.config.registry
             )
 
         target = self._makeOne()
@@ -628,7 +637,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            registry=self.config.registry
             )
 
         target = self._makeOne()
@@ -710,7 +720,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            registry=self.config.registry
             )
 
         target = self._makeOne()
@@ -800,7 +811,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         request = DummyRequest(
             params=params,
             _cart=dummy_cart,
-            session=DummySession(order=session_order)
+            session=DummySession(order=session_order),
+            registry=self.config.registry
             )
 
         target = self._makeOne()
@@ -860,7 +872,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             CmnErrorCd='000000'
             )
 
-        request = DummyRequest()
+        request = DummyRequest(registry=self.config.registry)
         target = self._makeOne()
 
         try:
@@ -900,7 +912,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         )
         dummy_cart.finish = lambda: None
 
-        request = DummyRequest()
+        request = DummyRequest(self.config.registry)
         target = self._makeOne()
 
         try:
@@ -939,7 +951,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         )
         dummy_cart.finish = lambda: None
 
-        request = DummyRequest()
+        request = DummyRequest(self.config.registry)
         target = self._makeOne()
 
         from multicheckout import MultiCheckoutSettlementFailure

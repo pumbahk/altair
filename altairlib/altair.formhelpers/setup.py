@@ -41,6 +41,7 @@ setup(name='altair.formhelpers',
           'zope.deprecation',
           'altair.viewhelpers',
           'altair.dynpredicate',
+          'altair.jis',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

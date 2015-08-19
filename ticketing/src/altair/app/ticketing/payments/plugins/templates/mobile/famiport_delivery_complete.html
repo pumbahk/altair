@@ -1,0 +1,11 @@
+Famiポートでお引取り<br />
+%if payment_type == 'CashOnDelivery':
+チケットは代金と引換です。<br />
+%else:
+【Famiポート予約番号】<br />${famiport_order['ticketing_reserve_number']}<br />
+【発券可能期間】<br />${h.japanese_datetime(famiport_order['ticketing_start_at'])}〜
+%if famiport_order['ticketing_end_at']:
+${h.japanese_datetime(famiport_order['ticketing_end_at'])}
+%endif
+<br />
+%endif

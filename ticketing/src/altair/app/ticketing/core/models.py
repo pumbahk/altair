@@ -7,13 +7,10 @@ import sys
 from math import floor
 import isodate
 from datetime import datetime, date, timedelta
-import smtplib
 from decimal import Decimal
 
-from email.MIMEText import MIMEText
-from email.Header import Header
-from email.Utils import formatdate
 from altair.sqla import association_proxy_many
+from altair.mailhelpers import Mailer
 from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -1927,18 +1924,19 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def filter_by_organization_id(id):
         payment_method = PaymentMethod.filter(PaymentMethod.organization_id == id) \
-                                      .filter('PaymentMethod.selectable is True') \
+                                      .filter(PaymentMethod.selectable != False) \
                                       .order_by('PaymentMethod.selectable desc') \
                                       .order_by('PaymentMethod.display_order asc') \
                                       .all()
         return payment_method
 
     def pay_at_store(self):
-        """
-        コンビニ支払かどうかを判定する。
-        """
-        return self.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID
+        """ コンビニ支払かどうかを判定する。"""
+        return self.payment_plugin_id in (plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID)
 
+    def cash_on_reservation(self):
+        """ 窓口支払かどうか """
+        return self.payment_plugin_id in (plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FREE_PAYMENT_PLUGIN_ID)
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
@@ -2050,7 +2048,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         コンビニ受取かどうかを判定する。
         """
-        return self.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID
+        return self.delivery_plugin_id in (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
@@ -3450,38 +3448,6 @@ class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.flush()
         return seq.id
 
-class Mailer(object):
-    def __init__(self, settings):
-        self.settings = settings
-
-    def create_message(self,
-                       sender=None,
-                       recipient=None,
-                       subject=None,
-                       body=None,
-                       html=None,
-                       encoding=None):
-
-        encoding = self.settings['mail.message.encoding']
-        if html:
-            mime_type = 'html'
-            mime_text = html
-        else:
-            mime_type = 'plain'
-            mime_text = body
-
-        msg = MIMEText(mime_text.encode(encoding, 'ignore'), mime_type, encoding)
-        msg['Subject'] = Header(subject, encoding)
-        msg['From'] = sender
-        msg['To'] = recipient
-        msg['Date'] = formatdate()
-        self.message = msg
-
-    def send(self, from_addr, to_addr):
-        smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
-        smtp.sendmail(from_addr, to_addr, self.message.as_string())
-        smtp.close()
-
 class ChannelEnum(StandardEnum):
     PC = 1
     Mobile = 2
@@ -3918,6 +3884,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
+    famiport_enabled = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"Famiポートでの入金p 発券機能を利用", _a_label=u"Famiポートでの入金・発券機能を利用")
+
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
 
@@ -4068,6 +4036,16 @@ class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     nwts_password           = Column(String(255), nullable=True)
 
     organization_id         = Column(Identifier)
+
+class FamiPortTenant(BaseModel, WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'FamiPortTenant'
+    __table_args__          = (
+        UniqueConstraint('organization_id', 'code'),
+        )
+    id                      = Column(Identifier, primary_key=True, autoincrement=True)
+    organization_id         = Column(Identifier, ForeignKey('Organization.id'))
+    name                    = Column(Unicode(255), nullable=False)
+    code                    = Column(Unicode(24), nullable=False)
 
 
 class CooperationTypeEnum(StandardEnum):

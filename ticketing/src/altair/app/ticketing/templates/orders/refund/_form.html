@@ -13,7 +13,7 @@
 
     $('#payment_method_id').change(function(){
       var sej_field = $('.sej_field');
-      if ($.inArray(parseInt($(this).val()), ${form.payment_method_id.sej_plugin_id}) == -1) {
+      if ($.inArray(parseInt($(this).val()), ${HH.json(form.convenience_payment_method_ids)|n}) == -1) {
         sej_field.css('display', 'none');
         sej_field.find('input, select').attr('disabled', 'disabled');
       } else {

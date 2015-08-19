@@ -8,6 +8,7 @@ requires = [
     "tornado",
     "pyramid",
     "venusian",
+    "six",
 ]
 
 points = {
@@ -47,5 +48,6 @@ setup(name='altair.mq',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      test_suite='altair.mq',
       entry_points=points,
       )

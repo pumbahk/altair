@@ -205,6 +205,14 @@ $(function(){
 </div>
 %endif
 
+% if event.organization.setting.famiport_enabled:
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+    Famiポート連携
+  </a>
+</div>
+% endif
+
 <%include file="./_send_event_mixin.html" />
 
 <div style="clear: left;"></div>

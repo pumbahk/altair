@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
+import sys
 import logging
 import transaction
-from zope.interface import implementer 
+from zope.interface import implementer
 from datetime import datetime
 from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
@@ -41,7 +42,7 @@ class Payment(object):
         """
         preparer = self.get_preparer(self.request, self.cart.payment_delivery_pair)
         if preparer is None:
-            raise Exception
+            raise Exception(u'get_preparer() returned None (payment_method_id=%d, delivery_method_id=%d)' % (self.cart.payment_delivery_pair.payment_method.id, self.cart.payment_delivery_pair.delivery_method.id))
         res = preparer.prepare(self.request, self.cart)
         return res
 
@@ -72,7 +73,7 @@ class Payment(object):
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-        
+
         if payment_delivery_plugin is not None:
             if IPaymentCart.providedBy(self.cart):
                 order = payment_delivery_plugin.finish(self.request, self.cart)
@@ -81,17 +82,18 @@ class Payment(object):
                 payment_delivery_plugin.finish2(self.request, self.cart)
                 order = self.cart
         else:
-            # 決済と配送を別々に処理する            
+            # 決済と配送を別々に処理する
             if IPaymentCart.providedBy(self.cart):
                 order = payment_plugin.finish(self.request, self.cart)
                 self._bind_order(order)
                 try:
                     delivery_plugin.finish(self.request, self.cart)
                 except Exception as e:
+                    exc_info = sys.exc_info()
                     order.deleted_at = self.now
                     if self.cancel_payment_on_failure:
                         payment_plugin.cancel(self.request, order)
-                    raise e
+                    raise exc_info[1], None, exc_info[2]
             else:
                 logger.info('cart is not a IPaymentCart')
                 payment_plugin.finish2(self.request, self.cart)
@@ -107,11 +109,12 @@ class Payment(object):
             payment_plugin.finish2(self.request, order)
             try:
                 delivery_plugin.finish2(self.request, self.cart)
-            except Exception as e:
+            except Exception:
+                exc_info = sys.exc_info()
                 order.deleted_at = self.now
                 if self.cancel_payment_on_failure:
                     payment_plugin.cancel(self.request, order)
-                raise e
+                raise exc_info[1], None, exc_info[2]
         return order
 
     def call_delivery(self, order):

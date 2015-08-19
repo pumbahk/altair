@@ -1,0 +1,5 @@
+.DS_Store
+simple-bench.xml*
+*.log
+simple-test.xml
+test_simple-*

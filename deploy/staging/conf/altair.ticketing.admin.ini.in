@@ -4,6 +4,7 @@ www_check_docroot = %(here)s/../var/www-check/altair.ticketing.admin
 sqlalchemy.url = ${altair:ticketing.db_url.master}
 altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 altair.sqlahelper.sessions.lot_work_history.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 
 [app:ticketing]
 use = config:%(here)s/../../baseconf/common.ini#ticketing
@@ -11,6 +12,7 @@ pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_l
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
 get altair.sqlahelper.sessions.lot_work_history.url = altair.sqlahelper.sessions.lot_work_history.url
 
 ;mail
@@ -46,6 +48,10 @@ altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
                            altair.mq.publisher.pika_publisher_factory
 altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
+altair.ticketing.userside_famiport.mq = altair.mq.consumer.pika_client_factory
+                                        altair.mq.publisher.pika_publisher_factory
+altair.ticketing.userside_famiport.mq.url = ${altair:ticketing.mq_url}
+
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.lots.mq.routes =
@@ -53,6 +59,9 @@ altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 ;    lots.rejection:lots.rejection
 ;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.cart.mq.routes = cart:cart
+;altair.ticketing.userside_famiport.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.userside_famiport.mq.routes =
+;    userside_famiport.submit_to_downstream:userside_famiport.submit_to_downstream
 
 altair.ticketing.cooperation.augus.bucket = tstar
 altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test

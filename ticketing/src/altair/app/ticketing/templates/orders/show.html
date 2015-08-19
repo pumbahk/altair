@@ -68,7 +68,7 @@ ${ch.breadcrumbs(
           <div class="page-header">
             <h3>配送情報</h3>
           </div>
-          <%include file="./_show_shipping_table.html" args="order_like=order,shipping_address=order.shipping_address"/>
+          <%include file="./_show_shipping_table.html" args="order_like=order,shipping_address=order.shipping_address,delivery_plugin_info=delivery_plugin_info"/>
 
           % if is_current_order:
           <div class="pull-right">
@@ -87,16 +87,7 @@ ${ch.breadcrumbs(
           <div class="page-header">
             <h3>決済情報</h3>
           </div>
-          <%include file="./_show_payment_table.html" args="order=order,checkout=checkout,sej_order=sej_order" />
-
-          % if sej_order:
-          <div class="pull-right">
-            <form action="${sej_order.exchange_sheet_url}" method="POST">
-              <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
-              <input type="submit" name="submit" value="引換票を表示" class="btn"/>
-            </form>
-          </div>
-          % endif
+          <%include file="./_show_payment_table.html" args="order=order,payment_plugin_info=payment_plugin_info,delivery_plugin_info=delivery_plugin_info" />
         </div>
       </div>
 

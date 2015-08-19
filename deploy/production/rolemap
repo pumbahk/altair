@@ -21,8 +21,21 @@ apmv10.1c.vpc.altr	userapp-cart
 btmv1.1c.vpc.altr	batch
 wkmv1.1a.vpc.altr	worker
 wkmv1.1c.vpc.altr	worker
-apnl1.1a.vpc.altr	newsletter
-apvv1.1a.vpc.altr	venueadmin
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
+apmv1-rc.1a.vpc.altr	rc
+
+apmv1-fmrc.1a.vpc.altr	fmrc
+apfm1.1a.vpc.altr	famiport-optool
+apfm1.1c.vpc.altr	famiport-optool
+apfm2.1a.vpc.altr	famiport-api
+apfm2.1c.vpc.altr	famiport-api
+btfm2.1a.vpc.altr	famiport-batch
+wkfm1.1a.vpc.altr	famiport-worker
+wkfm1.1c.vpc.altr	famiport-worker
+apcv2.1a.vpc.altr	famiport-userside-api
+apcv2.1c.vpc.altr	famiport-userside-api
+wkmv2.1a.vpc.altr	famiport-userside-worker
+wkmv2.1c.vpc.altr	famiport-userside-worker
+
 # vim: noet
