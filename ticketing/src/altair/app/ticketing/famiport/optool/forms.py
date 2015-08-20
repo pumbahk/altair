@@ -41,7 +41,7 @@ class SearchReceiptForm(OurForm):
         ]
     )
     reserve_number = OurTextField(
-        label=u'引換票番号：',
+        label=u'引換票番号(予約番号)：',
         validators=[
             Optional(),
             Length(min=13, max=13, message=u'引換票番号は13文字以内で入力して下さい')
@@ -213,7 +213,7 @@ class RefundTicketSearchForm(OurForm):
         label=u'払戻店番:',
         validators=[
             Optional(),
-            Length(min=5, max=5, message=u'払戻店番は半角数字5文字で入力してください')
+            Length(min=1, max=5, message=u'払戻店番は半角数字5文字以内で入力してください')
         ]
     )
     event_code = OurTextField(

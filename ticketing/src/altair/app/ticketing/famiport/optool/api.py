@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 from dateutil.parser import parse as parsedate
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc
 from sqlalchemy.sql import and_, not_, or_
 from altair.sqlahelper import get_db_session
 from ..models import (
@@ -157,7 +158,8 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
                         .join(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
                         .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
                         .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
-                        .group_by(FamiPortReceipt.id)
+                        .group_by(FamiPortReceipt.id) \
+                        .order_by(desc(FamiPortReceipt.created_at))
 
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
@@ -180,15 +182,16 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         req_from = formdata.get('completed_from') + ' 00:00:00'
         if formdata.get('completed_to'):
             req_to = formdata.get('completed_to') + ' 23:59:59'
-            query = query.filter(FamiPortReceipt.completed_at >= req_from,
-                                 FamiPortReceipt.completed_at <= req_to)
+            query = query.filter(or_(and_(FamiPortOrder.paid_at >= req_from, FamiPortOrder.paid_at <= req_to),
+                                     and_(FamiPortOrder.issued_at >= req_from, FamiPortOrder.issued_at <= req_to)))
         else:
-            query = query.filter(FamiPortReceipt.completed_at >= req_from)
+            query = query.filter(or_(FamiPortOrder.paid_at >= req_from,
+                                     FamiPortOrder.issued_at >= req_from))
     elif formdata.get('completed_to'):
         req_from = '1900-01-01 00:00:00'
         req_to = formdata.get('completed_to') + ' 23:59:59'
-        query = query.filter(FamiPortReceipt.completed_at >= req_from,
-                             FamiPortReceipt.completed_at <= req_to)
+        query = query.filter(or_(and_(FamiPortOrder.paid_at >= req_from, FamiPortOrder.paid_at <= req_to),
+                                 and_(FamiPortOrder.issued_at >= req_from, FamiPortOrder.issued_at <= req_to)))
 
     receipts = query.all()
     return receipts
@@ -238,7 +241,8 @@ def search_refund_ticket_by(request, params, now=None):
     if management_number:
         query = query.filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))
     if refunded_shop_code:
-        query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code)
+        query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code) \
+                     .filter(FamiPortRefundEntry.refunded_at != None)
     if event_code:
         query = query.filter(FamiPortEvent.code_1 == event_code)
     if event_subcode:
