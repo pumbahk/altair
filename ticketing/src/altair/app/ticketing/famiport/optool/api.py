@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 from dateutil.parser import parse as parsedate
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc
 from sqlalchemy.sql import and_, not_, or_
 from altair.sqlahelper import get_db_session
 from ..models import (
@@ -157,7 +158,8 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
                         .join(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
                         .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
                         .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
-                        .group_by(FamiPortReceipt.id)
+                        .group_by(FamiPortReceipt.id) \
+                        .order_by(desc(FamiPortReceipt.created_at))
 
     if formdata.get('barcode_no'):
         query = query.filter(FamiPortReceipt.barcode_no == formdata.get('barcode_no'))
