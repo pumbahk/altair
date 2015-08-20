@@ -241,7 +241,8 @@ def search_refund_ticket_by(request, params, now=None):
     if management_number:
         query = query.filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))
     if refunded_shop_code:
-        query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code)
+        query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code) \
+                     .filter(FamiPortRefundEntry.refunded_at != None)
     if event_code:
         query = query.filter(FamiPortEvent.code_1 == event_code)
     if event_subcode:
