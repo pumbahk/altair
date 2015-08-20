@@ -640,25 +640,11 @@ class SalesSegmentGroupSearchForm(Form):
     )
 
 
-class OrderReserveSettingsForm(OurForm):
-    sales_segment_id = OurSelectField(
-        label=u'販売区分',
-        validators=[Optional()],
-        choices=lambda field: [
-            (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(field.form.context.request)).term(sales_segment.start_at, sales_segment.end_at)))
-            for sales_segment in field.form.context.available_sales_segments
-            ],
-        encoder=lambda x : u'' if x is None else u'%d' % x,
-        coerce=lambda x : int(x) if x else None
-        )
-
-    performance_id = OurSelectField(
+class OrderReservePreconditionsForm(OurForm):
+    performance_id = OurHiddenField(
         label=u'公演',
-        validators=[Required()],
-        choices=lambda field: [ (field.form.context.performance.id, u'') ],
-        coerce=lambda x: int(x)
+        validators=[Required()]
         )
-
     stocks = OurPHPCompatibleFieldList(
         OurHiddenField(),
         widget=OurListWidget(
@@ -666,6 +652,24 @@ class OrderReserveSettingsForm(OurForm):
             inner_html_tag=None,
             omit_labels=True
             )
+        )
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
+        self.context = context
+        super(OrderReservePreconditionsForm, self).__init__(*args, **kwargs)
+
+
+class OrderReserveSettingsForm(OurForm):
+    sales_segment_id = OurSelectField(
+        label=u'販売区分',
+        validators=[Optional()],
+        choices=lambda field: [
+            (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(field.form.context.request)).term(sales_segment.start_at, sales_segment.end_at)))
+            for sales_segment in field.form.context.sales_segments
+            ],
+        encoder=lambda x : u'' if x is None else u'%d' % x,
+        coerce=lambda x : int(x) if x else None
         )
 
     def __init__(self, *args, **kwargs):

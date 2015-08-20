@@ -44,6 +44,7 @@ from altair.app.ticketing.mailmags.models import(
 from .forms import (
     OrderInfoForm,
     OrderForm,
+    OrderReservePreconditionsForm,
     OrderReserveSettingsForm,
     OrderReserveSeatsForm,
     OrderReserveForm,
@@ -367,17 +368,56 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
     def __init__(self, request):
         super(OrderReserveResource, self).__init__(request)
         self.now = datetime.now()
-        performance_id = None
+
+        self.preconditions_form = OrderReservePreconditionsForm(self.request.POST, context=self)
+        if not self.preconditions_form.validate():
+            logger.debug('%r' % self.seats_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+
+        # パフォーマンスの取得
+        self.performance = DBSession.query(Performance).filter(Performance.id == self.preconditions_form.performance_id.data).one()
+
+        self.seats_form = OrderReserveSeatsForm(self.request.POST, context=self)
+        if not self.seats_form.validate():
+            logger.debug('%r' % self.seats_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+
+        # stockの取得
+        stock_ids = []
         try:
-            performance_id = long(request.POST['performance_id'])
+            stock_ids = [long(stock_id) for stock_id in self.preconditions_form.stocks.data]
         except (TypeError, ValueError):
             pass
-        self.performance = DBSession.query(Performance).filter(Performance.id == performance_id).one()
-        stock_ids = []
+        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type), joinedload(Stock.stock_status)).filter(Stock.id.in_(stock_ids)).all()
+
+        # seat l0_idの取得
+        seat_l0_ids = self.seats_form.seats.data
+
+        # 選択可能なsales_segmentの取得
+        if seat_l0_ids:
+            applicable_sales_segment_ids = set(
+                x[0]
+                for x in DBSession.query(SalesSegment.id) \
+                        .join(SalesSegment.products) \
+                        .join(Product.items) \
+                        .join(ProductItem.stock) \
+                        .join(Stock.seats) \
+                        .join(Seat.venue) \
+                        .filter(Stock.performance_id == self.performance.id) \
+                        .filter(Venue.performance_id == self.performance.id) \
+                        .filter(Seat.l0_id.in_(seat_l0_ids)) \
+                        .distinct()
+                )
+            sales_segments = [sales_segment for sales_segment in self.available_sales_segments if sales_segment.id in applicable_sales_segment_ids]
+        else:
+            sales_segments = self.available_sales_segments
+        self.sales_segments = sales_segments
+
         self.settings_form = OrderReserveSettingsForm(self.request.POST, context=self)
         if not self.settings_form.validate():
             logger.debug('%r' % self.settings_form.errors)
             self.raise_error(u'不正な値が指定されました')
+
         sales_segment_id = self.settings_form.sales_segment_id.data
         sales_segment = None
         if sales_segment_id is not None:
@@ -388,18 +428,10 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
             if sales_segment not in self.available_sales_segments:
                 raise HTTPBadRequest()
         else:
-            sales_segment = self.available_sales_segments[0]
+            sales_segment = sales_segments[0]
+            self.settings_form.sales_segment_id.data = sales_segment.id
         self.sales_segment = sales_segment
-        try:
-            stock_ids = [long(stock_id) for stock_id in self.settings_form.stocks.data]
-        except (TypeError, ValueError):
-            pass
-        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type), joinedload(Stock.stock_status)).filter(Stock.id.in_(stock_ids)).all()
-        self.seats_form = OrderReserveSeatsForm(self.request.POST, context=self)
-        if not self.seats_form.validate():
-            logger.debug('%r' % self.seats_form.errors)
-            self.raise_error(u'不正な値が指定されました')
-        seat_l0_ids =  self.seats_form.seats.data
+
         if seat_l0_ids:
             q = DBSession.query(Product) \
                 .join(Product.seat_stock_type) \
@@ -426,14 +458,6 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
     @reify
     def seats(self):
         return list(DBSession.query(Seat).filter(Seat.venue_id == self.performance.venue.id, Seat.l0_id.in_(self.seats_form.seats.data)))
-
-    @reify
-    def sales_segments(self):
-        if self.sales_segment is not None:
-            sales_segments = [self.sales_segment]
-        else:
-            sales_segments = self.available_sales_segments
-        return sales_segments
 
     def raise_error(self, message, klass=HTTPBadRequest):
         raise klass(
