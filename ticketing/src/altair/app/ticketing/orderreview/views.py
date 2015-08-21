@@ -750,8 +750,7 @@ def render_qrmail_viewlet(context, request):
         ticket = build_qr_by_token_id(request, order_no, token)
     else:
         order = get_order_by_order_no(request, order_no)
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
-            ticket = build_qr_by_order(request, order)
+        ticket = build_qr_by_order(request, order)
 
     if ticket is None:
         raise HTTPNotFound
