@@ -744,12 +744,22 @@ class QRView(object):
     renderer=selectable_renderer("order_review/qr.txt")
     )
 def render_qrmail_viewlet(context, request):
-    ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
-    sign = ticket.qr[0:8]
+    token = request.params['token']
+    order_no = request.params['order_no']
+    if token:
+        ticket = build_qr_by_token_id(request, order_no, token)
+    else:
+        order = get_order_by_order_no(request, order_no)
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
+            ticket = build_qr_by_order(request, order)
+
+    if ticket is None:
+        HTTPNotFound
+
+    name = u''
     if ticket.order.shipping_address:
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
-    else:
-        name = u''
+    sign = ticket.qr[0:8]
 
     return dict(
         h=h,
