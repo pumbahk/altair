@@ -754,7 +754,7 @@ def render_qrmail_viewlet(context, request):
             ticket = build_qr_by_order(request, order)
 
     if ticket is None:
-        HTTPNotFound
+        raise HTTPNotFound
 
     name = u''
     if ticket.order.shipping_address:
