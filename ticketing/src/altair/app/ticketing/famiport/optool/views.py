@@ -297,7 +297,7 @@ class FamiPortDownloadRefundTicketView(object):
 
     @view_config(route_name='download.refund_ticket', renderer='csv', permission='operator')
     def download_csv(self):
-        refund_entries = search_refund_ticket_by(self.request, self.request.POST)
+        refund_entries = search_refund_ticket_by(self.request, self.request.GET)
         rts_helper = RefundTicketSearchHelper(self.request)
         header = [column[1] for column in rts_helper.get_columns()]
 
