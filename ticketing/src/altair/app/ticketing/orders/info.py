@@ -7,6 +7,7 @@ from altair.viewhelpers.datetime_ import create_date_time_formatter
 from pyramid.i18n import get_localizer
 from altair.app.ticketing.payments.api import get_payment_plugin, get_delivery_plugin, get_payment_delivery_plugin
 from altair.app.ticketing.payments.directives import PAYMENT_CONFIG
+from decimal import Decimal
 
 from .interfaces import IOrderDescriptorRegistry, IOrderDescriptor, IOrderDescriptorRenderer
 
