@@ -2060,10 +2060,6 @@ class OrdersReserveView(OrderBaseView):
                 payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
                 if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
                     order.paid_at = datetime.now()
-
-            payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == payments_plugins.FREE_PAYMENT_PLUGIN_ID:
-                order.paid_at = datetime.now()
             ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
