@@ -1229,14 +1229,15 @@ def initiate_import_task(request, task, session_for_task):
         errors = run_import_task(request, task_)
         if errors is None:
             transaction.commit()
+            task.status = ImportStatusEnum.Imported.v
         else:
             transaction.abort()
             errors_dict = dict(
                 (ref, (errors_for_order[0].order_no, [error.message for error in errors_for_order]))
                 for ref, errors_for_order in six.iteritems(errors)
                 )
+            task.status = ImportStatusEnum.Aborted.v
         logging.info('order_import_task (%s) ended with %s errors' % (task.id, (unicode(len(errors_dict)) if errors_dict else u'no')))
-        task.status = ImportStatusEnum.Imported.v
     except Exception as e:
         logging.exception('order_import_task(%s) aborted: %s' % (task.id, e))
         task.status = ImportStatusEnum.Aborted.v
