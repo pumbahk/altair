@@ -3,6 +3,7 @@ from webhelpers.paginate import PageURL_WebOb, Page
 import logging, locale
 import json
 from .api import get_famiport_shop_by_code
+from ..models import FamiPortReceiptType
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,32 @@ class ViewHelpers(object):
         :return:
         """
         return famiport_order_identifier[3:12]
+
+    def display_payment_shop_code(self, famiport_receipt):
+        display_code = u'-'
+
+        if famiport_receipt.type == FamiPortReceiptType.Payment.value:
+            if famiport_receipt.famiport_order.paid_at is not None:
+                display_code = famiport_receipt.shop_code
+        elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
+            if famiport_receipt.famiport_order.paid_at is not None and \
+               famiport_receipt.famiport_order.issued_at is not None:
+                display_code = famiport_receipt.shop_code
+
+        return display_code
+
+    def display_delivery_shop_code(self, famiport_receipt):
+        display_code = u'-'
+
+        if famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
+            if famiport_receipt.famiport_order.issued_at is not None:
+                display_code = famiport_receipt.shop_code
+        elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
+            if famiport_receipt.famiport_order.paid_at is not None and \
+               famiport_receipt.famiport_order.issued_at is not None:
+                display_code = famiport_receipt.shop_code
+
+        return display_code
 
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
