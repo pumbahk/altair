@@ -828,7 +828,7 @@ class DownloadListOfPreviewImage(object):
                     assert ISejDeliveryPlugin.providedBy(delivery_plugin)
                     template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
                     transformer = SEJTemplateTransformer(
-                        svgio=BytesIO(svg),
+                        svgio=BytesIO(svg.encode('utf-8')),
                         global_transform=global_transform,
                         notation_version=template_record.notation_version
                         )
