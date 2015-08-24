@@ -796,24 +796,6 @@ class CouponView(object):
             )
 
     @lbr_view_config(
-        route_name='order_review.coupon',
-        renderer=selectable_renderer("order_review/coupon.html"))
-    def show(self):
-
-        reserved_number = self.context.get_reserved_number(self.request.matchdict.get('reserved_number', None))
-        if reserved_number is None:
-            raise HTTPNotFound()
-
-        order = self.context.get_order(reserved_number.order_no)
-        if order is None:
-            raise HTTPNotFound()
-
-        return dict(
-            reserved_number=reserved_number,
-            order=order
-            )
-
-    @lbr_view_config(
         route_name='order_review.coupon_admission',
         request_method='POST',
         renderer=selectable_renderer("order_review/admission.html"))

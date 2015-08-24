@@ -1,4 +1,6 @@
 <%inherit file="../layout.html" />
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+
 <div class="purchased">
 
 <%mobile:form_header>受付番号</%mobile:form_header>
@@ -35,6 +37,6 @@ ${order.performance.venue.name}<br />
 % else:
   <div>お客様は、未入場です。</div>
   <form action="${request.route_path('order_review.coupon_admission', order_no=order.order_no)}" method="POST">
-    <input class="btnLogin" type="submit" style="width:400px;height:50px;" value="入場する"/>
+    <input class="btnLogin" type="submit" value="入場する"/>
   </form>
 % endif
