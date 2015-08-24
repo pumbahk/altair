@@ -14,6 +14,9 @@ from .zip_file import EnhZipFile
 
 MAX_TICKET_DATA_LENGTH = 5000
 
+class TicketDataLargeError(Exception):
+    pass
+
 class SejTicketDataXml(object):
     xml = ''
 
@@ -21,7 +24,8 @@ class SejTicketDataXml(object):
         self.xml = xml
 
     def validate(self):
-        return len(unicode(self).encode('CP932')) < MAX_TICKET_DATA_LENGTH
+        if len(unicode(self).encode('CP932')) > MAX_TICKET_DATA_LENGTH:
+            raise TicketDataLargeError
 
     def __unicode__(self):
         from cStringIO import StringIO
