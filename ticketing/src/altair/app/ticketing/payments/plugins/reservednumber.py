@@ -145,7 +145,8 @@ class CompletionMailViewlet(object):
         :param context: ICompleteMailDelivery
         """
         notice = self.context.mail_data("D", "notice")
-        return dict(notice=notice)
+        reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
+        return dict(notice=notice, reserved_number=reserved_number)
 
 @view_defaults(context=IOrderCancelMailResource)
 class OrderCancelMailViewlet(object):
