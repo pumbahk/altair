@@ -5,7 +5,10 @@ import json
 import re
 import base64
 import os.path
-from io import BytesIO
+from io import (
+    BytesIO,
+    StringIO,
+    )
 from collections import OrderedDict
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -809,6 +812,7 @@ class DownloadListOfPreviewImage(object):
 
     def fetch_data_list(self, q, organization, delivery_method_id, ticket_format):
         svg_string_list = []
+        regx_xmldecl = re.compile('<\?xml.*?\?>', re.I)
         dm = c_models.DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         for product_item in q:
             ticket_q = (c_models.Ticket.query
@@ -827,8 +831,9 @@ class DownloadListOfPreviewImage(object):
                     delivery_plugin = get_delivery_plugin(self.request, SEJ_DELIVERY_PLUGIN_ID)
                     assert ISejDeliveryPlugin.providedBy(delivery_plugin)
                     template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
+                    svgio = StringIO(regx_xmldecl.sub('', svg))
                     transformer = SEJTemplateTransformer(
-                        svgio=BytesIO(svg.encode('utf-8')),
+                        svgio=svgio,
                         global_transform=global_transform,
                         notation_version=template_record.notation_version
                         )
