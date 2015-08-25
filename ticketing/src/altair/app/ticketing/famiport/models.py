@@ -335,6 +335,7 @@ class FamiPortSalesSegment(Base, WithTimestamp):
         if self.sales_channel == 3:
             return u'FamiPortAndWeb'
 
+
 class FamiPortRefundType(Enum):
     Type1 = 1
     Type2 = 2
@@ -381,10 +382,12 @@ class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
     Ticketing            = 3  # 代済発券
     PaymentOnly          = 4  # 前払いのみ
 
+
 class FamiPortReceiptType(Enum):
     Payment              = 1  # 前払い（後日渡し）の前払い時
     Ticketing            = 2  # 代済発券と前払い(後日渡し)の後日渡し時
     CashOnDelivery       = 3  # 代引き
+
 
 def create_random_sequence_number(length):
     seq = u''
