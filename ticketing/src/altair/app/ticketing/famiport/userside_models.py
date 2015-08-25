@@ -18,15 +18,24 @@ class AltairFamiPortReflectionStatus(Enum):
     Reflected = 2
 
 
+class AltairFamiPortVenue_Site(Base):
+    __tablename__ = 'AltairFamiPortVenue_Site'
+    __table_args__ = (
+        sa.PrimaryKeyConstraint('altair_famiport_venue_id', 'site_id'),
+        )
+
+    altair_famiport_venue_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortVenue.id', ondelete='CASCADE'), nullable=False)
+    site_id = AnnotatedColumn(Identifier, sa.ForeignKey('Site.id', ondelete='CASCADE'), nullable=False)
+
+
 class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortVenue'
     __table_args__ = (
-        sa.UniqueConstraint('organization_id', 'site_id', 'famiport_venue_id'),
+        sa.UniqueConstraint('organization_id', 'famiport_venue_id'),
         )
    
     id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
     organization_id = AnnotatedColumn(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
-    site_id = AnnotatedColumn(Identifier, sa.ForeignKey('Site.id'), nullable=False)
     famiport_venue_id = AnnotatedColumn(Identifier, nullable=False)
     name  = AnnotatedColumn(sa.Unicode(50), nullable=False)
     name_kana = AnnotatedColumn(sa.Unicode(100), nullable=False)
@@ -34,7 +43,7 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     organization = orm.relationship('Organization')
-    site = orm.relationship('Site')
+    sites = orm.relationship('Site', secondary=AltairFamiPortVenue_Site.__table__)
 
 
 class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
