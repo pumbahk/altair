@@ -155,44 +155,52 @@ class FamiPortTicketTemplate(Base):
     __tablename__ = 'FamiPortTicketTemplate'
 
     id = sa.Column(Identifier(), nullable=False, autoincrement=True, primary_key=True)
+    organization_id = sa.Column(Identifier(), sa.ForeignKey('Organization.id'), nullable=False)
+    name = sa.Column(sa.Unicode(255), nullable=False)
     template_code = sa.Column(sa.Unicode(13), nullable=False)
     logically_subticket = sa.Column(sa.Boolean(), nullable=False, default=False)
     mappings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False)
 
 
 class FamiPortTicketXMLBuilder(object):
-    def __init__(self, request):
+    def __init__(self, request, organization_id):
         self.request = request
         self.session = get_db_session(request, 'slave')
+        self.organization_id = organization_id
         self.cache = {}
 
-    def _get_template_info(self, template_code):
-        ti = self.cache.get(template_code)
+    def _get_template_info(self, name):
+        ti = self.cache.get(name)
         if ti is None:
             ti = self.session.query(FamiPortTicketTemplate) \
-                .filter_by(template_code=template_code) \
+                .filter_by(organization_id=self.organization_id, name=name) \
                 .one()
-            self.cache[template_code] = ti
+            self.cache[name] = ti
         return ti
 
-    def __call__(self, template_code, dicts):
+    def __call__(self, name, dicts):
         render = pystache.render
         root = etree.Element(u'ticket')
-        ti = self._get_template_info(template_code)
+        ti = self._get_template_info(name)
         for element_name, t in ti.mappings:
             e = etree.Element(element_name)
             e.text = render(t, dicts)
             root.append(e)
-        return root, ti.logically_subticket
+        return root, ti.template_code, ti.logically_subticket
 
 
-def get_ticket_template_code_from_ticket_format(ticket_format):
+def get_template_name_from_ticket_format(ticket_format):
     retval = None
     aux = ticket_format.data.get('aux')
     if aux is not None:
-        retval = aux.get('famiport_ticket_template_code')
+        retval = aux.get('famiport_ticket_template_name')
+        if retval is None:
+            retval = aux.get('famiport_ticket_template_code')
+            if retval is not None:
+                logger.warning('using deprecated famiport_ticket_template_code=%s' % retval)
     if retval is None:
         retval = u'TTTSTR0001'  # XXX: デフォルト
+        logger.warning('famiport_ticket_template_name is not specified; falls back to the default: %s' % retval)
     return retval
 
 def get_ticket_count(request, order_like):
@@ -214,12 +222,12 @@ def build_ticket_dicts_from_order_like(request, order_like):
             else:
                 raise TypeError('!')
             bundle = ordered_product_item.product_item.ticket_bundle
-            xml_builder = FamiPortTicketXMLBuilder(request)
+            xml_builder = FamiPortTicketXMLBuilder(request, order_like.organization_id)
             for token, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
-                    template_code = get_ticket_template_code_from_ticket_format(ticket_format)
-                    xml_root, logically_subticket = xml_builder(template_code, dict_)
+                    name = get_template_name_from_ticket_format(ticket_format)
+                    xml_root, template_code, logically_subticket = xml_builder(name, dict_)
                     xml = etree.tostring(xml_root, encoding='unicode')
                     if logically_subticket != (not ticket.principal):
                         raise RuntimeError('logically_subticket=%r while expecting %r' % (logically_subticket, not ticket.principal))
