@@ -17,6 +17,7 @@ class AltairFamiPortReflectionStatus(Enum):
     AwaitingReflection = 1
     Reflected = 2
 
+
 class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortVenue'
     __table_args__ = (
@@ -34,6 +35,7 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
 
     organization = orm.relationship('Organization')
     site = orm.relationship('Site')
+
 
 class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortPerformanceGroup'
@@ -122,7 +124,6 @@ class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
         if self.direct_sales_data is None:
             self.direct_sales_data = {}
         self.direct_sales_data['search_code'] = value
-
 
 
 class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
@@ -214,6 +215,7 @@ class AltairFamiPortNotificationType(Enum):
     PaymentAndTicketingCanceled = 12
     OrderCanceled = 16
     Refunded  = 32
+
 
 class AltairFamiPortNotification(Base, WithTimestamp):
     __tablename__ = 'AltairFamiPortNotification'
