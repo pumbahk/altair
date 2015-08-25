@@ -131,15 +131,16 @@
         % if personal_info:
         <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
         % endif
+        <% payment_shop_code = vh.display_payment_shop_code(receipt) %>
+        <% delivery_shop_code = vh.display_delivery_shop_code(receipt) %>
         <td nowrap="nowrap" class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at)}</td>
-        <% payment_famiport_receipt = receipt.famiport_order.payment_famiport_receipt %>
-        <td nowrap="nowrap" class="first-hidden">${payment_famiport_receipt.shop_code if receipt.famiport_order.paid_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_famiport_receipt.shop_code)) if receipt.famiport_order.paid_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at)}</td>
-        <% ticketing_famiport_receipt = receipt.famiport_order.ticketing_famiport_receipt %>
-        <td nowrap="nowrap" class="first-hidden">${ticketing_famiport_receipt.shop_code if receipt.famiport_order.issued_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(ticketing_famiport_receipt.shop_code)) if receipt.famiport_order.issued_at else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at) if payment_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.display_payment_shop_code(receipt)}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_shop_code)) if payment_shop_code != u'-' else u'-'}</td>
+
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at) if delivery_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.display_delivery_shop_code(receipt)}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(delivery_shop_code)) if delivery_shop_code != u'-' else u'-'}</td>
       </tr>
     % endfor
     </tbody>
