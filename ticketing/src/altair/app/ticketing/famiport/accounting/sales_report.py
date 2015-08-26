@@ -65,7 +65,7 @@ def make_unmarshaller(f, encoding='cp932', eor='\n', exc_handler=None):
 
 def gen_records_from_order_model(famiport_order, start_date, end_date):
     famiport_sales_segment = famiport_order.famiport_sales_segment
-    famiport_performance = famiport_sales_segment.famiport_performance
+    famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
     famiport_client = famiport_event.client
     playguide = famiport_client.playguide
@@ -75,7 +75,7 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
     basic_dict = dict(
         event_code=famiport_event.code_1,
         event_code_sub=famiport_event.code_2,
-        sales_segment_code=famiport_sales_segment.code,
+        sales_segment_code=famiport_sales_segment.code if famiport_sales_segment is not None else u'',
         performance_code=famiport_performance.code,
         event_name=famiport_event.name_1,
         performance_date=famiport_performance.start_at,

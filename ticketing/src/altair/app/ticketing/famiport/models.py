@@ -670,7 +670,7 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @property
     def performance_start_at(self):
-        return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
+        return self.famiport_performance and self.famiport_performance.start_at
 
     @property
     def ticket_total_count(self):

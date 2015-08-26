@@ -61,6 +61,7 @@ class FamiPortReceiptFakeFactory(object):
         famiport_order = mock.Mock(
             total_amount=100,
             famiport_client=famiport_client,
+            famiport_performance=famiport_performance,
             famiport_sales_segment=famiport_sales_segment,
             spec=FamiPortOrder,
             )
@@ -123,6 +124,7 @@ class FamiPortOrderAutoCompleteNotificationContextTest(TestCase):
         self.famiport_order = mock.Mock(
             total_amount=100,
             famiport_client=self.famiport_client,
+            famiport_performance=self.famiport_performance,
             famiport_sales_segment=self.famiport_sales_segment,
             spec=FamiPortOrder,
             )
