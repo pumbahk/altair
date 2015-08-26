@@ -547,8 +547,13 @@ def payment_mail_viewlet(context, request):
     assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
-                famiport_order=famiport_order, h=cart_helper)
+    return dict(
+        payment_name=payment_method.name,
+        description=Markup(payment_method.description),
+        notice=context.mail_data("P", "notice"),
+        famiport_order=famiport_order,
+        h=cart_helper
+        )
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
@@ -646,6 +651,7 @@ def deliver_completion_mail_viewlet(context, request):
     return dict(
         delivery_name=delivery_method.name,
         description=Markup(delivery_method.description),
+        notice=context.mail_data("D", "notice"),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
         h=cart_helper
