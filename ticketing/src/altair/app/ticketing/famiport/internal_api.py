@@ -55,6 +55,12 @@ def get_famiport_venue_by_userside_id(session, client_code, userside_id):
                     .one()
     return retval
 
+def get_famiport_venue_by_name(session, client_code, name):
+    retval = session.query(FamiPortVenue) \
+                    .filter_by(client_code=client_code, name=name) \
+                    .one()
+    return retval
+
 def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortSalesSegment) \
                     .join(FamiPortSalesSegment.famiport_performance) \

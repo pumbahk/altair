@@ -83,13 +83,17 @@
     </tr>
   </thead>
   <tbody>
-% for altair_famiport_performance in altair_famiport_performance_group.altair_famiport_performances.values():
+% for altair_famiport_performance in sorted(altair_famiport_performance_group.altair_famiport_performances.values(), key=lambda altair_famiport_performance: altair_famiport_performance.code):
     <% rows = len(altair_famiport_performance.altair_famiport_sales_segment_pairs) %>
     <tr>
-      <td rowspan="${rows}">${view.status_label(altair_famiport_performance.status)}</td>
-      <td rowspan="${rows}">${altair_famiport_performance.code}</td>
-      <td rowspan="${rows}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
-      <td rowspan="${rows}"><a href="${request.route_path('performances.show', performance_id=altair_famiport_performance.performance.id)}">${altair_famiport_performance.performance.name}</td>
+      <td rowspan="${rows or 1}">${view.status_label(altair_famiport_performance.status)}</td>
+      <td rowspan="${rows or 1}">${altair_famiport_performance.code}</td>
+      <td rowspan="${rows or 1}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
+      <td rowspan="${rows or 1}"><a href="${request.route_path('performances.show', performance_id=altair_famiport_performance.performance.id)}">${altair_famiport_performance.performance.name}</td>
+  % if rows == 0:
+      <td colspan="4"><span class="warn">Famiポート受付区分が未連携です</span></td>
+    </tr>
+  % else:
   % for i, altair_famiport_sales_segment_pair in enumerate(altair_famiport_performance.altair_famiport_sales_segment_pairs):
     % if i > 0:
     </tr>
@@ -101,6 +105,7 @@
       <td>${vh.term(altair_famiport_sales_segment_pair.seat_selection_start_at, altair_famiport_sales_segment_pair.end_at)}</td>
     </tr>
   % endfor
+  % endif
 % endfor
   </tbody>
 </table>

@@ -119,7 +119,7 @@
         </td>
         <td rowspan="${rows}">
           ${altair_famiport_performance_group.altair_famiport_venue.name}<br />
-          [${altair_famiport_performance_group.altair_famiport_venue.site.name}]
+          [${altair_famiport_performance_group.altair_famiport_venue.sites[0].name}]
         </td>
         <td rowspan="${rows}">${altair_famiport_performance_group.code_1}-${altair_famiport_performance_group.code_2}</td>
         % for i, (performance, altair_famiport_performance) in enumerate(sorted(altair_famiport_performance_group.altair_famiport_performances.items(), key=lambda pair: pair[1].code)):
