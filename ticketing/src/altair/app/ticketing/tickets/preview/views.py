@@ -83,6 +83,10 @@ from . import TicketPreviewFillValuesException
 from ..cleaner.api import TicketCleanerValidationError
 import tempfile
 
+
+regx_xmldecl = re.compile('<\?xml.*?\?>', re.I)  # XML宣言にマッチする (例) '<?xml version="1.0" ?>'
+
+
 sej_ticket_printer_transforms = {
     'old': numpy.matrix(
         [
@@ -812,7 +816,6 @@ class DownloadListOfPreviewImage(object):
 
     def fetch_data_list(self, q, organization, delivery_method_id, ticket_format):
         svg_string_list = []
-        regx_xmldecl = re.compile('<\?xml.*?\?>', re.I)
         dm = c_models.DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         for product_item in q:
             ticket_q = (c_models.Ticket.query
