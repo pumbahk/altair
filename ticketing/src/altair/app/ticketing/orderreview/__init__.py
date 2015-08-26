@@ -40,10 +40,6 @@ def includeme(config):
     config.add_route('order_review.edit_order_attributes.update', '/show', request_method='POST', request_param='action=edit_order_attributes.update', factory='.resources.OrderReviewResource')
     config.add_route('order_review.show', '/show', request_method='POST', factory='.resources.OrderReviewResource')
 
-    ## coupon
-    config.add_route('order_review.coupon', '/coupon/{reserved_number}', factory='.resources.CouponViewResource')
-    config.add_route('order_review.coupon_admission', '/coupon/admission/{order_no}', factory='.resources.CouponViewResource')
-
     ## qr
     config.add_route('order_review.qr_print', '/qr/print', factory='.resources.QRViewResource')
     config.add_route('order_review.qr_send', '/qr/send', factory='.resources.QRViewResource')
