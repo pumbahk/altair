@@ -978,7 +978,7 @@ class OrderImportForm(OurForm):
         label=u'インポート方法',
         validators=[Required()],
         choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update, ImportTypeEnum.CreateOrUpdate]],
-        default=ImportTypeEnum.Create.v,
+        default=ImportTypeEnum.Update.v,
         coerce=int,
     )
     always_issue_order_no = OurBooleanField(

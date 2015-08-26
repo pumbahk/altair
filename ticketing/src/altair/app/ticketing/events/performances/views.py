@@ -180,7 +180,7 @@ class PerformanceShowView(BaseView):
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': OrderImportForm(always_issue_order_no=True, merge_order_attributes=True),
+            'form': OrderImportForm(always_issue_order_no=False, merge_order_attributes=True),
             'oh': order_helpers,
             'order_import_tasks': order_import_tasks
         }
