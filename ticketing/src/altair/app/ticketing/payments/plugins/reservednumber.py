@@ -88,14 +88,11 @@ class ReservedNumberDeliveryPlugin(object):
         self.finish2(request, cart)
 
     def finish2(self, request, order_like):
-        while True:
-            number = rand_string(string.digits, 10)
-            existing_number = m.ReservedNumber.query.filter_by(number=number).first()
-            if existing_number is None:
-                reserved_number = m.ReservedNumber(order_no=order_like.order_no, number=number)
-                break
+        seq_no = sensible_alnum_decode(order_like.order_no[2:])
+        logger.debug('seq_no = %s' % seq_no)
+        number = hashlib.md5(str(seq_no)).hexdigest()
+        reserved_number = m.ReservedNumber(order_no=order_like.order_no, number=number)
         m.DBSession.add(reserved_number)
-        logger.debug(u"窓口引き換え番号: %s" % reserved_number.number)
 
     def finished(self, request, order):
         """ 引換番号が発行されていること """
@@ -145,8 +142,7 @@ class CompletionMailViewlet(object):
         :param context: ICompleteMailDelivery
         """
         notice = self.context.mail_data("D", "notice")
-        reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
-        return dict(notice=notice, reserved_number=reserved_number)
+        return dict(notice=notice)
 
 @view_defaults(context=IOrderCancelMailResource)
 class OrderCancelMailViewlet(object):
