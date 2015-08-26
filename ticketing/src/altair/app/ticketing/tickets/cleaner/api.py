@@ -193,4 +193,4 @@ class TicketSVGValidator(object):
             raise self.exc_class(u"チケットデータのサイズが制限を超えています。")
         except Exception, e:
             logger.exception(e)
-            raise self.exc_class("sej_xml:" + e)
+            raise self.exc_class("sej_xml:" + unicode(e))
