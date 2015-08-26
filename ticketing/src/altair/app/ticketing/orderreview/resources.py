@@ -18,6 +18,7 @@ from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
 from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
+from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
 from .views import unsuspicious_order_filter
@@ -163,6 +164,17 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
 
 class QRViewResource(OrderReviewResourceBase):
     pass
+
+class CouponViewResource(OrderReviewResourceBase):
+
+    def get_reserved_number(self, reserved_number):
+        return self.session.query(ReservedNumber).filter(ReservedNumber.number==reserved_number).first()
+
+    def get_order(self, order_no):
+        return Order.query.join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            filter(Order.organization_id==self.organization.id). \
+            filter(Order.order_no==order_no).first()
 
 class EventGateViewResource(OrderReviewResourceBase):
     pass
