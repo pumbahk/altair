@@ -24,11 +24,8 @@ public class App {
 
     	final AppWindowModel model = new AppWindowModel();
     	final AppWindowService appService = new AppWindowService(model);
-    	final IAppWindow appWindow = new AppWindow(appService);
-    	appWindow.show();
 
         if(appServer.acceptConnection()) {
-			System.out.println("Starting server at port "+appServer.getPort());
 			appServer.setModel(model);
 			appServer.setService(appService);
 
@@ -37,6 +34,10 @@ public class App {
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
+			return;
 		}
+
+        final IAppWindow appWindow = new AppWindow(appService);
+        appWindow.show();
     }
 }

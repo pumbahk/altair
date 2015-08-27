@@ -1,12 +1,14 @@
 package jp.ticketstar.ticketing.printing;
 
 import java.awt.geom.AffineTransform;
+import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,8 +18,10 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import javax.print.PrintService;
 
@@ -43,6 +47,7 @@ import com.sun.net.httpserver.HttpServer;
 public class Server implements HttpHandler {
 	private AppWindowModel model;
 	private AppWindowService service;
+	private ExtendedSVG12BridgeContext bridgeContext;
 	
 	@Option(name="--server")
     private boolean acceptConnection;
@@ -53,10 +58,30 @@ public class Server implements HttpHandler {
 	@Option(name="--origin")
 	private List<String> originHosts;
 	
+	@Option(name="--queue")
+	private boolean useQueue;
+	
+	private PrintStream console;
+	
+	private int nextId;
+	private Queue<Job> queue;
+	
+	private Object printThreadLock;
+	private Thread printThread;
+	
 	public Server() {
 		acceptConnection = false;
 		port = 8081;
 		originHosts = new ArrayList<String>();
+		useQueue = false;
+		
+		console = System.out;
+		
+		nextId = 0;
+		queue = new LinkedList<Job>();
+		
+		printThreadLock = new Object();
+		printThread = null;
 	}
 	
 	public boolean acceptConnection() {
@@ -76,13 +101,24 @@ public class Server implements HttpHandler {
 	}
 	
 	public void start() throws IOException {
+		console.println("Accept connection at port "+port);
 		for(String h: originHosts) {
-			System.out.println("Origin: "+h);
+			console.println("Origin: "+h);
 		}
+		
+		bridgeContext = new ExtendedSVG12BridgeContext(service);
+		bridgeContext.setInteractive(false);
+		bridgeContext.setDynamic(false);
 		
 		HttpServer httpServer = HttpServer.create(new InetSocketAddress(getPort()), 0);
 		httpServer.createContext("/", this);
 		httpServer.start();
+	}
+	
+	class Job {
+		Integer id;
+		Request request;
+		PageSetModel pageSet;
 	}
 	
 	class Request {
@@ -95,7 +131,7 @@ public class Server implements HttpHandler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		// クライアントとリクエストを表示する
-		System.out.println("new connection from "+exchange.getRemoteAddress().toString()+" with request "+exchange.getRequestMethod()+" "+exchange.getRequestURI());
+		console.println("new connection from "+exchange.getRemoteAddress().toString()+" with request "+exchange.getRequestMethod()+" "+exchange.getRequestURI());
 		
 		StringBuffer sb = new StringBuffer();
 		
@@ -150,69 +186,103 @@ public class Server implements HttpHandler {
 						sb.append(pf.getName()+"\n");
 					}
 				}
+			} else if(path.equals("/queue")) {
+				Map<String,Object> data = new HashMap<String,Object>();
+				List<String> list = new ArrayList<String>();
+				synchronized (queue) {
+					for(Job job: queue.toArray(new Job[0])) {
+						if(preferJson) {
+							list.add("job-"+job.id);
+						} else {
+							sb.append("job "+job.id+"\n");
+						}
+					}
+				}
+				if(preferJson) {
+					type = "text/json; charset=UTF-8";
+					data.put("jobs", list);
+					sb.append(gson.toJson(data));
+				}
 			} else if(path.equals("/process") && exchange.getRequestMethod().equals("POST")) {
 				type = "text/json; charset=UTF-8";
 				
-				InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "UTF-8");
-				Request req = gson.fromJson(isr, Request.class);
+				// リクエストをオブジェクトとして読み込む
+				console.println("Building request");
+				Request req = gson.fromJson(new InputStreamReader(exchange.getRequestBody(), "UTF-8"), Request.class);
 				
-				ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
-				bridgeContext.setInteractive(false);
-				bridgeContext.setDynamic(false);
-				
+				// SVGをオブジェクトにする
+				console.println("creating page set model");
 				InputStream is = new ByteArrayInputStream(req.svg.getBytes("utf-8"));
 				OurDocumentLoader loader = new OurDocumentLoader(service);
 				ExtendedSVG12OMDocument doc = (ExtendedSVG12OMDocument) loader.loadDocument("http://", is);
+				PageSetModel pageSetModel = new PageSetModel(bridgeContext, doc);
 				
-				model.setPageSetModel(new PageSetModel(bridgeContext, doc));
+				Job job = new Job();
+				job.request = req;
+				job.pageSet = pageSetModel;
 				
-				// ページ一覧を出してみる
-				Iterator<SVGOMPageElement> i = new PageElementIterator(model.getPageSetModel().findPageSetElement(doc));
-				while(i.hasNext()) {
-					SVGOMPageElement page = i.next();
-					final String title = findTitle(page);
-					System.out.println("[page] "+title);
-				}
-				
-				System.out.println("Creating thread...");
-				Thread thread = new Thread(new Runnable() {
-					public void run() {
-						AccessController.doPrivileged(new PrivilegedAction<Object>() {
-							public Object run() {
-								try {
-									final PrinterJob job = PrinterJob.getPrinterJob();
-									job.setPrintService(model.getPrintService());
-									job.setPrintable(createTicketPrintable(job), model.getPageFormat());
-									job.print();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-								// 完了!
-								System.out.println("child completed.");
-								return null;
-							}
-						});
+				if(useQueue) {
+					console.println("Add to queue");
+					synchronized (queue) {
+						job.id = nextId++;
+						queue.add(job);
 					}
-				});
-				thread.start();
+					console.println("ok");
+					
+					synchronized (printThreadLock) {
+						if(printThread == null) {
+							console.println("Starting print thread...");
+							printThread = createPrintThread();
+							printThread.start();
+						} else {
+							console.println("already running: "+printThread.hashCode());
+						}
+					}
+				} else {
+					// キューなんて使わずに直接スレッドで
+					console.println("Creating thread...");
+					final Job _job = job;
+					Thread thread = new Thread(new Runnable() {
+						public void run() {
+							AccessController.doPrivileged(new PrivilegedAction<Object>() {
+								public Object run() {
+									try {
+										PrinterJob printerJob = makePrinterJob(_job);
+										if(printerJob != null) {
+											printerJob.print();
+											console.println("child completed.");
+										} else {
+											console.println("no such printer");
+										}
+									} catch(PrinterException e) {
+										e.printStackTrace(console);
+									}
+									return null;
+								}
+							});
+						}
+					});
+					thread.start();
+				}
 				
 				Map<String,Object> data = new HashMap<String,Object>();
 				data.put("status", "OK");
 				sb.append(gson.toJson(data));
 				
-				System.out.println("finish output.");
+				console.println("finish output.");
 			} else if(path.equals("/test")) {
+				URI uri = null;
 				try {
-					URI uri = new URI("file:///tmp/sample1.svg");
-					service.loadDocument(uri);
-					System.out.println("Printing...");
-					service.printAll();
-					System.out.println("done.");
+					uri = new URI("file:///tmp/sample1.svg");
 				} catch(URISyntaxException e) {
 					e.printStackTrace();
 				}
+				if(uri != null) {
+					service.loadDocument(uri);
+					service.printAll();
+				}
 			} else {
-				System.out.println("not handled.");
+				console.println("not handled.");
 			}
 			
 			byte[] bytes = sb.toString().getBytes(Charset.forName("UTF-8"));
@@ -220,8 +290,8 @@ public class Server implements HttpHandler {
 			exchange.sendResponseHeaders(200, bytes.length);
 			out.write(bytes);
 		} catch(Exception e) {
-			System.out.println("Catch exception");
-			e.printStackTrace(System.out);
+			console.println("Catch exception");
+			e.printStackTrace(console);
 			
 			sb.append("\n");
 			sb.append(e.getMessage());
@@ -231,7 +301,7 @@ public class Server implements HttpHandler {
 			exchange.sendResponseHeaders(200, bytes.length);
 			out.write(bytes);
 		} finally {
-			System.out.println("Closing...");
+			console.println("Closing...");
 			out.close();
 			exchange.close();
 		}
@@ -259,16 +329,72 @@ public class Server implements HttpHandler {
 		return false;
 	}
 	
-	// copied from BasicAppService
-	protected TicketPrintable createTicketPrintable(PrinterJob job) {
-		if (model.getPageSetModel() == null) {
-			throw new IllegalStateException("pageSetModel is not loaded");
+	private Thread createPrintThread() {
+		class Box {
+			int identity;
 		}
-		return new TicketPrintable(
-			new ArrayList<Page>(model.getPageSetModel().getPages()),
-			job,
+		final Box box = new Box();
+		Thread thread = new Thread(new Runnable() {
+			public void run() {
+				AccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						String prefix = "["+box.identity+"] ";
+						console.println(prefix+"starting printing thread");
+						while(true) {
+							Job job = null;
+							synchronized (queue) {
+								job = queue.peek();
+							}
+							if(job == null) {
+								synchronized (printThreadLock) {
+									console.println(prefix+"No more job, terminate thread.");
+									printThread = null;
+								}
+								return null;
+							}
+							console.println(prefix+"Found job "+job.id);
+							try {
+								PrinterJob printerJob = makePrinterJob(job);
+								console.println(prefix+"Start printing...");
+								printerJob.print();
+								console.println(prefix+"Printing completed.");
+								synchronized (queue) {
+									queue.poll();
+								}
+								Thread.sleep(1000);
+							} catch (Exception e) {
+								e.printStackTrace(console);
+							}
+						}
+					}
+				});
+			}
+		});
+		box.identity = thread.hashCode();
+		return thread;
+	}
+	
+	private PrinterJob makePrinterJob(Job job) throws PrinterException {
+		PrinterJob printerJob = PrinterJob.getPrinterJob();
+		TicketPrintable content = new TicketPrintable(
+			new ArrayList<Page>(job.pageSet.getPages()),
+			printerJob,
 			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
 		);
+		printerJob.setPrintService(getPrintServiceByName(job.request.printer));
+		printerJob.setPrintable(content, getPageFormatByName(job.request.page));
+		
+		return printerJob;
+	}
+
+	public static List<String> findPageTitles(PageSetModel pageSetModel, ExtendedSVG12OMDocument doc) {
+		List<String> titles = new ArrayList<String>();
+		Iterator<SVGOMPageElement> i = new PageElementIterator(pageSetModel.findPageSetElement(doc));
+		while(i.hasNext()) {
+			SVGOMPageElement page = i.next();
+			titles.add(findTitle(page));
+		}
+		return titles;
 	}
 	
 	// copied from PageSetModel
@@ -285,6 +411,15 @@ public class Server implements HttpHandler {
 		for(PrintService ps: model.getPrintServices()) {
 			if(ps.getName().equals(name)) {
 				return ps;
+			}
+		}
+		return null;
+	}
+	
+	private OurPageFormat getPageFormatByName(String name) {
+		for(OurPageFormat pf: model.getPageFormats()) {
+			if(pf.getName().equals(name)) {
+				return pf;
 			}
 		}
 		return null;
