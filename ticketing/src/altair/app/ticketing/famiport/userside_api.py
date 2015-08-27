@@ -271,8 +271,11 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                         .join(PaymentDeliveryMethodPair.payment_method) \
                         .join(PaymentDeliveryMethodPair.delivery_method) \
                         .filter(
-                            sql.or_(PaymentMethod.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID,
-                                    DeliveryMethod.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID)
+                            sql.and_(
+                                sql.or_(PaymentMethod.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID,
+                                        DeliveryMethod.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID),
+                                PaymentDeliveryMethodPair.public != 0
+                                )
                             ) \
                         .filter(SalesSegment.performance_id == performance.id) \
                         .all()

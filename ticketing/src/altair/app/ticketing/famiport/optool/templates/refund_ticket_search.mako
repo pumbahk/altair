@@ -98,10 +98,10 @@
             <td>${rts_helper.get_shop_name_text(rts_helper.get_famiport_shop_by_code(ticketing_shop_code))}</td>
             <td>${rts_helper.get_management_number_from_famiport_order_identifier(famiport_receipt.famiport_order_identifier)}</td>
             <td>${famiport_refund_entry.famiport_ticket.barcode_number}</td>
-            <td>${famiport_receipt.famiport_order.famiport_performance.famiport_event.code_1}</td>
-            <td>${famiport_receipt.famiport_order.famiport_performance.famiport_event.code_2}</td>
+            <td>${famiport_receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1}</td>
+            <td>${famiport_receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)}</td>
-            <td nowrap="nowrap">${famiport_receipt.famiport_order.famiport_performance.famiport_event.name_1}</td>
+            <td nowrap="nowrap">${famiport_receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1}</td>
             <td>${rts_helper.format_currency(famiport_refund_entry.ticket_payment)}</td>
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_refund_entry.shop_code if famiport_refund_entry.refunded_at else '-'}</td>

@@ -306,8 +306,8 @@ class FamiPortDownloadRefundTicketView(object):
         for entry in refund_entries:
             famiport_refund_entry = entry.FamiPortRefundEntry
             famiport_shop = rts_helper.get_famiport_shop_by_code(famiport_refund_entry.shop_code)
-            event_code_1 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_performance.famiport_event.code_1
-            event_code_2 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_performance.famiport_event.code_2
+            event_code_1 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1
+            event_code_2 = famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_2
             ticketing_shop_code = famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.shop_code
             rows.append([
                 unicode(rts_helper.get_refund_status_text(famiport_refund_entry.refunded_at)),
@@ -319,7 +319,7 @@ class FamiPortDownloadRefundTicketView(object):
                 unicode(famiport_refund_entry.famiport_ticket.barcode_number),
                 unicode(u'-'.join([event_code_1,event_code_2])),
                 unicode(rts_helper.format_date(famiport_refund_entry.famiport_ticket.famiport_order.performance_start_at)),
-                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_performance.famiport_event.name_1),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.name_1),
                 unicode(famiport_refund_entry.ticket_payment),
                 unicode(rts_helper.format_datetime(famiport_refund_entry.refunded_at)),
                 unicode(famiport_refund_entry.shop_code),

@@ -106,7 +106,7 @@
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td nowrap="nowrap">
-            ${receipt.famiport_order.famiport_sales_segment.name if receipt.famiport_order.famiport_sales_segment else u'-'}
+            ${receipt.famiport_order.famiport_sales_segment.name}
             % if receipt.canceled_at:
                 <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
             % elif receipt.void_at and receipt.void_reason == 99:
@@ -116,9 +116,9 @@
         <td nowrap="nowrap">${receipt.famiport_order.get_type_in_str}</td>
         <td nowrap="nowrap">${receipt.get_issued_status_in_str}</td>
         <td nowrap="nowrap">${receipt.get_payment_status_in_str}</td>
-        <td nowrap="nowrap">${receipt.famiport_order.famiport_performance.name}</td>
-        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_performance.start_at)}</td>
-        <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
         <td nowrap="nowrap">${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
         <td nowrap="nowrap">${vh.get_barcode_no_text(receipt.barcode_no)}</td>
         <td nowrap="nowrap">${receipt.reserve_number}</td>

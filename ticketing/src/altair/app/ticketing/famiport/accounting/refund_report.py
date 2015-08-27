@@ -53,7 +53,7 @@ def gen_record_from_refund_model(refund_entry):
     famiport_ticket = refund_entry.famiport_ticket
     famiport_order = famiport_ticket.famiport_order
     famiport_sales_segment = famiport_order.famiport_sales_segment
-    famiport_performance = famiport_order.famiport_performance
+    famiport_performance = famiport_sales_segment.famiport_performance
     famiport_event = famiport_performance.famiport_event
     famiport_client = famiport_event.client
     playguide = famiport_client.playguide
@@ -75,7 +75,7 @@ def gen_record_from_refund_model(refund_entry):
         management_number=management_number,
         event_code=famiport_event.code_1,
         event_code_sub=famiport_event.code_2,
-        sales_segment_code=famiport_sales_segment.code if famiport_sales_segment is not None else u'',
+        sales_segment_code=famiport_sales_segment.code,
         performance_code=famiport_performance.code,
         event_name=famiport_event.name_1,
         performance_date=famiport_performance.start_at,

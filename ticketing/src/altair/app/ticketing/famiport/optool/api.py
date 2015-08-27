@@ -112,7 +112,8 @@ def lookup_refund_performance_by_searchform_data(request, formdata=None, now=Non
                         .join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                         .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                         .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
-                        .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortOrder.famiport_performance_id)\
+                        .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
+                        .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
                         .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)\
                         .group_by(FamiPortPerformance.id, FamiPortRefund.start_at, FamiPortRefund.end_at, FamiPortRefund.send_back_due_at)
 
@@ -157,6 +158,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
+                        .join(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
                         .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
                         .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
                         .group_by(FamiPortReceipt.id) \
@@ -205,7 +207,8 @@ def search_refund_ticket_by(request, params, now=None):
                                               .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                                               .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
                                               .join(FamiPortReceipt, FamiPortReceipt.famiport_order_id == FamiPortOrder.id)\
-                                              .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortOrder.famiport_performance_id)\
+                                              .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
+                                              .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
                                               .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)
 
     before_refund = params.get('before_refund', None)

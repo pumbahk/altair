@@ -322,7 +322,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 barCodeNo = famiport_receipt.barcode_no
                 ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
-                kogyoName = famiport_order.famiport_performance.name
+                kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
                 name = famiport_order.customer_name if not famiport_order.customer_name_input else u''
 
                 totalAmount = str_or_blank(totalAmount, 8, fillvalue='0')
@@ -547,9 +547,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 ticketingCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 exchangeTicketNo = str_or_blank(exchangeTicketNo)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
-                kogyoName = famiport_order.famiport_performance.name
+                kogyoName = famiport_order.famiport_sales_segment.famiport_performance.name
 
-                start_at = famiport_order.famiport_performance.start_at
+                start_at = famiport_order.famiport_sales_segment.famiport_performance.start_at
                 koenDate = start_at.strftime('%Y%m%d%H%M') if start_at else '999999999999'
                 tickets = famiport_order.famiport_tickets
 
@@ -935,7 +935,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                 else:
                     famiport_order = famiport_receipt.famiport_order
                     famiport_sales_segment = famiport_order.famiport_sales_segment
-                    famiport_performance = famiport_order.famiport_performance
+                    famiport_performance = famiport_sales_segment.famiport_performance
                     famiport_event = famiport_performance.famiport_event
                     criteria = [
                         lambda q: \
@@ -1156,7 +1156,7 @@ class FamiPortRefundEntryResponseBuilder(FamiPortResponseBuilder):
                         issuing_shop_code = refund_entry.famiport_ticket.famiport_order.issuing_shop_code
                         assert issuing_shop_code is not None
                         issuing_shop_code = _strip_zfill(issuing_shop_code)
-                        famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_performance
+                        famiport_performance = refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.famiport_performance
                         main_title = famiport_performance.name or u''
                         perf_day = six.text_type(famiport_performance.start_at.strftime('%Y%m%d')) if famiport_performance.start_at else u''
                         repayment = u'{0}'.format(refund_entry.ticket_payment + refund_entry.ticketing_fee + refund_entry.other_fees)

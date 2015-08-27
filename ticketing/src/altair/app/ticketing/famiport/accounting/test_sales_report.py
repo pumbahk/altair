@@ -550,37 +550,3 @@ class GenRecordsFromOrderModelTest(unittest.TestCase):
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['valid'], False)
 
-    def test_no_sales_segment(self):
-        from ..models import FamiPortOrder, FamiPortTicket, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
-        from datetime import date, datetime
-        famiport_order = FamiPortOrder(
-            famiport_order_identifier=u'123000000000',
-            type=FamiPortOrderType.CashOnDelivery.value,
-            famiport_sales_segment=None,
-            famiport_performance=self.famiport_performance,
-            created_at=datetime(2014, 12, 31),
-            total_amount=Decimal(0),
-            ticket_payment=Decimal(0),
-            system_fee=Decimal(0),
-            ticketing_fee=Decimal(0),
-            famiport_receipts=[
-                FamiPortReceipt(
-                    id=1,
-                    type=FamiPortReceiptType.CashOnDelivery.value,
-                    shop_code=u'000000',
-                    reserve_number=u'0000000000001',
-                    famiport_order_identifier=u'123000000001',
-                    created_at=datetime(2014, 12, 31)
-                    ),
-                ],
-            famiport_tickets=[
-                FamiPortTicket(
-                    barcode_number=u'0000000000000'
-                    ),
-                ]
-            )
-        from .sales_report import gen_records_from_order_model
-        records, _ = gen_records_from_order_model(famiport_order, datetime(2014, 12, 31), datetime(2015, 1, 1))
-        self.assertEqual(len(records), 0)
-
-
