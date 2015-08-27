@@ -278,6 +278,11 @@ class PaymentTest(FamiPortAPIViewTest):
         ticketing_start_at = datetime(2015, 3, 31, 17, 25, 53)
         ticketing_end_at = datetime(2015, 3, 31, 17, 25, 55)
 
+        famiport_performance = DummyModel(
+            name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
+            start_at=None,
+            )
+
         famiport_receipt = DummyModel(
             type=FamiPortReceiptType.Ticketing.value,
             shop_code=u'99999',
@@ -310,11 +315,9 @@ class PaymentTest(FamiPortAPIViewTest):
                 famiport_tickets=famiport_tickets,
                 made_reissueable_at=None,
                 require_ticketing_fee_on_ticketing=True,
+                famiport_performance=famiport_performance,
                 famiport_sales_segment=DummyModel(
-                    famiport_performance=DummyModel(
-                        name=u'ａｂｃｄｅｆｇｈｉｊ１２３４５６７８９０',
-                        start_at=None,
-                        ),
+                    famiport_performance=famiport_performance
                     ),
                 ticketing_famiport_receipt=DummyModel(
                     reserve_number=u'4310000000002',

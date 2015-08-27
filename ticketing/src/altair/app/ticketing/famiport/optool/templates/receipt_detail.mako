@@ -64,15 +64,15 @@
     <tbody>
       <tr>
         <th>興行コード</th>
-        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.code_1}</td>
+        <td colspan="3">${receipt.famiport_order.famiport_performance.famiport_event.code_1}</td>
       </tr>
       <tr>
         <th>公演名</th>
-        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
+        <td colspan="3">${receipt.famiport_order.famiport_performance.name}</td>
       </tr>
       <tr>
         <th>会場</th>
-        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.famiport_performance.famiport_event.venue.name}</td>
+        <td colspan="3">${receipt.famiport_order.famiport_performance.famiport_event.venue.name}</td>
       </tr>
       <tr>
         <th>公演日時</th>

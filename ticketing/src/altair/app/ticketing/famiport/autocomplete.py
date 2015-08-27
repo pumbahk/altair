@@ -80,7 +80,7 @@ class FamiPortOrderAutoCompleteNotificationContext(object):
 
     @reify
     def _famiport_performance(self):
-        return self._famiport_sales_segment.famiport_performance
+        return self._famiport_order.famiport_performance
 
     @reify
     def _famiport_event(self):
