@@ -109,7 +109,7 @@
             ${receipt.famiport_order.famiport_sales_segment.name}
             % if receipt.canceled_at:
                 <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
-            % elif receipt.void_at and receipt.void_reason == 99:
+            % elif receipt.void_at:
                 <br><button type="button" class="btn btn-warning btn-xs">再発券</button>
             % endif
         </td>
