@@ -106,7 +106,7 @@
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td nowrap="nowrap">
-            ${receipt.famiport_order.famiport_sales_segment.name}
+            ${receipt.famiport_order.famiport_sales_segment.name if receipt.famiport_order.famiport_sales_segment else u'-'}
             % if receipt.canceled_at:
                 <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
             % elif receipt.void_at:
