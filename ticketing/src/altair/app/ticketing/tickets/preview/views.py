@@ -5,7 +5,10 @@ import json
 import re
 import base64
 import os.path
-from io import BytesIO
+from io import (
+    BytesIO,
+    StringIO,
+    )
 from collections import OrderedDict
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -79,6 +82,10 @@ from . import TicketPreviewTransformException
 from . import TicketPreviewFillValuesException
 from ..cleaner.api import TicketCleanerValidationError
 import tempfile
+
+
+regx_xmldecl = re.compile('<\?xml.*?\?>', re.I)  # XML宣言にマッチする (例) '<?xml version="1.0" ?>'
+
 
 sej_ticket_printer_transforms = {
     'old': numpy.matrix(
@@ -827,8 +834,9 @@ class DownloadListOfPreviewImage(object):
                     delivery_plugin = get_delivery_plugin(self.request, SEJ_DELIVERY_PLUGIN_ID)
                     assert ISejDeliveryPlugin.providedBy(delivery_plugin)
                     template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
+                    svgio = StringIO(regx_xmldecl.sub('', svg))
                     transformer = SEJTemplateTransformer(
-                        svgio=BytesIO(svg),
+                        svgio=svgio,
                         global_transform=global_transform,
                         notation_version=template_record.notation_version
                         )
