@@ -52,6 +52,9 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			final PageSetModel _model = (PageSetModel)evt.getNewValue();
+			if(_model == null) {
+				return;
+			}
 			_model.getPages().addListDataListener(new ExtendedListDataListener() {
 				volatile List<Page> pagesToBeRemoved = null;
 
