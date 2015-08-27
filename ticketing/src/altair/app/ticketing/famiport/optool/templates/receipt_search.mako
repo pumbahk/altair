@@ -106,19 +106,19 @@
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td nowrap="nowrap">
-            ${receipt.famiport_order.famiport_sales_segment.name}
+            ${receipt.famiport_order.famiport_sales_segment.name if receipt.famiport_order.famiport_sales_segment else u'-'}
             % if receipt.canceled_at:
                 <br><button type="button" class="btn btn-danger btn-xs">canceled</button>
-            % elif receipt.void_at:
+            % elif receipt.void_at and receipt.void_reason == 99:
                 <br><button type="button" class="btn btn-warning btn-xs">再発券</button>
             % endif
         </td>
         <td nowrap="nowrap">${receipt.famiport_order.get_type_in_str}</td>
         <td nowrap="nowrap">${receipt.get_issued_status_in_str}</td>
         <td nowrap="nowrap">${receipt.get_payment_status_in_str}</td>
-        <td nowrap="nowrap">${receipt.famiport_order.famiport_sales_segment.famiport_performance.name}</td>
-        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
-        <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_sales_segment.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.famiport_performance.name}</td>
+        <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_performance.start_at)}</td>
+        <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_performance.start_at)}</td>
         <td nowrap="nowrap">${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
         <td nowrap="nowrap">${vh.get_barcode_no_text(receipt.barcode_no)}</td>
         <td nowrap="nowrap">${receipt.reserve_number}</td>
@@ -131,15 +131,16 @@
         % if personal_info:
         <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
         % endif
+        <% payment_shop_code = vh.display_payment_shop_code(receipt) %>
+        <% delivery_shop_code = vh.display_delivery_shop_code(receipt) %>
         <td nowrap="nowrap" class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at)}</td>
-        <% payment_famiport_receipt = receipt.famiport_order.payment_famiport_receipt %>
-        <td nowrap="nowrap" class="first-hidden">${payment_famiport_receipt.shop_code if receipt.famiport_order.paid_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_famiport_receipt.shop_code)) if receipt.famiport_order.paid_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at)}</td>
-        <% ticketing_famiport_receipt = receipt.famiport_order.ticketing_famiport_receipt %>
-        <td nowrap="nowrap" class="first-hidden">${ticketing_famiport_receipt.shop_code if receipt.famiport_order.issued_at else u'-'}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(ticketing_famiport_receipt.shop_code)) if receipt.famiport_order.issued_at else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at) if payment_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.display_payment_shop_code(receipt)}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_shop_code)) if payment_shop_code != u'-' else u'-'}</td>
+
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at) if delivery_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.display_delivery_shop_code(receipt)}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(delivery_shop_code)) if delivery_shop_code != u'-' else u'-'}</td>
       </tr>
     % endfor
     </tbody>

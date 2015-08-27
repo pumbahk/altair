@@ -670,7 +670,7 @@ class FamiPortOrder(Base, WithTimestamp):
 
     @property
     def performance_start_at(self):
-        return self.famiport_sales_segment and self.famiport_sales_segment.famiport_performance and self.famiport_sales_segment.famiport_performance.start_at
+        return self.famiport_performance and self.famiport_performance.start_at
 
     @property
     def ticket_total_count(self):
@@ -1048,14 +1048,6 @@ class FamiPortReceipt(Base, WithTimestamp):
             and self.payment_request_received_at is not None \
             and self.completed_at is None \
             and self.rescued_at is None
-
-    def can_auto_complete(self, now):
-        return self.inquired_at is not None \
-           and self.payment_request_received_at is not None \
-           and self.rescued_at is None \
-           and self.completed_at is None \
-           and self.canceled_at is None \
-           and self.payment_request_received_at <= now
 
     @classmethod
     def get_by_reserve_number(cls, reserve_number, session):

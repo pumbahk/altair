@@ -112,20 +112,13 @@ def lookup_refund_performance_by_searchform_data(request, formdata=None, now=Non
                         .join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                         .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                         .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
-                        .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
-                        .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
+                        .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortOrder.famiport_performance_id)\
                         .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)\
                         .group_by(FamiPortPerformance.id, FamiPortRefund.start_at, FamiPortRefund.end_at, FamiPortRefund.send_back_due_at)
 
     before_refund = formdata.get('before_refund')
     during_refund = formdata.get('during_refund')
     after_refund = formdata.get('after_refund')
-    performance_from = formdata.get('performance_from')
-    if performance_from is not None:
-        performance_from = parsedate(performance_from)
-    performance_to = formdata.get('performance_to')
-    if performance_to is not None:
-        performance_to = parsedate(performance_to)
 
     if before_refund and during_refund and after_refund:
         pass
@@ -141,11 +134,20 @@ def lookup_refund_performance_by_searchform_data(request, formdata=None, now=Non
         query = query.filter(and_(FamiPortRefund.start_at < now, now < FamiPortRefund.end_at))
     elif after_refund:
         query = query.filter(FamiPortRefund.end_at < now)
-
-    if performance_from:
-        query = query.filter(performance_from <= FamiPortPerformance.start_at)
-    if performance_to:
-        query = query.filter(FamiPortPerformance.start_at <= performance_to)
+    
+    if formdata.get('performance_from'):
+        req_from = formdata.get('performance_from') + ' 00:00:00'
+        if formdata.get('performance_to'):
+            req_to = formdata.get('performance_to') + ' 23:59:59'
+            query = query.filter(FamiPortPerformance.start_at >= req_from,
+                                 FamiPortPerformance.start_at <= req_to)
+        else:
+            query = query.filter(FamiPortPerformance.start_at >= req_from)
+    elif formdata.get('performance_to'):
+        req_from = '1900-01-01 00:00:00'
+        req_to = formdata.get('performance_to') + ' 23:59:59'
+        query = query.filter(FamiPortPerformance.start_at >= req_from,
+                             FamiPortPerformance.start_at <= req_to)
 
     performances = query.all()
     return performances
@@ -155,7 +157,6 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
 
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
-                        .join(FamiPortSalesSegment, FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id) \
                         .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
                         .outerjoin(FamiPortShop, FamiPortReceipt.shop_code == FamiPortShop.code) \
                         .group_by(FamiPortReceipt.id) \
@@ -204,8 +205,7 @@ def search_refund_ticket_by(request, params, now=None):
                                               .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                                               .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
                                               .join(FamiPortReceipt, FamiPortReceipt.famiport_order_id == FamiPortOrder.id)\
-                                              .join(FamiPortSalesSegment, FamiPortSalesSegment.id == FamiPortOrder.famiport_sales_segment_id)\
-                                              .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortSalesSegment.famiport_performance_id)\
+                                              .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortOrder.famiport_performance_id)\
                                               .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)
 
     before_refund = params.get('before_refund', None)

@@ -52,10 +52,6 @@ def main(argv=sys.argv[1:]):
     registry = env['registry']
     session = get_global_db_session(registry, 'famiport')
 
-    completer = FamiPortOrderAutoCompleter(
-        registry, no_commit=args.no_commit, recipients=recipients)
-    registry.registerUtility(completer, IFamiPortOrderAutoCompleter)
-
     auto_complete_delta = None
     try:
         auto_complete_time = registry.settings['altair.famiport.auto_complete_time']
@@ -66,6 +62,10 @@ def main(argv=sys.argv[1:]):
     if auto_complete_delta is None:
         _logger.exception('auto complete time no setting')
         return 253
+
+    completer = FamiPortOrderAutoCompleter(
+        registry, auto_complete_delta, no_commit=args.no_commit, recipients=recipients)
+    registry.registerUtility(completer, IFamiPortOrderAutoCompleter)
 
     completer = FamiPortOrderAutoCompleteRunner(registry, auto_complete_delta)
     _logger.info('famiport auto complete start')
