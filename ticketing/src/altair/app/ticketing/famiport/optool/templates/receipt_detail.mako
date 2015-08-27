@@ -14,10 +14,8 @@
         <th>発券ステータス</th>
         <td>
             ${receipt.get_issued_status_in_str}
-            % if receipt.canceled_at:
+            % if receipt.canceled_at or receipt.void_at:
                 <button type="button" class="btn btn-xs btn-danger">canceled</button>
-            % elif receipt.void_at and receipt.void_reason == 99:
-                <br><button type="button" class="btn btn-warning btn-xs">再発券</button>
             % endif
         </td>
       </tr>
@@ -27,10 +25,8 @@
         <th>入金ステータス</th>
         <td>
             ${receipt.get_payment_status_in_str}
-            % if receipt.canceled_at:
+            % if receipt.canceled_at or receipt.void_at:
                 <button type="button" class="btn btn-xs btn-danger">canceled</button>
-            % elif receipt.void_at and receipt.void_reason == 99:
-                <br><button type="button" class="btn btn-warning btn-xs">再発券</button>
             % endif
         </td>
       </tr>
