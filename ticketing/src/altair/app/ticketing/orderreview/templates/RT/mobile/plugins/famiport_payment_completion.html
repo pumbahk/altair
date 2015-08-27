@@ -1,0 +1,13 @@
+Famiポートでお支払い<br />
+【Famiポート予約番号】<br />
+${famiport_order['payment_reserve_number']}<br />
+【支払期限】<br />
+${h.japanese_datetime(famiport_order['payment_start_at'])}〜
+%if famiport_order['payment_due_at']:
+${h.japanese_datetime(famiport_order['payment_due_at'])}
+%endif
+<br />
+支払期日までに、ファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。<br />
+<font color="red"><b>支払期日内にご入金されない場合は予約が無効となりますので、ご注意ください。</b></font><br />
+<font color="red"><b>※入金完了後の確認メール等は配信しておりません。お支払後のレシートがご入金の証明となりますので、保管をお願いいたします。</b></font>
+</div>

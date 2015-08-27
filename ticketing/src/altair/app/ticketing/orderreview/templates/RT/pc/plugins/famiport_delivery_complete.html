@@ -1,0 +1,19 @@
+%if payment_type == 'CashOnDelivery':
+<p>チケットは代金と引換です。</p>
+%else:
+<div>
+  <h4>Famiポートでお引き取り</h4>
+  <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
+  <p>
+    発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong>〜
+    %if famiport_order['ticketing_end_at']:
+    <strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong>
+    %endif
+  </p>
+  <p>ファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。</p>
+  <p>レジにてチケットをお引取りいただきます。</p>
+  <p>当日は、ファミリーマートにて発券されたチケットをご使用ください。</p>
+  <p style="color:red;font-weight:bold">※チケットお引き取りの際に必要となるfamiポート予約番号等、受付で使用した情報は絶対に他者に知られないように大切に保管してください。</p>
+  <p style="color:red;font-weight:bold">万が一、第三者がfamiポート予約番号 、その他の情報を入手し、チケットを発券されてしまった場合でも、弊社は責任を一切負いません。</p>
+</div>
+%endif
