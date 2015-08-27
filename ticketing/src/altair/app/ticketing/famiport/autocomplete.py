@@ -257,8 +257,9 @@ class FamiPortOrderAutoCompleteNotifier(object):
 class FamiPortOrderAutoCompleter(object):
     """POSで入金を行わず30分VOID処理も行われないFamiPortOrderを完了状態にしていく
     """
-    def __init__(self, registry, no_commit=False, recipients=None, notifier=None):
+    def __init__(self, registry, expiry, no_commit=False, recipients=None, notifier=None):
         self._registry = registry
+        self._expiry = expiry
         self._no_commit = no_commit  # commitするかどうか
         self._recipients = recipients
         self._notifier = notifier
@@ -268,6 +269,15 @@ class FamiPortOrderAutoCompleter(object):
 
     def get_setup_errors(self):
         return self._notifier.get_setup_errors()
+
+    def can_auto_complete(self, receipt, now):
+        return receipt.inquired_at is not None \
+           and receipt.payment_request_received_at is not None \
+           and (receipt.void_at is None or receipt.void_at < receipt.payment_request_received_at) \
+           and receipt.rescued_at is None \
+           and receipt.completed_at is None \
+           and receipt.canceled_at is None \
+           and receipt.payment_request_received_at <= now - self._expiry
 
     def complete(self, session, receipt_id, now_=None):
         """FamiPortReceiptを90VOID救済する
@@ -281,7 +291,7 @@ class FamiPortOrderAutoCompleter(object):
         receipt = self._get_receipt(session, receipt_id)
         if receipt is None:
             raise NoSuchReceiptError('%d' % receipt_id)
-        if receipt.can_auto_complete(now_):
+        if self.can_auto_complete(receipt, now_):
             _logger.debug('completing: FamiPortReceipt.id={}'.format(receipt.id))
             self._do_complete(session, receipt, now_)
             if not self._no_commit:

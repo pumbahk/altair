@@ -4,6 +4,7 @@ import logging
 from altair.mq.ext import delayed_queue
 from altair.mq.decorators import task_config
 from altair.sqlahelper import get_db_session
+from altair.timeparse import parse_time_spec
 from .interfaces import IFamiPortOrderAutoCompleter
 from .autocomplete import FamiPortOrderAutoCompleter, InvalidReceiptStatusError
 
@@ -51,7 +52,9 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     config = Configurator(settings=settings)
-    completer = FamiPortOrderAutoCompleter(config.registry)
+    auto_complete_time_str = config.registry.settings['altair.famiport.auto_complete_time']
+    auto_complete_time = parse_time_spec(auto_complete_time_str)
+    completer = FamiPortOrderAutoCompleter(config.registry, auto_complete_time)
     config.registry.registerUtility(completer, IFamiPortOrderAutoCompleter)
 
     config.include('pyramid_mako')
