@@ -227,7 +227,9 @@ public class AppWindow implements IAppWindow {
 		comboBoxPrintService.setRenderer(new PrintServiceCellRenderer());
 		comboBoxPrintService.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				model.setPrintService((PrintService)e.getItem());
+				if(model != null) {
+					model.setPrintService((PrintService)e.getItem());
+				}
 			}
 		});
 		toolBar.add(comboBoxPrintService);
