@@ -77,12 +77,13 @@ def deliver_completion_viewlet(context, request):
                         token = t,
                         printed_at = t.issued_at)
                     tickets.append(ticket)
-    
+
     # TODO: orderreviewから呼ばれた場合とcartの完了画面で呼ばれた場合で
     # 処理を分岐したい
-    
+    from altair.app.ticketing.payments.plugins import FREE_PAYMENT_PLUGIN_ID
     return dict(
         paid = (order.paid_at != None),
+        free = (order.payment_delivery_pair.payment_method.payment_plugin_id == FREE_PAYMENT_PLUGIN_ID),
         order = order,
         tel = order.shipping_address.tel_1,
         tickets = tickets,
@@ -110,7 +111,7 @@ def delivery_notice_viewlet(context, request):
 
 class QRTicketDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
 
     def prepare(self, request, cart):
         """ 前処理 """

@@ -73,6 +73,8 @@ class FreePaymentPlugin(object):
     def finish(self, request, cart):
         """ 確定処理 """
         order = order_models.Order.create_from_cart(cart)
+        from datetime import datetime
+        order.paid_at = datetime.now()
         cart.finish()
         return order
 
