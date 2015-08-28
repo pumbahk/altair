@@ -116,25 +116,29 @@
         <td colspan="3">${vh.format_datetime(receipt.payment_request_received_at)}</td>
       </tr>
       <tr>
+        % if receipt.type != 1:
         <th>発券日時</th>
         <td>${receipt.famiport_order.issued_at if receipt.famiport_order.issued_at else u'未発券'}</td>
+        % endif
+        % if receipt.type != 2:
         <th>入金日時</th>
         <td>${receipt.famiport_order.paid_at if receipt.famiport_order.paid_at else u'未入金'}</td>
+        % endif
       </tr>
-      % if receipt.famiport_order.type != 2:
+      % if receipt.type != 2:
       <tr>
         <th>入金店番</th>
-        <td>${u"-" if receipt.is_ticketing_receipt else receipt.shop_code}</td>
+        <td>${vh.display_payment_shop_code(receipt) if receipt.famiport_order.paid_at else u"-"}</td>
         <th>入金店舗</th>
-        <td>${u"-" if receipt.is_ticketing_receipt else receipt.get_shop_name(request)}</td>
+        <td>${receipt.get_shop_name(request) if receipt.famiport_order.paid_at else u"-"}</td>
       </tr>
       % endif
-      % if receipt.famiport_order.type != 1:
+      % if receipt.type != 1:
       <tr>
         <th>発券店番</th>
-        <td>${u"-" if receipt.is_payment_receipt else receipt.shop_code}</td>
+        <td>${vh.display_delivery_shop_code(receipt) if receipt.famiport_order.issued_at else u"-"}</td>
         <th>発券店舗</th>
-        <td>${u"-" if receipt.is_payment_receipt else receipt.get_shop_name(request)}</td>
+        <td>${receipt.get_shop_name(request) if receipt.famiport_order.issued_at else u"-"}</td>
       </tr>
       % endif
       % if receipt.famiport_order.famiport_tickets:
