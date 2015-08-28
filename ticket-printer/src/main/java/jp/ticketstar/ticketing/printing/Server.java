@@ -1,5 +1,13 @@
 package jp.ticketstar.ticketing.printing;
 
+import java.awt.AWTException;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
@@ -10,8 +18,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -23,10 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import javax.imageio.ImageIO;
 import javax.print.PrintService;
 
-import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 import jp.ticketstar.ticketing.printing.gui.AppWindowService;
+import jp.ticketstar.ticketing.printing.gui.FormatLoader;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.svg.OurDocumentLoader;
@@ -38,6 +45,8 @@ import org.kohsuke.args4j.Option;
 import org.w3c.dom.Node;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -45,9 +54,7 @@ import com.sun.net.httpserver.HttpServer;
 
 @SuppressWarnings("restriction")
 public class Server implements HttpHandler {
-	private AppWindowModel model;
 	private AppWindowService service;
-	private ExtendedSVG12BridgeContext bridgeContext;
 	
 	@Option(name="--server")
     private boolean acceptConnection;
@@ -68,6 +75,9 @@ public class Server implements HttpHandler {
 	
 	private Object printThreadLock;
 	private Thread printThread;
+	
+	private TrayIcon icon;
+	private MenuItem statusLabel;
 	
 	public Server() {
 		acceptConnection = false;
@@ -92,40 +102,71 @@ public class Server implements HttpHandler {
 		return port;
 	}
 	
-	public void setModel(AppWindowModel model) {
-		this.model = model;
-	}
-
 	public void setService(AppWindowService service) {
 		this.service = service;
 	}
 	
-	public void start() throws IOException {
-		console.println("Accept connection at port "+port);
+	public void start() {
+		try {
+			setupSystemTray();
+		} catch(IOException e) {
+			e.printStackTrace(console);
+		} catch(AWTException e) {
+			e.printStackTrace(console);
+		}
+		
+		printServices = new ArrayList<PrintService>();
+        for (PrintService service: PrinterJob.lookupPrintServices()) {
+        	printServices.add(service);
+        }
+		
+        console.println("Accept connection at port "+port);
+        icon.setToolTip("altair print server at port "+port);
+        statusLabel.setLabel("queue size is "+queue.size());
 		for(String h: originHosts) {
 			console.println("Origin: "+h);
 		}
 		
-		bridgeContext = new ExtendedSVG12BridgeContext(service);
-		bridgeContext.setInteractive(false);
-		bridgeContext.setDynamic(false);
-		
-		HttpServer httpServer = HttpServer.create(new InetSocketAddress(getPort()), 0);
-		httpServer.createContext("/", this);
-		httpServer.start();
+		try {
+			HttpServer httpServer = HttpServer.create(new InetSocketAddress(getPort()), 0);
+			httpServer.createContext("/", this);
+			httpServer.start();
+		} catch(IOException e) {
+			e.printStackTrace(console);
+		}
 	}
 	
+	private void setupSystemTray() throws IOException, AWTException {
+		Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
+		
+		PopupMenu menu = new PopupMenu();
+		
+		statusLabel = new MenuItem("hoge");
+		statusLabel.setEnabled(false);
+		menu.add(statusLabel);
+		
+		menu.addSeparator();
+		
+		MenuItem exitItem = new MenuItem("終了");
+		exitItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		menu.add(exitItem);
+        icon = new TrayIcon(image, "altair print server", menu);
+        
+		SystemTray.getSystemTray().add(icon);
+	}
+
 	class Job {
 		Integer id;
-		Request request;
-		PageSetModel pageSet;
-	}
-	
-	class Request {
 		String printer;
-		String page;
+		OurPageFormat page;
 		String svg;
 		String uri;
+		PageSetModel pageSet;
 	}
 
 	@Override
@@ -157,33 +198,14 @@ public class Server implements HttpHandler {
 					type = "text/json; charset=UTF-8";
 					Map<String,Object> data = new HashMap<String,Object>();
 					List<String> list = new ArrayList<String>();
-					for(PrintService ps: model.getPrintServices()) {
+					for(PrintService ps: getPrintServices()) {
 						list.add(ps.getName());
 					}
 					data.put("printers", list);
 					sb.append(gson.toJson(data));
 				} else {
-					PrintService selected = service.getPrintService();
-					for(PrintService ps: model.getPrintServices()) {
-						sb.append(selected.equals(ps) ? "* " : "  ");
+					for(PrintService ps: getPrintServices()) {
 						sb.append(ps.getName()+"\n");
-					}
-				}
-			} else if(path.equals("/pages")) {
-				if(preferJson) {
-					type = "text/json; charset=UTF-8";
-					Map<String,Object> data = new HashMap<String,Object>();
-					List<String> list = new ArrayList<String>();
-					for(OurPageFormat pf: model.getPageFormats()) {
-						list.add(pf.getName());
-					}
-					data.put("pages", list);
-					sb.append(gson.toJson(data));
-				} else {
-					OurPageFormat selected = service.getPageFormat();
-					for(OurPageFormat pf: model.getPageFormats()) {
-						sb.append(selected.equals(pf) ? "* " : "  ");
-						sb.append(pf.getName()+"\n");
 					}
 				}
 			} else if(path.equals("/queue")) {
@@ -208,17 +230,21 @@ public class Server implements HttpHandler {
 				
 				// リクエストをオブジェクトとして読み込む
 				console.println("Building request");
-				Request req = gson.fromJson(new InputStreamReader(exchange.getRequestBody(), "UTF-8"), Request.class);
+				Job job = new Job();
+				JsonObject obj = new JsonParser().parse(new InputStreamReader(exchange.getRequestBody(), "UTF-8")).getAsJsonObject();
+				job.printer = obj.get("printer").getAsString();
+				job.page = FormatLoader.buildPageFormat(obj.get("page").getAsJsonObject());
 				
 				// SVGをオブジェクトにする
 				console.println("creating page set model");
-				InputStream is = new ByteArrayInputStream(req.svg.getBytes("utf-8"));
+				InputStream is = new ByteArrayInputStream(obj.get("svg").getAsString().getBytes("utf-8"));
 				OurDocumentLoader loader = new OurDocumentLoader(service);
 				ExtendedSVG12OMDocument doc = (ExtendedSVG12OMDocument) loader.loadDocument("http://", is);
+				ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
+				bridgeContext.setInteractive(false);
+				bridgeContext.setDynamic(false);
 				PageSetModel pageSetModel = new PageSetModel(bridgeContext, doc);
 				
-				Job job = new Job();
-				job.request = req;
 				job.pageSet = pageSetModel;
 				
 				if(useQueue) {
@@ -228,6 +254,7 @@ public class Server implements HttpHandler {
 						queue.add(job);
 					}
 					console.println("ok");
+			        statusLabel.setLabel("queue size is "+queue.size());
 					
 					synchronized (printThreadLock) {
 						if(printThread == null) {
@@ -271,6 +298,11 @@ public class Server implements HttpHandler {
 				
 				console.println("finish output.");
 			} else if(path.equals("/test")) {
+				/*
+				String str = "{}";
+				JsonObject result = new JsonParser().parse(str).getAsJsonObject();
+				FormatPair fp = FormatLoader.buildFormatsFromJsonObject(result.get("data").getAsJsonObject());
+				fp.pageFormats
 				URI uri = null;
 				try {
 					uri = new URI("file:///tmp/sample1.svg");
@@ -281,6 +313,7 @@ public class Server implements HttpHandler {
 					service.loadDocument(uri);
 					service.printAll();
 				}
+				*/
 			} else {
 				console.println("not handled.");
 			}
@@ -361,8 +394,13 @@ public class Server implements HttpHandler {
 								synchronized (queue) {
 									queue.poll();
 								}
+						        statusLabel.setLabel("queue size is "+queue.size());
 								Thread.sleep(1000);
-							} catch (Exception e) {
+							} catch(PrinterException e) {
+								// プリンタの問題が起きた場合は...
+								e.printStackTrace(console);
+								System.exit(0);
+							} catch(InterruptedException e) {
 								e.printStackTrace(console);
 							}
 						}
@@ -374,6 +412,12 @@ public class Server implements HttpHandler {
 		return thread;
 	}
 	
+	private List<PrintService> printServices;
+	
+	public List<PrintService> getPrintServices() {
+		return printServices;
+	}
+	
 	private PrinterJob makePrinterJob(Job job) throws PrinterException {
 		PrinterJob printerJob = PrinterJob.getPrinterJob();
 		TicketPrintable content = new TicketPrintable(
@@ -381,8 +425,8 @@ public class Server implements HttpHandler {
 			printerJob,
 			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
 		);
-		printerJob.setPrintService(getPrintServiceByName(job.request.printer));
-		printerJob.setPrintable(content, getPageFormatByName(job.request.page));
+		printerJob.setPrintService(getPrintServiceByName(job.printer));
+		printerJob.setPrintable(content, job.page);
 		
 		return printerJob;
 	}
@@ -408,7 +452,7 @@ public class Server implements HttpHandler {
 	}
 	
 	private PrintService getPrintServiceByName(String name) {
-		for(PrintService ps: model.getPrintServices()) {
+		for(PrintService ps: getPrintServices()) {
 			if(ps.getName().equals(name)) {
 				return ps;
 			}
@@ -417,11 +461,15 @@ public class Server implements HttpHandler {
 	}
 	
 	private OurPageFormat getPageFormatByName(String name) {
-		for(OurPageFormat pf: model.getPageFormats()) {
+		for(OurPageFormat pf: getPageFormats()) {
 			if(pf.getName().equals(name)) {
 				return pf;
 			}
 		}
+		return null;
+	}
+	
+	public List<OurPageFormat> getPageFormats() {
 		return null;
 	}
 

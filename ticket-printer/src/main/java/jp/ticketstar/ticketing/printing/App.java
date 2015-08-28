@@ -2,8 +2,6 @@ package jp.ticketstar.ticketing.printing;
 
 import jp.ticketstar.ticketing.printing.gui.AppWindowService;
 
-import java.io.IOException;
-
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -26,14 +24,8 @@ public class App {
     	final AppWindowService appService = new AppWindowService(model);
 
         if(appServer.acceptConnection()) {
-			appServer.setModel(model);
 			appServer.setService(appService);
-
-			try {
-				appServer.start();
-			} catch(IOException e) {
-				e.printStackTrace();
-			}
+			appServer.start();
 			return;
 		}
 

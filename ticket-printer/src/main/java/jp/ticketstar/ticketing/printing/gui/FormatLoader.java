@@ -85,53 +85,58 @@ public class FormatLoader {
 		final List<OurPageFormat> retval = new ArrayList<OurPageFormat>();
 		for (final JsonElement _pageFormatDatum: result) {
 			final JsonObject pageFormatDatum = _pageFormatDatum.getAsJsonObject();
-			final OurPageFormat pageFormat = new OurPageFormat();
-			pageFormat.setId(pageFormatDatum.get("id").getAsInt());
-			pageFormat.setName(pageFormatDatum.get("name").getAsString());
-			pageFormat.setOrientation(resolveOrientationString(pageFormatDatum.get("orientation").getAsString()));
-			{
-				final JsonElement paper = pageFormatDatum.get("paper");
-				if (notNull(paper)) 
-					pageFormat.setPreferredMediaType(resolveMediaTypeString(paper.getAsString()));
-			}
-			{
-				final JsonElement printerName = pageFormatDatum.get("printer_name");
-				if (notNull(printerName))
-					pageFormat.setPreferredPrinterName(printerName.getAsString());
-			}
-			{
-				final JsonObject size = pageFormatDatum.get("size").getAsJsonObject();
-				final JsonObject printableArea = pageFormatDatum.get("printable_area").getAsJsonObject();
-				pageFormat.setPaper(PrintingUtils.buildPaper(
-						new DDimension2D(
-								UnitUtils.convertToPoint(size.get("width").getAsString()),
-								UnitUtils.convertToPoint(size.get("height").getAsString())),
-						new Rectangle2D.Double(
-								UnitUtils.convertToPoint(printableArea.get("x").getAsString()),
-								UnitUtils.convertToPoint(printableArea.get("y").getAsString()),
-								UnitUtils.convertToPoint(printableArea.get("width").getAsString()),
-								UnitUtils.convertToPoint(printableArea.get("height").getAsString()))));
-			}
-			{
-				final JsonObject perforations = pageFormatDatum.get("perforations").getAsJsonObject();
-				{
-					final JsonArray verticalPerforations = perforations.get("vertical").getAsJsonArray();
-					final double[] values = new double[verticalPerforations.size()];
-					for (int i = 0; i < verticalPerforations.size(); i++)
-						values[i] = UnitUtils.convertToPoint(verticalPerforations.get(i).getAsString());
-					pageFormat.setVerticalGuides(values);
-				}
-				{
-					final JsonArray horizontalPerforations = perforations.get("horizontal").getAsJsonArray();
-					final double[] values = new double[horizontalPerforations.size()];
-					for (int i = 0; i < horizontalPerforations.size(); i++)
-						values[i] = UnitUtils.convertToPoint(horizontalPerforations.get(i).getAsString());
-					pageFormat.setHorizontalGuides(values);
-				}
-			}
+			OurPageFormat pageFormat = buildPageFormat(pageFormatDatum);
 			retval.add(pageFormat);
 		}
 		return retval;
+	}
+	
+	public static OurPageFormat buildPageFormat(JsonObject pageFormatDatum) {
+		final OurPageFormat pageFormat = new OurPageFormat();
+		pageFormat.setId(pageFormatDatum.get("id").getAsInt());
+		pageFormat.setName(pageFormatDatum.get("name").getAsString());
+		pageFormat.setOrientation(resolveOrientationString(pageFormatDatum.get("orientation").getAsString()));
+		{
+			final JsonElement paper = pageFormatDatum.get("paper");
+			if (notNull(paper)) 
+				pageFormat.setPreferredMediaType(resolveMediaTypeString(paper.getAsString()));
+		}
+		{
+			final JsonElement printerName = pageFormatDatum.get("printer_name");
+			if (notNull(printerName))
+				pageFormat.setPreferredPrinterName(printerName.getAsString());
+		}
+		{
+			final JsonObject size = pageFormatDatum.get("size").getAsJsonObject();
+			final JsonObject printableArea = pageFormatDatum.get("printable_area").getAsJsonObject();
+			pageFormat.setPaper(PrintingUtils.buildPaper(
+					new DDimension2D(
+							UnitUtils.convertToPoint(size.get("width").getAsString()),
+							UnitUtils.convertToPoint(size.get("height").getAsString())),
+					new Rectangle2D.Double(
+							UnitUtils.convertToPoint(printableArea.get("x").getAsString()),
+							UnitUtils.convertToPoint(printableArea.get("y").getAsString()),
+							UnitUtils.convertToPoint(printableArea.get("width").getAsString()),
+							UnitUtils.convertToPoint(printableArea.get("height").getAsString()))));
+		}
+		{
+			final JsonObject perforations = pageFormatDatum.get("perforations").getAsJsonObject();
+			{
+				final JsonArray verticalPerforations = perforations.get("vertical").getAsJsonArray();
+				final double[] values = new double[verticalPerforations.size()];
+				for (int i = 0; i < verticalPerforations.size(); i++)
+					values[i] = UnitUtils.convertToPoint(verticalPerforations.get(i).getAsString());
+				pageFormat.setVerticalGuides(values);
+			}
+			{
+				final JsonArray horizontalPerforations = perforations.get("horizontal").getAsJsonArray();
+				final double[] values = new double[horizontalPerforations.size()];
+				for (int i = 0; i < horizontalPerforations.size(); i++)
+					values[i] = UnitUtils.convertToPoint(horizontalPerforations.get(i).getAsString());
+				pageFormat.setHorizontalGuides(values);
+			}
+		}
+		return pageFormat;
 	}
 	
 	protected static List<TicketFormat> buildTicketFormats(final JsonArray result) {
