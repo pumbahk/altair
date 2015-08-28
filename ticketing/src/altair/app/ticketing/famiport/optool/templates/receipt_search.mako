@@ -134,11 +134,11 @@
         <% payment_shop_code = vh.display_payment_shop_code(receipt) %>
         <% delivery_shop_code = vh.display_delivery_shop_code(receipt) %>
         <td nowrap="nowrap" class="first-hidden">${receipt.famiport_order.ticket_total_count}</td>
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.paid_at) if payment_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(vh.display_payment_date(receipt)) if payment_shop_code != u'-' else u'-'}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.display_payment_shop_code(receipt)}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(payment_shop_code)) if payment_shop_code != u'-' else u'-'}</td>
 
-        <td nowrap="nowrap" class="first-hidden">${vh.format_date(receipt.famiport_order.issued_at) if delivery_shop_code != u'-' else u'-'}</td>
+        <td nowrap="nowrap" class="first-hidden">${vh.format_date(vh.display_delivery_date(receipt)) if delivery_shop_code != u'-' else u'-'}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.display_delivery_shop_code(receipt)}</td>
         <td nowrap="nowrap" class="first-hidden">${vh.get_shop_name_text(vh.get_famiport_shop_by_code(delivery_shop_code)) if delivery_shop_code != u'-' else u'-'}</td>
       </tr>

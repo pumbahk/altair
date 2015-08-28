@@ -75,12 +75,9 @@ class ViewHelpers(object):
     def display_payment_shop_code(self, famiport_receipt):
         display_code = u'-'
 
-        if famiport_receipt.type == FamiPortReceiptType.Payment.value:
-            if famiport_receipt.famiport_order.paid_at is not None:
-                display_code = famiport_receipt.shop_code
-        elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
-            if famiport_receipt.famiport_order.paid_at is not None and \
-               famiport_receipt.famiport_order.issued_at is not None:
+        if famiport_receipt.type == FamiPortReceiptType.Payment.value or \
+           famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
+            if famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
                 display_code = famiport_receipt.shop_code
 
         return display_code
@@ -88,15 +85,28 @@ class ViewHelpers(object):
     def display_delivery_shop_code(self, famiport_receipt):
         display_code = u'-'
 
-        if famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
-            if famiport_receipt.famiport_order.issued_at is not None:
-                display_code = famiport_receipt.shop_code
-        elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
-            if famiport_receipt.famiport_order.paid_at is not None and \
-               famiport_receipt.famiport_order.issued_at is not None:
+        if famiport_receipt.type == FamiPortReceiptType.Ticketing.value or \
+           famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
+            if famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
                 display_code = famiport_receipt.shop_code
 
         return display_code
+
+    def display_payment_date(self, famiport_receipt):
+        if famiport_receipt.famiport_order.paid_at:
+            display_date = famiport_receipt.famiport_order.paid_at
+        elif famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
+            display_date = famiport_receipt.completed_at
+
+        return display_date
+
+    def display_delivery_date(self, famiport_receipt):
+        if famiport_receipt.famiport_order.issued_at:
+            display_date = famiport_receipt.famiport_order.issued_at
+        elif famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
+            display_date = famiport_receipt.completed_at
+
+        return display_date
 
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
