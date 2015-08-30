@@ -63,7 +63,7 @@ class TestScrew(TestCase):
         import math
         from .models import screw36
         for i in range(0, 100000):
-            assert math.log10(screw36(i, 0x123456789)) < 11 
+            assert math.log10(screw36(i, 0x123456789)) < 11
 
     def test_screw47(self):
         from .models import screw47
@@ -597,3 +597,44 @@ class FamiPortOrderTest(TestCase):
                 cancel_reason_code=u'00',
                 cancel_reason_text=u'canceled'
                 )
+
+    def test_expired_cash_on_delivery(self):
+        target = self.famiport_order_cash_on_delivery
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
+
+    def test_expired_payment(self):
+        target = self.famiport_order_payment
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 22, 0, 0, 0)), datetime(2015, 5, 21, 23, 59, 59))
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), datetime(2015, 5, 21, 23, 59, 59))
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 21, 23, 59, 59))
+
+    def test_expired_payment_paid(self):
+        target = self.famiport_order_payment
+        target.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 0, 0, 0)
+        self.assertEqual(target.expired(datetime(2015, 5, 22, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
+
+    def test_expired_ticketing_only(self):
+        target = self.famiport_order_ticketing_only
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
+
+    def test_expired_payment_only(self):
+        target = self.famiport_order_payment_only
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
+

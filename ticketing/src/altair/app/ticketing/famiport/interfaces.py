@@ -33,3 +33,6 @@ class IReceiptCanceled(IReceiptEvent):
 
 class IOrderCanceled(Interface):
     famiport_order = Attribute('')
+
+class IOrderExpired(Interface):
+    famiport_order = Attribute('')

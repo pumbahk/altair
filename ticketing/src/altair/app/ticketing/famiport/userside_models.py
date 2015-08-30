@@ -224,6 +224,7 @@ class AltairFamiPortNotificationType(Enum):
     PaymentAndTicketingCanceled = 12
     OrderCanceled = 16
     Refunded  = 32
+    OrderExpired = 64
 
 
 class AltairFamiPortNotification(Base, WithTimestamp):

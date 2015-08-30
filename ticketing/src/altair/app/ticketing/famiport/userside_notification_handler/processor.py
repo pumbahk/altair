@@ -67,6 +67,9 @@ class AltairFamiPortNotificationProcessor(object):
             order.issued_at = None
             order.printed_at = None
 
+    def handle_expired(self, order, notification, now):
+        pass
+
     def handle_order_canceled(self, order, notification, now):
         order.release()
         order.mark_canceled(now)
@@ -84,7 +87,8 @@ class AltairFamiPortNotificationProcessor(object):
         AltairFamiPortNotificationType.TicketingCanceled.value: handle_canceled,
         AltairFamiPortNotificationType.PaymentAndTicketingCanceled.value: handle_canceled,
         AltairFamiPortNotificationType.OrderCanceled.value: handle_order_canceled,
-        AltairFamiPortNotificationType.Refunded.value: handle_refunded
+        AltairFamiPortNotificationType.Refunded.value: handle_refunded,
+        AltairFamiPortNotificationType.OrderExpired.value: handle_expired,
         }
 
     def __call__(self, notification, now):

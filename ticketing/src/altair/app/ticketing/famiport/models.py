@@ -633,6 +633,8 @@ class FamiPortOrder(Base, WithTimestamp):
 
     require_ticketing_fee_on_ticketing = sa.Column(sa.Boolean(), nullable=False, default=False)
 
+    expired_at                   = sa.Column(sa.DateTime(), nullable=True)
+
     famiport_sales_segment = orm.relationship(
         'FamiPortSalesSegment',
         primaryjoin=lambda: FamiPortOrder.famiport_sales_segment_id == FamiPortSalesSegment.id
@@ -739,7 +741,7 @@ class FamiPortOrder(Base, WithTimestamp):
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as paid' % (self.id, self.order_no))
         self.paid_at = now
 
-    def mark_canceled(self, now, request, reason=None):
+    def mark_canceled(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) is already invalidated' % (self.id, self.order_no))
         if self.canceled_at is not None:
@@ -750,10 +752,15 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; there are pending receipt(s)' % (self.id, self.order_no))
         for famiport_receipt in self.famiport_receipts:
             if not famiport_receipt.canceled_at:
-                famiport_receipt.mark_canceled(now, request, reason)
+                famiport_receipt.mark_canceled(now, request, cancel_reason_code=cancel_reason_code, cancel_reason_text=cancel_reason_text)
         logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as canceled' % (self.id, self.order_no))
         self.canceled_at = now
         request.registry.notify(events.OrderCanceled(self, request))
+
+    def mark_expired(self, now, request):
+        logger.info('marking FamiPortOrder(id=%ld, order_no=%s) as expired' % (self.id, self.order_no))
+        self.expired_at = now
+        request.registry.notify(events.OrderExpired(self, request))
 
     def make_reissueable(self, now, request, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
@@ -815,6 +822,39 @@ class FamiPortOrder(Base, WithTimestamp):
                     famiport_order_id=self.id
                     )
                 )
+
+    @property
+    def automatically_cancellable(self):
+        return self.invalidated_at is None and \
+            self.canceled_at is None and \
+            self.expired_at is None and \
+            not any(
+                famiport_receipt.canceled_at is None and famiport_receipt.completed_at is not None
+                for famiport_receipt in self.famiport_receipts
+                )
+
+    def expired(self, now):
+        if self.type == FamiPortOrderType.CashOnDelivery.value:
+            if self.payment_famiport_receipt.completed_at is None:
+                if self.payment_due_at < now or self.ticketing_end_at < now:
+                    return self.payment_due_at
+        elif self.type == FamiPortOrderType.Payment.value:
+            if self.payment_famiport_receipt.completed_at is None:
+                if self.payment_due_at < now:
+                    return self.payment_due_at
+            elif self.ticketing_famiport_receipt.completed_at is None:
+                if self.ticketing_end_at < now:
+                    return self.ticketing_end_at
+        elif self.type == FamiPortOrderType.Ticketing.value:
+            if self.ticketing_famiport_receipt.completed_at is None:
+                if self.ticketing_end_at < now:
+                    return self.ticketing_end_at
+        elif self.type == FamiPortOrderType.PaymentOnly.value:
+            if self.payment_famiport_receipt.completed_at is None:
+                if self.payment_due_at < now:
+                    return self.payment_due_at
+        return None
+
 
 class FamiPortTicketType(Enum):
     Ticket                 = 2
@@ -1037,11 +1077,6 @@ class FamiPortReceipt(Base, WithTimestamp):
         return self.inquired_at is not None \
             and self.payment_request_received_at is not None \
             and (self.completed_at is None or self.made_reissueable_at is not None)
-
-    def can_cancel(self, now):
-        return self.inquired_at is not None\
-            and self.payment_request_received_at is not None \
-            and self.completed_at is None
 
     def can_rescue(self, now):
         return self.inquired_at is not None \
