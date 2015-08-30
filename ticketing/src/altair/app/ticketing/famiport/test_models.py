@@ -606,6 +606,15 @@ class FamiPortOrderTest(TestCase):
         self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
 
+    def test_expired_paid_cash_on_delivery(self):
+        target = self.famiport_order_cash_on_delivery
+        target.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 0, 0, 0)
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), None)
+
     def test_expired_payment(self):
         target = self.famiport_order_payment
         self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
@@ -622,6 +631,14 @@ class FamiPortOrderTest(TestCase):
         self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
 
+    def test_expired_payment_paid_and_issued(self):
+        target = self.famiport_order_payment
+        target.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 0, 0, 0)
+        target.ticketing_famiport_receipt.completed_at = datetime(2015, 5, 23, 0, 0, 0)
+        self.assertEqual(target.expired(datetime(2015, 5, 22, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), None)
+
     def test_expired_ticketing_only(self):
         target = self.famiport_order_ticketing_only
         self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
@@ -630,6 +647,15 @@ class FamiPortOrderTest(TestCase):
         self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
 
+    def test_expired_issued_ticketing_only(self):
+        target = self.famiport_order_ticketing_only
+        target.ticketing_famiport_receipt.completed_at = datetime(2015, 5, 23, 0, 0, 0)
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), None)
+
     def test_expired_payment_only(self):
         target = self.famiport_order_payment_only
         self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
@@ -637,4 +663,14 @@ class FamiPortOrderTest(TestCase):
         self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), datetime(2015, 5, 23, 23, 59, 59))
+
+
+    def test_expired_paid_payment_only(self):
+        target = self.famiport_order_payment_only
+        target.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 0, 0, 0)
+        self.assertEqual(target.expired(datetime(2015, 5, 19, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 20, 12, 34, 56)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 21, 0, 0, 0)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
+        self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), None)
 
