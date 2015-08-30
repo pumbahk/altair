@@ -1,9 +1,0 @@
-*.exe
-*.mdb
-*.swp
-*~
-*/bin/Debug
-*/bin/Release
-*/obj
-packages/*
-Thumbs.db
