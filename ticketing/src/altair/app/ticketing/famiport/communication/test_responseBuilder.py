@@ -853,6 +853,33 @@ class FamiPortReservationInquiryResponseBuilderTest(unittest.TestCase, FamiPortR
         self.assertEqual(result.nameInput, u'1')
         self.assertEqual(result.phoneInput, u'0')
 
+    def test_canceled(self):
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].canceled_at = datetime(2015, 5, 21, 10, 0, 0)
+        f_request = FamiPortReservationInquiryRequest(
+            storeCode=u'000009',
+            ticketingDate=u'20150521134001',
+            reserveNumber=u'4321043210432',
+            authNumber=u''
+            )
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
+        self.assertEqual(result.playGuideId, u'')
+        self.assertEqual(result.barCodeNo, u'')
+        self.assertEqual(result.totalAmount, u'')
+        self.assertEqual(result.ticketPayment, u'')
+        self.assertEqual(result.systemFee, u'')
+        self.assertEqual(result.ticketingFee, u'')
+        self.assertEqual(result.ticketCountTotal, u'')
+        self.assertEqual(result.ticketCount, u'')
+        self.assertEqual(result.kogyoName, u'')
+        self.assertEqual(result.koenDate, u'')
+        self.assertEqual(result.name, u'')
+        self.assertEqual(result.nameInput, u'0')
+        self.assertEqual(result.phoneInput, u'0')
+
     def test_too_early(self):
         from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
         f_request = FamiPortReservationInquiryRequest(
@@ -1281,6 +1308,45 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
 
     def tearDown(self):
         FamiPortResponseBuilderTestBase.tearDown(self)
+
+    def test_canceled(self):
+        from .models import ResultCodeEnum, ReplyClassEnum, ReplyCodeEnum
+        f_request = FamiPortPaymentTicketingRequest(
+            storeCode=u'000009',
+            mmkNo=u'1',
+            ticketingDate=u'20150521134001',
+            sequenceNo=u'15052100002',
+            playGuideId=u'012340123401234012340123',
+            barCodeNo=u'01234012340123',
+            customerName=u'カスタマ　太郎',
+            phoneNumber=u'0123456789'
+            )
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_cash_on_delivery.famiport_receipts[0].canceled_at = datetime(2015, 5, 21, 13, 39, 12)
+        builder = get_response_builder(self.request, f_request)
+        result = builder.build_response(f_request, self.session, self.now, self.request)
+        self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
+        self.assertEqual(result.replyClass, u'')
+        self.assertEqual(result.replyCode, ReplyCodeEnum.SearchKeyError.value)
+        self.assertEqual(result.storeCode, u'000009')
+        self.assertEqual(result.sequenceNo, u'15052100002')
+        self.assertEqual(result.barCodeNo, u'01234012340123')
+        self.assertEqual(result.orderId, None)
+        self.assertEqual(result.playGuideId, None)
+        self.assertEqual(result.playGuideName,None)
+        self.assertEqual(result.orderTicketNo, None)
+        self.assertEqual(result.exchangeTicketNo, None)
+        self.assertEqual(result.ticketingStart, None)
+        self.assertEqual(result.ticketingEnd, None)
+        self.assertEqual(result.totalAmount, None)
+        self.assertEqual(result.ticketPayment, None)
+        self.assertEqual(result.systemFee, None)
+        self.assertEqual(result.ticketingFee, None)
+        self.assertEqual(result.ticketCountTotal, None)
+        self.assertEqual(result.ticketCount, None)
+        self.assertEqual(result.kogyoName, None)
+        self.assertEqual(result.koenDate, None)
+
 
     def test_cash_on_delivery(self):
         """代引"""

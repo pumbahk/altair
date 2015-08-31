@@ -201,7 +201,10 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
 
-                if famiport_receipt.payment_request_received_at is not None and \
+                if famiport_receipt.canceled_at is not None:
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_receipt = None
+                elif famiport_receipt.payment_request_received_at is not None and \
                    famiport_receipt.completed_at is None:
                     if famiport_receipt.made_reissueable_at is not None:
                         logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
@@ -428,7 +431,10 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             if famiport_receipt is not None:
-                if famiport_receipt is None or _strip_zfill(famiport_receipt.shop_code) != storeCode:
+                if famiport_receipt.canceled_at is not None:
+                    replyCode = ReplyCodeEnum.SearchKeyError.value
+                    famiport_receipt = None
+                elif famiport_receipt is None or _strip_zfill(famiport_receipt.shop_code) != storeCode:
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
