@@ -436,7 +436,7 @@ def _build_order_info(sej_order):
     return retval
 
 def get_sej_order_info(request, order):
-    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_order = sej_api.get_sej_order(order.order_no, fetch_canceled=True)
     retval = _build_order_info(sej_order)
     if sej_order.pay_store_name:
         retval[u'pay_store_name'] = sej_order.pay_store_name
@@ -784,7 +784,7 @@ def payment_type_to_string(payment_type):
 @lbr_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
 def sej_delivery_viewlet(context, request):
     order = context.order
-    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_order = sej_api.get_sej_order(order.order_no, fetch_canceled=True)
     payment_plugin_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     payment_method = context.order.payment_delivery_pair.payment_method
     delivery_method = context.order.payment_delivery_pair.delivery_method
@@ -825,7 +825,7 @@ def sej_delivery_confirm_viewlet(context, request):
              renderer=_overridable_delivery('sej_payment_complete.html'))
 def sej_payment_viewlet(context, request):
     order = context.order
-    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_order = sej_api.get_sej_order(order.order_no, fetch_canceled=True)
     payment_method = context.order.payment_delivery_pair.payment_method
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
