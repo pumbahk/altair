@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
@@ -22,37 +21,6 @@ import org.apache.batik.gvt.CompositeGraphicsNode;
 import org.apache.batik.gvt.GraphicsNode;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGSVGElement;
-
-class PageElementIterator implements Iterator<SVGOMPageElement> {
-    AbstractElement current;
-    
-    public PageElementIterator(SVGOMPageSetElement pageSet) {
-        this.current = (AbstractElement) pageSet.getFirstElementChild();
-        advance();
-    }
-
-    public boolean hasNext() {
-        return current != null;
-    }
-
-    void advance() {
-        while (current != null && !(current instanceof SVGOMPageElement))
-            current = (AbstractElement)current.getNextElementSibling();
-    }
-
-    public SVGOMPageElement next() {
-        if (current == null)
-            throw new NoSuchElementException();
-        final SVGOMPageElement retval = (SVGOMPageElement)current;
-        current = (AbstractElement)current.getNextElementSibling();
-        advance();
-        return retval;
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-}
 
 public class PageSetModel {
     PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
