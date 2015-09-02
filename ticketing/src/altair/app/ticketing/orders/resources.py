@@ -388,7 +388,7 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
             stock_ids = [long(stock_id) for stock_id in self.preconditions_form.stocks.data]
         except (TypeError, ValueError):
             pass
-        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type), joinedload(Stock.stock_status)).filter(Stock.id.in_(stock_ids)).all()
+        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type)).filter(Stock.id.in_(stock_ids)).all()
 
         # seat l0_idの取得
         seat_l0_ids = self.seats_form.seats.data
