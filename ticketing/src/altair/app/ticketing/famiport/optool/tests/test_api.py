@@ -972,53 +972,53 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             refund_ticket = search_refund_ticket_by(self.request, params)
             self.assertFalse(refund_ticket, msg='Failed to search refund ticket by refunded_shop_code: %s' % shop_code)
 
-    def test_search_refund_ticket_by_event_code(self):
-        params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
-                  'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
-        # Search hits
-        for event_code in self.event_codes:
-            params['event_code'] = event_code
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_code)
-        # Search does not hit
-        for event_code in (u'000000', u'111111', u'abcdef'):
-            params['event_code'] = event_code
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_code)
+    # def test_search_refund_ticket_by_event_code(self):
+    #     params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
+    #               'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
+    #     # Search hits
+    #     for event_code in self.event_codes:
+    #         params['event_code'] = event_code
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertTrue(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_code)
+    #     # Search does not hit
+    #     for event_code in (u'000000', u'111111', u'abcdef'):
+    #         params['event_code'] = event_code
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertFalse(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_code)
 
-    def test_search_refund_ticket_by_event_subcode(self):
-        params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
-                  'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
-        # Search hits
-        for event_subcode in self.event_subcodes:
-            params['event_subcode'] = event_subcode
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by event_subcode: %s' % event_subcode)
-        # Search does not hit
-        for event_subcode in (u'000000', u'111111', u'abcdef'):
-            params['event_subcode'] = event_subcode
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_subcode)
+    # def test_search_refund_ticket_by_event_subcode(self):
+    #     params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
+    #               'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
+    #     # Search hits
+    #     for event_subcode in self.event_subcodes:
+    #         params['event_subcode'] = event_subcode
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertTrue(refund_ticket, msg='Failed to search refund ticket by event_subcode: %s' % event_subcode)
+    #     # Search does not hit
+    #     for event_subcode in (u'000000', u'111111', u'abcdef'):
+    #         params['event_subcode'] = event_subcode
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertFalse(refund_ticket, msg='Failed to search refund ticket by event_code: %s' % event_subcode)
 
-    def test_search_refund_ticket_by_performance_start_date(self):
-        params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
-                  'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
-        # Search hits
-        for performance_start_date in self.performance_start_dates:
-            str_performance_start_date = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
-            params['performance_start_date'] = str_performance_start_date
-            str_performance_end_date = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
-            params['performance_end_date'] = str_performance_end_date
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by performance_start_date: %s, performance_end_date: %s' % (str_performance_start_date, str_performance_end_date))
-        # Search does not hit
-        for performance_start_date in self.performance_start_dates:
-            str_performance_start_date = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
-            params['performance_start_date'] = str_performance_start_date
-            str_performance_end_date = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
-            params['performance_end_date'] = str_performance_end_date
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by performance_start_date: %s, performance_end_date: %s' % (str_performance_start_date, str_performance_end_date))
+    # def test_search_refund_ticket_by_performance_start_date(self):
+    #     params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
+    #               'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
+    #     # Search hits
+    #     for performance_start_date in self.performance_start_dates:
+    #         str_performance_start_date = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
+    #         params['performance_start_date'] = str_performance_start_date
+    #         str_performance_end_date = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
+    #         params['performance_end_date'] = str_performance_end_date
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertTrue(refund_ticket, msg='Failed to search refund ticket by performance_start_date: %s, performance_end_date: %s' % (str_performance_start_date, str_performance_end_date))
+    #     # Search does not hit
+    #     for performance_start_date in self.performance_start_dates:
+    #         str_performance_start_date = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
+    #         params['performance_start_date'] = str_performance_start_date
+    #         str_performance_end_date = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
+    #         params['performance_end_date'] = str_performance_end_date
+    #         refund_ticket = search_refund_ticket_by(self.request, params)
+    #         self.assertFalse(refund_ticket, msg='Failed to search refund ticket by performance_start_date: %s, performance_end_date: %s' % (str_performance_start_date, str_performance_end_date))
 
     def test_search_refund_ticket_by_shop_code_and_event_code(self):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
@@ -1438,21 +1438,21 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
             self.assertTrue(refund_performance, msg='Failed to search refund performance by refund term. before_refund: %s, during_refund: %s, after_refund: %s' % refund_term_flag)
 
-    def test_search_refund_performance_by_performane_date(self):
-        formdata = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'performance_from': None, 'performance_to': None}
-        # Search hit
-        for performance_start_date in self.performance_start_dates:
-            str_performance_from = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
-            str_performance_to = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
-            formdata['performance_from'] = str_performance_from
-            formdata['performance_to'] = str_performance_to
-            refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
-            self.assertTrue(refund_performance, msg='Failed to search refund performance by performance_date. performance_from: %s, performance_to: %s' % (str_performance_from, str_performance_to))
-        # Search does not hit
-        for performance_start_date in self.performance_start_dates:
-            str_performance_from = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
-            str_performance_to = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=20), format="%Y-%m-%d")
-            formdata['performance_from'] = str_performance_from
-            formdata['performance_to'] = str_performance_to
-            refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
-            self.assertFalse(refund_performance, msg='Failed to search refund performance by performance_date. performance_from: %s, performance_to: %s' % (str_performance_from, str_performance_to))
+    # def test_search_refund_performance_by_performane_date(self):
+    #     formdata = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'performance_from': None, 'performance_to': None}
+    #     # Search hit
+    #     for performance_start_date in self.performance_start_dates:
+    #         str_performance_from = RefundTicketSearchHelper.format_date(performance_start_date - timedelta(days=10), format="%Y-%m-%d")
+    #         str_performance_to = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
+    #         formdata['performance_from'] = str_performance_from
+    #         formdata['performance_to'] = str_performance_to
+    #         refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
+    #         self.assertTrue(refund_performance, msg='Failed to search refund performance by performance_date. performance_from: %s, performance_to: %s' % (str_performance_from, str_performance_to))
+    #     # Search does not hit
+    #     for performance_start_date in self.performance_start_dates:
+    #         str_performance_from = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=10), format="%Y-%m-%d")
+    #         str_performance_to = RefundTicketSearchHelper.format_date(performance_start_date + timedelta(days=20), format="%Y-%m-%d")
+    #         formdata['performance_from'] = str_performance_from
+    #         formdata['performance_to'] = str_performance_to
+    #         refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
+    #         self.assertFalse(refund_performance, msg='Failed to search refund performance by performance_date. performance_from: %s, performance_to: %s' % (str_performance_from, str_performance_to))
