@@ -1,0 +1,35 @@
+<%page args="performance, task, order=None, small=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_order_import(performance_id, task_id) {
+    modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/events/performances/import_orders/' + performance_id + '/delete/' + task_id);
+    modal.find('#message').text("${u'選択した予約インポートタスクを削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
+<%
+  actions = {
+    'show':dict(
+      label=u'詳細',
+      url=request.route_path('performances.import_orders.show', performance_id=performance.id, task_id=task.id),
+      icon='icon-th-list',
+      route_name='events.show',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_order_import(%d,%d);' % (performance.id, task.id),
+      icon='icon-minus',
+      route_name='events.delete',
+    ),
+ }
+
+  order = iter(order or ['show', 'delete'])
+%>
+<div style="float: left;">
+  ${HH.action_button(actions, order, extra_classes=[u'btn-small'] if small else [])}
+</div>
+
+${delete_modal()}

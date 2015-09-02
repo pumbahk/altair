@@ -27,12 +27,7 @@
         <td>${task.created_at}</td>
         <td>${task.updated_at}</td>
         <td>
-          <a href="${request.route_path('performances.import_orders.show', performance_id=performance.id, task_id=task.id)}" class=" btn btn-small">
-            <i class="icon-list"></i> 詳細
-          </a>
-          <a href="${request.route_path('performances.import_orders.delete', performance_id=performance.id, task_id=task.id)}" class=" btn btn-small btn-danger">
-            <i class="icon-trash"></i> 削除
-          </a>
+          <%include file="./_action_button.html" args="performance=performance, task=task, order=['show', 'delete']"/>
         </td>
       </tr>
       % endfor
