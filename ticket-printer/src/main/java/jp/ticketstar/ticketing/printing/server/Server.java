@@ -163,7 +163,11 @@ public class Server {
         String cookie;
         int page_format_id;
         int ticket_format_id;
+        
+        // orderIdかqueueIdsのいずれか片方を受け取る
+        // orderIdを受け取った場合は、peekして得たsvgの中にqueueIdsが埋めこまれている
         int[] queueIds;
+        int orderId;
         
         PageSetModel pageSet;
     }
@@ -422,11 +426,24 @@ public class Server {
             job.cookie = pickStringFromJsonObject(obj, "cookie");
             job.page_format_id = pickIntFromJsonObject(obj, "page_format_id");
             job.ticket_format_id = pickIntFromJsonObject(obj, "ticket_format_id");
-            JsonArray queueIds = pickArrayFromJsonObject(obj, "queue_ids");
-            job.queueIds = new int[queueIds.size()];
-            job.svg = obj.has("svg") ? pickStringFromJsonObject(obj, "svg"): null;
-            for (int i=0 ; i<queueIds.size(); i++) {
-                job.queueIds[i] = queueIds.get(i).getAsInt();
+            if(obj.has("order_id")) {
+                job.orderId = pickIntFromJsonObject(obj, "order_id");
+                job.queueIds = null;
+                job.svg = null;
+            } else if(obj.has("queue_ids")) {
+                JsonArray queueIds = pickArrayFromJsonObject(obj, "queue_ids");
+                job.queueIds = new int[queueIds.size()];
+                for (int i=0 ; i<queueIds.size(); i++) {
+                    job.queueIds[i] = queueIds.get(i).getAsInt();
+                }
+                job.orderId = 0;
+                job.svg = null;
+            } else if(obj.has("svg")) {
+                job.orderId = 0;
+                job.queueIds = null;
+                job.svg = pickStringFromJsonObject(obj, "svg");
+            } else {
+                throw new HandlerException("Invalid request", 400);
             }
             return job;
         }
@@ -811,13 +828,9 @@ public class Server {
                     writer.beginObject();
                     writer.name("ticket_format_id").value(job.ticket_format_id);
                     writer.name("page_format_id").value(job.page_format_id);
-                    /*
-                    if (0 < job.order_id) {
-                        writer.name("order_id");
-                        writer.value(orderId);
-                    }
-                    */
-                    if(job.queueIds != null && 0 < job.queueIds.length) {
+                    if(0 < job.orderId) {
+                        writer.name("order_id").value(job.orderId);
+                    } else if(job.queueIds != null && 0 < job.queueIds.length) {
                         writer.name("queue_ids");
                         writer.beginArray();
                         for (int queueId: job.queueIds) {
@@ -843,6 +856,21 @@ public class Server {
                 log.info("wait response");
                 ExtendedSVG12OMDocument doc = listener.get();        // ここで取得完了を待つ
                 job.pageSet = new PageSetModel(bridgeContext, doc);
+                
+                // dequeueする際に必要になるのでページからqueueIdを抽出する
+                List<Integer> queueIds = new ArrayList<Integer>();
+                log.info("[job]");
+                for(Page page: job.pageSet.getPages()) {
+                    log.info("page="+page.getName());
+                    for(String queueId: page.getQueueIds()) {
+                        log.info("queueId=" + queueId);
+                        queueIds.add(Integer.parseInt(queueId));
+                    }
+                }
+                job.queueIds = new int[queueIds.size()];
+                for(int i=0 ; i<job.queueIds.length ; i++) {
+                    job.queueIds[i] = queueIds.get(i);
+                }
                 log.info("done");
             } catch (Exception e) {
                 log.log(Level.SEVERE, "exception thrown during fetching printing data", e);
@@ -914,6 +942,7 @@ public class Server {
     
     private void notifyCompletion(Job job) {
         if (job.queueIds != null && 0 < job.queueIds.length) {
+            log.info("queueIds size is " + job.queueIds.length);
             try {
                 final HttpURLConnection conn = (HttpURLConnection) (new URL(job.uri+"/tickets/print/dequeue")).openConnection();
                 conn.setRequestProperty("Cookie", job.cookie);
@@ -939,12 +968,18 @@ public class Server {
                 final JsonObject obj = new JsonParser().parse(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
                 if (obj.has("status")) {
                     if (obj.get("status").getAsString().equals("success")) {
-                        log.info("dequeued: job=" + job.id + ", queueIds=" + job.queueIds);
+                        StringBuilder queueIds = new StringBuilder();
+                        for (int queueId : job.queueIds) {
+                            queueIds.append("," + queueId);
+                        }
+                        log.info("dequeued: job=" + job.id + ", queueIds=" + queueIds.toString().substring(1));
                     } else {
                         log.severe("failed to dequeue job=" + job.id);
                         // dequeueに失敗
                         // TODO: 常駐している限りは、リトライしたい。。。原因によるが。
                     }
+                } else {
+                    throw new CommunicationException("server returned unexpected response");
                 }
             } catch(Exception e) {
                 log.log(Level.SEVERE, "oops", e);
