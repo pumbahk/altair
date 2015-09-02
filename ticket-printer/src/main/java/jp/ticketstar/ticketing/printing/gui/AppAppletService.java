@@ -31,235 +31,235 @@ import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 
 public class AppAppletService implements StandardAppService {
-	private AppAppletServiceImpl impl;
-	private final SerializingExecutor executor;
+    private AppAppletServiceImpl impl;
+    private final SerializingExecutor executor;
 
-	public void printAll() {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.printAll();
-			}
-		});
-	}
+    public void printAll() {
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.printAll();
+            }
+        });
+    }
 
-	public void displayError(String message) {
-		impl.displayError(message);
-	}
+    public void displayError(String message) {
+        impl.displayError(message);
+    }
 
-	public void displayError(Exception ex) {
-		impl.displayError(ex);
-	}
+    public void displayError(Exception ex) {
+        impl.displayError(ex);
+    }
 
-	public void displayMessage(String message) {
-		impl.displayMessage(message);
-	}
+    public void displayMessage(String message) {
+        impl.displayMessage(message);
+    }
 
-	public void showAlert(String message) {
-		impl.showAlert(message);
-	}
+    public void showAlert(String message) {
+        impl.showAlert(message);
+    }
 
-	public String showPrompt(String message) {
-		return impl.showPrompt(message);
-	}
+    public String showPrompt(String message) {
+        return impl.showPrompt(message);
+    }
 
-	public String showPrompt(String message, String defaultValue) {
-		return impl.showPrompt(message, defaultValue);
-	}
+    public String showPrompt(String message, String defaultValue) {
+        return impl.showPrompt(message, defaultValue);
+    }
 
-	public boolean showConfirm(String message) {
-		return impl.showConfirm(message);
-	}
+    public boolean showConfirm(String message) {
+        return impl.showConfirm(message);
+    }
 
-	public void deselectAll() {
-		impl.deselectAll();
-	}
+    public void deselectAll() {
+        impl.deselectAll();
+    }
 
-	public float getPixelUnitToMillimeter() {
-		return impl.getPixelUnitToMillimeter();
-	}
+    public float getPixelUnitToMillimeter() {
+        return impl.getPixelUnitToMillimeter();
+    }
 
-	public Point getClientAreaLocationOnScreen() {
-		return impl.getClientAreaLocationOnScreen();
-	}
+    public Point getClientAreaLocationOnScreen() {
+        return impl.getClientAreaLocationOnScreen();
+    }
 
-	public float getPixelToMM() {
-		return impl.getPixelToMM();
-	}
+    public float getPixelToMM() {
+        return impl.getPixelToMM();
+    }
 
-	public EventDispatcher getEventDispatcher() {
-		return impl.getEventDispatcher();
-	}
+    public EventDispatcher getEventDispatcher() {
+        return impl.getEventDispatcher();
+    }
 
-	public AffineTransform getTransform() {
-		return impl.getTransform();
-	}
+    public AffineTransform getTransform() {
+        return impl.getTransform();
+    }
 
-	public Dimension2D getViewportSize() {
-		return impl.getViewportSize();
-	}
+    public Dimension2D getViewportSize() {
+        return impl.getViewportSize();
+    }
 
-	public String getDefaultFontFamily() {
-		return impl.getDefaultFontFamily();
-	}
+    public String getDefaultFontFamily() {
+        return impl.getDefaultFontFamily();
+    }
 
-	public boolean hasFeature(String arg0) {
-		return impl.hasFeature(arg0);
-	}
+    public boolean hasFeature(String arg0) {
+        return impl.hasFeature(arg0);
+    }
 
-	public float getMediumFontSize() {
-		return impl.getMediumFontSize();
-	}
+    public float getMediumFontSize() {
+        return impl.getMediumFontSize();
+    }
 
-	public void registerExtension(BridgeExtension arg0) {
-		impl.registerExtension(arg0);
-	}
+    public void registerExtension(BridgeExtension arg0) {
+        impl.registerExtension(arg0);
+    }
 
-	public float getLighterFontWeight(float f) {
-		return impl.getLighterFontWeight(f);
-	}
+    public float getLighterFontWeight(float f) {
+        return impl.getLighterFontWeight(f);
+    }
 
-	public List<OurPageFormat> getPageFormats() {
-		return impl.getPageFormats();
-	}
+    public List<OurPageFormat> getPageFormats() {
+        return impl.getPageFormats();
+    }
 
-	public String getLanguages() {
-		return impl.getLanguages();
-	}
+    public String getLanguages() {
+        return impl.getLanguages();
+    }
 
-	public OurPageFormat getPageFormat() {
-		return impl.getPageFormat();
-	}
+    public OurPageFormat getPageFormat() {
+        return impl.getPageFormat();
+    }
 
-	public void setPageFormat(final OurPageFormat pageFormat) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.setPageFormat(pageFormat);
-			}
-		});
-	}
+    public void setPageFormat(final OurPageFormat pageFormat) {
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.setPageFormat(pageFormat);
+            }
+        });
+    }
 
-	public String getUserStyleSheetURI() {
-		return impl.getUserStyleSheetURI();
-	}
+    public String getUserStyleSheetURI() {
+        return impl.getUserStyleSheetURI();
+    }
 
-	public void addListenerForPageFormat(PropertyChangeListener listener) {
-		impl.addListenerForPageFormat(listener);
-	}
+    public void addListenerForPageFormat(PropertyChangeListener listener) {
+        impl.addListenerForPageFormat(listener);
+    }
 
-	public String getXMLParserClassName() {
-		return impl.getXMLParserClassName();
-	}
+    public String getXMLParserClassName() {
+        return impl.getXMLParserClassName();
+    }
 
-	public List<PrintService> getPrintServices() {
-		return impl.getPrintServices();
-	}
+    public List<PrintService> getPrintServices() {
+        return impl.getPrintServices();
+    }
 
-	public PrintService getPrintService() {
-		return impl.getPrintService();
-	}
+    public PrintService getPrintService() {
+        return impl.getPrintService();
+    }
 
-	public String getMedia() {
-		return impl.getMedia();
-	}
+    public String getMedia() {
+        return impl.getMedia();
+    }
 
-	public void setPrintService(PrintService printService) {
-		impl.setPrintService(printService);
-	}
+    public void setPrintService(PrintService printService) {
+        impl.setPrintService(printService);
+    }
 
-	public void addListenerForPrintService(PropertyChangeListener listener) {
-		impl.addListenerForPrintService(listener);
-	}
+    public void addListenerForPrintService(PropertyChangeListener listener) {
+        impl.addListenerForPrintService(listener);
+    }
 
-	public List<Page> getPages() {
-		return impl.getPages();
-	}
+    public List<Page> getPages() {
+        return impl.getPages();
+    }
 
-	public void addListenerForPages(PropertyChangeListener listener) {
-		impl.addListenerForPages(listener);
-	} 
+    public void addListenerForPages(PropertyChangeListener listener) {
+        impl.addListenerForPages(listener);
+    } 
 
-	public boolean getPrintingStatus() {
-		return impl.getPrintingStatus();
-	}
+    public boolean getPrintingStatus() {
+        return impl.getPrintingStatus();
+    }
 
-	public void addListenerForPrintingStatus(PropertyChangeListener listener) {
-		impl.addListenerForPrintingStatus(listener);
-	}
-	
-	public boolean supportExtension(String s) {
-		return impl.supportExtension(s);
-	}
+    public void addListenerForPrintingStatus(PropertyChangeListener listener) {
+        impl.addListenerForPrintingStatus(listener);
+    }
+    
+    public boolean supportExtension(String s) {
+        return impl.supportExtension(s);
+    }
 
-	public void handleElement(Element elt, Object data) {
-		impl.handleElement(elt, data);
-	}
+    public void handleElement(Element elt, Object data) {
+        impl.handleElement(elt, data);
+    }
 
-	public ScriptSecurity getScriptSecurity(String scriptType,
-			ParsedURL scriptURL, ParsedURL docURL) {
-		return impl.getScriptSecurity(scriptType, scriptURL, docURL);
-	}
+    public ScriptSecurity getScriptSecurity(String scriptType,
+            ParsedURL scriptURL, ParsedURL docURL) {
+        return impl.getScriptSecurity(scriptType, scriptURL, docURL);
+    }
 
-	public void checkLoadScript(String scriptType, ParsedURL scriptURL,
-			ParsedURL docURL) throws SecurityException {
-		impl.checkLoadScript(scriptType, scriptURL, docURL);
-	}
+    public void checkLoadScript(String scriptType, ParsedURL scriptURL,
+            ParsedURL docURL) throws SecurityException {
+        impl.checkLoadScript(scriptType, scriptURL, docURL);
+    }
 
-	public ExternalResourceSecurity getExternalResourceSecurity(
-			ParsedURL resourceURL, ParsedURL docURL) {
-		return impl.getExternalResourceSecurity(resourceURL, docURL);
-	}
+    public ExternalResourceSecurity getExternalResourceSecurity(
+            ParsedURL resourceURL, ParsedURL docURL) {
+        return impl.getExternalResourceSecurity(resourceURL, docURL);
+    }
 
-	public void checkLoadExternalResource(ParsedURL resourceURL,
-			ParsedURL docURL) throws SecurityException {
-		impl.checkLoadExternalResource(resourceURL, docURL);
-	}
+    public void checkLoadExternalResource(ParsedURL resourceURL,
+            ParsedURL docURL) throws SecurityException {
+        impl.checkLoadExternalResource(resourceURL, docURL);
+    }
 
-	public SVGDocument getBrokenLinkDocument(Element arg0, String arg1,
-			String arg2) {
-		return impl.getBrokenLinkDocument(arg0, arg1, arg2);
-	}
+    public SVGDocument getBrokenLinkDocument(Element arg0, String arg1,
+            String arg2) {
+        return impl.getBrokenLinkDocument(arg0, arg1, arg2);
+    }
 
-	public float getBolderFontWeight(float f) {
-		return impl.getBolderFontWeight(f);
-	}
+    public float getBolderFontWeight(float f) {
+        return impl.getBolderFontWeight(f);
+    }
 
-	public String getAlternateStyleSheet() {
-		return impl.getAlternateStyleSheet();
-	}
+    public String getAlternateStyleSheet() {
+        return impl.getAlternateStyleSheet();
+    }
 
-	public void openLink(final SVGAElement arg0) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.openLink(arg0);
-			}
-		});
-	}
+    public void openLink(final SVGAElement arg0) {
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.openLink(arg0);
+            }
+        });
+    }
 
-	public void loadDocument(final URI uri) {
-		executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
-			public ExtendedSVG12OMDocument call() {
-				try {
-					return impl.loadDocument(uri).get();
-				} catch (Exception e) {
-					throw new ApplicationException(e);
-				}
-			}
-		});			
-	}
-	
-	public void loadDocument(final URLConnection conn, final RequestBodySender sender) {
-		executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
-			public ExtendedSVG12OMDocument call() {
-				try {
-					return impl.loadDocument(conn, sender).get();
-				} catch (Exception e) {
-					throw new ApplicationException(e);
-				}
-			}
-		});
-	}
+    public void loadDocument(final URI uri) {
+        executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
+            public ExtendedSVG12OMDocument call() {
+                try {
+                    return impl.loadDocument(uri).get();
+                } catch (Exception e) {
+                    throw new ApplicationException(e);
+                }
+            }
+        });            
+    }
+    
+    public void loadDocument(final URLConnection conn, final RequestBodySender sender) {
+        executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
+            public ExtendedSVG12OMDocument call() {
+                try {
+                    return impl.loadDocument(conn, sender).get();
+                } catch (Exception e) {
+                    throw new ApplicationException(e);
+                }
+            }
+        });
+    }
 
-	@Override
+    @Override
     public List<TicketFormat> getTicketFormats() {
         return impl.getTicketFormats();
     }
@@ -271,30 +271,30 @@ public class AppAppletService implements StandardAppService {
  
     @Override
     public void setTicketFormat(final TicketFormat ticketFormat) {
-		executeSynchronously(new Runnable() {
+        executeSynchronously(new Runnable() {
             public void run() {
                 impl.setTicketFormat(ticketFormat);
             }
         });
     }
 
-	@Override
-	public void filterByOrderId(final String orderId) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.filterByOrderId(orderId);
-			}
-		});
-	}
+    @Override
+    public void filterByOrderId(final String orderId) {
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.filterByOrderId(orderId);
+            }
+        });
+    }
 
-	@Override
-	public void filterByQueueIds(final List<String> queueIds) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.filterByQueueIds(queueIds);
-			}
-		});
-	}
+    @Override
+    public void filterByQueueIds(final List<String> queueIds) {
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.filterByQueueIds(queueIds);
+            }
+        });
+    }
 
     @Override
     public void addListenerForTicketFormat(PropertyChangeListener listener) {
@@ -303,53 +303,53 @@ public class AppAppletService implements StandardAppService {
    
     @Override
     public void addPageEventListener(PageEventListener listener) {
-    	impl.addPageEventListener(listener);
+        impl.addPageEventListener(listener);
     }
 
     public void startBatchUpdate() {
-    	executeSynchronously(new Runnable() {
-    		public void run() {
-    	    	impl.startBatcnUpdate();
-    		}
-    	});
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.startBatcnUpdate();
+            }
+        });
     }
 
     public void endBatchUpdate() {
-    	executeSynchronously(new Runnable() {
-    		public void run() {
-    			impl.endBatchUpdate();
-    		}
-    	});
+        executeSynchronously(new Runnable() {
+            public void run() {
+                impl.endBatchUpdate();
+            }
+        });
     }
 
-	private void executeSynchronously(Runnable runnable) {
-		try {
-			executor.executeSynchronously(runnable);
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ApplicationException(e);
-		}
-	}
+    private void executeSynchronously(Runnable runnable) {
+        try {
+            executor.executeSynchronously(runnable);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(e);
+        }
+    }
 
-	private <V> V executeSynchronously(Callable<V> runnable) {
-		try {
-			return executor.executeSynchronously(runnable);
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ApplicationException(e);
-		}
-	}
+    private <V> V executeSynchronously(Callable<V> runnable) {
+        try {
+            return executor.executeSynchronously(runnable);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(e);
+        }
+    }
 
-	public void dispose() {
-		executor.terminate();
-		impl.dispose();
-	}
-	
-	public AppAppletService(AppAppletServiceImpl impl) {
-		this.impl = impl;
-		executor = new SerializingExecutor(impl.getApplet());
-		executor.start();
-	}
+    public void dispose() {
+        executor.terminate();
+        impl.dispose();
+    }
+    
+    public AppAppletService(AppAppletServiceImpl impl) {
+        this.impl = impl;
+        executor = new SerializingExecutor(impl.getApplet());
+        executor.start();
+    }
 }

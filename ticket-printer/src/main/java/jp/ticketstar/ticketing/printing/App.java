@@ -10,7 +10,7 @@ import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 
 public class App {
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         Server appServer = new Server();
         CmdLineParser parser = new CmdLineParser(appServer);
         try {
@@ -20,14 +20,14 @@ public class App {
             return;
         }
 
-    	final AppWindowModel model = new AppWindowModel();
-    	final AppWindowService appService = new AppWindowService(model);
+        final AppWindowModel model = new AppWindowModel();
+        final AppWindowService appService = new AppWindowService(model);
 
         if(appServer.acceptConnection()) {
-			appServer.setService(appService);
-			appServer.start();
-			return;
-		}
+            appServer.setService(appService);
+            appServer.start();
+            return;
+        }
 
         final IAppWindow appWindow = new AppWindow(appService);
         appWindow.show();
