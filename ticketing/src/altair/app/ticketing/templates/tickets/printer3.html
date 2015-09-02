@@ -190,16 +190,19 @@ function init(tags, progressHandlers, uiUpdater) {
     function refreshPrintServices() {
         $printService.empty();
         $.ajax({
-            url: api+'/printers',
+            url: api + '/printers',
             type: 'GET',
             dataType: 'json'
         }).done(function(s) {
             for(var i=0 ; i<s.printers.length ; i++) {
                 $('<option></option>').val(s.printers[i]).text(s.printers[i]).appendTo($printService);
             }
-       }).fail(function() {
-            alert('プリントサービスが起動していないようです.');
-       });
+        }).fail(function(_, s, e) {
+            var message = 'プリントサービスが起動していないようです';
+            if (e != '')
+                message += ' (' + e + ')';
+            alert(message);
+        });
     }
     var formats = { };
     function refreshFormats() {
@@ -428,7 +431,7 @@ function init(tags, progressHandlers, uiUpdater) {
       }
 
       $.ajax({
-          url: api+"/process",
+          url: api + "/process",
           type: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({
@@ -442,7 +445,7 @@ function init(tags, progressHandlers, uiUpdater) {
           }),
           dataType: 'json'
         }).done(function(s) {
-          if(s.status == "OK") {
+          if(s.status == "success") {
             // 印刷を開始したので、完了を待つ...
             var confirm = function() {
               $.ajax({
@@ -461,7 +464,8 @@ function init(tags, progressHandlers, uiUpdater) {
             };
             setTimeout(confirm, 1000);
           } else {
-            alert("印刷に失敗しました.");
+            alert("印刷に失敗しました." + s.message);
+            onPrintingCompleted();
           }
         });
     };
