@@ -993,11 +993,11 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Payment.value:
             return u'-'
         else:
-            if self.payment_request_received_at is not None and self.completed_at is not None:
+            if self.payment_request_received_at is not None and self.famiport_order.issued_at is not None:
                 return u'発券済み'
-            elif self.payment_request_received_at is not None and self.completed_at is None:
+            elif self.payment_request_received_at is not None and self.famiport_order.issued_at is None:
                 return u'発券確定待ち'
-            elif self.payment_request_received_at is None:
+            elif self.payment_request_received_at is None or self.inquired_at is None:
                 return u'発券待ち'
             else:
                 return u'状態不正'
@@ -1008,11 +1008,11 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Ticketing.value:
             return u'-'
         else:
-            if self.payment_request_received_at is not None and self.completed_at is not None:
+            if self.payment_request_received_at is not None and self.famiport_order.paid_at is not None:
                 return u'入金済み'
-            elif self.payment_request_received_at is not None and self.completed_at is None:
+            elif self.payment_request_received_at is not None and self.famiport_order.paid_at is None:
                 return u'入金確定待ち'
-            elif self.payment_request_received_at is None:
+            elif self.payment_request_received_at is None or self.inquired_at is None:
                 return u'入金待ち'
             else:
                 return u'状態不正'
