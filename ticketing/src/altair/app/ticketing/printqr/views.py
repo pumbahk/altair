@@ -70,7 +70,7 @@ def orderno_show_qrsigned(context, request):
         raise
 
 def _signed_string_from_history(builder, history):
-    params = make_data_for_qr(history)
+    params, ticket = make_data_for_qr(history)
     return builder.sign(builder.make(params))
 
 def orderno_show_qrsigned_after_validated(context, request, form):
