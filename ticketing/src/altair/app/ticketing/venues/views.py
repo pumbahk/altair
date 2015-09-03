@@ -128,17 +128,19 @@ def get_seat_info(context, request):
 
     row = aliased(SeatAttribute)
     floor = aliased(SeatAttribute)
+    block = aliased(SeatAttribute)
     gate = aliased(SeatAttribute)
-    seats = slave_session.query(Seat, VenueArea, row.value, floor.value, gate.value)\
+    seats = slave_session.query(Seat, VenueArea, row.value, floor.value, block.value, gate.value)\
         .filter_by(venue_id=venue.id)\
         .join(VenueArea, Seat.areas)\
         .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
         .outerjoin(floor, and_(floor.name=="floor", floor.seat_id==Seat.id))\
+        .outerjoin(block, and_(block.name=="block", block.seat_id==Seat.id))\
         .outerjoin(gate, and_(gate.name=="gate", gate.seat_id==Seat.id))
 
     x_seats = etree.Element("seats")
     x_result.append(x_seats)
-    for seat, venuearea, sa_row, sa_floor, sa_gate in seats:
+    for seat, venuearea, sa_row, sa_floor, sa_block, sa_gate in seats:
         x_seat = etree.Element("seat")
         create_text_element(x_seat, "l0_id", seat.l0_id)
         create_text_element(x_seat, "group_l0_id", seat.group_l0_id)
@@ -149,6 +151,8 @@ def get_seat_info(context, request):
         create_text_element(x_seat, "sa_row", sa_row)
         if sa_floor is not None:
             create_text_element(x_seat, "sa_floor", sa_floor)
+        if sa_block is not None:
+            create_text_element(x_seat, "sa_block", sa_block)
         if sa_gate is not None:
             create_text_element(x_seat, "sa_gate", sa_gate)
         x_seats.append(x_seat)
@@ -170,11 +174,15 @@ def update_seat_info(context, request):
     name_list = request.POST['name'].split("\t")
     sa_row_list = request.POST['sa_row'].split("\t")
     sa_floor_list = request.POST['sa_floor'].split("\t")
+    if 'sa_block' in request.POST:
+        sa_block_list = request.POST['sa_block'].split("\t")
+    else:
+        sa_block_list = None
     sa_gate_list = request.POST['sa_gate'].split("\t")
     
     info_by_id = dict()
     for idx, l0_id in enumerate(l0_id_list):
-        info_by_id[l0_id] = (seat_no_list[idx], name_list[idx], sa_row_list[idx], sa_floor_list[idx], sa_gate_list[idx])
+        info_by_id[l0_id] = (seat_no_list[idx], name_list[idx], sa_row_list[idx], sa_floor_list[idx], sa_block_list[idx] if not (sa_block_list is None) else None, sa_gate_list[idx])
 
     areas = DBSession.query(VenueArea_group_l0_id, VenueArea)\
         .filter_by(venue_id=venue.id)\
@@ -189,15 +197,17 @@ def update_seat_info(context, request):
 
     row = aliased(SeatAttribute)
     floor = aliased(SeatAttribute)
+    block = aliased(SeatAttribute)
     gate = aliased(SeatAttribute)
-    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, gate.value)\
+    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, block.value, gate.value)\
         .filter_by(venue_id=venue.id)\
         .join(VenueArea, Seat.areas)\
         .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
         .outerjoin(floor, and_(floor.name=="floor", floor.seat_id==Seat.id))\
+        .outerjoin(block, and_(block.name=="block", block.seat_id==Seat.id))\
         .outerjoin(gate, and_(gate.name=="gate", gate.seat_id==Seat.id))
 
-    for seat, venuearea, _row, _floor, _gate in seats:
+    for seat, venuearea, _row, _floor, _block, _gate in seats:
         if seat.l0_id in info_by_id:
             if seat.seat_no != info_by_id[seat.l0_id][0] or seat.name != info_by_id[seat.l0_id][1]:
                 seat.seat_no = info_by_id[seat.l0_id][0]
@@ -216,10 +226,24 @@ def update_seat_info(context, request):
                     floor.value = info_by_id[seat.l0_id][3]
                     floor.save()
                     updated = updated + 1
-            if info_by_id[seat.l0_id][4] != _gate:
+            if (not info_by_id[seat.l0_id][4] is None) and info_by_id[seat.l0_id][4] != _block:
+                block = SeatAttribute.query.filter(and_(SeatAttribute.seat_id==seat.id, SeatAttribute.name=="block")).first()
+                if block is not None:
+                    block.value = info_by_id[seat.l0_id][4]
+                    block.save()
+                    updated = updated + 1
+                elif info_by_id[seat.l0_id][4] != "":
+                    # create new record
+                    block = SeatAttribute()
+                    block.seat_id = seat.id
+                    block.name = "block"
+                    block.value = info_by_id[seat.l0_id][4]
+                    DBSession.add(block)
+                    updated = updated + 1
+            if info_by_id[seat.l0_id][5] != _gate:
                 gate = SeatAttribute.query.filter(and_(SeatAttribute.seat_id==seat.id, SeatAttribute.name=="gate")).first()
                 if gate is not None:
-                    gate.value = info_by_id[seat.l0_id][4]
+                    gate.value = info_by_id[seat.l0_id][5]
                     gate.save()
                     updated = updated + 1
 
