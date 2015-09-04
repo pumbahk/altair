@@ -726,6 +726,10 @@ class PreviewWithDefaultParameterDialogView(object):
                     for t in ApplicableTicketsProducer(b).sej_only_tickets():
                         tf = t.ticket_format
                         D[(tf.id, "sej")] = {"pk": tf.id, "name": tf.name, "type": "sej"}
+                for b in bundles:
+                    for t in ApplicableTicketsProducer(b).famiport_only_tickets():
+                        tf = t.ticket_format
+                        D[(tf.id, "famiport")] = {"pk": tf.id, "name": tf.name, "type": "famiport"}
                 ticket_formats = D.values()
             else:
                 ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
