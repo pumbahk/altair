@@ -2,7 +2,7 @@
 import logging
 from datetime import datetime
 from zope.interface import implementer
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.security import (
     Everyone,
     Allow,
@@ -18,11 +18,16 @@ from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 from .interfaces import ILotResource
 from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import Lot, LotEntry, LotEntryWish
 from .api import get_lot_entry_dict
+from . import api
+from webob.multidict import MultiDict
+from altair.app.ticketing.cart import schemas as cart_schemas
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 logger = logging.getLogger(__name__)
 
@@ -143,9 +148,25 @@ class LotResource(LotResourceBase):
     @reify
     def lot_asid(self):
         organization = cart_api.get_organization(self.request)
-        lot_asid =organization.setting.lot_asid
+        lot_asid = organization.setting.lot_asid
         logger.debug('organization %s' % organization.code)
         logger.debug('lot_asid %s' % lot_asid)
+        return lot_asid
+
+    @reify
+    def lot_asid_smartphone(self):
+        organization = cart_api.get_organization(self.request)
+        lot_asid = organization.setting.lot_asid
+        logger.debug('organization %s' % organization.code)
+        logger.debug('lot_asid_smartphone %s' % lot_asid)
+        return lot_asid
+
+    @reify
+    def lot_asid_mobile(self):
+        organization = cart_api.get_organization(self.request)
+        lot_asid = organization.setting.lot_asid
+        logger.debug('organization %s' % organization.code)
+        logger.debug('lot_asid_mobile %s' % lot_asid)
         return lot_asid
 
     def check_entry_limit(self, wishes, user=None, email=None):
@@ -177,6 +198,64 @@ class LotResource(LotResourceBase):
                 if entry_count >= entry_limit:
                     logger.info('entry_limit exceeded')
                     raise OverEntryLimitPerPerformanceException(performance_name=performance.name, entry_limit=entry_limit)
+
+    # PC, MB, SP共通
+    def get_rsp(self, lot_asid):
+        form = cart_schemas.PointForm(formdata=MultiDict(accountno=""))
+
+        accountno = self.request.params.get('account')
+
+        if accountno:
+            form['accountno'].data = accountno.replace('-', '')
+        else:
+            if self.membershipinfo is not None and \
+               self.membershipinfo.enable_auto_input_form:
+                if self.existing_user_point_account is not None:
+                    form.accountno.data = self.existing_user_point_account.account_number
+
+        return dict(
+            form=form,
+            asid=lot_asid
+        )
+
+    def post_rsp(self, lot_asid):
+        form = cart_schemas.PointForm(formdata=self.request.params)
+        point_params = dict(
+            accountno=form.data['accountno'],
+            )
+
+        if not form.validate():
+            return dict(form=form, asid=lot_asid)
+
+        account_number = point_params.pop("accountno", None)
+        user = cart_api.get_or_create_user(self.authenticated_user())
+        if account_number:
+            acc = cart_api.create_user_point_account_from_point_no(
+                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
+                type=UserPointAccountTypeEnum.Rakuten,
+                account_number=account_number
+                )
+            api.set_user_point_account_to_session(self.request, acc)
+
+        from .adapters import LotSessionCart
+        from altair.app.ticketing.payments.payment import Payment
+        entry = api.get_lot_entry_dict(self.request)
+        cart = LotSessionCart(entry, self.request, self.lot)
+        payment = Payment(cart, self.request)
+        # マルチ決済のみオーソリのためにカード番号入力画面に遷移する
+        result = payment.call_prepare()
+        if callable(result):
+            return result
+
+        return HTTPFound(self.request.route_url('lots.entry.confirm', event_id=self.event.id, lot_id=self.lot.id))
+
+    @reify
+    def existing_user_point_account(self):
+        user = cart_api.get_user(self.request.context.authenticated_user())
+        if user is not None and UserPointAccountTypeEnum.Rakuten.v in user.user_point_accounts:
+            return user.user_point_accounts[UserPointAccountTypeEnum.Rakuten.v]
+        else:
+            return None
 
 
 class LotOptionSelectionResource(LotResource):
