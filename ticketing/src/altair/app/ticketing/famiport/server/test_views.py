@@ -28,6 +28,7 @@ class FamiPortAPIViewTest(TestCase):
         'altair.famiport.order_status_reflector.endpoint.completed': '',
         'altair.famiport.order_status_reflector.endpoint.canceled': '',
         'altair.famiport.order_status_reflector.endpoint.refunded': '',
+        'altair.famiport.order_status_reflector.endpoint.expired': '',
         }
 
     def setUp(self):
@@ -454,7 +455,6 @@ playGuideId=&storeCode=000009&ticketingDate=20150401101950&barCodeNo=10000000000
             famiport_order_identifier='123456789012',
             inquired_at=datetime(2015, 1, 1, 0, 0, 0),
             shop_code='99999',
-            can_cancel=lambda now: True,
             completed_at=None,
             canceled_at=None,
             void_at=None,

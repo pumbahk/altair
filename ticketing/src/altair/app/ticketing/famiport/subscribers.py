@@ -8,7 +8,7 @@ from pyramid.config import ConfigurationError
 from pyramid.events import subscriber
 import urllib2
 from .models import FamiPortReceiptType
-from .interfaces import IReceiptCompleted, IReceiptCanceled, IOrderCanceled
+from .interfaces import IReceiptCompleted, IReceiptCanceled, IOrderCanceled, IOrderExpired
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ class OrderStatusReflector(object):
             'completed': None,
             'canceled': None,
             'refunded': None,
+            'expired': None,
             }
 
         for k in list(six.iterkeys(endpoints)):
@@ -149,6 +150,24 @@ class OrderStatusReflector(object):
         except:
             logger.exception('exception ignored')
 
+    def order_expired(self, event):
+        request = event.request
+        famiport_order = event.famiport_order
+        try:
+            self.make_json_request(
+                url=self.endpoints['expired'],
+                data={
+                    'type': ['order'],
+                    'client_code': famiport_order.client_code,
+                    'order_no': famiport_order.order_no,
+                    'famiport_order_identifier': u'',
+                    'payment_reserve_number': famiport_order.payment_famiport_receipt and famiport_order.payment_famiport_receipt.reserve_number,
+                    'ticketing_reserve_number': famiport_order.ticketing_famiport_receipt and famiport_order.ticketing_famiport_receipt.reserve_number,
+                    }
+                )
+        except:
+            logger.exception('exception ignored')
+
 
 def includeme(config):
     reflector = OrderStatusReflector(config)
@@ -163,6 +182,10 @@ def includeme(config):
     config.add_subscriber(
         reflector.order_canceled,
         IOrderCanceled 
+        )
+    config.add_subscriber(
+        reflector.order_expired,
+        IOrderExpired
         )
 
 

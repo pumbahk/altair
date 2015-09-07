@@ -88,6 +88,21 @@ class FamiPortUsersideAPIView(object):
         self.session.add(notification)
         return {"status":"ok"}
 
+    @view_config(route_name='famiport.userside_api.expired')
+    def expired(self):
+        try:
+            notification = AltairFamiPortNotification(
+                type=AltairFamiPortNotificationType.OrderExpired.value,
+                client_code=self.request_data['client_code'],
+                order_no=self.request_data['order_no'],
+                famiport_order_identifier=self.request_data.get('famiport_order_identifier', None),
+                payment_reserve_number=self.request_data['payment_reserve_number'] or None,
+                ticketing_reserve_number=self.request_data['ticketing_reserve_number'] or None
+                )
+        except KeyError as e:
+            self.bad_request("missing key: %s" % e.message)
+        self.session.add(notification)
+        return {"status":"ok"}
 
     @view_config(route_name='famiport.userside_api.refunded')
     def refunded(self):
