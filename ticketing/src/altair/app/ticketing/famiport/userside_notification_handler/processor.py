@@ -71,10 +71,13 @@ class AltairFamiPortNotificationProcessor(object):
         pass
 
     def handle_order_canceled(self, order, notification, now):
-        order.release()
-        order.mark_canceled(now)
-        order.updated_at = now
-        notify_order_canceled(self.request, order)
+        if order.paid_at is None:
+            order.release()
+            order.mark_canceled(now)
+            order.updated_at = now
+            notify_order_canceled(self.request, order)
+        else:
+            logger.info("Order(order_no=%s) is already marked paid; do nothing" % order.order_no)
 
     def handle_refunded(self, order):
         logger.info("not implemented")
