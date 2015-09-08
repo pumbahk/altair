@@ -447,7 +447,8 @@ class ConfirmLotEntryView(object):
                     memo=entry['memo'],
                     extra_form_data=extra_form_data,
                     mailmagazines_to_subscribe=magazines_to_subscribe,
-                    accountno=acc.account_number if acc else "")
+                    accountno=acc.account_number if acc else "",
+                    membershipinfo = self.context.membershipinfo)
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))

@@ -156,7 +156,7 @@ class LotResource(LotResourceBase):
     @reify
     def lot_asid_smartphone(self):
         organization = cart_api.get_organization(self.request)
-        lot_asid = organization.setting.lot_asid
+        lot_asid = organization.setting.lot_asid_smartphone
         logger.debug('organization %s' % organization.code)
         logger.debug('lot_asid_smartphone %s' % lot_asid)
         return lot_asid
@@ -164,10 +164,14 @@ class LotResource(LotResourceBase):
     @reify
     def lot_asid_mobile(self):
         organization = cart_api.get_organization(self.request)
-        lot_asid = organization.setting.lot_asid
+        lot_asid = organization.setting.lot_asid_mobile
         logger.debug('organization %s' % organization.code)
         logger.debug('lot_asid_mobile %s' % lot_asid)
         return lot_asid
+
+    @property
+    def membershipinfo(self):
+        return cart_api.get_membership(self.authenticated_user())
 
     def check_entry_limit(self, wishes, user=None, email=None):
         logger.debug('user.id=%r, email=%r', user.id if user else None, email)
