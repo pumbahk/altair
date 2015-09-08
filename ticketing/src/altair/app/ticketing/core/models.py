@@ -3939,7 +3939,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
-    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16384)), _a_label=_(u'追加フィールド')))
+    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -3961,7 +3961,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
-    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16384)), _a_label=_(u'追加フィールド')))
+    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)

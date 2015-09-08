@@ -1,5 +1,5 @@
 from zope.interface import implementer
-from .interfaces import IReceiptInquired, IReceiptPaymentRequestReceived, IReceiptCompleted, IReceiptVoided, IReceiptCanceled, IOrderCanceled
+from .interfaces import IReceiptInquired, IReceiptPaymentRequestReceived, IReceiptCompleted, IReceiptVoided, IReceiptCanceled, IOrderCanceled, IOrderExpired
 
 class ReceiptEventBase(object):
     def __init__(self, famiport_receipt, request):
@@ -36,3 +36,10 @@ class OrderCanceled(OrderEventBase):
     def __init__(self, famiport_order, request):
         self.famiport_order = famiport_order
         self.request = request
+
+@implementer(IOrderExpired)
+class OrderExpired(OrderEventBase):
+    def __init__(self, famiport_order, request):
+        self.famiport_order = famiport_order
+        self.request = request
+

@@ -51,6 +51,7 @@ def includeme(config):
     config.add_route('famiport.userside_api.ping', '/ping') # ping
     config.add_route('famiport.userside_api.completed', '/completed')  # 完了
     config.add_route('famiport.userside_api.canceled', '/canceled')  # キャンセル (VOIDではない)
+    config.add_route('famiport.userside_api.expired', '/expired')  # 入金・発券期限切れ
     config.add_route('famiport.userside_api.refunded', '/refunded')  # 払戻
 
     config.scan('.views')
