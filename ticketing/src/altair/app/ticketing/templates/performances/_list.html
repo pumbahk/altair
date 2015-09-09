@@ -76,7 +76,7 @@
             </div>
           </td>
           % endif
-          <td>${u'済' if performance.id in fm_performance_ids else u'未'}</td>
+          <td>${u'済' if fm_performance_ids and (performance.id in fm_performance_ids) else u'未'}</td>
           <td>${performance.display_order}</td>
           <td>${vh.date(performance.start_on, with_weekday=True)}</td>
           <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
