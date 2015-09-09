@@ -42,7 +42,7 @@
       </tr>
       <tr>
         <th>申込方法</th>
-        <td>${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
+        <td>${vh.get_sales_channel_name(receipt.famiport_order.famiport_performance.sales_channel)}</td>
         <th>受付日</th>
         <td>${vh.format_datetime(receipt.famiport_order.created_at)}</td>
       </tr>

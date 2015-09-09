@@ -4,7 +4,6 @@ import logging, locale
 import json
 from .api import get_famiport_shop_by_code
 from ..models import FamiPortReceiptType, FamiPortSalesChannel
-from ..exc import FamiPortAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -118,8 +117,6 @@ class ViewHelpers(object):
             return u'WebOnly'
         elif sales_channel == FamiPortSalesChannel.FamiPortAndWeb.value:
             return u'FamiPortAndWeb'
-        else:
-            raise FamiPortAPIError('invalid sales_channel: %d' % sales_channel)
 
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)
