@@ -3,7 +3,8 @@ from webhelpers.paginate import PageURL_WebOb, Page
 import logging, locale
 import json
 from .api import get_famiport_shop_by_code
-from ..models import FamiPortReceiptType
+from ..models import FamiPortReceiptType, FamiPortSalesChannel
+from ..exc import FamiPortAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +110,16 @@ class ViewHelpers(object):
             display_date = famiport_receipt.completed_at
 
         return display_date
+
+    def get_sales_channel_name(self, sales_channel):
+        if sales_channel == FamiPortSalesChannel.FamiPortOnly.value:
+            return u'FamiPortOnly'
+        elif sales_channel == FamiPortSalesChannel.WebOnly.value:
+            return u'WebOnly'
+        elif sales_channel == FamiPortSalesChannel.FamiPortAndWeb.value:
+            return u'FamiPortAndWeb'
+        else:
+            raise FamiPortAPIError('invalid sales_channel: %d' % sales_channel)
 
 def get_paginator(request, query, page=1, items_per_page=20):
     page_url = PageURL_WebOb(request)

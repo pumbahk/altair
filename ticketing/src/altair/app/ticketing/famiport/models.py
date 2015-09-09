@@ -328,11 +328,11 @@ class FamiPortSalesSegment(Base, WithTimestamp):
 
     @property
     def get_sales_channel_in_str(self):
-        if self.sales_channel == 1:
+        if self.sales_channel == FamiPortSalesChannel.FamiPortOnly.value:
             return u'FamiPortOnly'
-        if self.sales_channel == 2:
+        if self.sales_channel == FamiPortSalesChannel.WebOnly.value:
             return u'WebOnly'
-        if self.sales_channel == 3:
+        if self.sales_channel == FamiPortSalesChannel.FamiPortAndWeb.value:
             return u'FamiPortAndWeb'
 
 

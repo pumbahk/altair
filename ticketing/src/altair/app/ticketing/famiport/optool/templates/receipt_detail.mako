@@ -80,7 +80,7 @@
       </tr>
       <tr>
         <th>申込サイト</th>
-        <td colspan="3">${receipt.famiport_order.famiport_sales_segment.get_sales_channel_in_str}</td>
+        <td colspan="3">${vh.get_sales_channel_name(receipt.famiport_order.famiport_performance.sales_channel)}</td>
       </tr>
     </tbody>
 
