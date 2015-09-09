@@ -734,7 +734,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'end_on':end_on,
             "code": self.code or "",
             'sales':[s.get_cms_data() for s in sales_segments],
-            'public':self.public
+            'public':self.public,
+            'display_order':self.display_order
         }
         if self.deleted_at:
             data['deleted'] = 'true'
