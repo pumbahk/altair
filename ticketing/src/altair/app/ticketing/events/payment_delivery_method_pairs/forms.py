@@ -538,6 +538,13 @@ class PaymentDeliveryMethodPairForm(OurForm):
     def validate(form):
         status = super(type(form), form).validate()
         if status:
+            # 有効な決済方法と引取方法の組み合わせかをチェックする
+            if not PaymentDeliveryMethodPair.is_valid_pair(int(form.payment_method_id.data), int(form.delivery_method_id.data)):
+                error_message = u'有効な決済方法と引取方法の組み合わせではありません'
+                form.payment_method_id.errors.append(error_message)
+                form.delivery_method_id.errors.append(error_message)
+                status = False
+
             # 楽天ID決済の場合は、決済手数料と特別手数料は設定不可
             payment_method = PaymentMethod.query.filter_by(id=form.payment_method_id.data).first()
             if payment_method and payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
