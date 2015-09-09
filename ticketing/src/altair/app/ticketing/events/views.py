@@ -93,13 +93,13 @@ class Events(BaseView):
             sql.asc
             )
 
-        query = slave_session.query(Event)
+        query = slave_session.query(Event) \
+            .filter(Event.organization_id==int(self.context.organization.id))
 
         # イベントの表示、非表示（クッキーで制御）
         from . import VISIBLE_EVENT_SESSION_KEY
         if not self.request.session.get(VISIBLE_EVENT_SESSION_KEY, None):
             query = query.join(EventSetting, Event.id==EventSetting.event_id) \
-                .filter(Event.organization_id==int(self.context.organization.id)) \
                 .filter(EventSetting.visible==True)
 
         if sort is not None:
