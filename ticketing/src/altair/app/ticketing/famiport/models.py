@@ -326,15 +326,6 @@ class FamiPortSalesSegment(Base, WithTimestamp):
         primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id
         )
 
-    @property
-    def get_sales_channel_in_str(self):
-        if self.sales_channel == 1:
-            return u'FamiPortOnly'
-        if self.sales_channel == 2:
-            return u'WebOnly'
-        if self.sales_channel == 3:
-            return u'FamiPortAndWeb'
-
 
 class FamiPortRefundType(Enum):
     Type1 = 1
