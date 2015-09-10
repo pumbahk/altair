@@ -31,6 +31,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, PerformanceSetting, StockType, StockTypeEnum, SalesSegment
+from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -94,13 +95,13 @@ class Events(BaseView):
             )
 
         query = slave_session.query(Event) \
-            .join(EventSetting, Event.id==EventSetting.event_id) \
             .filter(Event.organization_id==int(self.context.organization.id))
 
         # イベントの表示、非表示（クッキーで制御）
         from . import VISIBLE_EVENT_SESSION_KEY
         if not self.request.session.get(VISIBLE_EVENT_SESSION_KEY, None):
-            query = query.filter(EventSetting.visible==True)
+            query = query.join(EventSetting, Event.id==EventSetting.event_id) \
+                .filter(EventSetting.visible==True)
 
         if sort is not None:
             query = query.order_by(direction(sort))
@@ -191,9 +192,16 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
+        fm_performance_ids = [] # FM連携済みのperformance_id
+        altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
+            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances])).all()
+        for altair_famiport_performance in altair_famiport_performances:
+            fm_performance_ids.append(altair_famiport_performance.performance_id)
+
         return {
             'event':event,
             'performances':performances,
+            'fm_performance_ids': fm_performance_ids,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url,

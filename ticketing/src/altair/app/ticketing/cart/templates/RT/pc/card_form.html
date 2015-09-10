@@ -86,8 +86,8 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
           ${notice | n}
 %else:
           <p>
-            予約受付完了と同時に決済され、即時予約確定となります。
-            支払回数は≪1回払い≫のみのお取扱いとなります。
+            購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。<br/>
+            支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。<br/>
             以下のクレジットカードがご利用できます。
           </p>
 %endif
@@ -97,6 +97,11 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/master.gif')}" height="30px" />
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/jcb.gif')}" height="30px" />
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/amex_logo.gif')}" height="30px" /><br />
+          </p>
+          <p>
+            <font color="#FF0000">※カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。<br/>
+            お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。</font><br/>
+            ※ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。<br/>
           </p>
         </dd>
       </dl>

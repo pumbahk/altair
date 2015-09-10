@@ -1711,6 +1711,8 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
                                   _a_label=_(u'特別手数料'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = AnnotatedColumn(Integer, nullable=False, default=FeeTypeEnum.Once.v[0], _a_label=_(u'特別手数料計算単位'))
 
+    INVALID_PLUGIN_ID_PAIRS = ((plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID), (plugins.FAMIPORT_PAYMENT_PLUGIN_ID, plugins.SEJ_DELIVERY_PLUGIN_ID))
+
     @property
     def delivery_fee_per_product(self):
         """商品ごとの引取手数料"""
@@ -1819,6 +1821,13 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             (todate(on_day) <= (sales_segment.end_at.date()
                                 - timedelta(days=self.unavailable_period_days)))
             )
+
+    @staticmethod
+    def is_valid_pair(payment_method_id, delivery_method_id):
+        """決済方法と引取方法の組み合わせが有効かをチェックする"""
+        payment_method = PaymentMethod.query.filter_by(id=payment_method_id).first()
+        delivery_method = DeliveryMethod.query.filter_by(id=delivery_method_id).first()
+        return (payment_method.payment_plugin_id, delivery_method.delivery_plugin_id) not in PaymentDeliveryMethodPair.INVALID_PLUGIN_ID_PAIRS
 
     @staticmethod
     def create_from_template(template, **kwargs):

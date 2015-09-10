@@ -52,6 +52,7 @@
             </span>
           </th>
           % endif
+          <th style="width:6em">FM連携</th>
           <th style="width:6em">表示順</th>
           <th style="width:12em">公演日</th>
           <th style="width:12em">時刻</th>
@@ -75,6 +76,7 @@
             </div>
           </td>
           % endif
+          <td>${u'済' if fm_performance_ids and (performance.id in fm_performance_ids) else u'未'}</td>
           <td>${performance.display_order}</td>
           <td>${vh.date(performance.start_on, with_weekday=True)}</td>
           <td style="white-space: nowrap; font-size: 10px; line-height: 12px">

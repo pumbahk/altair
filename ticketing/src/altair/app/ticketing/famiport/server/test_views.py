@@ -289,6 +289,7 @@ class PaymentTest(FamiPortAPIViewTest):
             shop_code=u'99999',
             can_payment=lambda now: True,
             completed_at=None,
+            canceled_at=None,
             reserve_number=u'4310000000002',
             barcode_no=u'1000000000000',
             famiport_order_identifier=u'430000000002',
