@@ -24,8 +24,8 @@ wkmv1.1c.vpc.altr	worker
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
 apmv1-rc.1a.vpc.altr	rc
+apmv1-rc.1c.vpc.altr	rc
 
-apmv1-fmrc.1a.vpc.altr	fmrc
 apfm1.1a.vpc.altr	famiport-optool
 apfm1.1c.vpc.altr	famiport-optool
 apfm2.1a.vpc.altr	famiport-api
