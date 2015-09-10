@@ -4,7 +4,6 @@
 import logging
 import pystache
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 from lxml import etree
 from decimal import Decimal
 from sqlalchemy import sql
@@ -433,7 +432,7 @@ def refund_order(request, order, refund_record, now=None):
         base_date = refund.end_at
     else:
         base_date = now
-    send_back_due_at = base_date.replace(day=1) + relativedelta(months=6) + timedelta(days=1), # 3ヶ月後の月末
+    send_back_due_at = base_date.replace(day=1) + timedelta(days=14)  # 14日後
 
     result = famiport_api.get_or_create_refund(
         request,
