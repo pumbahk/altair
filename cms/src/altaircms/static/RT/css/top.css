@@ -341,3 +341,56 @@ body {
 	text-align: center;
 	margin-bottom: 5px;
 }
+
+
+
+
+
+
+#tsSideArea #tsSideEtc,
+#tsSideArea #tsInfo,
+#tsSideArea #tsTweet {
+	margin-bottom: 20px;
+}
+#tsSideArea #tsSideEtc,
+#tsSideArea #tsInfo {
+	background: #F5F5F2;
+	border: 1px solid #D3D3C7;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSideArea #tsSideEtc h3,
+#tsSideArea #tsInfo h3 {
+	/*width: 300px;
+	height: 26px;
+	background: url(../../_images/ttl_side.jpg) no-repeat 0 0;*/
+	background: #81877d;
+	color: #EDEDED;
+	font-weight: bold;
+	font-size: 1.2em;
+	padding: 10px 20px;
+	-moz-border-top-left-radius:3px;
+	-webkit-border-top-left-radius:3px;
+	border-top-left-radius:3px;
+	-moz-border-top-right-radius:3px;
+	-webkit-border-top-right-radius:3px;
+	border-top-right-radius:3px;
+}
+#tsSideArea #tsSideEtc ul,
+#tsSideArea #tsInfo ul {
+/*	border-bottom: 1px solid #D3D3C7;
+	border-left: 1px solid #D3D3C7;
+	border-right: 1px solid #D3D3C7;
+	background: #F5F5F2;*/
+}
+#tsSideArea #tsSideEtc ul {
+	padding: 5px 0 3px 0;
+}
+#tsSideArea #tsSideEtc li {
+	text-align: center;
+	margin-bottom: 2px;
+}

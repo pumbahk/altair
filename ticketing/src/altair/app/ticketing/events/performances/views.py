@@ -22,6 +22,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformanceManycopyForm, PerformancePublicForm, OrionPerformanceForm
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance
+from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 
@@ -390,9 +391,16 @@ class Performances(BaseView):
             url=paginate.PageURL_WebOb(self.request)
         )
 
+        fm_performance_ids = [] # FM連携済みのperformance_id
+        altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
+            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances])).all()
+        for altair_famiport_performance in altair_famiport_performances:
+            fm_performance_ids.append(altair_famiport_performance.performance_id)
+
         return {
             'event': self.context.event,
             'performances': performances,
+            'fm_performance_ids': fm_performance_ids,
             'form': PerformanceForm(organization_id=self.context.user.organization_id),
         }
 

@@ -326,15 +326,6 @@ class FamiPortSalesSegment(Base, WithTimestamp):
         primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id
         )
 
-    @property
-    def get_sales_channel_in_str(self):
-        if self.sales_channel == 1:
-            return u'FamiPortOnly'
-        if self.sales_channel == 2:
-            return u'WebOnly'
-        if self.sales_channel == 3:
-            return u'FamiPortAndWeb'
-
 
 class FamiPortRefundType(Enum):
     Type1 = 1
@@ -1033,7 +1024,8 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Payment.value:
             return u'-'
         else:
-            if self.payment_request_received_at is not None and self.famiport_order.issued_at is not None:
+            if (self.payment_request_received_at is not None and self.famiport_order.issued_at is not None) or \
+               (self.completed_at is not None and self.rescued_at is not None):
                 return u'発券済み'
             elif self.payment_request_received_at is not None and self.famiport_order.issued_at is None:
                 return u'発券確定待ち'
@@ -1048,7 +1040,8 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Ticketing.value:
             return u'-'
         else:
-            if self.payment_request_received_at is not None and self.famiport_order.paid_at is not None:
+            if (self.payment_request_received_at is not None and self.famiport_order.paid_at is not None) or \
+               (self.completed_at is not None and self.rescued_at is not None):
                 return u'入金済み'
             elif self.payment_request_received_at is not None and self.famiport_order.paid_at is None:
                 return u'入金確定待ち'
