@@ -868,7 +868,7 @@ public class Server {
                 log.severe("queue timeout");
             } else {
                 log.info("ok");
-                statusLabel.setLabel("queue size is " + queue.size());
+                statusLabel.setLabel("Queue size is " + queue.size());
             }
         } catch (InterruptedException e) {
             log.log(Level.SEVERE, "interrupted", e);
@@ -1030,7 +1030,7 @@ public class Server {
                         }
                         log.info("dequeued: job=" + job.id + ", queueIds=" + queueIds.toString().substring(1));
                     } else {
-                        log.severe("failed to dequeue job=" + job.id);
+                        log.severe("failed to dequeue job=" + job.id + " (reason: " + obj.get("message") + ")");
                         // dequeueに失敗
                         // TODO: 常駐している限りは、リトライしたい。。。原因によるが。
                     }
