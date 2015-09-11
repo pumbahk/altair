@@ -369,7 +369,7 @@ class FamiPortRefundEntry(Base, WithTimestamp):
 
 class FamiPortOrderType(Enum):  # ReplyClassEnumと意味的には同じ
     CashOnDelivery       = 1  # 代引き
-    Payment              = 2  # 前払い（後日渡し）の前払い時
+    Payment              = 2  # 前払い（後日渡し）
     Ticketing            = 3  # 代済発券
     PaymentOnly          = 4  # 前払いのみ
 
@@ -1024,8 +1024,10 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Payment.value:
             return u'-'
         else:
-            if (self.payment_request_received_at is not None and self.famiport_order.issued_at is not None) or \
-               (self.completed_at is not None and self.rescued_at is not None):
+            if self.completed_at is not None and self.rescued_at is not None:
+                return u'発券済み(90分確定)'
+            elif self.payment_request_received_at is not None and self.famiport_order.issued_at is not None \
+                    and self.rescued_at is None:
                 return u'発券済み'
             elif self.payment_request_received_at is not None and self.famiport_order.issued_at is None:
                 return u'発券確定待ち'
@@ -1040,8 +1042,10 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Ticketing.value:
             return u'-'
         else:
-            if (self.payment_request_received_at is not None and self.famiport_order.paid_at is not None) or \
-               (self.completed_at is not None and self.rescued_at is not None):
+            if self.completed_at is not None and self.rescued_at is not None:
+                return u'入金済み(90分確定)'
+            elif self.payment_request_received_at is not None and self.famiport_order.paid_at is not None \
+                    and self.rescued_at is None:
                 return u'入金済み'
             elif self.payment_request_received_at is not None and self.famiport_order.paid_at is None:
                 return u'入金確定待ち'

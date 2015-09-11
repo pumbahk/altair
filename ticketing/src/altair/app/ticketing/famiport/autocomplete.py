@@ -23,6 +23,7 @@ from altair.app.ticketing.famiport.models import (
     FamiPortShop,
     FamiPortReceipt,
     FamiPortReceiptType,
+    FamiPortOrderType,
     )
 from .interfaces import IFamiPortOrderAutoCompleter
 
@@ -317,6 +318,19 @@ class FamiPortOrderAutoCompleter(object):
         """FamiPortOrderを完了状態にする"""
         receipt.rescued_at = now_
         receipt.completed_at = now_
+        if receipt.famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
+            receipt.famiport_order.paid_at = now_
+            receipt.famiport_order.issued_at = now_
+        elif receipt.famiport_order.type == FamiPortOrderType.Ticketing.value:
+            receipt.famiport_order.issued_at = now_
+        elif receipt.famiport_order.type == FamiPortOrderType.PaymentOnly.value:
+            receipt.famiport_order.paid_at = now_
+        elif receipt.famiport_order.type == FamiPortOrderType.Payment.value:
+            if receipt.type == FamiPortReceiptType.Payment.value:
+                receipt.famiport_order.paid_at = now_
+            elif receipt.type == FamiPortReceiptType.Ticketing.value:
+                receipt.famiport_order.issued_at = now_
+
 
     def _get_receipt(self, session, receipt_id):
         """FamiPortReceiptを取得する"""
