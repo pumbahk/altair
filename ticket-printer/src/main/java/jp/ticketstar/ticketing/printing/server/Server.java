@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
@@ -43,7 +44,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -54,6 +54,7 @@ import javax.print.PrintService;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 
 import jp.ticketstar.ticketing.DeferredValue;
@@ -150,9 +151,9 @@ public class Server {
 
     private DeferredValue<Boolean> disposed = new DeferredValue<Boolean>();
     
-    private LogWindow logWindow = new LogWindow();
+    private LogWindow logWindow;
 
-    static class Job {
+    static class Job extends DeferredValue<Exception> {
         Integer id;
         
         String printer;
@@ -171,6 +172,8 @@ public class Server {
         
         PageSetModel pageSet;
     }
+
+    private Map<Integer, Job> jobsBeingProcessed = new HashMap<Integer, Job>();
 
     private static class Request {
         public static final class KeyValuePair {
@@ -202,6 +205,13 @@ public class Server {
                     }
                 }
                 return retval;
+            }
+
+            public String getFirst(String key) {
+                List<String> values = getList(key);
+                if (values.size() == 0)
+                    return null;
+                return values.get(0);
             }
         }
 
@@ -351,7 +361,6 @@ public class Server {
                 list.add(ps.getName());
             }
             data.put("printers", list);
-            data.put("status", "success");
             return data;
         }
 
@@ -452,7 +461,7 @@ public class Server {
             if (!request.getMethod().equals("POST")) {
                 throw new HandlerException("bad request method", 400);
             }
-            // リクエストをオブジェクトとして読み込む
+                                // リクエストをオブジェクトとして読み込む
             log.info("Building request");
             Reader reader = request.getBodyReader();
             JsonObject obj = null;
@@ -478,14 +487,65 @@ public class Server {
             }
             log.info("finish output.");
             Map<String,Object> data = new HashMap<String,Object>();
+            data.put("job_id", Integer.toString(job.id));
+            data.put("poll_url", buildPollUrl(request, job));
             return data;
         }
-        
+
+        private Map<String, Object> handlePoll(Request request, HttpExchange exchange, String jobIdStr) throws HandlerException {            
+            if (!request.getMethod().equals("GET")) {
+                throw new HandlerException("bad request method", 400);
+            }
+            final String timeoutStr = request.getParams().getFirst("timeout");
+            int jobId = 0;
+            try {
+                jobId = Integer.parseInt(jobIdStr);
+            } catch (NumberFormatException e) {
+                throw new HandlerException("bad job_id", e, 400);
+            }
+            Integer timeout = null;
+            if (timeoutStr != null) {
+                try {
+                    timeout = Integer.valueOf(timeoutStr);
+                } catch (NumberFormatException e) {
+                    throw new HandlerException("bad timeout value", e, 400);
+                }
+            }
+            Job job = null;
+            synchronized (this) {
+                job = jobsBeingProcessed.get(jobId);
+            }
+            if (job == null) {
+                throw new HandlerException(String.format("no such Job(id=%d)", jobId), 404);
+            }
+            Map<String,Object> data = new HashMap<String,Object>();
+            Exception result;
+            try {
+                result = timeout != null ? job.get(timeout.longValue(), TimeUnit.MILLISECONDS): job.get();
+                if (result != null) {
+                    data.put("error_class", result.getClass().getName()); 
+                    data.put("error_message", result.getMessage()); 
+                } else {
+                    data.put("error_class", null);
+                    data.put("error_message", null);
+                }
+            } catch (InterruptedException e) {
+                throw new HandlerException("interrupted", 500);                
+            } catch (TimeoutException e) {
+                data.put("status", "timeout");
+            }
+            return data;
+        }
+ 
+        private String buildPollUrl(Request request, Job job) {
+            return String.format("/poll/%d", job.id);
+        }
+
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             try {
                 final Request request = new Request(exchange, "UTF-8");
-                // クライアントとリクエストを表示する
+                                            // クライアントとリクエストを表示する
                 log.info("new connection from " + exchange.getRemoteAddress().toString() + " with request " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
                 String path = exchange.getRequestURI().getPath();
                 Map<String, Object> retval = null;
@@ -504,6 +564,8 @@ public class Server {
                             retval = handleQueue(request, exchange);
                         } else if (path.equals("/process")) {
                             retval = handleProcess(request, exchange);
+                        } else if (path.startsWith("/poll/")) {
+                            retval = handlePoll(request, exchange, path.substring(6));
                         } else {
                             throw new HandlerException("not handled", 404);
                         }
@@ -522,7 +584,8 @@ public class Server {
                             retval.put("cause", exc.getCause().toString());
                         }
                     } else {
-                        retval.put("status", "success");
+                        if (!retval.containsKey("status"))
+                            retval.put("status", "success");
                     }
         
                     byte[] responseBody = null;
@@ -552,6 +615,7 @@ public class Server {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
+        this.logWindow = new LogWindow();
         this.address = address;
         this.originHosts.addAll(originHosts);
         this.nextId = 0;
@@ -794,93 +858,11 @@ public class Server {
     }
     
     private void processRequest(final Job job) throws IOException {
-        OurDocumentLoader loader = new OurDocumentLoader(service);
-        ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
-        bridgeContext.setInteractive(false);
-        bridgeContext.setDynamic(false);
-        
-        if (job.svg != null) {
-            // SVGをオブジェクトにする
-            log.info("creating page set model");
-            InputStream is = new ByteArrayInputStream(job.svg.getBytes("utf-8"));
-            ExtendedSVG12OMDocument doc = (ExtendedSVG12OMDocument) loader.loadDocument("http://", is);
-            job.pageSet = new PageSetModel(bridgeContext, doc);
-        } else {
-            // altairに要求してSVGを取得する
-            URLConnection conn = (new URL(job.uri+"/tickets/print/peek")).openConnection();
-            conn.setRequestProperty("Cookie", job.cookie);
-            conn.setUseCaches(false);
-            log.info("cookie=" + job.cookie);
-            log.info("using " + job.uri + "/tickets/print/peek");
-            
-            URLConnectionSVGDocumentLoader documentLoader = new URLConnectionSVGDocumentLoader(conn, new RequestBodySender() {
-                public String getRequestMethod() {
-                    return "POST";
-                }
-
-                public void send(OutputStream out) throws IOException {
-                    /*
-                    OutputStream original = out;
-                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                    out = bOut;
-                    */
-                    final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-                    writer.beginObject();
-                    writer.name("ticket_format_id").value(job.ticket_format_id);
-                    writer.name("page_format_id").value(job.page_format_id);
-                    if(0 < job.orderId) {
-                        writer.name("order_id").value(job.orderId);
-                    } else if(job.queueIds != null && 0 < job.queueIds.length) {
-                        writer.name("queue_ids");
-                        writer.beginArray();
-                        for (int queueId: job.queueIds) {
-                            writer.value(queueId);
-                        }
-                        writer.endArray();
-                    }
-                    writer.endObject();
-                    writer.flush();
-                    writer.close();
-                    /*
-                    log.info(bOut.toString("utf-8"));
-                    original.write(bOut.toByteArray());
-                    */
-                }
-            }, loader);
-            LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>();
-            documentLoader.addSVGDocumentLoaderListener(listener);
-            log.info("start documentLoader");
-            documentLoader.start();
- 
-            try {
-                log.info("wait response");
-                ExtendedSVG12OMDocument doc = listener.get();        // ここで取得完了を待つ
-                job.pageSet = new PageSetModel(bridgeContext, doc);
-                
-                // dequeueする際に必要になるのでページからqueueIdを抽出する
-                List<Integer> queueIds = new ArrayList<Integer>();
-                log.info("[job]");
-                for(Page page: job.pageSet.getPages()) {
-                    log.info("page="+page.getName());
-                    for(String queueId: page.getQueueIds()) {
-                        log.info("queueId=" + queueId);
-                        queueIds.add(Integer.parseInt(queueId));
-                    }
-                }
-                job.queueIds = new int[queueIds.size()];
-                for(int i=0 ; i<job.queueIds.length ; i++) {
-                    job.queueIds[i] = queueIds.get(i);
-                }
-                log.info("done");
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "exception thrown during fetching printing data", e);
-            }
-        }
-        
-        log.info("Add to queue");
         synchronized (this) {
             job.id = nextId++;
+            jobsBeingProcessed.put(job.id, job);
         }
+        log.info("Add to queue");
         try {
             if (!queue.offer(job, 1, TimeUnit.SECONDS)) {
                 log.severe("queue timeout");
@@ -900,28 +882,102 @@ public class Server {
                 public void run() {
                     final String prefix = String.format("[%s] ", this.toString());
                     log.info(prefix + "Starting printing thread");
+                    final OurDocumentLoader loader = new OurDocumentLoader(service);
+                    final ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
+                    bridgeContext.setInteractive(false);
+                    bridgeContext.setDynamic(false);
                     printThreadIsRunning = true;
                     AccessController.doPrivileged(new PrivilegedAction<Object>() {
                         public Object run() {
                             while (printThreadIsRunning) {
-                                Job job = null;
                                 try {
-                                    job = queue.take();
+                                    final Job job = queue.take();
+                                    log.info(prefix + "Found job " + job.id);
+                                    try {
+                                        if (job.svg != null) {
+                                            // SVGをオブジェクトにする
+                                            log.info("creating page set model");
+                                            InputStream is = new ByteArrayInputStream(UTF_8_CHARSET.encode(job.svg).array());
+                                            ExtendedSVG12OMDocument doc = (ExtendedSVG12OMDocument) loader.loadDocument("http://", is);
+                                            job.pageSet = new PageSetModel(bridgeContext, doc);
+                                        } else {
+                                            // altairに要求してSVGを取得する
+                                            URLConnection conn = (new URL(job.uri+"/tickets/print/peek")).openConnection();
+                                            conn.setRequestProperty("Cookie", job.cookie);
+                                            conn.setUseCaches(false);
+                                            log.info("cookie=" + job.cookie);
+                                            log.info("using " + job.uri + "/tickets/print/peek");
+                                            
+                                            URLConnectionSVGDocumentLoader documentLoader = new URLConnectionSVGDocumentLoader(conn, new RequestBodySender() {
+                                                public String getRequestMethod() {
+                                                    return "POST";
+                                                }
+        
+                                                public void send(OutputStream out) throws IOException {
+                                                    /*
+                                                    OutputStream original = out;
+                                                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                                                    out = bOut;
+                                                    */
+                                                    final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
+                                                    writer.beginObject();
+                                                    writer.name("ticket_format_id").value(job.ticket_format_id);
+                                                    writer.name("page_format_id").value(job.page_format_id);
+                                                    if(0 < job.orderId) {
+                                                        writer.name("order_id").value(job.orderId);
+                                                    } else if(job.queueIds != null && 0 < job.queueIds.length) {
+                                                        writer.name("queue_ids");
+                                                        writer.beginArray();
+                                                        for (int queueId: job.queueIds) {
+                                                            writer.value(queueId);
+                                                        }
+                                                        writer.endArray();
+                                                    }
+                                                    writer.endObject();
+                                                    writer.flush();
+                                                    writer.close();
+                                                }
+                                            }, loader);
+                                            LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>();
+                                            documentLoader.addSVGDocumentLoaderListener(listener);
+                                            log.info("start documentLoader");
+                                            documentLoader.start();
+                                 
+                                            log.info("wait response");
+                                            ExtendedSVG12OMDocument doc = listener.get();        // ここで取得完了を待つ
+                                            if (listener.exception != null) {
+                                                throw listener.exception;
+                                            }
+                                            job.pageSet = new PageSetModel(bridgeContext, doc);
+                                            // dequeueする際に必要になるのでページからqueueIdを抽出する
+                                            List<Integer> queueIds = new ArrayList<Integer>();
+                                            log.info("[job]");
+                                            for(Page page: job.pageSet.getPages()) {
+                                                log.info("page="+page.getName());
+                                                for(String queueId: page.getQueueIds()) {
+                                                    log.info("queueId=" + queueId);
+                                                    queueIds.add(Integer.parseInt(queueId));
+                                                }
+                                            }
+                                            job.queueIds = new int[queueIds.size()];
+                                            for(int i=0 ; i<job.queueIds.length ; i++) {
+                                                job.queueIds[i] = queueIds.get(i);
+                                            }
+                                            log.info("done");
+                                        }
+                                        PrinterJob printerJob = makePrinterJob(job);
+                                        log.info(prefix + "Start printing...");
+                                        printerJob.print();
+                                        log.info(prefix + "Printing completed.");                                        
+                                        job.set(null);
+                                        notifyCompletion(job);
+                                    } catch (Exception e) {
+                                        log.log(Level.SEVERE, prefix + "Failed to print out", e);
+                                        job.set(e);
+                                    }
                                 } catch (InterruptedException e) {
                                     log.info(prefix + "Printing thread was interrupted");
                                     continue;
-                                }
-                                log.info(prefix + "Found job " + job.id);
-                                try {
-                                    PrinterJob printerJob = makePrinterJob(job);
-                                    log.info(prefix + "Start printing...");
-                                    printerJob.print();
-                                    log.info(prefix + "Printing completed.");
-                                    notifyCompletion(job);
-                                    statusLabel.setLabel("Queue size is "+queue.size());
-                                } catch(PrinterException e) {
-                                    // プリンタの問題が起きた場合は...
-                                    log.log(Level.SEVERE, prefix + "Failed to print out", e);
                                 }
                             }
                             return null;
@@ -985,6 +1041,7 @@ public class Server {
                 log.log(Level.SEVERE, "oops", e);
             }
         }
+        statusLabel.setLabel("Queue size is " + queue.size());
     }
     
     private PrinterJob makePrinterJob(Job job) throws PrinterException {
