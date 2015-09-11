@@ -430,45 +430,65 @@ function init(tags, progressHandlers, uiUpdater) {
           alert('no print service');
       }
 
-      $.ajax({
-          url: api + "/process",
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({
-              "printer": currentPrintService,
-              "page": currentPageFormat,
-              "page_format_id": currentPageFormat.id,
-              "ticket_format_id": currentTicketFormat.id,
-              "uri": location.origin,
-              "cookie": cookie,
-              "queue_ids": queueIds
-          }),
-          dataType: 'json'
-        }).done(function(s) {
-          if(s.status == "success") {
-            // 印刷を開始したので、完了を待つ...
-            var confirm = function() {
-              $.ajax({
-                url: api+"/queue",
-                type: 'POST',
-                dataType: 'json'
-              }).done(function(s) {
-                if(0 < s.jobs.length) {
-                  // TODO: update progess
-                  setTimeout(confirm, 1000);
-                } else {
-                  printedQueueIdCount = queueIds.length;
-                  onPrintingCompleted();
-                }
-              });
-            };
-            setTimeout(confirm, 1000);
-          } else {
-            alert("印刷に失敗しました." + s.message);
-            onPrintingCompleted();
-          }
-        });
-    };
+      function reportError(message) {
+        alert("印刷に失敗しました." + message);
+        onPrintingCompleted();
+      }
+
+      function next() {
+        if (queueIds.length == 0) {
+          onPrintingCompleted();
+        } else {
+          var _queueIds = [queueIds.shift()];
+          $.ajax({
+            url: api + "/process",
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+                "printer": currentPrintService,
+                "page": currentPageFormat,
+                "page_format_id": currentPageFormat.id,
+                "ticket_format_id": currentTicketFormat.id,
+                "uri": location.origin,
+                "cookie": cookie,
+                "queue_ids": _queueIds
+            })
+          }).done(function(s) {
+            if (s.status == "success") {
+              function poll() {
+                $.ajax({
+                  url: api + s.poll_url,
+                  type: 'GET',
+                  data: { 'timeout': 3000 }
+                }).done(function (s) {
+                  switch (s.status) {
+                  case 'success':
+                    if (s.error_class != null) {
+                      reportError(s.error_message);
+                    } else {
+                      reflectProgress(_queueIds);
+                      next();
+                    }
+                    break;
+                  case 'error':
+                    reportError(s.message);
+                    break;
+                  case 'timeout':
+                    poll();
+                    break;
+                  }
+                });
+              }
+              poll();
+            } else {
+              reportError(s.message);
+            }
+          });
+        }
+      }
+      next();
+    }
 
     function doPrintAll() {
       if (printing)
