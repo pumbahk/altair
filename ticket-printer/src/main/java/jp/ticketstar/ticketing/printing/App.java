@@ -50,11 +50,11 @@ public class App {
             return;
         }
 
-        final Server appServer = new Server(config);
         final AppWindowModel model = new AppWindowModel();
         final AppWindowService appService = new AppWindowService(model);
 
         if (config.isAcceptConnection()) {
+            final Server appServer = new Server(config);
             appServer.setService(appService);
             appServer.run();
         } else {
