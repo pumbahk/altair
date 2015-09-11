@@ -353,7 +353,7 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         altair_famiport_performance = get_altair_famiport_performance(order_like)
         if altair_famiport_performance is None:
             raise FamiPortPluginFailure(
-                u'cannot retrieve AltairFamiPortPerformance with performance_id=%ld.' % (
+                u'cannot retrieve AltairFamiPortPerformance with client_code=%s, performance_id=%ld.' % (
                     client_code,
                     order_like.performance_id
                     ),
