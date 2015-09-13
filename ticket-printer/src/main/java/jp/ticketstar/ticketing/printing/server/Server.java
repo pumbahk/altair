@@ -31,19 +31,23 @@ import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -54,7 +58,6 @@ import javax.print.PrintService;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 
 import jp.ticketstar.ticketing.DeferredValue;
@@ -79,6 +82,7 @@ import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.w3c.dom.Node;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.MediaType;
@@ -99,6 +103,7 @@ import com.sun.net.httpserver.HttpServer;
 @SuppressWarnings("restriction")
 class LogWindow extends JFrame {
     private static final long serialVersionUID = 1L;
+    int maxLines = 500;
     JTextArea textArea;
     JScrollPane outer;
     public LogWindow() {
@@ -107,12 +112,18 @@ class LogWindow extends JFrame {
     }
 
     public void appendLine(String l) {
+        int lineCount = textArea.getLineCount();
+        if (lineCount >= maxLines) {
+            try {
+                textArea.replaceRange("", 0, textArea.getLineStartOffset(lineCount - maxLines + 1));
+            } catch (BadLocationException e) {
+            }
+        }
         try {
-            textArea.setCaretPosition(textArea.getLineEndOffset(textArea.getLineCount() - 1));
+            textArea.setCaretPosition(textArea.getLineEndOffset(lineCount - 1));
         } catch (BadLocationException e) {
         }
         textArea.append(l);
-        textArea.append("\n");
     }
 
     protected void initialize() {
@@ -125,11 +136,200 @@ class LogWindow extends JFrame {
     }
 }
 
+class Job extends DeferredValue<Exception> {
+    Integer id;
+    Date createdAt;
+
+    String printer;
+    OurPageFormat pageFormat;
+    String svg;
+    
+    String peekUrl;
+    String dequeueUrl;
+    String cookie;
+    int pageFormatId;
+    int ticketFormatId;
+    
+    // orderIdかqueueIdsのいずれか片方を受け取る
+    // orderIdを受け取った場合は、peekして得たsvgの中にqueueIdsが埋めこまれている
+    List<Integer> queueIds;
+    Integer orderId;
+    
+    PageSetModel pageSet;
+
+    public void dispose() {
+        // these are leaky
+        svg = null;
+        pageSet = null;
+        pageFormat = null;
+        peekUrl = null;
+        dequeueUrl = null;
+        cookie = null;
+    }
+
+    public void disposeAndSet(Exception e) {
+        dispose();
+        set(e);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "Job(id=%s, peekUrl=%s, dequeueUrl=%s, cookie=%s, pageFormatId=%d, ticketFormatId=%d, orderId=%d, queueIds=%s)",
+            id,
+            peekUrl,
+            dequeueUrl,
+            cookie,
+            pageFormatId,
+            ticketFormatId,
+            orderId,
+            Joiner.on(".").join(queueIds)
+        );
+    }
+}
+
+class Request {
+    public static final class KeyValuePair {
+        private String key;
+        private String value;
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    public static final class Params extends ArrayList<KeyValuePair> {
+        private static final long serialVersionUID = 1L;
+
+        public List<String> getList(String key) {
+            final List<String> retval = new ArrayList<String>(size());
+            for (final KeyValuePair kv: this) { 
+                if (kv.getKey().equals(key)) {
+                    retval.add(kv.getValue());
+                }
+            }
+            return retval;
+        }
+
+        public String getFirst(String key) {
+            List<String> values = getList(key);
+            if (values.size() == 0)
+                return null;
+            return values.get(0);
+        }
+    }
+
+    @SuppressWarnings("restriction")
+    protected HttpExchange exchange;
+    protected Params params;
+    protected String requestURIEncoding;
+    protected Optional<MediaType> contentType;
+
+    @SuppressWarnings("restriction")
+    public Request(final HttpExchange exchange, final String requestURIEncoding) {
+        this.exchange = exchange;
+        this.params = null;
+        this.requestURIEncoding = requestURIEncoding;
+    }
+
+    @SuppressWarnings("restriction")
+    public String getMethod() {
+        return exchange.getRequestMethod();
+    }
+    
+    @SuppressWarnings("restriction")
+    public Headers getHeaders() {
+        return exchange.getRequestHeaders();
+    }
+
+    @SuppressWarnings("restriction")
+    public InputStream getBodyInputStream() {
+        return exchange.getRequestBody();
+    }
+
+    public Reader getBodyReader() {
+        final Optional<MediaType> contentType = getContentType();
+        final Charset charset = contentType.or(MediaType.OCTET_STREAM).charset().or(Server.UTF_8_CHARSET);
+        return new InputStreamReader(getBodyInputStream(), charset);
+    }
+    
+    public Params getParams() {
+        if (this.params == null) {
+            final Params params = new Params();
+            @SuppressWarnings("restriction")
+            final String query = exchange.getRequestURI().getRawQuery();
+            if (query != null) {
+                try {
+                    for (final String c: query.split("&")) {
+                        String[] kv = c.split("=", 2);
+                        if (kv.length == 1) {
+                            params.add(new KeyValuePair(URLDecoder.decode(kv[0], requestURIEncoding), null));
+                        } else {
+                            params.add(new KeyValuePair(URLDecoder.decode(kv[0], requestURIEncoding), URLDecoder.decode(kv[1], requestURIEncoding)));
+                        }
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            this.params = params;
+        }
+        return this.params;
+    }
+
+    @SuppressWarnings("restriction")
+    public boolean getJsonAcception() {
+        List<String> as_ = getParams().getList("as");
+        if (as_.size() > 0 && as_.get(0) == "json")
+            return true;
+        
+        List<String> accepts = getHeaders().get("Accept");
+        if(accepts != null) {
+            for(String accept: accepts) {
+                for(String type: accept.split(",")) {
+                    if(type.endsWith("javascript") || type.endsWith("json")) {
+                        return true;
+                    } else if(type.endsWith("html")) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("restriction")
+    public Optional<MediaType> getContentType() {
+        if (this.contentType == null) {
+            final String contentTypeStr = exchange.getRequestHeaders().getFirst("Content-Type");
+            if (contentTypeStr != null)
+                this.contentType = Optional.<MediaType>of(MediaType.parse(contentTypeStr));
+            else
+                this.contentType = Optional.<MediaType>absent();
+        }
+        return this.contentType;
+    }
+
+    @SuppressWarnings("restriction")
+    public String getOrigin() {
+        return exchange.getRequestHeaders().getFirst("Origin");
+    }
+}
+
 @SuppressWarnings("restriction")
 public class Server {
     private static final Logger log = Logger.getLogger(Server.class.getName());
     private static final Pattern addrRegex = Pattern.compile("^(?:\\[([^]]+)\\]|([^:]*)):([0-9]+)");
-    private static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
+    public static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
 
     private AppWindowService service;
     
@@ -139,9 +339,15 @@ public class Server {
     
     private int nextId;
     private BlockingQueue<Job> queue;
+    private long gcInterval;
+
+    private ThreadFactory threadFactory = Executors.defaultThreadFactory();
     
     private Thread printThread;
-    private boolean printThreadIsRunning;
+    private AtomicBoolean printThreadIsRunning = new AtomicBoolean(false);
+
+    private Thread gcThread;
+    private AtomicBoolean gcThreadIsRunning = new AtomicBoolean(false);
     
     private TrayIcon icon;
     private MenuItem statusLabel;
@@ -149,160 +355,11 @@ public class Server {
     private Charset jsonCharset = UTF_8_CHARSET;
     private HttpServer httpServer;
 
-    private DeferredValue<Boolean> disposed = new DeferredValue<Boolean>();
+    private CountDownLatch disposed = new CountDownLatch(3);
     
     private LogWindow logWindow;
 
-    static class Job extends DeferredValue<Exception> {
-        Integer id;
-        
-        String printer;
-        OurPageFormat pageFormat;
-        String svg;
-        
-        String uri;
-        String cookie;
-        int page_format_id;
-        int ticket_format_id;
-        
-        // orderIdかqueueIdsのいずれか片方を受け取る
-        // orderIdを受け取った場合は、peekして得たsvgの中にqueueIdsが埋めこまれている
-        int[] queueIds;
-        int orderId;
-        
-        PageSetModel pageSet;
-    }
-
     private Map<Integer, Job> jobsBeingProcessed = new HashMap<Integer, Job>();
-
-    private static class Request {
-        public static final class KeyValuePair {
-            private String key;
-            private String value;
-
-            public String getKey() {
-                return key;
-            }
-
-            public String getValue() {
-                return value;
-            }
-
-            public KeyValuePair(String key, String value) {
-                this.key = key;
-                this.value = value;
-            }
-        }
-
-        public static final class Params extends ArrayList<KeyValuePair> {
-            private static final long serialVersionUID = 1L;
-
-            public List<String> getList(String key) {
-                final List<String> retval = new ArrayList<String>(size());
-                for (final KeyValuePair kv: this) { 
-                    if (kv.getKey().equals(key)) {
-                        retval.add(kv.getValue());
-                    }
-                }
-                return retval;
-            }
-
-            public String getFirst(String key) {
-                List<String> values = getList(key);
-                if (values.size() == 0)
-                    return null;
-                return values.get(0);
-            }
-        }
-
-        protected HttpExchange exchange;
-        protected Params params;
-        protected String requestURIEncoding;
-        protected Optional<MediaType> contentType;
-
-        public Request(final HttpExchange exchange, final String requestURIEncoding) {
-            this.exchange = exchange;
-            this.params = null;
-            this.requestURIEncoding = requestURIEncoding;
-        }
-
-        public String getMethod() {
-            return exchange.getRequestMethod();
-        }
-        
-        public Headers getHeaders() {
-            return exchange.getRequestHeaders();
-        }
-
-        public InputStream getBodyInputStream() {
-            return exchange.getRequestBody();
-        }
-
-        public Reader getBodyReader() {
-            final Optional<MediaType> contentType = getContentType();
-            final Charset charset = contentType.or(MediaType.OCTET_STREAM).charset().or(UTF_8_CHARSET);
-            return new InputStreamReader(getBodyInputStream(), charset);
-        }
-        
-        public Params getParams() {
-            if (this.params == null) {
-                final Params params = new Params();
-                final String query = exchange.getRequestURI().getRawQuery();
-                if (query != null) {
-                    try {
-                        for (final String c: query.split("&")) {
-                            String[] kv = c.split("=", 2);
-                            if (kv.length == 1) {
-                                params.add(new KeyValuePair(URLDecoder.decode(kv[0], requestURIEncoding), null));
-                            } else {
-                                params.add(new KeyValuePair(URLDecoder.decode(kv[0], requestURIEncoding), URLDecoder.decode(kv[1], requestURIEncoding)));
-                            }
-                        }
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                this.params = params;
-            }
-            return this.params;
-        }
-
-        @SuppressWarnings("unused")
-        public boolean getJsonAcception() {
-            List<String> as_ = getParams().getList("as");
-            if (as_.size() > 0 && as_.get(0) == "json")
-                return true;
-            
-            List<String> accepts = getHeaders().get("Accept");
-            if(accepts != null) {
-                for(String accept: accepts) {
-                    for(String type: accept.split(",")) {
-                        if(type.endsWith("javascript") || type.endsWith("json")) {
-                            return true;
-                        } else if(type.endsWith("html")) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        public Optional<MediaType> getContentType() {
-            if (this.contentType == null) {
-                final String contentTypeStr = exchange.getRequestHeaders().getFirst("Content-Type");
-                if (contentTypeStr != null)
-                    this.contentType = Optional.<MediaType>of(MediaType.parse(contentTypeStr));
-                else
-                    this.contentType = Optional.<MediaType>absent();
-            }
-            return this.contentType;
-        }
-
-        public String getOrigin() {
-            return exchange.getRequestHeaders().getFirst("Origin");
-        }
-    }
 
     private static class HandlerException extends Exception {
         private static final long serialVersionUID = 1L;
@@ -338,10 +395,16 @@ public class Server {
             if (origin != null) {
                 try {
                     final URI givenOrigin = new URI(origin);
+                    boolean matched = false;
                     for (final URI originHost: originHosts) {
                         final URI result = originHost.relativize(givenOrigin);
-                        if (result.getScheme() == null && result.getHost() == null && result.getPort() == -1 && result.getUserInfo() == null)
+                        if (result.getScheme() == null && result.getHost() == null && result.getPort() == -1 && result.getUserInfo() == null) {
+                            matched = true;
                             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", origin);
+                        }
+                    }
+                    if (!matched) {
+                        log.warning("Origin " + origin + " is not included in the allowed origin list: " + Joiner.on(", ").join(originHosts));
                     }
                 } catch (URISyntaxException e) {
                     log.log(Level.INFO, "WTF?", e);
@@ -429,26 +492,28 @@ public class Server {
  
         private Job jobFromJsonObject(JsonObject obj) throws HandlerException {
             final Job job = new Job();
+            job.createdAt = new Date(); 
             job.printer = pickStringFromJsonObject(obj, "printer");
             job.pageFormat = FormatLoader.buildPageFormat(pickObjectFromJsonObject(obj, "page"));
-            job.uri = pickStringFromJsonObject(obj, "uri");
+            job.peekUrl = pickStringFromJsonObject(obj, "peek_url");
+            job.dequeueUrl = pickStringFromJsonObject(obj, "dequeue_url");
             job.cookie = pickStringFromJsonObject(obj, "cookie");
-            job.page_format_id = pickIntFromJsonObject(obj, "page_format_id");
-            job.ticket_format_id = pickIntFromJsonObject(obj, "ticket_format_id");
+            job.pageFormatId = pickIntFromJsonObject(obj, "page_format_id");
+            job.ticketFormatId = pickIntFromJsonObject(obj, "ticket_format_id");
             if(obj.has("order_id")) {
                 job.orderId = pickIntFromJsonObject(obj, "order_id");
                 job.queueIds = null;
                 job.svg = null;
             } else if(obj.has("queue_ids")) {
-                JsonArray queueIds = pickArrayFromJsonObject(obj, "queue_ids");
-                job.queueIds = new int[queueIds.size()];
-                for (int i=0 ; i<queueIds.size(); i++) {
-                    job.queueIds[i] = queueIds.get(i).getAsInt();
+                final JsonArray queueIds = pickArrayFromJsonObject(obj, "queue_ids");
+                job.queueIds = new ArrayList<Integer>(queueIds.size());
+                for (int i = 0; i < queueIds.size(); i++) {
+                    job.queueIds.add(queueIds.get(i).getAsInt());
                 }
-                job.orderId = 0;
+                job.orderId = null;
                 job.svg = null;
             } else if(obj.has("svg")) {
-                job.orderId = 0;
+                job.orderId = null;
                 job.queueIds = null;
                 job.svg = pickStringFromJsonObject(obj, "svg");
             } else {
@@ -457,7 +522,7 @@ public class Server {
             return job;
         }
 
-        private Map<String, Object> handleProcess(Request request, HttpExchange exchange) throws HandlerException {            
+        private Map<String, Object> handleProcess(Request request, HttpExchange exchange) throws HandlerException {
             if (!request.getMethod().equals("POST")) {
                 throw new HandlerException("bad request method", 400);
             }
@@ -478,14 +543,13 @@ public class Server {
             } catch (JsonIOException e) {
                 throw new HandlerException("error parsing response", 400);
             }
-            Job job = jobFromJsonObject(obj);
+            final Job job = jobFromJsonObject(obj);
             log.info("Processing...");
             try {
                 processRequest(job);
             } catch (IOException e) {
                 throw new HandlerException("internal server error", e, 500);
             }
-            log.info("finish output.");
             Map<String,Object> data = new HashMap<String,Object>();
             data.put("job_id", Integer.toString(job.id));
             data.put("poll_url", buildPollUrl(request, job));
@@ -512,7 +576,7 @@ public class Server {
                 }
             }
             Job job = null;
-            synchronized (this) {
+            synchronized (jobsBeingProcessed) {
                 job = jobsBeingProcessed.get(jobId);
             }
             if (job == null) {
@@ -522,6 +586,9 @@ public class Server {
             Exception result;
             try {
                 result = timeout != null ? job.get(timeout.longValue(), TimeUnit.MILLISECONDS): job.get();
+                synchronized (jobsBeingProcessed) {
+                    jobsBeingProcessed.remove(jobId);
+                }
                 if (result != null) {
                     data.put("error_class", result.getClass().getName()); 
                     data.put("error_message", result.getMessage()); 
@@ -611,7 +678,7 @@ public class Server {
         }
     }
 
-    public Server(InetSocketAddress address, List<URI> originHosts) {
+    public Server(InetSocketAddress address, List<URI> originHosts, long gcInterval) {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
@@ -619,8 +686,11 @@ public class Server {
         this.address = address;
         this.originHosts.addAll(originHosts);
         this.nextId = 0;
+        this.gcInterval = gcInterval;
         this.queue = new LinkedBlockingQueue<Job>();
         this.printThread = createPrintThread();
+        if (gcInterval > 0)
+            this.gcThread = createGCThread();
     }
 
     private static InetSocketAddress parseAddress(final String listen) {
@@ -648,12 +718,12 @@ public class Server {
         return _originHosts;
     }
 
-    public Server(String listen, List<String> originHosts) {
-        this(parseAddress(listen), parseOriginHosts(originHosts));
+    public Server(String listen, List<String> originHosts, long gcInterval) {
+        this(parseAddress(listen), parseOriginHosts(originHosts), gcInterval);
     }
  
     public Server(Configuration config) {
-        this(config.getListen(), config.getOriginHosts());
+        this(config.getListen(), config.getOriginHosts(), config.getGCInterval());
     }
 
     public void setService(AppWindowService service) {
@@ -661,7 +731,29 @@ public class Server {
     }
  
     private void startPrintThread() {
-        printThread.start();
+        if (printThread != null)
+            printThread.start();
+        else
+            disposed.countDown();
+    }
+
+    private void stopPrintThread() {
+        printThreadIsRunning.set(false);
+        printThread.interrupt();
+        printThread = null;
+    }
+
+    private void startGCThread() {
+        if (gcThread != null)
+            gcThread.start();
+        else
+            disposed.countDown();
+    }
+
+    private void stopGCThread() {
+        gcThreadIsRunning.set(false);
+        gcThread.interrupt();
+        gcThread = null;
     }
 
     private void startHttpServer() throws IOException {
@@ -712,6 +804,7 @@ public class Server {
             }
             startHttpServer();
             startPrintThread();
+            startGCThread();
         } catch (Exception e) {
             log.log(Level.SEVERE, "error occurred during starting server", e);
             throw new ServerRuntimeException("error occurred during starting server", e);
@@ -726,21 +819,22 @@ public class Server {
             httpServer = null;
         }
         if (printThread != null) { 
-            printThreadIsRunning = false;
-            printThread.interrupt();
-            printThread = null;
+            stopPrintThread();
+        }
+        if (gcThread != null) {
+            stopGCThread();
         }
         if (logWindow != null) {
             logWindow.dispose();
             logWindow = null;
         }
-        disposed.set(true);
+        disposed.countDown();
     }
 
     public void run() {
         start();
         try {
-            disposed.get();
+            disposed.await();
         } catch (InterruptedException e) {
             log.log(Level.INFO, "interrupted", e);
         }
@@ -857,17 +951,22 @@ public class Server {
         }
     }
     
-    private void processRequest(final Job job) throws IOException {
+    private int getNextId() {
         synchronized (this) {
-            job.id = nextId++;
+            return nextId++;
+        }
+    }
+
+    private void processRequest(final Job job) throws IOException {
+        job.id = getNextId();
+        synchronized (jobsBeingProcessed) {
             jobsBeingProcessed.put(job.id, job);
         }
-        log.info("Add to queue");
         try {
             if (!queue.offer(job, 1, TimeUnit.SECONDS)) {
                 log.severe("queue timeout");
             } else {
-                log.info("ok");
+                log.info(String.format("Job(id=%d) added to queue", job.id));
                 statusLabel.setLabel("Queue size is " + queue.size());
             }
         } catch (InterruptedException e) {
@@ -876,59 +975,51 @@ public class Server {
     }
 
     private Thread createPrintThread() {
-        return new Thread(
+        return threadFactory.newThread(
             new Runnable() {
                 @Override
                 public void run() {
-                    final String prefix = String.format("[%s] ", this.toString());
-                    log.info(prefix + "Starting printing thread");
-                    final OurDocumentLoader loader = new OurDocumentLoader(service);
-                    final ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
-                    bridgeContext.setInteractive(false);
-                    bridgeContext.setDynamic(false);
-                    printThreadIsRunning = true;
+                    log.info("Starting printing thread");
+                    printThreadIsRunning.set(true);
                     AccessController.doPrivileged(new PrivilegedAction<Object>() {
                         public Object run() {
-                            while (printThreadIsRunning) {
+                            while (printThreadIsRunning.get()) {
                                 try {
                                     final Job job = queue.take();
-                                    log.info(prefix + "Found job " + job.id);
+                                    log.info("Take " + job);
+                                    final OurDocumentLoader loader = new OurDocumentLoader(service);
+                                    final ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(service);
+                                    bridgeContext.setInteractive(false);
+                                    bridgeContext.setDynamic(false);
                                     try {
                                         if (job.svg != null) {
                                             // SVGをオブジェクトにする
-                                            log.info("creating page set model");
+                                            log.info("Creating page set model");
                                             InputStream is = new ByteArrayInputStream(UTF_8_CHARSET.encode(job.svg).array());
                                             ExtendedSVG12OMDocument doc = (ExtendedSVG12OMDocument) loader.loadDocument("http://", is);
                                             job.pageSet = new PageSetModel(bridgeContext, doc);
                                         } else {
                                             // altairに要求してSVGを取得する
-                                            URLConnection conn = (new URL(job.uri+"/tickets/print/peek")).openConnection();
+                                            URLConnection conn = (new URL(job.peekUrl)).openConnection();
                                             conn.setRequestProperty("Cookie", job.cookie);
                                             conn.setUseCaches(false);
-                                            log.info("cookie=" + job.cookie);
-                                            log.info("using " + job.uri + "/tickets/print/peek");
-                                            
                                             URLConnectionSVGDocumentLoader documentLoader = new URLConnectionSVGDocumentLoader(conn, new RequestBodySender() {
                                                 public String getRequestMethod() {
                                                     return "POST";
                                                 }
         
                                                 public void send(OutputStream out) throws IOException {
-                                                    /*
-                                                    OutputStream original = out;
-                                                    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                                                    out = bOut;
-                                                    */
+                                                    log.info("Sending " + job);
                                                     final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
                                                     writer.beginObject();
-                                                    writer.name("ticket_format_id").value(job.ticket_format_id);
-                                                    writer.name("page_format_id").value(job.page_format_id);
-                                                    if(0 < job.orderId) {
+                                                    writer.name("ticket_format_id").value(job.ticketFormatId);
+                                                    writer.name("page_format_id").value(job.pageFormatId);
+                                                    if (job.orderId != null) {
                                                         writer.name("order_id").value(job.orderId);
-                                                    } else if(job.queueIds != null && 0 < job.queueIds.length) {
+                                                    } else if (job.queueIds != null && !job.queueIds.isEmpty()) {
                                                         writer.name("queue_ids");
                                                         writer.beginArray();
-                                                        for (int queueId: job.queueIds) {
+                                                        for (Integer queueId: job.queueIds) {
                                                             writer.value(queueId);
                                                         }
                                                         writer.endArray();
@@ -940,54 +1031,91 @@ public class Server {
                                             }, loader);
                                             LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>();
                                             documentLoader.addSVGDocumentLoaderListener(listener);
-                                            log.info("start documentLoader");
+                                            log.info("Starting documentLoader");
                                             documentLoader.start();
                                  
-                                            log.info("wait response");
+                                            log.info("Awaiting response");
                                             ExtendedSVG12OMDocument doc = listener.get();        // ここで取得完了を待つ
                                             if (listener.exception != null) {
                                                 throw listener.exception;
                                             }
-                                            job.pageSet = new PageSetModel(bridgeContext, doc);
+                                            final PageSetModel pageSet = new PageSetModel(bridgeContext, doc);
+                                            log.info("Number of pages: " + pageSet.getPages().size());
                                             // dequeueする際に必要になるのでページからqueueIdを抽出する
-                                            List<Integer> queueIds = new ArrayList<Integer>();
-                                            log.info("[job]");
-                                            for(Page page: job.pageSet.getPages()) {
-                                                log.info("page="+page.getName());
-                                                for(String queueId: page.getQueueIds()) {
-                                                    log.info("queueId=" + queueId);
-                                                    queueIds.add(Integer.parseInt(queueId));
+                                            final List<Integer> actualQueueIds = new ArrayList<Integer>();
+                                            for (Page page: pageSet.getPages()) {
+                                                log.info(String.format("Queue IDs for page %s: %s", page.getName(), Joiner.on(",").join(page.getQueueIds())));
+                                                for (String queueId: page.getQueueIds()) {
+                                                    actualQueueIds.add(Integer.parseInt(queueId));
                                                 }
                                             }
-                                            job.queueIds = new int[queueIds.size()];
-                                            for(int i=0 ; i<job.queueIds.length ; i++) {
-                                                job.queueIds[i] = queueIds.get(i);
-                                            }
-                                            log.info("done");
+                                            job.pageSet = pageSet;
+                                            job.queueIds = actualQueueIds;
                                         }
                                         PrinterJob printerJob = makePrinterJob(job);
-                                        log.info(prefix + "Start printing...");
+                                        log.info("Start printing...");
                                         printerJob.print();
-                                        log.info(prefix + "Printing completed.");                                        
-                                        job.set(null);
-                                        notifyCompletion(job);
+                                        log.info("Printing completed");                                        
+                                        log.info(job + " completed");
+                                        try {
+                                            notifyCompletion(job);
+                                        } finally {
+                                            job.disposeAndSet(null);
+                                        }
                                     } catch (Exception e) {
-                                        log.log(Level.SEVERE, prefix + "Failed to print out", e);
-                                        job.set(e);
+                                        log.log(Level.SEVERE, "Failed to print out.", e);
+                                        job.disposeAndSet(e);
                                     }
                                 } catch (InterruptedException e) {
-                                    log.info(prefix + "Printing thread was interrupted");
+                                    log.info("Printing thread was interrupted");
                                     continue;
                                 }
                             }
                             return null;
                         }
                     });
-                    log.info(prefix + "Printing thread terminated");
+                    log.info("Printing thread terminated");
+                    disposed.countDown();
                 }
-            }, 
-            "printThread"
+            }
         );
+    }
+
+    private Thread createGCThread() {
+        return threadFactory.newThread(new Runnable() {
+            @Override
+            public void run() {
+                gcThreadIsRunning.set(true);
+                                            log.info(String.format("GC Thread started (interval=%d)", gcInterval));
+                while (gcThreadIsRunning.get()) {
+                    try {
+                        Thread.sleep(gcInterval);
+                    } catch (InterruptedException e) {
+                        gcThreadIsRunning.set(false);
+                        continue;
+                    }
+                    log.info("GC thread is picking jobs being processed");
+                    List<Job> jobs = null;
+                    synchronized (jobsBeingProcessed) {
+                        jobs = new ArrayList<Job>(jobsBeingProcessed.values());
+                    }
+                    final Date now = new Date();
+                    for (final Job job: jobs) {
+                        if (job.isDone()) {
+                            final long elapsed = now.getTime() - job.createdAt.getTime();
+                            if (elapsed > gcInterval) {
+                                log.info(job + " is stale");
+                                synchronized (jobsBeingProcessed) {
+                                    jobsBeingProcessed.remove(job.id);
+                                }
+                            }
+                        }
+                    }
+                }
+                log.info("GC Thread terminated");
+                disposed.countDown();
+            }
+        });
     }
     
     private List<PrintService> printServices;
@@ -997,10 +1125,10 @@ public class Server {
     }
     
     private void notifyCompletion(Job job) {
-        if (job.queueIds != null && 0 < job.queueIds.length) {
-            log.info("queueIds size is " + job.queueIds.length);
+        if (job.queueIds != null && !job.queueIds.isEmpty()) {
+            log.info("Sending completion notification for " + job);
             try {
-                final HttpURLConnection conn = (HttpURLConnection) (new URL(job.uri+"/tickets/print/dequeue")).openConnection();
+                final HttpURLConnection conn = (HttpURLConnection) (new URL(job.dequeueUrl)).openConnection();
                 conn.setRequestProperty("Cookie", job.cookie);
                 conn.setUseCaches(false);
                 conn.setRequestMethod("POST");
@@ -1024,13 +1152,9 @@ public class Server {
                 final JsonObject obj = new JsonParser().parse(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
                 if (obj.has("status")) {
                     if (obj.get("status").getAsString().equals("success")) {
-                        StringBuilder queueIds = new StringBuilder();
-                        for (int queueId : job.queueIds) {
-                            queueIds.append("," + queueId);
-                        }
-                        log.info("dequeued: job=" + job.id + ", queueIds=" + queueIds.toString().substring(1));
+                        log.info("Dequeued " + job);
                     } else {
-                        log.severe("failed to dequeue job=" + job.id + " (reason: " + obj.get("message") + ")");
+                        log.severe(String.format("Failed to dequeue %s (reason: %s)", job, obj.get("message")));
                         // dequeueに失敗
                         // TODO: 常駐している限りは、リトライしたい。。。原因によるが。
                     }

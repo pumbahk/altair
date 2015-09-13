@@ -25,6 +25,9 @@ public class App {
         @Option(name="--origin")
         List<String> originHosts = new ArrayList<String>();
 
+        @Option(name="--gc-interval")
+        long gcInterval = 0;
+
         public boolean isAcceptConnection() {
             return acceptConnection;
         }
@@ -37,6 +40,11 @@ public class App {
         @Override
         public List<String> getOriginHosts() {
             return originHosts;
+        }
+
+        @Override
+        public long getGCInterval() {
+            return gcInterval;
         }
     }
 

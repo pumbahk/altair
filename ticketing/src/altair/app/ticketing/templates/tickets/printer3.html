@@ -143,7 +143,7 @@ table#queue-entries .summary { width: 27%; }
 </script>
 <script type="text/javascript">
 function init(tags, progressHandlers, uiUpdater) {
-  var api = 'http://localhost:11231';
+  var api = 'http://127.0.0.1:11231';
   var $screen = tags['screen'];
   var $page = tags['page'];
   var $printService = tags['printService'];
@@ -198,7 +198,7 @@ function init(tags, progressHandlers, uiUpdater) {
                 $('<option></option>').val(s.printers[i]).text(s.printers[i]).appendTo($printService);
             }
         }).fail(function(_, s, e) {
-            var message = 'プリントサービスが起動していないようです';
+            var message = 'プリントサービスが起動していないか、プリントサービスの設定に誤りがあります';
             if (e != '')
                 message += ' (' + e + ')';
             alert(message);
@@ -435,11 +435,12 @@ function init(tags, progressHandlers, uiUpdater) {
         onPrintingCompleted();
       }
 
+      var queueIdsToPrint = queueIds.slice();
       function next() {
-        if (queueIds.length == 0) {
+        if (queueIdsToPrint.length == 0) {
           onPrintingCompleted();
         } else {
-          var _queueIds = [queueIds.shift()];
+          var _queueIds = queueIdsToPrint.splice(0, ticketsPerPage * numberOfPagesPrintedAtOnce);
           $.ajax({
             url: api + "/process",
             type: 'POST',
@@ -450,7 +451,8 @@ function init(tags, progressHandlers, uiUpdater) {
                 "page": currentPageFormat,
                 "page_format_id": currentPageFormat.id,
                 "ticket_format_id": currentTicketFormat.id,
-                "uri": location.origin,
+                "peek_url": location.origin + endpoints["peek"],
+                "dequeue_url": location.origin + endpoints["dequeue"],
                 "cookie": cookie,
                 "queue_ids": _queueIds
             })

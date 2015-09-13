@@ -5,4 +5,5 @@ import java.util.List;
 public interface Configuration {
     public String getListen();
     public List<String> getOriginHosts();
+    public long getGCInterval();
 }
