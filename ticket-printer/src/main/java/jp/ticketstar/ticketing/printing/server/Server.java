@@ -56,6 +56,7 @@ import java.util.logging.SimpleFormatter;
 import javax.imageio.ImageIO;
 import javax.print.PrintService;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
@@ -785,30 +786,37 @@ public class Server {
         Logger.getLogger("").addHandler(handler);
     }
 
-    public synchronized void start() {
+    public synchronized void start() throws IOException {
         try {
             icon = makeSystemTray();
             SystemTray.getSystemTray().add(icon);
-            enableLogging();
-
-            printServices = new ArrayList<PrintService>();
-            for (PrintService service: PrinterJob.lookupPrintServices()) {
-                printServices.add(service);
-            }
-    
-            log.info("Accept connection at " + address);
-            icon.setToolTip("altair print server at " + address);
-            statusLabel.setLabel("queue size is "+queue.size());
-            for (URI h: originHosts) {
-                log.info("Origin: " + h);
-            }
-            startHttpServer();
-            startPrintThread();
-            startGCThread();
-        } catch (Exception e) {
+        } catch(Exception e) {
             log.log(Level.SEVERE, "error occurred during starting server", e);
             throw new ServerRuntimeException("error occurred during starting server", e);
         }
+
+        enableLogging();
+
+        printServices = new ArrayList<PrintService>();
+        for (PrintService service: PrinterJob.lookupPrintServices()) {
+            printServices.add(service);
+        }
+
+        log.info("Accept connection at " + address);
+        icon.setToolTip("altair print server at " + address);
+        statusLabel.setLabel("queue size is "+queue.size());
+        for (URI h: originHosts) {
+            log.info("Origin: " + h);
+        }
+        try {
+            startHttpServer();
+        } catch(IOException e) {
+            disposed.countDown();
+            disposed.countDown();
+            throw e;
+        }
+        startPrintThread();
+        startGCThread();
     }
 
     public synchronized void stop() {
@@ -832,7 +840,12 @@ public class Server {
     }
 
     public void run() {
-        start();
+        try {
+            start();
+        } catch(IOException e) {
+        	JOptionPane.showMessageDialog(null, "Failed starting server: " + e.getMessage());
+            stop();
+        }
         try {
             disposed.await();
         } catch (InterruptedException e) {
