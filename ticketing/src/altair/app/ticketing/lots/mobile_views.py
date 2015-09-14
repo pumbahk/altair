@@ -359,6 +359,9 @@ class EntryLotView(object):
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)
 
+        if cart_api.is_point_input_required(self.context, self.request):
+            return HTTPFound(self.request.route_path('lots.entry.rsp'))
+
         result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result

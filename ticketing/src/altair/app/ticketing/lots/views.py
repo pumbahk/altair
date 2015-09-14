@@ -376,6 +376,9 @@ class EntryLotView(object):
 
         self.request.session['lots.entry.time'] = get_now(self.request)
 
+        if cart_api.is_point_input_required(self.context, self.request):
+            return HTTPFound(self.request.route_path('lots.entry.rsp'))
+
         result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result
@@ -444,7 +447,8 @@ class ConfirmLotEntryView(object):
                     memo=entry['memo'],
                     extra_form_data=extra_form_data,
                     mailmagazines_to_subscribe=magazines_to_subscribe,
-                    accountno=acc.account_number if acc else "")
+                    accountno=acc.account_number if acc else "",
+                    membershipinfo = self.context.membershipinfo)
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -687,3 +691,22 @@ class LogoutView(object):
             return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context.lot.event.id, lot_id=self.context.lot.id), headers=self.request.response.headers)
         else:
             return HTTPFound(self.context.host_base_url or "/", headers=self.request.response.headers)
+
+
+@view_defaults(route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"))
+class LotRspView(object):
+    """ 申し込み確認 """
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(request_method="GET")
+    def rsp(self):
+        lot_asid = self.context.lot_asid
+        return self.context.get_rsp(lot_asid)
+
+    @lbr_view_config(request_method="POST")
+    def rsp_post(self):
+        lot_asid = self.context.lot_asid
+        return self.context.post_rsp(lot_asid)
