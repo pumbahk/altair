@@ -260,7 +260,7 @@ def get_altair_famiport_sales_segment_pair(order_like):
         except NoResultFound:
             pass
     return None
-            
+
 
 def get_altair_famiport_performance(order_like):
     if order_like.performance_id is not None:
@@ -561,11 +561,25 @@ def cancel_mail(context, request):
     return Response(context.mail_data("P", "notice"))
 
 
-@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @lbr_view_config(context=ILotsRejectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @lbr_view_config(context=ILotsAcceptedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def lot_payment_notice_viewlet(context, request):
     return Response(context.mail_data("P", "notice"))
+
+
+@lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("famiport_payment_mail_complete.html", fallback_ua_type='mail'))
+def lot_payment_elect_entry_notice_viewlet(context, request):
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
+    payment_method = context.order.payment_delivery_pair.payment_method
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    return dict(
+        payment_name=payment_method.name,
+        description=Markup(payment_method.description),
+        notice=context.mail_data("P", "notice"),
+        famiport_order=famiport_order,
+        h=cart_helper
+    )
 
 
 @implementer(IPaymentPlugin)
@@ -663,10 +677,24 @@ def deliver_completion_mail_viewlet(context, request):
 @lbr_view_config(context=IOrderCancelMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsRejectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsAcceptedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
-@lbr_view_config(context=ILotsElectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
     return Response(text=u'Famiポート受け取り')
 
+
+@lbr_view_config(context=ILotsElectedMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('famiport_delivery_mail_complete.html', fallback_ua_type='mail'))
+def lot_delivery_elect_entry_notice_viewlet(context, request):
+    tenant = lookup_famiport_tenant(request, context.order)
+    assert tenant is not None
+    delivery_method = context.order.payment_delivery_pair.delivery_method
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    return dict(
+        delivery_name=delivery_method.name,
+        description=Markup(delivery_method.description),
+        notice=context.mail_data("D","notice"),
+        famiport_order=famiport_order,
+        payment_type=order_type_to_string(famiport_order['type']),
+        h=cart_helper
+    )
 
 @implementer(IDeliveryPlugin)
 class FamiPortDeliveryPlugin(object):
