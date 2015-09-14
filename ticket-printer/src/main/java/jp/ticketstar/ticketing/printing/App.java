@@ -28,6 +28,9 @@ public class App {
         @Option(name="--gc-interval")
         long gcInterval = 0;
 
+        @Option(name="--ignore-wrong-cert")
+        boolean ignoreWrongCert = false;
+
         public boolean isAcceptConnection() {
             return acceptConnection;
         }
@@ -46,6 +49,11 @@ public class App {
         public long getGCInterval() {
             return gcInterval;
         }
+
+        @Override
+        public boolean getIgnoreWrongCert() {
+            return ignoreWrongCert;
+        }
     }
 
     public static void main(String[] args) {
@@ -56,6 +64,10 @@ public class App {
         } catch (CmdLineException e) {
             e.printStackTrace();
             return;
+        }
+
+        if(config.getIgnoreWrongCert()) {
+            HttpsConfigurator.configureForDevelopment();
         }
 
         final AppWindowModel model = new AppWindowModel();
