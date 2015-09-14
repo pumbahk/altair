@@ -1,0 +1,688 @@
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
+<style type="text/css">
+.attached-action {
+  border: 1px solid #ccc;
+  border-radius: 4px 4px 0px 0px;
+  background: rgb(230, 230, 230);
+  background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+  padding: 4px 4px;
+  line-height: 1em;
+  height: 64px;
+  overflow: hidden;
+}
+
+.attached-action-form {
+  line-height: 32px;
+}
+
+.attached-action-inner {
+  overflow: hidden;
+}
+
+.attached-action label {
+  display: inline-block;
+}
+
+.attached-action input,
+.attached-action textarea,
+.attached-action select,
+.attached-action .uneditable-input,
+.attached-action .input-append {
+  margin: 0 0;
+}
+
+tr.printed td {
+  background-color: #efe;
+}
+
+tr.masked td {
+  color: #ccc;
+}
+
+tr.printed td.page span:after {
+  display: inline-block;
+  font-size: 10px;
+  height: 1em;
+  line-height: 1em;
+  content: "✔️";
+  color: #f80;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+#screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: fixed;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+
+#print-and-progress {
+  width: 128px;
+  height: 24px;
+  text-align: center;
+}
+
+#print-and-progress button {
+  width: 120px;
+}
+
+#page-format {
+  width: 120px;
+}
+
+#ticket-format,
+#print-service {
+  width: 150px;
+}
+
+.scrollable table {
+  overflow: hidden;
+}
+
+.scrollable table > thead {
+  display: table;
+  width: 100%;
+}
+
+.scrollable table > thead > tr,
+.scrollable table > tbody > tr {
+  display: table-row;
+}
+
+.scrollable table > tbody {
+  display: block;
+  overflow-y: scroll;
+  width: 100%;
+  height: 28em;
+}
+
+.scrollable table > tbody > tr > td {
+  overflow: hidden;
+}
+
+table#queue-entries .c { width: 3%; }
+table#queue-entries .page { width: 6%; }
+table#queue-entries .order-no { width: 10%; }
+table#queue-entries .seat-name { width: 27%; }
+table#queue-entries .product-name { width: 27%; }
+table#queue-entries .summary { width: 27%; }
+</style>
+<script type="text/javascript">
+  var callbackName = ${json.dumps(callback_name)|n};
+  var endpoints = ${endpoints_json|n};
+  var cookie = ${json.dumps(request.headers.get('cookie'))|n};
+  var numberOfPagesPrintedAtOnce = 100;
+</script>
+<script type="text/javascript">
+function init(tags, progressHandlers, uiUpdater) {
+  var api = 'http://127.0.0.1:11231';
+  var $screen = tags['screen'];
+  var $page = tags['page'];
+  var $printService = tags['printService'];
+  var $pageFormat = tags['pageFormat'];
+  var $ticketFormat = tags['ticketFormat'];
+  var $queueEntryTable = tags['queueEntryTable'];
+  var $ticketsPerPage = tags['ticketsPerPage'];
+  var $totalTickets = tags['totalTickets'];
+  var $doPrint = tags['doPrint'];
+  var $showUnmaskedOnly = tags['showUnmaskedOnly'];
+  var $maskCheckedEntries = tags['maskCheckedEntries'];
+  var $unmaskCheckedEntries = tags['unmaskCheckedEntries'];
+  var $deleteCheckedEntries = tags['deleteCheckedEntries'];
+  var $selectAll = tags['selectAll'];
+
+  function disableUI() {
+    $doPrint.blur();
+    $pageFormat.attr('disabled', 'disabled');
+    $ticketFormat.attr('disabled', 'disabled');
+    $printService.attr('disabled', 'disabled');
+    $doPrint.attr('disabled', 'disabled');
+    $showUnmaskedOnly.attr('disabled', 'disabled');
+  }
+
+  function enableUI() {
+    $pageFormat.attr('disabled', null);
+    $ticketFormat.attr('disabled', null);
+    $printService.attr('disabled', null);
+    $doPrint.attr('disabled', null);
+    $showUnmaskedOnly.attr('disabled', null);
+  }
+
+  function initMain() {
+    var proxies = [];
+    var queueIdToRowMap = {};
+    var queueIds = [];
+    var printedQueueIds = null;
+    var printedQueueIdCount = 0;
+    var printingContinuation = null;
+    var printing = false;
+    var ticketsPerPage = null;
+
+    var pageFormatToPrintServiceMap = {};
+    function refreshPrintServices() {
+        $printService.empty();
+        $.ajax({
+            url: api + '/printers',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            for(var i=0 ; i<s.printers.length ; i++) {
+                $('<option></option>').val(s.printers[i]).text(s.printers[i]).appendTo($printService);
+            }
+        }).fail(function(_, s, e) {
+            var message = 'プリントサービスが起動していないか、プリントサービスの設定に誤りがあります';
+            if (e != '')
+                message += ' (' + e + ')';
+            alert(message);
+        });
+    }
+    var formats = { };
+    function refreshFormats() {
+        $pageFormat.empty();
+        $ticketFormat.empty();
+        var d = $.Deferred();
+        $.ajax({
+            url: endpoints.formats,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            if(s.status != 'success')
+                return;
+            formats.page_formats = s.data.page_formats;
+            for(var i=0 ; i<s.data.page_formats.length ; i++) {
+                $('<option></option>').val(i).text(s.data.page_formats[i].name).appendTo($pageFormat);
+            }
+            formats.ticket_formats = s.data.ticket_formats;
+            for(var i=0 ; i<s.data.ticket_formats.length ; i++) {
+                $('<option></option>').val(i).text(s.data.ticket_formats[i].name).appendTo($ticketFormat);
+            }
+            d.resolve();
+       }).fail(function() {
+            d.reject();
+       });
+       return d;
+    }
+
+    function collectionToArray(col) {
+      var retval = [];
+      for (var i = col.iterator(); i.hasNext();) {
+        retval.push(i.next());
+      }
+      return retval;
+    }
+
+    function refreshQueueEntryListSub(url, data) {
+      var tbody = $queueEntryTable.find('tbody');
+
+      function buildRow(entry) {
+        var checkBox = $('<input type="checkbox" name="queueId">').attr('value', entry['queue_id']);
+        var tr = $('<tr></tr>')
+          .append($('<td class="c"></td>').append(checkBox))
+          .append($('<td class="page"></td>').append($('<span></span>').text(entry['page'] === null ? '-': entry['page'] + 1)))
+          .append($('<td class="order-no"></td>').append($('<span></span>').text(entry['order_no'] || '-')))
+          .append($('<td class="seat-name"></td>').text(entry['seat_name'] || '-'))
+          .append($('<td class="product-name"></td>').text(entry['product_name'] || '-'))
+          .append($('<td class="summary"></td>').text(entry['summary'] || '-'));
+        if (entry['masked'])
+          tr.addClass('masked');
+        return tr;
+      }
+
+      disableUI();
+      $.ajax({
+        url: url,
+        type: 'post',
+        dataType: 'json',
+        processData: false,
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(data),
+        complete: function() {
+          enableUI();
+        },
+        success: function (payload) {
+          if (payload['status'] != 'success') {
+            alert('Unknown error');
+            return;
+          }
+          var data = payload['data'];
+          $ticketsPerPage.text(data['tickets_per_page'] + '枚');
+          var entries = data['entries'];
+          var newTbody = $('<tbody></tbody>');
+          var _queueIdToRowMap = {};
+          var _queueIds = [];
+          if (entries.length > 0) {
+            for (var i = 0; i < entries.length; i++) {
+              var entry = entries[i];
+              var queueId = entry['queue_id'].toString();
+              var tr = buildRow(entry);
+              _queueIdToRowMap[queueId] = tr;
+              if (!entry['masked'])
+                _queueIds.push(queueId);
+              newTbody.append(tr);
+            }
+          } else {
+            newTbody.append($('<tr><td colspan="5">発券対象がありません。指定されたチケット様式が発券内容と合致していない可能性があります。</td></tr>'));
+          }
+          $totalTickets.text(_queueIds.length + '枚');
+          tbody.replaceWith(newTbody);
+          queueIdToRowMap = _queueIdToRowMap;
+          queueIds = _queueIds;
+          ticketsPerPage = data['tickets_per_page'];
+          printedQueueIds = {};
+          printedQueueIdCount = 0;
+          uiUpdater({
+            allPrinted: queueIds.length == 0
+          });
+          onShowUnmaskedOnlyChange();
+        }
+      });
+    }
+
+    function refreshQueueEntryList() {
+      refreshQueueEntryListSub(
+        endpoints['list'],
+        {
+          'page_format_id': formats.page_formats[$pageFormat.val()].id,
+          'ticket_format_id': formats.ticket_formats[$ticketFormat.val()].id,
+          'include_masked': true
+        }
+      );
+    }
+
+    function onPageFormatChange() {
+      refreshQueueEntryList();
+    }
+
+    function onTicketFormatChange() {
+      refreshQueueEntryList();
+    }
+
+    function onShowUnmaskedOnlyChange(e) {
+      if ($showUnmaskedOnly.attr('checked')) {
+        $queueEntryTable.find('tr.masked').attr('style', 'display:none');
+      } else {
+        $queueEntryTable.find('tr.masked').attr('style', null);
+      }
+    }
+
+    function onSelectAllClicked(e) {
+      $queueEntryTable.find('input[name="queueId"]').each(function (_, n) {
+        var $n = $(n);
+        $n.attr('checked', $n.attr('checked') ? null: 'checked');
+      });
+    }
+
+    function getCheckedQueueIds(e) {
+      var _queueIds = [];
+      $(e.target).closest('form').find('input[name="queueId"]:checked').each(function (_, checkbox) {
+        _queueIds.push(checkbox.value);
+      });
+      return _queueIds;
+    }
+
+    function markRowPrinted(row) {
+      row.addClass('printed');
+      row.find('input[name="queueId"]').attr('disabled', 'disabled');
+    }
+
+    function onUnmaskCheckedEntriesClicked(e) {
+      refreshQueueEntryListSub(
+        endpoints['unmask'],
+        {
+          'page_format_id': formats.page_formats[$pageFormat.val()].id,
+          'ticket_format_id': formats.ticket_formats[$ticketFormat.val()].id,
+          'include_masked': true,
+          'queue_ids': getCheckedQueueIds(e)
+        }
+      );
+      return false;
+    }
+
+    function onMaskCheckedEntriesClicked(e) {
+      refreshQueueEntryListSub(
+        endpoints['mask'],
+        {
+          'page_format_id': formats.page_formats[$pageFormat.val()].id,
+          'ticket_format_id': formats.ticket_formats[$ticketFormat.val()].id,
+          'include_masked': true,
+          'queue_ids': getCheckedQueueIds(e)
+        }
+      );
+      return false;
+    }
+
+    function onDeleteCheckedEntriesClicked(e) {
+      refreshQueueEntryListSub(
+        endpoints['delete'],
+        {
+          'page_format_id': formats.page_formats[$pageFormat.val()].id,
+          'ticket_format_id': formats.ticket_formats[$ticketFormat.val()].id,
+          'include_masked': true,
+          'queue_ids': getCheckedQueueIds(e)
+        }
+      );
+      return false;
+    }
+
+    function updateUI() {
+      uiUpdater({
+        allPrinted: printedQueueIdCount == queueIds.length
+      });
+    }
+
+    function onPrintingCompleted() {
+      if (printing) {
+        progressHandlers.end();
+        updateUI();
+        enableUI();
+        printing = false;
+      }
+    }
+
+    function reflectProgress(_queueIds) {
+      $.each(_queueIds, function (_, queueId) {
+        var row = queueIdToRowMap[queueId];
+        if (row) {
+          markRowPrinted(row);
+          row.get(0).scrollIntoView(false);
+        }
+        if (!(queueId in printedQueueIds)) {
+          printedQueueIds[queueId] = queueId;
+          printedQueueIdCount++;
+        }
+      });
+      progressHandlers.progress(printedQueueIdCount, queueIds.length);
+    }
+
+    function printAllImpl() {
+      var currentPrintService = $printService.val();
+      var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
+      var currentPageFormat = formats.page_formats[$pageFormat.val()];
+      if (!currentPrintService) {
+          alert('no print service');
+      }
+
+      function reportError(message) {
+        alert("印刷に失敗しました." + message);
+        onPrintingCompleted();
+      }
+
+      var queueIdsToPrint = queueIds.slice();
+      function next() {
+        if (queueIdsToPrint.length == 0) {
+          onPrintingCompleted();
+        } else {
+          var _queueIds = queueIdsToPrint.splice(0, ticketsPerPage * numberOfPagesPrintedAtOnce);
+          $.ajax({
+            url: api + "/process",
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+                "printer": currentPrintService,
+                "page": currentPageFormat,
+                "page_format_id": currentPageFormat.id,
+                "ticket_format_id": currentTicketFormat.id,
+                "peek_url": location.origin + endpoints["peek"],
+                "dequeue_url": location.origin + endpoints["dequeue"],
+                "cookie": cookie,
+                "queue_ids": _queueIds
+            })
+          }).done(function(s) {
+            if (s.status == "success") {
+              function poll() {
+                $.ajax({
+                  url: api + s.poll_url,
+                  type: 'GET',
+                  data: { 'timeout': 3000 }
+                }).done(function (s) {
+                  switch (s.status) {
+                  case 'success':
+                    if (s.error_class != null) {
+                      reportError(s.error_message);
+                    } else {
+                      reflectProgress(_queueIds);
+                      next();
+                    }
+                    break;
+                  case 'error':
+                    reportError(s.message);
+                    break;
+                  case 'timeout':
+                    poll();
+                    break;
+                  }
+                });
+              }
+              poll();
+            } else {
+              reportError(s.message);
+            }
+          });
+        }
+      }
+      next();
+    }
+
+    function doPrintAll() {
+      if (printing)
+        return;
+      printing = true;
+      disableUI();
+      progressHandlers.start();
+      progressHandlers.progress(0.);
+      printAllImpl();
+      return false;
+    }
+
+    function heartbeat() {
+      return;
+      // TODO:
+    }
+
+    $pageFormat.change(onPageFormatChange);
+    $ticketFormat.change(onTicketFormatChange);
+    $showUnmaskedOnly.change(onShowUnmaskedOnlyChange);
+    $deleteCheckedEntries.click(onDeleteCheckedEntriesClicked);
+    $unmaskCheckedEntries.click(onUnmaskCheckedEntriesClicked);
+    $maskCheckedEntries.click(onMaskCheckedEntriesClicked);
+    $selectAll.click(onSelectAllClicked);
+    refreshPrintServices();
+    refreshFormats()
+    .then(function() {
+        onPageFormatChange();
+    });
+    $doPrint.click(doPrintAll);
+
+    heartbeat();
+    $screen.hide();
+  };
+
+  enableUI();
+  $screen.show();
+  initMain();
+}
+</script>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'印刷キュー', u'印刷ツール'],
+  urls=[request.route_path('index'), request.route_path('tickets.queue.index')]
+)}
+</%block>
+<div class="page-header">
+<h2>印刷ツール with ローカルプリントサービス(11231)</h2>
+</div>
+<!--<div>
+  <a href="${request.route_path('tickets.queue.index')}">古い印刷ツールに切り替える</a>
+</div>-->
+<form>
+  <div class="attached-action">
+    <div class="attached-action-inner">
+      <div class="attached-action-form pull-left">
+        <label>
+          ページ様式
+          <select id="page-format"></select>
+        </label>
+        <label>
+          チケット様式
+          <select id="ticket-format"></select>
+        </label>
+        <label>
+          プリンタ
+          <select id="print-service"></select>
+        </label>
+      </div>
+      <div class="pull-right">
+        <div class="pull-left" style="margin-right: 1em; margin-top: 5px;">
+          <div>枚数/ページ: <span id="tickets-per-page">-</span></div>
+          <div>総発券枚数: <span id="total-tickets">-</span></div>
+        </div>
+        <div id="print-and-progress" class="pull-right">
+          <button class="btn btn-large btn-primary" id="do-print">発券する</button>
+          <div class="progress-outer" style="display:none">
+            <div class="progress-message"></span></div>
+            <div class="progress progress-striped">
+              <div class="bar bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"><span class="sr-only"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="attached-action-inner">
+      <div class="attached-action-form">
+        <label>キュー操作</label>
+        チェックしたものを
+        <div class="btn-group">
+          <button class="btn" id="btn-mask-checked-entries">除外</button>
+          <button class="btn" id="btn-unmask-checked-entries">印刷対象に含める</button>
+          <button class="btn" id="btn-delete-checked-entries">削除</button>
+        </div>
+        <label>
+          <input type="checkbox" id="show-unmasked-only">
+          印刷対象のみ表示
+        </label>
+        <div class="btn-group">
+          <button class="btn" id="btn-check-all">全て選択</button>
+          <button class="btn" id="btn-uncheck-all">全て選択しない</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scrollable">
+    <table class="table" id="queue-entries">
+      <thead>
+        <th class="c"><a id="select-all">✔</a></th>
+        <th class="page">ページ</th>
+        <th class="order-no">注文番号</th>
+        <th class="seat-name">座席番号</th>
+        <th class="product-name">商品名</th>
+        <th class="summary">サマリー</th>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</form>
+<div id="screen" style="display:none;">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>
+<script type="text/javascript">
+
+var CheckBoxHandler = function(expr){
+  return {
+    checkAll: function(){
+　　   $(expr).find(".c input").attr("checked", true);
+    },
+    uncheckAll: function(){
+　　   $(expr).find(".c input").attr("checked", false);
+    }
+  }
+}
+
+$(function () {
+  var checkboxHandler = CheckBoxHandler("#queue-entries tr:visible");
+  $("#btn-check-all").on("click", function(){checkboxHandler.checkAll(); return false;});
+  $("#btn-uncheck-all").on("click", function(){checkboxHandler.uncheckAll(); return false;});
+
+  var $printAndProgress = $('#print-and-progress');
+  var $doPrint = $('#do-print');
+  var originalDoPrintButtonText = $doPrint.text();
+  init(
+    {
+      screen: $('#screen'),
+      page: $('#page'),
+      printService: $('#print-service'),
+      pageFormat: $('#page-format'),
+      ticketFormat: $('#ticket-format'),
+      queueEntryTable: $('#queue-entries'),
+      ticketsPerPage: $('#tickets-per-page'),
+      totalTickets: $('#total-tickets'),
+      doPrint: $doPrint,
+      showUnmaskedOnly: $('#show-unmasked-only'),
+      maskCheckedEntries: $('#btn-mask-checked-entries'),
+      unmaskCheckedEntries: $('#btn-unmask-checked-entries'),
+      deleteCheckedEntries: $('#btn-delete-checked-entries'),
+      selectAll: $('#select-all')
+    },
+    {
+      start: function () {
+        $printAndProgress.find('.btn').hide();
+        $printAndProgress.find('.progress').addClass('active');
+        $printAndProgress.find('.progress-outer').show();
+      },
+      end: function () {
+        $printAndProgress.find('.btn').show();
+        $printAndProgress.find('.progress').removeClass('active');
+        $printAndProgress.find('.progress-outer').hide();
+      },
+      progress: function (printed, total) {
+        var w = 100 * (printed / total);
+        $printAndProgress.find('.progress .bar')
+          .attr('aria-valuenow',  w)
+          .css('width', w + '%');
+        var message = printed == 0 ?
+          "しばらくお待ちください": (printed + "枚完了");
+        $printAndProgress.find('.progress-message').text(message);
+      }
+    }, function (params) {
+      if (params.allPrinted) {
+        $doPrint.removeClass('btn-primary');
+        $doPrint.text('発券完了');
+      } else {
+        $doPrint.addClass('btn-primary');
+        $doPrint.text(originalDoPrintButtonText);
+      }
+    }
+  );
+});
+</script>

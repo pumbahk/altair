@@ -6,25 +6,25 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 
 public class QueueBundler<T> implements Callable<List<T>> {
-	protected Queue<T> queue;
-	protected int maxItems;
+    protected Queue<T> queue;
+    protected int maxItems;
 
-	public List<T> call() {
-		List<T> retval;
-		synchronized (queue) {
+    public List<T> call() {
+        List<T> retval;
+        synchronized (queue) {
             retval = new ArrayList<T>(maxItems);
             for (int i = maxItems; --i >= 0;) {
                 final T entry = queue.poll();
                 if (entry == null)
                     break;
                 retval.add(entry);
-			}
-		}
-		return retval;
-	}
+            }
+        }
+        return retval;
+    }
 
-	public QueueBundler(Queue<T> queue, int maxItems) {
-		this.queue = queue;
-		this.maxItems = maxItems;
-	}
+    public QueueBundler(Queue<T> queue, int maxItems) {
+        this.queue = queue;
+        this.maxItems = maxItems;
+    }
 }

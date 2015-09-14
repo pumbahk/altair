@@ -4,58 +4,58 @@ import java.awt.PageAttributes;
 import java.awt.print.PageFormat;
 
 public class OurPageFormat extends PageFormat {
-	int id;
-	String name;
-	double[] horizontalGuides;
-	double[] verticalGuides;
-	PageAttributes.MediaType preferredMediaType;
-	String preferredPrinterName;
-	
-	public int getId() {
-		return id;
-	}
+    int id;
+    String name;
+    double[] horizontalGuides;
+    double[] verticalGuides;
+    PageAttributes.MediaType preferredMediaType;
+    String preferredPrinterName;
+    
+    public int getId() {
+        return id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public PageAttributes.MediaType getPreferredMediaType() {
-		return preferredMediaType;
-	}
+    public PageAttributes.MediaType getPreferredMediaType() {
+        return preferredMediaType;
+    }
 
-	public void setPreferredMediaType(PageAttributes.MediaType mediaType) {
-		this.preferredMediaType = mediaType;
-	}
+    public void setPreferredMediaType(PageAttributes.MediaType mediaType) {
+        this.preferredMediaType = mediaType;
+    }
 
-	public String getPreferredPrinterName() {
-		return preferredPrinterName;
-	}
-	
-	public double[] getHorizontalGuides() {
-		return horizontalGuides;
-	}
+    public String getPreferredPrinterName() {
+        return preferredPrinterName;
+    }
+    
+    public double[] getHorizontalGuides() {
+        return horizontalGuides;
+    }
 
-	public void setHorizontalGuides(double[] horizontalGuides) {
-		this.horizontalGuides = horizontalGuides;
-	}
+    public void setHorizontalGuides(double[] horizontalGuides) {
+        this.horizontalGuides = horizontalGuides;
+    }
 
-	public double[] getVerticalGuides() {
-		return verticalGuides;
-	}
+    public double[] getVerticalGuides() {
+        return verticalGuides;
+    }
 
-	public void setVerticalGuides(double[] verticalGuides) {
-		this.verticalGuides = verticalGuides;
-	}
+    public void setVerticalGuides(double[] verticalGuides) {
+        this.verticalGuides = verticalGuides;
+    }
 
-	public void setPreferredPrinterName(String preferredPrinterName) {
-		this.preferredPrinterName = preferredPrinterName;
-	}
+    public void setPreferredPrinterName(String preferredPrinterName) {
+        this.preferredPrinterName = preferredPrinterName;
+    }
 }

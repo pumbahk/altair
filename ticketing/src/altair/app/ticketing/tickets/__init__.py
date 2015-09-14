@@ -44,6 +44,7 @@ def includeme(config):
 
     config.add_route('tickets.printer', '/print/printer')
     config.add_route('tickets.printer2', '/print/printer2')
+    config.add_route('tickets.printer3', '/print/printer3')
     config.add_route('tickets.printer.api.formats', '/print/formats')
     config.add_route('tickets.printer.api.enqueue', '/print/enqueue')
     config.add_route('tickets.printer.api.ticket', '/print/ticket/{event_id}/{id:.*}')
