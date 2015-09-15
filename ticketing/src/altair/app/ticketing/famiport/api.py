@@ -775,7 +775,9 @@ def update_famiport_order_by_order_no(
         payment_due_at=None,
         ticketing_start_at=None,
         ticketing_end_at=None,
-        payment_sheet_text=None):
+        payment_sheet_text=None,
+        require_ticketing_fee_on_ticketing=None
+        ):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
@@ -802,7 +804,8 @@ def update_famiport_order_by_order_no(
             payment_due_at=payment_due_at,
             ticketing_start_at=ticketing_start_at,
             ticketing_end_at=ticketing_end_at,
-            payment_sheet_text=payment_sheet_text
+            payment_sheet_text=payment_sheet_text,
+            require_ticketing_fee_on_ticketing=require_ticketing_fee_on_ticketing
             )
         session.commit()
     except:
