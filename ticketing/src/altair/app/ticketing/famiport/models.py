@@ -297,6 +297,16 @@ class FamiPortPerformance(Base, WithTimestamp):
         primaryjoin=lambda: FamiPortPerformance.famiport_event_id == FamiPortEvent.id
         )
 
+    # def delete(self):
+    #     if self.orders:
+    #         raise Exception(u'購入されている為、削除できません')
+    #     else:
+    #         # delete SalesSegment
+    #         for sales_segment in self.sales_segments:
+    #             sales_segment.delete()
+    #
+    #         super(FamiPortPerformance, self).delete()
+
 
 class FamiPortSalesSegment(Base, WithTimestamp):
     __tablename__ = 'FamiPortSalesSegment'
@@ -323,7 +333,8 @@ class FamiPortSalesSegment(Base, WithTimestamp):
 
     famiport_performance = orm.relationship(
         'FamiPortPerformance',
-        primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id
+        primaryjoin=lambda: FamiPortSalesSegment.famiport_performance_id == FamiPortPerformance.id,
+        backref='sales_segments'
         )
 
     @property
@@ -641,7 +652,8 @@ class FamiPortOrder(Base, WithTimestamp):
         )
     famiport_performance = orm.relationship(
         'FamiPortPerformance',
-        primaryjoin=lambda: FamiPortOrder.famiport_performance_id == FamiPortPerformance.id
+        primaryjoin=lambda: FamiPortOrder.famiport_performance_id == FamiPortPerformance.id,
+        backref='orders'
         )
     famiport_client = orm.relationship('FamiPortClient')
 

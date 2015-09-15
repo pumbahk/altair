@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import logging
 from enum import Enum
 from datetime import datetime, timedelta
 import sqlalchemy as sa
@@ -7,10 +8,14 @@ from sqlalchemy import orm
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from altair.models import MutationDict, JSONEncodedDict, LogicallyDeleted, Identifier, WithTimestamp
-from altair.app.ticketing.models import Base, BaseModel
+from altair.app.ticketing.models import Base, BaseModel, DBSession, _flush_or_rollback
+from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType
 from altair.app.ticketing.core.models import SalesSegment
 from sqlalchemy.orm.collections import attribute_mapped_collection
+
+logger = logging.getLogger(__name__)
 
 class AltairFamiPortReflectionStatus(Enum):
     Editing = 0
@@ -155,6 +160,27 @@ class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
 
     performance = orm.relationship('Performance')
     altair_famiport_performance_group = orm.relationship('AltairFamiPortPerformanceGroup')
+
+    # def reserved_orders(self):
+    #     query = Order.query.filter_by(Order.performance_id==self.performance_id).filter_by(Order.deleted_at!=None).filter_by(Order.canceled_at!=None)\
+    #                                                                              .filter_by(sa.or_(Order.payment_plugin_id==FAMIPORT_PAYMENT_PLUGIN_ID, Order.delivery_plugin_id==FAMIPORT_DELIVERY_PLUGIN_ID))
+    #     return query.first()
+
+    def delete(self):
+        # if self.reserved_orders():
+        #      raise Exception(u'購入されている為、削除できません')
+        # else:
+        # Check FamiPortPerformance and FamiPortPerformanceGroup are not reflected
+        if self.altair_famiport_performance_group.status != AltairFamiPortReflectionStatus.Reflected.value and self.status != AltairFamiPortReflectionStatus.Reflected.value:
+            # Delete AltairFamiPortSalesSegmentPair
+            for altair_famiport_sales_segment_pair in self.altair_famiport_sales_segment_pairs:
+                altair_famiport_sales_segment_pair.delete()
+            # Delete AltairFamiPortPerformance
+            self.deleted_at = datetime.now()
+            DBSession.merge(self)
+            _flush_or_rollback()
+        else:
+            raise Exception(u'ステータスが反映済みのため、削除できません')
 
 
 class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
