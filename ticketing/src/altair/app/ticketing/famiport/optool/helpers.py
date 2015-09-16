@@ -94,6 +94,8 @@ class ViewHelpers(object):
 
     def display_payment_date(self, famiport_receipt):
         display_date = None
+        if famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
+            return display_date
         if famiport_receipt.famiport_order.paid_at:
             display_date = famiport_receipt.famiport_order.paid_at
         elif famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
@@ -103,6 +105,8 @@ class ViewHelpers(object):
 
     def display_delivery_date(self, famiport_receipt):
         display_date = None
+        if famiport_receipt.type == FamiPortReceiptType.Payment.value:
+            return display_date
         if famiport_receipt.famiport_order.issued_at:
             display_date = famiport_receipt.famiport_order.issued_at
         elif famiport_receipt.completed_at is not None and famiport_receipt.rescued_at is None:
