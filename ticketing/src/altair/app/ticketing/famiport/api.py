@@ -781,6 +781,7 @@ def update_famiport_order_by_order_no(
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
+        sales_segment_code_specified = sales_segment_code != 'UNSPECIFIED'
         internal.update_famiport_order_by_order_no(
             session,
             client_code=client_code,
@@ -790,7 +791,8 @@ def update_famiport_order_by_order_no(
             event_code_1=event_code_1,
             event_code_2=event_code_2,
             performance_code=performance_code,
-            sales_segment_code=sales_segment_code,
+            sales_segment_code=(sales_segment_code if sales_segment_code_specified else None),
+            sales_segment_code_specified=sales_segment_code_specified,
             customer_name=customer_name,
             customer_phone_number=customer_phone_number,
             customer_address_1=customer_address_1,

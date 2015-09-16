@@ -61,6 +61,23 @@ def get_famiport_venue_by_name(session, client_code, name):
                     .one()
     return retval
 
+def get_famiport_sales_segment_by_code(session, client_code, event_code_1, event_code_2, performance_code, code):
+    retval = session.query(FamiPortSalesSegment) \
+                    .join(FamiPortSalesSegment.famiport_performance) \
+                    .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortEvent.code_1 == event_code_1,
+                            FamiPortEvent.code_2 == event_code_2
+                            ) \
+                    .filter(FamiPortPerformance.code == performance_code) \
+                    .filter(FamiPortSalesSegment.code == code) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
+                    .one()
+    return retval
+
+
 def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortSalesSegment) \
                     .join(FamiPortSalesSegment.famiport_performance) \
@@ -91,6 +108,15 @@ def get_famiport_performance_by_userside_id(session, client_code, userside_id):
                             FamiPortPerformance.userside_id == userside_id) \
                     .filter(FamiPortEvent.invalidated_at == None) \
                     .filter(FamiPortPerformance.invalidated_at == None) \
+                    .one()
+    return retval
+
+def get_famiport_event_by_code(session, client_code, code_1, code_2):
+    retval = session.query(FamiPortEvent) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortEvent.code_1 == code_1,
+                            FamiPortEvent.code_2 == code_2) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
                     .one()
     return retval
 
@@ -310,6 +336,7 @@ def update_famiport_order_by_order_no(
         event_code_2,
         performance_code,
         sales_segment_code,
+        sales_segment_code_specified,
         customer_name,
         customer_phone_number,
         customer_address_1,
@@ -338,12 +365,116 @@ def update_famiport_order_by_order_no(
     famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
 
-    if famiport_event.code_1 != event_code_1 or \
-       famiport_event.code_2 != event_code_2 or \
-       famiport_performance.code != performance_code or \
-       ((famiport_sales_segment is not None and famiport_sales_segment.code != sales_segment_code) or \
-        (famiport_sales_segment is None and sales_segment_code is not None)):
-        raise FamiPortError(u'event_code_1, event_code_2, performance_code or sales_segment_code differs')
+    event_differs = False
+    performance_differs = False
+    sales_segment_differs = False
+    if famiport_event.code_1 != event_code_1 or famiport_event.code_2 != event_code_2:
+        logger.warning(
+            u'event_code_1, event_code_2 differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        event_differs = True
+    elif famiport_performance.code != performance_code:
+        logger.warning(
+            u'performance_code differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        performance_differs = True
+    elif sales_segment_code_specified and famiport_sales_segment.code != sales_segment_code:
+        logger.warning(
+            u'sales_segment_code differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        sales_segment_differs = True
+
+    if event_differs:
+        try:
+            famiport_event = get_famiport_event_by_code(
+                session,
+                client_code=client_code,
+                code_1=famiport_event.code_1,
+                code_2=famiport_event.code_2
+                )
+        except NoResultFound:
+            raise FamiPortError(u'FamiPortEvent not found for client_code=%s, code_1=%s, code_2=%s' % (client_code, event_code_1, event_code_2))
+        performance_differs = True
+
+    if performance_differs:
+        try:
+            famiport_performance = get_famiport_performance_by_code(
+                session,
+                client_code=client_code,
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                code=performance_code
+                )
+        except NoResultFound:
+            raise FamiPortError(u'FamiPortPerformance not found for client_code=%s, event_code_1=%s, event_code_2=%s, code=%s' % (client_code, event_code_1, event_code_2, performance_code))
+        sales_segment_differs = True
+
+    if sales_segment_differs:
+        if sales_segment_code is not None:
+            try:
+                famiport_sales_segment = get_famiport_sales_segment_by_code(
+                    session,
+                    client_code=client_code,
+                    event_code_1=event_code_1,
+                    event_code_2=event_code_2,
+                    performance_code=performance_code,
+                    code=sales_segment_code
+                    )
+            except NoResultFound:
+                raise FamiPortError(u'FamiPortSalesSegment not found for client_code=%s, event_code_1=%s, event_code_2=%s, performance_code=%s, code=%s' % (client_code, event_code_1, event_code_2, performance_code, sales_segment_code))
+        else:
+            famiport_sales_segment = None
 
     def check_updatable(payment_related=False, ticketing_related=False):
         if famiport_order.type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
@@ -435,6 +566,9 @@ def update_famiport_order_by_order_no(
                 added_famiport_tickets.append(famiport_ticket)
         deleted_famiport_tickets = ticket_map.values()
         logger.info('added tickets: %d; updated tickets: %d; deleted tickets: %d' % (len(added_famiport_tickets), updated_famiport_ticket_count, len(deleted_famiport_tickets)))
+
+    famiport_order.famiport_performance = famiport_performance
+    famiport_order.famiport_sales_segment = famiport_sales_segment
 
     if customer_name is not None:
         logger.info('updating FamiPortOrder(id=%ld).customer_name' % famiport_order.id)

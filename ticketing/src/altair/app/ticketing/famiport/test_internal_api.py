@@ -358,6 +358,18 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         self.session.add(self.performance)
         self.another_performance = FamiPortPerformance(
             userside_id=None,
+            famiport_event_id=self.event.id,
+            code=u'001',
+            name=u'公演2',
+            type=FamiPortPerformanceType.Normal.value,
+            searchable=False,
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            start_at=datetime(2015, 10, 2, 0, 0, 0),
+            ticket_name=None
+            )
+        self.session.add(self.another_performance)
+        self.yet_another_performance = FamiPortPerformance(
+            userside_id=None,
             famiport_event_id=self.another_event.id,
             code=u'000',
             name=u'公演2',
@@ -367,7 +379,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             start_at=datetime(2015, 10, 1, 0, 0, 0),
             ticket_name=None
             )
-        self.session.add(self.performance)
+        self.session.add(self.yet_another_performance)
         self.session.flush()
         self.sales_segment = FamiPortSalesSegment(
             famiport_performance=self.performance,
@@ -382,6 +394,48 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             auth_message=None,
             seat_selection_start_at=datetime(2015, 7, 1, 0, 0, 0)
             )
+        self.another_sales_segment = FamiPortSalesSegment(
+            famiport_performance=self.performance,
+            userside_id=None,
+            code=u'001',
+            name=u'受付区分2',
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            published_at=datetime(2015, 6, 1, 0, 0, 0),
+            start_at=datetime(2015, 7, 1, 0, 0, 0),
+            end_at=datetime(2015, 10, 31, 0, 0, 0),
+            auth_required=False,
+            auth_message=None,
+            seat_selection_start_at=datetime(2015, 7, 1, 0, 0, 0)
+            )
+        self.session.add(self.another_sales_segment)
+        self.sales_segment_for_another_performance = FamiPortSalesSegment(
+            famiport_performance=self.another_performance,
+            userside_id=None,
+            code=u'000',
+            name=u'受付区分1',
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            published_at=datetime(2015, 5, 1, 0, 0, 0),
+            start_at=datetime(2015, 6, 1, 0, 0, 0),
+            end_at=datetime(2015, 9, 30, 0, 0, 0),
+            auth_required=False,
+            auth_message=None,
+            seat_selection_start_at=datetime(2015, 7, 1, 0, 0, 0)
+            )
+        self.session.add(self.sales_segment_for_another_performance)
+        self.yet_another_sales_segment = FamiPortSalesSegment(
+            famiport_performance=self.yet_another_performance,
+            userside_id=None,
+            code=u'000',
+            name=u'受付区分1',
+            sales_channel=FamiPortSalesChannel.FamiPortAndWeb.value,
+            published_at=datetime(2015, 7, 1, 0, 0, 0),
+            start_at=datetime(2015, 8, 1, 0, 0, 0),
+            end_at=datetime(2015, 11, 30, 0, 0, 0),
+            auth_required=False,
+            auth_message=None,
+            seat_selection_start_at=datetime(2015, 7, 1, 0, 0, 0)
+            )
+        self.session.add(self.yet_another_sales_segment)
         self.order_cash_on_delivery = FamiPortOrder(
             client_code=u'00000000000000000000001',
             famiport_sales_segment=self.sales_segment,
@@ -474,6 +528,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='000',
+            sales_segment_code_specified=True,
             customer_name=None,
             customer_phone_number=None,
             customer_address_1=None,
@@ -491,6 +546,102 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             require_ticketing_fee_on_ticketing=False
             )
 
+    def test_cash_on_delivery_different_event(self):
+        from .internal_api import update_famiport_order_by_order_no
+        from .exc import FamiPortAlreadyPaidError
+        update_famiport_order_by_order_no(
+            self.session,
+            order_no=u'XX000012345',
+            client_code=u'00000000000000000000001',
+            famiport_order_identifier=None,
+            type_=1,
+            event_code_1='000002',
+            event_code_2='0000',
+            performance_code='000',
+            sales_segment_code='000',
+            sales_segment_code_specified=True,
+            customer_name=None,
+            customer_phone_number=None,
+            customer_address_1=None,
+            customer_address_2=None,
+            total_amount=None,
+            system_fee=None,
+            ticketing_fee=None,
+            ticket_payment=None,
+            tickets=None,
+            payment_start_at=datetime(2015, 6, 5),
+            payment_due_at=None,
+            ticketing_start_at=None,
+            ticketing_end_at=None,
+            payment_sheet_text=None,
+            require_ticketing_fee_on_ticketing=False
+            )
+        self.assertEqual(self.order_cash_on_delivery.famiport_performance.famiport_event.code_1, '000002')
+
+    def test_cash_on_delivery_different_performance(self):
+        from .internal_api import update_famiport_order_by_order_no
+        from .exc import FamiPortAlreadyPaidError
+        update_famiport_order_by_order_no(
+            self.session,
+            order_no=u'XX000012345',
+            client_code=u'00000000000000000000001',
+            famiport_order_identifier=None,
+            type_=1,
+            event_code_1='000001',
+            event_code_2='0000',
+            performance_code='001',
+            sales_segment_code='000',
+            sales_segment_code_specified=True,
+            customer_name=None,
+            customer_phone_number=None,
+            customer_address_1=None,
+            customer_address_2=None,
+            total_amount=None,
+            system_fee=None,
+            ticketing_fee=None,
+            ticket_payment=None,
+            tickets=None,
+            payment_start_at=datetime(2015, 6, 5),
+            payment_due_at=None,
+            ticketing_start_at=None,
+            ticketing_end_at=None,
+            payment_sheet_text=None,
+            require_ticketing_fee_on_ticketing=False
+            )
+        self.assertEqual(self.order_cash_on_delivery.famiport_performance.code, '001')
+
+    def test_cash_on_delivery_different_sales_segment(self):
+        from .internal_api import update_famiport_order_by_order_no
+        from .exc import FamiPortAlreadyPaidError
+        update_famiport_order_by_order_no(
+            self.session,
+            order_no=u'XX000012345',
+            client_code=u'00000000000000000000001',
+            famiport_order_identifier=None,
+            type_=1,
+            event_code_1='000001',
+            event_code_2='0000',
+            performance_code='000',
+            sales_segment_code='001',
+            sales_segment_code_specified=True,
+            customer_name=None,
+            customer_phone_number=None,
+            customer_address_1=None,
+            customer_address_2=None,
+            total_amount=None,
+            system_fee=None,
+            ticketing_fee=None,
+            ticket_payment=None,
+            tickets=None,
+            payment_start_at=datetime(2015, 6, 5),
+            payment_due_at=None,
+            ticketing_start_at=None,
+            ticketing_end_at=None,
+            payment_sheet_text=None,
+            require_ticketing_fee_on_ticketing=False
+            )
+        self.assertEqual(self.order_cash_on_delivery.famiport_sales_segment.code, '001')
+
     def test_cash_on_delivery_unupdatable(self):
         from .internal_api import update_famiport_order_by_order_no
         from .exc import FamiPortAlreadyPaidError
@@ -506,6 +657,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 event_code_2='0000',
                 performance_code='000',
                 sales_segment_code='000',
+                sales_segment_code_specified=True,
                 customer_name=None,
                 customer_phone_number=None,
                 customer_address_1=None,
@@ -538,6 +690,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 event_code_2='0000',
                 performance_code='000',
                 sales_segment_code='000',
+                sales_segment_code_specified=True,
                 customer_name=None,
                 customer_phone_number=None,
                 customer_address_1=None,
@@ -569,6 +722,7 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='000',
+            sales_segment_code_specified=True,
             customer_name=None,
             customer_phone_number=None,
             customer_address_1=None,
