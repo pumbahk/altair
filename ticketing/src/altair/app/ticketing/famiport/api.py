@@ -36,6 +36,8 @@ from . import internal_api as internal
 
 logger = logging.getLogger(__name__)
 
+Unspecified = ['Unspecified']
+
 def user_api(fn):
     def _(*args, **kwargs):
         return fn(*args, **kwargs)
@@ -755,59 +757,59 @@ def cancel_famiport_order_by_order_no(request, client_code, order_no, now=None):
 def update_famiport_order_by_order_no(
         request,
         client_code,
-        order_no=None,
-        famiport_order_identifier=None,
-        type_=None,
-        event_code_1=None,
-        event_code_2=None,
-        performance_code=None,
-        sales_segment_code=None,
-        customer_name=None,
-        customer_phone_number=None,
-        customer_address_1=None,
-        customer_address_2=None,
-        total_amount=None,
-        system_fee=None,
-        ticketing_fee=None,
-        ticket_payment=None,
-        tickets=None,
-        payment_start_at=None,
-        payment_due_at=None,
-        ticketing_start_at=None,
-        ticketing_end_at=None,
-        payment_sheet_text=None,
-        require_ticketing_fee_on_ticketing=None
+        order_no=Unspecified,
+        famiport_order_identifier=Unspecified,
+        type_=Unspecified,
+        event_code_1=Unspecified,
+        event_code_2=Unspecified,
+        performance_code=Unspecified,
+        sales_segment_code=Unspecified,
+        customer_name=Unspecified,
+        customer_phone_number=Unspecified,
+        customer_address_1=Unspecified,
+        customer_address_2=Unspecified,
+        total_amount=Unspecified,
+        system_fee=Unspecified,
+        ticketing_fee=Unspecified,
+        ticket_payment=Unspecified,
+        tickets=Unspecified,
+        payment_start_at=Unspecified,
+        payment_due_at=Unspecified,
+        ticketing_start_at=Unspecified,
+        ticketing_end_at=Unspecified,
+        payment_sheet_text=Unspecified,
+        require_ticketing_fee_on_ticketing=Unspecified
         ):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')
-        sales_segment_code_specified = sales_segment_code != 'UNSPECIFIED'
+        def _u(v):
+            return v if v != Unspecified else internal.Unspecified
         internal.update_famiport_order_by_order_no(
             session,
-            client_code=client_code,
-            order_no=order_no,
-            famiport_order_identifier=famiport_order_identifier,
-            type_=type_,
-            event_code_1=event_code_1,
-            event_code_2=event_code_2,
-            performance_code=performance_code,
-            sales_segment_code=(sales_segment_code if sales_segment_code_specified else None),
-            sales_segment_code_specified=sales_segment_code_specified,
-            customer_name=customer_name,
-            customer_phone_number=customer_phone_number,
-            customer_address_1=customer_address_1,
-            customer_address_2=customer_address_2,
-            total_amount=total_amount,
-            system_fee=system_fee,
-            ticketing_fee=ticketing_fee,
-            ticket_payment=ticket_payment,
-            tickets=tickets,
-            payment_start_at=payment_start_at,
-            payment_due_at=payment_due_at,
-            ticketing_start_at=ticketing_start_at,
-            ticketing_end_at=ticketing_end_at,
-            payment_sheet_text=payment_sheet_text,
-            require_ticketing_fee_on_ticketing=require_ticketing_fee_on_ticketing
+            client_code=_u(client_code),
+            order_no=_u(order_no),
+            famiport_order_identifier=_u(famiport_order_identifier),
+            type_=_u(type_),
+            event_code_1=_u(event_code_1),
+            event_code_2=_u(event_code_2),
+            performance_code=_u(performance_code),
+            sales_segment_code=_u(sales_segment_code),
+            customer_name=_u(customer_name),
+            customer_phone_number=_u(customer_phone_number),
+            customer_address_1=_u(customer_address_1),
+            customer_address_2=_u(customer_address_2),
+            total_amount=_u(total_amount),
+            system_fee=_u(system_fee),
+            ticketing_fee=_u(ticketing_fee),
+            ticket_payment=_u(ticket_payment),
+            tickets=_u(tickets),
+            payment_start_at=_u(payment_start_at),
+            payment_due_at=_u(payment_due_at),
+            ticketing_start_at=_u(ticketing_start_at),
+            ticketing_end_at=_u(ticketing_end_at),
+            payment_sheet_text=_u(payment_sheet_text),
+            require_ticketing_fee_on_ticketing=_u(require_ticketing_fee_on_ticketing)
             )
         session.commit()
     except:

@@ -517,133 +517,129 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
         tearDown()
 
     def test_none_updated(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
             client_code=u'00000000000000000000001',
-            famiport_order_identifier=None,
+            famiport_order_identifier=Unspecified,
             type_=1,
             event_code_1='000001',
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='000',
-            sales_segment_code_specified=True,
-            customer_name=None,
-            customer_phone_number=None,
-            customer_address_1=None,
-            customer_address_2=None,
-            total_amount=None,
-            system_fee=None,
-            ticketing_fee=None,
-            ticket_payment=None,
-            tickets=None,
-            payment_start_at=None,
-            payment_due_at=None,
-            ticketing_start_at=None,
-            ticketing_end_at=None,
-            payment_sheet_text=None,
-            require_ticketing_fee_on_ticketing=False
+            customer_name=Unspecified,
+            customer_phone_number=Unspecified,
+            customer_address_1=Unspecified,
+            customer_address_2=Unspecified,
+            total_amount=Unspecified,
+            system_fee=Unspecified,
+            ticketing_fee=Unspecified,
+            ticket_payment=Unspecified,
+            tickets=Unspecified,
+            payment_start_at=Unspecified,
+            payment_due_at=Unspecified,
+            ticketing_start_at=Unspecified,
+            ticketing_end_at=Unspecified,
+            payment_sheet_text=Unspecified,
+            require_ticketing_fee_on_ticketing=Unspecified
             )
 
     def test_cash_on_delivery_different_event(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
             client_code=u'00000000000000000000001',
-            famiport_order_identifier=None,
+            famiport_order_identifier=Unspecified,
             type_=1,
             event_code_1='000002',
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='000',
-            sales_segment_code_specified=True,
-            customer_name=None,
-            customer_phone_number=None,
-            customer_address_1=None,
-            customer_address_2=None,
-            total_amount=None,
-            system_fee=None,
-            ticketing_fee=None,
-            ticket_payment=None,
-            tickets=None,
+            customer_name=Unspecified,
+            customer_phone_number=Unspecified,
+            customer_address_1=Unspecified,
+            customer_address_2=Unspecified,
+            total_amount=Unspecified,
+            system_fee=Unspecified,
+            ticketing_fee=Unspecified,
+            ticket_payment=Unspecified,
+            tickets=Unspecified,
             payment_start_at=datetime(2015, 6, 5),
-            payment_due_at=None,
-            ticketing_start_at=None,
-            ticketing_end_at=None,
-            payment_sheet_text=None,
-            require_ticketing_fee_on_ticketing=False
+            payment_due_at=Unspecified,
+            ticketing_start_at=Unspecified,
+            ticketing_end_at=Unspecified,
+            payment_sheet_text=Unspecified,
+            require_ticketing_fee_on_ticketing=Unspecified
             )
         self.assertEqual(self.order_cash_on_delivery.famiport_performance.famiport_event.code_1, '000002')
 
     def test_cash_on_delivery_different_performance(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
             client_code=u'00000000000000000000001',
-            famiport_order_identifier=None,
+            famiport_order_identifier=Unspecified,
             type_=1,
             event_code_1='000001',
             event_code_2='0000',
             performance_code='001',
             sales_segment_code='000',
-            sales_segment_code_specified=True,
-            customer_name=None,
-            customer_phone_number=None,
-            customer_address_1=None,
-            customer_address_2=None,
-            total_amount=None,
-            system_fee=None,
-            ticketing_fee=None,
-            ticket_payment=None,
-            tickets=None,
+            customer_name=Unspecified,
+            customer_phone_number=Unspecified,
+            customer_address_1=Unspecified,
+            customer_address_2=Unspecified,
+            total_amount=Unspecified,
+            system_fee=Unspecified,
+            ticketing_fee=Unspecified,
+            ticket_payment=Unspecified,
+            tickets=Unspecified,
             payment_start_at=datetime(2015, 6, 5),
-            payment_due_at=None,
-            ticketing_start_at=None,
-            ticketing_end_at=None,
-            payment_sheet_text=None,
-            require_ticketing_fee_on_ticketing=False
+            payment_due_at=Unspecified,
+            ticketing_start_at=Unspecified,
+            ticketing_end_at=Unspecified,
+            payment_sheet_text=Unspecified,
+            require_ticketing_fee_on_ticketing=Unspecified
             )
         self.assertEqual(self.order_cash_on_delivery.famiport_performance.code, '001')
 
     def test_cash_on_delivery_different_sales_segment(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
             client_code=u'00000000000000000000001',
-            famiport_order_identifier=None,
+            famiport_order_identifier=Unspecified,
             type_=1,
             event_code_1='000001',
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='001',
-            sales_segment_code_specified=True,
-            customer_name=None,
-            customer_phone_number=None,
-            customer_address_1=None,
-            customer_address_2=None,
-            total_amount=None,
-            system_fee=None,
-            ticketing_fee=None,
-            ticket_payment=None,
-            tickets=None,
+            customer_name=Unspecified,
+            customer_phone_number=Unspecified,
+            customer_address_1=Unspecified,
+            customer_address_2=Unspecified,
+            total_amount=Unspecified,
+            system_fee=Unspecified,
+            ticketing_fee=Unspecified,
+            ticket_payment=Unspecified,
+            tickets=Unspecified,
             payment_start_at=datetime(2015, 6, 5),
-            payment_due_at=None,
-            ticketing_start_at=None,
-            ticketing_end_at=None,
-            payment_sheet_text=None,
-            require_ticketing_fee_on_ticketing=False
+            payment_due_at=Unspecified,
+            ticketing_start_at=Unspecified,
+            ticketing_end_at=Unspecified,
+            payment_sheet_text=Unspecified,
+            require_ticketing_fee_on_ticketing=Unspecified
             )
         self.assertEqual(self.order_cash_on_delivery.famiport_sales_segment.code, '001')
 
     def test_cash_on_delivery_unupdatable(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         self.order_cash_on_delivery.paid_at = datetime(2015, 6, 4)
         with self.assertRaises(FamiPortAlreadyPaidError):
@@ -651,32 +647,31 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 self.session,
                 order_no=u'XX000012345',
                 client_code=u'00000000000000000000001',
-                famiport_order_identifier=None,
+                famiport_order_identifier=Unspecified,
                 type_=1,
                 event_code_1='000001',
                 event_code_2='0000',
                 performance_code='000',
                 sales_segment_code='000',
-                sales_segment_code_specified=True,
-                customer_name=None,
-                customer_phone_number=None,
-                customer_address_1=None,
-                customer_address_2=None,
-                total_amount=None,
-                system_fee=None,
-                ticketing_fee=None,
-                ticket_payment=None,
-                tickets=None,
+                customer_name=Unspecified,
+                customer_phone_number=Unspecified,
+                customer_address_1=Unspecified,
+                customer_address_2=Unspecified,
+                total_amount=Unspecified,
+                system_fee=Unspecified,
+                ticketing_fee=Unspecified,
+                ticket_payment=Unspecified,
+                tickets=Unspecified,
                 payment_start_at=datetime(2015, 6, 5),
-                payment_due_at=None,
-                ticketing_start_at=None,
-                ticketing_end_at=None,
-                payment_sheet_text=None,
-                require_ticketing_fee_on_ticketing=False
+                payment_due_at=Unspecified,
+                ticketing_start_at=Unspecified,
+                ticketing_end_at=Unspecified,
+                payment_sheet_text=Unspecified,
+                require_ticketing_fee_on_ticketing=Unspecified
                 )
 
     def test_payment_unupdatable(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         self.order_payment.paid_at = datetime(2015, 6, 4)
         with self.assertRaises(FamiPortAlreadyPaidError):
@@ -684,58 +679,56 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
                 self.session,
                 order_no=u'XX000012346',
                 client_code=u'00000000000000000000001',
-                famiport_order_identifier=None,
+                famiport_order_identifier=Unspecified,
                 type_=2,
                 event_code_1='000001',
                 event_code_2='0000',
                 performance_code='000',
                 sales_segment_code='000',
-                sales_segment_code_specified=True,
-                customer_name=None,
-                customer_phone_number=None,
-                customer_address_1=None,
-                customer_address_2=None,
-                total_amount=None,
-                system_fee=None,
-                ticketing_fee=None,
-                ticket_payment=None,
-                tickets=None,
+                customer_name=Unspecified,
+                customer_phone_number=Unspecified,
+                customer_address_1=Unspecified,
+                customer_address_2=Unspecified,
+                total_amount=Unspecified,
+                system_fee=Unspecified,
+                ticketing_fee=Unspecified,
+                ticket_payment=Unspecified,
+                tickets=Unspecified,
                 payment_start_at=datetime(2015, 6, 5),
-                payment_due_at=None,
-                ticketing_start_at=None,
-                ticketing_end_at=None,
-                payment_sheet_text=None,
-                require_ticketing_fee_on_ticketing=False
+                payment_due_at=Unspecified,
+                ticketing_start_at=Unspecified,
+                ticketing_end_at=Unspecified,
+                payment_sheet_text=Unspecified,
+                require_ticketing_fee_on_ticketing=Unspecified
                 )
 
     def test_payment_updatable(self):
-        from .internal_api import update_famiport_order_by_order_no
+        from .internal_api import update_famiport_order_by_order_no, Unspecified
         from .exc import FamiPortAlreadyPaidError
         self.order_payment.paid_at = datetime(2015, 6, 4)
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012346',
             client_code=u'00000000000000000000001',
-            famiport_order_identifier=None,
+            famiport_order_identifier=Unspecified,
             type_=2,
             event_code_1='000001',
             event_code_2='0000',
             performance_code='000',
             sales_segment_code='000',
-            sales_segment_code_specified=True,
-            customer_name=None,
-            customer_phone_number=None,
-            customer_address_1=None,
-            customer_address_2=None,
-            total_amount=None,
-            system_fee=None,
-            ticketing_fee=None,
-            ticket_payment=None,
-            tickets=None,
-            payment_start_at=None,
-            payment_due_at=None,
+            customer_name=Unspecified,
+            customer_phone_number=Unspecified,
+            customer_address_1=Unspecified,
+            customer_address_2=Unspecified,
+            total_amount=Unspecified,
+            system_fee=Unspecified,
+            ticketing_fee=Unspecified,
+            ticket_payment=Unspecified,
+            tickets=Unspecified,
+            payment_start_at=Unspecified,
+            payment_due_at=Unspecified,
             ticketing_start_at=datetime(2015, 6, 6),
             ticketing_end_at=datetime(2015, 6, 7),
-            payment_sheet_text=None,
-            require_ticketing_fee_on_ticketing=False
+            payment_sheet_text=Unspecified,
+            require_ticketing_fee_on_ticketing=Unspecified
             )
