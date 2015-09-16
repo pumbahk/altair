@@ -28,7 +28,7 @@
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
                   <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                  <input type="submit" value="QRコードを表示する" />
+                  <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
               </form>
               <br/>
               <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
