@@ -129,7 +129,6 @@ class LotEntryReporterTests(unittest.TestCase):
         self.config.add_mako_renderer('.html')
         self.config.add_subscriber('altair.app.ticketing.register_globals', 'pyramid.events.BeforeRender')
         self.config.include('pyramid_mailer.testing')
-        self.config.include('altair.app.ticketing.renderers')
         self.session = _setup_db([
             "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
@@ -277,7 +276,6 @@ class send_lot_report_mailsTests(unittest.TestCase):
         self.config.add_mako_renderer('.html')
         self.config.add_mako_renderer('.txt')
         self.config.include('pyramid_mailer.testing')
-        self.config.include('altair.app.ticketing.renderers')
         from altair.sqlahelper import register_sessionmaker_with_engine
         register_sessionmaker_with_engine(
             self.config.registry,

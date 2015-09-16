@@ -42,7 +42,7 @@ def main(global_config, **local_config):
     config.include('altair.httpsession.pyramid')
     config.include('pyramid_mako')
     config.add_mako_renderer('.html')
-    config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')
+    from altair.pyramid_extra_renderers.xml import XML
 
     ## login/logout
     config.include('altair.app.ticketing.login.internal')

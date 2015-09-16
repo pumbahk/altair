@@ -1,0 +1,22 @@
+# encoding: utf-8
+from pyramid.security import Everyone, Allow, DENY_ALL
+
+class ExtAuthBase(object):
+    __acl__ = [
+        (Allow, 'altair.auth.authenticator:rakuten', 'rakuten'),
+        DENY_ALL,
+        ]
+
+class ExtAuthRoot(ExtAuthBase):
+    subtype = None
+
+    def __init__(self, request):
+        self.request = request
+
+    def __getitem__(self, subtype):
+        return ExtAuthSubTypeResource(self.request, subtype)
+
+class ExtAuthSubTypeResource(ExtAuthBase):
+    def __init__(self, request, subtype):
+        self.request = request
+        self.subtype = subtype

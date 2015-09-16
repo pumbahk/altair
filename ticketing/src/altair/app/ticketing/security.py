@@ -6,16 +6,20 @@ from urlparse import urljoin
 from zope.interface import implementer
 from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
+from altair.app.ticketing.users.models import Membership
+from altair.sqlahelper import get_db_session
 from altair.auth.api import get_plugin_registry
 from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
 from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
 from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
+from altair.oauth_auth.plugin import OAuthAuthPlugin
 
 logger = logging.getLogger(__name__)
 
 HARDCODED_PRIORITIES = {
+    OAuthAuthPlugin: -4,
     RakutenOpenID: -3,
     FCAuthPlugin: -2,
     NogizakaAuthPlugin: 1,
@@ -25,6 +29,7 @@ DISPLAY_NAMES = {
     RakutenOpenID: _(u'楽天会員認証'),
     FCAuthPlugin: _(u'FC会員認証'),
     NogizakaAuthPlugin: _(u'キーワード認証'),
+    OAuthAuthPlugin: _(u'OAuth認可APIを使った認証'),
     }
 
 class AuthModelCallback(object):
@@ -66,19 +71,29 @@ class AuthModelCallback(object):
             plugin_registry = get_plugin_registry(request)
             authenticator = plugin_registry.lookup(authenticator_name)
 
-            membership = identity.get('membership', None)
             if isinstance(authenticator, RakutenOpenID):
-                membership = 'rakuten'
                 auth_identifier = identity['claimed_id']
+                membership = 'rakuten'
+                membergroup = None
+                is_guest = False
+            elif isinstance(authenticator, OAuthAuthPlugin):
+                auth_identifier = identity.get('authz_id') or identity['id'] 
+                _membership = get_db_session(request, 'slave').query(Membership).filter_by(organization_id=request.organization.id).first()
+                membership = _membership.name if _membership is not None else None
+                membergroup = identity['authz_kind']
+                is_guest = False
             else:
                 auth_identifier = identity.get('username', None)
+                membership = identity.get('membership', None)
+                membergroup = identity.get('membergroup', None)
+                is_guest = identity.get('is_guest', False)
             reorganized_identities.append({
                 'authenticator': authenticator,
                 'authenticator_name': authenticator_name,
                 'auth_identifier': auth_identifier,
                 'membership': membership,
-                'membergroup': identity.get('membergroup', None),
-                'is_guest': identity.get('is_guest', False),
+                'membergroup': membergroup,
+                'is_guest': is_guest,
                 })
 
         reorganized_identities.sort(key=lambda identity: self.priorities.get(identity['authenticator'].__class__) or 0)

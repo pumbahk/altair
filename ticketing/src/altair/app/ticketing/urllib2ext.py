@@ -1,3 +1,5 @@
+# encoding: utf-8
+import six
 import urllib2
 import urllib
 import base64
@@ -178,3 +180,22 @@ def build_opener(default_content_type='application/x-www-form-urlencoded', ssl_v
     opener.add_handler(urllib2.HTTPRedirectHandler())
     opener.add_handler(urllib2.HTTPErrorProcessor())
     return opener
+
+def opener_factory_from_config(config, opener_factory_key, default_opener_factory=build_opener):
+    settings = config.registry.settings
+    opener_factory_ref = settings.get(opener_factory_key, '').strip()
+    opener_factory_args = {}
+    if not opener_factory_ref:
+        opener_factory_ref = default_opener_factory
+        logger.info('%s is not specified; defaulting to %s and opener_factory arguments will be ignored too!' % (opener_factory_key, opener_factory_ref))
+    else:
+        # opener_factory が明示的に指定されたときのみ opener_factory_args を populate する
+        # そうでないと、予期せぬ引数がデフォルトの opener_factory に渡されることになるため
+        for k, v in six.iteritems(settings):
+            if k.startswith(opener_factory_key):
+                k = k[len(opener_factory_key) + 1:]
+                if k:
+                    opener_factory_args[k] = v
+    opener_factory = config.maybe_dotted(opener_factory_ref)
+    return lambda: opener_factory(**opener_factory_args) 
+

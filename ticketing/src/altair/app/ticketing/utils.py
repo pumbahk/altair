@@ -443,3 +443,9 @@ def get_safe_filename(s):
     # 全角はスペース/クォート記号以外全部OK、半角は大半の記号がNG
     s = re.sub(u'[　”“’]', u'_', s)
     return re.sub(r'[^-_0-9a-zA-Z\x80-\xFF]', '_', s.encode('euc-jp', 'replace').replace('?', '_')).decode('euc-jp')
+
+def parse_content_type(header_value):
+    from email.message import Message
+    m = Message()
+    m['Content-Type'] = header_value
+    return m.get_content_type(), m.get_charsets()[0]

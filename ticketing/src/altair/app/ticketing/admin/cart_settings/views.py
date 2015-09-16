@@ -56,6 +56,11 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.embedded_html_complete_page = form.data['embedded_html_complete_page']
     cart_setting.embedded_html_complete_page_mobile = form.data['embedded_html_complete_page_mobile']
     cart_setting.embedded_html_complete_page_smartphone = form.data['embedded_html_complete_page_smartphone']
+    cart_setting.oauth_client_id = form.data['oauth_client_id']
+    cart_setting.oauth_client_secret = form.data['oauth_client_secret']
+    cart_setting.oauth_endpoint_authz = form.data['oauth_endpoint_authz']
+    cart_setting.oauth_endpoint_token = form.data['oauth_endpoint_token']
+    cart_setting.oauth_endpoint_api = form.data['oauth_endpoint_api']
 
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):

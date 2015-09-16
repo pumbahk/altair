@@ -946,3 +946,54 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['nogizaka46_auth_key'] = value
+
+    @property
+    def oauth_client_id(self):
+        return self.data.get('oauth_client_id')
+
+    @oauth_client_id.setter
+    def oauth_client_id(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_client_id'] = value
+
+    @property
+    def oauth_client_secret(self):
+        return self.data.get('oauth_client_secret')
+
+    @oauth_client_secret.setter
+    def oauth_client_secret(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_client_secret'] = value
+
+    @property
+    def oauth_endpoint_authz(self):
+        return self.data.get('oauth_endpoint_authz')
+
+    @oauth_endpoint_authz.setter
+    def oauth_endpoint_authz(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_authz'] = value
+
+    @property
+    def oauth_endpoint_api(self):
+        return self.data.get('oauth_endpoint_api')
+
+    @oauth_endpoint_api.setter
+    def oauth_endpoint_api(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_api'] = value
+
+    @property
+    def oauth_endpoint_token(self):
+        return self.data.get('oauth_endpoint_token')
+
+    @oauth_endpoint_token.setter
+    def oauth_endpoint_token(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_token'] = value
+

@@ -65,7 +65,6 @@ def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
-    config.add_route('rakuten_auth.login', '/login', factory='.resources.LandingViewResource')
     config.add_route('rakuten_auth.verify', '/verify', factory='.resources.LandingViewResource')
     config.add_route('rakuten_auth.verify2', '/verify2', factory='.resources.LandingViewResource')
     config.add_route('rakuten_auth.error', '/error', factory='.resources.LandingViewResource')

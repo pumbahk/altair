@@ -10,7 +10,6 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         self.config = testing.setUp()
         self.config.include('pyramid_mako')
         self.config.add_mako_renderer('.html')
-        self.config.include('altair.app.ticketing.renderers')
         self.session = _setup_db(
             [
                 'altair.app.ticketing.core.models',

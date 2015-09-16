@@ -60,6 +60,10 @@ altair.ticketing.orderreview =
     http://[^/.]+.stg.altr.jp(/orderreview(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.orderreview.port}\1
 
+altair.ticketing.extauth = 
+    http://[^/.]+.stg.altr.jp(/extauth(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.extauth.port}\1
+
 altair.ticketing.coupon = 
     http://[^/.]+.stg.altr.jp(/coupon(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.coupon.port}\1

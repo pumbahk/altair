@@ -1,5 +1,6 @@
 import logging
 from altair.rakuten_auth.events import Authenticated
+from altair.app.ticketing.extauth.userside_impl import Authenticated as ExtAuthAuthenticated
 from pyramid.events import subscriber
 from altair.app.ticketing.cart.api import get_or_create_user
 from .models import UserPointAccountTypeEnum, UserPointAccountStatusEnum, UserPointAccount, UserProfile
@@ -7,6 +8,7 @@ from altair.app.ticketing.models import DBSession
 
 logger = logging.getLogger(__name__)
 
+@subscriber(ExtAuthAuthenticated)
 @subscriber(Authenticated)
 def hook(event):
     info = event.request.altair_auth_info

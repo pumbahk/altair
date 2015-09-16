@@ -10,6 +10,7 @@ from .exceptions import SejServerError
 from .interfaces import ISejPaymentAPICommunicator, ISejPaymentAPICommunicatorFactory
 from .payload import create_request_params, create_sej_request, parse_sej_response
 from .models import SejTicketType, SejPaymentType
+from altair.app.ticketing.urllib2ext import opener_factory_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -115,22 +116,7 @@ class SejPaymentAPICommunicatorFactory(object):
         self.retry_count = retry_count and int(retry_count) or None
         retry_interval = settings.get('altair.sej.retry_interval', '3')
         self.retry_interval = retry_interval and int(retry_interval) or None
-        opener_factory_ref = settings.get(self.OPENER_FACTORY_KEY, '').strip()
-        opener_factory_args = {}
-        if not opener_factory_ref:
-            opener_factory_ref = self.DEFAULT_OPENER_FACTORY
-            logger.info('altair.sej.urllib2_opener_factory is not specified; defaulting to %s and opener_factory arguments will be ignored too!' % opener_factory_ref)
-        else:
-            # opener_factory が明示的に指定されたときのみ opener_factory_args を populate する
-            # そうでないと、予期せぬ引数がデフォルトの opener_factory に渡されることになるため
-            for k, v in six.iteritems(settings):
-                if k.startswith(self.OPENER_FACTORY_KEY):
-                    k = k[len(self.OPENER_FACTORY_KEY) + 1:]
-                    if k:
-                        opener_factory_args[k] = v
-        self.opener_factory = config.maybe_dotted(opener_factory_ref)
-        logger.debug('opener_factory_args=%r' % opener_factory_args)
-        self.opener_factory_args = opener_factory_args
+        self.opener_factory = opener_factory_from_config(config, self.OPENER_FACTORY_KEY, self.DEFAULT_OPENER_FACTORY)
 
     def __call__(self, tenant, path):
         inticket_api_url = (tenant and tenant.inticket_api_url) or self.default_inticket_api_url
@@ -144,7 +130,7 @@ class SejPaymentAPICommunicatorFactory(object):
             time_out=self.timeout,
             retry_count=self.retry_count,
             retry_interval=self.retry_interval,
-            opener=self.opener_factory(**self.opener_factory_args)
+            opener=self.opener_factory()
             )
 
 def includeme(config):

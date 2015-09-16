@@ -78,7 +78,6 @@ def setup_auth(config):
     # 楽天認証コールバック
     def empty_resource_factory(request):
         return None
-    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
     config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
     config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
     config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
@@ -204,7 +203,6 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
     config.include('altair.app.ticketing.mails')
-    config.include('altair.app.ticketing.renderers')
     config.include('altair.app.ticketing.cart.request')
     config.include('altair.app.ticketing.cart.view_context')
     config.include('altair.app.ticketing.cart.setup__renderers')

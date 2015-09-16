@@ -30,8 +30,6 @@ class RefreshResponseTests(unittest.TestCase):
         return response
 
     def test__missing_template(self):
-        self.config.include('altair.app.ticketing.renderers')
-
         venusian = DummyVenusian(self.config)
         self._callFUT("altair.app.ticketing:templates/missing__missing.html", venusian_=venusian)
 
@@ -41,8 +39,6 @@ class RefreshResponseTests(unittest.TestCase):
             self.config.commit()
 
     def test__exists_template(self):
-        self.config.include('altair.app.ticketing.renderers')
-
         venusian = DummyVenusian(self.config)
         response_function = self._callFUT("altair.app.ticketing:templates/refresh.html", venusian_=venusian)
         venusian.scan(".")
