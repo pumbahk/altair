@@ -368,3 +368,13 @@ class EntryLotView(object):
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
+
+    @lbr_view_config(route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), request_method="GET")
+    def rsp_get(self):
+        lot_asid = self.context.lot_asid_mobile
+        return self.context.get_rsp(lot_asid)
+
+    @lbr_view_config(route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), request_method="POST")
+    def rsp_post(self):
+        lot_asid = self.context.lot_asid_mobile
+        return self.context.post_rsp(lot_asid)
