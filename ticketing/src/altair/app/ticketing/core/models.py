@@ -734,7 +734,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'end_on':end_on,
             "code": self.code or "",
             'sales':[s.get_cms_data() for s in sales_segments],
-            'public':self.public
+            'public':self.public,
+            'display_order':self.display_order
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -3888,6 +3889,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     asid_mobile = AnnotatedColumn(Unicode(255), doc=u"asid_mobile", _a_label=u"asid_mobile")
     asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"asid_smartphone", _a_label=u"asid_smartphone")
     lot_asid = AnnotatedColumn(Unicode(255), doc=u"lot_asid", _a_label=u"lot_asid")
+    lot_asid_smartphone = AnnotatedColumn(Unicode(255), doc=u"lot_asid_smartphone", _a_label=u"lot_asid_smartphone")
+    lot_asid_mobile = AnnotatedColumn(Unicode(255), doc=u"lot_asid_mobile", _a_label=u"lot_asid_mobile")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
     mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
 

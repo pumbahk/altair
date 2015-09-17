@@ -359,9 +359,22 @@ class EntryLotView(object):
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)
 
+        if cart_api.is_point_input_required(self.context, self.request):
+            return HTTPFound(self.request.route_path('lots.entry.rsp'))
+
         result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
+
+    @lbr_view_config(route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), request_method="GET")
+    def rsp_get(self):
+        lot_asid = self.context.lot_asid_mobile
+        return self.context.get_rsp(lot_asid)
+
+    @lbr_view_config(route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), request_method="POST")
+    def rsp_post(self):
+        lot_asid = self.context.lot_asid_mobile
+        return self.context.post_rsp(lot_asid)

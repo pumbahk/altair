@@ -14,12 +14,16 @@ from unittest import (
 import mock
 from markupsafe import Markup
 from pyramid.testing import (
+    setUp,
+    tearDown,
     DummyModel,
     DummyRequest,
     DummyResource,
     )
 from altair.app.ticketing.famiport.communication.testing import FamiPortTestBase
-
+from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.sqlahelper import register_sessionmaker_with_engine, get_db_session
+from sqlalchemy import create_engine
 
 class FamiPortTestCase(FamiPortTestBase, TestCase):
     pass
@@ -1242,3 +1246,162 @@ class SelectFamiportOrderTypeTest(TestCase):
              }
         res = self._callFUT(*args, **kwds)
         self.assertEqual(res, exp_type)
+
+
+class RefreshFamiPortOrderTest(TestCase):
+    def _getTargets(self):
+        from .famiport import FamiPortPaymentPlugin, FamiPortDeliveryPlugin, FamiPortPaymentDeliveryPlugin
+        return [
+            FamiPortPaymentPlugin,
+            FamiPortDeliveryPlugin,
+            FamiPortPaymentDeliveryPlugin,
+            ]
+
+    def setUp(self):
+        from altair.app.ticketing.core.models import Organization, FamiPortTenant
+        self.session = _setup_db([
+           'altair.app.ticketing.core.models',
+           'altair.app.ticketing.orders.models',
+           'altair.app.ticketing.cart.models',
+           'altair.app.ticketing.lots.models',
+           ])
+        self.famiport_engine = create_engine('sqlite://')
+        from altair.app.ticketing.famiport.models import Base as FamiPortBase 
+        self.request = DummyRequest()
+        self.config = setUp(request=self.request)
+        FamiPortBase.metadata.create_all(bind=self.famiport_engine)
+        register_sessionmaker_with_engine(self.config.registry, 'famiport', self.famiport_engine)
+        self.organization = Organization(
+            code=u'XX',
+            short_name=u'-'
+            )
+        self.session.add(self.organization)
+        self.session.flush()
+        self.session.add(
+            FamiPortTenant(
+                organization_id=self.organization.id,
+                name=u'',
+                code=u'00000'
+                )
+            )
+        self.session.flush()
+
+    def tearDown(self):
+        famiport_session = get_db_session(self.request, 'famiport')
+        famiport_session.close()
+        from altair.app.ticketing.famiport.models import Base as FamiPortBase 
+        FamiPortBase.metadata.drop_all(bind=self.famiport_engine)
+        _teardown_db()
+
+    def test_it(self):
+        from decimal import Decimal
+        from datetime import datetime
+        from altair.app.ticketing.core.models import Site, Event, Performance
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
+        from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortOrderType, FamiPortPerformance, FamiPortEvent, FamiPortVenue, FamiPortClient, FamiPortPlayguide
+        famiport_session = get_db_session(self.request, 'famiport')
+        client = FamiPortClient(
+            name=u'client',
+            code=u'00000',
+            prefix=u'0',
+            playguide=FamiPortPlayguide(
+                discrimination_code=u'0',
+                discrimination_code_2=u'0'
+                )
+            )
+        famiport_venue = FamiPortVenue(
+            client_code=client.code,
+            name=u'venue',
+            name_kana=u'venue_kana'
+            )
+        famiport_session.add(famiport_venue)
+        famiport_session.flush()
+
+        event = Event(organization=self.organization)
+        performance = Performance()
+        altair_famiport_venue = AltairFamiPortVenue(
+            organization=self.organization,
+            famiport_venue_id=famiport_venue.id,
+            name=u'venue',
+            name_kana=u'venue_kana',
+            sites=[Site()]
+            )
+        altair_famiport_performance_group = AltairFamiPortPerformanceGroup(
+            organization=self.organization,
+            event=event,
+            code_1=u'000',
+            code_2=u'000',
+            altair_famiport_venue=altair_famiport_venue
+            )
+        altair_famiport_performance = AltairFamiPortPerformance(
+            code=u'000',
+            altair_famiport_performance_group=altair_famiport_performance_group,
+            performance=performance
+            )
+        self.session.add(altair_famiport_performance)
+        self.session.flush()
+
+        famiport_session.add(
+            FamiPortOrder(
+                type=FamiPortOrderType.CashOnDelivery.value,
+                famiport_client=client,
+                order_no=u'XX0000000000',
+                famiport_order_identifier=u'',
+                total_amount=Decimal(100),
+                system_fee=Decimal(30),
+                ticketing_fee=Decimal(10),
+                ticket_payment=Decimal(60),
+                customer_name=u'',
+                customer_address_1=u'',
+                customer_address_2=u'',
+                customer_phone_number=u'',
+                famiport_performance=FamiPortPerformance(
+                    code=u'000',
+                    userside_id=altair_famiport_performance.id,
+                    famiport_event=FamiPortEvent(
+                        code_1=u'000',
+                        code_2=u'000',
+                        venue=famiport_venue,
+                        client=client
+                        )
+                    )
+                )
+            )
+        famiport_session.flush()
+        targets = self._getTargets()
+        for target in targets:
+            order = DummyModel(
+                organization_id=1,
+                performance_id=performance.id,
+                order_no=u'XX0000000000',
+                items=[],
+                total_amount=Decimal(100),
+                system_fee=Decimal(10),
+                delivery_fee=Decimal(10),
+                transaction_fee=Decimal(10),
+                special_fee=Decimal(10),
+                special_fee_name=u'special',
+                sales_segment=None,
+                shipping_address=DummyModel(
+                    zip=u'0000000',
+                    prefecture=u'new',
+                    city=u'new',
+                    address_1=u'new',
+                    address_2=u'new',
+                    tel_1=u'0123456789',
+                    tel_2=None,
+                    last_name=u'new_last_name',
+                    first_name=u'new_first_name'
+                    ),
+                channel=1,
+                operator=None,
+                user=None,
+                membership=None,
+                user_point_accounts=None,
+                payment_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                payment_due_at=datetime(2015, 1, 2, 0, 0, 0),
+                issuing_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                issuing_end_at=datetime(2015, 1, 1, 0, 0, 0)
+                )
+            obj = target()
+            obj.refresh(self.request, order)

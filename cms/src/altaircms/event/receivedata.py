@@ -194,6 +194,7 @@ class Scanner(object):
                 performance.end_on = parse_datetime(record.get('end_on'))
                 performance.code = record.get('code')
                 performance.public = record.get('public')
+                performance.display_order = record.get('display_order')
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the performance record" % e.message)
         return r

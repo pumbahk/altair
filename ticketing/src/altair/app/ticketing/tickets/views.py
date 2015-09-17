@@ -704,6 +704,10 @@ class TicketPrinter(BaseView):
     def printer2(self):
         return dict(endpoints=self.endpoints)
 
+    @view_config(route_name='tickets.printer3', renderer='altair.app.ticketing:templates/tickets/printer3.html')
+    def printer3(self):
+        return dict(endpoints=self.endpoints)
+
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
     def printer_embedded(self):
         return dict(

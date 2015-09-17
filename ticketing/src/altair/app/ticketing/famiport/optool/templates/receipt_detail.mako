@@ -118,7 +118,7 @@
       <tr>
         % if receipt.is_ticketing_receipt:
         <th>発券日時</th>
-        <td>${vh.display_delivery_date(receipt) if vh.display_payment_date(receipt) else u'未発券'}</td>
+        <td>${vh.display_delivery_date(receipt) if vh.display_delivery_date(receipt) else u'未発券'}</td>
         % endif
         % if receipt.is_payment_receipt:
         <th>入金日時</th>

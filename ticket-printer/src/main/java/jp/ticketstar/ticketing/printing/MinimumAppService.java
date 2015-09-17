@@ -6,31 +6,31 @@ import java.util.List;
 import javax.print.PrintService;
 
 public interface MinimumAppService {
-	public void printAll();
+    public void printAll();
 
-	public List<OurPageFormat> getPageFormats();
-	
-	public void setPageFormat(OurPageFormat pageFormat);
+    public List<OurPageFormat> getPageFormats();
+    
+    public void setPageFormat(OurPageFormat pageFormat);
 
-	public OurPageFormat getPageFormat();
+    public OurPageFormat getPageFormat();
 
-	public void addListenerForPageFormat(PropertyChangeListener listener);
-	
-	public List<PrintService> getPrintServices();
+    public void addListenerForPageFormat(PropertyChangeListener listener);
+    
+    public List<PrintService> getPrintServices();
 
-	public void setPrintService(PrintService printService);
+    public void setPrintService(PrintService printService);
 
-	public PrintService getPrintService();
+    public PrintService getPrintService();
 
-	public void addListenerForPrintService(PropertyChangeListener listener);
+    public void addListenerForPrintService(PropertyChangeListener listener);
 
-	public List<Page> getPages();
+    public List<Page> getPages();
 
-	public void addListenerForPages(PropertyChangeListener listener);
+    public void addListenerForPages(PropertyChangeListener listener);
 
-	public boolean getPrintingStatus();
+    public boolean getPrintingStatus();
 
-	public void addListenerForPrintingStatus(PropertyChangeListener listener);
-	
-	public void addPageEventListener(PageEventListener listener);
+    public void addListenerForPrintingStatus(PropertyChangeListener listener);
+    
+    public void addPageEventListener(PageEventListener listener);
 }

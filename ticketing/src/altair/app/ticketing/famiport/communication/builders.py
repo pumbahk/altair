@@ -194,7 +194,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
             try:
                 famiport_receipt = FamiPortReceipt.get_by_reserve_number(reserveNumber, session=session)
             except NoResultFound:
-                logger.exception(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
+                logger.info(u'FamiPortOrder not found with reserveNumber=%s' % reserveNumber)
                 replyCode = ReplyCodeEnum.SearchKeyError.value
                 famiport_receipt = None
 
