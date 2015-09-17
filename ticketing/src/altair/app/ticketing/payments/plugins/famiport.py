@@ -432,7 +432,7 @@ def refund_order(request, order, refund_record, now=None):
         base_date = refund.end_at
     else:
         base_date = now
-    send_back_due_at = base_date.replace(day=1) + timedelta(days=14)  # 14日後
+    send_back_due_at = base_date + timedelta(days=14)  # 14日後
 
     result = famiport_api.get_or_create_refund(
         request,
