@@ -175,6 +175,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   var appletCodeBase = ${json.dumps(request.application_url)|n};
   var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
+  var endpoints = ${endpoints_json|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
   var uiMode = 'normal';  // normal, salesCounter
   var uiFilter = 'vacant';  // vacant, all
@@ -424,7 +425,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       return;
     uiMode = 'salesCounter';
 
-    loadApplet();
+    var api = 'http://localhost:11231';
+    if (location.hash == '#local' || (navigator.appVersion.match(/Chrome\/(\d+)\./) && 45 <= parseInt(RegExp.$1))) {
+      connectToPrintServer(api);
+    } else {
+      loadApplet();
+    }
     $('#sales-counter-button').css('display', 'none');
     $('#sales-counter-toolbar').css('display', 'block');
   }
@@ -455,6 +461,114 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     $('#venue-viewer-guide').remove();
     $('#show-vacant-btn').val('空席のみ表示');
     $('form[name="modal-confirm-form"]').find('input').removeAttr('disabled');
+  }
+
+  function connectToPrintServer(api) {
+    var $printService = $('#printService');
+    var $pageFormat = $('#pageFormat');
+    var $ticketFormat = $('#ticketFormat');
+
+    function refreshPrintServices() {
+        $printService.empty();
+        $.ajax({
+            url: api + '/printers',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            for(var i=0 ; i<s.printers.length ; i++) {
+                $('<option></option>').val(s.printers[i]).text(s.printers[i]).appendTo($printService);
+            }
+        }).fail(function(_, s, e) {
+            var message = 'プリントサービスが起動していないようです';
+            if (e != '')
+                message += ' (' + e + ')';
+            alert(message);
+        });
+    }
+    var formats = { };
+    function refreshFormats() {
+        $pageFormat.empty();
+        $ticketFormat.empty();
+        var d = $.Deferred();
+        $.ajax({
+            url: endpoints.formats,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            if(s.status != 'success')
+                return;
+            formats.page_formats = s.data.page_formats;
+            for(var i=0 ; i<s.data.page_formats.length ; i++) {
+                $('<option></option>').val(i).text(s.data.page_formats[i].name).appendTo($pageFormat);
+            }
+            formats.ticket_formats = s.data.ticket_formats;
+            for(var i=0 ; i<s.data.ticket_formats.length ; i++) {
+                $('<option></option>').val(i).text(s.data.ticket_formats[i].name).appendTo($ticketFormat);
+            }
+            d.resolve();
+       }).fail(function() {
+            d.reject();
+       });
+       return d;
+    }
+    function onPageFormatChange() {
+      //refreshQueueEntryList();
+    }
+    function onPrintingCompleted() {
+       
+    }
+    $pageFormat.change(onPageFormatChange);
+    refreshPrintServices();
+    refreshFormats();
+    onPageFormatChange();
+
+    window.ticketPrinterService = true;
+    window.printOrder = function(order_id) {
+      var currentPrintService = $printService.val();
+      var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
+      var currentPageFormat = formats.page_formats[$pageFormat.val()];
+      if (!currentPrintService) {
+          alert('no print service');
+          return;
+      }
+      $.ajax({
+          url: api + "/process",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+              "printer": currentPrintService,
+              "page": currentPageFormat,
+              "page_format_id": currentPageFormat.id,
+              "ticket_format_id": currentTicketFormat.id,
+              "uri": location.origin,
+              "cookie": cookie,
+              "order_id": order_id
+          }),
+          dataType: 'json'
+        }).done(function(s) {
+          if(s.status == "success") {
+            // 印刷を開始したので、完了を待つ...
+            var confirm = function() {
+              $.ajax({
+                url: api+"/queue",
+                type: 'POST',
+                dataType: 'json'
+              }).done(function(s) {
+                if(0 < s.jobs.length) {
+                  // TODO: update progess
+                  setTimeout(confirm, 1000);
+                } else {
+                  onPrintingCompleted();
+                }
+              });
+            };
+            setTimeout(confirm, 1000);
+          } else {
+            alert("印刷に失敗しました." + s.message);
+            onPrintingCompleted();
+          }
+        });
+    };
   }
 
   window[callbackName] = function (applet) {

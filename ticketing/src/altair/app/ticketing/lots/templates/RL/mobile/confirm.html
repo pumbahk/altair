@@ -82,6 +82,18 @@ ${shipping_address['address_2']}
 <div>
 ${memo|h.nl2br}
 </div>
+% if membershipinfo is not None and membershipinfo.enable_point_input:
+<%mobile:form_header>楽天ポイント口座</%mobile:form_header>
+    % if accountno:
+<div>
+${accountno}
+</div>
+    % else:
+<div style="color: red">
+※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。
+</div>
+    % endif
+% endif
 
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>

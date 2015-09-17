@@ -45,7 +45,7 @@ public class URLConnectionSVGDocumentLoader extends SVGDocumentLoader {
     protected RequestBodySender sender;
 
     public URLConnectionSVGDocumentLoader(URLConnection conn, RequestBodySender sender, DocumentLoader loader) {
-    	super(conn.getURL().toString(), loader);
+        super(conn.getURL().toString(), loader);
         this.conn = conn;
         this.sender = sender;
     }
@@ -63,14 +63,14 @@ public class URLConnectionSVGDocumentLoader extends SVGDocumentLoader {
             }
 
             if (sender != null) {
-            	if (conn instanceof HttpURLConnection)
-	            	((HttpURLConnection)conn).setRequestMethod(sender.getRequestMethod());
-            	conn.setDoOutput(true);
+                if (conn instanceof HttpURLConnection)
+                    ((HttpURLConnection)conn).setRequestMethod(sender.getRequestMethod());
+                conn.setDoOutput(true);
             }
             conn.setDoInput(true);
             conn.connect();
             if (sender != null)
-            	sender.send(conn.getOutputStream());
+                sender.send(conn.getOutputStream());
 
             SVGDocument svgDocument = (SVGDocument)loader.loadDocument(conn.getURL().toString(), conn.getInputStream());
 
@@ -101,12 +101,12 @@ public class URLConnectionSVGDocumentLoader extends SVGDocumentLoader {
     }
 
     static Dispatcher startedDispatcher = new Dispatcher() {
-	        public void dispatch(Object listener,
-	                             Object event) {
-	            ((SVGDocumentLoaderListener)listener).documentLoadingStarted
-	                ((SVGDocumentLoaderEvent)event);
-	        }
-	    };
+            public void dispatch(Object listener,
+                                 Object event) {
+                ((SVGDocumentLoaderListener)listener).documentLoadingStarted
+                    ((SVGDocumentLoaderEvent)event);
+            }
+        };
             
     static Dispatcher completedDispatcher = new Dispatcher() {
             public void dispatch(Object listener,

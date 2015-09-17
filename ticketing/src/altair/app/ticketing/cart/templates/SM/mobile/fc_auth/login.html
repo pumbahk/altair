@@ -18,15 +18,13 @@
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="SM" />
+<input type="hidden" name="password" value="susanoo"/><br />
 <div>
   会員ID(半角数字)<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  <br/><span style="color: red">IDが一致しません</span>
   %endif
-  <br/>
-  パスワード(半角英数字)
-  <input type="password" name="password" value=""><br/>
 </div>
 <input type="submit" value="ログイン" />
 </form>
@@ -35,7 +33,7 @@
 <div>
 <div><font color="#036EB8">■</font>一般の方はこちらから</font>
 </div>
-
+※ブースター会員の方も一般販売開始後はこちらからご購入ください。
 </div>
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">

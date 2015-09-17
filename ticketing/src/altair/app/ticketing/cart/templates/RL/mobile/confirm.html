@@ -77,6 +77,18 @@ ${shipping.tel_1}
 <div>
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
+% if membershipinfo is not None and membershipinfo.enable_point_input:
+    % if accountno:
+<%mobile:form_header>楽天ポイント口座</%mobile:form_header>
+<div>
+${accountno}
+</div>
+    % else:
+<div style="color: red">
+※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。
+</div>
+    % endif
+% endif
 
 % if extra_form_data:
 <%mobile:header>追加情報</%mobile:header>

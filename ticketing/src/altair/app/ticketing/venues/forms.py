@@ -75,7 +75,8 @@ class SiteForm(Form):
             replace_ambiguous,
             ],
         validators=[
-            JISX0208, 
+            Required(),
+            JISX0208,
             Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )

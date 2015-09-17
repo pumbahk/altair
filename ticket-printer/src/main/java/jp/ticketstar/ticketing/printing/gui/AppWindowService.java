@@ -22,56 +22,56 @@ import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 public class AppWindowService extends BasicAppService {
-	public void openFileDialog() {
-		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-		if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
-			loadDocument(chooser.getSelectedFile().toURI());
-		}
-	}
+    public void openFileDialog() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
+            loadDocument(chooser.getSelectedFile().toURI());
+        }
+    }
 
-	public synchronized Future<ExtendedSVG12OMDocument> loadDocument(URI uri) {
-		if (this.documentLoader != null)
-			throw new IllegalStateException("document is being loaded");
-		final OurDocumentLoader loader = new OurDocumentLoader(this);
-		final SVGDocumentLoader documentLoader = new SVGDocumentLoader(uri.toString(), loader);
-		this.documentLoader = documentLoader;
-		final LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>(new ExtendedSVG12BridgeContext(this, loader));
-		documentLoader.addSVGDocumentLoaderListener(listener);
-		documentLoader.start();
-		return listener;
-	}
+    public synchronized Future<ExtendedSVG12OMDocument> loadDocument(URI uri) {
+        if (this.documentLoader != null)
+            throw new IllegalStateException("document is being loaded");
+        final OurDocumentLoader loader = new OurDocumentLoader(this);
+        final SVGDocumentLoader documentLoader = new SVGDocumentLoader(uri.toString(), loader);
+        this.documentLoader = documentLoader;
+        final LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>(new ExtendedSVG12BridgeContext(this, loader));
+        documentLoader.addSVGDocumentLoaderListener(listener);
+        documentLoader.start();
+        return listener;
+    }
 
-	protected TicketPrintable createTicketPrintable(PrinterJob job) {
-		if (model.getPageSetModel() == null)
-			throw new IllegalStateException("pageSetModel is not loaded");
-		return new TicketPrintable(
-			new ArrayList<Page>(model.getPageSetModel().getPages()), job,
-			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
-		);
-	}
+    protected TicketPrintable createTicketPrintable(PrinterJob job) {
+        if (model.getPageSetModel() == null)
+            throw new IllegalStateException("pageSetModel is not loaded");
+        return new TicketPrintable(
+            new ArrayList<Page>(model.getPageSetModel().getPages()), job,
+            new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
+        );
+    }
 
-	public void printAll() {
-		invokeWhenDocumentReady(new Runnable() {
-			public void run() {
-				AccessController.doPrivileged(new PrivilegedAction<Object>() {
-					public Object run() {
-						try {
-							final PrinterJob job = PrinterJob.getPrinterJob();
-							job.setPrintService(model.getPrintService());
-							job.setPrintable(createTicketPrintable(job), model.getPageFormat());
-							job.print();
-						} catch (Exception e) {
-							displayError("Failed to print tickets\nReason: " + e);
-						}
-						return null;
-					}
-				});
-			}
-		}, null);
-	}
+    public void printAll() {
+        invokeWhenDocumentReady(new Runnable() {
+            public void run() {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        try {
+                            final PrinterJob job = PrinterJob.getPrinterJob();
+                            job.setPrintService(model.getPrintService());
+                            job.setPrintable(createTicketPrintable(job), model.getPageFormat());
+                            job.print();
+                        } catch (Exception e) {
+                            displayError("Failed to print tickets\nReason: " + e);
+                        }
+                        return null;
+                    }
+                });
+            }
+        }, null);
+    }
 
-	public AppWindowService(AppModel model) {
-		super(model);
-	}
+    public AppWindowService(AppModel model) {
+        super(model);
+    }
 }

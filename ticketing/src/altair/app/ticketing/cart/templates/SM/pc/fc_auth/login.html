@@ -33,6 +33,7 @@
                               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
                                 <input type="submit" class="btnLogin" value="チケット購入" />
                               </form>
+                        ※ブースター会員の方も一般販売開始後は<br/>こちらからご購入ください。
                             </td>
                         </tr>
                     </table>
@@ -40,6 +41,7 @@
                 </td>
                 <td>
                   <form action="${request.path}" method="post">
+                    <input type="hidden" name="password" value="susanoo">
                     <table class="loginbox">
                         <thead>
                             <tr>
@@ -56,17 +58,9 @@
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                                            <br/><span class="small red">IDが一致しません</span>
                                             %endif
 
-                                        </div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <th style="text-align:right">パスワード</th>
-                                      <td style="text-align:left">
-                                        <div class="tal">
-                                            <input type="password" name="password">
                                         </div>
                                       </td>
                                     </tr>
@@ -87,19 +81,20 @@
     <li>携帯電話､スマートフォンの各キャリアの受信拒否設定により、購入確認メールが受け取れない場合がございますので、
 <span style="color:#f00;">susanoo-m@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
     <li>発売開始直後は回線が大変混み合う場合がございますので、予めご了承ください。</li>
-    <li>会員ID・パスワードは半角英数でご入力ください。</li>
+    <li>会員IDは半角英数でご入力ください。</li>
     <li>4歳以上は入場チケットが必要です。ただし3歳以下でも一人で着席の場合はチケットが必要です。</li>
 </ul>
 <h3>その他</h3>
 <ul class="notes">
-    <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
-    <li>パスワードをお忘れの場合<a href="mailto:susanoo-m@tstar.jp">こちら</a>からお問合せください。</li>
+<li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
+<li>予約完了メールが届かない場合は<a href="mailto:susanoo-m@tstar.jp">こちら</a>にご登録いただいた『お名前』・『電話番号』記載の上ご連絡ください。</li>
+<li>会員IDをお忘れの場合は、以下「お問い合わせ」までご連絡ください。</li>
 </ul>
 
 <h3>お問い合わせ</h3>
 
 <ul class="notes">
-        <li>◆株式会社山陰スポーツネットワーク(0852-60-1866) (平日10時～18時)</li>
+        <li>株式会社山陰スポーツネットワーク(0852-60-1866) (平日10時～18時)</li>
 </ul>
   </div>
 </div>

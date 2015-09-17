@@ -388,9 +388,9 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
         klass = self._get_target_class()
         return klass(*args, **kwds)
 
-    def _create_famiport_receipt(self, *args, **kwds):
-        from ..models import FamiPortReceipt as klass
-        return klass(*args, **kwds)
+    def _create_famiport_receipt(self, **kwds):
+        from ..models import FamiPortOrder, FamiPortOrderType, FamiPortReceipt, FamiPortReceiptType
+        return FamiPortReceipt(type=FamiPortReceiptType.CashOnDelivery.value, famiport_order=FamiPortOrder(type=FamiPortOrderType.CashOnDelivery.value), **kwds)
 
     def _before_90(self, now_):
         return now_ - self.expiry
@@ -430,7 +430,7 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
         receipt = self._create_famiport_receipt(
             id=receipt_id,
             inquired_at=ago,
-            payment_request_received_at=ago,
+            payment_request_received_at=ago
             )
         receipt.id = receipt_id
         registry = mock.Mock()

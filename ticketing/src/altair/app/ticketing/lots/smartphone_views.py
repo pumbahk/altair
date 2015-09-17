@@ -6,7 +6,6 @@ import operator
 from markupsafe import Markup
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
-from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from webob.multidict import MultiDict
 
@@ -24,7 +23,6 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart import schemas as cart_schemas
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.view_support import render_view_to_response_with_derived_request
-from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 from . import api
 from . import helpers as h
@@ -344,67 +342,12 @@ class EntryLotView(object):
             return result
         return HTTPFound(urls.entry_confirm(self.request))
 
-    @reify
-    def existing_user_point_account(self):
-        user = cart_api.get_user(self.context.authenticated_user())
-        if user is not None and UserPointAccountTypeEnum.Rakuten.v in user.user_point_accounts:
-            return user.user_point_accounts[UserPointAccountTypeEnum.Rakuten.v]
-        else:
-            return None
-
     @lbr_view_config(request_method="GET", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
     def rsp(self):
-        formdata = MultiDict(
-            accountno=""
-            )
-        form = cart_schemas.PointForm(formdata=formdata)
-        lot_asid = self.request.context.lot_asid
-
-        accountno = self.request.params.get('account')
-        user = cart_api.get_or_create_user(self.context.authenticated_user())
-        if accountno:
-            form['accountno'].data = accountno.replace('-', '')
-        else:
-            if self.context.membershipinfo is not None and \
-               self.context.membershipinfo.enable_auto_input_form:
-                if self.existing_user_point_account is not None:
-                    form.accountno.data = self.existing_user_point_account.account_number
-
-        return dict(
-            form=form,
-            asid=lot_asid
-        )
-        return dict()
+        lot_asid = self.context.lot_asid_smartphone
+        return self.context.get_rsp(lot_asid)
 
     @lbr_view_config(request_method="POST", route_name='lots.entry.rsp', renderer=selectable_renderer("point.html"), custom_predicates=())
     def rsp_post(self):
-        form = cart_schemas.PointForm(formdata=self.request.params)
-        point_params = dict(
-            accountno=form.data['accountno'],
-            )
-
-        if not form.validate():
-            asid = self.request.context.asid_smartphone
-            return dict(form=form, asid=asid)
-
-        account_number = point_params.pop("accountno", None)
-        user = cart_api.get_or_create_user(self.context.authenticated_user())
-        if account_number:
-            acc = cart_api.create_user_point_account_from_point_no(
-                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
-                type=UserPointAccountTypeEnum.Rakuten,
-                account_number=account_number
-                )
-            api.set_user_point_account_to_session(self.request, acc)
-
-        from .adapters import LotSessionCart
-        from altair.app.ticketing.payments.payment import Payment
-        entry = api.get_lot_entry_dict(self.request)
-        cart = LotSessionCart(entry, self.request, self.request.context.lot)
-        payment = Payment(cart, self.request)
-        # マルチ決済のみオーソリのためにカード番号入力画面に遷移する
-        result = payment.call_prepare()
-        if callable(result):
-            return result
-
-        return HTTPFound(self.request.route_url('lots.entry.confirm', event_id=self.request.context.event.id, lot_id=self.request.context.lot.id))
+        lot_asid = self.context.lot_asid_smartphone
+        return self.context.post_rsp(lot_asid)

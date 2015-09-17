@@ -1,6 +1,0 @@
-bin/*
-var/*
-*.pid
-develop-eggs
-eggs
-parts
