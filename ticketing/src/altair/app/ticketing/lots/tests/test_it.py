@@ -368,6 +368,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                                         lot=lot,
                                         organization=organization,
                                         extra_form_fields=[],
+                                        membershipinfo=None,
                                         cart_setting=testing.DummyModel(
                                             extra_form_fields=[],
                                             flavors=None,
