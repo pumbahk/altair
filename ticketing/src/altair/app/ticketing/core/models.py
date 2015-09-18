@@ -618,6 +618,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 convert_map['sales_segment'].update(
                     SalesSegment.create_from_template(template=template_sales_segment, performance_id=self.id)
                 )
+
                 template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
                                                  .filter_by(performance_id=template_performance.id).all()
                 for template_product in template_products:
@@ -630,6 +631,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=org_id)\
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
+
+                # 会員のひも付けを反映する
+                template_sales_segment.sales_segment_group.sync_member_group_to_children()
+
             logger.info('[copy] SalesSegment end')
 
         # create Venue - VenueArea, Seat - SeatAttribute
