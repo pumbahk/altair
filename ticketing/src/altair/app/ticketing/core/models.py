@@ -667,8 +667,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
 
         # 会員のひも付けを反映する
+        group_list = []
         for sales_segment in self.sales_segments:
-            sales_segment.sales_segment_group.sync_member_group_to_children()
+            group = sales_segment.sales_segment_group
+            if not group.id in group_list:
+                group_list.append(group.id)
+                group.sync_member_group_to_children()
 
     def delete(self):
 
