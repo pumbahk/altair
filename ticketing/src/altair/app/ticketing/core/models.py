@@ -632,9 +632,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
 
-                # 会員のひも付けを反映する
-                template_sales_segment.sales_segment_group.sync_member_group_to_children()
-
             logger.info('[copy] SalesSegment end')
 
         # create Venue - VenueArea, Seat - SeatAttribute
@@ -668,6 +665,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 sales_segment.start_at = sales_segment.sales_segment_group.start_for_performance(sales_segment.performance)
             if sales_segment.use_default_end_at:
                 sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
+
+        # 会員のひも付けを反映する
+        for sales_segment in self.sales_segments:
+            sales_segment.sales_segment_group.sync_member_group_to_children()
 
     def delete(self):
 
