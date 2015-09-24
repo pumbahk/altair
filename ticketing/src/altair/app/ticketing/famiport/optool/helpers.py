@@ -77,7 +77,7 @@ class ViewHelpers(object):
 
         if famiport_receipt.type == FamiPortReceiptType.Payment.value or \
            famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
-            if famiport_receipt.completed_at is not None:
+            if famiport_receipt.payment_request_received_at is not None:
                 display_code = famiport_receipt.shop_code
 
         return display_code
@@ -87,7 +87,7 @@ class ViewHelpers(object):
 
         if famiport_receipt.type == FamiPortReceiptType.Ticketing.value or \
            famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
-            if famiport_receipt.completed_at is not None:
+            if famiport_receipt.payment_request_received_at is not None:
                 display_code = famiport_receipt.shop_code
 
         return display_code
