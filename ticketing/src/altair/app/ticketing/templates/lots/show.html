@@ -91,25 +91,22 @@ ${tabs.tabs(request)}
 
 <h3>決済引取方法</h3>
 <form action="${request.url}" method="post">
-販売区分グループの値を使用
-<input type="checkbox" name="use_default_pdmp" value="checked" ${"checked" if lot.sales_segment.use_default_payment_delivery_method_pairs else u""}/>
+  ※決済取引方法が表示されない場合は、販売区分グループから一般公開に変更してください。
   <table class="table table-bordered table-condensed">
     <thead>
       <tr>
-        <th class="span1">使用</th>
-        <th class="span5">決済方法</th>
-        <th class="span5">引取方法</th>
-        <th class="span1">状態</th>
+        <th class="span6">決済方法</th>
+        <th class="span6">引取方法</th>
       </tr>
     </thead>
     <tbody>
-    %for pdmp in lot.sales_segment.sales_segment_group.payment_delivery_method_pairs:
+    %for pdmp in lot.sales_segment.payment_delivery_method_pairs:
+      % if pdmp.public:
       <tr>
-        <td><input type="checkbox" name="pdmp_id" value="${pdmp.id}" ${u"checked" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u""} /></td>
         <td>${pdmp.payment_method.name}</td>
         <td>${pdmp.delivery_method.name}</td>
-        <td>${u"有効" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u"無効"}</td>
       </tr>
+      % endif
     %endfor
     </tbody>
   </table>
