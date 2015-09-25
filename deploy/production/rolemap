@@ -4,6 +4,10 @@ apbv3.1a.vpc.altr	adminapp
 apbv3.1c.vpc.altr	adminapp
 apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
+btmv1.1a.vpc.altr	batch
+btmv1.1c.vpc.altr	batch
+wkmv1.1a.vpc.altr	worker
+wkmv1.1c.vpc.altr	worker
 apmv2.1a.vpc.altr	userapp-usersite
 apmv2.1c.vpc.altr	userapp-usersite
 apmv4.1a.vpc.altr	userapp-usersite
@@ -16,26 +20,24 @@ apmv8.1a.vpc.altr	userapp-cart
 apmv8.1c.vpc.altr	userapp-cart
 apmv9.1a.vpc.altr	userapp-cart
 apmv9.1c.vpc.altr	userapp-cart
-apmv10.1a.vpc.altr	userapp-cart
-apmv10.1c.vpc.altr	userapp-cart
-btmv1.1c.vpc.altr	batch
-wkmv1.1a.vpc.altr	worker
-wkmv1.1c.vpc.altr	worker
+apmv11.1a.vpc.altr	userapp-cart
+apmv11.1c.vpc.altr	userapp-cart
+apmv12.1a.vpc.altr	userapp-cart
+apmv12.1c.vpc.altr	userapp-cart
+
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
-apmv1-rc.1a.vpc.altr	rc
-apmv1-rc.1c.vpc.altr	rc
 
+apcv2.1a.vpc.altr	famiport-userside-api
+apcv2.1c.vpc.altr	famiport-userside-api
 apfm1.1a.vpc.altr	famiport-optool
 apfm1.1c.vpc.altr	famiport-optool
 apfm2.1a.vpc.altr	famiport-api
 apfm2.1c.vpc.altr	famiport-api
 btfm2.1a.vpc.altr	famiport-batch
-wkfm1.1a.vpc.altr	famiport-worker
-wkfm1.1c.vpc.altr	famiport-worker
-apcv2.1a.vpc.altr	famiport-userside-api
-apcv2.1c.vpc.altr	famiport-userside-api
-wkmv2.1a.vpc.altr	famiport-userside-worker
-wkmv2.1c.vpc.altr	famiport-userside-worker
+btfm2.1c.vpc.altr	famiport-batch
 
-# vim: noet
+apmv1-rc.1a.vpc.altr	rc
+apmv1-rc.1c.vpc.altr	rc
+
+# vim: noet ts=8
