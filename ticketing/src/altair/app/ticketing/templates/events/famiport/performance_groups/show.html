@@ -117,25 +117,26 @@ var delete_performance;
 var post_modal;
 (function () {
 var modal;
+var altair_famiport_performance_id;
 var item_delete_url = ${HH.json(request.route_path('events.famiport.performances.item.delete', altair_famiport_performance_id='__altair_famiport_performance_id__'))|n};
   function get_selected_altair_famiport_performance_id() {
     return $("input[name='altair_famiport_performance_id']:checked").val();
   }
 
   delete_performance = function() {
-    var altair_famiport_performance_id = get_selected_altair_famiport_performance_id();
+    altair_famiport_performance_id = get_selected_altair_famiport_performance_id();
     if (altair_famiport_performance_id === void(0)) {
         alert("削除する公演を選択してください。");
     } else {
         modal = $('#modal-delete');
-        item_delete_url = item_delete_url.replace('__altair_famiport_performance_id__', altair_famiport_performance_id);
         modal.find('#message').text('選択した公演を削除します。よろしいですか？');
         modal.modal('toggle');
     }
   }
 
   post_modal = function() {
-    post_modal_form(modal, modal.find('form'), item_delete_url)
+    var url = item_delete_url.replace('__altair_famiport_performance_id__', altair_famiport_performance_id);
+    post_modal_form(modal, modal.find('form'), url)
   }
  })();
 </script>
