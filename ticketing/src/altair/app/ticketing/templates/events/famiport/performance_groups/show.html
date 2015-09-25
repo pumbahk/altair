@@ -117,7 +117,7 @@ var delete_performance;
 var post_modal;
 (function () {
 var modal;
-var item_delete_url
+var item_delete_url = ${HH.json(request.route_path('events.famiport.performances.item.delete', altair_famiport_performance_id='__altair_famiport_performance_id__'))|n};
   function get_selected_altair_famiport_performance_id() {
     return $("input[name='altair_famiport_performance_id']:checked").val();
   }
@@ -128,7 +128,6 @@ var item_delete_url
         alert("削除する公演を選択してください。");
     } else {
         modal = $('#modal-delete');
-        item_delete_url = ${HH.json(request.route_path('events.famiport.performances.item.delete', altair_famiport_performance_id='__altair_famiport_performance_id__'))|n};
         item_delete_url = item_delete_url.replace('__altair_famiport_performance_id__', altair_famiport_performance_id);
         modal.find('#message').text('選択した公演を削除します。よろしいですか？');
         modal.modal('toggle');
