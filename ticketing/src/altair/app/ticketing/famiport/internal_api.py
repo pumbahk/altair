@@ -437,7 +437,7 @@ def update_famiport_order_by_order_no(
                 )
             )
         performance_differs = True
-    elif famiport_sales_segment.code != sales_segment_code:
+    elif famiport_sales_segment is not None and famiport_sales_segment.code != sales_segment_code:
         logger.warning(
             u'sales_segment_code differs ('
             u'original_event_code_1={original_event_code_1}, '
