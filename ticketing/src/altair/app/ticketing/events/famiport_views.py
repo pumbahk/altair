@@ -2,6 +2,7 @@
 import logging
 from markupsafe import Markup
 from pyramid.view import view_defaults, view_config, render_view_to_response
+from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPForbidden, HTTPFound
 from sqlalchemy.sql import func as sqlf
 from altair.sqlahelper import get_db_session
@@ -327,23 +328,13 @@ class FamiPortView(BaseView):
 
     @view_config(route_name='events.famiport.performances.item.delete', renderer='events/famiport/performance_groups/show.html', request_method='POST')
     def delete_performance_post(self):
-        # event_id = self.request.matchdict['event_id']
-        # event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
-        # altair_famiport_performance_group_id = self.request.matchdict['altair_famiport_performance_group_id']
         altair_famiport_performance_id = self.request.matchdict['altair_famiport_performance_id']
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.id==altair_famiport_performance_id).one()
-        altair_famiport_performance_group = altair_famiport_performance.altair_famiport_performance_group
         try:
             altair_famiport_performance.delete()
             self.request.session.flash(u'FM公演を削除しました')
         except Exception, exception:
             self.request.session.flash(exception.message)
 
-        return dict(
-            event=altair_famiport_performance_group.event,
-            altair_famiport_performance_group=altair_famiport_performance_group
-            )
-
-        # return HTTPFound(location=self.request.route_path('events.famiport.performance_groups.item.show', event_id=altair_famiport_performance_group.event.id, \
-        #                                                   altair_famiport_performance_group_id=altair_famiport_performance_group.id))
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
