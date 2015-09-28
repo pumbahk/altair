@@ -91,22 +91,22 @@ ${tabs.tabs(request)}
 
 <h3>決済引取方法</h3>
 <form action="${request.url}" method="post">
-  ※決済取引方法が表示されない場合は、販売区分グループから一般公開に変更してください。
+  ※決済引取方法の一般公開／非公開は、販売区分グループから変更してください。
   <table class="table table-bordered table-condensed">
     <thead>
       <tr>
-        <th class="span6">決済方法</th>
-        <th class="span6">引取方法</th>
+        <th class="span2">一般公開</th>
+        <th class="span5">決済方法</th>
+        <th class="span5">引取方法</th>
       </tr>
     </thead>
     <tbody>
     %for pdmp in lot.sales_segment.payment_delivery_method_pairs:
-      % if pdmp.public:
       <tr>
+        <td><input type="checkbox" ${'checked' if pdmp.public else ''} disabled="disabled"></td>
         <td>${pdmp.payment_method.name}</td>
         <td>${pdmp.delivery_method.name}</td>
       </tr>
-      % endif
     %endfor
     </tbody>
   </table>
