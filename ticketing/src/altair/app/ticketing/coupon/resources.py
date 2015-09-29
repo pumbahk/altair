@@ -18,10 +18,6 @@ class DefaultResource(object):
         self.request = request
 
 class CouponResourceBase(object):
-    __acl__ = [
-        (Allow, Authenticated, '*'),
-        DENY_ALL,
-        ]
 
     def __init__(self, request):
         self.request = request
@@ -42,11 +38,6 @@ class CouponResourceBase(object):
         return self.session.query(Membership) \
             .filter_by(organization_id=self.organization.id) \
             .all()
-
-    def authenticated_user(self):
-        """現在認証中のユーザ"""
-        return get_auth_info(self.request)
-
 
 class CouponViewResource(CouponResourceBase):
 

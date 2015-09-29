@@ -1,4 +1,4 @@
-from altair.now import get_now, is_now_set
+from datetime import datetime
 from pyramid.httpexceptions import HTTPNotFound
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.rendering import selectable_renderer
@@ -36,7 +36,7 @@ class CouponView(object):
         if order is None:
             raise HTTPNotFound
 
-        now = get_now(self.request)
+        now = datetime.now()
         order.printed_at = now
 
         for attr in order.items:

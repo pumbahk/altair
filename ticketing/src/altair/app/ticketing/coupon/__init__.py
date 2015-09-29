@@ -1,17 +1,8 @@
 # -*- coding:utf-8 -*-
 from pyramid.config import Configurator
-from pyramid.authorization import ACLAuthorizationPolicy
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
-
-def decide_auth_types(request, classification):
-    auth_type = request.organization.setting.auth_type 
-    if auth_type is not None:
-        return [auth_type]
-    else:
-        return None
-
 
 def setup_static_views(config):
     config.add_static_view('static', 'altair.app.ticketing.coupon:static', cache_max_age=3600)
@@ -30,13 +21,6 @@ def includeme(config):
     ## coupon
     config.add_route('coupon', '/{reserved_number}', factory='.resources.CouponViewResource')
     config.add_route('coupon_admission', '/admission/{order_no}', factory='.resources.CouponViewResource')
-
-def setup_auth(config):
-    config.set_who_api_decider(decide_auth_types)
-    from altair.auth import set_auth_policy
-    from altair.app.ticketing.security import AuthModelCallback
-    set_auth_policy(config, AuthModelCallback(config))
-    config.set_authorization_policy(ACLAuthorizationPolicy())
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -67,7 +51,6 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart.setup_cart_interface')
     config.include('altair.app.ticketing.cart.import_mail_module')
     config.include('altair.app.ticketing.cart.setup_payment_renderers')
-    config.include(setup_auth)
 
     config.add_subscriber('..orderreview.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 

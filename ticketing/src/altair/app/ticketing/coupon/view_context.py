@@ -30,13 +30,6 @@ def get_coupon_view_context_factory(default_package):
             return ua_type
 
         @reify
-        def membership(self):
-            try:
-                return self.request.altair_auth_info['membership'] or self.request.matchdict.get('membership')
-            except:
-                logger.exception('WTF?')
-
-        @reify
         def organization_short_name(self):
             organization_short_name = None
             try:
