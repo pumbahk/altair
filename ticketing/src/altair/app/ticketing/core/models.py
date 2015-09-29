@@ -618,6 +618,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 convert_map['sales_segment'].update(
                     SalesSegment.create_from_template(template=template_sales_segment, performance_id=self.id)
                 )
+
                 template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
                                                  .filter_by(performance_id=template_performance.id).all()
                 for template_product in template_products:
@@ -630,6 +631,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=org_id)\
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
+
             logger.info('[copy] SalesSegment end')
 
         # create Venue - VenueArea, Seat - SeatAttribute
@@ -663,6 +665,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 sales_segment.start_at = sales_segment.sales_segment_group.start_for_performance(sales_segment.performance)
             if sales_segment.use_default_end_at:
                 sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
+
+        # 会員のひも付けを反映する
+        group_list = []
+        for sales_segment in self.sales_segments:
+            group = sales_segment.sales_segment_group
+            if not group.id in group_list:
+                group_list.append(group.id)
+                group.sync_member_group_to_children()
 
     def delete(self):
 
