@@ -188,11 +188,16 @@ def refund_sej_order(request,
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
 
-def get_sej_order(order_no, session=None):
+def get_sej_order(order_no, fetch_canceled=False, session=None):
     if session is None:
         session = _session
-    retval = session.query(SejOrder) \
-        .filter_by(order_no=order_no) \
+    q = session.query(SejOrder) \
+        .filter(SejOrder.order_no == order_no) \
+        .filter(SejOrder.error_type == None) \
+        .filter(SejOrder.order_at != None)
+    if not fetch_canceled:
+        q = q.filter(SejOrder.cancel_at == None)
+    retval = q \
         .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)) \
         .first()
     return retval
@@ -202,7 +207,9 @@ def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_n
         session = _session
     if order_no is None and exchange_number is None and billing_number is None:
         raise ValueError('any of order_no, exchange_number and billing_number must be non-null value')
-    q = session.query(SejOrder)
+    q = session.query(SejOrder) \
+        .filter(SejOrder.error_type == None) \
+        .filter(SejOrder.order_at != None)
     if order_no is not None:
         q = q.filter_by(order_no=order_no)
     if exchange_number:
@@ -215,7 +222,9 @@ def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:
         session = _session
     q = session.query(SejOrder)
-    q = q.filter_by(order_no=order_no)
+    q = q.filter(SejOrder.order_no == order_no) \
+        .filter(SejOrder.error_type == None) \
+        .filter(SejOrder.order_at != None)
     if not fetch_canceled:
         q = q.filter_by(cancel_at=None)
     q = q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
@@ -225,8 +234,10 @@ def get_valid_sej_orders(order_no, session=None):
     if session is None:
         session = _session
     q = session.query(SejOrder) \
-        .filter_by(order_no=order_no) \
-        .filter_by(cancel_at=None) \
+        .filter(SejOrder.order_no == order_no) \
+        .filter(SejOrder.error_type == None) \
+        .filter(SejOrder.order_at != None) \
+        .filter(SejOrder.cancel_at == None) \
         .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
     lists = OrderedDict()
     for sej_order in q:
