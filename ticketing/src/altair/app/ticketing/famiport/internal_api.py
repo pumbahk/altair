@@ -35,6 +35,11 @@ from .communication.api import (  # noqa
 
 logger = logging.getLogger(__name__)
 
+class UnspecifiedType(object):
+    pass
+
+Unspecified = UnspecifiedType()
+
 def get_famiport_sales_segment_by_code(session, client_code, event_code_1, event_code_2, performance_code, code):
     retval = session.query(FamiPortSalesSegment) \
                     .join(FamiPortSalesSegment.famiport_performance) \
@@ -60,6 +65,23 @@ def get_famiport_venue_by_name(session, client_code, name):
                     .filter_by(client_code=client_code, name=name) \
                     .one()
     return retval
+
+def get_famiport_sales_segment_by_code(session, client_code, event_code_1, event_code_2, performance_code, code):
+    retval = session.query(FamiPortSalesSegment) \
+                    .join(FamiPortSalesSegment.famiport_performance) \
+                    .join(FamiPortPerformance.famiport_event) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortEvent.code_1 == event_code_1,
+                            FamiPortEvent.code_2 == event_code_2
+                            ) \
+                    .filter(FamiPortPerformance.code == performance_code) \
+                    .filter(FamiPortSalesSegment.code == code) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
+                    .one()
+    return retval
+
 
 def get_famiport_sales_segment_by_userside_id(session, client_code, userside_id):
     retval = session.query(FamiPortSalesSegment) \
@@ -91,6 +113,15 @@ def get_famiport_performance_by_userside_id(session, client_code, userside_id):
                             FamiPortPerformance.userside_id == userside_id) \
                     .filter(FamiPortEvent.invalidated_at == None) \
                     .filter(FamiPortPerformance.invalidated_at == None) \
+                    .one()
+    return retval
+
+def get_famiport_event_by_code(session, client_code, code_1, code_2):
+    retval = session.query(FamiPortEvent) \
+                    .filter(FamiPortEvent.client_code == client_code,
+                            FamiPortEvent.code_1 == code_1,
+                            FamiPortEvent.code_2 == code_2) \
+                    .filter(FamiPortEvent.invalidated_at == None) \
                     .one()
     return retval
 
@@ -126,7 +157,7 @@ def get_famiport_order(session, client_code, order_no=None, famiport_order_ident
         except NoResultFound:
             raise FamiPortError('no corresponding order found for order_no=%s' % order_no)
         if famiport_order_identifier is not None and retval.famiport_order_identifier != famiport_order_identifier:
-            raise FamiPortError('famiport_order_identifier differs (%s != %s)' % famiport_order_identifier, retval.famiport_order_identifier)
+            raise FamiPortError('famiport_order_identifier differs (%s != %s)' % (famiport_order_identifier, retval.famiport_order_identifier))
     return retval
 
 def get_famiport_client(session, client_code):
@@ -326,7 +357,12 @@ def update_famiport_order_by_order_no(
         payment_sheet_text,
         require_ticketing_fee_on_ticketing
         ):
-    famiport_order = get_famiport_order(session, order_no=order_no, famiport_order_identifier=famiport_order_identifier, client_code=client_code)
+    famiport_order = get_famiport_order(
+        session,
+        order_no=(order_no if order_no is not Unspecified else None),
+        famiport_order_identifier=(famiport_order_identifier if famiport_order_identifier is not Unspecified else None),
+        client_code=client_code
+        )
 
     if famiport_order.canceled_at is not None:
         raise FamiPortAlreadyCanceledError('FamiPortOrder(id=%ld) is already canceled' % famiport_order.id)
@@ -338,12 +374,132 @@ def update_famiport_order_by_order_no(
     famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
 
-    if famiport_event.code_1 != event_code_1 or \
-       famiport_event.code_2 != event_code_2 or \
-       famiport_performance.code != performance_code or \
-       ((famiport_sales_segment is not None and famiport_sales_segment.code != sales_segment_code) or \
-        (famiport_sales_segment is None and sales_segment_code is not None)):
-        raise FamiPortError(u'event_code_1, event_code_2, performance_code or sales_segment_code differs')
+    if event_code_1 is Unspecified:
+        if event_code_2 is Unspecified:
+            event_code_1 = famiport_event.code_1
+            event_code_2 = famiport_event.code_2
+            if performance_code is Unspecified:
+                performance_code = famiport_performance.code
+                if sales_segment_code is Unspecified:
+                    if famiport_sales_segment is not None:
+                        sales_segment_code = famiport_sales_segment.code
+            elif sales_segment_code is Unspecified:
+                raise FamiPortError('sales_segment_code may not be left Unspecified when the performance is being changed')
+        else:
+            raise FamiPortError('neither event_code_1 nor event_code_2 can be Unspecified while the other is not Unspecified')
+    elif performance_code is Unspecified or sales_segment_code is Unspecified:
+        raise FamiPortError('performance_code or sales_segment_code may not be left when the event is being changed')
+
+    event_differs = False
+    performance_differs = False
+    sales_segment_differs = False
+    if famiport_event.code_1 != event_code_1 or famiport_event.code_2 != event_code_2:
+        logger.warning(
+            u'event_code_1, event_code_2 differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        event_differs = True
+    elif famiport_performance.code != performance_code:
+        logger.warning(
+            u'performance_code differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        performance_differs = True
+    elif famiport_sales_segment is not None and famiport_sales_segment.code != sales_segment_code:
+        logger.warning(
+            u'sales_segment_code differs ('
+            u'original_event_code_1={original_event_code_1}, '
+            u'original_event_code_2={original_event_code_2}, '
+            u'original_performance_code={original_performance_code}, '
+            u'original_sales_segment_code={original_sales_segment_code}, '
+            u'new_event_code_1={event_code_1}, '
+            u'new_event_code_2={event_code_2}, '
+            u'new_performance_code={performance_code}, '
+            u'new_sales_segment_code={sales_segment_code})'.format(
+                original_event_code_1=famiport_event.code_1,
+                original_event_code_2=famiport_event.code_2,
+                original_performance_code=famiport_performance.code,
+                original_sales_segment_code=(famiport_sales_segment.code if famiport_sales_segment is not None else None),
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                performance_code=performance_code,
+                sales_segment_code=sales_segment_code
+                )
+            )
+        sales_segment_differs = True
+
+    if event_differs:
+        try:
+            famiport_event = get_famiport_event_by_code(
+                session,
+                client_code=client_code,
+                code_1=famiport_event.code_1,
+                code_2=famiport_event.code_2
+                )
+        except NoResultFound:
+            raise FamiPortError(u'FamiPortEvent not found for client_code=%s, code_1=%s, code_2=%s' % (client_code, event_code_1, event_code_2))
+        performance_differs = True
+
+    if performance_differs:
+        try:
+            famiport_performance = get_famiport_performance_by_code(
+                session,
+                client_code=client_code,
+                event_code_1=event_code_1,
+                event_code_2=event_code_2,
+                code=performance_code
+                )
+        except NoResultFound:
+            raise FamiPortError(u'FamiPortPerformance not found for client_code=%s, event_code_1=%s, event_code_2=%s, code=%s' % (client_code, event_code_1, event_code_2, performance_code))
+        sales_segment_differs = True
+
+    if sales_segment_differs:
+        if sales_segment_code is not None:
+            try:
+                famiport_sales_segment = get_famiport_sales_segment_by_code(
+                    session,
+                    client_code=client_code,
+                    event_code_1=event_code_1,
+                    event_code_2=event_code_2,
+                    performance_code=performance_code,
+                    code=sales_segment_code
+                    )
+            except NoResultFound:
+                raise FamiPortError(u'FamiPortSalesSegment not found for client_code=%s, event_code_1=%s, event_code_2=%s, performance_code=%s, code=%s' % (client_code, event_code_1, event_code_2, performance_code, sales_segment_code))
+        else:
+            famiport_sales_segment = None
 
     def check_updatable(payment_related=False, ticketing_related=False):
         if famiport_order.type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
@@ -362,30 +518,30 @@ def update_famiport_order_by_order_no(
     _ticketing_start_at = famiport_order.ticketing_start_at
     _ticketing_end_at = famiport_order.ticketing_end_at
 
-    if total_amount is not None and total_amount != _total_amount:
+    if total_amount is not Unspecified and total_amount != _total_amount:
         check_updatable(payment_related=True, ticketing_related=False)
         _total_amount = total_amount
-    if system_fee is not None and system_fee != _system_fee:
+    if system_fee is not Unspecified and system_fee != _system_fee:
         check_updatable(payment_related=True, ticketing_related=False)
         _system_fee = system_fee
-    if ticketing_fee is not None and ticketing_fee != _ticketing_fee:
+    if ticketing_fee is not Unspecified and ticketing_fee != _ticketing_fee:
         check_updatable(payment_related=True, ticketing_related=False)
         _ticketing_fee = ticketing_fee
-    if ticket_payment is not None and ticket_payment != _ticket_payment:
+    if ticket_payment is not Unspecified and ticket_payment != _ticket_payment:
         check_updatable(payment_related=True, ticketing_related=False)
         _ticket_payment = ticket_payment
-    if payment_start_at is not None and payment_start_at != _payment_start_at:
+    if payment_start_at is not Unspecified and payment_start_at != _payment_start_at:
         check_updatable(payment_related=True, ticketing_related=False)
         _payment_start_at = payment_start_at
-    if payment_due_at is not None and payment_due_at != _payment_due_at:
+    if payment_due_at is not Unspecified and payment_due_at != _payment_due_at:
         check_updatable(payment_related=True, ticketing_related=False)
         _payment_due_at = payment_due_at
-    if ticketing_start_at is not None and ticketing_start_at != _ticketing_start_at:
+    if ticketing_start_at is not Unspecified and ticketing_start_at != _ticketing_start_at:
         if famiport_order.type == FamiPortOrderType.CashOnDelivery:
             ticketing_start_at = _payment_start_at
         check_updatable(payment_related=False, ticketing_related=True)
         _ticketing_start_at = ticketing_start_at
-    if ticketing_end_at is not None and ticketing_end_at != _ticketing_end_at:
+    if ticketing_end_at is not Unspecified and ticketing_end_at != _ticketing_end_at:
         if famiport_order.type == FamiPortOrderType.CashOnDelivery:
             ticketing_end_at = _payment_due_at
         check_updatable(payment_related=False, ticketing_related=True)
@@ -414,7 +570,7 @@ def update_famiport_order_by_order_no(
 
     added_famiport_tickets = None
     deleted_famiport_tickets = None 
-    if tickets is not None:
+    if tickets is not Unspecified:
         check_updatable(payment_related=False, ticketing_related=True)
         added_famiport_tickets = []
         updated_famiport_ticket_count = 0
@@ -436,51 +592,54 @@ def update_famiport_order_by_order_no(
         deleted_famiport_tickets = ticket_map.values()
         logger.info('added tickets: %d; updated tickets: %d; deleted tickets: %d' % (len(added_famiport_tickets), updated_famiport_ticket_count, len(deleted_famiport_tickets)))
 
-    if customer_name is not None:
+    famiport_order.famiport_performance = famiport_performance
+    famiport_order.famiport_sales_segment = famiport_sales_segment
+
+    if customer_name is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).customer_name' % famiport_order.id)
         famiport_order.customer_name = customer_name
-    if customer_phone_number is not None:
+    if customer_phone_number is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).customer_phone_number' % famiport_order.id)
         famiport_order.customer_phone_number = customer_phone_number
-    if customer_address_1 is not None:
+    if customer_address_1 is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).customer_address_1' % famiport_order.id)
         famiport_order.customer_address_1 = customer_address_1
-    if customer_address_2 is not None:
+    if customer_address_2 is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).customer_address_2' % famiport_order.id)
         famiport_order.customer_address_2 = customer_address_2
-    if total_amount is not None:
+    if total_amount is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).total_amount' % famiport_order.id)
         famiport_order.total_amount = total_amount
-    if system_fee is not None:
+    if system_fee is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).system_fee' % famiport_order.id)
         famiport_order.system_fee = system_fee
-    if ticketing_fee is not None:
+    if ticketing_fee is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).ticketing_fee' % famiport_order.id)
         famiport_order.ticketing_fee = ticketing_fee
-    if ticket_payment is not None:
+    if ticket_payment is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).ticket_payment' % famiport_order.id)
         famiport_order.ticket_payment = ticket_payment
-    if added_famiport_tickets is not None:
+    if added_famiport_tickets or deleted_famiport_tickets:
         logger.info('updating FamiPortOrder(id=%ld).famiport_tickets' % famiport_order.id)
         famiport_order.famiport_tickets.extend(added_famiport_tickets)
         for famiport_ticket in deleted_famiport_tickets:
             famiport_order.famiport_tickets.remove(famiport_ticket)
-    if payment_start_at is not None:
+    if payment_start_at is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).payment_start_at' % famiport_order.id)
         famiport_order.payment_start_at = payment_start_at
-    if payment_due_at is not None:
+    if payment_due_at is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).payment_due_at' % famiport_order.id)
         famiport_order.payment_due_at = payment_due_at
-    if ticketing_start_at is not None:
+    if ticketing_start_at is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).ticketing_start_at' % famiport_order.id)
         famiport_order.ticketing_start_at = ticketing_start_at
-    if ticketing_end_at is not None:
+    if ticketing_end_at is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).ticketing_end_at' % famiport_order.id)
         famiport_order.ticketing_end_at = ticketing_end_at
-    if payment_sheet_text is not None:
+    if payment_sheet_text is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).payment_sheet_text' % famiport_order.id)
         famiport_order.payment_sheet_text = payment_sheet_text
-    if require_ticketing_fee_on_ticketing is not None:
+    if require_ticketing_fee_on_ticketing is not Unspecified:
         logger.info('updating FamiPortOrder(id=%ld).require_ticketing_fee_on_ticketing' % famiport_order.id)
         famiport_order.require_ticketing_fee_on_ticketing = require_ticketing_fee_on_ticketing
 
