@@ -1,0 +1,42 @@
+<%inherit file="layout.html" />
+<%namespace file="../../__commons__/tags_mobile.html" name="mobile" />
+
+<div class="purchased">
+
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<%mobile:form_header>イベント名</%mobile:form_header>
+<div>
+${order.performance.event.title} ${order.performance.name}<br />
+<%mobile:form_header>開演日時</%mobile:form_header>
+${h.japanese_date(order.performance.start_on)}
+${h.japanese_time(order.performance.start_on)}
+<%mobile:form_header>会場</%mobile:form_header>
+${order.performance.venue.name}<br />
+<%mobile:form_header>購入内容</%mobile:form_header>
+合計金額: ￥${h.format_number(order.total_amount)}<br />
+%for product in order.items:
+・${product.product.name}
+% if product.seats:
+% if product.product.sales_segment.setting.display_seat_no:
+  (${product.seat_quantity}枚)<br />
+  % for seat in product.seats:
+  　${seat['name']}<br/>
+  % endfor
+% else:
+  (${product.seat_quantity}枚)<br />
+% endif
+% else:
+  (${product.quantity}枚)<br />
+% endif
+　￥${h.format_number(product.price * product.quantity)}<br />
+%endfor
+
+% if order.printed_at:
+  お客様は入場済みです
+% else:
+  <div>お客様は、未入場です。</div>
+  <form action="${request.route_path('coupon_admission', order_no=order.order_no)}" method="POST">
+    <input class="btnLogin" type="submit" value="入場する"/>
+  </form>
+% endif
