@@ -238,7 +238,7 @@ class EntryLotView(object):
                 'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
 
         sales_segment = lot.sales_segment
-        payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
+        payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
 
         return dict(form=form, event=event, lot=lot,
             payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,

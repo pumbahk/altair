@@ -252,7 +252,7 @@ class EntryLotView(object):
                     break
 
         sales_segment = lot.sales_segment
-        payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
+        payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
         performance_product_map = self._create_performance_product_map(sales_segment.products)
         stock_types = [
             dict(

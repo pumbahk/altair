@@ -176,18 +176,22 @@ class Lots(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
-            lot.sales_segment.payment_delivery_method_pairs = []
+            self.context.lot.sales_segment.payment_delivery_method_pairs = []
+            self.context.lot.sales_segment.use_default_payment_delivery_method_pairs = False
             if "use_default_pdmp" in self.request.POST:
                 self.context.lot.sales_segment.use_default_payment_delivery_method_pairs = True
-                for pdmp in self.context.lot.sales_segment_group.payment_delivery_method_pairs:
-                    lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
-            else:
-                # 販売区分グループの値を使用しない場合のみ、個別の設定が可能
-                self.context.lot.sales_segment.use_default_payment_delivery_method_pairs = False
-                for pdmp_id in self.request.POST.getall("pdmp_id"):
-                    pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
-                    if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
-                        lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+                for pdmp in self.context.lot.sales_segment.sales_segment_group.payment_delivery_method_pairs:
+                    self.context.lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+
+            if not self.context.lot.sales_segment.use_default_payment_delivery_method_pairs:
+                for pdmp in self.context.lot.sales_segment.sales_segment_group.payment_delivery_method_pairs:
+                    # 販売区分グループの値を使用しない場合のみ、個別の設定が可能
+                    if "pdmp_" + str(pdmp.id) in self.request.POST:
+                        self.context.lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+                    if not pdmp.public:
+                        # 販売区分グループで、一般公開されていない決済引取方法は必ず紐付ける
+                        self.context.lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+
         if "action-delete" in self.request.POST:
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
