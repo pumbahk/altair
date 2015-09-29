@@ -461,7 +461,8 @@ class PreviewApiView(object):
                 .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
                 .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
                 .one()
-            transformer = SVGTransformer(svg, self.request.POST)
+            hide_background = True
+            transformer = SVGTransformer(svg, self.request.POST, hide_background)
             svg = transformer.transform()
             imgdata_base64 = preview.communicate(self.request, svg, ticket_format)
             f = BytesIO(base64.decodestring(imgdata_base64))

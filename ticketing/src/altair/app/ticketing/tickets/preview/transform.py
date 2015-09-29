@@ -50,9 +50,10 @@ def _find_svg(xmltree):
         return xmltree.find("{%s}svg" % SVG_NAMESPACE)
 
 class SVGTransformer(object):
-    def __init__(self, svg, postdata=None, encoding="utf-8"):
+    def __init__(self, svg, postdata=None, hide_background=None, encoding="utf-8"):
         self.svg = svg
         self.data = parse(SVGTransformValidator, postdata or {})
+        self.hide_background = hide_background
         self.encoding = encoding
         self.width = None #ugg
         self.height = None
@@ -78,7 +79,7 @@ class SVGTransformer(object):
 
     def put_pageformat(self, xmltree):
         svg = _find_svg(xmltree)
-        svg_with_ticketformat(svg, self.data["ticket_format"])
+        svg_with_ticketformat(svg, self.data["ticket_format"], self.hide_background)
         return xmltree
 
     def detect_size(self, attrib):
