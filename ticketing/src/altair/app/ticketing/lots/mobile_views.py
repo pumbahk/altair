@@ -279,11 +279,12 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
+        payment_delivery_method_pairs=[pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
         return dict(
             event=event,
             lot=lot,
             sales_segment=sales_segment,
-            payment_delivery_methods=sales_segment.payment_delivery_method_pairs,
+            payment_delivery_methods=payment_delivery_method_pairs,
             form=form,
             pdmp_messages=pdmp_messages,
             messages=self.request.session.pop_flash()

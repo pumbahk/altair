@@ -152,7 +152,10 @@ class EntryLotViewTests(unittest.TestCase):
         lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
-    def test_post(self):
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    def test_post(self, mock_get_organization):
+        from altair.app.ticketing.core.models import Organization
+        mock_get_organization.return_value = Organization(code='RL', short_name='RL')
         from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin, IPaymentPreparer
         self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
         lot, products = self._add_datas([
@@ -219,6 +222,7 @@ class EntryLotViewTests(unittest.TestCase):
         context = testing.DummyResource(
             request=request,
             event=lot.event, lot=lot,
+            lot_asid=None,
             organization=lot.event.organization,
             check_entry_limit=lambda wishes, user, email: True,
             authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"},
@@ -368,6 +372,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                                         lot=lot,
                                         organization=organization,
                                         extra_form_fields=[],
+                                        membershipinfo=None,
                                         cart_setting=testing.DummyModel(
                                             extra_form_fields=[],
                                             flavors=None,

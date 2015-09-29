@@ -96,19 +96,21 @@ ${tabs.tabs(request)}
   <table class="table table-bordered table-condensed">
     <thead>
       <tr>
-        <th class="span1">使用</th>
+        <th class="span1"></th>
         <th class="span5">決済方法</th>
         <th class="span5">引取方法</th>
-        <th class="span1">状態</th>
+        <th class="span1">一般公開</th>
       </tr>
     </thead>
     <tbody>
     %for pdmp in lot.sales_segment.sales_segment_group.payment_delivery_method_pairs:
       <tr>
-        <td><input type="checkbox" name="pdmp_id" value="${pdmp.id}" ${u"checked" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u""} /></td>
+        <td>
+          <input type="checkbox" name="pdmp_${pdmp.id}" ${u'checked' if pdmp in lot.sales_segment.payment_delivery_method_pairs else u""} ${'disabled="disabled"' if not pdmp.public else u''}>
+        </td>
         <td>${pdmp.payment_method.name}</td>
         <td>${pdmp.delivery_method.name}</td>
-        <td>${u"有効" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u"無効"}</td>
+        <td>${u'公開' if pdmp.public else u'非公開'}</td>
       </tr>
     %endfor
     </tbody>
