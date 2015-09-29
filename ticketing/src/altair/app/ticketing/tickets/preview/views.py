@@ -23,6 +23,7 @@ from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import ISejDeliveryPlugin
 from altair.app.ticketing.payments.plugins import(
     SEJ_DELIVERY_PLUGIN_ID,
+    FAMIPORT_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID,
     ORION_DELIVERY_PLUGIN_ID,
     RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
@@ -450,6 +451,36 @@ class PreviewApiView(object):
         except Exception, e:
             logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+    @view_config(match_param="action=preview.base64", request_param="type=famiport") #svg
+    def preview_ticket_post64_famiport(self):
+        # todo:本来famiport preview serverと通信して券面画像取得するようにすべき
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        try:
+            svg = self.request.POST["svg"]
+            ticket_format = c_models.TicketFormat.query \
+                .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+                .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
+                .one()
+            transformer = SVGTransformer(svg, self.request.POST)
+            svg = transformer.transform()
+            imgdata_base64 = preview.communicate(self.request, svg, ticket_format)
+            f = BytesIO(base64.decodestring(imgdata_base64))
+            imgdata = image.open(f)
+            im = composite_ticket_image(self.request, ticket_format, imgdata, im_info_defaults={'dpi':(300, 300)})
+            f = BytesIO()
+            im.save(f, 'png')
+            imgdata = f.getvalue()
+            return {"status": True, "data":base64.b64encode(imgdata),
+                    "width": transformer.width, "height": transformer.height} #original size
+        except TicketPreviewTransformException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except Exception, e:
+            logger.exception(e)
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
 
     @view_config(match_param="action=preview.base64.withmodels")
     def preview_ticket_post64_with_models(self):
