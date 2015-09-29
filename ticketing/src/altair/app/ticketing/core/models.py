@@ -3141,6 +3141,10 @@ class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"),
         )
 
+    def accept_core_model_traverser(self, traverser):
+        traverser.visit_ticket_bundle_attribute(self)
+
+
 class TicketPrintQueueEntry(Base, BaseModel):
     __tablename__ = "TicketPrintQueueEntry"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
