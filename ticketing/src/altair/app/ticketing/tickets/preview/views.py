@@ -23,7 +23,6 @@ from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import ISejDeliveryPlugin
 from altair.app.ticketing.payments.plugins import(
     SEJ_DELIVERY_PLUGIN_ID,
-    FAMIPORT_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID,
     ORION_DELIVERY_PLUGIN_ID,
     RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
@@ -480,7 +479,6 @@ class PreviewApiView(object):
         except Exception, e:
             logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
-
 
     @view_config(match_param="action=preview.base64.withmodels")
     def preview_ticket_post64_with_models(self):
