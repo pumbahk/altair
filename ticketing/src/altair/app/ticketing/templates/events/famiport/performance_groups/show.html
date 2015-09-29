@@ -72,6 +72,7 @@
 <table class="table">
   <thead>
     <tr>
+      <th style="width:2em"></th>
       <th>ステータス</th>
       <th>FM公演コード</th>
       <th>FM公演名</th>
@@ -86,6 +87,7 @@
 % for altair_famiport_performance in sorted(altair_famiport_performance_group.altair_famiport_performances.values(), key=lambda altair_famiport_performance: altair_famiport_performance.code):
     <% rows = len(altair_famiport_performance.altair_famiport_sales_segment_pairs) %>
     <tr>
+      <td><input type="radio" name="altair_famiport_performance_id" value="${altair_famiport_performance.id}" /></td>
       <td rowspan="${rows or 1}">${view.status_label(altair_famiport_performance.status)}</td>
       <td rowspan="${rows or 1}">${altair_famiport_performance.code}</td>
       <td rowspan="${rows or 1}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
@@ -109,3 +111,58 @@
 % endfor
   </tbody>
 </table>
+
+<script type="text/javascript">
+var delete_performance;
+var post_modal;
+(function () {
+var modal;
+var altair_famiport_performance_id;
+var item_delete_url = ${HH.json(request.route_path('events.famiport.performances.item.delete', altair_famiport_performance_id='__altair_famiport_performance_id__'))|n};
+  function get_selected_altair_famiport_performance_id() {
+    return $("input[name='altair_famiport_performance_id']:checked").val();
+  }
+
+  delete_performance = function() {
+    altair_famiport_performance_id = get_selected_altair_famiport_performance_id();
+    if (altair_famiport_performance_id === void(0)) {
+        alert("削除する公演を選択してください。");
+    } else {
+        modal = $('#modal-delete');
+        modal.find('#message').text('選択した公演を削除します。よろしいですか？');
+        modal.modal('toggle');
+    }
+  }
+
+  post_modal = function() {
+    var url = item_delete_url.replace('__altair_famiport_performance_id__', altair_famiport_performance_id);
+    post_modal_form(modal, modal.find('form'), url)
+  }
+ })();
+</script>
+
+<div id="modal-delete" class="modal hide">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal">&times;</a>
+        <h3>確認</h3>
+    </div>
+
+    <div class="modal-body">
+        <form method="POST" action="">
+        <p id="message"></p>
+        %if caller:
+            ${caller.body()}
+        %endif
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+        <a id="delete" class="btn" href="javascript:post_modal()">削除</a>
+    </div>
+</div>
+
+
+<a class="btn" data-keyboard="true" data-controls-modal="modal-delete" data-backdrop="true" href="javascript:delete_performance();">
+<i class="icon-minus"></i>
+削除
+</a>

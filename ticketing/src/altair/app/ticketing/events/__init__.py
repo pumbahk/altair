@@ -21,6 +21,7 @@ def includeme(config):
     config.add_route('events.famiport.performance_groups.item.edit', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/edit', factory=factory)
     config.add_route('events.famiport.performances.item.show', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/performances/{altair_famiport_performance_id}/show', factory=factory)
     config.add_route('events.famiport.performances.item.edit', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/performances/{altair_famiport_performance_id}/edit', factory=factory)
+    config.add_route('events.famiport.performances.item.delete', '/famiport/performance_groups/performances/{altair_famiport_performance_id}/delete', factory=factory)
     config.add_route('events.famiport.performance_groups.action', '/{event_id}/famiport/performance_groups/*traverse', factory=factory)
 
     config.include('altair.app.ticketing.events.performances', route_prefix='performances')
