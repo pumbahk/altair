@@ -315,6 +315,15 @@ class BundleAttributeView(BaseView):
             if "attr_%u" % attr.id in form.data:
                 attr.value = form.data["attr_%u" % attr.id]
                 attr.save()
+        names = self.request.POST.getall('newattr_names[]')
+        values = self.request.POST.getall('newattr_values[]')
+        if len(names) == len(values):
+            for idx, name in enumerate(names):
+                attr = TicketBundleAttribute(
+                    name = names[idx],
+                    value = values[idx],
+                    ticket_bundle = self.context.bundle)
+                attr.save()
 
         self.request.session.flash(u'属性(TicketBundleAttribute)を更新しました')
         return HTTPFound(self.request.route_url("events.tickets.index", event_id=self.request.matchdict["event_id"]))
