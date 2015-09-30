@@ -60,7 +60,7 @@ ${ch.breadcrumbs(
                       $('<input type="hidden" />').attr('name', 'newattr_names[]').val(name)
                   )
               ).wrap($('<fieldset></fieldset>'));
-              form.find('fieldset:last').after(field);
+              form.find('.form-actions').before(field);
               return true;
           };
           var found = { };
