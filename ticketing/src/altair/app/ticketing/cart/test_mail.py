@@ -127,6 +127,7 @@ def _build_sej(request, order_no=None, user_name=u'name', user_name_kana=u'name_
         ticketing_due_at=ticketing_due_at,
         regrant_number_due_at=regrant_number_due_at
         )
+    sej_order.order_at = datetime(2015, 1, 1)
     sej_order.shop_id = '00000'
     sej_order.shop_name = 'shop_name'
     sej_order.contact_01 = 'contact_01'
