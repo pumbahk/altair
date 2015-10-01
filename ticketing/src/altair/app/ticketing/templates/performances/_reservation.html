@@ -1022,7 +1022,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       this.$el.append(label);
 
       var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em; margin-left:3px;" />');
-      select.append($('<option value=""></option>'));
+      select.append($('<option value="">(すべて)</option>'));
       % for sales_segment in _context.available_sales_segments:
       select.append($('<option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>'));
       % endfor

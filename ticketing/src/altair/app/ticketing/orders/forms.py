@@ -660,10 +660,28 @@ class OrderReservePreconditionsForm(OurForm):
         super(OrderReservePreconditionsForm, self).__init__(*args, **kwargs)
 
 
-class OrderReserveSettingsForm(OurForm):
+class OrderReserveSalesSegmentChooserForm(OurForm):
     sales_segment_id = OurSelectField(
         label=u'販売区分',
         validators=[Optional()],
+        choices=lambda field: [(None, u'(すべて)')] + [
+            (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(field.form.context.request)).term(sales_segment.start_at, sales_segment.end_at)))
+            for sales_segment in field.form.context.sales_segments
+            ],
+        encoder=lambda x : u'' if x is None else u'%d' % x,
+        coerce=lambda x : int(x) if x else None
+        )
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.pop('context')
+        self.context = context
+        super(OrderReserveSalesSegmentChooserForm, self).__init__(*args, **kwargs)
+
+
+class OrderReserveSettingsForm(OurForm):
+    sales_segment_id = OurSelectField(
+        label=u'販売区分',
+        validators=[Required()],
         choices=lambda field: [
             (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(field.form.context.request)).term(sales_segment.start_at, sales_segment.end_at)))
             for sales_segment in field.form.context.sales_segments

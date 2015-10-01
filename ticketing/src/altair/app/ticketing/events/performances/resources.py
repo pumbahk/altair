@@ -23,6 +23,7 @@ class SalesCounterResourceMixin(object):
                 ss.start_at is None or ss.start_at <= self.now,
                 ss.end_at is None or self.now <= ss.end_at,
                 -ss.start_at.toordinal() if ss.start_at else 0,
+                ss.sales_segment_group.name,
                 ss.id
                 )
         if not self._is_event_editor:

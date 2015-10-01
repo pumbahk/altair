@@ -61,6 +61,11 @@ class OurForm(form.Form):
                     counterpart.data = liaison.data
                     liaison.data = None
 
+    def clear_errors(self):
+        for name, f in iteritems(self._fields):
+            f.errors = ()
+        self._errors = None
+
 
 class OurDynamicForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', *args, **kwargs):
