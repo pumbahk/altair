@@ -165,8 +165,10 @@ def create_sej_request_data(
         params['X_user_email']      = email
     return params
 
-def request_order(request_or_registry, tenant, sej_order):
+def request_order(request_or_registry, tenant, sej_order, now=None):
     """決済要求 https://inticket.sej.co.jp/order/order.do"""
+    if now is None:
+        now = datetime.now()
     ticket_dict = dict(
         (ticket.ticket_idx, ticket)
         for ticket in sej_order.tickets
@@ -242,6 +244,7 @@ def request_order(request_or_registry, tenant, sej_order):
         error_message = ret.get('Error_Msg', None)
         error_field = ret.get('Error_Field', None)
         sej_order.error_type = int(error_type)
+        sej_order.order_at = None
         raise SejError(
             message=error_message,
             order_no=sej_order.order_no,
@@ -261,7 +264,7 @@ def request_order(request_or_registry, tenant, sej_order):
     sej_order.commission_fee        = int(params.get('X_ticket_kounyu_daikin',0))
     sej_order.ticketing_fee         = int(params.get('X_hakken_daikin',0))
     sej_order.payment_due_at        = payment_due_at
-    sej_order.order_at              = datetime.now()
+    sej_order.order_at              = now
     sej_order.updated_at            = sej_order.order_at
 
     for idx in range(1, 21):
@@ -277,6 +280,8 @@ def request_cancel_order(request_or_registry, tenant, sej_order, now=None):
     '''
     注文キャンセル https://inticket.sej.co.jp/order/cancelorder.do
     '''
+    if now is None:
+        now = datetime.now()
     payment = create_communicator(request_or_registry, tenant, '/order/cancelorder.do')
     params = JavaHashMap()
     params['X_shop_order_id']   = sej_order.order_no
@@ -302,12 +307,15 @@ def request_cancel_order(request_or_registry, tenant, sej_order, now=None):
     sej_order.mark_canceled(now)
     return sej_order
 
-def request_update_order(request_or_registry, tenant, sej_order, update_reason):
+def request_update_order(request_or_registry, tenant, sej_order, update_reason, now=None):
     """
     注文情報更新 https://inticket.sej.co.jp/order/updateorder.do
     """
     if type(update_reason) is not SejOrderUpdateReason:
         raise ValueError('update_reason')
+
+    if now is None:
+        now = datetime.now()
 
     ticket_dict = dict(
         (ticket.ticket_idx, ticket)
@@ -371,6 +379,7 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
         error_message = ret.get('Error_Msg', None)
         error_field = ret.get('Error_Field', None)
         sej_order.error_type = int(error_type)
+        sej_order.order_at = None
         raise SejError(
             message=error_message,
             order_no=sej_order.order_no,
@@ -387,7 +396,7 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
     assert (not sej_order.exchange_sheet_url) or sej_order.exchange_sheet_url == ret.get('X_url_info')
     assert (not sej_order.exchange_sheet_number) or sej_order.exchange_sheet_number == ret.get('iraihyo_id_00')
 
-    sej_order.updated_at                = datetime.now()
+    sej_order.updated_at = now
 
     for idx in range(1, 21):
         ticket = ticket_dict.get(idx)

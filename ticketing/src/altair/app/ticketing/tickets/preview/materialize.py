@@ -83,9 +83,10 @@ class TicketFormatMaterializer(object):
         ## todo: ticket_margin
         return svg
 
-def svg_with_ticketformat(svg, ticketformat):
+def svg_with_ticketformat(svg, ticketformat, hide_background=False):
     g = etree.Element("{%s}g" % SVG_NAMESPACE)
-    etree.tostring(TicketFormatMaterializer(ticketformat).materialize(g))
+    if not hide_background:
+        etree.tostring(TicketFormatMaterializer(ticketformat).materialize(g))
     svg.insert(0, g)
     ## width, heightの調整が必要?
     return svg

@@ -1,0 +1,60 @@
+<div>
+    <h4>QRコード（発券ステーション）</h4>
+
+    <p>＜発券方法＞<br />
+    1.試合当日、試合会場に設置してあるチケット発券ステーションに取得したQRコードをお持ちください。<br />
+    2.画面の案内にしたがい、お客様ご自身で発券してください。<br />
+    3.発券されたチケットをお取りになり、ご入場ください。
+    </p>
+
+    <p> ＜QRコードの表示方法＞<br />
+    　・【QRコードを表示する・印刷する】：『QRコードを表示する』ボタンをクリックするとQRコードが表示されます。紙に印刷する場合はプリンタで印刷してください。<br />
+    　・【QRコードをメールで送信する】：メールアドレスを入力いただき、『メールで送る』ボタンをクリック、ご指定のメールアドレス（パソコン・携帯いずれも可能）へQRコード表示用のメールをお送りできます。<br />
+    <br />
+    なお、お客様によるQRコードの転送、間違い、漏えい等に起因するトラブル等にはご対応いたしかねますのでご注意ください。
+    </p>
+
+    <p class="red">携帯電話へQRコードを送信される場合は、@tstar.jpからのメールが受信できるよう、事前にお客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
+%if paid or free:
+
+    % for ticket in tickets:
+        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            %if ticket.product:
+            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            %endif
+            %if ticket.seat:
+            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            %endif
+            <br />
+              % if ticket.printed_at:
+                  発行(印刷orメール送信)済 (${ticket.printed_at})
+              % else:
+                  未発行
+              % endif
+              <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
+              </form>
+              <br/>
+              <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  メールアドレス: <input type="text" name="mail" size="40" />
+                  <input type="submit" name="send" value="メールで送る" />
+              </form>
+        </div>
+    % endfor
+
+% else:
+
+試合当日会場専用窓口でのお受け取りです。<br/>
+
+支払い完了後、このページにQRコードを表示へのリンクが貼られます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+
+% endif
+
+</div>

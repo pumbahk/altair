@@ -21,7 +21,8 @@ class SejApiTest(unittest.TestCase):
             ])
         from altair.app.ticketing.sej.models import _session
         self._session = _session
-        self.config = testing.setUp()
+        self.request = testing.DummyRequest()
+        self.config = testing.setUp(request=self.request)
         self.config.include('altair.app.ticketing.sej')
 
     def tearDown(self):
@@ -302,4 +303,285 @@ class SejApiTest(unittest.TestCase):
         assert n.billing_number         == u'2374045665660'
         assert n.exchange_number        == u''
         assert n.signature              == params['xcode']
+
+    def test_get_sej_order(self):
+        from altair.app.ticketing.sej.models import SejOrder
+        from decimal import Decimal
+        from datetime import datetime
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=u'0000000000000',
+                billing_number=u'0000000000001',
+                exchange_sheet_url=u'http://example.com/',
+                exchange_sheet_number=u'0',
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=datetime(2015, 1, 2, 0, 0, 0),
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=1,
+                version_no=0,
+                error_type=None
+                )
+            )
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=None,
+                billing_number=None,
+                exchange_sheet_url=None,
+                exchange_sheet_number=None,
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=None,
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=2,
+                version_no=0,
+                error_type=1
+                )
+            )
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=u'0000000000000',
+                billing_number=u'0000000000001',
+                exchange_sheet_url=u'http://example.com/',
+                exchange_sheet_number=u'0',
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=datetime(2015, 1, 2, 0, 0, 0),
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=3,
+                version_no=0,
+                error_type=None
+                )
+            )
+        from ..api import get_sej_order
+        sej_order = get_sej_order(u'XX0000000000')
+        self.assertEqual(sej_order.branch_no, 3)
+
+    def test_get_sej_order_with_error(self):
+        from altair.app.ticketing.sej.models import SejOrder
+        from decimal import Decimal
+        from datetime import datetime
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=u'0000000000000',
+                billing_number=u'0000000000001',
+                exchange_sheet_url=u'http://example.com/',
+                exchange_sheet_number=u'0',
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=datetime(2015, 1, 2, 0, 0, 0),
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=1,
+                version_no=0,
+                error_type=None
+                )
+            )
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=None,
+                billing_number=None,
+                exchange_sheet_url=None,
+                exchange_sheet_number=None,
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=None,
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=2,
+                version_no=0,
+                error_type=1
+                )
+            )
+        self._session.add(
+            SejOrder(
+                shop_id=u'30520',
+                shop_name=u'ticketstar',
+                contact_01=u'contact_01',
+                contact_02=u'contact_02',
+                user_name=u'user_name',
+                user_name_kana=u'user_name_kana',
+                tel=u'0123456789',
+                zip_code=u'0123456',
+                email=u'ticketstar@example.com',
+                order_no=u'XX0000000000',
+                exchange_number=u'0000000000000',
+                billing_number=u'0000000000001',
+                exchange_sheet_url=u'http://example.com/',
+                exchange_sheet_number=u'0',
+                total_price=Decimal(10000),
+                ticket_price=Decimal(9000),
+                commission_fee=Decimal(500),
+                ticketing_fee=Decimal(500),
+                total_ticket_count=0,
+                ticket_count=0,
+                return_ticket_count=0,
+                process_id=u'0',
+                payment_type=u'1',
+                pay_store_number=None,
+                pay_store_name=None,
+                cancel_reason=None,
+                ticketing_store_number=None,
+                ticketing_store_name=None,
+                payment_due_at=datetime(2015, 1, 4, 0, 0, 0),
+                ticketing_start_at=datetime(2015, 1, 6, 0, 0, 0),
+                ticketing_due_at=datetime(2015, 1, 9, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                processed_at=None,
+                order_at=None,
+                pay_at=None,
+                issue_at=None,
+                cancel_at=None,
+                branch_no=3,
+                version_no=0,
+                error_type=2
+                )
+            )
+        from ..api import get_sej_order
+        sej_order = get_sej_order(u'XX0000000000')
+        self.assertEqual(sej_order.branch_no, 1)
+
 
