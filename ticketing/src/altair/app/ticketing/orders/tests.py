@@ -221,7 +221,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
 
             ticket = SejTicket(order_no=retval.order_no)
             self.sej_session.add(ticket)
-            sej_order = SejOrder(order_no=retval.order_no, payment_type=payment_type, tickets=[ticket])
+            sej_order = SejOrder(order_no=retval.order_no, payment_type=payment_type, tickets=[ticket], order_at=datetime(2014, 1, 1, 0, 0, 0))
             ticket.order = sej_order
             self.sej_session.add(sej_order)
         self.sej_session.commit()
