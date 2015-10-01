@@ -1006,7 +1006,7 @@ class OrderImportForm(OurForm):
         field.data.file.seek(0)
 
         # ヘッダーをチェック
-        reader = ImportCSVReader(field.data.file)
+        reader = ImportCSVReader(field.data.file, encoding='cp932:normalized-tilde')
         import_header = reader.fieldnames
         field.data.file.seek(0)
 

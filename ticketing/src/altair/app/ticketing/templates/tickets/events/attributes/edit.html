@@ -30,6 +30,86 @@ ${ch.breadcrumbs(
 	</fieldset>
 	%endfor
 	
+        <a href="#" id="auto_attribute">券面データから自動設定</a>
+
+        <script>
+        (function() {
+          var jsons = [ ];
+          %for ticket in bundle.tickets:
+          jsons.push('${ticket.data['drawing'].replace("\n", "")}');
+          %endfor
+
+          var idx = 0;
+          var append_attribute = function(name) {
+              var ready = { };
+              $('.control-group label.control-label').each(function() {
+                  ready[$.trim($(this).text())] = true;
+              });
+              if(ready[name]) {
+                  return false;
+              }
+              idx++;
+              var form = $('input.btn-primary').parents('form').eq(0);
+              var label = 'label_newattr_'+idx;
+              var field = $('<div></div>').addClass('control-group').append(
+                  $('<label></label>').addClass('control-label').text(name).attr('for', label)
+              ).append(
+                  $('<div></div>').addClass('controls').append(
+                      $('<textarea />').attr('name', 'newattr_values[]').attr('id', label)
+                  ).append(
+                      $('<input type="hidden" />').attr('name', 'newattr_names[]').val(name)
+                  )
+              ).wrap($('<fieldset></fieldset>'));
+              form.find('.form-actions').before(field);
+              return true;
+          };
+          var found = { };
+          var count = 0;
+          var consume_jsons = function(handler) {
+              if(jsons.length == 0) {
+                  handler();
+                  return;
+              }
+              var json = jsons.shift();
+              $.ajax({
+                  type: 'post',
+                  url: '${request.route_path("tickets.preview.api", action="collectvars")}',
+                  data: { svg: json }
+              }).done(function(s) {
+                  if(!s.status) {
+                      return;
+                  }
+                  for(var i=0 ; i<s.data.length ; i++) {
+                      if(s.data[i].match(/^aux\./)) {
+                          if(found[s.data[i].substr(4)]) {
+                              continue;
+                          }
+                          found[s.data[i].substr(4)] = true;
+                          if(append_attribute(s.data[i].substr(4))) {
+                              count++;
+                          }
+                      }
+                  }
+                  consume_jsons(handler);
+              });
+          };
+          if(0 < jsons.length) {
+              $('#auto_attribute').click(function() {
+                  var handler = function() {
+                      if(0 < count) {
+                          alert('券面に含まれている属性を自動設定しました.');
+                      } else {
+                          alert('券面に含まれている属性が無いか、または、すでに設定済みです.');
+                      }
+                  };
+                  consume_jsons(handler);
+                  $(this).hide();
+                  return false;
+              });
+          }
+        })();
+        </script>
+
 	<div class="form-actions">
 	  <input class="btn btn-primary" type="submit" name="submit" value="更新" />
 	</div>

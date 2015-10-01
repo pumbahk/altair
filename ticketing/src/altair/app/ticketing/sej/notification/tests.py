@@ -118,7 +118,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
-            payment_type=SejPaymentType.CashOnDelivery.v
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
@@ -163,7 +164,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
-            payment_type=SejPaymentType.Prepayment.v
+            payment_type=SejPaymentType.Prepayment.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         # 支払
@@ -209,7 +211,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number=u'000000000000',
             billing_number='000000000000',
-            payment_type=SejPaymentType.Prepayment.v
+            payment_type=SejPaymentType.Prepayment.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
 
@@ -255,7 +258,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
-            payment_type=SejPaymentType.Paid.v
+            payment_type=SejPaymentType.Paid.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
@@ -298,7 +302,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
-            payment_type=SejPaymentType.PrepaymentOnly.v
+            payment_type=SejPaymentType.PrepaymentOnly.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
@@ -345,7 +350,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
-            payment_type=SejPaymentType.CashOnDelivery.v
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         notification = create_expire_notification_from_order('000000', sej_order)
@@ -388,6 +394,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 exchange_number='000000000000',
                 billing_number='000000000000',
                 payment_type=SejPaymentType.CashOnDelivery.v,
+                order_at=datetime(2013, 1, 1, 1, 1, 1),
                 branch_no=1
                 ),
             SejOrder(
@@ -395,6 +402,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 exchange_number='000000000001',
                 billing_number='000000000001',
                 payment_type=SejPaymentType.CashOnDelivery.v,
+                order_at=datetime(2013, 1, 1, 1, 1, 1),
                 branch_no=2
                 )
             ]
@@ -496,6 +504,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.Prepayment.v,
             pay_at=datetime(2013, 1, 1, 0, 0, 0),
+            order_at=datetime(2013, 1, 1, 1, 1, 1),
             branch_no=1
             )
         self._session.add(sej_order)
@@ -537,7 +546,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
-            payment_type=SejPaymentType.Paid.v
+            payment_type=SejPaymentType.Paid.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
             )
         self._session.add(sej_order)
         notification = create_expire_notification_from_order('000000', sej_order)

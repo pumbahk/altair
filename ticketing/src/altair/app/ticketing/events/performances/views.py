@@ -205,7 +205,7 @@ class PerformanceShowView(BaseView):
             session=DBSession
         )
         order_import_task, errors = importer(
-            reader=ImportCSVReader(StringIO(f.order_csv.data.value)),
+            reader=ImportCSVReader(StringIO(f.order_csv.data.value), encoding='cp932:normalized-tilde'),
             operator=self.context.user,
             organization=self.context.organization,
             performance=self.performance
