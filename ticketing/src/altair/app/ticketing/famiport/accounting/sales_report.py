@@ -150,9 +150,8 @@ def gen_records_from_order_model(famiport_order, start_date, end_date):
                 valid=valid,
                 **basic_dict
                 )
-            # 前払後日発券の前払レシートは本件副券をカウントしない
+            # 前払後日発券の前払レシートは副券をカウントしない
             if famiport_order.type == FamiPortOrderType.Payment.value:
-                dict_['ticket_count'] = 0
                 dict_['subticket_count'] = 0
             dicts.append(dict_)
             reported_famiport_receipts.append(famiport_receipt)
