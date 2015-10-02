@@ -20,7 +20,8 @@ def setup_static_views(config):
 def includeme(config):
     ## coupon
     config.add_route('coupon', '/{reserved_number}', factory='.resources.CouponViewResource')
-    config.add_route('coupon_admission', '/admission/{order_no}', factory='.resources.CouponViewResource')
+    config.add_route('coupon.admission', '/admission/{reserved_number}', factory='.resources.CouponViewResource')
+    config.add_route('coupon.notfound', '/notfound/', factory='.resources.CouponViewResource')
 
 def main(global_config, **local_config):
     settings = dict(global_config)

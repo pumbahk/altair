@@ -41,11 +41,15 @@ class CouponResourceBase(object):
 
 class CouponViewResource(CouponResourceBase):
 
-    def get_reserved_number(self, reserved_number):
+    @property
+    def reserved_number(self):
+        reserved_number = self.request.matchdict.get('reserved_number', None)
         return self.session.query(ReservedNumber).filter(ReservedNumber.number==reserved_number).first()
 
-    def get_order(self, order_no):
-        return Order.query.join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
-            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
-            filter(Order.organization_id==self.organization.id). \
-            filter(Order.order_no==order_no).first()
+    @property
+    def order(self):
+        if self.reserved_number is not None:
+            return Order.query.join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+                join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+                filter(Order.organization_id==self.organization.id). \
+                filter(Order.order_no==self.reserved_number.order_no).first()

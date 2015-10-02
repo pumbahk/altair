@@ -41,11 +41,13 @@
         <td class="textR">
           % if order.printed_at:
             お客様は入場済みです
-          % else:
+          % elif order.payment_status == 'paid':
             <div>お客様は、未入場です。</div>
-            <form action="${request.route_path('coupon_admission', order_no=order.order_no)}" method="POST">
+            <form action="${request.route_path('coupon.admission', reserved_number=reserved_number.number)}" method="POST">
               <input class="btnLogin" type="submit" style="width:400px;height:50px;" value="入場する"/>
             </form>
+          % else:
+            <div>ご入金後、入場が可能となります。</div>
           % endif
         </td>
       </tr>

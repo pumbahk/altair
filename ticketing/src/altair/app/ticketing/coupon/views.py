@@ -1,40 +1,43 @@
 from datetime import datetime
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.view import view_defaults
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.rendering import selectable_renderer
+from pyramid.httpexceptions import HTTPFound
 
 
+class CouponErrorView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(route_name='coupon.notfound', renderer=selectable_renderer("notfound.html"))
+    def notfound(self):
+        return dict()
+
+
+@view_defaults(renderer=selectable_renderer("coupon.html"))
 class CouponView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @lbr_view_config(
-        route_name='coupon',
-        renderer=selectable_renderer("coupon.html"))
+    @lbr_view_config(route_name='coupon')
     def show(self):
 
-        reserved_number = self.context.get_reserved_number(self.request.matchdict.get('reserved_number', None))
-        if reserved_number is None:
-            raise HTTPNotFound()
-
-        order = self.context.get_order(reserved_number.order_no)
-        if order is None:
-            raise HTTPNotFound()
+        if self.context.order is None:
+            return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
         return dict(
-            reserved_number=reserved_number,
-            order=order
+            reserved_number=self.context.reserved_number,
+            order=self.context.order
             )
 
     @lbr_view_config(
-        route_name='coupon_admission',
-        request_method='POST',
-        renderer=selectable_renderer("admission.html"))
+        route_name='coupon.admission', request_method='POST')
     def admission(self):
-        order = self.context.get_order(self.request.matchdict['order_no'])
+        order = self.context.order
         if order is None:
-            raise HTTPNotFound
+            return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
         now = datetime.now()
         order.printed_at = now
@@ -46,6 +49,6 @@ class CouponView(object):
                     token.printed_at = now
 
         return dict(
+            reserved_number=self.context.reserved_number,
             order=order
             )
-
