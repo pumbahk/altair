@@ -7,6 +7,7 @@ import argparse
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
+from sqlalchemy import or_, and_
 import transaction
 
 from dateutil.parser import parse as parsedatetime
@@ -500,9 +501,9 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .filter(Order.paid_at != None) \
             .filter(Order.manual_point_grant == False) # Only select auto grant mode
         if start_date:
-            query = query.filter(Performance.start_on >= start_date)
+            query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on >= start_date), and_(Performance.end_on != None, Performance.end_on >= start_date)))
         if end_date:
-            query = query.filter(Performance.start_on < end_date)
+            query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on < end_date), and_(Performance.end_on != None, Performance.end_on < end_date)))
 
         orders = query.all()
         logger.info('number of orders to process: %d' % len(orders))
