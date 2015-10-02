@@ -455,6 +455,11 @@ class PreviewApiView(object):
     def preview_ticket_post64_famiport(self):
         # todo:本来famiport preview serverと通信して券面画像取得するようにすべき
         preview = SVGPreviewCommunication.get_instance(self.request)
+
+        # すみません、縮尺機能は別途対応とさせて下さい... todo:縮尺対応
+        self.request.POST["sx"] = u'2'
+        self.request.POST["sy"] = u'2'
+        
         try:
             svg = self.request.POST["svg"]
             ticket_format = c_models.TicketFormat.query \
