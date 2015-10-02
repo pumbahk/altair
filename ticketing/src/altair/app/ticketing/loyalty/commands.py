@@ -500,6 +500,8 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .filter(Order.refund_id == None) \
             .filter(Order.paid_at != None) \
             .filter(Order.manual_point_grant == False) # Only select auto grant mode
+        # 非期間内有効券の場合はstart_date <= Performance.start_on < end_dateのものを抽出
+        # 期間内有効券の場合はstart_date <= Performance.end_on < end_dateのものを抽出
         if start_date:
             query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on >= start_date), and_(Performance.end_on != None, Performance.end_on >= start_date)))
         if end_date:
