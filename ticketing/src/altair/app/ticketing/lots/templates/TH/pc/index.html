@@ -304,14 +304,6 @@ if label is None or label is True:
                 ${self.error(form, 'sex')}
               </td>
             </tr>
-            <tr>
-              <th>旅行券の引換に関して</th>
-              <td style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
-                  ・未定の場合は『未定』をご選択ください。<br/>
-                  ・なお、引換場所は、当選後に<a href="https://tbc.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集することが可能です。<br/>
-                  ・引換場所が決定した際は<a href="https://tbc.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集ください。<br/>
-              </td>
-            </tr>
             % for field in form['extra']._contained_form:
             % if not field.short_name in {'member_type'}:
             <tr>
