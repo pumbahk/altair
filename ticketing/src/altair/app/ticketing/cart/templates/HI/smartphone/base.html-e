@@ -3,13 +3,13 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>チケット販売 - スパリゾートハワイアンズ</title>
-  <meta name="description" content="スパリゾートハワイアンズは、チケットのオンラインショッピングサイトです。" />
+  <title>チケット販売 - 横浜ビー・コルセアーズ</title>
+  <meta name="description" content="横浜ビー・コルセアーズは、チケットのオンラインショッピングサイトです。" />
   <meta name="keywords" content="チケット" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/HI/smartphone/images/favicon.ico')}">
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/HI/smartphone/css/default2.css')}" type="text/css" />
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/BC/smartphone/images/favicon.ico')}">
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/BC/smartphone/css/default2.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
 </head>
@@ -20,8 +20,8 @@
     <div class="header">
       <div class="grpheader">
         <div class="siteID">
-          <a href="http://hawaiianss.tstar.jp/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/HI/smartphone/images/hawaiianss_logo.png')}" alt="スパリゾートハワイアンズ" class="serviceLogo" />
+          <a href="http://b-corsairs.tstar.jp/">
+            <img src="${request.static_url('altair.app.ticketing.cart:static/BC/smartphone/images/b-corsairs_logo.png')}" alt="横浜ビー・コルセアーズ" class="serviceLogo" />
           </a>
         </div>
       </div>

@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>横浜ビー・コルセアーズ</title>
+  <title>スパリゾートハワイアンズ</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/BC/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="横浜ビー・コルセアーズ" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/HI/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ" />
 </div>
 <div>
 <div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">お申込み</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
-<input type="hidden" name="membership" value="BC" />
+<input type="hidden" name="membership" value="HI" />
 <div>
   会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">

@@ -1,11 +1,11 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title><%block name="title">スパリゾートハワイアンズ</%block></title>
+  <title><%block name="title">横浜ビー・コルセアーズ</%block></title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.cart:static/HI/mobile/images/hawaiianss_240x96.gif')}" width="100%" height="96" alt="スパリゾートハワイアンズ" />
+  <img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/b-corsairs_240x96.gif')}" width="100%" height="96" alt="横浜ビー・コルセアーズ" />
 </div>
 <div>
 ${self.body()}

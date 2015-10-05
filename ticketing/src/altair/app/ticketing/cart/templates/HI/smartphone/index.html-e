@@ -106,7 +106,7 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = ${h.json_encode(cart_release_url)|n};
-var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/HI/smartphone/images/loading.gif'))|n};
+var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/BC/smartphone/images/loading.gif'))|n};
 $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false, spinnerPictureUrl);});
 $(function () {
   $('*[data-toggle]').live(
@@ -302,3 +302,15 @@ $(function () {
         </div>
       </div>
     </div>
+<script>
+ (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+ })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ ga('create', 'UA-66410343-1', 'auto', {'allowLinker': true}); ga('require', 'linker');
+ ga('linker:autoLink',
+['b-corsairs.com','bcor.sakura.ne.jp','b-corsairs.tstar.jp'] );
+ ga('send', 'pageview');
+
+</script>
