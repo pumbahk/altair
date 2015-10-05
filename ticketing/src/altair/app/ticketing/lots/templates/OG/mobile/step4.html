@@ -126,15 +126,6 @@ ${render_field(field)}
 % endif
 % endfor
 
-<%mobile:form_header>${form['memo'].label.text}</%mobile:form_header>
-<div>
-  ${form['memo']}
-  ${h.mobile_error_list(request, form, 'memo')}
-  <div style="font-size: 80%;">
-  ※ご質問を入力されても返信はいたしかねます。<br>
-  </div>
-</div>
-
 <hr />
 <div>
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
