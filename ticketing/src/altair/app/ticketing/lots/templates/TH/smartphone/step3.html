@@ -1,6 +1,6 @@
 <%inherit file="${context['main_template'].uri}" />
 <div id="main">
-  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
   %if request.session.peek_flash():
   <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
     <ul>
@@ -15,7 +15,7 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
         %for m in payment_delivery_pairs:
         <div class="settlementPayBox">
           <div class="settlementPayBoxInner">
@@ -73,7 +73,7 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
         <div class="settlementSelectBox">
           <div class="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
@@ -182,7 +182,7 @@
         </div>
       </div>
     </div>
-    <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+    <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
   </form>
 </div>
 <%def name="product_select_tmpl()">
