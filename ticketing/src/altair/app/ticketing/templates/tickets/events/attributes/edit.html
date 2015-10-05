@@ -32,12 +32,24 @@ ${ch.breadcrumbs(
 	
         <a href="#" id="auto_attribute">券面データから自動設定</a>
 
+        <%include file="_script.html" />
         <script>
         (function() {
           var jsons = [ ];
           %for ticket in bundle.tickets:
           jsons.push('${ticket.data['drawing'].replace("\n", "")}');
           %endfor
+
+          var rules = [ ];
+          %if not fpTicketTemplate.rules is None:
+           %for rule in fpTicketTemplate.rules:
+             rules.push([ '${rule[0]}', '${rule[1]}', '${rule[2]}' ]);
+           %endfor
+          %endif
+
+          $('label.control-label').each(function() {
+            append_notice(this, rules);
+          });
 
           var idx = 0;
           var append_attribute = function(name) {
@@ -61,6 +73,7 @@ ${ch.breadcrumbs(
                   )
               ).wrap($('<fieldset></fieldset>'));
               form.find('.form-actions').before(field);
+              append_notice(field.find('.control-label'), rules);
               return true;
           };
           var found = { };
