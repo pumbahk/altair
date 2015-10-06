@@ -1,0 +1,198 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+  <p class="pageTitle">申込内容をご確認ください。</p>
+  <p>修正・変更箇所があれば訂正の上、「次へ」をクリックしてください。</p>
+  <div class="settlementBox2" id="settlementEventDetail">
+    <div class="settlementBoxInner2">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+      <table class="border" summary="イベント詳細情報">
+        <tr>
+          <th colspan="2" scope="row"><span><strong>${performance.name}</strong></span></th>
+        </tr>
+        <tr class="none">
+          <th scope="row">公演日</th>
+          <td>${h.japanese_datetime(performance.open_on)}開演</td>
+        </tr>
+        <tr>
+          <th scope="row">会場</th>
+          <td>${performance.venue.name}</td>
+        </tr>
+        <tr>
+          <td colspan="2" scope="row">
+            <table border="0">
+              %for wp in wish.products:
+              <tr>
+                  <th>${wp.product.name}　${wp.quantity}枚</th>
+                  <td>${h.format_currency(wp.product.price)}</td>
+              </tr>
+              %endfor
+              <tr>
+                <th>決済手数料</th>
+                <td>${h.format_currency(payment_delivery_method_pair.transaction_fee)}</td>
+              </tr>
+              <tr>
+                <th>発券/配達手数料</th>
+                <td>${h.format_currency(payment_delivery_method_pair.delivery_fee)}</td>
+              </tr>
+              <tr>
+                <th class="line">システム利用料</th>
+                <td class="line">${h.format_currency(payment_delivery_method_pair.system_fee)}</td>
+              </tr>
+              %if payment_delivery_method_pair.special_fee > 0:
+              <tr>
+                <th class="line">${payment_delivery_method_pair.special_fee_name}</th>
+                <td class="line">${h.format_currency(payment_delivery_method_pair.special_fee)}</td>
+              </tr>
+              %endif
+              <tr>
+                <th><strong>合計金額</strong></th>
+                <td><strong>${h.format_currency(total_amount)}</strong></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <form id="form1" name="form1" method="post" action="">
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+          %for m in payment_delivery_pairs:
+        <div class="settlementPayBox">
+          <div class="settlementPayBoxInner">
+            <table>
+              <tr>
+                <% checked = 'checked' if m.id == payment_delivery_method_pair_id else '' %>
+                <td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
+                <td>
+                  <dl class="left">
+                    <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
+                    <dd>${m.payment_method.description or '' | n}<br />
+                  </dl>
+                  <dl class=" left">
+                    <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
+                    <dd>${m.delivery_method.description or '' | n}</dd>
+                  </dl>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        %endfor
+
+      </div>
+    </div>
+
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+        <div id="settlementSelectBox">
+          <div id="settlementSelectBoxInner02">
+            <table summary="お支払・お引取り方法選択">
+              <tr>
+                <th><label>購入者氏名（全角）</label></th>
+                <td>
+                  ${form['last_name']}
+                  ${form['first_name']}
+                  ${self.error(form, 'last_name')}
+                  ${self.error(form, 'first_name')}
+                </td>
+              </tr>
+              <tr>
+                <th><label>購入者氏名（カナ）</label></th>
+                <td>
+                  ${form['last_name_kana']}
+                  ${form['first_name_kana']}
+                  ${self.error(form, 'last_name_kana')}
+                  ${self.error(form, 'first_name_kana')}
+                </tr>
+                <tr>
+                  <th><label>メールアドレス</label></th>
+                  <td>
+                    ${form['email_1']}
+                    ${self.error(form, 'email_1')}
+                  </td>
+                </tr>
+                <tr>
+                  <th><label>メールアドレス（確認）</label></th>
+                  <td>
+                    ${form['email_1_confirm']}
+                    ${self.error(form, 'email_1_confirm')}
+                  </td>
+                </tr>
+                <tr>
+                  <th><label>電話番号</label></th>
+                  <td>
+                    ${form['tel_1']}
+                    ${self.error(form, 'tel_1')}
+                  </td>
+                </tr>
+              <tr>
+                <th><label>住所</label></th>
+                <td>
+                  <table>
+                    <tr>
+                      <th><label>郵便番号</label></th>
+                      <td>
+                        ${form['zip']}
+                        ${self.error(form, 'zip')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><label>都道府県</label></th>
+                      <td>
+                        ${form['prefecture']}
+                        ${self.error(form, 'prefecture')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><label>市区町村</label></th>
+                      <td>
+                        ${form['city']}
+                        ${self.error(form, 'city')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><label>住所１</label></th>
+                      <td>
+                        ${form['address_1']}
+                        ${self.error(form, 'address_1')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th><label>住所２</label></th>
+                      <td>
+                        ${form['address_2']}
+                        ${self.error(form, 'address_2')}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th><label>生年月日</label></th>
+                <td>
+                  ${form['birthday']}
+                  ${self.error(form, 'birthday')}
+                </td>
+              </tr>
+              <tr>
+                <th><label>${form['sex'].label}</label></th>
+                <td>
+                  %for subfields in form['sex']:
+                    ${subfields}　${subfields.label}
+                  %endfor
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  </form>
+
+</div>
