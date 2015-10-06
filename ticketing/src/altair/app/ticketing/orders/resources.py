@@ -5,7 +5,7 @@ from datetime import datetime
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPBadRequest
 from sqlalchemy.sql.expression import or_, desc
-from sqlalchemy.orm import joinedload, undefer, aliased
+from sqlalchemy.orm import joinedload, joinedload_all, undefer, aliased
 
 # from paste.util.multidict import MultiDict
 from webob.multidict import MultiDict
@@ -46,6 +46,7 @@ from .forms import (
     OrderForm,
     OrderReservePreconditionsForm,
     OrderReserveSettingsForm,
+    OrderReserveSalesSegmentChooserForm,
     OrderReserveSeatsForm,
     OrderReserveForm,
     OrderRefundForm,
@@ -371,7 +372,7 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
 
         self.preconditions_form = OrderReservePreconditionsForm(self.request.POST, context=self)
         if not self.preconditions_form.validate():
-            logger.debug('%r' % self.seats_form.errors)
+            logger.debug('%r' % self.preconditions_form.errors)
             self.raise_error(u'不正な値が指定されました')
 
         # パフォーマンスの取得
@@ -394,6 +395,7 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
         seat_l0_ids = self.seats_form.seats.data
 
         # 選択可能なsales_segmentの取得
+        applicable_sales_segment_ids = None
         if seat_l0_ids:
             applicable_sales_segment_ids = set(
                 x[0]
@@ -408,44 +410,56 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
                         .filter(Seat.l0_id.in_(seat_l0_ids)) \
                         .distinct()
                 )
+        elif stock_ids:
+            applicable_sales_segment_ids = set(
+                x[0]
+                for x in DBSession.query(SalesSegment.id) \
+                        .join(SalesSegment.products) \
+                        .join(Product.items) \
+                        .join(ProductItem.stock) \
+                        .filter(Stock.id.in_(stock_ids)) \
+                        .distinct()
+                )
+        if applicable_sales_segment_ids is not None:
             sales_segments = [sales_segment for sales_segment in self.available_sales_segments if sales_segment.id in applicable_sales_segment_ids]
         else:
             sales_segments = self.available_sales_segments
         self.sales_segments = sales_segments
 
         self.settings_form = OrderReserveSettingsForm(self.request.POST, context=self)
-        if not self.settings_form.validate():
-            logger.debug('%r' % self.settings_form.errors)
-            self.raise_error(u'不正な値が指定されました')
-
         sales_segment_id = self.settings_form.sales_segment_id.data
         sales_segment = None
-        if sales_segment_id is not None:
-            sales_segment = DBSession.query(SalesSegment) \
-                .filter(SalesSegment.performance_id == self.performance.id) \
-                .filter(SalesSegment.id == sales_segment_id) \
-                .one()
-            if sales_segment not in self.available_sales_segments:
-                raise HTTPBadRequest()
-        else:
+        if not self.settings_form.validate():
+            self.settings_form.clear_errors()
             sales_segment = sales_segments[0]
             self.settings_form.sales_segment_id.data = sales_segment.id
+        else:
+            if sales_segment_id is not None:
+                sales_segment = DBSession.query(SalesSegment) \
+                    .filter(SalesSegment.performance_id == self.performance.id) \
+                    .filter(SalesSegment.id == sales_segment_id) \
+                    .one()
+                if sales_segment not in self.available_sales_segments:
+                    raise HTTPBadRequest()
         self.sales_segment = sales_segment
 
         if seat_l0_ids:
             q = DBSession.query(Product) \
                 .join(Product.seat_stock_type) \
+                .join(Product.sales_segment) \
                 .join(StockType.stocks) \
                 .join(Stock.seats) \
                 .join(Seat.venue) \
+                .filter(SalesSegment.performance_id == self.performance.id) \
                 .filter(Stock.performance_id == self.performance.id) \
                 .filter(Venue.performance_id == self.performance.id) \
-                .filter(Seat.l0_id.in_(seat_l0_ids)) \
-                .filter(Product.sales_segment_id == self.sales_segment.id)
+                .filter(Seat.l0_id.in_(seat_l0_ids))
         else:
             q = DBSession.query(Product) \
-                .join(Product.seat_stock_type) \
-                .filter(Product.sales_segment_id == self.sales_segment.id)
+                .join(Product.sales_segment) \
+                .filter(SalesSegment.performance_id == self.performance.id)
+        if sales_segment is not None:
+            q = q.filter(Product.sales_segment_id == sales_segment.id)
         if len(stock_ids) > 0:
             q = q.join(Product.items).filter(ProductItem.stock_id.in_(stock_ids))
         self.products = q.distinct().all()
@@ -484,3 +498,66 @@ class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
             if payment_delivery_method_pair.payment_method.pay_at_store() or \
                payment_delivery_method_pair.delivery_method.deliver_at_store()
             ]
+
+class OrderReservePageResource(TicketingAdminResource, SalesCounterResourceMixin):
+    def __init__(self, request):
+        super(OrderReservePageResource, self).__init__(request)
+        self.now = datetime.now()
+
+        self.preconditions_form = OrderReservePreconditionsForm(self.request.POST, context=self)
+        if not self.preconditions_form.validate():
+            logger.debug('%r' % self.preconditions_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+
+        # パフォーマンスの取得
+        self.performance = DBSession.query(Performance).filter(Performance.id == self.preconditions_form.performance_id.data).one()
+
+        self.seats_form = OrderReserveSeatsForm(self.request.POST, context=self)
+        if not self.seats_form.validate():
+            logger.debug('%r' % self.seats_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+
+        # stockの取得
+        stock_ids = []
+        try:
+            stock_ids = [long(stock_id) for stock_id in self.preconditions_form.stocks.data]
+        except (TypeError, ValueError):
+            pass
+        self.stocks = DBSession.query(Stock).options(joinedload(Stock.stock_type)).filter(Stock.id.in_(stock_ids)).all()
+
+        self.sales_segments = self.available_sales_segments
+
+        self.settings_form = OrderReserveSalesSegmentChooserForm(self.request.POST, context=self)
+        if not self.settings_form.validate():
+            logger.debug('%r' % self.settings_form.errors)
+            self.raise_error(u'不正な値が指定されました')
+
+        sales_segment_id = self.settings_form.sales_segment_id.data
+        sales_segment = None
+        if sales_segment_id is not None:
+            sales_segment = DBSession.query(SalesSegment) \
+                .filter(SalesSegment.performance_id == self.performance.id) \
+                .filter(SalesSegment.id == sales_segment_id) \
+                .one()
+            if sales_segment not in self.available_sales_segments:
+                raise HTTPBadRequest()
+        self.sales_segment = sales_segment
+
+        q = DBSession.query(Product) \
+            .join(Product.sales_segment) \
+            .options(
+                joinedload_all(Product.items, ProductItem.stock, Stock.stock_status),
+                joinedload(Product.items, ProductItem.stock, Stock.stock_holder)
+                )\
+            .filter(SalesSegment.performance_id == self.performance.id)
+        if sales_segment is not None:
+            q = q.filter(Product.sales_segment_id == sales_segment.id)
+        if len(stock_ids) > 0:
+            q = q.join(Product.items).filter(ProductItem.stock_id.in_(stock_ids))
+        self.products = q.distinct().all()
+
+    def raise_error(self, message, klass=HTTPBadRequest):
+        raise klass(
+            content_type='application/json',
+            text=json.dumps(dict(message=message), ensure_ascii=False)
+            )
