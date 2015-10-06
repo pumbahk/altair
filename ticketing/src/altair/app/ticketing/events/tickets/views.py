@@ -363,11 +363,11 @@ class BundleAttributeView(BaseView):
     def getFpTicketTemplate(self, tickets):
         for ticket in tickets:
             name = get_template_name_from_ticket_format(ticket.ticket_format)
-            if not name is None:
+            if name is not None:
                 found = DBSession.query(FamiPortTicketTemplate) \
                     .filter_by(organization_id=self.context.organization.id, name=name) \
                     .first()
-                if not found is None:
+                if found is not None:
                     return found
         return None
 

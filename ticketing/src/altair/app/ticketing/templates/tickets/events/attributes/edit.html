@@ -37,13 +37,13 @@ ${ch.breadcrumbs(
         (function() {
           var jsons = [ ];
           %for ticket in bundle.tickets:
-          jsons.push('${ticket.data['drawing'].replace("\n", "")}');
+          jsons.push(${HH.json(ticket.data['drawing']) | n});
           %endfor
 
           var rules = [ ];
-          %if not fpTicketTemplate.rules is None:
+          %if fpTicketTemplate.rules is not None:
            %for rule in fpTicketTemplate.rules:
-             rules.push([ '${rule[0]}', '${rule[1]}', '${rule[2]}' ]);
+             rules.push(${HH.json(rule) | n});
            %endfor
           %endif
 
