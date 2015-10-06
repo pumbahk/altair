@@ -1,4 +1,3 @@
-from datetime import datetime
 from pyramid.view import view_defaults
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.rendering import selectable_renderer
@@ -39,14 +38,7 @@ class CouponView(object):
         if order is None:
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
-        now = datetime.now()
-        order.printed_at = now
-
-        for attr in order.items:
-            for element in attr.elements:
-                element.printed_at = now
-                for token in element.tokens:
-                    token.printed_at = now
+        self.context.use_coupon()
 
         return dict(
             reserved_number=self.context.reserved_number,
