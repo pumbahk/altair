@@ -79,11 +79,11 @@ class MemberGroupChoicesForm(Form):
         coerce=unicode
     )
 
-    user_id_list = fields.HiddenField(
+    member_id_list = fields.HiddenField(
         label=u"",
     )
 
-    def validate_user_id_list(form, field):
+    def validate_member_id_list(form, field):
         field.data = json.loads(field.data)
 
     def configure(self, membergroups):

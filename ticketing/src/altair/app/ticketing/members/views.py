@@ -10,7 +10,7 @@ from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.models import merge_session_with_post
 from altair.response import FileLikeResponse ##
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.users.models import Member, User, MemberGroup, Membership
+from altair.app.ticketing.users.models import Member, MemberGroup, Membership
 from . import forms
 from . import api
 from altair.app.ticketing.views import BaseView
@@ -49,27 +49,24 @@ def members_index_view(context, request):
     choice_form = forms.SearchMemberForm(membership_id=membership_id, membergroup_id=membergroup_id, username=username)\
         .configure(memberships, membership.membergroups)
 
-    users = User.query.join(User.member) \
+    members = Member.query\
         .filter(Member.membership_id==membership_id)\
-        .filter(Member.user_id==User.id)\
-        .options(orm.contains_eager(User.member), 
-                 orm.joinedload(User.member, Member.membergroup), 
-                 )
+        .options(orm.joinedload(Member.membergroup))
 
     if membergroup_id:
-        users = users.filter(Member.membergroup_id == membergroup_id)
+        members = members.filter(Member.membergroup_id == membergroup_id)
     if username:
-        users = users.filter(Member.auth_identifier.like(u"%%%s%%" % username))
+        members = members.filter(Member.auth_identifier.like(u"%%%s%%" % username))
 
-    users = paginate.Page(
-        users, 
-        item_count=users.count(), 
+    members = paginate.Page(
+        members, 
+        item_count=members.count(), 
         page=int(request.params.get('page', 0)),
         items_per_page=50,
         url=paginate.PageURL_WebOb(request)
         )
     membergroups = MemberGroup.query.filter_by(membership_id=membership.id).order_by(sa.asc(MemberGroup.name)).all()
-    return {"users": users,
+    return {"members": members,
             "choice_form": choice_form, 
             "membership": membership, 
             "membergroup_id": membergroup_id, 
@@ -98,11 +95,10 @@ class MemberView(BaseView):
     def delete_member_all(self):
         membergroup_id = self.request.POST["membergroup_id"]
         membership_id = self.request.matchdict["membership_id"]
-        users = User.query.join(User.member) \
-                          .filter(Member.membership_id == membership_id)
+        members = Member.query.filter(Member.membership_id == membership_id)
         if membergroup_id:
-            users = users.filter(Member.membergroup_id==membergroup_id,)
-        api.delete_loginuser(self.request, users)
+            members = members.filter(Member.membergroup_id==membergroup_id,)
+        api.delete_loginuser(self.request, members)
         self.request.session.flash(u"ユーザを一括削除しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
@@ -110,29 +106,23 @@ class MemberView(BaseView):
                  renderer="altair.app.ticketing:templates/members/_delete_member_dialog.html")
     def delete_member_dialog(self):
         membership_id = self.request.matchdict["membership_id"]
-        user_id_list = self.request.params["user_id_list"]
-        users = User.query.filter(User.id.in_(json.loads(user_id_list)))\
-            .join(User.member)\
-            .options(orm.contains_eager(User.member), 
-                     orm.joinedload(User.member, Member.membergroup), 
-                     orm.joinedload(User.member, Member.membership)
-                     )
-        return {"users": users,"membership_id": membership_id, "user_id_list": user_id_list}
+        member_id_list = self.request.params["member_id_list"]
+        members = Member.query.filter(Member.id.in_(json.loads(member_id_list)))\
+            .options(orm.joinedload(Member.membergroup), 
+                     orm.joinedload(Member.membership))
+        return {"members": members,"membership_id": membership_id, "member_id_list": member_id_list}
 
 
     @view_config(match_param="action=delete", 
                  renderer="json")
     def delete_member(self):
-        user_id_list = self.request.params["user_id_list"]
+        member_id_list = self.request.params["member_id_list"]
         membership_id = self.request.matchdict["membership_id"]
-        users = User.query \
-            .join(User.member)\
-            .filter(User.id.in_(json.loads(user_id_list)))\
-            .options(orm.contains_eager(User.member), 
-                     orm.joinedload(User.member, Member.membergroup), 
-                     orm.joinedload(User.member, Member.membership),
-                     )
-        api.delete_loginuser(self.request, users)
+        members = Member.query\
+            .filter(Member.id.in_(json.loads(member_id_list)))\
+            .options(orm.joinedload(Member.membergroup), 
+                     orm.joinedload(Member.membership))
+        api.delete_loginuser(self.request, members)
         self.request.session.flash(u"指定したユーザを削除しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
@@ -144,14 +134,11 @@ class MemberView(BaseView):
         form = forms.MemberGroupChoicesForm(user_id_list=self.request.params["user_id_list"])
         form = form.configure(membergroups)
 
-        users = User.query \
-            .join(User.member)\
-            .filter(User.id.in_(json.loads(form.data["user_id_list"])))\
-            .options(orm.contains_eager(User.member), 
-                     orm.joinedload(User.member, Member.membergroup), 
-                     orm.joinedload(User.member, Member.membership)
-                     )
-        return {"users": users, "form": form, "membership_id": membership_id}
+        members = Member.query\
+            .filter(Member.id.in_(json.loads(form.data["member_id_list"])))\
+            .options(orm.joinedload(Member.membergroup), 
+                     orm.joinedload(Member.membership))
+        return {"members": members, "form": form, "membership_id": membership_id}
 
     @view_config(match_param="action=edit", 
                  renderer="json")
@@ -163,7 +150,7 @@ class MemberView(BaseView):
             self.request.session.flash(unicode(form.errors))
             return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
-        api.edit_membergroup(self.request, Member.query.filter(Member.user_id.in_(form.data["user_id_list"])), 
+        api.edit_membergroup(self.request, Member.query.filter(Member.in_(form.data["member_id_list"])), 
                              form.data["membergroup_id"])
 
         self.request.session.flash(u"membergroupを変更しました")
@@ -204,14 +191,11 @@ class MemberView(BaseView):
             return {"form": form, "membership_id": membership_id}
 
         io = StringIO()
-        users = User.query \
-            .join(User.member)\
+        members = Member.query \
             .filter(Member.membership_id==membership_id)\
-            .options(orm.contains_eager(User.member),
-                     orm.joinedload(User.member, Member.membergroup), 
-                     orm.joinedload(User.member, Member.membership)
-                     )
-        api.members_export_as_csv(self.request, io, users, encoding=form.data["encoding"])
+            .options(orm.joinedload(Member.membergroup),
+                     orm.joinedload(Member.membership))
+        api.members_export_as_csv(self.request, io, members, encoding=form.data["encoding"])
 
         if "cp932" == form.data["encoding"]:
             content_encoding = "shift-JIS"
