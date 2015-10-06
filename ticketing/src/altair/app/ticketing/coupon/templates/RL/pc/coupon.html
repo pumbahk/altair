@@ -1,6 +1,7 @@
 <%inherit file="layout.html" />
 <div class="purchased">
   <h2>入場チケット情報</h2>
+
   <table class="purchasedContents">
     <tbody>
       <tr>
@@ -45,7 +46,7 @@
     % for item in order.items:
       % for element in item.elements:
       <tr>
-        <td class="textR">${element.product_item.name}<br/>${element.product_item.quantity}枚</td>
+        <td class="textR ticket_col">${element.product_item.name}<br/>${element.product_item.quantity}枚</td>
         <td class="textR">
           % if order.payment_status != 'paid':
             ご入金後、利用が可能となります
@@ -53,7 +54,7 @@
             利用済みです
           % else:
             <form action="${request.route_path('coupon.admission', reserved_number=reserved_number.number, ordered_product_id=element.id)}" method="POST">
-              <input class="btnLogin" type="submit" value="利用する"/>
+              <input class="btnCoupon" type="submit" value="利用する"/>
             </form>
           % endif
         </td>
