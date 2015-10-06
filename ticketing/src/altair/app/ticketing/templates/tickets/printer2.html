@@ -136,6 +136,11 @@ table#queue-entries .product-name { width: 27%; }
 table#queue-entries .summary { width: 27%; }
 </style>
 <script type="text/javascript">
+if (navigator.appVersion.match(/Chrome\/(\d+)\./) && 45 <= parseInt(RegExp.$1)) {
+    location.href = '${request.route_path('tickets.printer3')}';
+}
+</script>
+<script type="text/javascript">
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
   var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
