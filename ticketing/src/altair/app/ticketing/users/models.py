@@ -40,16 +40,24 @@ class Member(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Member'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
+    auth_identifier = Column(Unicode(64))
+    auth_secret= Column(Unicode(64))
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref=backref("member", uselist=False))
     membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     membergroup = relationship('MemberGroup', backref='users')
+    membership_id = Column(Identifier, ForeignKey('Membership.id', name='Member_ibfk_3', ondelete='CASCADE'))
+    membership = relationship('Membership')
 
     @classmethod
-    def get_or_create_by_user(cls, user):
-        assert user
-        qs = cls.query.filter_by(deleted_at=None, user=user)
-        instance = qs.first() or cls(user=user, user_id=user.id)
+    def get_or_create_by_user(cls, user, membership):
+        assert user is not None and membership is not None
+        instance = None
+        if membership.id is not None:
+            qs = cls.query.filter_by(deleted_at=None, user=user, membership_id=membership.id)
+            instance = qs.first()
+        if instance is None:
+            instance = cls(user=user, user_id=user.id, membership=membership)
         return instance
 
 class SexEnum(StandardEnum):

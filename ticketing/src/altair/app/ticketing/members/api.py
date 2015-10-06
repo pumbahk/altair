@@ -11,8 +11,6 @@ def edit_membergroup(request, members, member_group_id):
 def delete_loginuser(request, users):
     for user in users:
         user.member.delete()
-        for c in user.user_credential:
-            c.delete()
         user.delete()
 
     
@@ -41,5 +39,4 @@ def members_export_as_csv(request, io, users, encoding="cp932"):
     
 def _member_info_triples(users):
     for u in users:
-        c = u.first_user_credential
-        yield u.member.membergroup.name, c.auth_identifier, c.auth_secret
+        yield u.member.membergroup.name, u.member.auth_identifier, u.member.auth_secret

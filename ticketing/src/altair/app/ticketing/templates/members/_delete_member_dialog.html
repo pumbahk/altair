@@ -19,7 +19,7 @@
         <tbody>
           %for user in users:
           <tr>
-            <td>${user.first_user_credential.auth_identifier}</td>
+            <td>${user.member.auth_identifier}</td>
             <td>${user.member.membergroup.membership.name}</td>
             <td>${user.member.membergroup.name}</td>
           </tr>

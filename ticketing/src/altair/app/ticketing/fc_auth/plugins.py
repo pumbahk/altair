@@ -121,11 +121,11 @@ def nonguest_authenticate(request, identity):
         logger.debug('identity could not be retrieved because either membership or username is not provided: %r' % identity)
         return None
 
-    user_query =  get_db_session_from_request(request).query(u_m.User) \
-        .filter(u_m.UserCredential.auth_identifier == username) \
-        .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
+    user_query = get_db_session_from_request(request).query(u_m.User) \
+        .filter(u_m.Member.auth_identifier == username) \
+        .filter(u_m.Membership.id == u_m.Member.membership_id) \
         .filter(u_m.Membership.name == membership_name) \
-        .filter(u_m.User.id == u_m.UserCredential.user_id) \
+        .filter(u_m.User.id == u_m.Member.user_id) \
 
     try:
         user = user_query.one()

@@ -10,7 +10,7 @@ from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.models import merge_session_with_post
 from altair.response import FileLikeResponse ##
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.users.models import Member, User, UserCredential, MemberGroup, Membership
+from altair.app.ticketing.users.models import Member, User, MemberGroup, Membership
 from . import forms
 from . import api
 from altair.app.ticketing.views import BaseView
@@ -49,19 +49,17 @@ def members_index_view(context, request):
     choice_form = forms.SearchMemberForm(membership_id=membership_id, membergroup_id=membergroup_id, username=username)\
         .configure(memberships, membership.membergroups)
 
-    users = User.query.filter(User.id==UserCredential.user_id)\
-        .filter(UserCredential.membership_id==membership_id)\
+    users = User.query.join(User.member) \
+        .filter(Member.membership_id==membership_id)\
         .filter(Member.user_id==User.id)\
-        .options(orm.joinedload("user_credential"), 
-                 orm.joinedload("user_credential.membership"), 
-                 orm.joinedload("member"), 
-                 orm.joinedload("member.membergroup"), 
+        .options(orm.contains_eager(User.member), 
+                 orm.joinedload(User.member, Member.membergroup), 
                  )
 
     if membergroup_id:
         users = users.filter(Member.membergroup_id == membergroup_id)
     if username:
-        users = users.filter(UserCredential.auth_identifier.like(u"%%%s%%" % username))
+        users = users.filter(Member.auth_identifier.like(u"%%%s%%" % username))
 
     users = paginate.Page(
         users, 
@@ -100,16 +98,8 @@ class MemberView(BaseView):
     def delete_member_all(self):
         membergroup_id = self.request.POST["membergroup_id"]
         membership_id = self.request.matchdict["membership_id"]
-        users = User.query.filter(User.id==Member.user_id,
-                                  Member.membergroup_id==MemberGroup.id,
-                                  MemberGroup.membership_id==membership_id,
-                                  User.id==UserCredential.user_id,
-                                  UserCredential.membership_id==membership_id)\
-                                  .options(orm.joinedload("user_credential"), 
-                                           orm.joinedload("member"), 
-                                           orm.joinedload("member.membergroup"), 
-                                           orm.joinedload("member.membergroup.membership"), 
-                                           )
+        users = User.query.join(User.member) \
+                          .filter(Member.membership_id == membership_id)
         if membergroup_id:
             users = users.filter(Member.membergroup_id==membergroup_id,)
         api.delete_loginuser(self.request, users)
@@ -122,10 +112,10 @@ class MemberView(BaseView):
         membership_id = self.request.matchdict["membership_id"]
         user_id_list = self.request.params["user_id_list"]
         users = User.query.filter(User.id.in_(json.loads(user_id_list)))\
-            .options(orm.joinedload("user_credential"), 
-                     orm.joinedload("member"), 
-                     orm.joinedload("member.membergroup"), 
-                     orm.joinedload("member.membergroup.membership"), 
+            .join(User.member)\
+            .options(orm.contains_eager(User.member), 
+                     orm.joinedload(User.member, Member.membergroup), 
+                     orm.joinedload(User.member, Member.membership)
                      )
         return {"users": users,"membership_id": membership_id, "user_id_list": user_id_list}
 
@@ -135,11 +125,12 @@ class MemberView(BaseView):
     def delete_member(self):
         user_id_list = self.request.params["user_id_list"]
         membership_id = self.request.matchdict["membership_id"]
-        users = User.query.filter(User.id.in_(json.loads(user_id_list)))\
-            .options(orm.joinedload("user_credential"), 
-                     orm.joinedload("member"), 
-                     orm.joinedload("member.membergroup"), 
-                     orm.joinedload("member.membergroup.membership"), 
+        users = User.query \
+            .join(User.member)\
+            .filter(User.id.in_(json.loads(user_id_list)))\
+            .options(orm.contains_eager(User.member), 
+                     orm.joinedload(User.member, Member.membergroup), 
+                     orm.joinedload(User.member, Member.membership),
                      )
         api.delete_loginuser(self.request, users)
         self.request.session.flash(u"指定したユーザを削除しました")
@@ -153,11 +144,12 @@ class MemberView(BaseView):
         form = forms.MemberGroupChoicesForm(user_id_list=self.request.params["user_id_list"])
         form = form.configure(membergroups)
 
-        users = User.query.filter(User.id.in_(json.loads(form.data["user_id_list"])))\
-            .options(orm.joinedload("user_credential"), 
-                     orm.joinedload("member"), 
-                     orm.joinedload("member.membergroup"), 
-                     orm.joinedload("member.membergroup.membership"), 
+        users = User.query \
+            .join(User.member)\
+            .filter(User.id.in_(json.loads(form.data["user_id_list"])))\
+            .options(orm.contains_eager(User.member), 
+                     orm.joinedload(User.member, Member.membergroup), 
+                     orm.joinedload(User.member, Member.membership)
                      )
         return {"users": users, "form": form, "membership_id": membership_id}
 
@@ -212,13 +204,12 @@ class MemberView(BaseView):
             return {"form": form, "membership_id": membership_id}
 
         io = StringIO()
-        users = User.query.filter(User.id==UserCredential.user_id)\
-            .filter(UserCredential.membership_id==membership_id)\
-            .filter(Member.user_id==User.id)\
-            .options(orm.joinedload("user_credential"), 
-                     orm.joinedload("user_credential.membership"), 
-                     orm.joinedload("member"), 
-                     orm.joinedload("member.membergroup"), 
+        users = User.query \
+            .join(User.member)\
+            .filter(Member.membership_id==membership_id)\
+            .options(orm.contains_eager(User.member),
+                     orm.joinedload(User.member, Member.membergroup), 
+                     orm.joinedload(User.member, Member.membership)
                      )
         api.members_export_as_csv(self.request, io, users, encoding=form.data["encoding"])
 
@@ -239,7 +230,7 @@ class LoginUserView(object):
 
     @view_config(match_param="action=edit", renderer="altair.app.ticketing:templates/members/_edit_loginuser_dialog.html", request_method="GET")
     def edit_dialog(self):
-        loginuser = UserCredential.filter_by(id=self.request.matchdict["loginuser_id"]).first()
+        loginuser = Member.filter_by(id=self.request.matchdict["loginuser_id"]).first()
         form = forms.LoginUserEditForm(auth_identifier=loginuser.auth_identifier, 
                                        auth_secret=loginuser.auth_secret,
                                        )
@@ -248,7 +239,7 @@ class LoginUserView(object):
     @view_config(match_param="action=edit", request_method="POST")
     def edit(self):
         membership_id = self.request.matchdict["membership_id"]
-        qs = UserCredential.filter(UserCredential.membership_id==membership_id)
+        qs = Member.filter(Member.membership_id==membership_id)
         loginuser = qs.filter_by(id=self.request.matchdict["loginuser_id"]).first()
         form = forms.LoginUserEditForm(self.request.POST)
 

@@ -51,8 +51,8 @@ class CreateLoginUserTests(unittest.TestCase):
         result = target.build_user_for_login_cart(membergroup_name, loginname, password)
 
         self.assertEquals(result.member.membergroup.name, "gold")
-        self.assertEquals(result.first_user_credential.auth_identifier, "foo")
-        self.assertEquals(result.first_user_credential.auth_secret, "this-is-password")
+        self.assertEquals(result.member.auth_identifier, "foo")
+        self.assertEquals(result.member.auth_secret, "this-is-password")
 
     def test_create_user_with_exist_membergroup(self):
         membership_id = 1
@@ -68,8 +68,8 @@ class CreateLoginUserTests(unittest.TestCase):
 
         self.assertEquals(result.member.membergroup.name, "gold")
         self.assertEquals(result.member.membergroup.id, 1000)
-        self.assertEquals(result.first_user_credential.auth_identifier, "foo")
-        self.assertEquals(result.first_user_credential.auth_secret, "this-is-password")
+        self.assertEquals(result.member.auth_identifier, "foo")
+        self.assertEquals(result.member.auth_secret, "this-is-password")
 
         delete_membergroups()
 
@@ -83,8 +83,8 @@ class CreateLoginUserTests(unittest.TestCase):
         result1 = target.build_user_for_login_cart_add_session(membergroup_name, loginname, password)
 
         self.assertEquals(result0.member.membergroup.name, "gold")
-        self.assertEquals(result0.first_user_credential.auth_identifier, "foo")
-        self.assertEquals(result0.first_user_credential.auth_secret, "this-is-password")
+        self.assertEquals(result0.member.auth_identifier, "foo")
+        self.assertEquals(result0.member.auth_secret, "this-is-password")
 
         self.assertEquals(result0, result1)
 
@@ -98,8 +98,8 @@ class CreateLoginUserTests(unittest.TestCase):
         result1 = target.build_user_for_login_cart_add_session(membergroup_name, loginname, "overwrite-password")
 
         self.assertEquals(result1.member.membergroup.name, "gold")
-        self.assertEquals(result1.first_user_credential.auth_identifier, "foo")
-        self.assertEquals(result1.first_user_credential.auth_secret, "overwrite-password")
+        self.assertEquals(result1.member.auth_identifier, "foo")
+        self.assertEquals(result1.member.auth_secret, "overwrite-password")
 
         self.assertEquals(result0, result1)
 
@@ -114,8 +114,8 @@ class CreateLoginUserTests(unittest.TestCase):
         result1 = target.build_user_for_login_cart_add_session("silver", loginname, password)
 
         self.assertEquals(result1.member.membergroup.name, "silver")
-        self.assertEquals(result1.first_user_credential.auth_identifier, "foo")
-        self.assertEquals(result1.first_user_credential.auth_secret, "this-is-password")
+        self.assertEquals(result1.member.auth_identifier, "foo")
+        self.assertEquals(result1.member.auth_secret, "this-is-password")
 
         self.assertEquals(result0, result1)        
 

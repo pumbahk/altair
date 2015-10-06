@@ -28,10 +28,9 @@ def do_authenticate(request, membership, username, password):
        空のdictが返ることもあるので、is not None でチェックする必要がある"""
     session = get_db_session(request, 'slave')
     user_query = session.query(u_m.User) \
-        .filter(u_m.User.id == u_m.UserCredential.user_id) \
-        .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
-        .filter(u_m.UserCredential.auth_identifier == username) \
-        .filter(u_m.UserCredential.auth_secret == password) \
+        .join(u_m.User.member).join(u_m.Member.membership) \
+        .filter(u_m.Member.auth_identifier == username) \
+        .filter(u_m.Member.auth_secret == password) \
         .filter(u_m.Membership.name == membership)
     try:
         user = user_query.one()

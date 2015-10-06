@@ -63,7 +63,7 @@ ${ch.breadcrumbs(
   ##ここpanel使いたい
   %if membergroup_id:
     <ul class="nav nav-tabs">
-    <li><a href="${request.current_route_path()}">すべて</a></li>
+    <li><a href="${request.current_route_path(_query={})}">すべて</a></li>
     %for g in membergroups:
       %if unicode(g.id) == unicode(membergroup_id):
         <li class="active"><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
@@ -102,11 +102,11 @@ ${ch.breadcrumbs(
                 <td class="checkbox-row"><input type="checkbox" name="user_id" value="${user.id}" /></td>
                 <td>${user.member.membergroup.name}</td>
                 <td>${user.id}</td>
-                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.member.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.member.auth_identifier}</a>
                 </td>
-                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_secret}</a>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.member.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.member.auth_secret}</a>
                 </td>
               </tr>
             % endfor
