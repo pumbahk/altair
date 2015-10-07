@@ -1,0 +1,30 @@
+<script>
+          var display_notice = function(rule) {
+            if(rule[1] == 'max-length-byte') {
+              return '全角換算で'+(rule[2]/2)+'文字まで';
+            }
+            return rule[1]+"("+rule[2]+")";
+          };
+
+          var rebuild_notice = function(target, rules, name) {
+            $(target).find('div').remove();
+            $.each(rules, function() {
+              var rule = this;
+              if('aux.'+name == rule[0]) {
+                $('<div></div>').append(display_notice(rule))
+                .appendTo($(target));
+                return true;
+              }
+            });
+          };
+          var append_notice = function(target, rules) {
+            $.each(rules, function() {
+              var rule = this;
+              if('aux.'+$.trim($(target).text()) == rule[0]) {
+                $('<div></div>').append(display_notice(rule))
+                .appendTo($(target).parents('.control-group').eq(0).find('.controls'));
+                return true;
+              }
+            });
+          };
+</script>
