@@ -42,7 +42,7 @@ cache.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/data
 cache.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/lock
 
 ; altair.rakuten_auth
-altair.rakuten_auth.url_builder_factory = altair.app.ticketing.extauth.URLBuilder
+altair.rakuten_auth.url_builder_factory = altair.app.ticketing.security.RakutenAuthURLBuilder
 altair.rakuten_auth.url_builder_factory.proxy_url_pattern = http://api.ticket.rakuten.co.jp/rid/rc/http/stg/{subdomain}
 altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}

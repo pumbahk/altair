@@ -15,6 +15,7 @@ from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPl
 from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
 from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 from altair.oauth_auth.plugin import OAuthAuthPlugin
+from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
 

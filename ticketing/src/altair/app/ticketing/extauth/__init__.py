@@ -1,13 +1,10 @@
 # encoding: utf-8
 import logging
-from urlparse import urljoin
 import pyramid.config
 from pyramid.authorization import ACLAuthorizationPolicy
 import sqlalchemy as sa
 import sqlalchemy.pool as sa_pool
 import sqlahelper
-from zope.interface import implementer
-from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
     
@@ -17,31 +14,6 @@ ENDPOINT_PATH = {
 
 def empty_resource_factory(request):
     return None
-
-@implementer(IRakutenOpenIDURLBuilder)
-class URLBuilder(object):
-    extra_verify_url_exists = True
-
-    def __init__(self, proxy_url_pattern):
-        self.proxy_url_pattern = proxy_url_pattern
-
-    def build_base_url(self, request):
-        subdomain = request.host.split('.', 1)[0]
-        return self.proxy_url_pattern.format(
-            subdomain=subdomain
-            )
-
-    def build_return_to_url(self, request):
-        return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.verify').lstrip('/'))
-
-    def build_error_to_url(self, request):
-        return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.error').lstrip('/'))
-
-    def build_verify_url(self, request):
-        return request.route_url('rakuten_auth.verify')
-
-    def build_extra_verify_url(self, request):
-        return request.route_url('rakuten_auth.verify2')
 
 def setup_auth(config):
     config.include('altair.auth')
