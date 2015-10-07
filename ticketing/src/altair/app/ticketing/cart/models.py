@@ -997,3 +997,13 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
             self.data = {}
         self.data['oauth_endpoint_token'] = value
 
+    @property
+    def oauth_endpoint_token_revocation(self):
+        return self.data.get('oauth_endpoint_token_revocation')
+
+    @oauth_endpoint_token_revocation.setter
+    def oauth_endpoint_token_revocation(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_token_revocation'] = value
+

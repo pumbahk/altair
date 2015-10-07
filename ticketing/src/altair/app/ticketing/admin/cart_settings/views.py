@@ -60,6 +60,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.oauth_client_secret = form.data['oauth_client_secret']
     cart_setting.oauth_endpoint_authz = form.data['oauth_endpoint_authz']
     cart_setting.oauth_endpoint_token = form.data['oauth_endpoint_token']
+    cart_setting.oauth_endpoint_token_revocation = form.data['oauth_endpoint_token_revocation']
     cart_setting.oauth_endpoint_api = form.data['oauth_endpoint_api']
 
 class CartSettingViewBase(BaseView):

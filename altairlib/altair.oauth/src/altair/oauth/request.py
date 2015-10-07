@@ -78,7 +78,7 @@ class WebObOAuthRequestParser(object):
     def get_access_token(self, request):
         authz = request.authorization
         access_token = None
-        if authz is not None and authz[0] == 'token':
+        if authz is not None and authz[0].lower() in ('token', 'basic'):
             access_token = authz[1]
         elif 'access_token' in request.GET:
             access_token = request.GET.pop('access_token')

@@ -37,10 +37,18 @@ class SensibleRequest(urllib2.Request):
             self.host = x[1]
             self.userinfo = userinfo
 
+    def get_method(self):
+        if self.method is not None:
+            return self.method.upper()
+        return urllib2.Request.get_method(self)
+
     def __init__(self, *args, **kwargs):
         # XXX: old style class!
+        method = kwargs.pop('method', None)
         urllib2.Request.__init__(self, *args, **kwargs)
         self.userinfo = None
+        self.method = method
+
 
 class BasicAuthSensibleRequest(SensibleRequest):
     def __init__(self, *args, **kwargs):

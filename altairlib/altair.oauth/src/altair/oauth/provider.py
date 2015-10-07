@@ -123,6 +123,17 @@ class OAuthProvider(object):
         auth_descriptor['refresh_token_expire_at'] = ((now + refresh_token_expire_in) if refresh_token_expire_in is not None else None)
         return auth_descriptor
 
+    def revoke_access_token(self, client_id, client_secret, access_token):
+        client = self.validated_client(client_id, client_secret)
+        try:
+            auth_descriptor = self.access_token_store[access_token]
+        except KeyError:
+            raise OAuthNoSuchAccessTokenError(access_token)
+        if auth_descriptor['client_id'] != client_id:
+            logger.info('client_id does not match (%s != %s)' % (client_id, auth_descriptor['client_id']))
+            raise OAuthNoSuchAuthorizationCodeError(u'client_id does not match')
+        del self.access_token_store[access_token]
+
     def get_auth_descriptor_by_token(self, access_token):
         try:
             return self.access_token_store[access_token]

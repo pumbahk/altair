@@ -37,8 +37,8 @@ class APIView(object):
          self.context = context
          self.request = request
 
-    @view_config(route_name='extauth.api.oauth_access_token')
-    def oauth_access_token(self):
+    @view_config(route_name='extauth.api.issue_oauth_access_token')
+    def issue_oauth_access_token(self):
         state = oauth_request_parser.get_state(self.request)
         try:
             client_id, client_secret = oauth_request_parser.get_client_credentials(self.request)
@@ -57,6 +57,22 @@ class APIView(object):
             self.request.response.status = e.http_status
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
         return get_oauth_response_renderer(self.request).render_auth_descriptor_as_dict(auth_descriptor, state)
+
+    @view_config(route_name='extauth.api.revoke_oauth_access_token', request_method='DELETE')
+    def revoke_oauth_access_token(self):
+        try:
+            client_id, client_secret = oauth_request_parser.get_client_credentials(self.request)
+        except OAuthBadRequestError:
+            logger.exception('bad request')
+            self.request.response.status = 400
+            return {}
+        provider = get_oauth_provider(self.request)
+        try:
+            provider.revoke_access_token(client_id=client_id, client_secret=client_secret, access_token=self.request.matchdict['access_token'])
+        except OAuthRenderableError as e:
+            self.request.response.status = e.http_status
+            return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
+        return {}
 
     @view_config(route_name='extauth.api.v0.user', decorator=(verify_access_token,))
     def user(self):

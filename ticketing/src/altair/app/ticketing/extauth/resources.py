@@ -20,3 +20,9 @@ class ExtAuthSubTypeResource(ExtAuthBase):
     def __init__(self, request, subtype):
         self.request = request
         self.subtype = subtype
+    
+    def route_path(self, *args, **kwargs):
+        return self.request.route_path(*args, subtype=self.subtype, **kwargs)
+    
+    def route_url(self, *args, **kwargs):
+        return self.request.route_url(*args, subtype=self.subtype, **kwargs)

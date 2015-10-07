@@ -7,7 +7,7 @@ from zope.interface import implementer
 from pyramid_dogpile_cache import get_region
 from pyramid.view import view_config
 from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
-from altair.auth.interfaces import IChallenger, IAuthenticator, IMetadataProvider, ILoginHandler, IRequestInterceptor
+from altair.auth.interfaces import IChallenger, IAuthenticator, IMetadataProvider, ILoginHandler, IRequestInterceptor, ISessionKeeper
 from altair.auth.api import get_auth_api
 from altair.browserid import get_browserid
 from altair.oauth_auth.api import get_api_factory
@@ -22,7 +22,7 @@ def generate_verification_token():
     from hashlib import md5
     return md5(__name__ + os.urandom(64)).hexdigest()
 
-@implementer(IAuthenticator, ILoginHandler, IChallenger, IMetadataProvider, IRequestInterceptor)
+@implementer(IAuthenticator, ILoginHandler, IChallenger, IMetadataProvider, IRequestInterceptor, ISessionKeeper)
 class OAuthAuthPlugin(object):
     ACCESS_TOKEN_KEY = 'access_token'
     METADATA_KEY = '%s.metadata' % __name__
@@ -110,6 +110,14 @@ class OAuthAuthPlugin(object):
         except:
             import sys
             logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
+
+    # ISessionKeeper
+    def remember(self, request, auth_context, response, auth_factor):
+        pass
+
+    # ISessionKeeper
+    def forget(self, request, auth_context, response, auth_factor):
+        get_api_factory(request, self.name).create_oauth_negotiator().revoke_access_token(request, auth_factor['access_token'])
 
     # IMetadataProvider
     def get_metadata(self, request, auth_context, identities):

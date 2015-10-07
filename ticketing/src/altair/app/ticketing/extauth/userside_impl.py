@@ -1,28 +1,31 @@
 # encoding: utf-8
 import logging
 import json
-from urllib import urlencode
+from urllib import urlencode, quote
 import urllib2
 import cgi
 import six
+import base64
 from urlparse import urljoin
 from zope.interface import implementer
 from altair.oauth_auth.interfaces import IOAuthAPIFactory, IOAuthNegotiator, IOAuthAPI
 from altair.oauth_auth.exceptions import OAuthAPICommunicationError
 from altair.app.ticketing.utils import parse_content_type
+from altair.app.ticketing import urllib2ext
 
 logger = logging.getLogger(__name__)
 
 @implementer(IOAuthAPIFactory)
 class OAuthAPIFactory(object):
-    def __init__(self, opener_factory, token_endpoint, client_credentials, encoding='utf-8'):
+    def __init__(self, opener_factory, token_endpoint, token_revocation_endpoint, client_credentials, encoding='utf-8'):
         self.opener_factory = opener_factory
         self.token_endpoint = token_endpoint
+        self.token_revocation_endpoint = token_revocation_endpoint
         self.client_credentials = client_credentials
         self.encoding = encoding
 
     def create_oauth_negotiator(self):
-        return OAuthNegotiator(self.opener_factory, self.token_endpoint, self.client_credentials, self.encoding)
+        return OAuthNegotiator(self.opener_factory, self.token_endpoint, self.token_revocation_endpoint, self.client_credentials, self.encoding)
 
     def create_oauth_api(self, access_token, endpoint_url):
         return OAuthAPIClient(self.opener_factory, self.encoding, access_token, {u'get_user_info': endpoint_url})
@@ -37,28 +40,15 @@ class OAuthAPIBase(object):
 
 @implementer(IOAuthNegotiator)
 class OAuthNegotiator(OAuthAPIBase):
-    def __init__(self, opener_factory, endpoint, client_credentials, encoding='utf-8'):
+    def __init__(self, opener_factory, endpoint, revocation_endpoint, client_credentials, encoding='utf-8'):
         self.opener_factory = opener_factory
         self.endpoint = endpoint
+        self.revocation_endpoint = revocation_endpoint
         self.client_credentials = client_credentials
         self.encoding = encoding
 
-    def get_access_token(self, request, authorization_code, redirect_uri):
+    def _do_request(self, req):
         opener = self.opener_factory()
-        client_credentials = self.client_credentials
-        if callable(client_credentials):
-            client_credentials = client_credentials(request)
-        client_id, client_secret = client_credentials
-        endpoint = self.endpoint
-        if callable(endpoint):
-            endpoint = endpoint(request)
-        req = urllib2.Request(
-            endpoint,
-            headers={'Content-Type': 'application/x-www-form-urlencoded; charset=%s' % self.encoding},
-            data=self._encode_params(
-                {u'grant_type': u'authorization_code', u'client_id': client_id, u'client_secret': client_secret, u'code': authorization_code, u'redirect_uri': redirect_uri}.items()
-                )
-            )
         try:
             resp = opener.open(req)
         except urllib2.HTTPError as e:
@@ -85,11 +75,45 @@ class OAuthNegotiator(OAuthAPIBase):
         if isinstance(resp, urllib2.HTTPError):
             logger.error('%r' % retval)
             if retval is not None:
-                raise OAuthAPICommunicationError(u'%d %s (%s - %s)' % (e.code, e.msg, retval['error'], retval.get('error_description', u'(no description provided)')))
+                raise OAuthAPICommunicationError(u'%d %s (%s - %s)' % (e.code, e.msg, retval.get('error', u'(unknown error)'), retval.get('error_description', u'(no description provided)')))
             else:
                 raise OAuthAPICommunicationError(u'%d %s' % (e.code, e.msg))
+        return retval
+
+    def get_access_token(self, request, authorization_code, redirect_uri):
+        client_credentials = self.client_credentials
+        if callable(client_credentials):
+            client_credentials = client_credentials(request)
+        client_id, client_secret = client_credentials
+        endpoint = self.endpoint
+        if callable(endpoint):
+            endpoint = endpoint(request)
+        req = urllib2ext.SensibleRequest(
+            endpoint,
+            headers={'Content-Type': 'application/x-www-form-urlencoded; charset=%s' % self.encoding},
+            data=self._encode_params(
+                {u'grant_type': u'authorization_code', u'client_id': client_id, u'client_secret': client_secret, u'code': authorization_code, u'redirect_uri': redirect_uri}.items()
+                )
+            )
+        retval = self._do_request(req)
         access_token = retval.pop(u'access_token')
         return (access_token, retval)
+
+    def revoke_access_token(self, request, token):
+        client_credentials = self.client_credentials
+        if callable(client_credentials):
+            client_credentials = client_credentials(request)
+        client_id, client_secret = client_credentials
+        endpoint = self.revocation_endpoint
+        if callable(endpoint):
+            endpoint = endpoint(request)
+        endpoint = endpoint.format(client_id=quote(client_credentials[0]), token=quote(token))
+        req = urllib2ext.SensibleRequest(
+            endpoint,
+            method='DELETE',
+            headers={'Authorization': 'basic %s' % base64.b64encode('%s:%s' % client_credentials)}
+            )
+        return self._do_request(req)
 
 
 @implementer(IOAuthAPI)
@@ -105,7 +129,7 @@ class OAuthAPIClient(OAuthAPIBase):
         params_ = params.copy()
         params_.update(access_token=self.access_token)
         url = urljoin(endpoint, '?' + self._encode_params(params_.items()))
-        req = urllib2.Request(url)
+        req = urllib2ext.SensibleRequest(url)
         try:
             resp = opener.open(req)
         except urllib2.HTTPError as e:
@@ -156,13 +180,13 @@ def on_login(request, identity, metadata):
 
 CLIENT_CREDENTIALS_KEY = '%s.client_credentials' % __name__
 ENDPOINT_TOKEN_KEY = '%s.endpoint_token' % __name__
+ENDPOINT_TOKEN_REVOCATION_KEY = '%s.endpoint_token_revocation' % __name__
 ENDPOINT_API_KEY = '%s.endpoint_api' % __name__
 
 def includeme(config):
     registry = config.registry
     settings = registry.settings
     from altair.oauth_auth.plugin import OAuthAuthPlugin
-    from altair.app.ticketing.urllib2ext import opener_factory_from_config
 
     def client_id(request):
         return request.session[CLIENT_CREDENTIALS_KEY][0]
@@ -174,6 +198,7 @@ def includeme(config):
             )
         request.session[ENDPOINT_API_KEY] = request.context.cart_setting.oauth_endpoint_api
         request.session[ENDPOINT_TOKEN_KEY] = request.context.cart_setting.oauth_endpoint_token
+        request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = request.context.cart_setting.oauth_endpoint_token_revocation
         return request.context.cart_setting.oauth_endpoint_authz
        
     def api_endpoint(request):
@@ -184,6 +209,9 @@ def includeme(config):
 
     def token_endpoint(request):
         return request.session[ENDPOINT_TOKEN_KEY]
+
+    def token_revocation_endpoint(request):
+        return request.session[ENDPOINT_TOKEN_REVOCATION_KEY]
 
     def client_credentials(request):
         return request.session[CLIENT_CREDENTIALS_KEY]
@@ -196,11 +224,12 @@ def includeme(config):
         error_url,
         on_login=on_login
         )
-    opener_factory = opener_factory_from_config(config, 'altair.extauth.oauth.urllib2_opener_fatory')
+    opener_factory = urllib2ext.opener_factory_from_config(config, 'altair.extauth.oauth.urllib2_opener_fatory')
     registry.registerUtility(
         OAuthAPIFactory(
             opener_factory,
             token_endpoint,
+            token_revocation_endpoint,
             client_credentials,
             'utf-8'
             ),

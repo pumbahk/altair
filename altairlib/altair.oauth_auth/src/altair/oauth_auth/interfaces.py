@@ -12,6 +12,9 @@ class IOAuthNegotiator(Interface):
     def get_access_token(request, authorization_code, redirect_uri):
         pass
 
+    def revoke_access_token(request, token):
+        pass
+
 
 class IOAuthAPI(Interface):
     def get_user_info(request):

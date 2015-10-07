@@ -1,10 +1,10 @@
 import logging
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound
 
-from altair.pyramid_dynamic_renderer.config import lbr_view_config
+from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
 from altair.auth.api import get_plugin_registry
 from altair.oauth.api import get_oauth_provider
 from altair.oauth.request import WebObOAuthRequestParser
@@ -103,3 +103,20 @@ class RakutenIDView(object):
                 '?' + get_oauth_response_renderer(self.request).render_authorization_code_as_urlencoded_params(code, state)
                 )
             )
+
+@lbr_view_config(
+    route_name='extauth.reset_and_continue',
+    request_method='GET'
+    )
+def reset_and_continue(context, request):
+    path = request.application_url + u'/' + u'/'.join(request.matchdict['path']) + u'?' + request.query_string
+    request.session.delete()
+    return HTTPFound(location=path)
+
+
+@lbr_notfound_view_config(
+    renderer=selectable_renderer('notfound.mako'),
+    append_slash=True
+    )
+def notfound(context, request):
+    return {}

@@ -38,3 +38,7 @@ class DogpileBackedPersistentStore(object):
         k = self._normalize_key(k)
         v = self.region.get(k, expiration_time=self._expiration_time)
         return v is not NO_VALUE
+
+    def __delitem__(self, k):
+        k = self._normalize_key(k)
+        self.region.delete(k)

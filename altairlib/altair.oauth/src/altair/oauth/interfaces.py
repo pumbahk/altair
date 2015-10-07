@@ -18,6 +18,9 @@ class IPersistentStore(Interface):
     def __contains__(k):
         pass
 
+    def __delitem__(k):
+        pass
+
 
 class IClient(Interface):
     client_id = Attribute('')

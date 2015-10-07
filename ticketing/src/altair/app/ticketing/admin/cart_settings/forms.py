@@ -327,6 +327,14 @@ class CartSettingForm(OurForm):
         #    ]
         )
 
+    oauth_endpoint_token_revocation = OurTextField(
+        label=_(u'OAuthトークン無効化エンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
     oauth_endpoint_api = OurTextField(
         label=_(u'OAuthAPIエンドポイント'),
         # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
