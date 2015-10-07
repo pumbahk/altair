@@ -1,6 +1,6 @@
 body {
   background: #FFF;
-  font-size:12px;
+  font-size:14px;
   height:100%;
   font-family:"Helvetica Neue",Helvetica,Meiryo,"メイリオ",HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif;
   padding: 0;
@@ -580,6 +580,12 @@ background: #f8dde2;
 table.purchasedContents td,
 table.purchasedContents th {
 text-align: center;
+font-size: 24px;
+width: 95%;
+}
+
+.ticket_col {
+width: 60% !important;
 }
 
 .notes{
@@ -914,6 +920,17 @@ background-color:#006633;
 background-color:#006633;
 }
 */
+
+.btnCoupon {
+text-align: center;
+color: #FFF;
+border:1px solid #000000;
+margin: 10px auto;
+font-size: 48px;
+font-weight: bold;
+display: inline-block;
+background-color:#AAAAAA;
+}
 
 /* マイページ
 ----------------------------------------------------------- */
