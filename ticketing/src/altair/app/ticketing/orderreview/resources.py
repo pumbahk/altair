@@ -66,6 +66,10 @@ class OrderReviewResourceBase(object):
         """現在認証中のユーザ"""
         return get_auth_info(self.request)
 
+    @reify
+    def cart_setting(self):
+        return self.organization.setting.cart_setting
+
 
 class LandingViewResource(OrderReviewResourceBase):
     pass

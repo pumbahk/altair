@@ -433,6 +433,11 @@ def information_view(context, request):
         )
 
 
+@lbr_view_config(route_name='order_review.change_auth_type')
+def change_auth_type(context, request):
+    request.session['orderreview_auth_type_override'] = request.params['auth_type']
+    return HTTPFound(location=request.route_path('mypage.show'))
+
 class QRView(object):
     def __init__(self, context, request):
         self.context = context

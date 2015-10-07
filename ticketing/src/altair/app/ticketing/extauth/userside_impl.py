@@ -174,7 +174,7 @@ def includeme(config):
             )
         request.session[ENDPOINT_API_KEY] = request.context.cart_setting.oauth_endpoint_api
         request.session[ENDPOINT_TOKEN_KEY] = request.context.cart_setting.oauth_endpoint_token
-        return request.context.cart_setting.oauth_endpoint_authz or settings['altair.extauth.oauth.endpoints.authorization']
+        return request.context.cart_setting.oauth_endpoint_authz
        
     def api_endpoint(request):
         return request.session[ENDPOINT_API_KEY]

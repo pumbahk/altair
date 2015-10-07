@@ -72,18 +72,19 @@ class AuthModelCallback(object):
             authenticator = plugin_registry.lookup(authenticator_name)
 
             if isinstance(authenticator, RakutenOpenID):
-                auth_identifier = identity['claimed_id']
+                auth_identifier = authz_identifier = identity['claimed_id']
                 membership = 'rakuten'
                 membergroup = None
                 is_guest = False
             elif isinstance(authenticator, OAuthAuthPlugin):
-                auth_identifier = identity.get('authz_id') or identity['id'] 
+                auth_identifier = identity['id']
+                authz_identifier = identity.get('authz_id') or auth_identifier
                 _membership = get_db_session(request, 'slave').query(Membership).filter_by(organization_id=request.organization.id).first()
                 membership = _membership.name if _membership is not None else None
                 membergroup = identity['authz_kind']
                 is_guest = False
             else:
-                auth_identifier = identity.get('username', None)
+                authz_identifier = auth_identifier = identity.get('username', None)
                 membership = identity.get('membership', None)
                 membergroup = identity.get('membergroup', None)
                 is_guest = identity.get('is_guest', False)
@@ -91,6 +92,7 @@ class AuthModelCallback(object):
                 'authenticator': authenticator,
                 'authenticator_name': authenticator_name,
                 'auth_identifier': auth_identifier,
+                'authz_identifier': authz_identifier,
                 'membership': membership,
                 'membergroup': membergroup,
                 'is_guest': is_guest,
@@ -105,10 +107,13 @@ class AuthModelCallback(object):
         membergroup = None
         is_guest = None
         auth_identifier = None
+        authz_identifier = None
 
         for identity in reorganized_identities:
             if auth_identifier is None:
                 auth_identifier = identity['auth_identifier'] 
+            if authz_identifier is None:
+                authz_identifier = identity['authz_identifier'] 
             if membership is None:
                 membership = identity['membership']
                 membership_source = identity['authenticator_name']
@@ -118,6 +123,8 @@ class AuthModelCallback(object):
 
         if auth_identifier is not None:
             principals.append('auth_identifier:%s' % auth_identifier)
+        if authz_identifier is not None:
+            principals.append('authz_identifier:%s' % authz_identifier)
         if membership is not None:
             principals.append('membership:%s' % membership)
             principals.append('membership_source:%s' % membership_source)
@@ -130,6 +137,7 @@ class AuthModelCallback(object):
 
 def get_extra_auth_info_from_principals(principals):
     auth_identifier = None
+    authz_identifier = None
     membership = None
     membership_source = None
     membergroup = None
@@ -143,10 +151,11 @@ def get_extra_auth_info_from_principals(principals):
         elif principal.startswith('membership_source:'):
             membership_source = principal[18:]
         elif principal.startswith('membergroup:'):
-            # membergroup は fc_auth でのみ提供されることを期待
             membergroup = principal[12:]
         elif principal.startswith('auth_identifier:'):
             auth_identifier = principal[16:]
+        elif principal.startswith('authz_identifier:'):
+            authz_identifier = principal[17:]
         elif principal == 'altair_guest':
             is_guest = True
         elif principal.startswith(authenticator_prefix):
@@ -155,6 +164,7 @@ def get_extra_auth_info_from_principals(principals):
         'authenticators': authenticators,
         'membership_source': membership_source,
         'auth_identifier': auth_identifier,
+        'authz_identifier': authz_identifier,
         'membership': membership,
         'membergroup': membergroup,
         'is_guest': is_guest,

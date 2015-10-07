@@ -15,6 +15,7 @@ from . import SESSION_KEY
 from .api import do_authenticate
 from .rendering import overridable_renderer
 from .resources import FCAuthResource, FixedMembershipFCAuthResource
+from .events import Authenticated
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,14 @@ class FCAuthLoginViewMixin(object):
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
 
+        self.request.registry.notify(
+            Authenticated(
+                self.request,
+                membership,
+                username,
+                None
+                )
+            )
         return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)
    
     def do_guest_login(self, membership):

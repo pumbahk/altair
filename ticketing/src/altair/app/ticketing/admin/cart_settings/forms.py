@@ -297,37 +297,42 @@ class CartSettingForm(OurForm):
 
     oauth_client_id = OurTextField(
         label=_(u'OAuthクライアントID'),
-        validators=[
-            DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
-            ]
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     oauth_client_secret = OurTextField(
         label=_(u'OAuthクライアントシークレット'),
-        validators=[
-            DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
-            ]
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     oauth_endpoint_authz = OurTextField(
         label=_(u'OAuth認可エンドポイント'),
-        validators=[
-            DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
-            ]
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     oauth_endpoint_token = OurTextField(
         label=_(u'OAuthトークン発行エンドポイント'),
-        validators=[
-            DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
-            ]
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     oauth_endpoint_api = OurTextField(
         label=_(u'OAuthAPIエンドポイント'),
-        validators=[
-            DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
-            ]
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     def validate_secondary_auth_type(self, field):

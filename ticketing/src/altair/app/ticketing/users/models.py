@@ -147,7 +147,8 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
 
-    auth_identifier = Column(String(255))
+    auth_identifier = Column(String(128))
+    authz_identifier = Column(String(96))
     auth_secret= Column(String(255))
 
     user_id = Column(Identifier, ForeignKey('User.id'))

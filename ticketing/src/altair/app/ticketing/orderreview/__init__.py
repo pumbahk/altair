@@ -10,11 +10,15 @@ import sqlahelper
 from altair.app.ticketing.cart.rendering import selectable_renderer
 
 def decide_auth_types(request, classification):
+    auth_type = request.session.get('orderreview_auth_type_override')
+    if auth_type is not None:
+        import sys
+        print >>sys.stderr, auth_type
+        return [auth_type]
     auth_type = request.organization.setting.auth_type 
     if auth_type is not None:
         return [auth_type]
-    else:
-        return None
+    return None
 
 
 def setup_static_views(config):
@@ -59,12 +63,14 @@ def includeme(config):
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
+    config.add_route('order_review.change_auth_type', '/change_auth_type')
     config.add_route('order_review.information', '/information')  # refs 10883
 
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
+    config.include('altair.app.ticketing.extauth.userside_impl')
     config.add_route('rakuten_auth.verify', '/verify', factory='.resources.LandingViewResource')
     config.add_route('rakuten_auth.verify2', '/verify2', factory='.resources.LandingViewResource')
     config.add_route('rakuten_auth.error', '/error', factory='.resources.LandingViewResource')
@@ -88,6 +94,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.setup_beaker_cache')
 
     config.include('pyramid_layout')
+    config.include('pyramid_dogpile_cache')
 
     ### include altair.*
     config.include('altair.browserid')

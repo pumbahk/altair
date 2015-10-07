@@ -467,6 +467,7 @@ def get_member_group(request, info):
 def lookup_user_credential(d):
     q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
+        .filter(u_models.UserCredential.authz_identifier==d['authz_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
         .filter(u_models.Membership.name==d['membership']) \
         .filter(u_models.Membership.organization_id == d['organization_id'])
@@ -514,6 +515,7 @@ def get_or_create_user(info):
     credential = u_models.UserCredential(
         user=user,
         auth_identifier=info['auth_identifier'],
+        authz_identifier=info['authz_identifier'],
         membership=membership
         )
     DBSession.add(credential)
