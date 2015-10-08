@@ -43,7 +43,7 @@ ${ch.breadcrumbs(
         <%include file="_script.html" />
         <script>
           var rules = [ ];
-          %if fpTicketTemplate.rules is not None:
+          %if event.organization.setting.famiport_enabled and fpTicketTemplate.rules is not None:
            %for rule in fpTicketTemplate.rules:
              rules.push(${HH.json(rule) | n});
            %endfor
