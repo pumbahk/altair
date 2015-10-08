@@ -3,25 +3,24 @@ package jp.ticketstar.ticketing.printing;
 import java.util.ArrayList;
 import java.util.List;
 
+import jp.ticketstar.ticketing.printing.gui.AppWindow;
+import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 import jp.ticketstar.ticketing.printing.gui.AppWindowService;
+import jp.ticketstar.ticketing.printing.gui.IAppWindow;
+import jp.ticketstar.ticketing.printing.server.Server;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-import jp.ticketstar.ticketing.printing.gui.AppWindow;
-import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
-import jp.ticketstar.ticketing.printing.gui.IAppWindow;
-import jp.ticketstar.ticketing.printing.server.Server;
-
 public class App {
-    static class Configuration implements jp.ticketstar.ticketing.printing.server.Configuration { 
+    static class Configuration implements jp.ticketstar.ticketing.printing.server.Configuration {
         @Option(name="--server")
         boolean acceptConnection = false;
 
         @Option(name="--listen")
         String listen = "127.0.0.1:8081";
-        
+
         @Option(name="--origin")
         List<String> originHosts = new ArrayList<String>();
 
@@ -30,6 +29,9 @@ public class App {
 
         @Option(name="--ignore-wrong-cert")
         boolean ignoreWrongCert = false;
+
+        @Option(name="--auth")
+        String authString = null;
 
         public boolean isAcceptConnection() {
             return acceptConnection;
@@ -53,6 +55,11 @@ public class App {
         @Override
         public boolean getIgnoreWrongCert() {
             return ignoreWrongCert;
+        }
+
+        @Override
+        public String getAuthString() {
+            return authString;
         }
     }
 
