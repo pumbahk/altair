@@ -159,6 +159,7 @@ class FamiPortTicketTemplate(Base):
     template_code = sa.Column(sa.Unicode(13), nullable=False)
     logically_subticket = sa.Column(sa.Boolean(), nullable=False, default=False)
     mappings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False)
+    rules = sa.Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=True)
 
 
 class FamiPortTicketXMLBuilder(object):

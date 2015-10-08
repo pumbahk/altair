@@ -1,0 +1,281 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+
+<form method="post" id="wishForm" action="${request.route_path('lots.entry.sp_step2', event_id=event.id, lot_id=lot.id)}">
+
+<div class="subbox">
+<dl>
+<dt><p class="lineRed">希望選択</p></dt>
+<dd>
+%for i in range(lot.limit_wishes):
+
+<dl class="kibouList">
+<dt></dt>
+%if len(performance_map) == 1:
+<input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
+%else:
+<dd>
+<select class="selStyle1 performance-name-select" name="performanceName-${i}" data-wishOrder="${i}" style="width: 100%">
+%for performance_name, _ in performance_map:
+% if selected_performance:
+  % if (_[0]['name'] == selected_performance.name) and (i == 0):
+  <option value="${performance_name}" selected>${performance_name}</option>
+  % else:
+  <option value="${performance_name}">${performance_name}</option>
+  % endif
+% else:
+<option value="${performance_name}">${performance_name}</option>
+% endif
+%endfor
+</select>
+</dd>
+%endif
+
+
+
+<div id="wish-cell-table-${i}">
+<dt></dt>
+<dd>
+<select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}" style="width: 100%">
+%for performance in performances:
+% if selected_performance:
+  % if (performance.id == selected_performance.id) and (i == 0):
+  <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+  % else:
+  <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+  % endif
+% else:
+<option value="${performance.id}">${h.performance_date_label(performance)}</option>
+% endif
+%endfor
+</select>
+※この項目は選択の必要はございません
+<div class="all_performance_name-${i}"></div>
+</dd>
+
+
+<dt></dt>
+<dd>
+<select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select" style="width: 100%">
+%for rec in stock_types:
+<option value="${rec['id']}">${rec['name']}</option>
+%endfor
+</select>
+<span class="stock-type-description"></span>
+※この項目は選択の必要はございません
+</dd>
+</div>
+</dl>
+% endfor
+
+</dd>
+</dl>
+</div>
+
+<p class="nextBtn"><input type="submit" value="次へ"></p>
+
+</form>
+
+</div>
+
+<%def name="product_select_tmpl()">
+<%include file="_product_selection.html_" />
+</%def>
+<script type="text/javascript">
+var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
+var stockTypes = ${h.tojson(stock_types)|n};
+var performanceProductMap = ${h.tojson(performance_product_map)|n};
+var postedValues = ${h.tojson(posted_values)|n};
+var upperLimit = ${sales_segment.max_quantity};
+var performanceMap = ${h.tojson(performance_map)|n};
+var selected_performance_id = 0;
+% if selected_performance:
+    selected_performance_id = ${selected_performance.id};
+% endif
+
+(function($wishForm) {
+    function cellTableId(n) {
+        return 'wish-cell-table-' + n
+    }
+
+    function refreshProducts(dateSelect, stockTypeSelect) {
+        var products = [];
+        var performanceId = $(dateSelect).val();
+        var stockTypeId = stockTypeSelect.val();
+        $.each(performanceProductMap[performanceId], function (_, product) {
+            if (product.stock_type_id == stockTypeId)
+                products.push(product);
+        });
+        var wishOrder = $(dateSelect).data('wishorder');
+        var wishCellTableId = cellTableId(wishOrder);
+        var rows = $("#" + wishCellTableId + " div.product-select-div");
+        rows.remove();
+        if (!products) {
+            return;
+        }
+        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
+        $("#" + wishCellTableId).append(html);
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id == stockTypeId) {
+                $(stockTypeSelect.parent().find('.stock-type-description')).html(stockType.description);
+            }
+        }
+    }
+
+    function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
+        var performanceId = dateSelect.val();
+        var filteredStockTypeIds = {};
+        var products = performanceProductMap[performanceId];
+        for (var i = 0; i < products.length; i++)
+            filteredStockTypeIds[products[i].stock_type_id] = true;
+        stockTypeSelect.empty();
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id in filteredStockTypeIds)
+                stockTypeSelect.append($('<option></option>').attr('value', stockType.id).text(stockType.name));
+        }
+    }
+
+    function refreshDateSelection(performanceNameSelect, dateSelect, selected_id) {
+        var selectedPerformanceName = performanceNameSelect.val();
+        for (var i = 0; i < performanceMap.length; i++) {
+            if (performanceMap[i][0] == selectedPerformanceName) {
+                choices = performanceMap[i][1];
+            }
+        }
+        dateSelect.empty();
+        for (var i = 0; i < choices.length; i++) {
+            var choice = choices[i];
+            if (selected_id == choice.id) {
+                dateSelect.append($('<option></option>').attr('value', choice.id).attr({ selected: "selected" }).text(choice.label));
+            } else {
+                dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.label));
+            }
+        }
+    }
+
+    function getPerformanceIdAndStockTypeIdFromProductId(productId) {
+        for (var performanceId in performanceProductMap) {
+            var datum = performanceProductMap[performanceId];
+            for (var i = 0; i < datum.length; i++) {
+                if (datum[i].id == productId)
+                    return [performanceId, datum[i].stock_type_id];
+            }
+        }
+    }
+
+    var PRODUCT_ID_RE = /^product-id-(\d+)-(\d+)$/;
+    function updateSelection(values) {
+        for (var key in values) {
+            matches = PRODUCT_ID_RE.exec(key)
+            if (matches) {
+                var wishOrder = matches[1], wishedProductOrder = matches[2];
+                var productId = values[key];
+                var pair = getPerformanceIdAndStockTypeIdFromProductId(productId);
+                var performanceId = pair[0], stockTypeId = pair[1];
+                var performanceNameSelect = $wishForm.find('select.performance-name-select[data-wishOrder="' + wishOrder + '"]');
+                var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+                var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+                if (!dateSelect.find('option[value="' + performanceId + '"]').length) {
+                    var performanceName = null;
+                    for (var i = 0; i < performanceMap.length; i++) {
+                        var performances = performanceMap[i][1];
+                        for (var j = 0; j < performances.length; j++) {
+                            if (performances[j].id == performanceId) {
+                                performanceName = performanceMap[i][0];
+                                break;
+                            }
+                        }
+                    }
+                    if (performanceName) {
+                        performanceNameSelect.val(performanceName);
+                        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+                        stockTypeSelect.empty();
+                    }
+                }
+                if (dateSelect.val() != performanceId) {
+                    dateSelect.val(performanceId);
+                    stockTypeSelect.empty();
+                }
+
+                var stockTypeSelectUpdated = false;
+                if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
+                    refreshStockTypeSelection(dateSelect, stockTypeSelect);
+                    stockTypeSelectUpdated = true;                    
+                }
+
+                if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
+                    stockTypeSelect.val(stockTypeId);
+                    refreshProducts(dateSelect, stockTypeSelect);
+                }
+
+                var quantityFieldName = 'product-quantity-' + wishOrder + '-' + wishedProductOrder;
+                var quantity = values[quantityFieldName];
+                $wishForm.find('select[name="' + quantityFieldName + '"]').val(quantity);
+            }
+        }
+    }
+    function refreshAllPerformanceName(wishOrder, allPerformanceName) {
+        $('.all_performance_name-' + wishOrder).empty();
+        $('.all_performance_name-' + wishOrder).html(allPerformanceName);
+    }
+
+    $(".performance-name-select").change(function() {
+        var performanceNameSelect = $(this);
+        var wishOrder = performanceNameSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+        refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
+    });
+    $(".performance-date-select").change(function() {
+        var performanceNameSelect = $(this);
+        var wishOrder = performanceNameSelect.data('wishorder');
+        refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
+    });
+    $wishForm.find(".performance-date-select").change(function() {
+        var dateSelect = $(this);
+        var wishOrder = dateSelect.data('wishorder');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".stock-type-select").change(function() {
+        var stockTypeSelect = $(this);
+        var wishOrder = stockTypeSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+
+    $(function() {
+        $wishForm.find("select.performance-name-select").each(function(_, n) {
+            var performanceNameSelect = $(n);
+            var wishOrder = performanceNameSelect.data('wishorder');
+            var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+            refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
+            refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
+        });
+        $wishForm.find("select.performance-date-select").each(function(_, n) {
+            var dateSelect = $(n);
+            var wishOrder = dateSelect.data('wishorder');
+            var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+            refreshStockTypeSelection(dateSelect, stockTypeSelect);
+            refreshProducts(dateSelect, stockTypeSelect);
+        });
+        updateSelection(postedValues);
+    });
+})($('#wishForm'));
+</script>

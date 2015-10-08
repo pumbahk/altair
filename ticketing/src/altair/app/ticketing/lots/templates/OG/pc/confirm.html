@@ -1,0 +1,141 @@
+<%inherit file="${context['main_template'].uri}" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+
+<p class="pageTitle">申込内容をご確認ください。</p>
+<form id="form1" name="form1" method="post" action="">
+  <input type="hidden" name="token" value="${token}" />
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_hope.gif')}" alt="選択商品" width="97" height="30" /></h2>
+      %for wish in wishes:
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <p class="header">
+          <table summary="チケット購入の絞り込み">
+            <tr>
+            </tr>
+            <tr class="settlementSelectEnd">
+              <th>購入内容と手数料</th>
+              <td>
+                <dl class="cost-summary">
+                %for i, lot_product in enumerate(wish.products):
+                  <dt class="product-name">${lot_product.product.name}</dt>
+                  <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
+                %endfor
+                  <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
+                  <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
+                  <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                  <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
+                  <dt class="delivery-method">システム利用料</dt>
+                  <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
+                  %if wish.special_fee > 0:
+                  <dt class="delivery-method">${wish.special_fee_name}</dt>
+                  <dd class="delivery-fee">${h.format_currency(wish.special_fee)}</dd>
+                  %endif
+                  <dt class="total-amount">合計</dt>
+                  <dd class="total-amount">${h.format_currency(wish.total_amount)} (税込)</dd>
+                </dl>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      %endfor
+    </div>
+  </div>
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table summary="お支払・お引取り方法選択">
+            <tr>
+              <th>購入者氏名（全角）</th>
+              <td>${shipping_address['last_name']} ${shipping_address['first_name']}</td>
+            </tr>
+            <tr>
+              <th>購入者氏名（カナ）</th>
+              <td>${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}</td>
+            </tr>
+            <tr>
+              <th>メールアドレス</th>
+              <td>${shipping_address['email_1']}</td>
+            </tr>
+            <tr>
+              <th>電話番号</th>
+              <td>${shipping_address['tel_1']}</td>
+            </tr>
+            <tr>
+              <th>住所</th>
+              <td>
+                〒${shipping_address['zip']}<br />
+                ${shipping_address['prefecture']}${shipping_address['city']}${shipping_address['address_1']}<br />
+                ${shipping_address['address_2']}
+              </td>
+            </tr>
+            <tr>
+              <th>生年月日</th>
+              <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
+            </tr>
+            <tr>
+              <th>性別</th>
+              <td>${h.format_gender(request, gender)}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  % if extra_form_data:
+  <div class="confirmBox">
+  	<div class="confirmBoxInner">
+      <h2>追加情報</h2>
+  	  <table id="contentsOfShopping">
+      % for _, (display_name, display_value) in extra_form_data:
+        <tr>
+          <th scope="row">${display_name}</th>
+          <td>${ch.sensible_coerce(request, display_value)}</td>
+        </tr>
+      % endfor
+      </table>
+    </div>
+  </div>
+  % endif
+
+  % if mailmagazines_to_subscribe:
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+      <div id="mailMagazineBox">
+        <div id="mailMagazineBoxInner">
+          <dl>
+            <dt>
+              お申し込みいただいた方に、大橋ボクシングジムからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+            </dt>
+            <dd>
+              <ul>
+              % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+                <li${subscribed and u' class="subscribed"' or u''|n}>
+                  <div>
+                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                  </div>
+                  <div>
+                    ${mailmagazine.description|n}
+                  </div>
+                </li>
+              % endfor
+              </ul>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+  % endif
+  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/OG/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
+</form>

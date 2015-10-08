@@ -89,6 +89,7 @@
         <th nowrap="nowrap">支払期限日時</th>
         <th nowrap="nowrap">発券期限日時</th>
         <th nowrap="nowrap">申込日時</th>
+        <th nowrap="nowrap">Altair受付番号</th>
         % if personal_info:
         <th nowrap="nowrap" class="first-hidden">電話番号</th>
         % endif
@@ -128,6 +129,7 @@
         <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.payment_due_at)}</td>
         <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.ticketing_end_at)}</td>
         <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.created_at)}</td>
+        <td nowrap="nowrap">${receipt.famiport_order.order_no}</td>
         % if personal_info:
         <td class="first-hidden">${receipt.famiport_order.customer_phone_number}</td>
         % endif

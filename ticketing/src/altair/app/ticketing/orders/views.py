@@ -1660,22 +1660,30 @@ class OrderDetailView(OrderBaseView):
 
     @view_config(route_name='orders.sales_summary', renderer='altair.app.ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
     def sales_summary(self):
-        sales_segments = self.context.sales_segments
+        sales_segments = [self.context.sales_segment] if self.context.sales_segment is not None else self.context.sales_segments
+        stock_types = {}
+        for p in self.context.products:
+            for pi in p.items:
+                stock_data_for_stock_type = stock_types.get(pi.stock.stock_type)
+                if stock_data_for_stock_type is None:
+                    stock_data_for_stock_type = stock_types[pi.stock.stock_type] = {}
+                stock_data_for_stock = stock_data_for_stock_type.get(pi.stock)
+                if stock_data_for_stock is None:
+                    stock_data_for_stock_type[pi.stock] = stock_data_for_stock = dict(
+                        stock=pi.stock,
+                        products=set()
+                        )
+                if p not in stock_data_for_stock['products']:
+                    stock_data_for_stock['products'].add(p)
+
         sales_summary = []
-        for stock_type in self.context.performance.stock_types:
-            stock_data = []
-            stocks = Stock.filter(Stock.performance_id == self.context.performance.id) \
-                .options(joinedload('stock_status'))\
-                .filter(Stock.stock_type_id==stock_type.id)\
-                .filter(Stock.quantity>0)\
-                .filter(exists().where(and_(ProductItem.performance_id == self.context.performance.id, ProductItem.stock_id==Stock.id))).all()
-            for stock in stocks:
-                products = [p for p in self.context.performance.products if stock in p.stocks and p.sales_segment in sales_segments]
-                if products:
-                    stock_data.append(dict(
-                        stock=stock,
-                        products=sorted(products, key=lambda x:(x.sales_segment.order, x.price)),
-                    ))
+        for stock_type in self.context.performance.event.stock_types: # ordered by display-order
+            stock_data_for_stock_type = stock_types.get(stock_type)
+            if stock_data_for_stock_type is None:
+                continue
+            stock_data = stock_data_for_stock_type.values()
+            for s in stock_data:
+                s['products'] = sorted(s['products'], key=lambda p: p.display_order)
             sales_summary.append(dict(
                 stock_type=stock_type,
                 total_quantity=sum([s.get('stock').quantity for s in stock_data]),
