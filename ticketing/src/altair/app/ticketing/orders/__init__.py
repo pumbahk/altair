@@ -21,7 +21,7 @@ def includeme(config):
     config.add_route('orders.undelivered'               , '/undelivered/{order_id}')
     config.add_route('orders.change_status'             , '/change_status/{order_id}/{status}')
     config.add_route('orders.download'                  , '/download/')
-    config.add_route('orders.sales_summary'             , '/sales_summary/', factory='.resources.OrderReserveResource')
+    config.add_route('orders.sales_summary'             , '/sales_summary/', factory='.resources.OrderReservePageResource')
     config.add_route('orders.reserve.form'              , '/reserve/form/', factory='.resources.OrderReserveResource')
     config.add_route('orders.reserve.form.reload'       , '/reserve/form/reload/', factory='.resources.OrderReserveResource')
     config.add_route('orders.reserve.confirm'           , '/reserve/confirm/', factory='.resources.OrderReserveResource')

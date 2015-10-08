@@ -10,6 +10,8 @@ from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.events.tickets.merging import TicketVarsCollector, emit_to_another_template
+from altair.app.ticketing.payments.plugins.famiport import get_template_name_from_ticket_format
+from altair.app.ticketing.payments.plugins.famiport import FamiPortTicketTemplate
 from . import forms
 
 import logging
@@ -240,7 +242,6 @@ class BundleView(BaseView):
                     product_item_dict=product_item_dict,
                     preview_item_candidates=json.dumps(preview_item_candidates))
 
-
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleAttributeView(BaseView):
     """ 属性(TicketBundleAttribute)
@@ -249,7 +250,10 @@ class BundleAttributeView(BaseView):
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
     def new(self):
         form = forms.AttributeForm(data_value="{\n}")
-        return dict(form=form,event=self.context.event)
+
+        fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
+
+        return dict(form=form,event=self.context.event,fpTicketTemplate=fpTicketTemplate)
 
     @view_config(route_name="events.tickets.attributes.new", request_method="POST",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
@@ -276,7 +280,10 @@ class BundleAttributeView(BaseView):
                                        value=bundle_attribute.value,
                                        bundle_id=bundle_attribute.ticket_bundle_id,
                                        attribute_id=bundle_attribute.id)
-        return dict(form=form, event=self.context.event, attribute=bundle_attribute)
+
+        fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
+
+        return dict(form=form, event=self.context.event, attribute=bundle_attribute, fpTicketTemplate=fpTicketTemplate)
 
     @view_config(route_name="events.tickets.attributes.edit", request_method="POST",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
@@ -304,7 +311,10 @@ class BundleAttributeView(BaseView):
     def multi_edit(self):
         attrs = TicketBundleAttribute.query.filter_by(ticket_bundle=self.context.bundle)
         form = forms.AttributesForm.append_fields(attrs)(formdata=self.request.POST, attrs=attrs)
-        return dict(event=self.context.event, bundle=self.context.bundle, form=form)
+
+        fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
+
+        return dict(event=self.context.event, bundle=self.context.bundle, form=form, fpTicketTemplate=fpTicketTemplate)
 
     @view_config(route_name="events.tickets.bundles.edit_attributes", request_method="POST",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/edit.html")
@@ -349,6 +359,17 @@ class BundleAttributeView(BaseView):
         self.request.session.flash(u'"属性(TicketBundleAttribute)を削除しました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
+
+    def getFpTicketTemplate(self, tickets):
+        for ticket in tickets:
+            name = get_template_name_from_ticket_format(ticket.ticket_format)
+            if name is not None:
+                found = DBSession.query(FamiPortTicketTemplate) \
+                    .filter_by(organization_id=self.context.organization.id, name=name) \
+                    .first()
+                if found is not None:
+                    return found
+        return None
 
 def _get_base_ticket(request):
     try:
