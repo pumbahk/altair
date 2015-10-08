@@ -251,9 +251,11 @@ class BundleAttributeView(BaseView):
     def new(self):
         form = forms.AttributeForm(data_value="{\n}")
 
-        fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
-
-        return dict(form=form,event=self.context.event,fpTicketTemplate=fpTicketTemplate)
+        if self.context.event.organization.setting.famiport_enabled:
+            fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
+            return dict(form=form,event=self.context.event,fpTicketTemplate=fpTicketTemplate)
+        else:
+            return dict(form=form,event=self.context.event)
 
     @view_config(route_name="events.tickets.attributes.new", request_method="POST",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
@@ -281,9 +283,11 @@ class BundleAttributeView(BaseView):
                                        bundle_id=bundle_attribute.ticket_bundle_id,
                                        attribute_id=bundle_attribute.id)
 
-        fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
-
-        return dict(form=form, event=self.context.event, attribute=bundle_attribute, fpTicketTemplate=fpTicketTemplate)
+        if self.context.event.organization.setting.famiport_enabled:
+            fpTicketTemplate = self.getFpTicketTemplate(self.context.bundle.tickets)
+            return dict(form=form, event=self.context.event, attribute=bundle_attribute, fpTicketTemplate=fpTicketTemplate)
+        else:
+            return dict(form=form, event=self.context.event, attribute=bundle_attribute)
 
     @view_config(route_name="events.tickets.attributes.edit", request_method="POST",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
