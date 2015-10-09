@@ -22,12 +22,14 @@ from altair.formhelpers.fields import (
     OurSelectField,
     OurSelectMultipleDictField,
     OurSelectMultipleField,
+    DelimitedTextsField,
     OurTextField,
     JSONField,
     )
 from altair.formhelpers.fields.select import WTFormsChoicesWrapper
 from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
+    OurTextInput,
     OurTextArea,
     )
 from altair.app.ticketing.models import DBSession
@@ -338,6 +340,17 @@ class CartSettingForm(OurForm):
 
     oauth_endpoint_api = OurTextField(
         label=_(u'OAuthAPIエンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_scope = DelimitedTextsField(
+        label=_(u'OAuthスコープ (スペース区切り)'),
+        delimiter_pattern=ur'\s+',
+        canonical_delimiter=u' ',
+        widget=OurTextInput()
         # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
         #validators=[
         #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),

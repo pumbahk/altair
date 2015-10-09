@@ -31,13 +31,14 @@ class OAuthAuthPlugin(object):
     SESSION_RETURN_TO_URL_KEY = '%s.return_to_url' % __name__
     SESSION_VERIFICATION_TOKEN_KEY = '%s.verification_token' % __name__
 
-    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, openid_prompt=None, cache_region=None, on_login=None):
+    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, scope=None, openid_prompt=None, cache_region=None, on_login=None):
         self.client_id = client_id
         self.name = '%s.%s' % (__name__, self.__class__.__name__)
         self.authz_endpoint = authz_endpoint
         self.api_endpoint = api_endpoint
         self.callback_path = callback_path
         self.error_url = error_url
+        self.scope = scope
         self.openid_prompt = openid_prompt
         if cache_region is None:
             cache_region = self.DEFAULT_CACHE_REGION_NAME
@@ -154,12 +155,17 @@ class OAuthAuthPlugin(object):
         prompt = self.openid_prompt
         if callable(prompt):
             prompt = prompt(request)
+        scope = self.scope
+        if callable(scope):
+            scope = scope(request)
         params = {
             u'response_type': u'code',
             u'client_id': client_id,
             u'state': verification_token,
             u'redirect_uri': self.get_redirect_uri(request),
             }
+        if scope:
+            params['scope'] = u' '.join(scope)
         if prompt:
             params['prompt'] = u' '.join(prompt)
         redirect_to = urljoin(

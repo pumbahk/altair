@@ -1008,6 +1008,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         self.data['oauth_endpoint_token_revocation'] = value
 
     @property
+    def oauth_scope(self):
+        return self.data.get('oauth_scope')
+
+    @oauth_scope.setter
+    def oauth_scope(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_scope'] = value
+
+    @property
     def openid_prompt(self):
         return self.data.get('openid_prompt')
 
@@ -1016,4 +1026,5 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['openid_prompt'] = value
+
 

@@ -1,4 +1,5 @@
 # encoding: utf-8
+import re
 import logging
 import json
 from urllib import urlencode, quote
@@ -49,27 +50,36 @@ class OAuthNegotiator(OAuthAPIBase):
 
     def _do_request(self, req):
         opener = self.opener_factory()
+        logger.debug('making request to %s' % req._Request__original)
         try:
             resp = opener.open(req)
         except urllib2.HTTPError as e:
             resp = e
         retval = None
         try:
-            mime_type, encoding = parse_content_type(resp.headers['content-type'])
-            if not encoding:
-                encoding = self.encoding
-            if mime_type == 'application/json':
-                retval = json.load(resp, encoding=encoding)
-            elif mime_type in ('application/x-www-form-urlencoded', 'text/plain'): # text/plain は Facebook の腐った API 対策
-                retval = dict(
-                    (
-                        six.text_type(k, encoding),
-                        six.text_type(v, encoding)
+            content_type = resp.headers.get('content-type').lstrip(", ") # XXX: to work around the anormaries of Google API
+            content_length_str = resp.headers.get('content-length')
+            content_length = -1
+            try:
+                content_length = int(content_length_str)
+            except (TypeError, ValueError):
+                pass
+            if content_type and (content_length > 0 or content_length == -1):
+                mime_type, encoding = parse_content_type(content_type)
+                if not encoding:
+                    encoding = self.encoding
+                if mime_type == 'application/json':
+                    retval = json.load(resp, encoding=encoding)
+                elif mime_type in ('application/x-www-form-urlencoded', 'text/plain'): # text/plain は Facebook の腐った API 対策
+                    retval = dict(
+                        (
+                            six.text_type(k, encoding),
+                            six.text_type(v, encoding)
+                            )
+                        for k, v in cgi.parse_qsl(resp.read())
                         )
-                    for k, v in cgi.parse_qsl(resp.read())
-                    )
-            else:
-                raise OAuthAPICommunicationError('unsupported response: mime_type=%s, body=%s' % (mime_type, resp.read()))
+                else:
+                    raise OAuthAPICommunicationError('unsupported response: mime_type=%s, body=%s' % (mime_type, resp.read()))
         finally:
             resp.close()
         if isinstance(resp, urllib2.HTTPError):
@@ -108,9 +118,15 @@ class OAuthNegotiator(OAuthAPIBase):
         if callable(endpoint):
             endpoint = endpoint(request)
         endpoint = endpoint.format(client_id=quote(client_credentials[0]), token=quote(token))
+        endpoint_and_method = re.split(ur'\s+', endpoint, 1)
+        if len(endpoint_and_method) == 2:
+            method = endpoint_and_method[0]
+            endpoint = endpoint_and_method[1]
+        else:
+            method = 'GET'
         req = urllib2ext.SensibleRequest(
             endpoint,
-            method='DELETE',
+            method=method,
             headers={'Authorization': 'basic %s' % base64.b64encode('%s:%s' % client_credentials)}
             )
         return self._do_request(req)
@@ -151,10 +167,11 @@ class OAuthAPIClient(OAuthAPIBase):
     def get_user_info(self, request):
         user_info = self._do_get_request(self.get_endpoint(request, 'get_user_info'), {})
         logger.debug('get_user_info() = %r' % user_info)
+        id = user_info.get('sub') or user_info['id']
         return dict(
             identifiers=dict(
-                id=user_info['id'],
-                authz_id=user_info.get('membership_id', user_info['id']),
+                id=id,
+                authz_id=user_info.get('membership_id', id),
                 authz_kind=user_info['member_kind']['name'] if 'member_kind' in user_info else None
                 ),
             profile=user_info.get('profile', None)
@@ -182,6 +199,7 @@ CLIENT_CREDENTIALS_KEY = '%s.client_credentials' % __name__
 ENDPOINT_TOKEN_KEY = '%s.endpoint_token' % __name__
 ENDPOINT_TOKEN_REVOCATION_KEY = '%s.endpoint_token_revocation' % __name__
 ENDPOINT_API_KEY = '%s.endpoint_api' % __name__
+OAUTH_SCOPE = '%s.oauth_scope' % __name__
 OPENID_PROMPT = '%s.openid_prompt' % __name__
 
 def includeme(config):
@@ -200,6 +218,7 @@ def includeme(config):
         request.session[ENDPOINT_API_KEY] = request.context.cart_setting.oauth_endpoint_api
         request.session[ENDPOINT_TOKEN_KEY] = request.context.cart_setting.oauth_endpoint_token
         request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = request.context.cart_setting.oauth_endpoint_token_revocation
+        request.session[OAUTH_SCOPE] = request.context.cart_setting.oauth_scope
         request.session[OPENID_PROMPT] = request.context.cart_setting.openid_prompt
         return request.context.cart_setting.oauth_endpoint_authz
 
@@ -215,6 +234,9 @@ def includeme(config):
     def token_revocation_endpoint(request):
         return request.session[ENDPOINT_TOKEN_REVOCATION_KEY]
 
+    def oauth_scope(request): 
+        return request.session[OAUTH_SCOPE]
+
     def client_credentials(request):
         return request.session[CLIENT_CREDENTIALS_KEY]
 
@@ -222,12 +244,13 @@ def includeme(config):
         return request.session[OPENID_PROMPT]
 
     plugin = OAuthAuthPlugin(
-        client_id,
-        authz_endpoint,
-        api_endpoint,
-        u'/.extauth/callback',
-        error_url,
-        openid_prompt,
+        client_id=client_id,
+        authz_endpoint=authz_endpoint,
+        api_endpoint=api_endpoint,
+        callback_path=u'/.extauth/callback',
+        error_url=error_url,
+        scope=oauth_scope,
+        openid_prompt=openid_prompt,
         on_login=on_login
         )
     opener_factory = urllib2ext.opener_factory_from_config(config, 'altair.extauth.oauth.urllib2_opener_fatory')
