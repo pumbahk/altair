@@ -10,7 +10,7 @@
 %endif
 <div class="settlementBox2" id="settlementEventDetail">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
     <table summary="イベント詳細情報">
       <tr>
         <th scope="row">イベント名</th>
@@ -51,7 +51,7 @@
 </div>
 <div class="settlementBox2">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
     %for performance in performances:
     <table class="border" summary="イベント詳細情報">
       <tr>
@@ -73,7 +73,7 @@
 <form method="post" id="wishForm" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+      <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
       %for i in range(lot.limit_wishes):
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
@@ -140,7 +140,7 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
       %for m in payment_delivery_pairs:
       <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
@@ -198,7 +198,7 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
@@ -323,7 +323,7 @@
       </div>
     </div>
   </div>
-  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/BC/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />

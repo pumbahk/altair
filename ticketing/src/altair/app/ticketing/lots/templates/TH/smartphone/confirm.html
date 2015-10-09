@@ -93,7 +93,7 @@ ${shipping_address['address_2']}
 % if mailmagazines_to_subscribe:
 <dt class="creditHl">メールマガジンの配信</dt>
 <dd>
-<p>ご利用いただいた方には、横浜ビー・コルセアーズからのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
+<p>ご利用いただいた方には、東北放送からのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
