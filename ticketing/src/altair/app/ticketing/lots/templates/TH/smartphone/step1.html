@@ -20,7 +20,7 @@
 %for i in range(lot.limit_wishes):
 
 <dl class="kibouList">
-<dt></dt>
+<dt><span>第${i + 1}希望</span></dt>
 %if len(performance_map) == 1:
 <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
 %else:
@@ -44,7 +44,7 @@
 
 
 <div id="wish-cell-table-${i}">
-<dt></dt>
+<dt>公演日・会場</dt>
 <dd>
 <select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}" style="width: 100%">
 %for performance in performances:
@@ -59,12 +59,13 @@
 % endif
 %endfor
 </select>
-※この項目は選択の必要はございません
+<br/><br/>
+【選択した公演】
 <div class="all_performance_name-${i}"></div>
 </dd>
 
 
-<dt></dt>
+<dt>席種</dt>
 <dd>
 <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select" style="width: 100%">
 %for rec in stock_types:
@@ -72,7 +73,6 @@
 %endfor
 </select>
 <span class="stock-type-description"></span>
-※この項目は選択の必要はございません
 </dd>
 </div>
 </dl>
