@@ -4,7 +4,7 @@
     var quantityField = "product-quantity-" + wishOrder + "-" + j + "";
 %>
 <div class="product-select-div<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
-<dt>お申込みセット数</dt>
+<dt>券種</dt>
 <dd>
 <span class="product-name"><%= product.name %></span><br>
 <input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />

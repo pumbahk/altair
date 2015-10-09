@@ -1,33 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -46,8 +17,10 @@ if label is None or label is True:
 <dd><p>${entry.entry_no}</p></dd>
 
 %for wish in wishes:
-<dt class="creditHl">購入内容</dt>
+<dt class="creditHl">第${wish.wish_order + 1}希望 ${wish.performance.name}</dt>
 <dd>
+<p>${h.performance_date_label(wish.performance)}
+</p>
 <div class="detailBox">
 <table>
 %for i, lot_product in enumerate(wish.products):
@@ -113,26 +86,11 @@ ${shipping_address.address_2}
 </li>
 <li>生年月日&nbsp;${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</li>
 <li>性別&nbsp;${h.format_gender(request, gender)}</li>
+<li>メモ欄&nbsp;${memo|h.nl2br}</li>
 
 </ul>
 </div>
 </dd>
-
-<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
-% if extra_form_data:
-<dt class="creditHl">追加情報</dt>
-<dd>
-  <div class="detailBox">
-    <ul>
-      % for _, (display_name, display_value) in extra_form_data:
-      <li>
-        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
-      </li>
-      % endfor
-    </ul>
-  </div>
-</dd>
-% endif
 
 <dt class="creditHl">注意事項</dt>
 <dd>

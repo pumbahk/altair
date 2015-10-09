@@ -1,36 +1,5 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
-
-<%namespace file="./tags_mobile.html" name="mobile" />
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -117,14 +86,14 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'tel_1')}
 </div>
 
-% for field in form['extra']._contained_form:
-% if not field.short_name in {'member_type'}:
-<%mobile:form_header>${field.label}</%mobile:form_header>
+<%mobile:form_header>${form['memo'].label.text}</%mobile:form_header>
 <div>
-${render_field(field)}
+  ${form['memo']}
+  ${h.mobile_error_list(request, form, 'memo')}
+  <div style="font-size: 80%;">
+  ※ご質問を入力されても返信はいたしかねます。<br>
+  </div>
 </div>
-% endif
-% endfor
 
 <hr />
 <div>
@@ -159,11 +128,11 @@ ${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
 予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
-<img src="${request.static_url('altair.app.ticketing.cart:static/TH/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/TH/mobile/images/visa.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/TH/mobile/images/master.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/TH/mobile/images/jcb.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/TH/mobile/images/amex_logo.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BC/mobile/images/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
