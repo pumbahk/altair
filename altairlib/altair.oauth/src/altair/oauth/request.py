@@ -33,7 +33,12 @@ class WebObOAuthRequestParser(object):
         return dict(
             client_id=client_id,
             redirect_uri=redirect_uri,
-            scope=scope
+            scope=scope,
+            aux={
+                k: v[0]
+                for k, v in request.GET.items()
+                if k not in ('response_type', 'client_id', 'redirect_uri', 'scope')
+                }
             )
 
     def parse_issue_access_token_request(self, request):

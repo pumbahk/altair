@@ -45,7 +45,7 @@ class OAuthResponseRenderer(object):
             params.append((u'state', state))
         return self._render_pairs_as_urlencoded_params(params)
 
-    def render_auth_descriptor_as_dict(self, auth_descriptor, state=None, now=None):
+    def render_auth_descriptor_as_dict(self, auth_descriptor, aux=None, state=None, now=None):
         if now is None:
             now = datetime.now()
         params = {
@@ -59,7 +59,12 @@ class OAuthResponseRenderer(object):
             params[u'refresh_token'] = auth_descriptor[u'refresh_token']
         if state:
             params[u'state'] = state
+        if aux is not None:
+            params.update(aux)
         return params
-    
+   
+    def render_id_token_as_dict(self, id_token):
+        return { u'id_token': id_token }
+
     def render_auth_descriptor_as_urlencoded_params(self, auth_descriptor, state=None, now=None):
         return self._render_pairs_as_urlencoded_params(self.render_auth_descriptor_as_dict(auth_descriptor, state, now).items())

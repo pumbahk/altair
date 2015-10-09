@@ -54,4 +54,27 @@ class IOAuthProviderFactory(Interface):
 
 
 class IOAuthProvider(Interface):
+    def validate_scope(scope):
+        pass
+
+    def validated_client(client_id, client_secret):
+        pass
+
+    def grant_authorization_code(client_id, redirect_uri=None, scope=None, identity=None):
+        pass
+
+    def issue_access_token(code, client_id, client_secret=None, token_type=u'bearer', redirect_uri=None):
+        pass
+
+    def revoke_access_token(client_id, client_secret, access_token):
+        pass
+
+    def get_identity_by_code(code):
+        pass
+
+    def get_auth_descriptor_by_token(access_token):
+        pass
+
+
+class IOpenIDProvider(Interface):
     pass

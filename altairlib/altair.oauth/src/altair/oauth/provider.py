@@ -92,22 +92,19 @@ class OAuthProvider(object):
 
     def issue_access_token(self, code, client_id, client_secret=None, token_type=u'bearer', redirect_uri=None):
         now = self.now_getter()
-        try:
-            entry = self.code_store[code]
-        except KeyError:
-            raise OAuthNoSuchAuthorizationCodeError(u'authorization code is not the one granted from the provider')
-        if entry['client_id'] != client_id:
-            logger.info('client_id does not match (%s != %s)' % (client_id, entry['client_id']))
+        authreq_descriptor = self._get_authreq_descriptor_by_code(code)
+        if authreq_descriptor['client_id'] != client_id:
+            logger.info('client_id does not match (%s != %s)' % (client_id, authreq_descriptor['client_id']))
             raise OAuthNoSuchAuthorizationCodeError(u'client_id does not match')
-        if entry['redirect_uri'] != redirect_uri:
-            logger.info('redirect_uri does not match (%s != %s)' % (redirect_uri, entry['redirect_uri']))
+        if authreq_descriptor['redirect_uri'] != redirect_uri:
+            logger.info('redirect_uri does not match (%s != %s)' % (redirect_uri, authreq_descriptor['redirect_uri']))
             raise OAuthNoSuchAuthorizationCodeError(u'redirect_uri does not match')
         client = self.validated_client(client_id, client_secret)
         auth_descriptor = {
             'client_id': client_id,
-            'scope': list(entry['scope']),
+            'scope': list(authreq_descriptor['scope']),
             'token_type': token_type,
-            'identity': entry['identity'],
+            'identity': authreq_descriptor['identity'],
             }
         access_token = self._generate_access_token()
         auth_descriptor['access_token'] = access_token
@@ -133,6 +130,15 @@ class OAuthProvider(object):
             logger.info('client_id does not match (%s != %s)' % (client_id, auth_descriptor['client_id']))
             raise OAuthNoSuchAuthorizationCodeError(u'client_id does not match')
         del self.access_token_store[access_token]
+
+    def _get_authreq_descriptor_by_code(self, code):
+        try:
+            return self.code_store[code]
+        except KeyError:
+            raise OAuthNoSuchAuthorizationCodeError(u'authorization code is not the one granted from the provider')
+
+    def get_identity_by_code(self, code):
+        return _get_authreq_descriptor_by_code(code)['identity']
 
     def get_auth_descriptor_by_token(self, access_token):
         try:
