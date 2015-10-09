@@ -1,13 +1,9 @@
-import json
-import base64
+import jwt
 from time import mktime
 from datetime import timedelta
 from dateutil.tz import tzlocal
 from .interfaces import IOpenIDProvider
 from .exceptions import OpenIDServerError, OpenIDNoSuchIDTokenError, OAuthAccessDeniedError
-
-def encode_jwt(data):
-    return base64.b64encode(json.dumps(data, ensure_ascii=False, encoding='utf-8'))
 
 def assume_naive_as_local(dt):
     if dt.tzinfo is None:
@@ -54,11 +50,13 @@ def build_oidconn_basic_jwt_content(issuer, subject, audiences, expiry, issued_a
 
 
 class OpenIDProvider(object):
-    def __init__(self, oauth_provider, id_token_store, issuer, token_expiration_time):
+    def __init__(self, oauth_provider, id_token_store, issuer, token_expiration_time, secret, jws_algorithm):
         self.oauth_provider = oauth_provider
         self.id_token_store = id_token_store
         self.issuer = issuer
         self.token_expiration_time = token_expiration_time
+        self.secret = secret
+        self.jws_algorithm = jws_algorithm
 
     def handle_authentication_request(self, subject_id, nonce=None, max_age=None):
         identity = dict(
@@ -68,7 +66,7 @@ class OpenIDProvider(object):
             )
         return identity
 
-    def issue_id_token(self, client_id, identity, acr=None, amr=None, azp=None, additional_audiences=[], token_expiration_time=None, authenticated_at=None, aux={}):
+    def issue_id_token(self, client_id, identity, acr=None, amr=None, azp=None, additional_audiences=[], token_expiration_time=None, authenticated_at=None, jws_algorithm=None, aux={}):
         max_age = identity['openid_max_age']
         expire_at = None
         if max_age is not None:
@@ -79,18 +77,22 @@ class OpenIDProvider(object):
         issuer = self.issuer
         if callable(issuer):
             issuer = issuer(client_id, identity)
-        id_token = encode_jwt(build_oidconn_basic_jwt_content(
-            issuer=issuer,
-            subject=identity['openid_subject_id'],
-            audiences=[client_id] + additional_audiences,
-            expiry=now + timedelta(seconds=token_expiration_time or self.token_expiration_time),
-            issued_at=now,
-            auth_time=authenticated_at,
-            nonce=identity['openid_nonce'],
-            acr=acr,
-            amr=amr,
-            azp=azp
-            ))
+        id_token = jwt.encode(
+            build_oidconn_basic_jwt_content(
+                issuer=issuer,
+                subject=identity['openid_subject_id'],
+                audiences=[client_id] + additional_audiences,
+                expiry=now + timedelta(seconds=token_expiration_time or self.token_expiration_time),
+                issued_at=now,
+                auth_time=authenticated_at,
+                nonce=identity['openid_nonce'],
+                acr=acr,
+                amr=amr,
+                azp=azp
+                ),
+            self.secret,
+            algorithm=jws_algorithm or self.jws_algorithm
+            )
         self.id_token_store[id_token] = dict(
             client_id=client_id,
             identity=identity,

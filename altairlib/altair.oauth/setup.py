@@ -21,8 +21,8 @@ setup(name='altair.oauth',
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
-        "Programming Language :: Python",
-        ],
+          "Programming Language :: Python",
+          ],
       keywords='',
       author='',
       author_email='',
@@ -36,7 +36,10 @@ setup(name='altair.oauth',
       install_requires=[
           'setuptools',
           # -*- Extra requirements: -*-
-      ],
+          ],
+      extras_require={
+        'openid': ['pyjwt']
+        },
       entry_points="""
       # -*- Entry points: -*-
       """,

@@ -119,7 +119,7 @@ requires = [
     'altair.mailhelpers',
     'altair.jis',
     'altair.types',
-    'altair.oauth',
+    'altair.oauth[openid]',
     'altair.oauth_auth',
     ]
 

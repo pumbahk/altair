@@ -57,11 +57,14 @@ def setup_oauth_provider(config):
         refresh_token_store=None,
         refresh_token_generator=None
         )
+    secret = config.registry.settings.get('altair.extauth.openid_secret')
     openid_provider = OpenIDProvider(
         oauth_provider=oauth_provider,
         id_token_store=DogpileBackedPersistentStore(get_region('altair_extauth_openid_id_token')),
         issuer=lambda client_id, identity: identity.get('host_name', 'altair.extauth'),
-        token_expiration_time=900
+        token_expiration_time=900,
+        secret=secret,
+        jws_algorithm='HS256' if secret else None
         )
     config.registry.registerUtility(
         oauth_provider,
