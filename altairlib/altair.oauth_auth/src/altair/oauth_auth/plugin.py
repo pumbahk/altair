@@ -4,6 +4,7 @@ import sys
 from urllib import urlencode
 from urlparse import urljoin
 from zope.interface import implementer
+from pyramid.httpexceptions import HTTPFound
 from pyramid_dogpile_cache import get_region
 from pyramid.view import view_config
 from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
@@ -30,13 +31,14 @@ class OAuthAuthPlugin(object):
     SESSION_RETURN_TO_URL_KEY = '%s.return_to_url' % __name__
     SESSION_VERIFICATION_TOKEN_KEY = '%s.verification_token' % __name__
 
-    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, cache_region=None, on_login=None):
+    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, openid_prompt=None, cache_region=None, on_login=None):
         self.client_id = client_id
         self.name = '%s.%s' % (__name__, self.__class__.__name__)
         self.authz_endpoint = authz_endpoint
         self.api_endpoint = api_endpoint
         self.callback_path = callback_path
         self.error_url = error_url
+        self.openid_prompt = openid_prompt
         if cache_region is None:
             cache_region = self.DEFAULT_CACHE_REGION_NAME
         self.cache_region = cache_region
@@ -149,14 +151,20 @@ class OAuthAuthPlugin(object):
         client_id = self.client_id
         if callable(client_id):
             client_id = client_id(request)
+        prompt = self.openid_prompt
+        if callable(prompt):
+            prompt = prompt(request)
+        params = {
+            u'response_type': u'code',
+            u'client_id': client_id,
+            u'state': verification_token,
+            u'redirect_uri': self.get_redirect_uri(request),
+            }
+        if prompt:
+            params['prompt'] = u' '.join(prompt)
         redirect_to = urljoin(
             authz_endpoint,
-            '?' + urlencode({
-                u'response_type': u'code',
-                u'client_id': client_id,
-                u'state': verification_token,
-                u'redirect_uri': self.get_redirect_uri(request),
-                })
+            '?' + urlencode(params)
             )
         logger.debug('redirect from %s to %s' % (request.url, redirect_to))
         response.location = redirect_to
@@ -167,22 +175,25 @@ class OAuthAuthPlugin(object):
     def intercept(self, request):
         if request.path_info != self.callback_path:
             return None
-        authorization_code = request.GET.getone('code')
-        verification_token = request.GET.getone('state')
-        expected_verification_token = request.session[self.SESSION_VERIFICATION_TOKEN_KEY]
-        if verification_token != expected_verification_token:
-            logger.warning('state does not match (%s != %s)' % (verification_token, expected_verification_token))
-            error_url = self.error_url
-            if callable(error_url):
-                error_url = error_url(request)
+        error_url = self.error_url
+        if callable(error_url):
+            error_url = error_url(request)
+        if 'error' in request.GET:
             return HTTPFound(location=error_url)
-        access_token, aux = get_api_factory(request, self.name).create_oauth_negotiator().get_access_token(request, authorization_code, self.get_redirect_uri(request))
-        logger.debug('access_token=%r, aux=%s' % (access_token, aux))
-        auth_api = get_auth_api(request)
-        response = request.response
-        identities, _, metadata = auth_api.login(request, response, { 'access_token': access_token }, auth_factor_provider_name=self.name)
-        if self.on_login is not None:
-            self.on_login(request, identities[self.name], metadata)
-        response.location = request.session[self.SESSION_RETURN_TO_URL_KEY]
-        response.status = 302
-        return response
+        else:
+            authorization_code = request.GET.getone('code')
+            verification_token = request.GET.getone('state')
+            expected_verification_token = request.session[self.SESSION_VERIFICATION_TOKEN_KEY]
+            if verification_token != expected_verification_token:
+                logger.warning('state does not match (%s != %s)' % (verification_token, expected_verification_token))
+                return HTTPFound(location=error_url)
+            access_token, aux = get_api_factory(request, self.name).create_oauth_negotiator().get_access_token(request, authorization_code, self.get_redirect_uri(request))
+            logger.debug('access_token=%r, aux=%s' % (access_token, aux))
+            auth_api = get_auth_api(request)
+            response = request.response
+            identities, _, metadata = auth_api.login(request, response, { 'access_token': access_token }, auth_factor_provider_name=self.name)
+            if self.on_login is not None:
+                self.on_login(request, identities[self.name], metadata)
+            response.location = request.session[self.SESSION_RETURN_TO_URL_KEY]
+            response.status = 302
+            return response

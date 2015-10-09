@@ -1007,3 +1007,13 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
             self.data = {}
         self.data['oauth_endpoint_token_revocation'] = value
 
+    @property
+    def openid_prompt(self):
+        return self.data.get('openid_prompt')
+
+    @openid_prompt.setter
+    def openid_prompt(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['openid_prompt'] = value
+

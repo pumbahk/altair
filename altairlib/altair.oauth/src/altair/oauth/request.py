@@ -11,7 +11,7 @@ class WebObOAuthRequestParser(object):
     def get_state(self, request):
         state = None
         if 'state' in request.GET:
-            state = request.GET.pop('state')
+            state = request.GET.getone('state')
         return state
 
     def parse_grant_authorization_code_request(self, request):
@@ -35,7 +35,7 @@ class WebObOAuthRequestParser(object):
             redirect_uri=redirect_uri,
             scope=scope,
             aux={
-                k: v[0]
+                k: v
                 for k, v in request.GET.items()
                 if k not in ('response_type', 'client_id', 'redirect_uri', 'scope')
                 }
@@ -66,11 +66,11 @@ class WebObOAuthRequestParser(object):
                 client_id = six.text_type(_client_id)
                 client_secret = six.text_type(_client_secret)
             elif 'client_id' in request.GET:
-                client_id = request.GET.pop('client_id')
-                client_secret = request.GET.pop('client_secret')
+                client_id = request.GET.getone('client_id')
+                client_secret = request.GET.getone('client_secret')
             elif 'client_id' in request.POST:
-                client_id = request.POST.pop('client_id')
-                client_secret = request.POST.pop('client_secret')
+                client_id = request.POST.getone('client_id')
+                client_secret = request.POST.getone('client_secret')
             else:
                 raise OAuthBadRequestError(u'no client credentials provided')
             return client_id, client_secret
@@ -86,9 +86,9 @@ class WebObOAuthRequestParser(object):
         if authz is not None and authz[0].lower() in ('token', 'basic'):
             access_token = authz[1]
         elif 'access_token' in request.GET:
-            access_token = request.GET.pop('access_token')
+            access_token = request.GET.getone('access_token')
         elif 'access_token' in request.POST:
-            access_token = request.POST.pop('access_token')
+            access_token = request.POST.getone('access_token')
         elif 'access_token' in request.json:
             access_token = request.json['access_token']
         return access_token

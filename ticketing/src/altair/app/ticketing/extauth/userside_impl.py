@@ -182,6 +182,7 @@ CLIENT_CREDENTIALS_KEY = '%s.client_credentials' % __name__
 ENDPOINT_TOKEN_KEY = '%s.endpoint_token' % __name__
 ENDPOINT_TOKEN_REVOCATION_KEY = '%s.endpoint_token_revocation' % __name__
 ENDPOINT_API_KEY = '%s.endpoint_api' % __name__
+OPENID_PROMPT = '%s.openid_prompt' % __name__
 
 def includeme(config):
     registry = config.registry
@@ -199,8 +200,9 @@ def includeme(config):
         request.session[ENDPOINT_API_KEY] = request.context.cart_setting.oauth_endpoint_api
         request.session[ENDPOINT_TOKEN_KEY] = request.context.cart_setting.oauth_endpoint_token
         request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = request.context.cart_setting.oauth_endpoint_token_revocation
+        request.session[OPENID_PROMPT] = request.context.cart_setting.openid_prompt
         return request.context.cart_setting.oauth_endpoint_authz
-       
+
     def api_endpoint(request):
         return request.session[ENDPOINT_API_KEY]
 
@@ -216,12 +218,16 @@ def includeme(config):
     def client_credentials(request):
         return request.session[CLIENT_CREDENTIALS_KEY]
 
+    def openid_prompt(request):
+        return request.session[OPENID_PROMPT]
+
     plugin = OAuthAuthPlugin(
         client_id,
         authz_endpoint,
         api_endpoint,
         u'/.extauth/callback',
         error_url,
+        openid_prompt,
         on_login=on_login
         )
     opener_factory = urllib2ext.opener_factory_from_config(config, 'altair.extauth.oauth.urllib2_opener_fatory')

@@ -21,6 +21,7 @@ from altair.formhelpers.translations import Translations
 from altair.formhelpers.fields import (
     OurSelectField,
     OurSelectMultipleDictField,
+    OurSelectMultipleField,
     OurTextField,
     JSONField,
     )
@@ -337,6 +338,20 @@ class CartSettingForm(OurForm):
 
     oauth_endpoint_api = OurTextField(
         label=_(u'OAuthAPIエンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    openid_prompt = OurSelectMultipleField(
+        label=_(u'OpenID Connectのログインプロンプト設定'),
+        choices=[
+            (u'none', u'一切のユーザーへのプロンプトを許可しない'),
+            (u'login', u'すでにOPで認証済みでもログイン画面を出す'),
+            (u'select_account', u'アカウントの選択を要求'),
+            ],
+        widget=CheckboxMultipleSelect(multiple=True)
         # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
         #validators=[
         #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),

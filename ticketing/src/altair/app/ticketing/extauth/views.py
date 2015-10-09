@@ -4,6 +4,7 @@ from datetime import datetime
 from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
 from pyramid.view import view_defaults
+from pyramid.events import subscriber
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
@@ -13,6 +14,7 @@ from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.exceptions import OAuthRenderableError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
 from altair.rakuten_auth.openid import RakutenOpenID
+from altair.rakuten_auth.events import Authenticated as RakutenOpenIDAuthenticated
 from .rendering import selectable_renderer
 from .rakuten_auth import get_openid_claimed_id
 from .api import get_communicator
@@ -27,6 +29,12 @@ def extract_identifer(request):
         if isinstance(authenticator, RakutenOpenID):
             return identity['claimed_id']
     return u'urn:eagles:soc:0000000'
+
+JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
+
+@subscriber(RakutenOpenIDAuthenticated)
+def authenticated(event):
+    event.request.session[JUST_AUTHENTICATED_KEY] = True
 
 class RakutenIDView(object):
     oauth_request_parser = WebObOAuthRequestParser()
@@ -61,9 +69,13 @@ class RakutenIDView(object):
             oauth_params['nonce'] = aux.get('nonce')
             prompt = re.split(ur'\s+', aux.get('prompt', 'select_account'))
             if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
-                if 'login' not in prompt:
-                    request.session.delete()
-                    return challenge_view(self.context, self.request)
+                if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
+                    del self.request.session[JUST_AUTHENTICATED_KEY]
+                else:
+                    if 'login' in prompt:
+                        self.request.session.delete()
+                        return challenge_view(self.context, self.request)
+
             else:
                 if 'none' in prompt:
                     raise OpenIDLoginRequired()
