@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.AccessController;
@@ -36,22 +35,22 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.print.PrintService;
@@ -60,6 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
+import javax.xml.bind.DatatypeConverter;
 
 import jp.ticketstar.ticketing.DeferredValue;
 import jp.ticketstar.ticketing.RequestBodySender;
@@ -96,8 +96,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -144,18 +144,18 @@ class Job extends DeferredValue<Exception> {
     String printer;
     OurPageFormat pageFormat;
     String svg;
-    
+
     String peekUrl;
     String dequeueUrl;
     String cookie;
     int pageFormatId;
     int ticketFormatId;
-    
+
     // orderIdかqueueIdsのいずれか片方を受け取る
     // orderIdを受け取った場合は、peekして得たsvgの中にqueueIdsが埋めこまれている
     List<Integer> queueIds;
     Integer orderId;
-    
+
     PageSetModel pageSet;
 
     public void dispose() {
@@ -213,7 +213,7 @@ class Request {
 
         public List<String> getList(String key) {
             final List<String> retval = new ArrayList<String>(size());
-            for (final KeyValuePair kv: this) { 
+            for (final KeyValuePair kv: this) {
                 if (kv.getKey().equals(key)) {
                     retval.add(kv.getValue());
                 }
@@ -246,7 +246,7 @@ class Request {
     public String getMethod() {
         return exchange.getRequestMethod();
     }
-    
+
     @SuppressWarnings("restriction")
     public Headers getHeaders() {
         return exchange.getRequestHeaders();
@@ -262,7 +262,7 @@ class Request {
         final Charset charset = contentType.or(MediaType.OCTET_STREAM).charset().or(Server.UTF_8_CHARSET);
         return new InputStreamReader(getBodyInputStream(), charset);
     }
-    
+
     public Params getParams() {
         if (this.params == null) {
             final Params params = new Params();
@@ -292,7 +292,7 @@ class Request {
         List<String> as_ = getParams().getList("as");
         if (as_.size() > 0 && as_.get(0) == "json")
             return true;
-        
+
         List<String> accepts = getHeaders().get("Accept");
         if(accepts != null) {
             for(String accept: accepts) {
@@ -333,31 +333,32 @@ public class Server {
     public static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
 
     private AppWindowService service;
-    
+
     private InetSocketAddress address;
-    
+
     private List<URI> originHosts = new ArrayList<URI>();
-    
+
     private int nextId;
     private BlockingQueue<Job> queue;
     private long gcInterval;
+    private String authString;	// user:pass
 
     private ThreadFactory threadFactory = Executors.defaultThreadFactory();
-    
+
     private Thread printThread;
     private AtomicBoolean printThreadIsRunning = new AtomicBoolean(false);
 
     private Thread gcThread;
     private AtomicBoolean gcThreadIsRunning = new AtomicBoolean(false);
-    
+
     private TrayIcon icon;
     private MenuItem statusLabel;
-    
+
     private Charset jsonCharset = UTF_8_CHARSET;
     private HttpServer httpServer;
 
     private CountDownLatch disposed = new CountDownLatch(3);
-    
+
     private LogWindow logWindow;
 
     private Map<Integer, Job> jobsBeingProcessed = new HashMap<Integer, Job>();
@@ -380,7 +381,7 @@ public class Server {
             this.status = status;
         }
     }
-    
+
     private class Handler implements HttpHandler {
         private final GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
 
@@ -478,7 +479,7 @@ public class Server {
                 throw new HandlerException(String.format("required parameter \"%s\" is invalid", key), 400);
             }
         }
- 
+
         private int pickIntFromJsonObject(JsonObject obj, String key) throws HandlerException {
             final JsonElement value = obj.get(key);
             if (value == null) {
@@ -490,10 +491,10 @@ public class Server {
                 throw new HandlerException(String.format("required parameter \"%s\" is invalid", key), 400);
             }
         }
- 
+
         private Job jobFromJsonObject(JsonObject obj) throws HandlerException {
             final Job job = new Job();
-            job.createdAt = new Date(); 
+            job.createdAt = new Date();
             job.printer = pickStringFromJsonObject(obj, "printer");
             job.pageFormat = FormatLoader.buildPageFormat(pickObjectFromJsonObject(obj, "page"));
             job.peekUrl = pickStringFromJsonObject(obj, "peek_url");
@@ -557,7 +558,7 @@ public class Server {
             return data;
         }
 
-        private Map<String, Object> handlePoll(Request request, HttpExchange exchange, String jobIdStr) throws HandlerException {            
+        private Map<String, Object> handlePoll(Request request, HttpExchange exchange, String jobIdStr) throws HandlerException {
             if (!request.getMethod().equals("GET")) {
                 throw new HandlerException("bad request method", 400);
             }
@@ -591,20 +592,20 @@ public class Server {
                     jobsBeingProcessed.remove(jobId);
                 }
                 if (result != null) {
-                    data.put("error_class", result.getClass().getName()); 
-                    data.put("error_message", result.getMessage()); 
+                    data.put("error_class", result.getClass().getName());
+                    data.put("error_message", result.getMessage());
                 } else {
                     data.put("error_class", null);
                     data.put("error_message", null);
                 }
             } catch (InterruptedException e) {
-                throw new HandlerException("interrupted", 500);                
+                throw new HandlerException("interrupted", 500);
             } catch (TimeoutException e) {
                 data.put("status", "timeout");
             }
             return data;
         }
- 
+
         private String buildPollUrl(Request request, Job job) {
             return String.format("/poll/%d", job.id);
         }
@@ -618,7 +619,7 @@ public class Server {
                 String path = exchange.getRequestURI().getPath();
                 Map<String, Object> retval = null;
                 HandlerException exc = null;
-    
+
                 // routing
                 if (request.getMethod().equals("OPTIONS")) {
                     setUpResponse(request, exchange, MediaType.PLAIN_TEXT_UTF_8);
@@ -642,7 +643,7 @@ public class Server {
                     } catch (Exception e) {
                         exc = new HandlerException("internal server error", e, 500);
                     }
-        
+
                     if (exc != null) {
                         log.log(Level.WARNING, "an error occurred", exc);
                         retval = new HashMap<String, Object>();
@@ -655,7 +656,7 @@ public class Server {
                         if (!retval.containsKey("status"))
                             retval.put("status", "success");
                     }
-        
+
                     byte[] responseBody = null;
                     final MediaType type = MediaType.JSON_UTF_8.withCharset(jsonCharset);
                     final Charset responseCharset = setUpResponse(request, exchange, type);
@@ -679,7 +680,7 @@ public class Server {
         }
     }
 
-    public Server(InetSocketAddress address, List<URI> originHosts, long gcInterval) {
+    public Server(InetSocketAddress address, List<URI> originHosts, long gcInterval, String authString) {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
@@ -688,6 +689,7 @@ public class Server {
         this.originHosts.addAll(originHosts);
         this.nextId = 0;
         this.gcInterval = gcInterval;
+        this.authString = authString;
         this.queue = new LinkedBlockingQueue<Job>();
         this.printThread = createPrintThread();
         if (gcInterval > 0)
@@ -696,7 +698,7 @@ public class Server {
 
     private static InetSocketAddress parseAddress(final String listen) {
         final Matcher m = addrRegex.matcher(listen);
-        if (!m.matches()) { 
+        if (!m.matches()) {
             throw new ConfigurationException("could not parse addr-port specification: " + listen);
         }
         final String v6Address = m.group(1), v4Address = m.group(2);
@@ -719,18 +721,18 @@ public class Server {
         return _originHosts;
     }
 
-    public Server(String listen, List<String> originHosts, long gcInterval) {
-        this(parseAddress(listen), parseOriginHosts(originHosts), gcInterval);
+    public Server(String listen, List<String> originHosts, long gcInterval, String authString) {
+        this(parseAddress(listen), parseOriginHosts(originHosts), gcInterval, authString);
     }
- 
+
     public Server(Configuration config) {
-        this(config.getListen(), config.getOriginHosts(), config.getGCInterval());
+        this(config.getListen(), config.getOriginHosts(), config.getGCInterval(), config.getAuthString());
     }
 
     public void setService(AppWindowService service) {
         this.service = service;
     }
- 
+
     private void startPrintThread() {
         if (printThread != null)
             printThread.start();
@@ -826,7 +828,7 @@ public class Server {
             httpServer.stop(0);
             httpServer = null;
         }
-        if (printThread != null) { 
+        if (printThread != null) {
             stopPrintThread();
         }
         if (gcThread != null) {
@@ -852,16 +854,16 @@ public class Server {
             log.log(Level.INFO, "interrupted", e);
         }
     }
-    
+
     private TrayIcon makeSystemTray() throws IOException, AWTException {
         Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
-        
+
         PopupMenu menu = new PopupMenu();
-        
+
         statusLabel = new MenuItem("hoge");
         statusLabel.setEnabled(false);
         menu.add(statusLabel);
-        
+
         menu.addSeparator();
         MenuItem showLogWindowItem = new MenuItem("ログウィンドウ...");
         showLogWindowItem.addActionListener(new ActionListener() {
@@ -886,7 +888,7 @@ public class Server {
         protected volatile boolean done = false;
         protected T result = null;
         protected Exception exception = null;
-        
+
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return false;
@@ -955,7 +957,7 @@ public class Server {
             exception = ((SVGDocumentLoader)e.getSource()).getException();
             done();
         }
-        
+
         private void done() {
             done = true;
             synchronized (this) {
@@ -963,7 +965,7 @@ public class Server {
             }
         }
     }
-    
+
     private int getNextId() {
         synchronized (this) {
             return nextId++;
@@ -1013,14 +1015,14 @@ public class Server {
                                             job.pageSet = new PageSetModel(bridgeContext, doc);
                                         } else {
                                             // altairに要求してSVGを取得する
-                                            URLConnection conn = (new URL(job.peekUrl)).openConnection();
+                                            HttpURLConnection conn = openConnection(new URL(job.peekUrl));
                                             conn.setRequestProperty("Cookie", job.cookie);
                                             conn.setUseCaches(false);
                                             URLConnectionSVGDocumentLoader documentLoader = new URLConnectionSVGDocumentLoader(conn, new RequestBodySender() {
                                                 public String getRequestMethod() {
                                                     return "POST";
                                                 }
-        
+
                                                 public void send(OutputStream out) throws IOException {
                                                     log.info("Sending " + job);
                                                     final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
@@ -1046,7 +1048,7 @@ public class Server {
                                             documentLoader.addSVGDocumentLoaderListener(listener);
                                             log.info("Starting documentLoader");
                                             documentLoader.start();
-                                 
+
                                             log.info("Awaiting response");
                                             ExtendedSVG12OMDocument doc = listener.get();        // ここで取得完了を待つ
                                             if (listener.exception != null) {
@@ -1068,7 +1070,7 @@ public class Server {
                                         PrinterJob printerJob = makePrinterJob(job);
                                         log.info("Start printing...");
                                         printerJob.print();
-                                        log.info("Printing completed");                                        
+                                        log.info("Printing completed");
                                         log.info(job + " completed");
                                         try {
                                             notifyCompletion(job);
@@ -1130,18 +1132,18 @@ public class Server {
             }
         });
     }
-    
+
     private List<PrintService> printServices;
-    
+
     public List<PrintService> getPrintServices() {
         return printServices;
     }
-    
+
     private void notifyCompletion(Job job) {
         if (job.queueIds != null && !job.queueIds.isEmpty()) {
             log.info("Sending completion notification for " + job);
             try {
-                final HttpURLConnection conn = (HttpURLConnection) (new URL(job.dequeueUrl)).openConnection();
+                final HttpURLConnection conn = openConnection(new URL(job.dequeueUrl));
                 conn.setRequestProperty("Cookie", job.cookie);
                 conn.setUseCaches(false);
                 conn.setRequestMethod("POST");
@@ -1158,7 +1160,7 @@ public class Server {
                 writer.endObject();
                 writer.flush();
                 writer.close();
-                
+
                 int code = conn.getResponseCode();
                 if (code != 200)
                     throw new CommunicationException("Server returned error status: " + code);
@@ -1180,8 +1182,17 @@ public class Server {
         }
         statusLabel.setLabel("Queue size is " + queue.size());
     }
-    
-    private PrinterJob makePrinterJob(Job job) throws PrinterException {
+
+    private HttpURLConnection openConnection(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        if(authString != null && authString.contains(":")) {
+            conn.addRequestProperty("Authorization", "Basic " + DatatypeConverter.printBase64Binary(authString.getBytes()));
+        }
+
+        return conn;
+    }
+
+	private PrinterJob makePrinterJob(Job job) throws PrinterException {
         PrinterJob printerJob = PrinterJob.getPrinterJob();
         TicketPrintable content = new TicketPrintable(
             new ArrayList<Page>(job.pageSet.getPages()),
@@ -1190,7 +1201,7 @@ public class Server {
         );
         printerJob.setPrintService(getPrintServiceByName(job.printer));
         printerJob.setPrintable(content, job.pageFormat);
-        
+
         return printerJob;
     }
 
@@ -1203,7 +1214,7 @@ public class Server {
         }
         return titles;
     }
-    
+
     // copied from PageSetModel
     private static String findTitle(SVGOMElement elem) {
         for (Node n = elem.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -1213,7 +1224,7 @@ public class Server {
         }
         return null;
     }
-    
+
     private PrintService getPrintServiceByName(String name) {
         for(PrintService ps: getPrintServices()) {
             if(ps.getName().equals(name)) {

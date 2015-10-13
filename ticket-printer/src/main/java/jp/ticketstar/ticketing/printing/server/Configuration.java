@@ -7,4 +7,5 @@ public interface Configuration {
     public List<String> getOriginHosts();
     public long getGCInterval();
     public boolean getIgnoreWrongCert();
+    public String getAuthString();
 }
