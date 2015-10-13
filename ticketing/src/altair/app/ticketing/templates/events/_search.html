@@ -45,30 +45,43 @@
           ${form_search.performance_name_or_code.label()}
           ${form_search.performance_name_or_code()}
         </div>
+        <hr/>
         <div class="controls">
           ${form_search.perf_range_start.label()}
+          (指定した期間に公演が開催しているイベントを表示)<br/>
           ${form_search.perf_range_start()} 〜 ${form_search.perf_range_end()}
         </div>
+        <hr/>
         <div class="controls">
           ${form_search.deal_range_start.label()}
+          (指定した期間に公演が販売しているイベントを表示)<br/>
           ${form_search.deal_range_start()} 〜 ${form_search.deal_range_end()}
         </div>
+        <hr/>
         <div class="controls">
           ${form_search.perf_open_start.label()}
+          (指定した期間に公演開始日があるイベントを表示)<br/>
           ${form_search.perf_open_start()} 〜 ${form_search.perf_open_end()}
         </div>
-        <div class="controls">
-          ${form_search.perf_close_start.label()}
-          ${form_search.perf_close_start()} 〜 ${form_search.perf_close_end()}
-        </div>
+        <hr/>
         <div class="controls">
           ${form_search.deal_open_start.label()}
+          (指定した期間に販売開始日があるイベントを表示)<br/>
           ${form_search.deal_open_start()} 〜 ${form_search.deal_open_end()}
         </div>
+        <hr/>
+        <div class="controls">
+          ${form_search.perf_close_start.label()}
+          (指定した期間に公演終了日があるイベントを表示)<br/>
+          ${form_search.perf_close_start()} 〜 ${form_search.perf_close_end()}
+        </div>
+        <hr/>
         <div class="controls">
           ${form_search.deal_close_start.label()}
+          (指定した期間に販売終了日があるイベントを表示)<br/>
           ${form_search.deal_close_start()} 〜 ${form_search.deal_close_end()}
         </div>
+        <hr/>
         <div class="controls">
           ${form_search.lot_only()} ${form_search.lot_only.label(class_='inline')}
         </div>
