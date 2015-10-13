@@ -6,8 +6,12 @@ class SupportMail:
 
     implements(IMailMessage)
 
-    def __init__(self, username, mail, num, category, title, body, user_agent):
+    def __init__(self, username, username_kana, zip_no, address, tel, mail, num, category, title, body, user_agent):
         self.username = username
+        self.username_kana = username_kana
+        self.zip_no = zip_no
+        self.address = address
+        self.tel = tel
         self.mail = mail
         self.num = num
         self.category = category
@@ -16,8 +20,10 @@ class SupportMail:
         self.user_agent = user_agent
 
     def create_mail(self):
-        result = self.username + u"さんからのお問合せです。\n"
+        result = self.username + "(" + self.username_kana+ ")" + u"さんからのお問合せです。\n"
         result = result + u"メールアドレス：" + self.mail + u"\n"
+        result = result + u"電話番号：" + self.tel + u"\n"
+        result = result + u"住所：〒" + self.zip_no + u"\n" + self.address + u"\n"
         result = result + u"予約受付番号：" + self.num + u"\n\n"
 
         result = result + u"---------------------------------------\n"
@@ -33,8 +39,12 @@ class CustomerMail:
 
     implements(IMailMessage)
 
-    def __init__(self, username, mail, num, category, title, body):
+    def __init__(self, username, username_kana, zip_no, address, tel, mail, num, category, title, body):
         self.username = username
+        self.username_kana = username_kana
+        self.zip_no = zip_no
+        self.address = address
+        self.tel = tel
         self.mail = mail
         self.num = num
         self.category = category

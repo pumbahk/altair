@@ -43,10 +43,19 @@
 % endif
 
 <form action="/inquiry" method="POST">
-    ${form.username.label}<br/>${form.username}<br/>
+    お名前<br/>
+    漢字※<br/>${form.username}<br/>
     ${disp_error(form.username.errors)}
+    カナ※<br/>${form.username_kana}<br/>
+    ${disp_error(form.username_kana.errors)}
     ${form.mail.label}<br/>${form.mail}<br/>
     ${disp_error(form.mail.errors)}
+    〒${form.zip_no}<br/>
+    ${disp_error(form.zip_no.errors)}
+    ${form.address.label}<br/>${form.address}<br/>
+    ${disp_error(form.address.errors)}
+    ${form.tel.label}<br/>${form.tel}<br/>
+    ${disp_error(form.tel.errors)}
     ${form.num.label}<br/>
 (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
     ${form.num}<br/>

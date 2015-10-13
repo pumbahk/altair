@@ -30,7 +30,7 @@
     「<a href="http://ticket.rakuten.co.jp/faq">よくある質問</a>」に掲載している内容については、お返事をお送りできない場合があります。<br/>
     問合せの前によくご確認ください。<br/><br/>
 
-    % if form.send.data == "Success":
+    % if result:
         <div style="color:#FF0000;">
             以下の内容で送信しました。<br/>
             受付の確認メールが自動で送信されます。<br/>
@@ -38,7 +38,7 @@
             別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
         </div>
         <br/>
-    % elif form.send.data == "Failed":
+    % elif result and form.username.data:
         <div style="color:#FF0000;">送信に失敗しました。</div>
         <br/>
     % endif
@@ -46,8 +46,18 @@
     <div id="inquiry" class="inquiry">
         <form action="${request.route_path('usersite.inquiry')}" method="POST">
             <fieldset style="border: none">
-                ${form.username.label}<br/>${form.username}<br/>
+                お名前<br/>
+                漢字※<br/>${form.username}<br/>
                 ${disp_error(form.username.errors)}
+                カナ※<br/>${form.username_kana}<br/>
+                ${disp_error(form.username_kana.errors)}
+                〒郵便番号※<br/>
+                ${form.zip_no}<br/>
+                ${disp_error(form.zip_no.errors)}
+                住所※<br/>${form.address}<br/>
+                ${disp_error(form.address.errors)}
+                電話番号※<br/>${form.tel}<br/>
+                ${disp_error(form.tel.errors)}
                 ${form.mail.label}<br/>${form.mail}<br/>
                 ${disp_error(form.mail.errors)}
                 ${form.num.label}<br/>
@@ -61,7 +71,7 @@
                 ${disp_error(form.title.errors)}
             </fieldset>
             ※は必ず入力してください。<br/>
-            % if form.send.data != "Success":
+            % if not result:
                 <input type="submit" value="送信"/>
             % endif
         </form>
