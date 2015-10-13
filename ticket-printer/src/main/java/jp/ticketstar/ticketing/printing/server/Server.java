@@ -184,7 +184,7 @@ class Job extends DeferredValue<Exception> {
             pageFormatId,
             ticketFormatId,
             orderId,
-            Joiner.on(".").join(queueIds)
+            queueIds==null ? "(null)" : Joiner.on(".").join(queueIds)
         );
     }
 }
