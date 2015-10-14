@@ -50,13 +50,14 @@
     ${disp_error(form.username_kana.errors)}
     ${form.mail.label}<span style="color:#FF0000;">※</span><br/>${form.mail}<br/>
     ${disp_error(form.mail.errors)}
-    〒郵便番号<span style="color:#FF0000;">※</span><br/>${form.zip_no}<br/>
+    ご住所・電話番号（申込済の件についてお問合せの場合は、お申し込み時に登録された情報を入力してください。)<br/>
+    〒郵便番号<br/>${form.zip_no}<br/>
     ${disp_error(form.zip_no.errors)}
     ${form.address.label}<span style="color:#FF0000;">※</span><br/>${form.address}<br/>
     ${disp_error(form.address.errors)}
     ${form.tel.label}<span style="color:#FF0000;">※</span><br/>${form.tel}<br/>
     ${disp_error(form.tel.errors)}
-    ${form.num.label}<span style="color:#FF0000;">※</span><br/>
+    ${form.num.label}<br/>
 (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
     ${form.num}<br/>
     ${form.category.label}<span style="color:#FF0000;">※</span><br/>${form.category}<br/>
