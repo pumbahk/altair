@@ -3132,3 +3132,7 @@ a.goto-link:visit, a.goto-link:link {
   color:white;
 }
 /* }}}*/
+
+.red {
+    color:red;
+}

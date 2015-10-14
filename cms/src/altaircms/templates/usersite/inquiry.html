@@ -47,30 +47,30 @@
         <form action="${request.route_path('usersite.inquiry')}" method="POST">
             <fieldset style="border: none">
                 お名前<br/>
-                漢字※<br/>${form.username}<br/>
+                漢字<span class="red">※</span><br/>${form.username}<br/>
                 ${disp_error(form.username.errors)}
-                カナ※<br/>${form.username_kana}<br/>
+                カナ<span class="red">※</span><br/>${form.username_kana}<br/>
                 ${disp_error(form.username_kana.errors)}
-                〒郵便番号※<br/>
+                〒郵便番号<span class="red">※</span><br/>
                 ${form.zip_no}<br/>
                 ${disp_error(form.zip_no.errors)}
-                住所※<br/>${form.address}<br/>
+                住所<span class="red">※</span><br/>${form.address}<br/>
                 ${disp_error(form.address.errors)}
-                電話番号※<br/>${form.tel}<br/>
+                電話番号<span class="red">※</span><br/>${form.tel}<br/>
                 ${disp_error(form.tel.errors)}
                 ${form.mail.label}<br/>${form.mail}<br/>
                 ${disp_error(form.mail.errors)}
-                ${form.num.label}<br/>
+                ${form.num.label}<span class="red">※</span><br/>
                 (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
                 ${form.num}<br/>
-                ${form.category.label}<br/>${form.category}<br/>
+                ${form.category.label}<span class="red">※</span><br/>${form.category}<br/>
                 ${disp_error(form.category.errors)}
-                ${form.title.label}<br/>${form.title}<br/>
+                ${form.title.label}<span class="red">※</span><br/>${form.title}<br/>
                 ${disp_error(form.title.errors)}
-                ${form.body.label}(具体的に記載してください)<br/>${form.body}<br/>
+                ${form.body.label}(具体的に記載してください)<span class="red">※</span><br/>${form.body}<br/>
                 ${disp_error(form.title.errors)}
             </fieldset>
-            ※は必ず入力してください。<br/>
+            <span class="red">※</span>は必ず入力してください。<br/>
             % if not result:
                 <input type="submit" value="送信"/>
             % endif

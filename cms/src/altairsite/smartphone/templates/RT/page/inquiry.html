@@ -138,7 +138,7 @@
         ${disp_error(form.title.errors)}
         内容<font color="red">※</font>(具体的に記載してください)${form.body}<br/>
         ${disp_error(form.body.errors)}
-        ※は必ず入力してください。<br/>
+        <font color="red">※</font>は必ず入力してください。<br/>
         % if not result:
             <input type="submit" class="btn-secondary btn-large" value="送信"/>
         % endif
