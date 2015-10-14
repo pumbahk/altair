@@ -49,7 +49,6 @@ def send_inquiry(request):
         , form.data['title'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
 
     send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(), recipients=[request.inquiry_mailaddress])
-    send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(), recipients=["ts-keiichi.okada@rakuten.com"])
     ret = send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(), recipients=[form.mail.data])
 
     session.delete_inquiry_session()
