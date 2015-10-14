@@ -5,8 +5,8 @@ from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField
 class InquiryForm(Form):
 
     # --- Form
-    username = TextField(label=u'お名前（漢字）※', validators=[Required(u'入力してください')])
-    username_kana = TextField(label=u'お名前（カナ）※', validators=[Required(u'入力してください')])
+    username = TextField(label=u'お名前（漢字）', validators=[Required(u'入力してください')])
+    username_kana = TextField(label=u'お名前（カナ）', validators=[Required(u'入力してください')])
     zip_no = TextField(label=u'郵便番号')
     address = TextField(label=u'住所', validators=[Required(u'入力してください')])
     tel = TextField(label=u'電話番号', validators=[Required(u'入力してください')])
