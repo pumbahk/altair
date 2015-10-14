@@ -11,7 +11,7 @@ class InquiryForm(Form):
     address = TextField(label = u'住所', validators=[Required(u'入力してください')])
     tel = TextField(label = u'電話番号', validators=[Required(u'入力してください')])
     mail = TextField(label = u'メールアドレス※', validators=[Required(u'入力してください'), email(u'メールアドレスに誤りがあります')])
-    num = TextField(label = u'予約受付番号')
+    num = TextField(label = u'受付番号(RT00000～)')
     category = SelectField(label = u'カテゴリ※', choices=[
         (u"選択なし", u'選択してください'), (u'チケットについて', u'チケットについて'), (u'お支払い方法について', u'お支払い方法について'),
         (u'座席について', u'座席について'), (u'配送方法について', u'配送方法について'), (u'ご意見/ご感想', u'ご意見/ご感想'), (u'その他', u'その他')
