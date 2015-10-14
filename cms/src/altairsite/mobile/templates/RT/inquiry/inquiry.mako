@@ -44,28 +44,29 @@
 
 <form action="/inquiry" method="POST">
     お名前<br/>
-    漢字※<br/>${form.username}<br/>
+    漢字<span style="color:#FF0000;">※</span><br/>${form.username}<br/>
     ${disp_error(form.username.errors)}
-    カナ※<br/>${form.username_kana}<br/>
+    カナ<span style="color:#FF0000;">※</span><br/>${form.username_kana}<br/>
     ${disp_error(form.username_kana.errors)}
-    ${form.mail.label}<br/>${form.mail}<br/>
+    ${form.mail.label}<span style="color:#FF0000;">※</span><br/>${form.mail}<br/>
     ${disp_error(form.mail.errors)}
-    〒${form.zip_no}<br/>
+    ご住所・電話番号（申込済の件についてお問合せの場合は、お申し込み時に登録された情報を入力してください。)<br/>
+    〒郵便番号<br/>${form.zip_no}<br/>
     ${disp_error(form.zip_no.errors)}
-    ${form.address.label}<br/>${form.address}<br/>
+    ${form.address.label}<span style="color:#FF0000;">※</span><br/>${form.address}<br/>
     ${disp_error(form.address.errors)}
-    ${form.tel.label}<br/>${form.tel}<br/>
+    ${form.tel.label}<span style="color:#FF0000;">※</span><br/>${form.tel}<br/>
     ${disp_error(form.tel.errors)}
     ${form.num.label}<br/>
 (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
     ${form.num}<br/>
-    ${form.category.label}<br/>${form.category}<br/>
+    ${form.category.label}<span style="color:#FF0000;">※</span><br/>${form.category}<br/>
     ${disp_error(form.category.errors)}
-    ${form.title.label}<br/>${form.title}<br/>
+    ${form.title.label}<span style="color:#FF0000;">※</span><br/>${form.title}<br/>
     ${disp_error(form.title.errors)}
-    ${form.body.label}(具体的に記載してください)<br/>${form.body}<br/>
+    ${form.body.label}(具体的に記載してください)<span style="color:#FF0000;">※</span><br/>${form.body}<br/>
     ${disp_error(form.body.errors)}
-    ※は必ず入力してください。
+    <span style="color:#FF0000;">※</span>は必ず入力してください。
     % if form.send.data != "Success":
         <input type="submit" value="送信"/>
     % endif

@@ -123,13 +123,14 @@
         ${disp_error(form.username_kana.errors)}
         メールアドレス<font color="red">※</font><br/>${form.mail}
         ${disp_error(form.mail.errors)}
-        〒<font color="red">※</font><br/>${form.zip_no}
+        ご住所・電話番号（申込済の件についてお問合せの場合は、お申し込み時に登録された情報を入力してください。)<br/>
+        〒郵便番号<br/>${form.zip_no}
         ${disp_error(form.zip_no.errors)}
         住所<font color="red">※</font><br/>${form.address}
         ${disp_error(form.tel.errors)}
         電話番号<font color="red">※</font><br/>${form.tel}
         ${disp_error(form.address.errors)}
-        ${form.num.label}
+        ${form.num.label}<br/>
         (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)
         ${form.num}
         カテゴリ<font color="red">※</font><br/>${form.category}
@@ -138,7 +139,7 @@
         ${disp_error(form.title.errors)}
         内容<font color="red">※</font>(具体的に記載してください)${form.body}<br/>
         ${disp_error(form.body.errors)}
-        ※は必ず入力してください。<br/>
+        <font color="red">※</font>は必ず入力してください。<br/>
         % if not result:
             <input type="submit" class="btn-secondary btn-large" value="送信"/>
         % endif

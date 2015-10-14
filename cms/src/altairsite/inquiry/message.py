@@ -24,7 +24,7 @@ class SupportMail:
         result = result + u"メールアドレス：" + self.mail + u"\n"
         result = result + u"電話番号：" + self.tel + u"\n"
         result = result + u"住所：〒" + self.zip_no + u"\n" + self.address + u"\n"
-        result = result + u"予約受付番号：" + self.num + u"\n\n"
+        result = result + u"受付番号：" + self.num + u"\n\n"
 
         result = result + u"---------------------------------------\n"
         result = result + u"カテゴリ：" + self.category + u"\n"
@@ -57,7 +57,7 @@ class CustomerMail:
         result = result + u"いつも楽天チケットをご利用頂き、誠にありがとうございます。\n"
         result = result + u"この度は、弊社にお問い合わせを頂き、ありがとうございました。以下の内容で、お問い合わせを受け付けました。\n\n"
 
-        result = result + u"予約受付番号：" + self.num + u"\n"
+        result = result + u"受付番号：" + self.num + u"\n"
         result = result + u"カテゴリ：" + self.category + u"\n"
         result = result + u"件名：" + self.title + u"\n"
         result = result + u"内容：" + self.body + u"\n\n"
