@@ -267,15 +267,14 @@ def calculate_target_date(now):
         target_date = (now + timedelta(days=1)).date()
     return target_date
 
-def create_refund_zip_files(now=None, work_dir_base='/tmp', session=None):
+def create_refund_zip_files_ex(now=None, target_date=None, work_dir_base='/tmp', session=None):
     if session is None:
         from .models import _session
         session = _session
     if now is None:
         now = datetime.now()
-
-    target_date = calculate_target_date(now)
-
+    if target_date is None:
+        target_date = now
     provider = SejRefundRecordProvider(
         target_date=target_date,
         session=session
@@ -314,6 +313,10 @@ def create_refund_zip_files(now=None, work_dir_base='/tmp', session=None):
 
     return zip_file_path_list
 
+def create_refund_zip_files(now=None, work_dir_base='/tmp', session=None):
+    target_date = calculate_target_date(now)
+    return create_refund_zip_files_ex(session=session, target_date=target_date, now=now, work_dir_base=work_dir_base)
+
 def stage_refund_zip_files(registry, now):
     # sej払戻ファイル生成
     manager = create_refund_file_manager_from_settings(registry.settings)
@@ -321,7 +324,8 @@ def stage_refund_zip_files(registry, now):
     logger.info("writing refund zip file(s) to %s..." % work_dir_base)
     from .models import _session as sej_session
     try:
-        zip_files = create_refund_zip_files(session=sej_session, now=now, work_dir_base=work_dir_base)
+        target_date = calculate_target_date(now)
+        zip_files = create_refund_zip_files_ex(session=sej_session, target_date=target_date, now=now, work_dir_base=work_dir_base)
         for zip_file in zip_files:
             logger.info("refund zip file successfully created as %s" % zip_file)
     except:
