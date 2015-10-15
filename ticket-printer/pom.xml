@@ -147,6 +147,46 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+        <artifactId>launch4j-maven-plugin</artifactId>
+        <version>1.7.8</version>
+        <executions>
+          <execution>
+            <id>l4j-clui</id>
+            <phase>package</phase>
+            <goals><goal>launch4j</goal></goals>
+            <configuration>
+
+                    <headerType>gui</headerType>
+                    <outfile>target/altair-printing.exe</outfile>
+                    <jar>target/printing-${project.version}-jar-with-dependencies.jar</jar>
+                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp</cmdLine>
+                    <errTitle></errTitle>
+                    <jre>
+                      <path>jre1.6.0_45</path>
+                      <bundledJreAsFallback>false</bundledJreAsFallback>
+                      <minVersion>1.6.0</minVersion>
+                      <maxVersion>1.6.0_45</maxVersion>
+                      <jdkPreference>jdkOnly</jdkPreference>
+                      <runtimeBits>32/64</runtimeBits>
+                    </jre>
+                    <versionInfo>
+                      <fileVersion>${project.version}.0</fileVersion>
+                      <txtFileVersion>-</txtFileVersion>
+                      <fileDescription>-</fileDescription>
+                      <copyright>-</copyright>
+                      <productVersion>${project.version}.0</productVersion>
+                      <txtProductVersion>-</txtProductVersion>
+                      <productName>altair-printing</productName>
+                      <internalName>altair-printing</internalName>
+                      <originalFilename>altair-printing.exe</originalFilename>
+                    </versionInfo>
+
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
