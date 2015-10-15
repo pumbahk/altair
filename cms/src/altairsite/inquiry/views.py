@@ -6,7 +6,7 @@ from . message import SupportMail, CustomerMail
 from . session import InquirySession
 
 from altairsite.config import usersite_view_config
-from altairsite.inquiry.forms import InquiryForm
+from altairsite.smartphone.page.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 
 ##workaround.
@@ -29,29 +29,29 @@ def move_inquiry(request):
              renderer='altaircms:templates/usersite/inquiry.html')
 def send_inquiry(request):
     log_info("send_inquiry", "start")
-
     form = InquiryForm(request.POST)
 
     session = InquirySession(request=request)
-    form.send.data = "Success"
     if not session.exist_inquiry_session():
-        return {"form": form}
+        return {
+            "form": form,
+            "result": True
+        }
 
     if not form.validate():
         return {"form": form}
 
-    log_info("send_inquiry", "send mail start")
-    customer_mail = CustomerMail(form.data['username'], form.data['mail'], form.data['num'], form.data['category']
+    customer_mail = CustomerMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
+        , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'], form.data['category']
         , form.data['title'], form.data['body'])
-    support_mail = SupportMail(form.data['username'], form.data['mail'], form.data['num'], form.data['category']
+    support_mail = SupportMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
+        , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'], form.data['category']
         , form.data['title'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
 
     send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(), recipients=[request.inquiry_mailaddress])
     ret = send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(), recipients=[form.mail.data])
 
-    if not ret:
-        form.send.data = "Failed"
-
     session.delete_inquiry_session()
+
     log_info("send_inquiry", "end")
-    return {'form':form}
+    return {'form': form, 'result': ret}

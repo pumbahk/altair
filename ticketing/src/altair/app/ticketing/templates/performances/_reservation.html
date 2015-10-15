@@ -517,6 +517,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     function onPrintingCompleted() {
        
     }
+    function reportError(message) {
+        alert("印刷に失敗しました." + message);
+        onPrintingCompleted();
+    }
     $pageFormat.change(onPageFormatChange);
     refreshPrintServices();
     refreshFormats();
@@ -540,33 +544,41 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
               "page": currentPageFormat,
               "page_format_id": currentPageFormat.id,
               "ticket_format_id": currentTicketFormat.id,
-              "uri": location.origin,
+              "peek_url": location.origin + endpoints["peek"],
+              "dequeue_url": location.origin + endpoints["dequeue"],
               "cookie": cookie,
               "order_id": order_id
           }),
           dataType: 'json'
         }).done(function(s) {
-          if(s.status == "success") {
-            // 印刷を開始したので、完了を待つ...
-            var confirm = function() {
-              $.ajax({
-                url: api+"/queue",
-                type: 'POST',
-                dataType: 'json'
-              }).done(function(s) {
-                if(0 < s.jobs.length) {
-                  // TODO: update progess
-                  setTimeout(confirm, 1000);
-                } else {
-                  onPrintingCompleted();
-                }
-              });
-            };
-            setTimeout(confirm, 1000);
-          } else {
-            alert("印刷に失敗しました." + s.message);
-            onPrintingCompleted();
-          }
+            if(s.status == "success") {
+              function poll() {
+                $.ajax({
+                  url: api + s.poll_url,
+                  type: 'GET',
+                  data: { 'timeout': 3000 }
+                }).done(function (s) {
+                  switch (s.status) {
+                  case 'success':
+                    if (s.error_class != null) {
+                      reportError(s.error_message);
+                    } else {
+                      onPrintingCompleted();
+                    }
+                    break;
+                  case 'error':
+                    reportError(s.message);
+                    break;
+                  case 'timeout':
+                    poll();
+                    break;
+                  }
+                });
+              }
+              poll();
+            } else {
+              reportError(s.message);
+            }
         });
     };
   }
