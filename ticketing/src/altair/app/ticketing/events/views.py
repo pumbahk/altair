@@ -182,7 +182,7 @@ class Events(BaseView):
         cart_url = get_cart_url_builder(self.request).build(self.request, event)
         agreement_url = get_agreement_cart_url_builder(self.request).build(self.request, event)
         performances = slave_session.query(Performance) \
-            .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
+            .outerjoin(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id == event_id) \
             .order_by(Performance.display_order) \
             .order_by("Performance.start_on asc")
