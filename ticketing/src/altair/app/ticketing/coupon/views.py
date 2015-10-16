@@ -32,6 +32,17 @@ class CouponView(object):
             )
 
     @lbr_view_config(
+        route_name='coupon.admission', request_method='GET')
+    def admission(self):
+        if self.context.order is None:
+            return HTTPFound(location=self.request.route_path('coupon.notfound'))
+
+        return dict(
+            reserved_number=self.context.reserved_number,
+            order=self.context.order
+            )
+
+    @lbr_view_config(
         route_name='coupon.admission', request_method='POST')
     def admission(self):
         order = self.context.order

@@ -922,51 +922,6 @@ background-color:#006633;
 */
 
 
-.btnCoupon {
-  color: white;
-  text-decoration: none;
-  padding: 0em;
-  font-size: 75%;
-  -webkit-box-align: center;
-  -moz-box-align: center;
-  box-align: center;
-
-  font-size: 40px;
-  line-height: 40px;
-  height: 100px;
-  width: 300px;
-
-  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
-  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
-}
-
-.btnCoupon:hover {
-  color: white;
-  text-decoration: none;
-  padding: 0 1em;
-  font-size: 75%;
-  -webkit-box-align: center;
-  -moz-box-align: center;
-  box-align: center;
-
-  font-size: 40px;
-  line-height: 40px;
-  height: 100px;
-  width: 300px;
-
-  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
-  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
-}
-
-.btnCoupon:active {
-  box-shadow: 1px 1px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
-}
 
 /* マイページ
 ----------------------------------------------------------- */
