@@ -1,8 +1,10 @@
+# -*- coding:utf-8 -*-
 from pyramid.view import view_defaults
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from pyramid.httpexceptions import HTTPFound
-
+from . import COUPON_COOKIE_NAME
+from datetime import datetime
 
 class CouponErrorView(object):
     def __init__(self, context, request):
@@ -50,6 +52,10 @@ class CouponView(object):
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
         self.context.use_coupon()
+
+        # 確認画面を出すかどうか
+        if self.request.POST.get('disp_dialog', None):
+            self.request.response.set_cookie(COUPON_COOKIE_NAME, str(datetime.now()))
 
         return dict(
             reserved_number=self.context.reserved_number,

@@ -4,7 +4,7 @@ $(document).on('click', '#modal-close, #modal-overlay', function() {
   $("#modal-content").css("display", "none");
 });
 
-$(document).on('click', '#coupon_button', function() {
+$(document).on('click', '.coupon_button', function() {
   var next_url = $(this).attr("next_url");
 
   $(this).blur();

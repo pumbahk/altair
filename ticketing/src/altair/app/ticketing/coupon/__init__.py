@@ -4,6 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
 
+COUPON_COOKIE_NAME = "_coupon"
+
 def setup_static_views(config):
     config.add_static_view('static', 'altair.app.ticketing.coupon:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
