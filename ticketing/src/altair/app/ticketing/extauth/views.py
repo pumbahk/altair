@@ -6,6 +6,7 @@ from urllib import urlencode, quote
 from pyramid.view import view_defaults
 from pyramid.events import subscriber
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound
+from pyramid.security import Authenticated, forget
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
 from altair.auth.api import get_plugin_registry
@@ -36,82 +37,137 @@ JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 def authenticated(event):
     event.request.session[JUST_AUTHENTICATED_KEY] = True
 
-class RakutenIDView(object):
-    oauth_request_parser = WebObOAuthRequestParser()
 
+class OAuthParamsReceiver(object):
+    def __init__(self, oauth_request_parser):
+        self.oauth_request_parser = oauth_request_parser
+
+    def __call__(self, fn):
+        def _(context, request):
+            if request.params or 'oauth_params' not in request.session:
+                oauth_params = None
+                try:
+                    oauth_params = self.oauth_request_parser.parse_grant_authorization_code_request(request)
+                    provider = get_oauth_provider(request)
+                    state = self.oauth_request_parser.get_state(request)
+                    if oauth_params['scope'] is not None:
+                        provider.validate_scope(oauth_params['scope'])
+                    provider.validated_client(oauth_params['client_id'], None)
+                    oauth_params['state'] = state
+                    oauth_params['authenticated_at'] = datetime.now()
+                    aux = oauth_params.pop('aux')
+                    max_age = aux.get('max_age')
+                    if max_age is not None:
+                        try:
+                            max_age = int(max_age)
+                        except (TypeError, ValueError):
+                            raise HTTPBadRequest('invalid max_age value')
+                    oauth_params['max_age'] = max_age
+                    oauth_params['nonce'] = aux.get('nonce')
+                    oauth_params['prompt'] = re.split(ur'\s+', aux.get('prompt', 'select_account'))
+                    request.session['oauth_params'] = oauth_params
+                except OAuthRenderableError as e:
+                    logger.exception('oops')
+                    if oauth_params is not None:
+                        raise HTTPFound(
+                            location=urljoin(
+                                oauth_params['redirect_uri'],
+                                '?' + get_oauth_response_renderer(request).render_exc_as_urlencoded_params(e, state)
+                                )
+                            )
+                    else:
+                        return HTTPInternalServerError(e.message)
+            return fn(context, request)
+        return _
+
+receives_oauth_params = OAuthParamsReceiver(WebObOAuthRequestParser())
+
+class View(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @lbr_view_config(
-        route_name='extauth.rakuten.index',
-        renderer=selectable_renderer('index.mako'),
-        request_method='GET'
-        )
-    def index(self):
-        try:
-            provider = get_oauth_provider(self.request)
-            state = self.oauth_request_parser.get_state(self.request)
-            oauth_params = self.oauth_request_parser.parse_grant_authorization_code_request(self.request)
-            if oauth_params['scope'] is not None:
-                provider.validate_scope(oauth_params['scope'])
-            provider.validated_client(oauth_params['client_id'], None)
-            oauth_params['state'] = state
-            oauth_params['authenticated_at'] = datetime.now()
-            aux = oauth_params.pop('aux')
-            max_age = aux.get('max_age')
-            if max_age is not None:
-                try:
-                    max_age = int(max_age)
-                except (TypeError, ValueError):
-                    raise HTTPBadRequest('invalid max_age value')
-            oauth_params['max_age'] = max_age
-            oauth_params['nonce'] = aux.get('nonce')
-            prompt = re.split(ur'\s+', aux.get('prompt', 'select_account'))
-            if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
-                if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
-                    del self.request.session[JUST_AUTHENTICATED_KEY]
-                else:
-                    if 'login' in prompt:
-                        self.request.session.delete()
-                        return challenge_view(self.context, self.request)
-
-            else:
-                if 'none' in prompt:
-                    raise OpenIDLoginRequired()
-                return challenge_view(self.context, self.request)
-            self.request.session['oauth_params'] = oauth_params
-            openid_claimed_id = get_openid_claimed_id(self.request)
-            if openid_claimed_id is not None:
-                data = get_communicator(self.request).get_user_profile(openid_claimed_id)
-                self.request.session['retrieved'] = data
-                if len(data['memberships']) == 1:
-                    return HTTPFound(
-                        location=self.request.route_path(
-                            'extauth.rakuten.login',
-                            _query=dict(
-                                member_kind_id=data['memberships'][0]['kind']['id'],
-                                membership_id=data['memberships'][0]['membership_id']
-                                )
-                            ),
-                        )
-                elif len(data['memberships']) > 1:
-                    if 'select_account' not in prompt:
-                        raise OpenIDAccountSelectionRequired()
-                return data
-            else:
-                raise HTTPInternalServerError()
-        except OAuthRenderableError as e:
-            logger.exception('oops')
-            raise HTTPFound(
-                location=urljoin(
-                    oauth_params['redirect_uri'],
-                    '?' + get_oauth_response_renderer(self.request).render_exc_as_urlencoded_params(e, state)
+    def navigate_to_select_account(self):
+        oauth_params = self.request.session['oauth_params']
+        openid_claimed_id = get_openid_claimed_id(self.request)
+        if openid_claimed_id is not None:
+            data = get_communicator(self.request).get_user_profile(openid_claimed_id)
+            self.request.session['retrieved'] = data
+            if len(data['memberships']) == 1:
+                return HTTPFound(
+                    location=self.request.route_path(
+                        'extauth.authorize',
+                        subtype=self.context.subtype,
+                        _query=dict(
+                            member_kind_id=data['memberships'][0]['kind']['id'],
+                            membership_id=data['memberships'][0]['membership_id']
+                            )
+                        ),
                     )
-                )
+            elif len(data['memberships']) > 1:
+                if 'select_account' not in oauth_params['prompt']:
+                    raise OpenIDAccountSelectionRequired()
+        else:
+            raise HTTPInternalServerError()
+        return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
 
-    @lbr_view_config(route_name='extauth.rakuten.login', permission='rakuten')
-    def login(self):
+    @lbr_view_config(
+        route_name='extauth.entry',
+        renderer=selectable_renderer('index.mako'),
+        request_method='GET',
+        decorator=(receives_oauth_params, )
+        )
+    def entry(self):
+        oauth_params = self.request.session['oauth_params']
+        if Authenticated in self.request.effective_principals:
+            if 'login' not in oauth_params['prompt']:
+                self.request.session.delete()
+            else:
+                return self.navigate_to_select_account()
+        return dict() 
+
+    @lbr_view_config(
+        route_name='extauth.rakuten.entry',
+        request_method='GET',
+        decorator=(receives_oauth_params, )
+        )
+    def rakuten_entry(self):
+        oauth_params = self.request.session['oauth_params']
+        if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
+            if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
+                del self.request.session[JUST_AUTHENTICATED_KEY]
+            else:
+                if 'login' in oauth_params['prompt']:
+                    self.request.session.delete()
+                    return challenge_view(self.context, self.request)
+        else:
+            if 'none' in oauth_params['prompt']:
+                raise OpenIDLoginRequired()
+            return challenge_view(self.context, self.request)
+        return self.navigate_to_select_account()
+
+    @lbr_view_config(
+        route_name='extauth.select_account',
+        renderer=selectable_renderer('select_account.mako'),
+        permission='authenticated'
+        )
+    def select_account(self):
+        data = self.request.session['retrieved']
+        if len(data['memberships']) == 1:
+            return HTTPFound(
+                location=self.request.route_path(
+                    'extauth.authorize',
+                    subtype=self.context.subtype,
+                    _query=dict(
+                        member_kind_id=data['memberships'][0]['kind']['id'],
+                        membership_id=data['memberships'][0]['membership_id']
+                        )
+                    ),
+                )
+        return data
+
+    @lbr_view_config(route_name='extauth.authorize', permission='rakuten')
+    def authorize(self):
         try:
             member_kind_id_str = self.request.params['member_kind_id']
             membership_id = self.request.params['membership_id']
@@ -166,6 +222,18 @@ class RakutenIDView(object):
                 '?' + get_oauth_response_renderer(self.request).render_authorization_code_as_urlencoded_params(code, state)
                 )
             )
+
+@lbr_view_config(route_name='extauth.logout')
+def logout(context, request):
+    headers = forget(request)
+    return HTTPFound(
+        location=request.route_path(
+            'extauth.entry',
+            subtype=context.subtype
+            ),
+        headers=headers
+        )
+
 
 @lbr_view_config(
     route_name='extauth.reset_and_continue',

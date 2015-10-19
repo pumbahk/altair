@@ -1,9 +1,10 @@
 # encoding: utf-8
-from pyramid.security import Everyone, Allow, DENY_ALL
+from pyramid.security import Everyone, Allow, Authenticated, DENY_ALL
 
 class ExtAuthBase(object):
     __acl__ = [
         (Allow, 'altair.auth.authenticator:rakuten', 'rakuten'),
+        (Allow, Authenticated, 'authenticated'),
         DENY_ALL,
         ]
 

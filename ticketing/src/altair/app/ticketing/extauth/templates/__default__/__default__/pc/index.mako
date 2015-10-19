@@ -1,13 +1,13 @@
 <%inherit file="base.mako" />
-<p>${last_name} ${first_name}さんこんにちは。</p>
-
 <ul>
-%for membership in memberships:
+  <li><p><a href="${request.route_path('extauth.rakuten.entry', subtype=_context.subtype)}">楽天会員としてログイン</a></p></li>
   <li>
-    <a href="${request.route_path('extauth.rakuten.login', subtype=_context.subtype, _query=dict(member_kind_id=membership['kind']['id'], membership_id=membership['membership_id']))}" class="btn">
-      <span class="membership--kind">${membership['kind']['name']}</span>
-      <span class="membership--membership_id">会員番号: ${membership['membership_id']}</span>
-    </a>
+    <p>株主ログイン</p>
+    <form>
+      <label for="stockholder-username">ユーザ名</label>
+      <input id="stockholder-username" type="text" name="username" />
+      <label for="stockholder-password">パスワード</label>
+      <input id="stockholder-password" type="password" name="password" />
+    </form>
   </li>
-%endfor
 </ul>

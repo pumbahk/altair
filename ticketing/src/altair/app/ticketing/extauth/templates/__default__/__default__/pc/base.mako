@@ -17,6 +17,16 @@
 </style>
 </head>
 <body>
+<header>
+% if request.authenticated_userid:
+楽天会員としてログイン (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
+% endif
+</header>
+<main>
 ${self.body()}
+</main>
+<footer>
+footer
+</footer>
 </body>
 </html>
