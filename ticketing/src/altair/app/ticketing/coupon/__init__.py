@@ -4,6 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
 
+COUPON_COOKIE_NAME = "_coupon"
+
 def setup_static_views(config):
     config.add_static_view('static', 'altair.app.ticketing.coupon:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
@@ -20,7 +22,7 @@ def setup_static_views(config):
 def includeme(config):
     ## coupon
     config.add_route('coupon', '/{reserved_number}', factory='.resources.CouponViewResource')
-    config.add_route('coupon.admission', '/{reserved_number}/use/{ordered_product_id}', factory='.resources.CouponViewResource')
+    config.add_route('coupon.admission', '/{reserved_number}/use/{token_id}', factory='.resources.CouponViewResource')
     config.add_route('coupon.notfound', '/notfound/', factory='.resources.CouponViewResource')
 
 def main(global_config, **local_config):

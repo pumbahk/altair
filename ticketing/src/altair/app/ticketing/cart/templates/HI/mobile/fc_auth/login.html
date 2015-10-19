@@ -28,14 +28,6 @@
   <input type="password" name="password" size="22" value="" istyle="4">
 </div>
 <input type="submit" value="ログイン" />
-<div>※レギュラー会員、シルバー会員、ゴールド会員の場合<br/>
-→B、S、SSで始まる4桁の会員No.の最後に“00”を付けて、ご入力ください。<br/>
-Ex)B9999の場合⇒「B999900」</div><br/>
-<div>※ファミリー会員の場合<br/>
-→B、S、SSで始まる会員No.のハイフンを「0」に変換し、ご入力ください。<br/>
-Ex)B9999-1の場合⇒「B999901」</div><br/>
-<div>『※パスワードは生年月日を西暦からご入力ください。なお月日が一桁の場合は、0を含めずご入力ください。<br>
-例）「1900年1月1日」の場合・・・・「190011」とご入力ください。』</div>
 </form>
 </div>
 
@@ -47,7 +39,7 @@ Ex)B9999-1の場合⇒「B999901」</div><br/>
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
-<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
+<input type="submit" value="&gt;&gt;次へ進む&lt;&lt;"/><br />
 <div>
 
 </div>
