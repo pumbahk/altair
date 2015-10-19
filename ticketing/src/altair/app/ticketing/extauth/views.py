@@ -7,6 +7,7 @@ from pyramid.view import view_defaults
 from pyramid.events import subscriber
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound
 from pyramid.security import Authenticated, forget
+from pyramid.session import check_csrf_token
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
 from altair.auth.api import get_plugin_registry
@@ -99,6 +100,7 @@ class View(object):
                         'extauth.authorize',
                         subtype=self.context.subtype,
                         _query=dict(
+                            _=self.request.session.get_csrf_token(),
                             member_kind_id=data['memberships'][0]['kind']['id'],
                             membership_id=data['memberships'][0]['membership_id']
                             )
@@ -159,6 +161,7 @@ class View(object):
                     'extauth.authorize',
                     subtype=self.context.subtype,
                     _query=dict(
+                        _=self.request.session.get_csrf_token(),
                         member_kind_id=data['memberships'][0]['kind']['id'],
                         membership_id=data['memberships'][0]['membership_id']
                         )
@@ -168,6 +171,7 @@ class View(object):
 
     @lbr_view_config(route_name='extauth.authorize', permission='rakuten')
     def authorize(self):
+        check_csrf_token(self.request, '_')
         try:
             member_kind_id_str = self.request.params['member_kind_id']
             membership_id = self.request.params['membership_id']
