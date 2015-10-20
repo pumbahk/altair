@@ -1,0 +1,98 @@
+@charset "utf-8";
+
+* {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	empty-cells: show;
+	font-size: 100%;
+}
+
+caption, th {
+	text-align: left;
+}
+
+object, embed {
+	vertical-align: top;
+}
+
+hr, legend {
+	display: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-size: 100%;
+}
+
+img {
+	border: none;
+	vertical-align: bottom;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+input {
+	padding: 1px;
+}
+
+textarea {
+	padding: 2px;
+	overflow: auto;
+	font-size: 100%;
+}
+
+option {
+	padding-right: 10px;
+}
+
+*+html option {
+	padding-right: 0; /* for IE7&Opera */
+}
+
+* html option {
+	padding-right: 0; /* for IE6 */
+}
+
+acronym, abbr {
+	cursor: help;
+}
+
+
+body {
+	color: #000000;
+	font-size: 62.5%;
+    font-family: "ヒラギノ角ゴ Pro W3", "ＭＳ Ｐゴシック";
+	text-align: center;
+	background-color: #ffffff;
+}
+
+a:link {
+	color: #5353f2;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #800080;
+	text-decoration: underline;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+a:focus {
+}
+
+a:active {
+}
