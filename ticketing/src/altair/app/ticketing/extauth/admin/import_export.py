@@ -1,0 +1,473 @@
+# encoding: utf-8
+import csv
+from collections import OrderedDict
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import sql
+from dateutil.parser import parse as parsedate
+from ..models import MemberSet, MemberKind, Member, Membership
+from ..utils import generate_salt, digest_secret
+
+__all__ = [
+    'CSVReader',
+    'MemberCSVParser',
+    'MemberCSVImporter',
+    'MemberImportExportError',
+    'MemberImportExportErrors',
+    'japanese_columns',
+    ] 
+
+japanese_columns = {
+    u'auth_identifier': u'ログインID',
+    u'auth_secret': u'パスワード',
+    u'name': u'氏名',
+    u'member_set': u'会員種別',
+    u'member_kind': u'会員区分',
+    u'valid_since': u'開始日',
+    u'expire_at': u'有効期限',
+    u'deleted': u'削除フラグ',
+    }
+
+class CSVReader(object):
+    def __init__(self, file, column_name_map, encoding='cp932'):
+        self.reader = csv.DictReader(file)
+        self.file = file
+        self.encoding = encoding
+        self.column_name_map = column_name_map
+        columns = dict((v, k) for k, v in column_name_map.iteritems())
+        header = []
+        for field in self.reader.fieldnames:
+            field = unicode(field.decode(self.encoding))
+            column_id = columns.get(field)
+            if column_id is None:
+                # 該当するカラムがない場合には、ヘッダに出現した内容をそのままキーとする
+                column_id = field
+            header.append(column_id)
+        self.reader.fieldnames = header
+
+    def __iter__(self):
+        for row in self.reader:
+            for k, v in row.iteritems():
+                row[k] = v.decode(self.encoding) if v is not None else u''
+            yield row
+
+    @property
+    def line_num(self):
+        return self.reader.line_num
+
+    @property
+    def filename(self):
+        return getattr(self.file, 'name', None)
+
+    @property
+    def fieldnames(self):
+        return self.reader.fieldnames
+
+
+class MemberImportExportErrorBase(Exception):
+    pass
+
+
+class MemberImportExportError(MemberImportExportErrorBase):
+    def __init__(self, message, record_field_name_pairs, filename, line_num):
+        return super(MemberImportExportError, self).__init__(
+            message,
+            record_field_name_pairs,
+            filename,
+            line_num
+            )
+
+    @classmethod
+    def from_reader(cls, reader, record_field_names, message):
+        return cls(
+            message=message,
+            record_field_name_pairs=[
+                (k, reader.column_name_map[k])
+                for k in record_field_names
+                ],
+            filename=reader.filename,
+            line_num=reader.line_num
+            )
+
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def record_field_name_pairs(self):
+        return self.args[1]
+
+    @property
+    def filename(self):
+        return self.args[2]
+
+    @property
+    def line_num(self):
+        return self.args[3]
+
+
+class MemberImportExportErrors(MemberImportExportErrorBase):
+    def __init__(self, message, errors, num_records):
+        super(MemberImportExportErrors, self).__init__(message, errors, num_records)
+
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def errors(self):
+        return self.args[1]
+
+    @property
+    def num_records(self):
+        return self.args[2]
+
+
+class DictBuilder(object):
+    def __init__(self, handleable_exceptions=()):
+        self.errors = []
+        self.result = {}
+        self.handleable_exceptions = handleable_exceptions
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            if isinstance(exc_value, self.handleable_exceptions):
+                self.errors.append(exc_value)
+                return True
+            else:
+                raise
+
+    def __setitem__(self, k, v):
+        self.result[k] = v
+
+
+class _Unspecified(object):
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
+        return False
+
+Unspecified = _Unspecified()
+
+def strip(v):
+    return v.strip(u' \t　') if v is not None else None
+
+
+def required(reader, dict_, k):
+    if k not in dict_:
+        raise MemberImportExportError.from_reader(
+            reader, [k],
+            u'「%s」は必須です' % reader.column_name_map[k]
+            )
+    return strip(dict_[k])
+
+
+def validate_length(reader, dict_, k, min, max):
+    errors = []
+    v = dict_[k]
+    if len(v) < min:
+        errors.append(
+            MemberImportExportError.from_reader(
+                reader, [k],
+                u'「%s」は%d文字以上にしてください' % (
+                    reader.column_name_map[k],
+                    min
+                    )
+                )
+            )
+    if len(v) > max:
+        errors.append(
+            MemberImportExportError.from_reader(
+                reader, [k],
+                u'「%s」は%d文字以下にしてください' % (
+                    reader.column_name_map[k],
+                    max
+                    )
+                )
+            )
+    return errors
+
+
+def validate_term(reader, dict_, start_k, end_k):
+    errors = []
+    start = dict_[start_k]
+    end = dict_[end_k]
+    if start is not None and end is not None and start > end:
+        errors.append(
+            MemberImportExportError.from_reader(
+                reader, [k],
+                u'「%(start)s」は「%(end)s」より後でなければなりません' % dict(
+                    start=reader.column_name_map[start_k],
+                    end=reader.column_name_map[end_k]
+                    )
+                )
+            )
+    return errors
+
+
+def parse_datetime(reader, dict_, k):
+    if k not in dict_:
+        return Unspecified
+    raw_value = strip(dict_[k])
+    if not raw_value:
+        return Unspecified
+    elif raw_value in (u'-', u'−'):
+        return None
+    return parsedate(raw_value)
+
+
+class MemberCSVParser(object):
+    def __init__(self, slave_session, organization_id):
+        self.slave_session = slave_session
+        self.organization_id = organization_id
+        self.member_set_cache = {}
+        self.members = {}
+
+    def _resolve_member_set(self, reader, k, name):
+        if name in self.member_set_cache:
+            member_set = self.member_set_cache[name][0]
+        else:
+            member_set = None
+            try:
+                member_set = self.slave_session.query(MemberSet) \
+                    .filter_by(organization_id=self.organization_id,
+                               name=name) \
+                    .one()
+            except NoResultFound:
+                pass
+            self.member_set_cache[name] = (member_set, [])
+
+        if member_set is None:
+            raise MemberImportExportError.from_reader(
+                reader, [k],
+                u'「%s」は正しい会員種別名ではありません' % name
+                )
+        return member_set
+
+    def _resolve_member_kind(self, reader, k, member_set, name):
+        member_kinds = self.member_set_cache[member_set.name][1]
+        if name in member_kinds:
+            member_kind = member_kinds[name]
+        else:
+            member_kind = None
+            try:
+                member_kind = self.slave_session.query(MemberKind) \
+                    .filter_by(member_set_id=member_set.id,
+                               name=name) \
+                    .one()
+            except NoResultFound:
+                pass
+        if member_kind is None:
+            raise MemberImportExportError.from_reader(
+                reader, [k],
+                u'「%s」は正しい会員区分名ではありません' % name
+                )
+        return member_kind
+
+    def _resolve_membership(self, reader, member_id, member_kind, valid_since, expire_at):
+        membership_id = None
+        try:
+            q = self.slave_session.query(Membership.id) \
+                .filter_by(member_id=member_id,
+                           member_kind_id=member_kind.id)
+            if valid_since is not Unspecified:
+                q = q.filter_by(valid_since=valid_since)
+            if expire_at is not Unspecified:
+                q = q.filter_by(expire_at=expire_at)
+            (membership_id,) = q.one()
+        except NoResultFound:
+            pass
+        return membership_id
+
+    def convert_to_record(self, reader, raw_record):
+        with DictBuilder((MemberImportExportError, )) as b:
+            member_set = None
+            b['auth_identifier'] = required(reader, raw_record, u'auth_identifier')
+            b['auth_secret'] = raw_record.get(u'auth_secret') or Unspecified
+            b['name'] = raw_record.get(u'name') or Unspecified
+            b['member_set'] = member_set = self._resolve_member_set(reader, u'member_set', raw_record[u'member_set']) if u'member_set' in raw_record else Unspecpfied
+            b['member_kind'] = member_set and self._resolve_member_kind(reader, u'member_kind', member_set, required(reader, raw_record, u'member_kind'))
+            b['valid_since'] = parse_datetime(reader, raw_record, u'valid_since')
+            b['expire_at'] = parse_datetime(reader, raw_record, u'expire_at')
+            b['deleted'] = bool(strip(raw_record.get(u'deleted', u'')))
+        return b.errors, b.result
+
+    def validate(self, reader, record):
+        errors = []
+        errors.extend(validate_length(reader, record, 'auth_identifier', min=1, max=128))
+        errors.extend(validate_term(reader, record, 'valid_since', 'expire_at'))
+        auth_identifier = record['auth_identifier']
+        member_desc = self.members.get(auth_identifier)
+        member_id = None
+        if member_desc is not None:
+            if record['auth_secret'] is not Unspecified and \
+               member_desc['auth_secret'] is not Unspecified and  \
+               member_desc['auth_secret'] != record['auth_secret']:
+                errors.append(
+                    MemberImportExportError.from_reader(
+                        reader, [u'auth_secret'],
+                        message=u'「%s」の値が一貫していません' % reader.column_name_map[u'auth_secret']
+                        )
+                    )
+            if record['member_set'] is not Unspecified and \
+               member_desc['member_set'] is not Unspecified and  \
+               member_desc['member_set'] != record['member_set']:
+                errors.append(
+                    MemberImportExportError.from_reader(
+                        reader, [u'member_set'],
+                        message=u'「%s」の値が一貫していません' % reader.column_name_map[u'member_set']
+                        )
+                    )
+            if record['name'] is not Unspecified and \
+               member_desc['name'] is not Unspecified and  \
+               member_desc['name'] != record['name']:
+                errors.append(
+                    MemberImportExportError.from_reader(
+                        reader, [u'name'],
+                        message=u'「%s」の値が一貫していません' % reader.column_name_map[u'name']
+                        )
+                    )
+            member_id = member_desc['member_id']
+        else:
+            try:
+                member_id, = self.slave_session.query(Member.id) \
+                    .filter_by(member_set_id=record['member_set'].id,
+                               auth_identifier=auth_identifier) \
+                    .one()
+            except NoResultFound:
+                pass
+        record['member_id'] = member_id
+        if member_id is not None:
+            membership_id = self._resolve_membership(reader, member_id, record['member_kind'], record['valid_since'], record['expire_at'])
+        else:
+            membership_id = None
+        if record['deleted'] and membership_id is None:
+            errors.append(
+                MemberImportExportError.from_reader(
+                    reader, [u'deleted'],
+                    message=u'既存のレコードではありませんが「%(deleted)s」が指定されています' % dict(
+                        deleted=reader.column_name_map[u'deleted']
+                        )
+                    )
+                )
+        record['membership_id'] = membership_id
+        return errors
+
+    def __call__(self, reader):
+        for raw_record in reader:
+            errors_for_row, record = self.convert_to_record(reader, raw_record)
+            if not errors_for_row:
+                errors_for_row.extend(self.validate(reader, record))
+            if not errors_for_row:
+                auth_identifier = record['auth_identifier']
+                member_desc = self.members.get(auth_identifier)
+                if member_desc is not None:
+                    if record['auth_secret'] is not Unspecified:
+                        member_desc['auth_secret'] = record['auth_secret']
+                else:
+                    self.members[auth_identifier] = dict(
+                        member_id=record['member_id'],
+                        member_set=record['member_set'],
+                        auth_secret=record['auth_secret'],
+                        name=record['name']
+                        )
+            yield errors_for_row, record
+
+
+class MemberCSVImporter(object):
+    def __init__(self, master_session, organization_id):
+        self.master_session = master_session
+        self.organization_id = organization_id
+        self.members_reflected = {}
+
+    def map_to_member_column(self, record):
+        return dict(
+            id=record['member_id'],
+            name=record['name'] or u'',
+            member_set_id=record['member_set'].id,
+            auth_identifier=record['auth_identifier'],
+            auth_secret=record['auth_secret'] and digest_secret(record['auth_secret'], generate_salt()),
+            ) 
+
+    def map_to_membership_column(self, record):
+        return dict(
+            id=record['membership_id'],
+            member_id=record['member_id'],
+            member_kind_id=record['member_kind'].id,
+            valid_since=record['valid_since'],
+            expire_at=record['expire_at']
+            )
+
+    def __call__(self, parser):
+        num_records = 0
+        errors = []
+        for errors_for_row, record in parser:
+            num_records += 1
+            if errors_for_row:
+                errors.extend(errors_for_row)
+                continue
+            auth_identifier = record['auth_identifier']
+            if auth_identifier in self.members_reflected:
+                record['member_id'] = self.members_reflected[auth_identifier]
+            else:
+                if record['member_id'] is None:
+                    result = self.master_session.execute(
+                        sql.insert(
+                            Member.__table__,
+                            values={
+                                k: v if v is not Unspecified else None
+                                for k, v in self.map_to_member_column(record).items()
+                                }
+                            )
+                        )
+                    record['member_id'] = result.inserted_primary_key
+                else:
+                    self.master_session.execute(
+                        sql.update(
+                            Member.__table__,
+                            values={
+                                k: v
+                                for k, v in self.map_to_member_column(record).items()
+                                if v is not Unspecified
+                                },
+                            whereclause=(Member.id == record['member_id'])
+                            )
+                        )
+                self.members_reflected[auth_identifier] = record['member_id']
+            if record['membership_id'] is None:
+                result = self.master_session.execute(
+                    sql.insert(
+                        Membership.__table__,
+                        values={
+                            k: v if v is not Unspecified else None
+                            for k, v in self.map_to_membership_column(record).items()
+                            }
+                        )
+                    )
+                record['membership_id'] = result.inserted_primary_key
+            else:
+                if record['deleted']:
+                    self.master_session.execute(
+                        sql.delete(
+                            Membership.__table__,
+                            whereclause=(Membership.id == record['membership_id'])
+                            )
+                        )
+                else:
+                    self.master_session.execute(
+                        sql.update(
+                            Membership.__table__,
+                            values={
+                                k: v
+                                for k, v in self.map_to_membership_column(record).items()
+                                if v is not Unspecified
+                                },
+                            whereclause=(Membership.id == record['membership_id'])
+                            )
+                        )
+        if errors:
+            raise MemberImportExportErrors(u'インポート中にエラーが発生しました', errors_for_row, num_records)
+        return num_records

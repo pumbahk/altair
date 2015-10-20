@@ -1,3 +1,4 @@
+# encoding: UTF-8
 import logging
 import re
 from datetime import datetime
@@ -8,6 +9,7 @@ from pyramid.events import subscriber
 from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound, HTTPForbidden
 from pyramid.security import Authenticated, forget
 from pyramid.session import check_csrf_token
+from sqlalchemy.orm.exc import NoResultFound
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
 from altair.auth.api import get_plugin_registry, get_auth_api
@@ -16,10 +18,14 @@ from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.exceptions import OAuthRenderableError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.rakuten_auth.events import Authenticated as RakutenOpenIDAuthenticated
+from altair.exclog.api import log_exception_message, build_exception_message
+from altair.sqlahelper import get_db_session
 from .rendering import selectable_renderer
 from .rakuten_auth import get_openid_claimed_id
 from .api import get_communicator
 from .utils import get_oauth_response_renderer
+from .models import MemberKind, MemberSet, Member
+from .internal_auth import InternalAuthPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +35,13 @@ def extract_identifer(request):
         authenticator = plugin_registry.lookup(authenticator_name)
         if isinstance(authenticator, RakutenOpenID):
             return identity['claimed_id']
-    return u'urn:eagles:soc:0000000'
+        elif isinstance(authenticator, InternalAuthPlugin):
+            return u'urn:altair-extauth:%s:%s:%s' % (
+                quote(identity['organization']),
+                quote(identity['member_set']),
+                quote(identity.get('auth_identifier') or u'*')
+                )
+    return None
 
 JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 
@@ -90,6 +102,15 @@ class OAuthParamsReceiver(object):
 
 receives_oauth_params = OAuthParamsReceiver(WebObOAuthRequestParser())
 
+
+def require_oauth_params_in_session(fn):
+    def _(context, request):
+        if 'oauth_params' not in request.session:
+            raise HTTPBadRequest()
+        return fn(context, request)
+    return _
+
+
 class View(object):
     def __init__(self, context, request):
         self.context = context
@@ -97,28 +118,32 @@ class View(object):
 
     def navigate_to_select_account(self):
         oauth_params = self.request.session['oauth_params']
+        data = self.request.session['retrieved']
+        if len(data['memberships']) == 1:
+            return HTTPFound(
+                location=self.request.route_path(
+                    'extauth.authorize',
+                    subtype=self.context.subtype,
+                    _query=dict(
+                        _=self.request.session.get_csrf_token(),
+                        member_kind_id=data['memberships'][0]['kind']['id'],
+                        membership_id=data['memberships'][0]['membership_id']
+                        )
+                    ),
+                )
+        elif len(data['memberships']) > 1:
+            if 'select_account' not in oauth_params['prompt']:
+                raise OpenIDAccountSelectionRequired()
+        return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
+
+    def navigate_to_select_account_rakuten_auth(self):
         openid_claimed_id = get_openid_claimed_id(self.request)
         if openid_claimed_id is not None:
             data = get_communicator(self.request).get_user_profile(openid_claimed_id)
             self.request.session['retrieved'] = data
-            if len(data['memberships']) == 1:
-                return HTTPFound(
-                    location=self.request.route_path(
-                        'extauth.authorize',
-                        subtype=self.context.subtype,
-                        _query=dict(
-                            _=self.request.session.get_csrf_token(),
-                            member_kind_id=data['memberships'][0]['kind']['id'],
-                            membership_id=data['memberships'][0]['membership_id']
-                            )
-                        ),
-                    )
-            elif len(data['memberships']) > 1:
-                if 'select_account' not in oauth_params['prompt']:
-                    raise OpenIDAccountSelectionRequired()
+            return self.navigate_to_select_account()
         else:
             raise HTTPInternalServerError()
-        return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
 
     @lbr_view_config(
         route_name='extauth.entry',
@@ -130,10 +155,12 @@ class View(object):
         oauth_params = self.request.session['oauth_params']
         if Authenticated in self.request.effective_principals:
             if 'login' not in oauth_params['prompt']:
+                auth_api = get_auth_api(self.request)
+                auth_api.forget(self.request)
                 self.request.session.delete()
-            else:
-                return self.navigate_to_select_account()
-        return dict() 
+            elif u'altair.auth.authenticator:rakuten' in self.request.effective_principals:
+                return self.navigate_to_select_account_rakuten_auth()
+        return dict()
 
     @lbr_view_config(
         route_name='extauth.rakuten.entry',
@@ -153,7 +180,7 @@ class View(object):
             if 'none' in oauth_params['prompt']:
                 raise OpenIDLoginRequired()
             return challenge_rakuten_id(self.request)
-        return self.navigate_to_select_account()
+        return self.navigate_to_select_account_rakuten_auth()
 
     @lbr_view_config(
         route_name='extauth.select_account',
@@ -174,6 +201,9 @@ class View(object):
                         )
                     ),
                 )
+        else:
+            membership_ids = set(membership['membership_id'] for membership in data['memberships'])
+            data = dict(data, membership_ids_are_the_same=(len(membership_ids) == 1))
         return data
 
     @lbr_view_config(route_name='extauth.authorize', permission='authenticated')
@@ -187,7 +217,7 @@ class View(object):
         try:
             member_kind_id = int(member_kind_id_str)
         except (TypeError, ValueError):
-            raise HTTPBadRequest('invalid parameter: member_kidn_id')
+            raise HTTPBadRequest('invalid parameter: member_kind_id')
         retrieved_profile = self.request.session['retrieved']
         member_kinds = {
             membership['kind']['id']: membership['kind']['name']
@@ -234,6 +264,130 @@ class View(object):
                 )
             )
 
+    @lbr_view_config(
+        route_name='extauth.login',
+        renderer=selectable_renderer('index.mako'),
+        request_method='GET',
+        decorator=(require_oauth_params_in_session,)
+        )
+    def login_form(self):
+        if Authenticated in self.request.effective_principals:
+            return self.navigate_to_select_account_rakuten_auth()
+        return dict()
+
+    @lbr_view_config(
+        route_name='extauth.login',
+        renderer=selectable_renderer('index.mako'),
+        request_method='POST',
+        decorator=(require_oauth_params_in_session,)
+        )
+    def login(self):
+        check_csrf_token(self.request, '_')
+        member_set_name = self.request.POST[u'member_set']
+        guest_login = None
+        for k in self.request.POST:
+            if isinstance(k, bytes):
+                k = k.decode("UTF-8")
+            if k.startswith(u'doGuestLoginAs'):
+                guest_login = k[14:]
+        dbsession = get_db_session(self.request, 'extauth_slave')
+        try:
+            member_set = dbsession.query(MemberSet).filter_by(
+                organization_id=self.request.organization.id,
+                name=member_set_name
+                ).one()
+        except NoResultFound:
+            return HTTPBadRequest('invalid member_set')
+        if guest_login is None:
+            username = self.request.POST[u'username']
+            password = self.request.POST[u'password']
+            credentials = dict(
+                member_set=member_set.name,
+                auth_identifier=username,
+                auth_secret=password
+                )
+            auth_api = get_auth_api(self.request)
+            identities, auth_factors, metadata = auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='internal')
+            if 'internal' not in identities:
+                return dict(
+                    selected_member_set=member_set,
+                    username=username,
+                    password=password,
+                    message=u'ユーザ名またはパスワードが違います'
+                    )
+            else:
+                member = dbsession.query(Member).filter_by(id=identities['internal']['member_id']).one()
+                valid_memberships = member.query_valid_memberships(self.request.now)
+                if not valid_memberships:
+                    auth_api.forget(request, request.response)
+                    return dict(
+                        selected_member_set=member_set,
+                        username=username,
+                        password=password,
+                        message=u'ログインできません'
+                        )
+                account_data = dict(
+                    memberships=[
+                        dict(
+                            membership_id=member.auth_identifier,
+                            kind=dict(
+                                id=membership.member_kind.id,
+                                name=membership.member_kind.name
+                                )
+                            )
+                        for membership in member.valid_memberships
+                        ]
+                    )
+                self.request.session['retrieved'] = account_data
+                return self.navigate_to_select_account()
+        else:
+            try:
+                member_kind = dbsession.query(MemberKind) \
+                    .filter_by(member_set_id=member_set.id,
+                               name=guest_login) \
+                    .one()
+            except NoResultFound:
+                raise HTTPBadRequest('invalid member_kind')
+            credentials = dict(
+                member_set=member_set.name,
+                member_kind=member_kind.name,
+                guest=True
+                )
+            auth_api = get_auth_api(self.request)
+            identities, auth_factors, metadata = auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='internal')
+            if 'internal' not in identities:
+                return dict(
+                    selected_member_set=member_set,
+                    username=u'',
+                    password=u'',
+                    message=u'現在ゲストログインはできなくなっております'
+                    )
+            else:
+                account_data = dict(
+                    memberships=[
+                        dict(
+                            membership_id=None,
+                            kind=dict(
+                                id=member_kind.id,
+                                name=member_kind.name
+                                )
+                            )
+                        ]
+                    )
+                self.request.session['retrieved'] = account_data
+                return HTTPFound(
+                    location=self.request.route_path(
+                        'extauth.authorize',
+                        subtype=self.context.subtype,
+                        _query=dict(
+                            _=self.request.session.get_csrf_token(),
+                            member_kind_id=member_kind.id,
+                            membership_id=None
+                            )
+                        )
+                    )
+
+
 @lbr_view_config(route_name='extauth.logout')
 def logout(context, request):
     headers = forget(request)
@@ -244,7 +398,6 @@ def logout(context, request):
             ),
         headers=headers
         )
-
 
 @lbr_view_config(
     route_name='extauth.reset_and_continue',
@@ -263,4 +416,10 @@ def reset_and_continue(context, request):
 def notfound(context, request):
     return {}
 
-
+@lbr_view_config(
+    renderer=selectable_renderer('fatal.mako'),
+    context=Exception
+    )
+def fatal(context, request):
+    log_exception_message(request, *build_exception_message(request))
+    return {}

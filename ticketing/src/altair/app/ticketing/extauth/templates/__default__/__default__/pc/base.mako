@@ -18,7 +18,7 @@
 </head>
 <body>
 <header>
-% if request.authenticated_userid:
+% if hasattr(_context, 'subtype') and request.authenticated_userid:
 楽天会員としてログイン (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
 % endif
 </header>

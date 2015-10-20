@@ -34,7 +34,7 @@ class IClient(Interface):
 
 
 class IClientRepository(Interface):
-    def lookup(client_id):
+    def lookup(client_id, now):
         pass
 
 

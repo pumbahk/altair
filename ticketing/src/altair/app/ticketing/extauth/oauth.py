@@ -1,22 +1,20 @@
-from urlparse import urlparse
+import logging
+from altair.sqlahelper import get_db_session
+from pyramid.threadlocal import get_current_request
+from sqlalchemy.orm.exc import NoResultFound
+from .models import OAuthClient
 
-class Client(object):
-    authorized_scope = {u'user_info'}
-
-    def validate_redirect_uri(self, redirect_uri):
-        try:
-            parsed = urlparse(redirect_uri)
-        except:
-            return False
-        if parsed.scheme not in ('http', 'https'):
-            return False
-        return True
-
-    def validate_secret(self, secret):
-        return True
-
+logger = logging.getLogger(__name__)
 
 class ClientRepository(object):
-    def lookup(self, client_id):
-        return Client()
-
+    def lookup(self, client_id, now):
+        dbsession = get_db_session(get_current_request(), 'extauth_slave')
+        client = None
+        try:
+            client = dbsession.query(OAuthClient).filter_by(client_id=client_id).one()
+            if now < client.valid_since or now >= client.expire_at:
+                logger.info("OAuthClient(client_id=%s) expired" % client_id)
+                client = None
+        except NoResultFound:
+            pass
+        return client

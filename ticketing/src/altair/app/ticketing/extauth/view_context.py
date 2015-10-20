@@ -40,18 +40,6 @@ def get_view_context_factory(default_package):
             return self.request.organization.short_name
 
         @property
-        def cart_setting(self):
-            if self.context is not None:
-                try:
-                    return self.context.cart_setting
-                except AttributeError as err:
-                    logger.warn('Failed to get the cart_setting: {}: {}'.format(self.context, err))
-                    return None
-            else:
-                # falls back to the default
-                return self.request.organization.setting.cart_setting
-
-        @property
         def subtype(self):
             if self.context is not None:
                 try:
@@ -62,30 +50,6 @@ def get_view_context_factory(default_package):
             else:
                 return None
 
-        @property
-        def orderreview_page_url(self):
-            return self.cart_setting.orderreview_page_url or ('https://%s/orderreview' % self.request.host)
-
-        @property
-        def contact_url(self):
-            return self.cart_setting.contact_url or api.safe_get_contact_url(self.request)
-
-        @property
-        def contact_url_mobile(self):
-            return self.cart_setting.contact_url_mobile or api.safe_get_contact_url(self.request)
-
-        @property
-        def extra_footer_links(self):
-            return self.cart_setting.extra_footer_links or []
-
-        @property
-        def extra_footer_links_mobile(self):
-            return self.cart_setting.extra_footer_links_mobile or []
-
-        @property
-        def team_name(self):
-            return self.request.organization.name
-
         def static_url(self, path, *args, **kwargs):
             return self.request.static_url(
                 (STATIC_ASSET_SPEC + "/%(organization_short_name)s/%(path)s") % dict(
@@ -95,9 +59,6 @@ def get_view_context_factory(default_package):
                     ),
                 *args, **kwargs
                 )
-
-        def __getattr__(self, k):
-            return getattr(self.cart_setting, k)
 
     return ExtAuthViewContext
 

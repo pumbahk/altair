@@ -6,6 +6,7 @@ from wtforms import fields
 from wtforms.fields.core import _unset_value
 from wtforms.compat import iteritems
 from wtforms.widgets import html_params, HTMLString
+from wtforms.validators import StopValidation
 from ..widgets import OurInput, OurTextInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget, OurTableWidget
 from ..widgets.select import SelectRendrant
 from zope.deprecation import deprecation
@@ -45,6 +46,7 @@ __all__ = [
     'NullableTextField',
     'NullableIntegerField',
     'SimpleElementNameHandler',
+    'NestableElementNameHandler',
     'OurFormField',
     'JSONField',
     'DelimitedTextsField',
@@ -88,6 +90,7 @@ class OurFieldMixin(object):
             name_builder = getattr(_form, '_name_builder', None)
         if name_builder is not None:
             kwargs.pop('prefix', None)
+        obj_value_filter = kwargs.pop('obj_value_filter', None)
         raw_input_filters = kwargs.pop('raw_input_filters', [])
         if 'label' in kwargs:
             label = kwargs['label']
@@ -99,6 +102,9 @@ class OurFieldMixin(object):
         self._name_builder = name_builder
         self.hide_on_new = hide_on_new
         self._validation_stopped = False
+        if obj_value_filter is None or callable(obj_value_filter):
+            obj_value_filter = (obj_value_filter, None)
+        self._obj_value_filter = obj_value_filter
 
         self.raw_input_filters = raw_input_filters
         description = kwargs.pop('description', u'')
@@ -153,6 +159,25 @@ class OurFieldMixin(object):
         self._validation_stopped = validation_stopped
         overridden(self, form, validation_stopped)
 
+    def fetch_value_from_obj(self, obj, name):
+        obj_value_filter_fwd = self._obj_value_filter[0]
+        value = getattr(obj, name)
+        if obj_value_filter_fwd is not None:
+            value = obj_value_filter_fwd(self, value)
+        return value
+
+    @override
+    def populate_obj(self, overriden, obj, name):
+        if overriden == fields.Field.populate_obj:
+            obj_value_filter_bwd = self._obj_value_filter[1]
+            value = self.data
+            if obj_value_filter_bwd is not None:
+                value = obj_value_filter_bwd(self, value)
+            setattr(obj, name, value)
+        else:
+            overriden(self, obj, name)
+
+
 class Singleton(object):
     def __init__(self, key, value):
         self.key = [key]
@@ -174,6 +199,17 @@ class Singleton(object):
 
     def __iter__(self):
         return iter(self.key)
+
+
+class DictWrapper(object):
+    def __init__(self, d):
+        self.d = d
+
+    def getlist(self, k):
+        return [self.d[k]] if k in self.d else []
+
+    def __contains__(self, k):
+        return k in self.d
 
 
 class OurLabel(fields.Label):
@@ -275,6 +311,7 @@ class NullableIntegerField(OurIntegerField):
 
 class SimpleElementNameHandler(object):
     def __init__(self, separator):
+        assert separator != u''
         self.separator = separator
 
     def build(self, field_name, subfield_name):
@@ -287,7 +324,34 @@ class SimpleElementNameHandler(object):
         return field_name, subfield_name
 
     def display_name(self, field, subfield):
-        return u'%s - %s' % (field.label, subfield.label)
+        return u'%s - %s' % (field.label.text, subfield.label.text)
+
+
+class NestableElementNameHandler(object):
+    def __init__(self, lparen=u'[', rparen=u']'):
+        self.lparen = lparen
+        self.rparen = rparen
+        self.re = re.compile(
+            u'(?P<field_name>[^%(lparen)s]+)'
+            u'%(lparen)s'
+            u'(?P<subfield_name>[^%(rparen)s]*)'
+            u'%(rparen)s' % dict(
+                lparen=re.escape(lparen),
+                rparen=re.escape(rparen)
+                )
+            )
+
+    def build(self, field_name, subfield_name):
+        return u'%s%s%s%s' % (field_name, self.lparen, subfield_name, self.rparen)
+
+    def resolve(self, combined_name):
+        g = re.match(self.re, combined_name)
+        if g is None:
+            return None, None
+        return g.group('field_name'), g.group('subfield_name')
+
+    def display_name(self, field, subfield):
+        return u'%s - %s' % (field.label.text, subfield.label.text)
 
 
 class OurFormField(OurField):
@@ -305,8 +369,8 @@ class OurFormField(OurField):
         if isinstance(field_error_formatter, basestring):
             field_error_formatter = (
                 lambda field_error_format: \
-                    lambda self, name, message: \
-                        field_error_format % dict(name=name, message=message)
+                    lambda self, name, errors: \
+                        field_error_format % dict(name=name, message=u' / '.join(errors))
                 )(field_error_formatter)
         self._field_error_formatter = field_error_formatter
 
@@ -341,6 +405,14 @@ class OurFormField(OurField):
                 else:
                     self.errors = self._contained_form.errors
 
+    def fetch_value_from_obj(self, obj, name):
+        candidate = getattr(obj, name, None)
+        if candidate is None:
+            if self._obj is None:
+                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+            candidate = self._obj
+        return getattr(candidate, name)
+
     def populate_obj(self, obj, name):
         candidate = getattr(obj, name, None)
         if candidate is None:
@@ -371,6 +443,8 @@ class OurFormField(OurField):
         return getattr(self._contained_form, k)
 
 class JSONField(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
     def _value(self):
         if self.raw_data:
             return self.raw_data[0]
@@ -389,6 +463,8 @@ class JSONField(fields.Field, RendererMixin, OurFieldMixin):
 
 
 class DelimitedTextsField(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
     def _value(self):
         if self.raw_data:
             return self.raw_data[0]
@@ -420,6 +496,8 @@ class DelimitedTextsField(fields.Field, RendererMixin, OurFieldMixin):
 
 
 class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
     class _fake(object):
         __slot__ = ['data']
 
@@ -428,18 +506,22 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
     def __init__(self, unbound_field, label=None, validators=None, default={}, **kwargs):
         _prefix = kwargs.pop('_prefix', None)
         name_handler = kwargs.pop('name_handler', None)
-        super(OurFieldList, self).__init__(
+        placeholder_subfield_name = kwargs.pop('placeholder_subfield_name', None)
+        super(OurGenericFieldList, self).__init__(
             label=label,
             validators=validators,
             default=default,
             **kwargs
             )
+        self._unbound_field = unbound_field
         if name_handler is None and _prefix is not None:
             name_handler = _prefix
         if isinstance(name_handler, basestring):
             name_handler = SimpleElementNameHandler(name_handler)
         self._name_handler = name_handler
-
+        self.placeholder_subfield_name = placeholder_subfield_name
+        self.entries = None
+        self.placeholder_entry = None
 
     def _build_subfield_name(self, subfield_name):
         return self._name_handler.build(self.name, subfield_name)
@@ -455,30 +537,40 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
 
         entries = OrderedDict()
         if formdata:
-            indices = [
-                (subfield_name, k)
-                for field_name, subfield_name in (
-                    self._name_handler.resolve(k)
-                    for k in formdata
-                    )
-                if field_name is not None and field_name == self.name
-                ]
-            for subfield_name, k in indices:
-                subfield_raw_values = formdata.getlist(k)
+            indices = {}
+            for k in formdata:
+                field_name, subfield_name = self._name_handler.resolve(k)
+                if field_name is not None and field_name == self.name:
+                    indices.setdefault(subfield_name, []).append(k)
+            for subfield_name, k_list in iteritems(indices):
+                subfield_raw_values_by_k = {}
+                longest = 0
+                for k in k_list:
+                    values = formdata.getlist(k)
+                    subfield_raw_values_by_k[k] = values
+                    longest = max(longest, len(values))
+                subfield_raw_values = [
+                    {
+                        k: _unset_value if len(subfield_raw_values_by_k[k]) < i
+                                        else subfield_raw_values_by_k[k][i]
+                        for k in subfield_raw_values_by_k.keys()
+                        }
+                    for i in range(0, longest)
+                    ]
                 obj_data = data.get(subfield_name, [])
                 for subfield_raw_value, subfield_data in itertools.izip_longest(subfield_raw_values, obj_data, fillvalue=_unset_value):
-                    field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations, name_builder=self._build_subfield_name)
-                    field.process(
-                        Singleton(k, subfield_raw_value) if subfield_raw_value is not _unset_value else None,
-                        subfield_data
-                        )
+                    field = self.make_field(subfield_name)
+                    field.process(DictWrapper(subfield_raw_value), subfield_data)
                     entries.setdefault(subfield_name, []).append(field)
         else:
             for subfield_name, obj_data in data.items():
                 for subfield_data in obj_data:
-                    field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations, name_builder=self._build_subfield_name)
+                    field = self.make_field(subfield_name)
                     field.process(None, subfield_data)
                     entries.setdefault(subfield_name, []).append(field)
+        if self.placeholder_subfield_name is not None and self.placeholder_subfield_name not in entries:
+            # add a placeholder to the tail
+            entries.setdefault(self.placeholder_subfield_name, []).append(self.make_placeholder(self.placeholder_subfield_name))
         self.entries = entries
 
     def validate(self, form, extra_validators=tuple()):
@@ -490,6 +582,52 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
                     success = False
                     self.errors.append(subfield.errors)
         return success
+
+    def validate(self, form, extra_validators=tuple()):
+        self.errors = list(self.process_errors)
+        stop_validation = False
+
+        try:
+            self.pre_validate(form)
+        except StopValidation as e:
+            if e.args and e.args[0]:
+                self.errors.append(e.args[0])
+            stop_validation = True
+        except ValueError as e:
+            self.errors.append(e.args[0])
+
+        if not stop_validation:
+            for subfield_name, subfields in self.entries.items():
+                if subfield_name == self.placeholder_subfield_name:
+                    subfields = subfields[0:-1]
+                for i, subfield in enumerate(subfields):
+                    valid = subfield.validate(form)
+                    if not valid:
+                        # last element is the true placeholder
+                        if i < len(subfields) - 1:
+                            stop_validation = True
+                            self.errors.append(subfield.errors)
+                        else:
+                            subfields.pop()
+
+            for validator in itertools.chain(self.validators, extra_validators):
+                try:
+                    validator(form, self)
+                except StopValidation as e:
+                    if e.args and e.args[0]:
+                        self.errors.append(e.args[0])
+                    stop_validation = True
+                    break
+                except ValueError as e:
+                    self.errors.append(e.args[0])
+
+        try:
+            self.post_validate(form, stop_validation)
+        except ValueError as e:
+            self.errors.append(e.args[0])
+
+        return len(self.errors) == 0
+
 
     def populate_obj(self, obj, name):
         data = getattr(obj, name, None)
@@ -505,8 +643,21 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
             output[subfield_name] = obj_data
         setattr(obj, name, output)
 
+    def make_field(self, subfield_name):
+        return self._unbound_field.bind(
+            form=self,
+            name=subfield_name,
+            translations=self._translations,
+            name_builder=self._build_subfield_name
+            )
+
+    def make_placeholder(self, subfield_name):
+        f = self.make_field(subfield_name)
+        f.process(None)
+        return f
+
     def __iter__(self):
-        return iter(self.entries)
+        return iteritems(self.entries)
 
     def __len__(self):
         return len(self.entries)
@@ -514,7 +665,9 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
     @property
     def data(self):
         return OrderedDict(
-            (subfield_name, 
+            (
+                subfield_name if subfield_name != self.placeholder_subfield_name
+                              else None,
                 [
                     subfield.data
                     for subfield in subfields
@@ -525,6 +678,8 @@ class OurGenericFieldList(fields.Field, RendererMixin, OurFieldMixin):
 
 
 class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
     class _fake(object):
         __slot__ = ['data']
 
@@ -534,7 +689,7 @@ class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
         self.min_entries = min_entries
         self.max_entries = max_entries
         self._subfield_name = None
-        self.unbound_field = unbound_field
+        self._unbound_field = unbound_field
         super(OurPHPCompatibleFieldList, self).__init__(
             label=label,
             validators=validators,
@@ -575,7 +730,7 @@ class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
                     data.append(_unset_value)
 
             for subfield_raw_value, subfield_data in itertools.izip_longest(subfield_raw_values, data, fillvalue=_unset_value):
-                field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
+                field = self._unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
                 field.process(
                     Singleton(
                         subfield_name,
@@ -593,7 +748,7 @@ class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
                 for i in range(0, self.min_entries - len(data)):
                     data.append(_unset_value)
             for subfield_data in data:
-                field = self.unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
+                field = self._unbound_field.bind(form=None, name=subfield_name, translations=self._translations)
                 field.process(
                     None,
                     subfield_data
@@ -603,13 +758,41 @@ class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
         self.entries = entries
 
     def validate(self, form, extra_validators=tuple()):
-        self.errors = []
-        success = True
-        for subfield in self.entries:
-            if not subfield.validate(form):
-                success = False
-                self.errors.append(subfield.errors)
-        return success
+        self.errors = list(self.process_errors)
+        stop_validation = False
+
+        try:
+            self.pre_validate(form)
+        except StopValidation as e:
+            if e.args and e.args[0]:
+                self.errors.append(e.args[0])
+            stop_validation = True
+        except ValueError as e:
+            self.errors.append(e.args[0])
+
+        if not stop_validation:
+            for subfield in self.entries:
+                if not subfield.validate(form):
+                    stop_validation = True
+                    self.errors.append(subfield.errors)
+
+            for validator in itertools.chain(self.validators, extra_validators):
+                try:
+                    validator(form, self)
+                except StopValidation as e:
+                    if e.args and e.args[0]:
+                        self.errors.append(e.args[0])
+                    stop_validation = True
+                    break
+                except ValueError as e:
+                    self.errors.append(e.args[0])
+
+        try:
+            self.post_validate(form, stop_validation)
+        except ValueError as e:
+            self.errors.append(e.args[0])
+
+        return len(self.errors) == 0
 
     def populate_obj(self, obj, name):
         output = []
@@ -621,6 +804,9 @@ class OurPHPCompatibleFieldList(fields.Field, RendererMixin, OurFieldMixin):
             else:
                 data = _unset_value
             output.append(fake_obj.data)
+        obj_value_filter_bwd = self._obj_value_filter[1]
+        if obj_value_filter_bwd is not None:
+            output = obj_value_filter_bwd(self, output)
         setattr(obj, name, output)
 
     def __iter__(self):

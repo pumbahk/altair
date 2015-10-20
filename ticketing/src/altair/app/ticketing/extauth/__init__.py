@@ -4,7 +4,6 @@ import pyramid.config
 from pyramid.authorization import ACLAuthorizationPolicy
 import sqlalchemy as sa
 import sqlalchemy.pool as sa_pool
-import sqlahelper
 
 logger = logging.getLogger(__name__)
     
@@ -18,6 +17,7 @@ def empty_resource_factory(request):
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
+    config.include('.internal_auth')
 
     config.set_who_api_decider(lambda request, classification: None)
     from altair.auth import set_auth_policy
@@ -88,9 +88,6 @@ def webapp_main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = sa.engine_from_config(settings, poolclass=sa_pool.NullPool, isolation_level='READ COMMITTED')
-    sqlahelper.add_engine(engine)
-
     config = pyramid.config.Configurator(
         settings=settings,
         root_factory='.resources.ExtAuthRoot'
@@ -120,6 +117,7 @@ def webapp_main(global_config, **local_config):
     config.add_route('extauth.rakuten.entry', '/{subtype}/rid', traverse='/{subtype}')
     config.add_route('extauth.select_account', '/{subtype}/select_account', traverse='/{subtype}')
     config.add_route('extauth.authorize', '/{subtype}/authz', traverse='/{subtype}')
+    config.add_route('extauth.login', '/{subtype}/login', traverse='/{subtype}')
     config.add_route('extauth.logout', '/{subtype}/logout', traverse='/{subtype}')
     config.scan('.views')
     return config.make_wsgi_app()
@@ -127,9 +125,6 @@ def webapp_main(global_config, **local_config):
 def api_main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
-
-    engine = sa.engine_from_config(settings, poolclass=sa_pool.NullPool, isolation_level='READ COMMITTED')
-    sqlahelper.add_engine(engine)
 
     config = pyramid.config.Configurator(
         settings=settings,

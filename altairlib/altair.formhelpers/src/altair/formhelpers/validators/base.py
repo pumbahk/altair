@@ -17,4 +17,13 @@ class RequiredOnUpdate(validators.Required):
         if not getattr(form, 'new_form', False):
             self.delegated(form, field)
 
+class RequiredOnNew(validators.Required):
+    def __init__(self):
+        self.delegated = Required()
+
+    def __call__(self, form, field):
+        if getattr(form, 'new_form', False):
+            self.delegated(form, field)
+
+
 

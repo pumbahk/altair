@@ -34,7 +34,7 @@ class OAuthProvider(object):
                 raise OAuthInvalidScopeError(u'invalid scope item: {scope_item}'.format(scope_item=scope_item))
 
     def validated_client(self, client_id, client_secret):
-        client = self.client_repository.lookup(client_id)
+        client = self.client_repository.lookup(client_id, self.now_getter())
         if client is None:
             raise OAuthClientNotFound(client_id)
         if client_secret is not None:
@@ -118,6 +118,10 @@ class OAuthProvider(object):
             self.refresh_token_store[refresh_token] = auth_descriptor
         auth_descriptor['refresh_token'] = refresh_token
         auth_descriptor['refresh_token_expire_at'] = ((now + refresh_token_expire_in) if refresh_token_expire_in is not None else None)
+        try:
+            del self.code_store[code]
+        except:
+            logger.warning('failed to invalidate authorization code: %s' % code)
         return auth_descriptor
 
     def revoke_access_token(self, client_id, client_secret, access_token):

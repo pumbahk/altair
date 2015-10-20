@@ -1,8 +1,8 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.ticketing.extauth
 
-sqlalchemy.url = ${altair:ticketing.db_url.master}
-altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.extauth.url = ${altair:extauth.db_url.master}
+altair.sqlahelper.sessions.extauth_slave.url = ${altair:extauth.db_url.slave}
 
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
@@ -36,8 +36,8 @@ dogpile_cache.altair_extauth_openid_id_token.arguments.db = 7
 use = config:%(here)s/../../baseconf/common.ini#extauth_webapp
 pyramid.includes = altair_gaq altair.findable_label
 
-get sqlalchemy.url = sqlalchemy.url
-get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.url
+get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
 
 get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
 get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
@@ -85,8 +85,8 @@ altair.httpsession.http_backend.query_string_key = JSESSIONID
 [app:extauth_api]
 use = config:%(here)s/../../baseconf/common.ini#extauth_api
 
-get sqlalchemy.url = sqlalchemy.url
-get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.url
+get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
 
 get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
 get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
@@ -148,6 +148,11 @@ port = %(http_port)s
 workers = 1
 timeout = 180
 graceful_timeout = 180
+
+[alembic]
+script_location = %(here)s/../../../ticketing/src/altair/app/ticketing/extauth/alembic
+get sqlalchemy.url = altair.sqlahelper.sessions.extauth.url
+sqlalchemy.echo = true
 
 # Begin logging configuration
 

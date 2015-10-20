@@ -2,7 +2,8 @@
 import logging
 import re
 
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
+from urllib import unquote
 from zope.interface import implementer
 from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
@@ -84,6 +85,14 @@ class AuthModelCallback(object):
                 membership = _membership.name if _membership is not None else None
                 membergroup = identity['authz_kind']
                 is_guest = False
+                if auth_identifier.startswith(u'urn:altair-extauth:'):
+                    try:
+                        parsed_auth_identifier = urlparse(auth_identifier)
+                        components = [unquote(component) for component in parsed_auth_identifier.path.split(u':')]
+                        if components[-1] == '*':
+                            is_guest = True
+                    except:
+                        pass
             else:
                 authz_identifier = auth_identifier = identity.get('username', None)
                 membership = identity.get('membership', None)

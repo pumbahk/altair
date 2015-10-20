@@ -10,6 +10,7 @@ from sqlalchemy.types import (
     TIMESTAMP,
     VARCHAR,
     TypeDecorator,
+    Unicode,
 )
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.sql import functions as sqlf
@@ -124,3 +125,38 @@ class MutationList(MutationJSONObjectBase, NervousList):
     def _changed(self, modified):
         self.changed()
 
+
+class SpaceDelimitedList(TypeDecorator):
+    impl = Unicode
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            return u' '.join(unicode(v).strip() for v in value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        else:
+            s = value.strip(u' ')
+            if not s:
+                return []
+            else:
+                return s.split(u' ')
+
+
+class MutableSpaceDelimitedList(Mutable, NervousList):
+    @classmethod
+    def coerce(cls, key, value):
+        if not isinstance(value, MutableSpaceDelimitedList):
+            try:
+                i = iter(value)
+            except TypeError:
+                return Mutable.coerce(key, value)
+            return MutableSpaceDelimitedList(i)
+        else:
+            return value
+
+    def _changed(self, modified):
+        self.changed()

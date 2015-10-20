@@ -27,6 +27,10 @@ altair.ticketing.qrreader =
     http://backend.stg.altr.jp(/qrreader(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.qrreader.port}\1
 
+altair.ticketing.extauth.admin =
+    http://backend.stg.altr.jp(/extauth(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.extauth.admin.port}\1
+
 altair.ticketing.admin =
     http://backend.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:${altair:ticketing.admin.default.port}\1
