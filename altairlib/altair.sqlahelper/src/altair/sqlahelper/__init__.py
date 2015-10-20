@@ -22,6 +22,7 @@ pool_class_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.po
 pool_recycle_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.pool_recycle")
 pool_size_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.pool_size")
 pool_timeout_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.pool_timeout")
+isolation_level_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.isolation_level")
 
 def asint(value):
     value = value.strip()
@@ -49,6 +50,7 @@ def from_settings(settings):
         param_match(key, value, pool_recycle_key_pt,  'pool_recycle', asint)
         param_match(key, value, pool_size_key_pt,     'pool_size', asint)
         param_match(key, value, pool_timeout_key_pt,  'pool_timeout', asint)
+        param_match(key, value, isolation_level_key_pt,  'isolation_level')
     return results
 
 
@@ -92,6 +94,7 @@ def register_sessionmakers(config, urls):
         assign_extra_param('pool_recycle')
         assign_extra_param('pool_size')
         assign_extra_param('pool_timeout')
+        assign_extra_param('isolation_level')
 
         engine = create_engine(
             url,
