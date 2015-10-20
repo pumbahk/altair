@@ -214,6 +214,15 @@ class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
                 errors.append(u'neither seat-unselectable or seat-selectable sales segment is specified or public')
         return errors
 
+    def delete(self):
+        # Check AltairFamiPortSalesSegmentPair is not reflected
+        if self.status != AltairFamiPortReflectionStatus.Reflected.value:
+            self.deleted_at = datetime.now()
+            DBSession.merge(self)
+            _flush_or_rollback()
+        else:
+            raise Exception(u'ステータスが反映済みのため、削除できません')
+
     @property
     def seat_selection_start_at(self):
         assert len(self.validate()) == 0
