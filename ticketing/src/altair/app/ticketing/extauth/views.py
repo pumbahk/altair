@@ -5,13 +5,12 @@ from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
 from pyramid.view import view_defaults
 from pyramid.events import subscriber
-from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound
+from pyramid.httpexceptions import HTTPBadRequest, HTTPInternalServerError, HTTPFound, HTTPForbidden
 from pyramid.security import Authenticated, forget
 from pyramid.session import check_csrf_token
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
-from altair.auth.api import get_plugin_registry
-from altair.auth.pyramid import challenge_view
+from altair.auth.api import get_plugin_registry, get_auth_api
 from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.exceptions import OAuthRenderableError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
@@ -38,6 +37,14 @@ JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 def authenticated(event):
     event.request.session[JUST_AUTHENTICATED_KEY] = True
 
+def challenge_rakuten_id(request):
+    api = get_auth_api(request)
+    response = HTTPForbidden()
+    if api.challenge(request, response, challenger_name='rakuten'):
+        return response
+    else:
+        logger.error('WTF?')
+        raise HTTPInternalServerError()
 
 class OAuthParamsReceiver(object):
     def __init__(self, oauth_request_parser):
@@ -141,11 +148,11 @@ class View(object):
             else:
                 if 'login' in oauth_params['prompt']:
                     self.request.session.delete()
-                    return challenge_view(self.context, self.request)
+                    return challenge_rakuten_id(self.request)
         else:
             if 'none' in oauth_params['prompt']:
                 raise OpenIDLoginRequired()
-            return challenge_view(self.context, self.request)
+            return challenge_rakuten_id(self.request)
         return self.navigate_to_select_account()
 
     @lbr_view_config(
@@ -169,7 +176,7 @@ class View(object):
                 )
         return data
 
-    @lbr_view_config(route_name='extauth.authorize', permission='rakuten')
+    @lbr_view_config(route_name='extauth.authorize', permission='authenticated')
     def authorize(self):
         check_csrf_token(self.request, '_')
         try:

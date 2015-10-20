@@ -19,7 +19,7 @@ def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
 
-    config.set_who_api_decider(lambda request, classification: 'rakuten')
+    config.set_who_api_decider(lambda request, classification: None)
     from altair.auth import set_auth_policy
     from .rakuten_auth import add_claimed_id_to_principals
     set_auth_policy(config, add_claimed_id_to_principals)
