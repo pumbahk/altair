@@ -538,7 +538,6 @@ def download(request):
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .options(undefer(Order.deleted_at))\
         .outerjoin(Seat.status_) \
-        .outerjoin(Seat.attributes_) \
         .outerjoin(Seat.stock) \
         .outerjoin(Stock.stock_holder) \
         .outerjoin(Stock.stock_type) \
