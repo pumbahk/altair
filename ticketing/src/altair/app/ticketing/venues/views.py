@@ -549,7 +549,7 @@ def download(request):
         .filter(Stock.deleted_at == None) \
         .filter(StockHolder.deleted_at == None) \
         .filter(StockType.deleted_at == None) \
-        .order_by(asc(Seat.id), desc(Order.id))
+        .order_by(asc(Seat.id), desc(Order.id), asc(Order.canceled_at), asc(Order.deleted_at), asc(Order.refunded_at))
 
 
     seats_csv = SeatCSV(seats_q)
