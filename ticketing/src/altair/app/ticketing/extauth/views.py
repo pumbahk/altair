@@ -26,6 +26,7 @@ from .api import get_communicator
 from .utils import get_oauth_response_renderer
 from .models import MemberKind, MemberSet, Member
 from .internal_auth import InternalAuthPlugin
+from .helpers import Helpers
 
 logger = logging.getLogger(__name__)
 
@@ -309,11 +310,15 @@ class View(object):
             auth_api = get_auth_api(self.request)
             identities, auth_factors, metadata = auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='internal')
             if 'internal' not in identities:
+                helpers = Helpers(self.request)
                 return dict(
                     selected_member_set=member_set,
                     username=username,
                     password=password,
-                    message=u'ユーザ名またはパスワードが違います'
+                    message=u'%(auth_identifier_field_name)sまたは%(auth_secret_field_name)sが違います' % dict(
+                        auth_identifier_field_name=helpers.auth_identifier_field_name(member_set),
+                        auth_secret_field_name=helpers.auth_secret_field_name(member_set)
+                        )
                     )
             else:
                 member = dbsession.query(Member).filter_by(id=identities['internal']['member_id']).one()

@@ -27,4 +27,18 @@
     <span class="help-inline">${u' / '.join(form.use_password.errors)}</span>
     % endif
   </div>
+  <label class="control-label" for="member_set-form--auth_identifier_field_name">${form.auth_identifier_field_name.label.text}</label>
+  <div class="controls">
+    ${form.auth_identifier_field_name(id="member_set-form--auth_identifier_field_name")}
+    %if form.auth_identifier_field_name.errors:
+    <span class="help-inline">${u' / '.join(form.auth_identifier_field_name.errors)}</span>
+    % endif
+  </div>
+  <label class="control-label" for="member_set-form--auth_secret_field_name">${form.auth_secret_field_name.label.text}</label>
+  <div class="controls">
+    ${form.auth_secret_field_name(id="member_set-form--auth_secret_field_name")}
+    %if form.auth_secret_field_name.errors:
+    <span class="help-inline">${u' / '.join(form.auth_secret_field_name.errors)}</span>
+    % endif
+  </div>
 </div>

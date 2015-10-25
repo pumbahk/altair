@@ -127,6 +127,22 @@ class MemberSetForm(OurForm):
         default=True
         )
 
+    auth_identifier_field_name = OurTextField(
+        label=u'「ログイン名」フィールドの名称',
+        filters=[blank_as_none],
+        validators=[
+            Length(max=255)
+            ]
+        )
+
+    auth_secret_field_name = OurTextField(
+        label=u'「パスワード」フィールドの名称',
+        filters=[blank_as_none],
+        validators=[
+            Length(max=255)
+            ]
+        )
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(MemberSetForm, self).__init__(*args, **kwargs)

@@ -43,6 +43,8 @@ def upgrade():
         sa.Column('display_name', sa.Unicode(255), nullable=False),
         sa.Column('applicable_subtype', sa.Unicode(32), nullable=True, index=True),
         sa.Column('use_password', sa.Boolean(), nullable=False, server_default=text(u"1")),
+        sa.Column('auth_identifier_field_name', sa.Unicode(255), nullable=True, default=u''),
+        sa.Column('auth_secret_field_name', sa.Unicode(255), nullable=True, default=u''),
         sa.UniqueConstraint('organization_id', 'name')
         )
 

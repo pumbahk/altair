@@ -252,6 +252,8 @@ class MemberSetsView(object):
         member_set.display_name = form.display_name.data
         member_set.applicable_subtype = form.applicable_subtype.data
         member_set.use_password = form.use_password.data
+        member_set.auth_identifier_field_name = form.auth_identifier_field_name.data
+        member_set.auth_secret_field_name = form.auth_secret_field_name.data
         session.add(member_set)
         session.commit()
         self.request.session.flash(u'会員種別 %s を変更しました' % member_set.name)
@@ -285,7 +287,9 @@ class MemberSetsView(object):
             name=form.name.data,
             display_name=form.display_name.data,
             applicable_subtype=form.applicable_subtype.data,
-            use_password=form.use_password.data
+            use_password=form.use_password.data,
+            auth_identifier_field_name=form.auth_identifier_field_name.data,
+            auth_secret_field_name=form.auth_secret_field_name.data
             )
         session.add(member_set)
         session.commit()

@@ -25,10 +25,10 @@
       % if _message:
       <p>${_message}</p>
       % endif
-      <label for="stockholder-username">ユーザ名</label>
+      <label for="stockholder-username">${h.auth_identifier_field_name(member_set)}</label>
       <input id="stockholder-username" type="text" name="username" value="${_username}" />
       % if member_set.use_password:
-      <label for="stockholder-password">パスワード</label>
+      <label for="stockholder-password">${h.auth_secret_field_name(member_set)}</label>
       <input id="stockholder-password" type="password" name="password" value="${_password}" />
       % endif
       <input type="hidden" name="member_set" value="${member_set.name}" />

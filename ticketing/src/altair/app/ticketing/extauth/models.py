@@ -39,6 +39,8 @@ class MemberSet(Base):
     display_name = sa.Column(sa.Unicode(255), nullable=False)
     applicable_subtype = sa.Column(sa.Unicode(32), nullable=True, index=True)
     use_password = sa.Column(sa.Boolean(), nullable=False, default=True)
+    auth_identifier_field_name = sa.Column(sa.Unicode(255), nullable=True, default=u'')
+    auth_secret_field_name = sa.Column(sa.Unicode(255), nullable=True, default=u'')
     organization = orm.relationship('Organization', backref='member_sets')
 
 

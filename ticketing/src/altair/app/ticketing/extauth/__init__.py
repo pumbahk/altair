@@ -75,6 +75,26 @@ def setup_oauth_provider(config):
         IOpenIDProvider
         )
 
+def register_template_globals(event):
+    from altair.viewhelpers import Namespace
+    from .helpers import Helpers
+    class CombinedNamespace(object):
+        def __init__(self, namespaces):
+            self.namespaces = namespaces
+
+        def __getattr__(self, k):
+            for ns in self.namespaces:
+                v = getattr(ns, k, None)
+                if v is not None:
+                    return v
+            return object.__getattr__(self, k)
+
+    h = CombinedNamespace([
+        Helpers(event['request']),
+        Namespace(event['request']),
+        ])
+    event.update(h=h)
+
 def key_mangler_oauth_code(key):
     return b'oauth_authz_code:' + bytes(key)
 
@@ -119,6 +139,7 @@ def webapp_main(global_config, **local_config):
     config.add_route('extauth.authorize', '/{subtype}/authz', traverse='/{subtype}')
     config.add_route('extauth.login', '/{subtype}/login', traverse='/{subtype}')
     config.add_route('extauth.logout', '/{subtype}/logout', traverse='/{subtype}')
+    config.add_subscriber(register_template_globals, 'pyramid.events.BeforeRender')
     config.scan('.views')
     return config.make_wsgi_app()
 
