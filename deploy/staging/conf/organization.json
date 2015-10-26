@@ -56,6 +56,11 @@
             "backend_id": 42, 
             "short_name": "KT"
         },
+        "RL": {
+            "auth_source": "oauth",
+            "backend_id": 50,
+            "short_name": "RL"
+        },
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"

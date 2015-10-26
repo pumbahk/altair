@@ -66,6 +66,11 @@
             "backend_id": 39, 
             "short_name": "YT"
         },
+        "RL": {
+            "auth_source": "oauth",
+            "backend_id": 50,
+            "short_name": "RL"
+        },
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"
