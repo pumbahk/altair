@@ -63,14 +63,6 @@
     <ul class=" clearfix">
       % for content in h.chunk(qs, 1):
         <% link  = h.link.get_link_from_topcontent(request,content[0]) %>
-        ## Embed a tracking code to topcontent link if exists
-        <% if request.featuresettingmanager.get_boolean_value("altair.cms.usersite.topcontent.usetrackingcode"):
-             trackingcode = h.link.get_trackingcode_from_topic(request, content[0])
-             if trackingcode is not None:
-               params = {"l-id": trackingcode}
-               from altaircms.linklib import add_params_to_url
-               link = add_params_to_url(link, params)
-        %>
       <li>
         <dl>
           <dt class="tileImg">
@@ -88,7 +80,6 @@
                 (${content[0].countdown_type_ja}まであと${h.base.countdown_days_from(request, content[0].countdown_limit)}日)
               %endif
             </p>
-            <p class="tileLink"><a href="${link}">詳細を見る</a></p>
           </dd>
         </dl>
       </li>
