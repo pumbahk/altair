@@ -535,8 +535,16 @@ class MembersView(object):
             name=form.name.data,
             auth_identifier=form.auth_identifier.data,
             auth_secret=form.auth_secret.data,
-            enabled=form.enabled.data
             )
+        member.enabled=form.enabled.data
+        for membership_id, membership_elem_list in form.memberships.entries.items():
+            for membership_elem in membership_elem_list:
+                membership_form = membership_elem._contained_form
+                if membership_form.member_kind_id.data is not None:
+                    if membership_id == form.memberships.placeholder_subfield_name:
+                        membership = Membership()
+                        membership_form.populate_obj(membership)
+                        member.memberships.append(membership)
         session.add(member)
         session.commit()
         self.request.session.flash(u'会員 %s を作成しました' % member.auth_identifier)
