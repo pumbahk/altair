@@ -45,7 +45,7 @@ class EventSearchForm(OurForm):
         )
 
     deal_range_start = DateTimeField(
-        label=u'販売期間検索',
+        label=u'受付期間検索',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )
@@ -81,7 +81,7 @@ class EventSearchForm(OurForm):
         )
 
     deal_open_start = DateTimeField(
-        label=u'販売開始日検索',
+        label=u'受付開始日検索',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )
@@ -93,7 +93,7 @@ class EventSearchForm(OurForm):
         )
 
     deal_close_start = DateTimeField(
-        label=u'販売終了日検索',
+        label=u'受付終了日検索',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )
