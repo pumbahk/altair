@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 STATIC_URL_PREFIX = '/static/'
 CDN_URL_PREFIX = '/extauth/static/'
-STATIC_ASSET_SPEC = '%(package)s:static/'
+STATIC_ASSET_SPEC = '%(package)s:static'
 
 def get_view_context_factory(default_package):
     if not isinstance(default_package, basestring):
@@ -53,7 +53,7 @@ def get_view_context_factory(default_package):
         def static_url(self, path, *args, **kwargs):
             return self.request.static_url(
                 (STATIC_ASSET_SPEC + "/%(organization_short_name)s/%(path)s") % dict(
-                    package=package,
+                    package=default_package,
                     organization_short_name=self.organization_short_name,
                     path=path
                     ),
@@ -63,8 +63,8 @@ def get_view_context_factory(default_package):
     return ExtAuthViewContext
 
 def setup_static_views(config, package=None):
-    if package is not None:
-        package = config.registry.default_package.__name__
+    if package is None:
+        package = config.package.__name__
 
     settings = config.registry.settings
     config.include("altair.cdnpath")

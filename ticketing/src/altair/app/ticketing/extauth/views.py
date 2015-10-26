@@ -267,18 +267,32 @@ class View(object):
 
     @lbr_view_config(
         route_name='extauth.login',
-        renderer=selectable_renderer('index.mako'),
+        renderer=selectable_renderer('login.mako'),
         request_method='GET',
         decorator=(require_oauth_params_in_session,)
         )
     def login_form(self):
+        dbsession = get_db_session(self.request, 'extauth_slave')
+        member_set_name = self.request.GET[u'member_set']
+        try:
+            member_set = dbsession.query(MemberSet).filter_by(
+                organization_id=self.request.organization.id,
+                name=member_set_name
+                ).one()
+        except NoResultFound:
+            return HTTPBadRequest('invalid member_set')
         if Authenticated in self.request.effective_principals:
             return self.navigate_to_select_account_rakuten_auth()
-        return dict()
+        return dict(
+            selected_member_set=member_set,
+            username=u'',
+            password=u'',
+            message=None
+            )
 
     @lbr_view_config(
         route_name='extauth.login',
-        renderer=selectable_renderer('index.mako'),
+        renderer=selectable_renderer('login.mako'),
         request_method='POST',
         decorator=(require_oauth_params_in_session,)
         )
