@@ -783,7 +783,7 @@ ul#globalNav1 li.right{
     position: relative;
     left: 1px;
     float: right;
-    width: 742px;
+    width: 950px;
     line-height: 1.5;
     margin-bottom: 20px;
     padding-top: 3px;
@@ -1144,7 +1144,7 @@ ul#globalNav1 li.right{
 
 .searchResult dd {
     float: right;
-    width: 628px;
+    width: 750px;
     margin-bottom: 7px;
     padding: 10px;
     background-color: #f7f7ea;
@@ -1188,7 +1188,7 @@ ul#globalNav1 li.right{
 
 /* .searchRemainingOnsale {{{ */
 .searchRemainingOnsale {
-    width: 82px;
+    width: 180px;
     margin-right: 10px;
     color: #ff3399;
     font-weight: bold;
