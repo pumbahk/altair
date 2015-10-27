@@ -11,7 +11,7 @@
 <dl>
 % for member_kind in member_set.member_kinds:
 % if member_kind.show_in_landing_page and member_kind.enable_guests:
-<dt class="user-guest-name"><span>${member_kind.name}の方</span>はこちらから</dt>
+<dt class="user-guest-name"><span>${member_kind.display_name}の方</span>はこちらから</dt>
 <dd>
 <p><button class="btnL" name="doGuestLoginAs${member_kind.name}" style="margin-top: 70px;">チケット購入</button></p>
 </dd>
