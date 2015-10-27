@@ -144,6 +144,7 @@ class View(object):
             self.request.session['retrieved'] = data
             return self.navigate_to_select_account()
         else:
+            logger.error('openid_claimed_id is None')
             raise HTTPInternalServerError()
 
     @lbr_view_config(
@@ -155,10 +156,8 @@ class View(object):
     def entry(self):
         oauth_params = self.request.session['oauth_params']
         if Authenticated in self.request.effective_principals:
-            if 'login' not in oauth_params['prompt']:
-                auth_api = get_auth_api(self.request)
-                auth_api.forget(self.request)
-                self.request.session.delete()
+            if u'login' in oauth_params['prompt']:
+                self.request.response.headers.update(forget(self.request))
             elif u'altair.auth.authenticator:rakuten' in self.request.effective_principals:
                 return self.navigate_to_select_account_rakuten_auth()
         return dict()
@@ -175,7 +174,7 @@ class View(object):
                 del self.request.session[JUST_AUTHENTICATED_KEY]
             else:
                 if 'login' in oauth_params['prompt']:
-                    self.request.session.delete()
+                    self.request.response.headers.update(forget(self.request))
                     return challenge_rakuten_id(self.request)
         else:
             if 'none' in oauth_params['prompt']:
@@ -282,7 +281,7 @@ class View(object):
         except NoResultFound:
             return HTTPBadRequest('invalid member_set')
         if Authenticated in self.request.effective_principals:
-            return self.navigate_to_select_account_rakuten_auth()
+            self.request.response.headers.update(forget(self.request))
         return dict(
             selected_member_set=member_set,
             username=u'',
@@ -338,7 +337,7 @@ class View(object):
                 member = dbsession.query(Member).filter_by(id=identities['internal']['member_id']).one()
                 valid_memberships = member.query_valid_memberships(self.request.now)
                 if not valid_memberships:
-                    auth_api.forget(request, request.response)
+                    self.request.response.headers.update(forget(self.request))
                     return dict(
                         selected_member_set=member_set,
                         username=username,
@@ -424,8 +423,9 @@ def logout(context, request):
     )
 def reset_and_continue(context, request):
     path = request.application_url + u'/' + u'/'.join(request.matchdict['path']) + u'?' + request.query_string
+    headers = forget(self.request)
     request.session.delete()
-    return HTTPFound(location=path)
+    return HTTPFound(location=path, headers=headers)
 
 
 @lbr_notfound_view_config(
