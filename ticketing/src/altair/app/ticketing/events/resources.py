@@ -82,7 +82,7 @@ class EventAdminResource(TicketingAdminResource):
             query += str
             search_query.append(query)
         if form.deal_range_start.data or form.deal_range_end.data:
-            query = u"販売期間検索："
+            query = u"受付期間検索："
             str = self._get_str(form.deal_range_start.data) or ""
             query += str + u" 〜 "
             str = self._get_str(form.deal_range_end.data) or ""
@@ -103,14 +103,14 @@ class EventAdminResource(TicketingAdminResource):
             query += str
             search_query.append(query)
         if form.deal_open_start.data or form.deal_open_end.data:
-            query = u"販売開始日検索："
+            query = u"受付開始日検索："
             str = self._get_str(form.deal_open_start.data) or ""
             query += str + u" 〜 "
             str = self._get_str(form.deal_open_end.data) or ""
             query += str
             search_query.append(query)
         if form.deal_close_start.data or form.deal_close_end.data:
-            query = u"販売終了日検索："
+            query = u"受付終了日検索："
             str = self._get_str(form.deal_close_start.data) or ""
             query += str + u" 〜 "
             str = self._get_str(form.deal_close_end.data) or ""
