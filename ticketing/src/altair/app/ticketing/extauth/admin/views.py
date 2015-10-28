@@ -116,10 +116,7 @@ class OperatorsView(object):
         session = get_db_session(self.request, 'extauth')
         query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
         operator = query.filter_by(id=self.request.matchdict['id']).one()
-        form = OperatorForm(
-            auth_identifier=operator.auth_identifier,
-            role=operator.role
-            )
+        form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
         return dict(
             form=form
             )
@@ -133,7 +130,7 @@ class OperatorsView(object):
         session = get_db_session(self.request, 'extauth')
         query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
         operator = query.filter_by(id=self.request.matchdict['id']).one()
-        form = OperatorForm(formdata=self.request.POST)
+        form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
                 form=form
@@ -152,7 +149,7 @@ class OperatorsView(object):
         request_method='GET'
         )
     def new(self):
-        form = OperatorForm()
+        form = OperatorForm(request=self.request)
         return dict(
             form=form
             )
@@ -471,7 +468,7 @@ class MembersView(object):
         session = get_db_session(self.request, 'extauth')
         query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id)
         member = query.filter(Member.id == self.request.matchdict['id']).one()
-        form = MemberForm(formdata=self.request.POST, request=self.request)
+        form = MemberForm(formdata=self.request.POST, obj=member, request=self.request)
         if not form.validate():
             return dict(
                 form=form

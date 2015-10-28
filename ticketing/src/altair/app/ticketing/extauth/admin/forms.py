@@ -3,6 +3,7 @@
 import itertools
 from datetime import timedelta
 from urlparse import urlparse
+from sqlalchemy.orm.exc import NoResultFound
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import blank_as_none
 from altair.formhelpers.fields import (
@@ -11,6 +12,7 @@ from altair.formhelpers.fields import (
     OurGenericFieldList,
     OurFormField,
     OurBooleanField,
+    OurHiddenField,
     NestableElementNameHandler,
 )
 from altair.formhelpers.fields.datetime import (
@@ -88,12 +90,18 @@ class OperatorForm(OurForm):
             raise ValidationError(u'パスワードが一致しません')
 
     def validate_auth_identifier(form, field):
-        if form.new_form and form.request:
-            if lookup_operator_by_auth_identifier(form.request, field.data) is not None:
-                raise ValidationError(u'オペレータ %s はすでに登録されています' % field.data)
+        operator = lookup_operator_by_auth_identifier(form.request, field.data) 
+        if form.new_form:
+            if operator is None:
+                return
+        else:
+            if operator is None or operator.id == form._obj.id:
+                return
+        raise ValidationError(u'同じログインIDがすでに登録されています')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
+        self._obj = kwargs.get('obj')
         super(OperatorForm, self).__init__(*args, **kwargs)
 
 
@@ -327,9 +335,22 @@ class MemberForm(OurForm):
             raise ValidationError(u'パスワードが一致しません')
 
     def validate_auth_identifier(form, field):
-        if form.new_form and form.request:
-            if lookup_operator_by_auth_identifier(form.request, field.data) is not None:
-                raise ValidationError(u'同じログインIDがすでに登録されています' % field.data)
+        member = None
+        try:
+            member = get_db_session(form.request, 'extauth').query(Member).join(Member.member_set) \
+                    .filter(Member.auth_identifier == field.data,
+                            Member.member_set_id == form.member_set_id.data,
+                            MemberSet.organization_id == form.request.operator.organization_id) \
+                    .one()
+        except NoResultFound:
+            pass
+        if form.new_form:
+            if member is None:
+                return
+        else:
+            if member is None or member.id == form._obj.id:
+                return
+        raise ValidationError(u'同じログインIDがすでに登録されています')
 
     def validate_memberships(form, field):
         fields_by_member_kind = {}
@@ -363,6 +384,7 @@ class MemberForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
+        self._obj = kwargs.get('obj')
         super(MemberForm, self).__init__(*args, **kwargs)
 
 
