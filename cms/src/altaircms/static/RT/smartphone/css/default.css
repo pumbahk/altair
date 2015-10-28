@@ -637,6 +637,8 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 .btn-secondary {

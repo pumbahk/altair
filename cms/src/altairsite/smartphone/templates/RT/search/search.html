@@ -5,6 +5,7 @@
     <form class="sectionbox-inner" action="${request.route_path('smartphone.search')}" method="GET">
         ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}
         ${form.sale}
+        <br/>
         <input type="submit" class="btn-secondary btn-large" value="検索"/>
         <a href="${request.route_path('smartphone.init_detail')}">もっと詳しく</a>
         <br/>
