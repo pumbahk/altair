@@ -1,42 +1,66 @@
+from datetime import datetime
 from pyramid.view import view_defaults, view_config
-from .models import EaglesUser
+from pyramid.decorator import reify
 from sqlalchemy import orm
+import sqlalchemy as sa
+from .models import EaglesUser, EaglesMembership
+from .interfaces import IRequestHandler
+from .exceptions import BadRequestError
 
 @view_defaults(renderer='json')
-class EaglesExtauthAPI(object):
+class EaglesExtauthCheckMembershipAPI(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(context=orm.exc.NoResultFound)
-    def no_result_found(self):
-        self.request.response.status = 404
-        return {
-            u'status': u'error',
-            u'message': u'not found'
-            }
+    def get_request_handler(self, type):
+        return self.request.registry.queryUtility(IRequestHandler, name=type)
 
-    @view_config(route_name='eagles_extauth.user_profile', request_method='POST')
+    @view_config(route_name='eagles_extauth.check_memberships', context=orm.exc.NoResultFound)
+    def no_result_found(self):
+        handler = self.get_request_handler('check_memberships')
+        response = handler.build_response(
+            self.request,
+            flavor='json',
+            successful=False,
+            value=u'user not found'
+            )
+        response.status = 404
+        return response
+
+    @view_config(route_name='eagles_extauth.check_memberships', context=BadRequestError)
+    def bad_request(self):
+        handler = self.get_request_handler('check_memberships')
+        response = handler.build_response(
+            self.request,
+            flavor='json',
+            successful=False,
+            value=self.context.message
+            )
+        response.status = 400
+        return response
+
+    @view_config(route_name='eagles_extauth.check_memberships')
     def user_profile(self):
-        openid_claimed_id = self.request.json['openid_claimed_id']
-        eagles_user = self.request.sa_session.query(EaglesUser) \
-            .options(orm.joinedload(EaglesUser.valid_memberships)) \
+        handler = self.get_request_handler('check_memberships')
+        params = handler.handle_request(self.request)
+        openid_claimed_id = params['openid_claimed_id']
+        memberships = self.request.sa_session.query(EaglesMembership) \
+            .join(EaglesMembership.user) \
             .filter(EaglesUser.openid_claimed_id == openid_claimed_id) \
-            .one()
-        return {
-            u'status': 'success',
-            u'last_name': eagles_user.last_name,
-            u'first_name': eagles_user.first_name,
-            u'memberships': [
-                {
-                    u'kind': {
-                        u'id': membership.kind.id,
-                        u'name': membership.kind.name,
-                        },
-                    u'membership_id': membership.membership_id,
-                    u'valid_since': membership.valid_since,
-                    u'expire_at': membership.expire_at,
-                    }
-                for membership in eagles_user.valid_memberships
-                ]
-            }
+            .filter(
+                sa.and_(
+                    (EaglesMembership.valid_since == None) \
+                    | sa.and_(EaglesMembership.valid_since >= datetime(params['start_year'], 1, 1),
+                           EaglesMembership.valid_since < datetime(params['end_year'] + 1, 1, 1)),
+                    (EaglesMembership.expire_at == None) \
+                    | (EaglesMembership.expire_at >= self.request.now)
+                    )
+                ) \
+            .all()
+        return handler.build_response(
+            self.request,
+            flavor='json',
+            successful=True,
+            value=memberships
+            )

@@ -141,6 +141,7 @@ class View(object):
         openid_claimed_id = get_openid_claimed_id(self.request)
         if openid_claimed_id is not None:
             data = get_communicator(self.request).get_user_profile(openid_claimed_id)
+            logger.debug('retrieved=%r' % data)
             self.request.session['retrieved'] = data
             return self.navigate_to_select_account()
         else:

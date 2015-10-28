@@ -5,7 +5,7 @@ from pyramid.decorator import reify
 logger = logging.getLogger(__name__)
 
 def setup_routes(config):
-    config.add_route('eagles_extauth.user_profile', '/user/profile')
+    config.add_route('eagles_extauth.check_memberships', '/user/memberships')
 
 def setup_renderers(config):
     config.include('pyramid_mako')
@@ -39,6 +39,28 @@ def setup_request_properties(config):
     from datetime import datetime
     config.set_request_property(lambda request: datetime.now(), 'now', reify=True)
 
+def setup_request_handlers(config):
+    registry = config.registry
+    settings = registry.settings
+    from .communication import MembershipCheckAPIRequestHandler
+    from .interfaces import IRequestHandler
+    hash_key = settings['dummy_eagles_extauth_server.hash_key']
+    clients = {}
+    for k, v in settings.items():
+        if k.startswith('dummy_eagles_extauth_server.client.'):
+            client_name = k[len('dummy_eagles_extauth_server.client.'):]
+            logger.info('client %s registered' % client_name)
+            clients[client_name] = v
+    registry.registerUtility(
+        MembershipCheckAPIRequestHandler(
+            hash_key=hash_key,
+            client_registry=clients,
+            now_getter=lambda request: request.now
+            ),
+        IRequestHandler, 
+        name='check_memberships'
+        )
+
 def main():
     return paster_main({})
 
@@ -51,6 +73,7 @@ def paster_main(global_config, **local_config):
     config.scan('.views')
     config.include("pyramid_fanstatic")
     config.include('altair.exclog')
+    config.include(setup_request_handlers)
     config.include(setup_sqlalchemy)
     config.include(setup_renderers)
     config.include(setup_routes)

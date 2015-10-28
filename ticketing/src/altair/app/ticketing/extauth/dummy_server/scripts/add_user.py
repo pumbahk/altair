@@ -12,10 +12,10 @@ def main(_args):
     charset = nl_langinfo(CODESET)
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', '--config', required=True)
-    parser.add_argument('--last-name', required=True)
-    parser.add_argument('--first-name', required=True)
+    parser.add_argument('--name', required=True)
+    parser.add_argument('--member-no', required=True)
     parser.add_argument('--claimed-id', required=True)
-    parser.add_argument('--membership', nargs='*')
+    parser.add_argument('--membership', action='append')
     args = parser.parse_args(_args[1:])
     setup_logging(args.config)
     env = bootstrap(args.config)
@@ -33,8 +33,8 @@ def main(_args):
 
     if user is None:
         user = EaglesUser(
-            last_name=six.text_type(args.last_name, charset),
-            first_name=six.text_type(args.first_name, charset),
+            name=six.text_type(args.name, charset),
+            member_no=six.text_type(args.member_no, charset),
             openid_claimed_id=six.text_type(args.claimed_id, charset)
             )
         session.add(user)
