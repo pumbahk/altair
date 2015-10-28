@@ -7,7 +7,7 @@ from altaircms.tag.models import HotWord
 from altaircms.models import SalesSegmentKind
 from altaircms.page.models import PageTag
 from altairsite.config import usersite_view_config
-from altairsite.separation import enable_search_function
+from altairsite.separation import enable_search_function, selectable_renderer
 import sqlalchemy.orm as orm
 from . import forms
 from . import searcher
@@ -32,7 +32,7 @@ def page_search_input(request):
 
 @usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_result",
-                      renderer="altaircms:templates/usersite/search/result.html")
+                      renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html"))
 def page_search_result(context, request):
     """ 詳細検索 検索結果
     """
@@ -50,7 +50,7 @@ def page_search_result(context, request):
 
 @usersite_view_config(custom_predicates=(enable_search_function, ), 
                       request_param="q", route_name="page_search_by_freeword", 
-                      renderer="altaircms:templates/usersite/search/result.html")
+                      renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html"))
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
@@ -68,7 +68,7 @@ def search_by_freeword(context, request):
 
 @usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_by_multi", 
-                      renderer="altaircms:templates/usersite/search/result.html")
+                      renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html)"))
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
     """
@@ -83,7 +83,7 @@ def search_by_multi(request):
     return dict(result_seq=result_seq, query_params=html_query_params)
 
 @view_defaults(custom_predicates=(enable_search_function, ), 
-               route_name="page_search_by", renderer="altaircms:templates/usersite/search/result.html")
+               route_name="page_search_by", renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html"))
 class SearchByKindView(object):
     def __init__(self, context, request):
         self.request = request

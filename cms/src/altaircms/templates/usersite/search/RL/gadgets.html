@@ -1,0 +1,62 @@
+<%def name="fukidashi(request, bind_to)">
+<%
+   from altaircms.seeds.area import AREA_CHOICES
+   i = 0
+   %>
+  <div class="fukidashi_region">
+ 		<p>
+	    %for en,ja in AREA_CHOICES:
+	      <a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="area", value=en)}">${ja}</a>
+        <% i+= 1%>
+        %if i >= 3:
+          <br/>
+          <% i = 0 %>
+        %endif
+	    %endfor
+ 		</p>
+    <script type="text/javascript">
+      (function($fukidashi_region, $bind_to) {
+        $fukidashi_region.hide();
+        $fukidashi_region.css({ top: $bind_to.position().top + $bind_to.height() + 20 + "px" });
+        $bind_to.click(function(e){$fukidashi_region.toggle();return false;});
+      })($("script:last").parent(), ${bind_to|n});
+    </script>
+ 	</div>
+</%def>
+
+## search form
+<%def name="search_form_on_header(placeholder, query_id)">
+	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+    <img src="${request.static_url("altaircms:static/RL/img/renewal/header_search_hr.jpg")}" alt="区切り線" width="4" height="45" class="headerSearch_border" />
+		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/renewal/header_search_btn.gif")}" alt="検索" />
+	</form>
+</%def>
+
+<%def name="search_form_prev(placeholder, query_id)">
+	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/common/header_search_btn.gif")}" alt="検索" />
+	</form>
+</%def>
+
+## いいねボタンなど
+<%def name="social_buttons(request)">
+  <div id="social"  style="float: right; padding-top: 10px">
+     <a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-via="RakutenTicket" data-lang="ja">ツイート</a><script type="text/javascript" src="https://platform.twitter.com/widgets.js"></script>
+    <iframe src="http://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
+  </div>
+</%def>
+
+## OGPの設定
+<%def name="social_ogp_settings(request)">
+  <meta property="og:site_name" content="楽天レジャー" />
+<!--
+  <meta property="fb:app_id" content="253316378120995" />
+  <meta property="og:image" content="http://ticket.rakuten.co.jp/static/RT/img/renewal/logo.square.gif" />
+-->
+  <meta property="og:title" content="楽天レジャー" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="${"http://leisure.tstar.jp/"}" />
+  <meta property="og:description" content="チケットの販売、イベントの予約は楽天レジャーで！楽天レジャーは、イベントなどのチケットのオンラインショッピングサイトです" />
+</%def>
