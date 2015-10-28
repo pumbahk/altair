@@ -1,14 +1,20 @@
+from datetime import datetime
 from urlparse import urlparse
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
 import sqlalchemy as sa
 from sqlalchemy import orm
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from altair.models import Identifier
 from altair.models import MutableSpaceDelimitedList, SpaceDelimitedList
 from altair.oauth.interfaces import IClient
 
 Base = declarative_base()
+
+class WithCreatedAt(object):
+    @declared_attr
+    def created_at(self):
+        return sa.Column(sa.DateTime(), nullable=False, default=datetime.now, server_default=sa.text(u'CURRENT_TIMESTAMP()'))
 
 class Organization(Base):
     __tablename__ = 'Organization'
@@ -44,7 +50,7 @@ class MemberSet(Base):
     organization = orm.relationship('Organization', backref='member_sets')
 
 
-class Member(Base):
+class Member(Base, WithCreatedAt):
     __tablename__ = 'Member'
     __table_args__ = (
         sa.UniqueConstraint('member_set_id', 'auth_identifier'),
@@ -86,7 +92,7 @@ class MemberKind(Base):
     enable_guests = sa.Column(sa.Boolean(), nullable=True, default=False)
 
 
-class Membership(Base):
+class Membership(Base, WithCreatedAt):
     __tablename__ = 'Membership'
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
     member_id = sa.Column(Identifier, sa.ForeignKey('Member.id', ondelete='CASCADE'), nullable=False)
@@ -100,7 +106,7 @@ class Membership(Base):
 
 
 @implementer(IClient)
-class OAuthClient(Base):
+class OAuthClient(Base, WithCreatedAt):
     __tablename__ = 'OAuthClient'
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
     organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
