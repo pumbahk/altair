@@ -83,6 +83,7 @@ class EaglesCommunicator(object):
 
     def get_user_profile(self, openid_claimed_id):
         h = hashlib.sha224()
+        h.update(openid_claimed_id)
         h.update(self.client_name)
         h.update(self.hash_key)
         token = six.text_type(h.hexdigest())

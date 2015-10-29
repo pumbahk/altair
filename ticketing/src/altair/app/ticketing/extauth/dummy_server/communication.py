@@ -42,6 +42,10 @@ class MembershipCheckAPIRequestHandler(object):
         if end_year < start_year:
             raise BadParamError(u'end_year >= start_year')
         h = hashlib.sha224()
+        if openid_claimed_id is not None:
+            h.update(openid_claimed_id)
+        else:
+            h.update(rakuten_easy_id)
         h.update(client_name)
         h.update(self.hash_key)
         expected_token = h.hexdigest()
