@@ -1,4 +1,5 @@
 <%namespace file="gadgets.html" name="gadgets" />
+<% from altairsite.front import helpers as myhelper %>
 
 <!DOCTYPE html>
 <!--[if lt IE 7]><html class="lt-ie9 lt-ie8 lt-ie7" lang="ja" prefix="og: http://ogp.me/ns# fb: http://www.facebook.com/2008/fbml"><![endif]-->
@@ -136,7 +137,8 @@
         </dl>
         </div>
 
-        <div id="main">
+        <div id="tsMainArea">
+
           <h2><img src="${request.static_url("altaircms:static/RL/img/search/title_results.gif")}" alt="チケット検索結果" /></h2>
             <!-- InstanceBeginEditable name="main" -->
             <h3>検索条件:</h3>
@@ -178,6 +180,50 @@
 
             ${seq.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
           %endif
+        </div>
+        <div id="tsSideArea">
+            <!-- pickUP -->
+            <div id="tsSidePickup">
+            <h3>PICK UP</h3>
+            <ul>
+            %for c in  myhelper._get_categories(request, "pickup"):
+              <li>
+                ${h.link.get_link_tag_from_category(request,c)}
+              </li>
+            %endfor
+            </ul>
+            </div>
+
+            <!-- お知らせ -->
+            <div id="tsInfo">
+            <h3>お知らせ</h3>
+            <ul>
+            %for c in  myhelper._get_categories(request, "news"):
+              <li>
+              % if c.url:
+              <a href = "${c.url}">
+                ${c.label}
+              </a>
+              % elif c.pageset:
+              <a href = "/${c.pageset.url}">
+                ${c.label}
+              </a>
+              % else:
+                ${c.label}
+              % endif
+              </li>
+            %endfor
+            </li>
+            </ul>
+            </div>
+
+            <ul class="tsSideBanner">
+              %for c in  myhelper._get_categories(request, "etc_banner"):
+                <li>
+                  ${h.link.get_link_tag_from_category(request,c)}
+                </li>
+              %endfor
+            </ul>
         </div>
     </div>
 </div>
