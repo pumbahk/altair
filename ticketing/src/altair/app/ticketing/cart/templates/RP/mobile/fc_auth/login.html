@@ -11,28 +11,23 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#E60048">■</font>会員の方はこちらから</font>
+    <div><font color="#E60048">■</font>登録Emailアドレス入力</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="RP" />
 <div>
-  会員番号<br/>
+  Emailアドレス<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+  <br/><span style="color: red">入力された内容が正しくありません。</span>
   %endif
   <br/>
-  パスワード<br/>
-  <input type="password" name="password" size="22" value="" istyle="4">
+  <input type="hidden" name="password" size="22" value="rakuten" istyle="4">
 </div>
 <input type="submit" value="ログイン" />
 </form>
-</div>
-
-<div>
-<div><font color="#E60048">■</font>一般の方はこちらから</font>
 </div>
 
 </div>
