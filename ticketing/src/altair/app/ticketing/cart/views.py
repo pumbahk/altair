@@ -1233,8 +1233,17 @@ class PointAccountEnteringView(object):
             form['accountno'].data = accountno.replace('-', '')
         else:
             if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form:
-                if self.existing_user_point_account is not None:
-                    form.accountno.data = self.existing_user_point_account.account_number
+                accountno = None
+                if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+                    metadata = getattr(self.request, 'altair_auth_metadata', None)
+                    if metadata is not None:
+                        profile = metadata.get(u'profile')
+                        if profile is not None:
+                            accountno = profile.get(u'rakuten_point_account')
+                if accountno is None:
+                    if self.existing_user_point_account is not None:
+                        accountno = self.existing_user_point_account.account_number
+                form.accountno.data = accountno
 
         return dict(
             form=form,
