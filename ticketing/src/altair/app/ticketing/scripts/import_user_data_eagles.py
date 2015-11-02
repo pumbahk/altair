@@ -51,7 +51,7 @@ class RecordError(ApplicationException):
         return '%s at line %d' % (self.message, self.lineno)
 
 def do_import_user_data(request, session, membergroup_id, file_, encoding, format, dry_run=False):
-    from altair.app.ticketing.users.models import UserProfile, UserCredential, User, MemberGroup, Membership, Member
+    from altair.app.ticketing.users.models import UserProfile, User, MemberGroup, Membership, Member
     from altair.app.ticketing.core.models import Performance, PerformanceSetting, Organization
 
     membergroup = session.query(MemberGroup).filter_by(id=membergroup_id).one()
@@ -135,10 +135,9 @@ def do_import_user_data(request, session, membergroup_id, file_, encoding, forma
 
         message('importing User(auth_identifier=%s)' % (auth_identifier, ))
 
-        if session.query(UserCredential) \
-            .join(Member, Member.user_id == UserCredential.user_id) \
+        if session.query(Member) \
             .filter(Member.membergroup_id == membergroup_id) \
-            .filter(UserCredential.auth_identifier == auth_identifier).count() > 0:
+            .filter(Member.auth_identifier == auth_identifier).count() > 0:
             message('User(auth_identifier=%s) already exists' % (auth_identifier, ))
             continue
 
@@ -159,15 +158,11 @@ def do_import_user_data(request, session, membergroup_id, file_, encoding, forma
                 address_2=address_2,
                 tel_1=tel_1
                 )
-            user_credential = UserCredential(
-                user=user,
-                auth_identifier=auth_identifier,
-                auth_secret=auth_secret,
-                membership=membership
-                )
             member = Member(
-                user=user,
-                membergroup=membergroup
+                membergroup=membergroup,
+                membership=membership,
+                auth_identifier=auth_identifier,
+                auth_secret=auth_secret
                 )
             session.add(user_profile)
             session.add(user_credential)

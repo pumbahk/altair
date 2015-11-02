@@ -3,7 +3,7 @@
 import unittest
 from pyramid import testing
 from altair.multicheckout.testing import DummySecure3D
-from ..testing import _setup_db as _setup_db_, _teardown_db, DummyRequest
+from altair.app.ticketing.testing import _setup_db as _setup_db_, _teardown_db, DummyRequest
 import mock
 
 def _setup_db(echo=False):
@@ -334,7 +334,11 @@ class TicketingCartResourceTestBase(object):
                  'altair.cart.completion_page.temporary_store.secret': '',
                  }
     def setUp(self):
-        self.config = testing.setUp(settings=self._settings)
+        self.request = DummyRequest()
+        from pyramid.interfaces import IRequest
+        from zope.interface import directlyProvides
+        directlyProvides(self.request, IRequest)
+        self.config = testing.setUp(settings=self._settings, request=self.request)
         self.config.include('altair.app.ticketing.cart')
         self.config.registry.settings['altair_cart.expire_time'] = '10'
         from altair.sqlahelper import register_sessionmaker_with_engine
@@ -349,6 +353,7 @@ class TicketingCartResourceTestBase(object):
         self.organization = self._add_organization(1)
         self.session.add(self.organization)
         self.session.flush()
+
 
     def tearDown(self):
         testing.tearDown()
@@ -439,8 +444,8 @@ class TicketingCartResourceTestBase(object):
         ss3 = self._add_sales_segment(performance=performance, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         self.session.flush()
 
-        request = DummyRequest(matchdict={'event_id': event_id, 'sales_segment_id': ss1.id})
-        target = self._makeOne(request)
+        self.request.matchdict = {'event_id': event_id, 'sales_segment_id': ss1.id}
+        target = self._makeOne(self.request)
         target.now = now
         result = target.memberships
 
@@ -475,9 +480,9 @@ class TicketingCartResourceTestBase(object):
         ss1.membergroups.append(mg)
         self.session.flush()
 
-        request = DummyRequest(matchdict={'event_id': event_id})
-        request.registry.settings = { 'altair_cart.expire_time': '15' }
-        target = self._makeOne(request)
+        self.request.matchdict = {'event_id': event_id}
+        self.request.registry.settings = { 'altair_cart.expire_time': '15' }
+        target = self._makeOne(self.request)
         target.now = now
         result = target.memberships
 
@@ -489,8 +494,8 @@ class TicketingCartResourceTestBase(object):
         organization = get_organization.return_value = self.organization
         event = self._add_event(12345L)
         self.session.flush()
-        request = DummyRequest(matchdict={"event_id": str(event.id)})
-        target = self._makeOne(request)
+        self.request.matchdict = {"event_id": str(event.id)}
+        target = self._makeOne(self.request)
         result = target.event.id
         self.assertEqual(result, event.id)
 
@@ -517,9 +522,9 @@ class TicketingCartResourceTestBase(object):
         ss3 = self._add_sales_segment(performance=performance, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         self.session.flush()
 
-        request = DummyRequest(matchdict={'event_id': event_id, 'sales_segment_id': ss1.id})
-        request.registry.settings = { 'altair_cart.expire_time': "15" }
-        target = self._makeOne(request)
+        self.request.matchdict = {'event_id': event_id, 'sales_segment_id': ss1.id}
+        self.request.registry.settings = { 'altair_cart.expire_time': "15" }
+        target = self._makeOne(self.request)
         target.now = now
         result = target.get_sales_segment()
 
@@ -633,8 +638,7 @@ class TicketingCartResourceTestBase(object):
                 )
             )
 
-        request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
         result = target.check_order_limit()
         self.assert_(True)
 
@@ -655,8 +659,7 @@ class TicketingCartResourceTestBase(object):
                 )
             )
 
-        request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
 
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
@@ -677,8 +680,7 @@ class TicketingCartResourceTestBase(object):
                 )
             )
 
-        request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
 
         try:
             target.check_order_limit()
@@ -785,8 +787,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(get_cart_safe.return_value)
         self.session.flush()
-        request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
 
@@ -805,8 +806,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(get_cart_safe.return_value)
         self.session.flush()
-        request = DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
 
         try:
             target.check_order_limit()
@@ -1256,7 +1256,14 @@ class PaymentViewTests(unittest.TestCase):
         from altair.app.ticketing.users.models import Membership
         from altair.app.ticketing.core.models import Performance, Event, Organization, PaymentDeliveryMethodPair
         self._register_starndard_payment_methods()
-        request = DummyRequest()
+        altair_auth_info = {
+            'membership_source': 'rakuten',
+            'claimed_id': 'http://ticketstar.example.com/user/1',
+            'auth_identifier': 'http://ticketstar.example.com/user/1',
+            'membership': 'membership',
+            'organization_id': 1
+            }
+        request = DummyRequest(altair_auth_info=altair_auth_info)
         request.registry.settings = {'altair_cart.expire_time': "15"}
 
         payment_method = testing.DummyModel(payment_plugin_id=1)
@@ -1290,13 +1297,7 @@ class PaymentViewTests(unittest.TestCase):
                 ),
             available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method_pair],
             membershipinfo = membership,
-            authenticated_user = lambda: {
-                'membership_source': 'rakuten',
-                'claimed_id': 'http://ticketstar.example.com/user/1',
-                'auth_identifier': 'http://ticketstar.example.com/user/1',
-                'membership': 'membership',
-                'organization_id': 1
-                },
+            authenticated_user = lambda: altair_auth_info,
             get_payment_delivery_method_pair = lambda: payment_delivery_method_pair,
             sales_segment = testing.DummyModel()
             )

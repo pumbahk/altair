@@ -128,6 +128,9 @@ class Cart(Base, c_models.CartMixin):
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
 
+    membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
+    membergroup = orm.relationship('MemberGroup')
+
     user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
 
     @property

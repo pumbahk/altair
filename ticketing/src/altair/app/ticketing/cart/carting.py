@@ -3,7 +3,7 @@ import logging
 from altair.app.ticketing.core.api import get_channel
 from altair.app.ticketing.users.models import Membership
 from .models import Cart, CartedProduct, CartedProductItem
-from .api import is_quantity_only, get_membership
+from .api import is_quantity_only, get_membership, get_member_group
 from .exceptions import CartCreationException
 from .stocker import InvalidProductSelectionException
 
@@ -13,8 +13,9 @@ class CartFactory(object):
     def __init__(self, request):
         self.request = request
 
-    def create_cart(self, sales_segment, seats, ordered_products, cart_setting=None, membership=None):
+    def create_cart(self, sales_segment, seats, ordered_products, cart_setting=None, membership=None, membergroup=None):
         logger.debug('create cart for ordered products %s' % ordered_products)
+        assert membership is None or membergroup is None or membership.id == membergroup.membership_id
         request = self.request
         # Cart
         # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
@@ -31,9 +32,17 @@ class CartFactory(object):
                 'user {0} is not associated to sales_segment_id({1})'.format(user, sales_segment.id)
                 )
 
-        if membership is None:
-            if user is not None:
+        if user is not None:
+            if membership is None:
                 membership = get_membership(user)
+            if membergroup is None:
+                membergroup = get_member_group(self.request, user)
+                if membergroup is not None:
+                    if membership is None:
+                        membership = membergroup.membership
+                    else:
+                        assert membergroup.membership_id == membership.id
+
         if cart_setting is None:
             if membership is not None:
                 cart_setting = membership.organization.setting.cart_setting
@@ -48,7 +57,8 @@ class CartFactory(object):
             browserid=getattr(request, 'browserid', ''),
             user_agent=getattr(request, 'user_agent', ''),
             cart_session_id=getattr(request.session, 'id', ''),
-            membership_id=membership and membership.id
+            membership=membership,
+            membergroup=membergroup
             )
 
         for ordered_product, quantity in ordered_products:
