@@ -348,9 +348,12 @@ class Events(BaseView):
                 event.setting.visible = f.visible.data
                 if f.cart_setting_id.data is not None:
                     event.setting.cart_setting_id = f.cart_setting_id.data
-            event.save()
+            try:
+                event.save()
+                self.request.session.flash(u'イベントを保存しました')
+            except Exception, exception:
+                self.request.session.flash(exception.message.decode('utf-8'))
 
-            self.request.session.flash(u'イベントを保存しました')
             return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
         else:
             return {
