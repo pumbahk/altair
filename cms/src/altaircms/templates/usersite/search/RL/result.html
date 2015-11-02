@@ -1,5 +1,10 @@
 <%namespace file="gadgets.html" name="gadgets" />
 <% from altairsite.front import helpers as myhelper %>
+<%
+selected_area = ''
+if area:
+    selected_area = area[0]
+%>
 
 <!DOCTYPE html>
 <!--[if lt IE 7]><html class="lt-ie9 lt-ie8 lt-ie7" lang="ja" prefix="og: http://ogp.me/ns# fb: http://www.facebook.com/2008/fbml"><![endif]-->
@@ -106,7 +111,6 @@
 
 ## spbutton
 <%include file="altairsite.smartphone:templates/_rt.pcsite.append.spbutton.html"/>
-
 <!-- ******************** contents [start] ******************** -->
 <div id="tsContents">
 
@@ -124,13 +128,13 @@
         <dt><img src="${request.static_url('altaircms:static/RL/img/common/sl_category_genre.gif')}" alt="ジャンル"></dt>
         <dd >
         <ul>
-        <li><a href="/leisure-amusement">水族館・動物園・植物園</a></li>
-        <li><a href="/leisure-spa">温泉・スパ</a></li>
-        <li><a href="/leisure-musium">美術館・博物館</a></li>
-        <li><a href="/leisure-experience">体験</a></li>
-        <li><a href="/leisure-themapark">遊園地・テーマパーク</a></li>
-        <li><a href="/leisure-pool">プール・海水浴</a></li>
-        <li><a href="/leisure-other">その他</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=177">水族館・動物園・植物園</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=178">温泉・スパ</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=179">美術館・博物館</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=180">体験</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=181">遊園地・テーマパーク</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=182">プール・海水浴</a></li>
+        <li><a href="/search/result/area/${selected_area}?genre=183">その他</a></li>
         </ul>
         </dd>
 
