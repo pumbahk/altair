@@ -67,6 +67,7 @@ class LotWishSummary(Base):
             LotEntry.__table__.c.ordered_mail_sent_at,
             LotEntryWish.__table__.c.wish_order,
             LotEntryWish.__table__.c.canceled_at,
+            LotEntryWish.__table__.c.withdrawed_at,
             LotEntryWish.__table__.c.elected_at,
             LotEntryWish.__table__.c.rejected_at,
             PaymentMethod.__table__.c.name.label('payment_method_name'),
@@ -249,6 +250,8 @@ class LotWishSummary(Base):
             return u"当選予定"
         if self.canceled_at:
             return u"キャンセル"
+        if self.withdrawed_at:
+            return u"ユーザ取消"
         if self.is_rejecting():
             return u"落選予定"
         if self.rejected_at:
@@ -305,12 +308,12 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
 
-    event_id = Column(Identifier, 
-                      ForeignKey('Event.id', ondelete='CASCADE'), 
+    event_id = Column(Identifier,
+                      ForeignKey('Event.id', ondelete='CASCADE'),
                       nullable=True)
     event = orm.relationship('Event', backref='lot_entry_report_settings')
-    lot_id = Column(Identifier, 
-                    ForeignKey('Lot.id', ondelete='CASCADE'), 
+    lot_id = Column(Identifier,
+                    ForeignKey('Lot.id', ondelete='CASCADE'),
                       nullable=True)
     lot = orm.relationship('Lot', backref='lot_entry_report_settings')
 
@@ -375,6 +378,7 @@ SELECT
         WHEN LotEntryWish.elected_at IS NOT NULL THEN '当選'
         WHEN LotEntryWish.rejected_at IS NOT NULL THEN '落選'
         WHEN LotEntryWish.canceled_at IS NOT NULL THEN 'キャンセル'
+        WHEN LotEntryWish.withdrawed_at IS NOT NULL THEN 'ユーザキャンセル'
         WHEN LotElectWork.lot_entry_no IS NOT NULL THEN '当選予定'
         WHEN LotRejectWork.lot_entry_no IS NOT NULL THEN '落選予定'
         ELSE '申込'

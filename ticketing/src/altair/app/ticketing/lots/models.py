@@ -71,6 +71,7 @@ class LotEntryStatusEnum(StandardEnum):
     Elected = 1
     Rejected = 2
     Ordered = 3
+    Withdrawed = 4 #ユーザ取消
 
 Lot_SalesSegment = sa.Table(
     "Lot_SalesSegment",
@@ -150,7 +151,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.order_id==None
         ).filter(
             sql.or_(LotEntry.rejected_at!=None,
-                    LotEntry.canceled_at!=None)
+                    LotEntry.canceled_at!=None,
+                    LotEntry.withdrawed_at!=None)
         ).filter(
             LotEntry.lot_id==self.id
         ).all()
@@ -164,6 +166,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         - 当選予定でない LotElectWork
         - まだ落選予定でない LotRejectWork
         - キャンセルされてない canceled_at
+        - ユーザ取消されてない withdrawed_at
 
         """
 
@@ -180,6 +183,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.elected_at==None,
             LotEntry.rejected_at==None,
             LotEntry.canceled_at==None,
+            LotEntry.withdrawed_at==None,
             LotEntry.lot_id==self.id,
             LotEntry.entry_no!=None,
             LotElectWork.id==None,
@@ -200,6 +204,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.elected_at==None, # 当選していない
             LotEntry.rejected_at==None, # 落選していない
             LotEntry.canceled_at==None, # キャンセルされていない
+            LotEntry.withdrawed_at==None, #ユーザ取消されていない
         )
 
     @property
@@ -213,6 +218,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).filter(
             LotEntry.ordered_mail_sent_at==None, # メール未送信
             LotEntry.canceled_at==None, # キャンセルされていない
+            LotEntry.withdrawed_at==None, #ユーザ取消されていない
         )
 
     def is_elected(self):
@@ -521,6 +527,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     memo = sa.Column(sa.UnicodeText)
 
     canceled_at = sa.Column(sa.DateTime())
+    withdrawed_at = sa.Column(sa.DateTime())
     ordered_mail_sent_at = sa.Column(sa.DateTime())
 
     browserid = sa.Column(sa.String(40))
@@ -622,6 +629,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         retval = LotEntryStatusEnum.New
         if self.rejected_at is not None:
             retval = LotEntryStatusEnum.Rejected
+        elif self.withdrawed_at is not None:
+            retval = LotEntryStatusEnum.Withdrawed
         else:
             if self.elected_at is not None:
                 if self.order_id is not None:
@@ -641,6 +650,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @hybrid_property
     def is_canceled(self):
         return self.canceled_at != None
+
+    @hybrid_property
+    def is_withdrawed(self):
+        return self.withdrawed_at != None
 
     @hybrid_property
     def is_ordered(self):
@@ -674,12 +687,18 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for wish in self.wishes:
             wish.cancel(now)
 
+    def withdraw(self):
+        now = datetime.now()
+        self.withdrawed_at = now
+        for wish in self.wishes:
+            wish.withdraw(now)
+
     def delete(self):
         self.deleted_at = datetime.now()
 
     def is_deletable(self):
         """キャンセル状態の抽選申込のみ論理削除可能"""
-        return self.canceled_at
+        return self.canceled_at or self.withdrawed_at
 
     def is_electing(self):
         return LotElectWork.query.filter(
@@ -808,6 +827,7 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
     order = orm.relationship('Order', backref='lot_wishes')
 
     canceled_at = sa.Column(sa.DateTime())
+    withdrawed_at = sa.Column(sa.DateTime())
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_entry_wishes')
@@ -853,6 +873,8 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
             return u"終了"
         if self.canceled_at:
             return u"キャンセル"
+        if self.withdrawed_at:
+            return u"ユーザ取消"
         if self.elected_at:
             return u"当選"
         if self.rejected_at:
@@ -874,6 +896,10 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
     def cancel(self, now):
         now = now or datetime.now()
         self.canceled_at = now
+
+    def withdraw(self, now):
+        now = now or datetime.now()
+        self.withdrawed_at = now
 
 class LotEntryProduct(LotEntryProductSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """

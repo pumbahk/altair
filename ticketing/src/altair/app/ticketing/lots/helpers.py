@@ -285,6 +285,8 @@ def mobile_list_widget(request):
     return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
 
 def lot_entry_status_as_string(entry):
+    if entry.status == LotEntryStatusEnum.Withdrawed:
+        return u'抽選取消'
     if entry.status == LotEntryStatusEnum.New:
         return u'抽選待ち'
     elif entry.status == LotEntryStatusEnum.Elected:
@@ -296,6 +298,8 @@ def lot_entry_status_as_string(entry):
     return u'???' # never get here
 
 def lot_entry_display_status(entry, now):
+    if entry.is_withdrawed:
+        return u'抽選取消'
     # 当選or注文済み
     if entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u'当選表示'
@@ -364,6 +368,15 @@ def announce_time_label(lot):
     announce_datetime = japanese_datetime(lot.lotting_announce_datetime)
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)
+
+def withdraw_time_label(entry):
+    if not entry or not entry.lot:
+        return ""
+    if not timezone_label(entry.lot):
+        return japanese_datetime(entry.withdrawed_at)
+    withdrawed_datetime = japanese_datetime(entry.withdrawed_at)
+    withdrawed_datetime = withdrawed_datetime[0:withdrawed_datetime.find(')', 0) +1]
+    return withdrawed_datetime + ' ' + timezone_label(entry.lot)
 
 def render_label(field):
     required = is_required(field)

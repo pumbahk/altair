@@ -44,11 +44,23 @@ dl.cost-detail > dd {
     </dl>
   </div>
 
+  %if h.lot_entry_display_status(entry, now) == u'抽選取消':
   <div class="subbox">
     <dl>
-      <dt><p class="lineRed">抽選結果</p></dt>
+      <dt><p class="linered">抽選取消</p></dt>
       <dd>
-        <div class="subInner2">
+        <div class="subinner2">
+        お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+        </div>
+      </dd>
+    </dl>
+  </div>
+  %else:
+  <div class="subbox">
+    <dl>
+      <dt><p class="linered">抽選結果</p></dt>
+      <dd>
+        <div class="subinner2">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
 払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
@@ -59,9 +71,11 @@ dl.cost-detail > dd {
         % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
         % endif
+        </div>
       </dd>
     </dl>
   </div>
+  %endif
   
   <div class="subbox">
     <dl>
@@ -147,3 +161,7 @@ dl.cost-detail > dd {
     </dl>
   </div>
 </div>
+
+%if entry_controller.can_withdraw():
+<a href="${request.route_path('lots.review.withdraw.confirm', _query=dict(_=request.session.get_csrf_token(), entry_no=entry_no, tel_no=tel_no))}" class="btn">キャンセル</a>
+%endif

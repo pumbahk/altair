@@ -17,7 +17,9 @@ ${h.lot_entry_status_as_string(entry)}
 </span>
 %endif
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'当選表示':
+%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
 払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
 <a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
@@ -128,3 +130,7 @@ ${h.japanese_date(birthday)}
 <div>
 ${memo|h.nl2br}
 </div>
+
+%if entry_controller.can_withdraw():
+<a href="${request.route_path('lots.review.withdraw.confirm', _query=dict(_=request.session.get_csrf_token(), entry_no=entry_no, tel_no=tel_no))}" class="btn">キャンセル</a>
+%endif

@@ -18,6 +18,7 @@ from .interfaces import (
     ILotsAcceptedMailResource,
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
+    ILotsWithdrawMailResource,
     )
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,10 @@ class LotsElectedMailResource(MailForLotContext):
     """ 当選メール """
     mtype = c_models.MailTypeEnum.LotsElectedMail
 
+@implementer(ILotsWithdrawMailResource)
+class LotsWithdrawMailResource(MailForLotContext):
+    """当選取消メール"""
+    mtype = c_models.MailTypeEnum.LotsWithdrawMail
 
 @implementer(ILotsRejectedMailResource)
 class LotsRejectedMailResource(MailForLotContext):
@@ -152,6 +157,14 @@ class LotsElectedMail(LotsMail):
 
     def build_context_factory(self, subject):
         return lambda request: LotsElectedMailResource(request, subject)
+
+class LotsWithdrawMail(LotsMail):
+    def get_mail_subject(self, request, organization, traverser):
+        return(traverser.data["subject"] or
+                u'抽選取消のお知らせ 【{organization}】'.format(organization=organization.name))
+
+    def build_context_factory(self, subject):
+        return lambda request: LotsWithdrawMailResource(request, subject)
 
 class LotsRejectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):

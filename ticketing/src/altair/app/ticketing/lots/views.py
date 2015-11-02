@@ -32,7 +32,10 @@ from .exceptions import NotElectedException, OverEntryLimitException, OverEntryL
 from .models import (
     LotEntry,
 )
-from .adapters import LotSessionCart
+from .adapters import (
+    LotSessionCart,
+    LotEntryController
+)
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from altair.app.ticketing.orderreview.views import (
@@ -40,6 +43,9 @@ from altair.app.ticketing.orderreview.views import (
     jump_infomation_page_om_for_10873,
     )
 from . import utils
+from pyramid.session import check_csrf_token
+from altair.app.ticketing.mails.api import get_mail_utility
+from altair.app.ticketing.core.models import MailTypeEnum
 
 logger = logging.getLogger(__name__)
 
@@ -640,16 +646,21 @@ class LotReviewView(object):
         event_id = lot_entry.lot.event.id # いる？
         lot_id = lot_entry.lot.id # いる？
         user_point_accounts = lot_entry.user_point_accounts
+        entry_controller = LotEntryController(self.request)
+        entry_controller.load(lot_entry)
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
             wishes=lot_entry.wishes,
             lot=lot_entry.lot,
+            entry_no=lot_entry.entry_no,
+            tel_no=self.request.params['tel_no'],
             shipping_address=lot_entry.shipping_address,
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
             user_point_accounts=user_point_accounts,
             memo=lot_entry.memo,
+            entry_controller=entry_controller,
             now=get_now(self.request))
 
 
@@ -710,3 +721,55 @@ class LotRspView(object):
     def rsp_post(self):
         lot_asid = self.context.lot_asid
         return self.context.post_rsp(lot_asid)
+
+class LotReviewWithdrawView(object):
+    """抽選申込キャンセル"""
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(route_name='lots.review.withdraw.withdraw',
+                     renderer=selectable_renderer("review_withdraw_completion.html"))
+    def withdraw(self):
+        """申込キャンセル実行"""
+        check_csrf_token(self.request)
+
+        if self.context.entry:
+            self.context.entry.withdraw()
+            mutil = get_mail_utility(self.request, MailTypeEnum.LotsWithdrawMail)
+            mutil.send_mail(self.request, (self.context.entry, None))
+        else:
+            raise ValueError()
+        return self.build_response_dict()
+
+    @lbr_view_config(route_name='lots.review.withdraw.confirm',
+                     renderer=selectable_renderer("review_withdraw_confirm.html"))
+    def confirm(self):
+        """申込キャンセル確認"""
+        check_csrf_token(self.request)
+        return self.build_response_dict()
+
+    def build_response_dict(self):
+        lot_entry = self.context.entry
+
+        if not lot_entry:
+            raise ValueError()
+
+        api.entry_session(self.request, lot_entry)
+        entry_controller = LotEntryController(self.request)
+        entry_controller.load(lot_entry)
+        tel_no = lot_entry.shipping_address.tel_1 or lot_entry.shipping_address.tel_2
+
+        return dict(
+            entry=lot_entry,
+            entry_no=lot_entry.entry_no,
+            tel_no=tel_no,
+            wishes=lot_entry.wishes,
+            lot=lot_entry.lot,
+            shipping_address=lot_entry.shipping_address,
+            gender=lot_entry.gender,
+            birthday=lot_entry.birthday,
+            memo=lot_entry.memo,
+            entry_controller=entry_controller,
+        )

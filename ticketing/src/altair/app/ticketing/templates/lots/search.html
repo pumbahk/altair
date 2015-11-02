@@ -6,7 +6,7 @@
 <%def name="lot_wish_row(request, w)">
 <% from altair.app.ticketing.core.api import get_channel %>
 <td nowrap="">
-%if (w.canceled_at or w.is_electing() or w.is_rejecting() or w.rejected_at or w.elected_at or w.is_other_electing()):
+%if (w.canceled_at or w.withdrawed_at or w.is_electing() or w.is_rejecting() or w.rejected_at or w.elected_at or w.is_other_electing()):
   <strong>${w.status}</strong>
   %if w.ordered_mail_sent_at:
   <br>メール送信済
@@ -17,21 +17,21 @@
 %endif
 %if not (w.closed_at or w.is_other_electing()):
   <div class="btn-group">
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  %if not w.canceled_at and not w.withdrawed_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
     <button class="btn btn-small entry-elect-btn btn-primary" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選</button>
   %endif
   %if w.is_electing() and not w.elected_at and not w.rejected_at:
     <button class="btn btn-small cancel-electing-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">元に戻す</button>
   %endif
 
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  %if not w.canceled_at and not w.withdrawed_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
     <button class="btn btn-small entry-reject-btn btn-info" data-entry-no="${w.entry_no}">落選</button>
   %endif
-  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.is_electing():
+  %if w.is_rejecting() and not w.rejected_at and not w.is_electing():
     <button class="btn btn-small cancel-reject-btn" data-entry-no="${w.entry_no}">元に戻す</button>
   %endif
 
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  %if not w.canceled_at and not w.withdrawed_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
     <button class="btn btn-small entry-cancel-btn btn-danger" data-entry-no="${w.entry_no}">キャンセル</button>
   %endif
   </div>
@@ -160,6 +160,9 @@ ${tabs.tabs(request)}
               <div class="checkbox-set" id="status">
                 <label class="checkbox-set-item" for="canceled">${form.canceled.label.text}
                   ${form.canceled()}
+                </label>
+                <label class="checkbox-set-item" for="withdrawed">${form.withdrawed.label.text}
+                  ${form.withdrawed()}
                 </label>
                 <label class="checkbox-set-item" for="entried">${form.entried.label.text}
                   ${form.entried()}
