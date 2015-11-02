@@ -120,7 +120,9 @@ class OAuthAuthPlugin(object):
 
     # ISessionKeeper
     def forget(self, request, auth_context, response, auth_factor):
-        get_api_factory(request, self.name).create_oauth_negotiator().revoke_access_token(request, auth_factor['access_token'])
+        access_token = auth_factor.get('access_token')
+        if access_token is not None:
+            get_api_factory(request, self.name).create_oauth_negotiator().revoke_access_token(request, access_token)
 
     # IMetadataProvider
     def get_metadata(self, request, auth_context, identities):
