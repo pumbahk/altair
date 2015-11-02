@@ -28,10 +28,10 @@ class UserForLoginCartBuilder(object):
         self.members = []
 
     def _find_member_from_db_same_data(self, membergroup_name, loginname):
-        return Member.query\
+        q = Member.query\
             .filter(Member.auth_identifier==loginname, 
-                    Member.membership_id==self.membership_id)\
-            .first()
+                    Member.membership_id==self.membership_id)
+        return q.first()
 
 
     def build_member_for_login_cart_add_session(self, membergroup_name, loginname, password):
@@ -41,16 +41,17 @@ class UserForLoginCartBuilder(object):
 
     def build_member_for_login_cart(self, membergroup_name, loginname, password):
         member = self._find_member_from_db_same_data(membergroup_name, loginname)
+        membergroup = self.build_membergroup(membergroup_name) if membergroup_name is not None else None
         if member is None: 
-            membergroup = self.build_membergroup(membergroup_name)
             member = Member(
                 membergroup=membergroup,
-                membership=membergroup.membership,
+                membership_id=self.membership_id,
                 auth_identifier=loginname,
                 auth_secret=password
                 )
         else:
-            member.password = password
+            member.membergroup = membergroup
+            member.auth_secret = password
         self.members.append(member)
         return member
 
