@@ -9,10 +9,5 @@ def add_credential(membership, membergroup, username, password, organization_sho
     ms = Membership(name=membership, organization=org)
     mg = MemberGroup(membership=ms, name=membergroup)
     u = User()
-    m = Member(membergroup=mg, user=u)
-    uc = UserCredential(membership=ms,
-                        user=u,
-                        auth_identifier=username,
-                        auth_secret=password)
-    
-    return uc
+    m = Member(membergroup=mg, membership=ms, user=u, auth_identifier=username, auth_secret=password)
+    return m

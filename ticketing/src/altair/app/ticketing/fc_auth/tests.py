@@ -64,10 +64,10 @@ class FCAuthPluginTests(unittest.TestCase):
         self.assertEqual(result, (None, None))
 
     def _addCredential(self, membership, membergroup, username, password):
-        user_credential = add_credential(membership, membergroup, username, password)
-        self.session.add(user_credential)
+        member = add_credential(membership, membergroup, username, password)
+        self.session.add(member)
         self.session.flush()
-        return user_credential
+        return member 
 
     def test_authenticate(self):
         membership = "fc"
@@ -129,10 +129,10 @@ class TestIt(unittest.TestCase):
 
 
     def _addCredential(self, membership, membergroup, username, password, organization_short_name="testing"):
-        user_credential = add_credential(membership, membergroup, username, password, organization_short_name)
-        self.session.add(user_credential)
+        member = add_credential(membership, membergroup, username, password, organization_short_name)
+        self.session.add(member)
         self.session.flush()
-        return user_credential
+        return member
 
     def test_it(self):
         api = self._makeAuthAPI()
