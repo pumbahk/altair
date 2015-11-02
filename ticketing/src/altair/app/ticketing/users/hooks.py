@@ -16,11 +16,12 @@ def hook(event):
     info = event.request.altair_auth_info
     user = get_or_create_user(info)
     metadata = event.request.altair_auth_metadata
-    rakuten_point_account = metadata.get('rakuten_point_account')
-    if rakuten_point_account:
-        user_point_account = user.user_point_accounts.get(UserPointAccountTypeEnum.Rakuten.v)
-        if user_point_account is None:
-            user_point_account = UserPointAccount(user=user, type=UserPointAccountTypeEnum.Rakuten.v)
-        user_point_account.account_number = rakuten_point_account
-        user_point_account.status = UserPointAccountStatusEnum.Valid.v
-        DBSession.add(user_point_account)
+    if isinstance(event, RakutenOpenIDAuthenticated):
+        rakuten_point_account = metadata.get('rakuten_point_account')
+        if rakuten_point_account:
+            user_point_account = user.user_point_accounts.get(UserPointAccountTypeEnum.Rakuten.v)
+            if user_point_account is None:
+                user_point_account = UserPointAccount(user=user, type=UserPointAccountTypeEnum.Rakuten.v)
+            user_point_account.account_number = rakuten_point_account
+            user_point_account.status = UserPointAccountStatusEnum.Valid.v
+            DBSession.add(user_point_account)
