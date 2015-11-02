@@ -982,7 +982,9 @@ class PaymentView(object):
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
-        metadata = self.request.altair_auth_metadata
+        metadata = getattr(self.request, 'altair_auth_metadata', {})
+        if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            metadata = metadata[u'profile']
         form = schemas.ClientForm(
             context=self.context,
             flavors=(self.context.cart_setting.flavors or {}),
