@@ -6,44 +6,11 @@
         ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}
         ${form.sale}
         <br/>
-        <input type="submit" class="btn-secondary btn-large" value="検索"/>
-        <a href="${request.route_path('smartphone.init_detail')}">もっと詳しく</a>
-        <br/>
+        <div class="moreInfo">
+        <input id="details" type="submit" class="btn-secondary btn-large" value="検索"/>
+        <a href="/smartphone/init_detail">もっと詳しく</a></div>
         % if helper.disp_error(form):
             <font color="yellow">${helper.disp_error(form)}</font><br/>
         % endif
     </form>
 </div>
-
-<style>
-#search input[type="text"] {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  width: 100%;
-  display: block;
-  height: 34px;
-  font-size: 17px;
-  padding: 0px 2px;
-  margin: 0 0 2px 0;
-}
-
-#search select {
-  height: 30px;
-  font-size: 16px;
-  margin: 3px 0 0 0;
-  background-color: #fff;
-}
-
-#search button {
-  height: 28px;
-  margin: 3px 0 0 0;
-  font-weight: bold;
-}
-
-#search input[type="submit"] {
-  height: 28px;
-  margin: 5px 0 0 0;
-  font-weight: bold;
-}
-</style>
