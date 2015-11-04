@@ -5,7 +5,6 @@ body {
   line-height: 1.5em;
   -webkit-text-size-adjust: none;
 }
-
 .page {
   width: 100%;
 }
@@ -137,10 +136,49 @@ ul.menu {
   margin: 0 0;
 }
 
+.sectionbox .moreInfo a {
+	display: inline-block;
+}
+
+
+
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  overflow: visible;
+  vertical-align: middle;
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+#search input[type="submit"] {
+  height: 27px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+  font-family: inherit;
+}
+
+
 .btn-large {
   font-size: 20px;
-  line-height: 1.5em;
-  height: 44px; 
 }
 
 .buttonbox {
