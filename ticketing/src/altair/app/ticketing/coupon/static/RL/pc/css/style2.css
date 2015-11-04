@@ -1143,3 +1143,7 @@ table td.display_value ul li {
 .memberLogin table tr th {
 	background: #F9F9F2;
 }
+
+.coupon_name {
+	background-color: #FCF8E3;
+}
