@@ -1,9 +1,25 @@
 <%namespace file="gadgets.html" name="gadgets" />
 <% from altairsite.front import helpers as myhelper %>
 <%
+amusement_link = request.route_path("page_search_by_freeword", _query=dict(q='水族館・動物園・植物園'))
+spa_link = request.route_path("page_search_by_freeword", _query=dict(q='温泉・スパ'))
+musium_link = request.route_path("page_search_by_freeword", _query=dict(q='美術館・博物館'))
+experience_link = request.route_path("page_search_by_freeword", _query=dict(q='体験'))
+themapark_link = request.route_path("page_search_by_freeword", _query=dict(q='遊園地・テーマパーク'))
+pool_link = request.route_path("page_search_by_freeword", _query=dict(q='プール・海水浴'))
+other_link = request.route_path("page_search_by_freeword", _query=dict(q='その他'))
+
 selected_area = ''
+link_format = "/search/result/area/{0}?genre={1}"
 if area:
     selected_area = area[0]
+    amusement_link = link_format.format(selected_area, "177")
+    spa_link = link_format.format(selected_area, "178")
+    musium_link = link_format.format(selected_area, "179")
+    experience_link = link_format.format(selected_area, "180")
+    themapark_link = link_format.format(selected_area, "181")
+    pool_link = link_format.format(selected_area, "182")
+    other_link = link_format.format(selected_area, "183")
 %>
 
 <!DOCTYPE html>
@@ -91,6 +107,26 @@ if area:
 
 </div><!-- ===== grpH-service [end] ===== -->
 
+<!-- ===== grpH-section [start] ===== -->
+<div class="grpH-section clearfix">
+
+<ul class="grpH-section-nav">
+<li class="grpH-nav-top"><a href="/"><span>トップ</span></a></li>
+<li class="grpH-nav-hokkaido"><a href="/search/result/area/hokkaido?"><span>北海道</span></a></li>
+<li class="grpH-nav-tohoku"><a href="/search/result/area/tohoku?"><span>東北</span></a></li>
+<li class="grpH-nav-kitakanto"><a href="/search/result/area/kitakanto?"><span>北関東</span></a></li>
+<li class="grpH-nav-shutoken"><a href="/search/result/area/shutoken?"><span>首都圏</span></a></li>
+<li class="grpH-nav-koshinetsu"><a href="/search/result/area/koshinetsu?"><span>甲信越</span></a></li>
+<li class="grpH-nav-hokuriku"><a href="/search/result/area/hokuriku?"><span>北陸</span></a></li>
+<li class="grpH-nav-tokai"><a href="/search/result/area/tokai?"><span>東海</span></a></li>
+<li class="grpH-nav-kinki"><a href="/search/result/area/kinki?"><span>近畿</span></a></li>
+<li class="grpH-nav-chugoku"><a href="/search/result/area/chugoku?"><span>中国</span></a></li>
+<li class="grpH-nav-shikoku"><a href="/search/result/area/shikoku?"><span>四国</span></a></li>
+<li class="grpH-nav-kyushu"><a href="/search/result/area/kyushu?"><span>九州</span></a></li>
+<li class="grpH-nav-okinawa"><a href="/search/result/area/okinawa?"><span>沖縄</span></a></li>
+</ul>
+
+</div><!-- ===== grpH-section [end] ===== -->
 
 <!-- ===== grpH-search [start] ===== -->
 <div class="grpH-search clearfix">
@@ -122,19 +158,23 @@ if area:
     <div id="container">
 
         <div id="tsSearchList">
-        <h3>イベントを探す</h3>
+        % if selected_area:
+            <h3>ジャンルで絞り込む</h3>
+        % else:
+            <h3>ジャンルを選ぶ</h3>
+        % endif
         <dl>
 
         <dt><img src="${request.static_url('altaircms:static/RL/img/common/sl_category_genre.gif')}" alt="ジャンル"></dt>
         <dd >
         <ul>
-        <li><a href="/search/result/area/${selected_area}?genre=177">水族館・動物園・植物園</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=178">温泉・スパ</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=179">美術館・博物館</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=180">体験</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=181">遊園地・テーマパーク</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=182">プール・海水浴</a></li>
-        <li><a href="/search/result/area/${selected_area}?genre=183">その他</a></li>
+        <li><a href="${amusement_link}">水族館・動物園・植物園</a></li>
+        <li><a href="${spa_link}">温泉・スパ</a></li>
+        <li><a href="${musium_link}">美術館・博物館</a></li>
+        <li><a href="${experience_link}">体験</a></li>
+        <li><a href="${themapark_link}">遊園地・テーマパーク</a></li>
+        <li><a href="${pool_link}">プール・海水,浴</a></li>
+        <li><a href="${other_link}">その他</a></li>
         </ul>
         </dd>
 
