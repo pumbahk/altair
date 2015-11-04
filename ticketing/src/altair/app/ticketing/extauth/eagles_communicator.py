@@ -9,7 +9,7 @@ from urlparse import urljoin
 from datetime import datetime
 from zope.interface import implementer
 from .interfaces import ICommunicator
-from .exceptions import CommunicationError
+from .exceptions import InvalidPayloadError, GenericHTTPError, GenericError, CommunicationError
 from altair.app.ticketing.utils import parse_content_type
 
 logger = logging.getLogger(__name__)
@@ -44,15 +44,15 @@ class EaglesCommunicator(object):
                     data = json.load(e, encoding=charset)
                     status = data.get('status')
                     if status != u'NG':
-                        raise CommunicationError('"status" field is not "NG" (or does not exist) while the response status is not 200 OK')
+                        raise InvalidPayloadError('"status" field is not "NG" (or does not exist) while the response status is not 200 OK', status=e.code)
                     message = data.get('message', None)
                     if message is not None:
-                        raise CommunicationError(message)
+                        raise GenericError(message, status=e.code)
                 except CommunicationError:
                     raise
                 except:
                     logger.exception('oops')
-            raise CommunicationError('HTTP error: status=%d' % e.code)
+            raise GenericHTTPError('HTTP error: status=%d' % e.code, status=e.code)
 
         mime_type, charset = parse_content_type(resp.info()['content-type'])
         if mime_type != 'application/json':
@@ -61,22 +61,22 @@ class EaglesCommunicator(object):
         try:
             status = data.pop(u'status')
         except KeyError:
-            raise CommunicationError('"status" field does not exist')
+            raise InvalidPayloadError('"status" field does not exist')
         if status != u'OK':
             if status != u'NG':
-                raise CommunicationError('"status" field must be either "OK" or "NG"')
+                raise InvalidPayloadError('"status" field must be either "OK" or "NG"')
             message = data.get('message', None)
             if message is None:
-                raise CommunicationError('"message" field is missing while "status" is NG')
+                raise InvalidPayloadError('"message" field is missing while "status" is NG')
             else:
-                raise CommunicationError(message)
+                raise GenericError(message, status=200)
         return data
 
     def parse_datetime(self, value):
         try:
             return datetime.strptime(value, "%Y-%m-%d %H:%M:%S") if value is not None else None
         except:
-            raise CommunicationError(u'invalid date/time string: %s' % value)
+            raise InvalidPayloadError(u'invalid date/time string: %s' % value)
 
     def resolve_style_name(self, member_dict):
         return self.style_classes.get(six.text_type(member_dict['course_id']), u'')
@@ -101,9 +101,9 @@ class EaglesCommunicator(object):
         try:
             members = data['members']
         except:
-            raise CommunicationError(u'"members" field is missing')
+            raise InvalidPayloadError(u'"members" field is missing')
         if not all(isinstance(member, dict) for member in members):
-            raise CommunicationError(u'each element in "members" must be an object')
+            raise InvalidPayloadError(u'each element in "members" must be an object')
         try:
             return dict(
                 memberships=[
@@ -124,7 +124,7 @@ class EaglesCommunicator(object):
                     ]
                 )
         except KeyError as e:
-            raise CommunicationError(u'"%s" field is missing in member' % e.message)
+            raise InvalidPayloadError(u'"%s" field is missing in member' % e.message)
 
 def includeme(config):
     from altair.app.ticketing.urllib2ext import opener_factory_from_config

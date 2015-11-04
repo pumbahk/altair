@@ -27,6 +27,7 @@ from .utils import get_oauth_response_renderer
 from .models import MemberKind, MemberSet, Member
 from .internal_auth import InternalAuthPlugin
 from .helpers import Helpers
+from .exceptions import GenericError
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,17 @@ class View(object):
     def navigate_to_select_account_rakuten_auth(self):
         openid_claimed_id = get_openid_claimed_id(self.request)
         if openid_claimed_id is not None:
-            data = get_communicator(self.request).get_user_profile(openid_claimed_id)
+            try:
+                data = get_communicator(self.request).get_user_profile(openid_claimed_id)
+            except GenericError:
+                data = None
+            if data is None:
+                return HTTPFound(
+                    location=self.request.route_path(
+                        'extauth.unknown_user',
+                        subtype=self.context.subtype
+                        )
+                    )
             logger.debug('retrieved=%r' % data)
             self.request.session['retrieved'] = data
             return self.navigate_to_select_account()
@@ -405,6 +416,15 @@ class View(object):
                             )
                         )
                     )
+
+    @lbr_view_config(
+        route_name='extauth.unknown_user',
+        renderer=selectable_renderer('unknown.mako'),
+        request_method='GET',
+        permission='authenticated'
+        )
+    def entry(self):
+        return dict()
 
 
 @lbr_view_config(route_name='extauth.logout')

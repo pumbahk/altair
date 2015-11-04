@@ -45,9 +45,11 @@ class EaglesExtauthCheckMembershipAPI(object):
         handler = self.get_request_handler('check_memberships')
         params = handler.handle_request(self.request)
         openid_claimed_id = params['openid_claimed_id']
-        memberships = self.request.sa_session.query(EaglesMembership) \
-            .join(EaglesMembership.user) \
+        user = self.request.sa_session.query(EaglesUser) \
             .filter(EaglesUser.openid_claimed_id == openid_claimed_id) \
+            .one()
+        memberships = self.request.sa_session.query(EaglesMembership) \
+            .filter(EaglesMembership.user_id == user.id) \
             .filter(
                 sa.and_(
                     (EaglesMembership.valid_since == None) \
