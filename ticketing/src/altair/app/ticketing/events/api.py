@@ -27,4 +27,5 @@ def set_visible_event(request):
     request.session[VISIBLE_EVENT_SESSION_KEY] = str(datetime.now())
 
 def set_invisible_event(request):
-    del request.session[VISIBLE_EVENT_SESSION_KEY]
+    if VISIBLE_EVENT_SESSION_KEY in request.session:
+        del request.session[VISIBLE_EVENT_SESSION_KEY]
