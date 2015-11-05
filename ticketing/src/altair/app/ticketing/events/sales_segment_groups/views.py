@@ -131,8 +131,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         sales_segment_group = self.context.sales_segment_group
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
-            # id_map は { テンプレートのid: 新しいSalesSegmentGroupのid }
-            id_map = SalesSegmentGroup.create_from_template(sales_segment_group, with_payment_delivery_method_pairs=with_pdmp)
+            try:
+                # id_map は { テンプレートのid: 新しいSalesSegmentGroupのid }
+                id_map = SalesSegmentGroup.create_from_template(sales_segment_group, with_payment_delivery_method_pairs=with_pdmp)
+            except Exception, exception:
+                self.request.session.flash(exception.message.decode('utf-8'))
+                return None
             f.id.data = id_map[self.context.sales_segment_group.id]
             # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
             new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()

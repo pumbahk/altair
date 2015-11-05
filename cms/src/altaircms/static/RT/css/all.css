@@ -3114,6 +3114,7 @@ h2.stage {
 
 /* .goto-link {{{*/
 a.goto-link {
+  margin-top: 3px;
   padding-left:18px;
   padding-right:18px;
   font-size:18px;
