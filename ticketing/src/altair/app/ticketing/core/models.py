@@ -1518,6 +1518,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         sales_segment_group.save()
 
         if with_payment_delivery_method_pairs:
+            if not sales_segment_group.id or sales_segment_group.id == template.id:
+                raise Exception("コピーされた販売区分グループのid (%s)が不正です。決済・支払い方法のコピーを中止します。" % sales_segment_group.id)
             for template_pdmp in template.payment_delivery_method_pairs:
                 PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_group_id=sales_segment_group.id, **kwargs)
 
