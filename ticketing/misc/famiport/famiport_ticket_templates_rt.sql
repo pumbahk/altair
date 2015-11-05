@@ -15,26 +15,6 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
--- Table structure for table `FamiPortTicketTemplate`
---
-
-DROP TABLE IF EXISTS `FamiPortTicketTemplate`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `FamiPortTicketTemplate` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `template_code` varchar(13) NOT NULL,
-  `logically_subticket` tinyint(1) NOT NULL DEFAULT '0',
-  `mappings` text NOT NULL,
-  `organization_id` bigint(20) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `rules` text,
-  PRIMARY KEY (`id`),
-  KEY `FamiPortTicketTemplate_ibfk_1` (`organization_id`),
-  CONSTRAINT `FamiPortTicketTemplate_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `Organization` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `FamiPortTicketTemplate`
