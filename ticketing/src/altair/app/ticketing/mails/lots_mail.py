@@ -161,7 +161,7 @@ class LotsElectedMail(LotsMail):
 class LotsWithdrawMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
         return(traverser.data["subject"] or
-                u'抽選取消のお知らせ 【{organization}】'.format(organization=organization.name))
+                u'抽選申込取消のお知らせ 【{organization}】'.format(organization=organization.name))
 
     def build_context_factory(self, subject):
         return lambda request: LotsWithdrawMailResource(request, subject)

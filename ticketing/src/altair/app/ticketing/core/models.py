@@ -3435,7 +3435,7 @@ _mail_type_labels = {
     MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了",
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知",
-    MailTypeEnum.LotsWithdrawMail.v: u"抽選ユーザ取消",
+    MailTypeEnum.LotsWithdrawMail.v: u"抽選申込ユーザ取消",
     MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知",
     MailTypeEnum.PurchaseRefundMail.v: u"払戻通知",
     MailTypeEnum.TicketPrintRemindMail.v: u"コンビニ未発券リマインド",

@@ -175,7 +175,7 @@ class LotResource(LotResourceBase):
 
     def check_entry_limit(self, wishes, user=None, email=None):
         logger.debug('user.id=%r, email=%r', user.id if user else None, email)
-        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None, LotEntry.withdrawed_at==None)
+        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None, LotEntry.withdrawn_at==None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:

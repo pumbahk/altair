@@ -1,4 +1,4 @@
-"""#TKT101 add withdrawed_at to LotEntry, LotEntryWish
+"""#TKT101 add withdrawn_at to LotEntry, LotEntryWish
 
 Revision ID: 6cdbdb8cd27
 Revises: 4f0f7a1dc72e
@@ -20,10 +20,10 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column("LotEntry",
-                  sa.Column("withdrawed_at", sa.DateTime))
+                  sa.Column("withdrawn_at", sa.DateTime))
     op.add_column("LotEntryWish",
-                  sa.Column("withdrawed_at", sa.DateTime))
+                  sa.Column("withdrawn_at", sa.DateTime))
 
 def downgrade():
-    op.drop_column("LotEntry", "withdrawed_at")
-    op.drop_column("LotEntryWish", "withdrawed_at")
+    op.drop_column("LotEntry", "withdrawn_at")
+    op.drop_column("LotEntryWish", "withdrawn_at")

@@ -275,7 +275,7 @@ def mobile_error_list(request, form, name, with_label=False):
     errors = form[name].errors
     if not errors:
         return ""
-    
+
     html = u'<div>'
     html += u"".join([render_mobile_error((u'%s:' % form[name].label.text if with_label else u'') + e)  for e in errors])
     html += u'</div>'
@@ -285,8 +285,8 @@ def mobile_list_widget(request):
     return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
 
 def lot_entry_status_as_string(entry):
-    if entry.status == LotEntryStatusEnum.Withdrawed:
-        return u'抽選取消'
+    if entry.status == LotEntryStatusEnum.Withdrawn:
+        return u'抽選申込取消'
     if entry.status == LotEntryStatusEnum.New:
         return u'抽選待ち'
     elif entry.status == LotEntryStatusEnum.Elected:
@@ -298,8 +298,8 @@ def lot_entry_status_as_string(entry):
     return u'???' # never get here
 
 def lot_entry_display_status(entry, now):
-    if entry.is_withdrawed:
-        return u'抽選取消'
+    if entry.is_withdrawn:
+        return u'抽選申込取消'
     # 当選or注文済み
     if entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u'当選表示'
@@ -340,7 +340,7 @@ def nl2br(s):
 format_gender = format_sex
 
 def tojson(obj):
-    return json.dumps(obj) 
+    return json.dumps(obj)
 
 def performance_date_label(performance):
     return u'%s %s' % (performance_datetime(performance), performance.venue.name)
@@ -373,10 +373,10 @@ def withdraw_time_label(entry):
     if not entry or not entry.lot:
         return ""
     if not timezone_label(entry.lot):
-        return japanese_datetime(entry.withdrawed_at)
-    withdrawed_datetime = japanese_datetime(entry.withdrawed_at)
-    withdrawed_datetime = withdrawed_datetime[0:withdrawed_datetime.find(')', 0) +1]
-    return withdrawed_datetime + ' ' + timezone_label(entry.lot)
+        return japanese_datetime(entry.withdrawn_at)
+    withdrawn_datetime = japanese_datetime(entry.withdrawn_at)
+    withdrawn_datetime = withdrawn_datetime[0:withdrawn_datetime.find(')', 0) +1]
+    return withdrawn_datetime + ' ' + timezone_label(entry.lot)
 
 def render_label(field):
     required = is_required(field)

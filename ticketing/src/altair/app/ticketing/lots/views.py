@@ -648,6 +648,7 @@ class LotReviewView(object):
         user_point_accounts = lot_entry.user_point_accounts
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
+        timestamp = datetime.now()
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
@@ -661,6 +662,7 @@ class LotReviewView(object):
             user_point_accounts=user_point_accounts,
             memo=lot_entry.memo,
             entry_controller=entry_controller,
+            timestamp=timestamp,
             now=get_now(self.request))
 
 
@@ -723,7 +725,7 @@ class LotRspView(object):
         return self.context.post_rsp(lot_asid)
 
 class LotReviewWithdrawView(object):
-    """抽選申込キャンセル"""
+    """抽選申込取消"""
 
     def __init__(self, context, request):
         self.context = context
@@ -732,7 +734,7 @@ class LotReviewWithdrawView(object):
     @lbr_view_config(route_name='lots.review.withdraw.withdraw',
                      renderer=selectable_renderer("review_withdraw_completion.html"))
     def withdraw(self):
-        """申込キャンセル実行"""
+        """申込取消実行"""
         check_csrf_token(self.request)
 
         if self.context.entry:
@@ -746,7 +748,7 @@ class LotReviewWithdrawView(object):
     @lbr_view_config(route_name='lots.review.withdraw.confirm',
                      renderer=selectable_renderer("review_withdraw_confirm.html"))
     def confirm(self):
-        """申込キャンセル確認"""
+        """申込取消確認"""
         check_csrf_token(self.request)
         return self.build_response_dict()
 
@@ -760,6 +762,7 @@ class LotReviewWithdrawView(object):
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
         tel_no = lot_entry.shipping_address.tel_1 or lot_entry.shipping_address.tel_2
+        timestamp = datetime.now()
 
         return dict(
             entry=lot_entry,
@@ -772,4 +775,5 @@ class LotReviewWithdrawView(object):
             birthday=lot_entry.birthday,
             memo=lot_entry.memo,
             entry_controller=entry_controller,
+            timestamp=timestamp,
         )

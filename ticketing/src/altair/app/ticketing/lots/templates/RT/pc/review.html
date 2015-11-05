@@ -6,10 +6,10 @@
   </div>
 </div>
 
-%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2 style="font-size:18px">抽選取消</h2>
+    <h2 style="font-size:18px">抽選申込取消</h2>
     <div class="confirmBoxText">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
     </div>
@@ -73,10 +73,6 @@
                 抽選処理前です
               %endif
             </td>
-          </tr>
-          <tr>
-            <th>公演日・会場</th>
-            <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
           </tr>
           <tr>
             <th>公演日・会場</th>
@@ -163,9 +159,11 @@
   </div>
 </div>
 
-%if entry_controller.can_withdraw():
+%if entry_controller.can_withdraw(timestamp):
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
-    <a href="javascript:void(0)" onclick="document.withdrawForm.submit();">キャンセル</a>
+    <div align="center">
+        <input type="submit" style="background-color:#FF6C0D;font-size:20px;padding: 10px 60px 10px 60px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">
+    </div>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>

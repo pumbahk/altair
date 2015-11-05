@@ -542,12 +542,12 @@ class LotEntries(BaseView):
         else:
             condition = sql.and_(condition,
                                  LotEntryWish.canceled_at==None)
-        if form.withdrawed.data:
+        if form.withdrawn.data:
             wish_condition = sql.or_(wish_condition,
-                                     LotEntryWish.withdrawed_at!=None)
+                                     LotEntryWish.withdrawn_at!=None)
         else:
             condition = sql.and_(condition,
-                                 LotEntryWish.withdrawed_at==None)
+                                 LotEntryWish.withdrawn_at==None)
         if form.entried.data:
             wish_condition = sql.or_(wish_condition,
                                      sql.and_(LotEntryWish.elected_at==None,

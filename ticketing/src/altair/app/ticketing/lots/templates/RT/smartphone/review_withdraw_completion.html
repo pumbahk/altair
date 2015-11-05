@@ -1,8 +1,9 @@
 <%inherit file="${context['main_template'].uri}" />
-<h1>以下の予約をキャンセルしました</h1>
-<form method="post" id="cancelFrom" action="${request.route_path('lots.review.index')}">
-  <input type="submit" value="予約の詳細ページに戻る" />
-</form>
+<div align="center">以下の抽選申込を取消いたしました</div><br/>
+<div align="center">
+    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 10px 20px 10px 20px;color:white;border-radius: 4px;text-decoration: none;">予約の詳細ページに戻る</a>
+    </div>
+</div>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -65,10 +66,6 @@
                 抽選処理前です
               %endif
             </td>
-          </tr>
-          <tr>
-            <th>公演日・会場</th>
-            <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
           </tr>
           <tr>
             <th>公演日・会場</th>

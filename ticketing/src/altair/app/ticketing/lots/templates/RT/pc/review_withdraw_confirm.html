@@ -1,13 +1,15 @@
 <%inherit file="${context['main_template'].uri}" />
-%if entry_controller.can_withdraw():
-<h1>この抽選申込をキャンセルしますか?</h1>
-(キャンセルした抽選申込を有効な抽選申込に戻す事はできません)
+%if entry_controller.can_withdraw(timestamp):
+<div align="center">
+<h1>この抽選申込を取消しますか?</h1>
 <form method="POST" id="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
-    <input type="submit" value="はい">
+    <input type="submit" style="background-color:#FF6C0D;font-size:16px;padding: 5px 40px 5px 40px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="はい">
 </form>
+<span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+</div>
 %endif
 
 <div class="confirmBox">
@@ -71,10 +73,6 @@
                 抽選処理前です
               %endif
             </td>
-          </tr>
-          <tr>
-            <th>公演日・会場</th>
-            <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
           </tr>
           <tr>
             <th>公演日・会場</th>

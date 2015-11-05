@@ -29,7 +29,6 @@ from .models import (
     )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
-from altair.now import get_now
 
 logger = logging.getLogger(__name__)
 
@@ -328,7 +327,7 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
-            LotEntry.withdrawed_at==None
+            LotEntry.withdrawn_at==None
         ).filter(
             LotEntry.entry_no!=None
         ).count()
@@ -431,7 +430,7 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
-            LotEntry.withdrawed_at==None
+            LotEntry.withdrawn_at==None
         ).filter(
             LotEntry.entry_no != None
         ).scalar()
@@ -452,7 +451,7 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
-            LotEntry.withdrawed_at==None
+            LotEntry.withdrawn_at==None
         ).filter(
             LotEntry.entry_no != None
         ).group_by(LotEntryWish.wish_order).all()
@@ -479,7 +478,7 @@ class LotEntryStatus(object):
             StockType.id.label('stock_type_id'),
             LotEntryWish.wish_order.label('wish_order'),
             case([
-                (LotEntry.withdrawed_at == None,
+                (LotEntry.withdrawn_at == None,
                  LotEntryProduct.quantity)
             ],
             else_=0).label('entry_quantity'),
@@ -646,18 +645,18 @@ class LotEntryController(object):
     def lot(self):
         return self._entry and self._entry.lot
 
-    def can_withdraw(self, now=None):
+    def can_withdraw(self, now):
         """
-        抽選申込がcancelで切る状態かどうかを判定する
-        当落が確定しておらず受付期間中の抽選申込のみキャンセルできる
+        抽選申込がwithdrawできる状態かどうかを判定する
+        当落が確定しておらず受付期間中の抽選申込のみ取消できる
         """
         if not now:
-            now = get_now(self._request) if self._request else datetime.now()
+            return None
         return (
             self.lot.available_on(now) and
             not self._entry.is_elected and
             not self._entry.is_rejected and
             not self._entry.is_canceled and
-            not self._entry.is_withdrawed and
+            not self._entry.is_withdrawn and
             not self._entry.is_ordered
         )

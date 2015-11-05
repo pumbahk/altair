@@ -429,7 +429,7 @@ class SearchEntryForm(Form):
         ],
     )
 
-    withdrawed = BooleanField(
+    withdrawn = BooleanField(
         label=u"ユーザ取消",
         default=False,
         validators=[
