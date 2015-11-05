@@ -11,7 +11,8 @@ def set_visible_performance(request):
 
 
 def set_invisible_performance(request):
-    del request.session[VISIBLE_PERFORMANCE_SESSION_KEY]
+    if VISIBLE_PERFORMANCE_SESSION_KEY in request.session:
+        del request.session[VISIBLE_PERFORMANCE_SESSION_KEY]
 
 
 def get_no_ticket_bundles(performance):
