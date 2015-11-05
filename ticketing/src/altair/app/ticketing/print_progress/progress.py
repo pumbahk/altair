@@ -45,7 +45,7 @@ class DummyPrintProgress(object):
 
     @property
     def size(self):
-        return 3
+        return 4
 
     @reify
     def qr(self):
@@ -53,6 +53,10 @@ class DummyPrintProgress(object):
 
     @reify
     def shipping(self):
+        return ProgressData(total=100, printed=100, unprinted=0)
+
+    @reify
+    def reserved(self):
         return ProgressData(total=100, printed=100, unprinted=0)
 
     @reify
@@ -101,7 +105,7 @@ class PrintProgressBase(object):
 
     @property
     def size(self):
-        return 3
+        return 4
 
     @reify
     def qr(self):
@@ -124,10 +128,20 @@ class PrintProgressBase(object):
         return ProgressData(total=total, printed=printed, unprinted=total-printed)
 
     @reify
+    def reserved(self):
+        query = self.filtering.include_by_delivery_plugin(
+            self.ordered_product_item_token_query,
+            plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+        )
+        total = query.count()
+        printed = self.filtering.filter_by_printed_token(query).count()
+        return ProgressData(total=total, printed=printed, unprinted=total-printed)
+
+    @reify
     def other(self):
         query = self.filtering.exclude_by_delivery_plugin(
             self.ordered_product_item_token_query, 
-            [plugins.SHIPPING_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID,  plugins.QR_DELIVERY_PLUGIN_ID]
+            [plugins.SHIPPING_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID, plugins.QR_DELIVERY_PLUGIN_ID, plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID]
         )
         total = query.count()
         printed = self.filtering.filter_by_printed_token(query).count()
