@@ -423,6 +423,8 @@ SELECT
     Membership.name AS `会員種別名`,
     MemberGroup.name AS `会員グループ名`,
     UserCredential.auth_identifier AS `会員種別ID`,
+    LotEntryAttribute.name AS `attribute_name`,
+    LotEntryAttribute.value AS `attribute_value`,
     NULL
 FROM LotEntryWish
      JOIN LotEntry
@@ -480,8 +482,11 @@ FROM LotEntryWish
      ON LotEntry.membergroup_id=MemberGroup.id AND MemberGroup.deleted_at IS NULL
      LEFT JOIN UserCredential
      ON LotEntry.user_id=UserCredential.user_id AND LotEntry.membership_id=UserCredential.membership_id AND UserCredential.deleted_at IS NULL
+     LEFT JOIN LotEntryAttribute
+     ON LotEntryAttribute.lot_entry_id = LotEntry.id
 WHERE Lot.id = %s
      AND LotEntryWish.deleted_at IS NULL
+ORDER BY 申し込み番号, attribute_name
 
 """
 
@@ -539,13 +544,40 @@ WHERE Lot.id = %s
     def __iter__(self):
         cur = self.session.bind.execute(self.sql, self.lot_id, self.lot_id)
         try:
+            prev_row = None
+            attribute_dict = OrderedDict()
             for row in cur.fetchall():
-                yield OrderedDict([
-                    (c, row[c] if row[c] is not None else u'')
-                    for c in self.csv_columns]
-                )
+                if not prev_row:
+                    prev_row = row
+
+                self.update_attribute_dict(prev_row, attribute_dict)
+                if prev_row[u'申し込み番号'] != row[u'申し込み番号']:
+                    order_dict = self.get_ordered_attribute_dict(prev_row, attribute_dict)
+                    attribute_dict = OrderedDict()
+                    yield order_dict
+                prev_row = row
+
+            self.update_attribute_dict(prev_row, attribute_dict)
+            yield self.get_ordered_attribute_dict(row, attribute_dict)
         finally:
             cur.close()
+
+    @staticmethod
+    def update_attribute_dict(prev_row, attribute_dict):
+        if prev_row[u'attribute_name']:
+            attribute_dict[prev_row[u'attribute_name']] = prev_row[u'attribute_value']
+
+    def get_ordered_dict(self, row):
+        return OrderedDict([
+            (c, row[c] if row[c] is not None else u'')
+            for c in self.csv_columns]
+        )
+
+    def get_ordered_attribute_dict(self, row, attribute_dict):
+        order_dict = self.get_ordered_dict(row)
+        if attribute_dict:
+            order_dict.update(attribute_dict)
+        return order_dict
 
     def all(self):
         return list(self)
