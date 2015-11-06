@@ -4,6 +4,7 @@ from collections import OrderedDict
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import sql
 from dateutil.parser import parse as parsedate
+from datetime import date
 from ..models import MemberSet, MemberKind, Member, Membership
 from ..utils import generate_salt, digest_secret
 from altair.tabular_data_io import lookup_reader
@@ -217,7 +218,12 @@ def validate_term(reader, dict_, start_k, end_k):
 def parse_datetime(reader, dict_, k):
     if k not in dict_:
         return Unspecified
-    raw_value = strip(dict_[k])
+    raw_value = dict_[k]
+    if isinstance(raw_value, date):
+        return raw_value
+    if not isinstance(raw_value, (str, six.text_type)):
+        raw_value = six.text_type(raw_value)
+    raw_value = strip(raw_value)
     if not raw_value:
         return Unspecified
     elif raw_value in (u'-', u'−'):
