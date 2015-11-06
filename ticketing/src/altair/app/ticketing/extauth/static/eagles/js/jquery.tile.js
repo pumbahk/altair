@@ -20,6 +20,35 @@
 })(jQuery);
 
 
-$(function() {
-　　$(".tileLogin").tile(2);
+
+
+
+// レスポンシヴ
+$(function(){
+    var minWidth = 450;
+    if (minWidth <= $(this).width()) {
+        $(".tile2").tile(2);
+      $(window).load(function() {
+        $(".tile2").tile(2);
+      });
+		}
+    $(window).resize(function(){
+        if (minWidth <= $(this).width()) {
+        $(".tile2").tile(2);
+        }
+        else {
+            $('.tile2,.tile4 li').removeAttr('style');
+        }
+    });
 });
+
+
+
+
+// PCのみ 
+/* 
+$(function() {
+　　$(".tile2").tile(2);
+　　$(".tile4 li").tile(4);
+});
+*/

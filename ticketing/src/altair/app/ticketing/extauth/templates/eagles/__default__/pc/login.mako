@@ -1,21 +1,22 @@
 <%inherit file="base.mako" />
 <% member_set = selected_member_set %>
-<h2>イーグルスチケット各種優待会員ログイン</h2>
+<h2 class="box heading-primary">イーグルスチケット各種優待会員ログイン</h2>
 
-<div class="loginBox2 clearfix">
+
+<div class="box clearfix">
 
 
 <!-- member LOGIN BOX -->
-<div class="user-stockholder">
+<div class="col2 login-box">
 <dl>
-<dt class="user-member-name"><span>各種会員IDをお持ちの方</span>はこちらから</dt>
-<dd>
+<dt class="login-name"><span>各種会員IDをお持ちの方</span>はこちらから</dt>
+<dd class="login-inbox">
 
-<ul class="fcType">
-<li style="background:#a371ff;">株主優待</li>
-<li style="background:#00FF00;">スクール</li>
-<li style="background:#ffa500;">SOC</li>
-<li style="background:#000000;">ろっけんイーグルス</li>
+<ul class="fcType clearfix">
+<li class="fcType-L" style="background:#FFF1D7;"><img src="images/status_soc.png" alt="SOC"></li>
+<li class="fcType-L" style="background:#EEE6FF;"><img src="images/status_stockholder.png" alt="株主優待"></li>
+<li class="fcType-L" style="background:#CCD5DD;"><img src="images/status_sponsor.png" alt="スポンサークラブ"></li>
+<li class="fcType-L" style="background:#E1FFE1;"><img src="images/status_school.png" alt="スクール"></li>
 </ul>
 
 <form action="${_context.route_path('extauth.login')}" method="POST">
@@ -36,26 +37,39 @@
 </tr>
 </tbody>
 </table>
-<p class="tac"><input type="submit" class="btnL" value="ログイン"></p>
+<p><input type="submit" class="btnA btnA_l" value="ログイン"></p>
 <input type="hidden" name="member_set" value="${selected_member_set.name}" />
 <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
 </form>
+
 </dd>
 </dl>
 </div>
 
+
+<!-- stockholder LOGIN BOX -->
+<div class="btn-stockholder">
+<p class="clear tar pdt10 pdr20">&raquo; <a href="${_context.route_path('extauth.index')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
+</div>
+
+
 </div>
 
 
 
-<h3>注意事項</h3>
-<ul class="notes">
+<article class="box">
+<h3 class="heading-bline">注意事項</h3>
+<ul class="list-disc">
 <li>会員の方も、受付番号（REから始まる12ケタ）から確認することができます。</li>
 <li>会員ID・パスワードは半角でご入力ください。</li>
 </ul>
+</article>
 
-<h3>お問い合わせ</h3>
 
-<ul class="notes">
-<li>楽天野球団チケットセンター：050-5817-8192(平日10時～18時)※不定休</li>
+<article class="box">
+<h3 class="heading-bline">お問い合わせ</h3>
+<ul class="list-disc">
+<li>楽天野球団チケットセンター<br>
+TEL: 050-5817-8192（平日10時～18時）※不定休</li>
 </ul>
+</article>
