@@ -13,10 +13,10 @@
 <dd class="login-inbox">
 
 <ul class="fcType clearfix">
-<li class="fcType-L" style="background:#FFF1D7;"><img src="images/status_soc.png" alt="SOC"></li>
-<li class="fcType-L" style="background:#EEE6FF;"><img src="images/status_stockholder.png" alt="株主優待"></li>
-<li class="fcType-L" style="background:#CCD5DD;"><img src="images/status_sponsor.png" alt="スポンサークラブ"></li>
-<li class="fcType-L" style="background:#E1FFE1;"><img src="images/status_school.png" alt="スクール"></li>
+<li class="fcType-L" style="background:#FFF1D7;"><img src="${view_context.static_url('images/status_soc.png')}" alt="SOC"></li>
+<li class="fcType-L" style="background:#EEE6FF;"><img src="${view_context.static_url('images/status_stockholder.png')}" alt="株主優待"></li>
+<li class="fcType-L" style="background:#CCD5DD;"><img src="${view_context.static_url('images/status_sponsor.png')}" alt="スポンサークラブ"></li>
+<li class="fcType-L" style="background:#E1FFE1;"><img src="${view_context.static_url('images/status_school.png')}" alt="スクール"></li>
 </ul>
 
 <form action="${_context.route_path('extauth.login')}" method="POST">
