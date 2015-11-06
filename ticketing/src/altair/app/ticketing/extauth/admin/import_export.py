@@ -202,7 +202,7 @@ def validate_term(reader, dict_, start_k, end_k):
     errors = []
     start = dict_[start_k]
     end = dict_[end_k]
-    if start is not None and end is not None and start > end:
+    if start and end and start > end:
         errors.append(
             MemberImportExportError.from_reader(
                 reader, [k],
