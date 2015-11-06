@@ -37,8 +37,8 @@ ${h.render_bootstrap_pager(members)}
         <ul>
         % for membership in member.memberships:
           <li>
-            ${membership.member_kind.name}
-            ${h.term(membership.valid_since, membership.expire_at)}
+            ${membership.member_kind.name}${u': ' + membership.membership_identifier if membership.membership_identifier else u''}
+            (${h.term(membership.valid_since, membership.expire_at)})
           </li>
         % endfor
         </ul>
@@ -55,13 +55,13 @@ ${h.render_bootstrap_pager(members)}
     <h3>CSVインポート</h3>
   </div>
   <div class="modal-body">
-    以下のような形式のcsvを受け取ります。
+    以下のような形式のxls / xlsx / csvファイルを受け取ります。
 <pre>
-<b>ログインID,パスワード,会員種別,会員区分,開始日,有効期限,削除フラグ</b>
-&lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
-&lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分2&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
-&lt;ログインID(B)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
-&lt;ログインID(C)&gt;,&lt;パスワード&gt;,&lt会員種別2&gt;,&lt会員区分3&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
+<b>ログインID,パスワード,会員種別,会員区分,会員ID,開始日,有効期限,削除フラグ</b>
+&lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;会員ID1&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
+&lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分2&gt;,&lt;会員ID2&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
+&lt;ログインID(B)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;会員ID3&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
+&lt;ログインID(C)&gt;,&lt;パスワード&gt;,&lt会員種別2&gt;,&lt会員区分3&gt;,&lt;会員ID4&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
 ...
 </pre>
     <input type="file" name="file" />

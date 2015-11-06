@@ -1,16 +1,18 @@
 # encoding: utf-8
-import csv
+import six
 from collections import OrderedDict
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import sql
 from dateutil.parser import parse as parsedate
 from ..models import MemberSet, MemberKind, Member, Membership
 from ..utils import generate_salt, digest_secret
+from altair.tabular_data_io import lookup_reader
+from altair.tabular_data_io.impl.csv import CsvTabularDataReader
 
 __all__ = [
-    'CSVReader',
-    'MemberCSVParser',
-    'MemberCSVImporter',
+    'TabularDataReader',
+    'MemberDataParser',
+    'MemberDataImporter',
     'MemberImportExportError',
     'MemberImportExportErrors',
     'japanese_columns',
@@ -20,6 +22,7 @@ japanese_columns = {
     u'auth_identifier': u'ログインID',
     u'auth_secret': u'パスワード',
     u'name': u'氏名',
+    u'membership_identifier': u'会員ID',
     u'member_set': u'会員種別',
     u'member_kind': u'会員区分',
     u'valid_since': u'開始日',
@@ -27,36 +30,39 @@ japanese_columns = {
     u'deleted': u'削除フラグ',
     }
 
-class CSVReader(object):
-    def __init__(self, file, column_name_map, encoding='cp932'):
-        self.reader = csv.DictReader(file)
+class TabularDataReader(object):
+    def __init__(self, file, filename, column_name_map, type=None, csv_encoding='cp932'):
+        reader_factory = lookup_reader(filename, type)
+        options = {}
+        if isinstance(reader_factory, CsvTabularDataReader):
+            options['encoding'] = csv_encoding
+        self.reader = reader_factory.open(file, **options)
         self.file = file
-        self.encoding = encoding
+        self.filename = filename
         self.column_name_map = column_name_map
+        self.line_num = 1
         columns = dict((v, k) for k, v in column_name_map.iteritems())
         header = []
-        for field in self.reader.fieldnames:
-            field = unicode(field.decode(self.encoding))
+        try:
+            first_row = next(self.reader)
+        except StopIteration:
+            raise MemberImportExportError(u'ファイルの形式が正しくありません')
+        self.line_num += 1
+        for field in first_row:
             column_id = columns.get(field)
             if column_id is None:
                 # 該当するカラムがない場合には、ヘッダに出現した内容をそのままキーとする
                 column_id = field
             header.append(column_id)
-        self.reader.fieldnames = header
+        self.header = header
 
     def __iter__(self):
         for row in self.reader:
-            for k, v in row.iteritems():
-                row[k] = v.decode(self.encoding) if v is not None else u''
-            yield row
-
-    @property
-    def line_num(self):
-        return self.reader.line_num
-
-    @property
-    def filename(self):
-        return getattr(self.file, 'name', None)
+            yield {
+                self.header[i]: v if v is not None else u''
+                for i, v in enumerate(row)
+                }
+            self.line_num += 1
 
     @property
     def fieldnames(self):
@@ -219,7 +225,7 @@ def parse_datetime(reader, dict_, k):
     return parsedate(raw_value)
 
 
-class MemberCSVParser(object):
+class MemberDataParser(object):
     def __init__(self, slave_session, organization_id):
         self.slave_session = slave_session
         self.organization_id = organization_id
@@ -288,8 +294,9 @@ class MemberCSVParser(object):
             b['auth_identifier'] = required(reader, raw_record, u'auth_identifier')
             b['auth_secret'] = raw_record.get(u'auth_secret') or Unspecified
             b['name'] = raw_record.get(u'name') or Unspecified
-            b['member_set'] = member_set = self._resolve_member_set(reader, u'member_set', raw_record[u'member_set']) if u'member_set' in raw_record else Unspecpfied
+            b['member_set'] = member_set = self._resolve_member_set(reader, u'member_set', required(reader, raw_record, u'member_set'))
             b['member_kind'] = member_set and self._resolve_member_kind(reader, u'member_kind', member_set, required(reader, raw_record, u'member_kind'))
+            b['membership_identifier'] = raw_record.get(u'membership_identifier') or Unspecified
             b['valid_since'] = parse_datetime(reader, raw_record, u'valid_since')
             b['expire_at'] = parse_datetime(reader, raw_record, u'expire_at')
             b['deleted'] = bool(strip(raw_record.get(u'deleted', u'')))
@@ -377,7 +384,7 @@ class MemberCSVParser(object):
             yield errors_for_row, record
 
 
-class MemberCSVImporter(object):
+class MemberDataImporter(object):
     def __init__(self, master_session, organization_id):
         self.master_session = master_session
         self.organization_id = organization_id
@@ -397,6 +404,7 @@ class MemberCSVImporter(object):
             id=record['membership_id'],
             member_id=record['member_id'],
             member_kind_id=record['member_kind'].id,
+            membership_identifier=record['membership_identifier'],
             valid_since=record['valid_since'],
             expire_at=record['expire_at']
             )

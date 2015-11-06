@@ -97,6 +97,7 @@ class Membership(Base, WithCreatedAt):
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
     member_id = sa.Column(Identifier, sa.ForeignKey('Member.id', ondelete='CASCADE'), nullable=False)
     member_kind_id = sa.Column(Identifier, sa.ForeignKey('MemberKind.id', ondelete='CASCADE'), nullable=False)
+    membership_identifier = sa.Column(sa.Unicode(64), nullable=True)
     valid_since = sa.Column(sa.DateTime(), nullable=True)
     expire_at = sa.Column(sa.DateTime(), nullable=True)
     enabled = sa.Column(sa.Boolean(), nullable=False, default=True)

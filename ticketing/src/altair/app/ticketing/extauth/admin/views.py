@@ -568,9 +568,9 @@ class MembersView(object):
             self.request.session.flash(u'ファイルを指定してください')
         else:
             try:
-                num_records = import_export.MemberCSVImporter(master_session, organization_id)(
-                    import_export.MemberCSVParser(slave_session, organization_id)(
-                        import_export.CSVReader(file_fs.file, import_export.japanese_columns)
+                num_records = import_export.MemberDataImporter(master_session, organization_id)(
+                    import_export.MemberDataParser(slave_session, organization_id)(
+                        import_export.TabularDataReader(file_fs.file, file_fs.filename, import_export.japanese_columns)
                         )
                     )
                 master_session.commit()

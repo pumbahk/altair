@@ -227,6 +227,14 @@ class MembershipForm(OurForm):
             )
         )
 
+    membership_identifier = OurTextField(
+        label=u'会員ID',
+        filters=[blank_as_none],
+        validators=[
+            Optional()
+            ]
+        )
+
     valid_since = OurDateTimeField(
         label=u'有効化日時',
         format=u'%Y-%m-%d %H:%M'

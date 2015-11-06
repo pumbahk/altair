@@ -57,6 +57,7 @@
     <table class="controls-table table" style="display: inline-block">
       <thead>
         <th>会員区分</th>
+        <th>会員ID</th>
         <th>有効期限</th>
         <th>有効フラグ</th>
         <th colspan="2">-</th>
@@ -66,6 +67,7 @@
     % for membership_form_field in membership_form_fields:
       <tr class="controls-table-row${u' placeholder' if membership_id == form.memberships.placeholder_subfield_name else u''}">
         <td>${membership_form_field.member_kind_id}</td>
+        <td>${membership_form_field.membership_identifier}</td>
         <td>
           ${membership_form_field.valid_since}から
           ${membership_form_field.expire_at}
