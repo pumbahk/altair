@@ -49,7 +49,7 @@
 
 <!-- stockholder LOGIN BOX -->
 <div class="btn-stockholder">
-<p class="clear tar pdt10 pdr20">&raquo; <a href="${_context.route_path('extauth.index')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
+<p class="clear tar pdt10 pdr20">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
 </div>
 
 
