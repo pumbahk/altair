@@ -359,7 +359,7 @@ class View(object):
                 account_data = dict(
                     memberships=[
                         dict(
-                            membership_id=member.auth_identifier,
+                            membership_id=membership.membership_identifier,
                             kind=dict(
                                 id=membership.member_kind.id,
                                 name=membership.member_kind.name
