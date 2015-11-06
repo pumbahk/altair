@@ -170,13 +170,18 @@ ul.menu {
 }
 
 #search input[type="submit"] {
-  height: 27px;
+  height: auto;
   margin: 5px 0 0 0;
   font-weight: bold;
   font-family: inherit;
 }
 
-
+.sectionbox-inner .moreInfo #details {
+  height: 27px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+  font-family: inherit;
+}
 .btn-large {
   font-size: 20px;
 }
