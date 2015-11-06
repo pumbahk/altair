@@ -32,18 +32,22 @@ from .exceptions import GenericError
 logger = logging.getLogger(__name__)
 
 def extract_identifer(request):
+    retval = None
     for authenticator_name, identity in request.authenticated_userid.items():
         plugin_registry = get_plugin_registry(request)
         authenticator = plugin_registry.lookup(authenticator_name)
         if isinstance(authenticator, RakutenOpenID):
-            return identity['claimed_id']
+            # if the session is authenticated both by RakutenOpenID and InternalAuth, then
+            # InternalAuth will take precedence.
+            retval = identity['claimed_id']
         elif isinstance(authenticator, InternalAuthPlugin):
-            return u'urn:altair-extauth:%s:%s:%s' % (
+            retval = u'urn:altair-extauth:%s:%s:%s' % (
                 quote(identity['organization']),
                 quote(identity['member_set']),
                 quote(identity.get('auth_identifier') or u'*')
                 )
-    return None
+            break
+    return retval
 
 JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 
