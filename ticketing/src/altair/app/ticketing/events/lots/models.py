@@ -557,7 +557,7 @@ ORDER BY 申し込み番号, attribute_name
                     yield order_dict
                 prev_row = row
 
-            self.update_attribute_dict(prev_row, attribute_dict)
+            self.update_attribute_dict(row, attribute_dict)
             yield self.get_ordered_attribute_dict(row, attribute_dict)
         finally:
             cur.close()
