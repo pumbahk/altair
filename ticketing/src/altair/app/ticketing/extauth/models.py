@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from altair.models import Identifier
-from altair.models import MutableSpaceDelimitedList, SpaceDelimitedList
+from altair.models import MutableSpaceDelimitedList, SpaceDelimitedList, MutationDict, JSONEncodedDict
 from altair.oauth.interfaces import IClient
 
 Base = declarative_base()
@@ -22,6 +22,7 @@ class Organization(Base):
     short_name = sa.Column(sa.Unicode(32), nullable=False)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
+    settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
 
 
 class Host(Base):
