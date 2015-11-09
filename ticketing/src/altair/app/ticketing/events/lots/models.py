@@ -486,7 +486,7 @@ FROM LotEntryWish
      ON LotEntryAttribute.lot_entry_id = LotEntry.id
 WHERE Lot.id = %s
      AND LotEntryWish.deleted_at IS NULL
-ORDER BY 申し込み番号, attribute_name
+ORDER BY 申し込み番号, 希望順序, attribute_name
 
 """
 
@@ -551,7 +551,7 @@ ORDER BY 申し込み番号, attribute_name
                     prev_row = row
 
                 self.update_attribute_dict(prev_row, attribute_dict)
-                if prev_row[u'申し込み番号'] != row[u'申し込み番号']:
+                if prev_row[u'申し込み番号'] != row[u'申し込み番号'] or prev_row[u'希望順序'] != row[u'希望順序']:
                     order_dict = self.get_ordered_attribute_dict(prev_row, attribute_dict)
                     attribute_dict = OrderedDict()
                     yield order_dict
