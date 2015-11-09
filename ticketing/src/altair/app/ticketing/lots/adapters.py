@@ -650,8 +650,6 @@ class LotEntryController(object):
         抽選申込がwithdrawできる状態かどうかを判定する
         当落が確定しておらず受付期間中の抽選申込のみ取消できる
         """
-        if not now:
-            return None
         return (
             self.lot.available_on(now) and
             not self._entry.is_elected and
