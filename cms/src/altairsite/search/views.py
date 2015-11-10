@@ -121,7 +121,7 @@ class SearchByKindView(object):
         ## query_paramsをhtml化する
         html_query_params = self.context.get_query_params_as_html(query_params)
         ### header page用のcategoryを集めてくる
-        return dict(result_seq=result_seq, query_params=html_query_params)
+        return dict(result_seq=result_seq, query_params=html_query_params, area=query_params.get("prefectures"))
 
     @usersite_view_config(match_param="kind=deal_cond") #kind, value
     def search_by_deal_cond(self):

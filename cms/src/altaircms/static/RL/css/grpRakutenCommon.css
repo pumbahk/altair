@@ -115,22 +115,33 @@
 	text-decoration: underline;
 }
 .grpH-section .grpH-section-nav .grpH-nav-top a { background: #C00; border-radius: 2px 2px 0 0; }
-.grpH-section .grpH-section-nav .grpH-nav-music a { background: #624CB0; border-radius: 2px 2px 0 0; }
-.grpH-section .grpH-section-nav .grpH-nav-stage a { background: #EE5E97; border-radius: 2px 2px 0 0; }
-.grpH-section .grpH-section-nav .grpH-nav-sport a { background: #77C561; border-radius: 2px 2px 0 0; }
-.grpH-section .grpH-section-nav .grpH-nav-event a { background: #E3AB42; border-radius: 2px 2px 0 0; }
-/*.grpH-section .grpH-section-nav .grpH-nav-top a:hover { background: #C00; }
-.grpH-section .grpH-section-nav .grpH-nav-music a:hover { background: #624CB0; }
-.grpH-section .grpH-section-nav .grpH-nav-stage a:hover { background: #EE5E97; }
-.grpH-section .grpH-section-nav .grpH-nav-sport a:hover { background: #77C561; }
-.grpH-section .grpH-section-nav .grpH-nav-event a:hover { background: #E3AB42; }*/
+.grpH-section .grpH-section-nav .grpH-nav-hokkaido a { background: #624CB0; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-tohoku a { background: #EE5E97; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-kitakanto a { background: #77C561; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-shutoken a { background: #E3AB42; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-koshinetsu a { background: #624CB0; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-hokuriku a { background: #EE5E97; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-tokai a { background: #77C561; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-kinki a { background: #E3AB42; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-chugoku a { background: #624CB0; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-shikoku a { background: #EE5E97; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-kyushu a { background: #77C561; border-radius: 2px 2px 0 0; }
+.grpH-section .grpH-section-nav .grpH-nav-okinawa a { background: #E3AB42; border-radius: 2px 2px 0 0; }
+
+
 .grpH-section .grpH-nav-top{ width:120px; }
-.grpH-section .grpH-nav-music{ width:120px; }
-.grpH-section .grpH-nav-stage{ width:120px; }
-.grpH-section .grpH-nav-sport{ width:120px; }
-.grpH-section .grpH-nav-event{ width:120px; }
-
-
+.grpH-section .grpH-nav-hokkaido{ width:120px; }
+.grpH-section .grpH-nav-tohoku{ width:120px; }
+.grpH-section .grpH-nav-kitakanto{ width:120px; }
+.grpH-section .grpH-nav-shutoken{ width:120px; }
+.grpH-section .grpH-nav-koshinetsu{ width:120px; }
+.grpH-section .grpH-nav-hokuriku{ width:120px; }
+.grpH-section .grpH-nav-tokai{ width:120px; }
+.grpH-section .grpH-nav-kinki{ width:120px; }
+.grpH-section .grpH-nav-chugoku{ width:120px; }
+.grpH-section .grpH-nav-shikoku{ width:120px; }
+.grpH-section .grpH-nav-kyushu{ width:120px; }
+.grpH-section .grpH-nav-okinawa{ width:120px; }
 
 
 /* grpH-site-menu -------------------- */

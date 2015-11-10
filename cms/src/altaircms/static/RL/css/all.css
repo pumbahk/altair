@@ -783,7 +783,7 @@ ul#globalNav1 li.right{
     position: relative;
     left: 1px;
     float: right;
-    width: 950px;
+    width: 742px;
     line-height: 1.5;
     margin-bottom: 20px;
     padding-top: 3px;
@@ -1144,7 +1144,7 @@ ul#globalNav1 li.right{
 
 .searchResult dd {
     float: right;
-    width: 750px;
+    width: 628px;
     margin-bottom: 7px;
     padding: 10px;
     background-color: #f7f7ea;
@@ -1188,7 +1188,7 @@ ul#globalNav1 li.right{
 
 /* .searchRemainingOnsale {{{ */
 .searchRemainingOnsale {
-    width: 180px;
+    width: 628px;
     margin-right: 10px;
     color: #ff3399;
     font-weight: bold;
@@ -1198,7 +1198,7 @@ ul#globalNav1 li.right{
 
 /* .searchRemainingOnsale {{{ */
 .searchRemainingSalesTermination {
-    width: 82px;
+    width: 628px;
     margin-right: 10px;
     color: #c7c7c7;
     font-weight: bold;
@@ -1227,6 +1227,7 @@ ul#globalNav1 li.right{
 .searchResult p {
     float: right;
     margin: 0;
+    margin-left: 20px;
 }
 
 .searchResult img {
@@ -3122,7 +3123,7 @@ a.goto-link {
   color:white;
   border:0;
   display:block;
-  font-size: 60px;
+/*  font-size: 60px;*/
   font-weight: bold;
   font-family: Sans-Serif, Helvetica;
 }
