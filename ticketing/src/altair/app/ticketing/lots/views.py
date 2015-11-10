@@ -737,12 +737,12 @@ class LotReviewWithdrawView(object):
         """申込取消実行"""
         check_csrf_token(self.request)
 
-        if self.context.entry:
-            self.context.entry.withdraw()
+        if not self.context.entry:
+            raise ValueError()
+        if not self.context.entry.is_withdrawn:
+            self.context.entry.withdraw(self.request)
             mutil = get_mail_utility(self.request, MailTypeEnum.LotsWithdrawMail)
             mutil.send_mail(self.request, (self.context.entry, None))
-        else:
-            raise ValueError()
         return self.build_response_dict()
 
     @lbr_view_config(route_name='lots.review.withdraw.confirm',

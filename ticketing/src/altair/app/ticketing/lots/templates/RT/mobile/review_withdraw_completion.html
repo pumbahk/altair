@@ -9,17 +9,31 @@
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>
 <div class="confirmBoxText">${entry.entry_no}</div>
-<%mobile:form_header>抽選結果</%mobile:form_header>
+
+<%mobile:form_header>状態</%mobile:form_header>
 <div>
-% if entry.is_ordered:
+%if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選待ち
+%else:
+<span style="color:red;">
+${h.lot_entry_status_as_string(entry)}
+</span>
+%endif
+<%mobile:band bgcolor="#ffffdd">
+%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
-<a href="/orderreview/guest" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
-% elif entry.is_rejected:
-抽選の結果、お客様は残念ながら落選となりました。
-% elif not entry.lot.is_elected():
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
-% endif
-</div>
+払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
+<a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
+予約番号は ${entry.entry_no} です。
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
+抽選の結果、お客様は残念ながら落選となりました。<br />
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
+抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+%endif
+</%mobile:band>
 
 <div>
 <%mobile:header>お申込内容</%mobile:header>

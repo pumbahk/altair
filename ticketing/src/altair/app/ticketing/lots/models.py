@@ -51,6 +51,7 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.cart.models import (
     Cart,
 )
+from .events import LotClosedEvent
 
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
@@ -695,7 +696,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for wish in self.wishes:
             wish.cancel(now)
 
-    def withdraw(self):
+    def withdraw(self, request):
+        logger.debug("close lot entry {0} ".format(self.entry_no))
+        self.close()
+        event = LotClosedEvent(request, lot_entry=self)
+        request.registry.notify(event)
         now = datetime.now()
         self.withdrawn_at = now
         for wish in self.wishes:

@@ -7,6 +7,7 @@
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>
 <div>${entry.entry_no}</div>
+
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
 %if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
@@ -31,6 +32,7 @@ ${h.lot_entry_status_as_string(entry)}
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 %endif
 </%mobile:band>
+
 </div>
 <%mobile:form_header>対象公演・試合</%mobile:form_header>
 <div>

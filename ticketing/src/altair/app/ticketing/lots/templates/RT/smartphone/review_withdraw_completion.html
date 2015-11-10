@@ -12,21 +12,38 @@
   </div>
 </div>
 
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
-    <div class="confirmBoxText">
-      % if entry.is_ordered:
-抽選の結果、お客様はご当選されました。
-<a href="/orderreview/guest" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
-      % elif entry.is_rejected:
-抽選の結果、お客様は残念ながら落選となりました。
-      % elif not entry.lot.is_elected():
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
-      % endif
-    </div>
+%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+  <div class="subbox">
+    <dl>
+      <dt><p class="linered">抽選取消</p></dt>
+      <dd>
+        <div class="subinner2">
+        お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+        </div>
+      </dd>
+    </dl>
   </div>
-</div>
+%else:
+  <div class="subbox">
+    <dl>
+      <dt><p class="linered">抽選結果</p></dt>
+      <dd>
+        <div class="subinner2">
+        % if h.lot_entry_display_status(entry, now) == u'当選表示':
+抽選の結果、お客様はご当選されました。
+払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
+<a href="/orderreview/guest" target="_blank">■購入履歴確認ページ</a>をご確認ください。<br/>
+予約番号は ${entry.entry_no} です。
+        % elif h.lot_entry_display_status(entry, now) == u'落選表示':
+抽選の結果、お客様は残念ながら落選となりました。
+        % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+        % endif
+        </div>
+      </dd>
+    </dl>
+  </div>
+%endif
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
