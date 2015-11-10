@@ -109,6 +109,7 @@ class EaglesCommunicator(object):
                 memberships=[
                     dict(
                         membership_id=member['fc_member_id'],
+                        displayed_membership_id=member['fc_member_no'],
                         year=member['year'],
                         registered_at=self.parse_datetime(member['admission_date']),
                         related_at=self.parse_datetime(member['rakuten_relation_date']),

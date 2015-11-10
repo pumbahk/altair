@@ -8,7 +8,7 @@
 <li class="${membership['kind']['aux']['style_class_name']}">
 <a href="${_context.route_path('extauth.authorize', _query=dict(_=request.session.get_csrf_token(), member_kind_id=membership['kind']['id'], membership_id=membership['membership_id']))}">
   <span class="member_kind">${membership['kind']['name']}</span>
-  <span class="member_id tac">会員ID：${membership['membership_id']}</span>
+  <span class="member_id tac">会員ID：${membership['displayed_membership_id']}</span>
 </a>
 </li>
 %endfor

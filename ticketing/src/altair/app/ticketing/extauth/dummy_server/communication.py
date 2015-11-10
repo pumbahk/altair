@@ -1,4 +1,5 @@
 import six
+import re
 import hashlib
 import json
 from zope.interface import implementer
@@ -66,6 +67,10 @@ class MembershipCheckAPIRequestHandler(object):
     def format_datetime(self, value):
         return six.text_type(value.strftime(u'%Y-%m-%d %H:%M:%S')) if value is not None else None
 
+
+    def mask_member_no(self, value):
+        return re.sub(ur'[0-9]+-', lambda g: u'*' * (len(g.group(0)) - 1) + u'-', value)
+
     def build_response(self, request, flavor, successful, value):
         if flavor != u'json':
             raise UnsupportedFlavor(flavor)
@@ -79,7 +84,7 @@ class MembershipCheckAPIRequestHandler(object):
             retval[u'members'] = [
                 {
                     u'fc_member_id': membership.membership_id,
-                    u'fc_member_no': membership.user.member_no,
+                    u'fc_member_no': self.mask_member_no(membership.membership_id),
                     u'course_id': membership.kind.id,
                     u'course_name': membership.kind.name,
                     u'year': membership.valid_since.year,

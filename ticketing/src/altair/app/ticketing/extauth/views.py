@@ -364,6 +364,7 @@ class View(object):
                     memberships=[
                         dict(
                             membership_id=membership.membership_identifier,
+                            displayed_membership_id=membership.membership_identifier,
                             kind=dict(
                                 id=membership.member_kind.id,
                                 name=membership.member_kind.name
@@ -401,6 +402,7 @@ class View(object):
                     memberships=[
                         dict(
                             membership_id=None,
+                            displayed_membership_id=None,
                             kind=dict(
                                 id=member_kind.id,
                                 name=member_kind.name
