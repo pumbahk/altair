@@ -303,7 +303,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 logger.debug("already marked as rejected {entry_no}".format(entry_no=entry_no))
                 continue
             #すでにユーザ取消
-            if wish.is_withdrawn():
+            if entry.is_withdrawn:
                 logger.debug("{entry_no} already withdrawn by user".format(entry_no=entry_no))
                 continue
             # すでに当選予定
