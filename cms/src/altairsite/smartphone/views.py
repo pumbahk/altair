@@ -15,7 +15,7 @@ def main_pc(context, request):
     ## don't imitate. this.
     return {'helper':SmartPhoneHelper()}
 
-@smartphone_site_view_config(route_name="smartphone.goto_pc_page", request_type="altair.mobile.interfaces.ISmartphoneRequest")
+@smartphone_site_view_config(route_name="smartphone.goto_pc_page")
 def goto_pc_page(context, request):
     response = HTTPFound(request.GET.get("next", "/"))
     set_we_need_pc_access(response)
