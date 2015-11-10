@@ -144,11 +144,9 @@ class CompletionMailViewlet(object):
         """ 完了メール表示
         :param context: ICompleteMailDelivery
         """
-        order = self.context.order
         notice = self.context.mail_data("D", "notice")
-        reserved_number = m.ReservedNumber.query.filter_by(order_no=order.order_no).first()
-        delivery_method = order.payment_delivery_pair.delivery_method
-        return dict(notice=notice, reserved_number=reserved_number, description=Markup(delivery_method.description))
+        reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
+        return dict(notice=notice, reserved_number=reserved_number)
 
 @view_defaults(context=IOrderCancelMailResource)
 class OrderCancelMailViewlet(object):
