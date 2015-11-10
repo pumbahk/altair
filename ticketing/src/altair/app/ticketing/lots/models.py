@@ -889,12 +889,12 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
     @property
     def status(self):
         """ """
+        if self.withdrawn_at:
+            return u"ユーザ取消"
         if self.closed:
             return u"終了"
         if self.canceled_at:
             return u"キャンセル"
-        if self.withdrawn_at:
-            return u"ユーザ取消"
         if self.elected_at:
             return u"当選"
         if self.rejected_at:
