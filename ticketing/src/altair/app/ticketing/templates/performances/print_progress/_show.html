@@ -1,4 +1,8 @@
 <h4>発券進捗状況</h4>
+<form method="POST">
+${print_progress_form.product_item_id}
+<input type="submit" value="選択"/>
+</form>
 <%include file="/print_progress/_list.html" args="progress=progress"/>
 
 <hr/>

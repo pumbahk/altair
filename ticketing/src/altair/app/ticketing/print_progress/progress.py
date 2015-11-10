@@ -26,17 +26,18 @@ ProgressData = namedtuple("ProgressData", "total printed unprinted")
 """
 
 class PrintProgressGetter(object):
-    def __init__(self, request, organization):
+    def __init__(self, request, organization, product_item_id):
         self.request = request
         self.organization = organization
+        self.product_item_id = product_item_id
 
     def get_event_progress(self, event):
         assert event.organization_id == self.organization.id
-        return EventPrintProgress(event)
+        return EventPrintProgress(event, self.product_item_id)
 
     def get_performance_progress(self, performance):
         assert performance.event.organization_id == self.organization.id
-        return PerformancePrintProgress(performance)
+        return PerformancePrintProgress(performance, self.product_item_id)
 
 class DummyPrintProgress(object):
     @reify
@@ -149,24 +150,33 @@ class PrintProgressBase(object):
 
 
 class PerformancePrintProgress(PrintProgressBase):
-    def __init__(self, performance):
+    def __init__(self, performance, product_item_id):
         self.performance = performance
         self.filtering = TokenQueryFilter()
+        self.product_item_id = product_item_id
+
+    @reify
+    def performance_id_list(self):
+        return [self.performance.id]
 
     @reify
     def ordered_product_item_token_query(self):
-        return (OrderedProductItemToken.query
+        query = (OrderedProductItemToken.query
                 .join(OrderedProductItem)
                 .join(OrderedProduct)
                 .join(Order)
                 .filter(Order.performance==self.performance)
                 .filter(Order.canceled_at==None)
                 .filter(Order.deleted_at==None))
+        if self.product_item_id:
+            query = query.filter(OrderedProductItem.product_item_id == self.product_item_id)
+        return query
 
 class EventPrintProgress(PrintProgressBase):
-    def __init__(self, event):
+    def __init__(self, event, product_item_id):
         self.event = event
         self.filtering = TokenQueryFilter()
+        self.product_item_id = product_item_id
 
     @reify
     def performance_id_list(self):
@@ -174,10 +184,13 @@ class EventPrintProgress(PrintProgressBase):
 
     @reify
     def ordered_product_item_token_query(self):
-        return (OrderedProductItemToken.query
+        query = (OrderedProductItemToken.query
                 .join(OrderedProductItem)
                 .join(OrderedProduct)
                 .join(Order)
                 .filter(Order.performance_id.in_(self.performance_id_list))
                 .filter(Order.canceled_at==None)
                 .filter(Order.deleted_at==None))
+        if self.product_item_id:
+            query = query.filter(OrderedProductItem.product_item_id == self.product_item_id)
+        return query
