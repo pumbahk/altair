@@ -6,6 +6,7 @@ from altair.app.ticketing.events.forms import EventForm
 from .forms import PrintProgressForm
 from .progress import PrintProgressGetter
 
+
 ##TODO:edit permission
 @view_config(route_name="events.print_progress.show", permission="authenticated", 
              renderer="altair.app.ticketing:templates/events/print_progress.html", 
@@ -14,17 +15,21 @@ def show_event_print_progress(context, request):
     event = context.target
     if event is None:
         raise HTTPNotFound("event is not found. (event_id={})".format(context.event_id))
-    product_item_id = request.POST.get('product_item_id')
-    getter = PrintProgressGetter(request, context.organization, product_item_id)
-    progress = getter.get_event_progress(event)
-    print_progress_form=PrintProgressForm(performance_ids=progress.performance_id_list)
-    print_progress_form.product_item_id.data = product_item_id
+    getter = PrintProgressGetter(request, context.organization)
+    print_progress_form=PrintProgressForm(request.POST, performance_ids=context.performance_id_list)
+    progress = getter.get_event_progress(
+         event
+        ,print_progress_form.product_item_id.data
+        ,print_progress_form.start_on.data
+        ,print_progress_form.end_on.data
+    )
     return dict(
         event=event,
         form=EventForm(context=context),
-        print_progress_form=print_progress_form,
-        progress=progress
+        progress=progress,
+        print_progress_form=print_progress_form
     )
+
 
 @view_config(route_name="performances.print_progress.show", permission="authenticated", 
              renderer='altair.app.ticketing:templates/performances/show.html', 
@@ -33,11 +38,15 @@ def show_performance_print_progress(context, request):
     performance = context.target
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))
-    product_item_id = request.POST.get('product_item_id')
-    getter = PrintProgressGetter(request, context.organization, product_item_id)
-    progress = getter.get_performance_progress(performance)
-    print_progress_form=PrintProgressForm(performance_ids=progress.performance_id_list)
-    print_progress_form.product_item_id.data = product_item_id
+    getter = PrintProgressGetter(request, context.organization)
+    print_progress_form=PrintProgressForm(request.POST, performance_ids=[context.performance_id])
+    progress = getter.get_performance_progress(
+         performance
+        ,print_progress_form.product_item_id.data
+        ,print_progress_form.start_on.data
+        ,print_progress_form.end_on.data
+    )
+
     return dict(
         tab="print_progress", 
         performance=performance,

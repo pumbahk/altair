@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from wtforms.validators import Optional
+from altair.formhelpers import after1900
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurSelectField
+from altair.formhelpers.fields import OurSelectField, DateTimeField
 from altair.app.ticketing.core.models import (
     ProductItem
     )
@@ -18,4 +20,14 @@ class PrintProgressForm(OurForm):
         label=u'商品明細',
         choices=lambda field: [(key, value) for key, value in sorted(field._form.product_items.items())],
         coerce=str
+    )
+    start_on = DateTimeField(
+        label=u'開始時間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    end_on = DateTimeField(
+        label=u'終了時間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
     )
