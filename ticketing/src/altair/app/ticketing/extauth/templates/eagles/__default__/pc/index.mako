@@ -6,25 +6,6 @@
 <div class="box clearfix">
 
 
-<!-- guest LOGIN BOX -->
-<div class="col2_2 tile2 login-box">
-<form action="${_context.route_path('extauth.login')}" method="POST">
-<dl>
-% for member_kind in member_set.member_kinds:
-% if member_kind.show_in_landing_page and member_kind.enable_guests:
-<dt class="login-name" id="guestlogintitle"><span>${member_kind.display_name}の方</span>はこちらから</dt>
-<dd class="login-inbox" id="guestlogin">
-<p><button class="btnA btnA_l login-guest-btn" name="doGuestLoginAs${member_kind.name}">チケット購入</button></p>
-</dd>
-% endif
-% endfor
-</dl>
-<input type="hidden" name="member_set" value="${member_set.name}" />
-<input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-</form>
-</div>
-
-
 <!-- member LOGIN BOX -->
 <div class="col2_1 tile2 login-box">
 <dl>
@@ -47,6 +28,25 @@
 </dd>
 </dl>
 </div>
+
+<!-- guest LOGIN BOX -->
+<div class="col2_2 tile2 login-box">
+<form action="${_context.route_path('extauth.login')}" method="POST">
+<dl>
+% for member_kind in member_set.member_kinds:
+% if member_kind.show_in_landing_page and member_kind.enable_guests:
+<dt class="login-name" id="guestlogintitle"><span>${member_kind.display_name}の方</span>はこちらから</dt>
+<dd class="login-inbox" id="guestlogin">
+<p><button class="btnA btnA_l login-guest-btn" name="doGuestLoginAs${member_kind.name}">チケット購入</button></p>
+</dd>
+% endif
+% endfor
+</dl>
+<input type="hidden" name="member_set" value="${member_set.name}" />
+<input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
+</form>
+</div>
+
 
 
 <!-- stockholder LOGIN BOX -->
