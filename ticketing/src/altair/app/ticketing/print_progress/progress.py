@@ -87,7 +87,7 @@ class TokenQueryFilter(object):
             cond
         )
 
-    def filter_by_printed_token(self, query, start_on, end_on):
+    def filter_by_printed_token(self, query, start_on=None, end_on=None):
         if start_on and end_on:
             query = query.filter(OrderedProductItemToken.printed_at >= start_on)
             query = query.filter(OrderedProductItemToken.printed_at <= end_on)
@@ -98,6 +98,7 @@ class TokenQueryFilter(object):
                            OrderedProductItemToken.printed_at > OrderedProductItemToken.refreshed_at)
                 )
         )
+
 
 class PrintProgressBase(object):
     filtering = None
@@ -118,8 +119,9 @@ class PrintProgressBase(object):
             [ plugins.QR_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID ]
         )
         total = query.count()
+        all_printed = self.filtering.filter_by_printed_token(query).count()
         printed = self.filtering.filter_by_printed_token(query, self.start_on, self.end_on).count()
-        return ProgressData(total=total, printed=printed, unprinted=total-printed)
+        return ProgressData(total=total, printed=printed, unprinted=total-all_printed)
 
     @reify
     def shipping(self):
@@ -128,8 +130,9 @@ class PrintProgressBase(object):
             plugins.SHIPPING_DELIVERY_PLUGIN_ID
         )
         total = query.count()
+        all_printed = self.filtering.filter_by_printed_token(query).count()
         printed = self.filtering.filter_by_printed_token(query, self.start_on, self.end_on).count()
-        return ProgressData(total=total, printed=printed, unprinted=total-printed)
+        return ProgressData(total=total, printed=printed, unprinted=total-all_printed)
 
     @reify
     def reserved(self):
@@ -138,8 +141,9 @@ class PrintProgressBase(object):
             plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID
         )
         total = query.count()
+        all_printed = self.filtering.filter_by_printed_token(query).count()
         printed = self.filtering.filter_by_printed_token(query, self.start_on, self.end_on).count()
-        return ProgressData(total=total, printed=printed, unprinted=total-printed)
+        return ProgressData(total=total, printed=printed, unprinted=total-all_printed)
 
     @reify
     def other(self):
@@ -148,8 +152,9 @@ class PrintProgressBase(object):
             [plugins.SHIPPING_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID, plugins.QR_DELIVERY_PLUGIN_ID, plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID]
         )
         total = query.count()
+        all_printed = self.filtering.filter_by_printed_token(query).count()
         printed = self.filtering.filter_by_printed_token(query, self.start_on, self.end_on).count()
-        return ProgressData(total=total, printed=printed, unprinted=total-printed)
+        return ProgressData(total=total, printed=printed, unprinted=total-all_printed)
 
 
 class PerformancePrintProgress(PrintProgressBase):
