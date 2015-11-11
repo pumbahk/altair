@@ -158,7 +158,7 @@ class PrintProgressBase(object):
 
 
 class PerformancePrintProgress(PrintProgressBase):
-    def __init__(self, performance, product_item_id, start_on, end_on):
+    def __init__(self, performance, product_item_id=None, start_on=None, end_on=None):
         self.performance = performance
         self.filtering = TokenQueryFilter()
         self.product_item_id = product_item_id
@@ -183,7 +183,7 @@ class PerformancePrintProgress(PrintProgressBase):
         return query
 
 class EventPrintProgress(PrintProgressBase):
-    def __init__(self, event, product_item_id, start_on, end_on):
+    def __init__(self, event, product_item_id=None, start_on=None, end_on=None):
         self.event = event
         self.filtering = TokenQueryFilter()
         self.product_item_id = product_item_id
