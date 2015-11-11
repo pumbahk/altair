@@ -151,7 +151,10 @@ class CompletionMailViewlet(object):
         delivery_method = order.payment_delivery_pair.delivery_method
         notice = self.context.mail_data("D", "notice")
         reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
-        return dict(notice=notice, reserved_number=reserved_number, description=tag_re.sub("", delivery_method.description))
+        description = ""
+        if delivery_method.description is not None:
+            description = tag_re.sub("", delivery_method.description)
+        return dict(notice=notice, reserved_number=reserved_number, description=description)
 
 @view_defaults(context=IOrderCancelMailResource)
 class OrderCancelMailViewlet(object):
