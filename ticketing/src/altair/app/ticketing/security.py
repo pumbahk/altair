@@ -2,6 +2,8 @@
 import logging
 import re
 
+from urlparse import urljoin
+from zope.interface import implementer
 from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
 from altair.auth.api import get_plugin_registry
@@ -9,6 +11,7 @@ from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
 from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
+from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -153,3 +156,51 @@ def get_display_name(request, plugin_name):
     plugin_registry = get_plugin_registry(request)
     plugin = plugin_registry.lookup(plugin_name) if plugin_name is not None else None
     return DISPLAY_NAMES.get(plugin.__class__, plugin.name) if plugin is not None else _(u'(なし)')
+
+@implementer(IRakutenOpenIDURLBuilder)
+class RakutenAuthURLBuilder(object):
+    def __init__(self, proxy_url_pattern, **kwargs):
+        self.proxy_url_pattern = proxy_url_pattern
+
+    def extra_verify_url_exists(self, request):
+        return True
+
+    def build_base_url(self, request):
+        subdomain = request.host.split('.', 1)[0]
+        return self.proxy_url_pattern.format(
+            subdomain=subdomain
+            )
+
+    def build_return_to_url(self, request):
+        return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.verify').lstrip('/'))
+
+    def build_error_to_url(self, request):
+        return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.error').lstrip('/'))
+
+    def build_verify_url(self, request):
+        return request.route_url('rakuten_auth.verify')
+
+    def build_extra_verify_url(self, request):
+        return request.route_url('rakuten_auth.verify2')
+
+
+@implementer(IRakutenOpenIDURLBuilder)
+class RakutenAuthNoExtraVerifyURLBuilder(object):
+    def __init__(self, **kwargs):
+        pass
+
+    def extra_verify_url_exists(self, request):
+        return False
+
+    def build_return_to_url(self, request):
+        return request.route_url('rakuten_auth.verify')
+
+    def build_error_to_url(self, request):
+        return request.route_url('rakuten_auth.error')
+
+    def build_verify_url(self, request):
+        return request.route_url('rakuten_auth.verify')
+
+    def build_extra_verify_url(self, request):
+        return None
+

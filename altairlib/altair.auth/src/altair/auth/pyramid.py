@@ -3,13 +3,13 @@
 from __future__ import absolute_import
 import logging
 import itertools
-from zope.interface import implementer, providedBy
+from zope.interface import implementer, providedBy, directlyProvides
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.interfaces import IAuthenticationPolicy, IRequest, IViewClassifier, IView, IMultiView
 from pyramid.security import Everyone, Authenticated, principals_allowed_by_permission
 
-from .api import get_auth_api, get_who_api, decide, get_request_classifier
-from .interfaces import ISessionKeeper, IForbiddenHandler
+from .api import get_auth_api, get_who_api, decide, get_request_classifier, get_plugin_registry
+from .interfaces import ISessionKeeper, IForbiddenHandler, IAltairAuthRequest, IRequestInterceptor
 
 
 logger = logging.getLogger(__name__)
@@ -121,11 +121,14 @@ class AuthenticationPolicy(object):
     def _get_identities(self, request):
         identities = request.environ.get('altair.auth.identities')
         auth_factors = request.environ.get('altair.auth.auth_factors')
+        metadata = request.environ.get('altair.auth.metadata')
         if identities is None:
             api = self._getAPI(request)
             if api is None:
                 return None
-            identities, auth_factors, _ = api.authenticate()
+            identities, auth_factors, metadata = api.authenticate()
+        directlyProvides(request, IAltairAuthRequest)
+        request.altair_auth_metadata = metadata
         return identities, auth_factors
 
 def get_required_permissions(context, request):
@@ -136,9 +139,9 @@ def get_required_permissions(context, request):
         )
     if view_callable is not None:
         if IMultiView.providedBy(view_callable):
-            permissions = (getattr(view, '__permission__', None) for _, view, _ in view_callable.get_views(request))
+            permissions = (getattr(view_callable, '__permission__', None) for _, view, _ in view_callable.get_views(request))
         else:
-            permissions = (getattr(view, '__permission__', None), )
+            permissions = (getattr(view_callable, '__permission__', None), )
         permissions = set(permission for permission in permissions if permission is not None)
     else:
         permissions = set()
@@ -204,3 +207,17 @@ def challenge_view(context, request):
         return HTTPForbidden(detail=u'We are experiencing a system error that you cannot get around at the moment. Sorry for the inconvenience... (guru meditation: {0})'.format(msg), content_type='text/plain')
     else:
         return response
+
+
+class InterceptorTween(object):
+    def __init__(self, handler, registry):
+        self.handler = handler
+
+    def __call__(self, request):
+        plugin_registry = get_plugin_registry(request)
+        plugins = plugin_registry.lookup_by_interface(IRequestInterceptor)
+        for plugin in plugins:
+            response = plugin.intercept(request)
+            if response is not None:
+                return response
+        return self.handler(request)

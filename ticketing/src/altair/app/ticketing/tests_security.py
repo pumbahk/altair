@@ -10,9 +10,11 @@ class AuthModelCallbackTest(unittest.TestCase):
         self.rakuten_auth_plugin = self._get_rakuten_auth_plugin()(
             plugin_name='rakuten',
             endpoint='http://example.com/',
-            verify_url='...',
-            extra_verify_url='...',
-            error_to='...',
+            url_builder=mock.Mock(
+                verify_url='...',
+                extra_verify_url='...',
+                error_to='...'
+                ),
             consumer_key='secret',
             session_factory=mock.Mock()
             )

@@ -1,3 +1,4 @@
+import six
 import hmac
 import uuid
 import time
@@ -12,24 +13,26 @@ from .interfaces import IRakutenOAuth, IRakutenIDAPI, IRakutenIDAPIFactory
 
 logger = logging.getLogger(__name__)
 
-def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
+def create_signature_base(method, url, oauth_consumer_key, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
-        ("oauth_consumer_key", oauth_consumer_key),
-        ("oauth_token", oauth_token),
-        ("oauth_signature_method", oauth_signature_method),
-        ("oauth_timestamp", str(oauth_timestamp)),
-        ("oauth_nonce", oauth_nonce),
-        ("oauth_version", oauth_version), 
+        (u"oauth_consumer_key", oauth_consumer_key),
+        (u"oauth_token", oauth_token),
+        (u"oauth_signature_method", oauth_signature_method),
+        (u"oauth_timestamp", oauth_timestamp),
+        (u"oauth_nonce", oauth_nonce),
+        (u"oauth_version", oauth_version),
     ])
-
-    msg = method + "&" + urllib.quote(url, safe="") + "&" + urllib.quote(urllib.urlencode(params), safe="")
+    logger.debug('params: %r' % params)
+    msg = '&'.join(urllib.quote(c, safe='') for c in [method.encode('utf-8'), url.encode('utf-8'), urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])])
     logger.debug("oauth base: %s" % msg)
     return msg
 
 
 def create_oauth_signature(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
-    msg = create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
-    logger.debug("secret: %s" % secret)
+    logger.debug("consumer_key=%s, consumer_secret=%s" % (oauth_consumer_key, secret))
+    msg = create_signature_base(method, url, oauth_consumer_key, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params)
+    if isinstance(secret, six.text_type):
+        secret = secret.encode('utf-8')
     oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
     return oauth_signature.strip()
 
@@ -47,20 +50,26 @@ class RakutenOAuth(object):
     def __init__(self, endpoint, consumer_key, secret, timeout=10):
         self.endpoint = endpoint
         self.consumer_key = consumer_key
-        self.secret = secret + '&'
+        self.secret = secret
         self.timeout = int(timeout)
 
-    def get_access_token(self, oauth_token):
-        method = "GET"
-        oauth_timestamp = int(time.time() * 1000)
+    def get_access_token(self, request, oauth_token):
+        method = u'GET'
+        oauth_timestamp = six.text_type(int(time.time() * 1000))
         oauth_nonce = uuid.uuid4().hex
-        oauth_signature_method = 'HMAC-SHA1'
-        oauth_version = '1.0'
+        oauth_signature_method = u'HMAC-SHA1'
+        oauth_version = u'1.0'
+        consumer_key = self.consumer_key
+        if callable(consumer_key):
+            consumer_key = consumer_key(request)
+        secret = self.secret
+        if callable(secret):
+            secret = secret(request)
         oauth_signature = create_oauth_signature(
             method,
             self.endpoint,
-            self.consumer_key,
-            self.secret, 
+            consumer_key,
+            secret + '&',
             oauth_token,
             oauth_signature_method,
             oauth_timestamp,
@@ -70,16 +79,16 @@ class RakutenOAuth(object):
             )
 
         params = [
-            ("oauth_consumer_key", self.consumer_key),
-            ("oauth_token", oauth_token),
-            ("oauth_signature_method", oauth_signature_method),
-            ("oauth_timestamp", oauth_timestamp),
-            ("oauth_nonce", oauth_nonce),
-            ("oauth_version", oauth_version),
-            ("oauth_signature", oauth_signature),
-        ]
-        
-        request_url = self.endpoint + '?' + urllib.urlencode(params)
+            (u'oauth_consumer_key', consumer_key),
+            (u'oauth_token', oauth_token),
+            (u'oauth_signature_method', oauth_signature_method),
+            (u'oauth_timestamp', oauth_timestamp),
+            (u'oauth_nonce', oauth_nonce),
+            (u'oauth_version', oauth_version),
+            (u'oauth_signature', oauth_signature),
+            ]
+
+        request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("getting access token: %s" % request_url)
         f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
@@ -96,24 +105,24 @@ class RakutenOAuth(object):
 
 @implementer(IRakutenIDAPI)
 class RakutenIDAPI(object):
-    def __init__(self, endpoint, consumer_key, secret, access_token, timeout=10):
+    def __init__(self, endpoint, consumer_key, secret, access_token, encoding='utf-8', timeout=10):
         self.endpoint = endpoint
         self.consumer_key = consumer_key
-        self.access_token = access_token['oauth_token']
-        self.secret = secret + '&' + access_token['oauth_token_secret']
+        self.secret = secret
+        self.oauth_token = access_token['oauth_token']
+        self.oauth_token_secret = access_token['oauth_token_secret']
         self.timeout = int(timeout)
+        self.encoding = encoding
 
-    @staticmethod
-    def parse_rakutenid_basicinfo(response):
-        return dict([line.split(":", 1) for line in response.split("\n")])
+    def parse_rakutenid_basicinfo(self, response):
+        return dict([tuple(six.text_type(c, self.encoding) for c in line.split(":", 1)) for line in response.split("\n")])
 
-    @staticmethod
-    def parse_rakutenid_pointaccount(response):
-        return dict([line.split(":", 1) for line in response.split("\n")])
+    def parse_rakutenid_pointaccount(self, response):
+        return dict([tuple(six.text_type(c, self.encoding) for c in line.split(":", 1)) for line in response.split("\n")])
 
     def call_rakutenid_api(self, rakuten_oauth_api):
         method = "GET"
-        oauth_timestamp = int(time.time() * 1000)
+        oauth_timestamp = six.text_type(int(time.time() * 1000))
         oauth_nonce = uuid.uuid4().hex
         oauth_signature_method = 'HMAC-SHA1'
         oauth_version = '1.0'
@@ -121,27 +130,27 @@ class RakutenIDAPI(object):
             method,
             self.endpoint,
             self.consumer_key,
-            self.secret,
-            self.access_token,
+            self.secret + '&' + self.oauth_token_secret,
+            self.oauth_token,
             oauth_signature_method,
             oauth_timestamp,
             oauth_nonce,
-            oauth_version, 
-            [("rakuten_oauth_api", rakuten_oauth_api)]
+            oauth_version,
+            [(u'rakuten_oauth_api', rakuten_oauth_api)]
             )
 
         params = [
-            ("oauth_consumer_key", self.consumer_key),
-            ("oauth_token", self.access_token),
-            ("oauth_signature_method", oauth_signature_method),
-            ("oauth_timestamp", oauth_timestamp),
-            ("oauth_nonce", oauth_nonce),
-            ("oauth_version", oauth_version),
-            ("oauth_signature", oauth_signature),
-            ("rakuten_oauth_api", rakuten_oauth_api),
-        ]
+            (u'oauth_consumer_key', self.consumer_key),
+            (u'oauth_token', self.oauth_token),
+            (u'oauth_signature_method', oauth_signature_method),
+            (u'oauth_timestamp', oauth_timestamp),
+            (u'oauth_nonce', oauth_nonce),
+            (u'oauth_version', oauth_version),
+            (u'oauth_signature', oauth_signature),
+            (u'rakuten_oauth_api', rakuten_oauth_api),
+            ]
 
-        request_url = self.endpoint + '?' + urllib.urlencode(params)
+        request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("get user_info: %s" % request_url)
         f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
@@ -163,21 +172,56 @@ class RakutenIDAPI(object):
     def get_point_account(self):
         return self.parse_rakutenid_pointaccount(self.call_rakutenid_api('rakutenid_pointaccount'))
 
-def rakuten_oauth_from_settings(settings, prefix):
+def get_oauth_consumer_key_from_config(config, prefix):
+    settings = config.registry.settings
+    consumer_key_builder = settings.get(prefix + 'oauth.consumer_key_builder')
+    if consumer_key_builder is not None:
+        consumer_key_builder = consumer_key_builder.strip()
+    if not consumer_key_builder:
+        consumer_key = settings[prefix + 'oauth.consumer_key']
+    else:
+        consumer_key = config.maybe_dotted(consumer_key_builder)
+    return consumer_key
+
+def get_oauth_consumer_secret_from_config(config, prefix):
+    settings = config.registry.settings
+    consumer_secret_builder = settings.get(prefix + 'oauth.consumer_secret_builder')
+    if consumer_secret_builder is not None:
+        consumer_secret_builder = consumer_secret_builder.strip()
+    if not consumer_secret_builder:
+        consumer_secret = settings[prefix + 'oauth.secret']
+    else:
+        consumer_secret = config.maybe_dotted(consumer_secret_builder)
+    return consumer_secret
+
+def rakuten_oauth_from_config(config, prefix):
+    settings = config.registry.settings
+    consumer_key = get_oauth_consumer_key_from_config(config, prefix)
+    consumer_secret = get_oauth_consumer_secret_from_config(config, prefix)
     return RakutenOAuth(
         endpoint=settings[prefix + 'oauth.endpoint.access_token'],
-        consumer_key=settings[prefix + 'oauth.consumer_key'],
-        secret=settings[prefix + 'oauth.secret'],
+        consumer_key=consumer_key,
+        secret=consumer_secret,
         timeout=settings[prefix + 'timeout']
         )
 
-def rakuten_id_api_factory_from_settings(settings, prefix):
-    def factory(access_token):
+def rakuten_id_api_factory_from_config(config, prefix):
+    settings = config.registry.settings
+    _consumer_key = get_oauth_consumer_key_from_config(config, prefix)
+    _consumer_secret = get_oauth_consumer_secret_from_config(config, prefix)
+    def factory(request, access_token):
+        consumer_key = _consumer_key
+        consumer_secret = _consumer_secret
+        if callable(consumer_key):
+            consumer_key = consumer_key(request)
+        if callable(consumer_secret):
+            consumer_secret = consumer_secret(request)
         return RakutenIDAPI(
             endpoint=settings[prefix + 'oauth.endpoint'],
-            consumer_key=settings[prefix + 'oauth.consumer_key'],
-            secret=settings[prefix + 'oauth.secret'],
+            consumer_key=consumer_key,
+            secret=consumer_secret,
             access_token=access_token,
+            encoding=settings.get(prefix + 'oauth.encoding', 'utf-8'),
             timeout=settings[prefix + 'timeout']
             )
     return factory
@@ -185,11 +229,10 @@ def rakuten_id_api_factory_from_settings(settings, prefix):
 def includeme(config):
     from . import CONFIG_PREFIX
     config.registry.registerUtility(
-        rakuten_oauth_from_settings(config.registry.settings, CONFIG_PREFIX),
+        rakuten_oauth_from_config(config, CONFIG_PREFIX),
         IRakutenOAuth
         )
     config.registry.registerUtility(
-        rakuten_id_api_factory_from_settings(
-            config.registry.settings, CONFIG_PREFIX),
-       IRakutenIDAPIFactory
-       )
+        rakuten_id_api_factory_from_config(config, CONFIG_PREFIX),
+        IRakutenIDAPIFactory
+        )
