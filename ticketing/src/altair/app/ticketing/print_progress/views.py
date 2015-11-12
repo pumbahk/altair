@@ -3,7 +3,9 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 
 from altair.app.ticketing.events.forms import EventForm
+from .forms import PrintProgressForm
 from .progress import PrintProgressGetter
+
 
 ##TODO:edit permission
 @view_config(route_name="events.print_progress.show", permission="authenticated", 
@@ -14,12 +16,20 @@ def show_event_print_progress(context, request):
     if event is None:
         raise HTTPNotFound("event is not found. (event_id={})".format(context.event_id))
     getter = PrintProgressGetter(request, context.organization)
-    progress = getter.get_event_progress(event)
+    print_progress_form=PrintProgressForm(request.POST, performance_ids=context.performance_id_list)
+    progress = getter.get_event_progress(
+         event
+        ,print_progress_form.product_item_id.data
+        ,print_progress_form.start_on.data
+        ,print_progress_form.end_on.data
+    )
     return dict(
         event=event,
         form=EventForm(context=context),
-        progress=progress
+        progress=progress,
+        print_progress_form=print_progress_form
     )
+
 
 @view_config(route_name="performances.print_progress.show", permission="authenticated", 
              renderer='altair.app.ticketing:templates/performances/show.html', 
@@ -29,10 +39,18 @@ def show_performance_print_progress(context, request):
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))
     getter = PrintProgressGetter(request, context.organization)
-    progress = getter.get_performance_progress(performance)
+    print_progress_form=PrintProgressForm(request.POST, performance_ids=[context.performance_id])
+    progress = getter.get_performance_progress(
+         performance
+        ,print_progress_form.product_item_id.data
+        ,print_progress_form.start_on.data
+        ,print_progress_form.end_on.data
+    )
+
     return dict(
         tab="print_progress", 
         performance=performance,
-        progress=progress
+        progress=progress,
+        print_progress_form=print_progress_form,
     )
 
