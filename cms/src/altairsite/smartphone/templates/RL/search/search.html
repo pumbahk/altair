@@ -1,0 +1,14 @@
+<%page args="form" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+
+<div class="sectionbox inverted" id="search">
+    <form class="sectionbox-inner" action="${request.route_path('smartphone.search')}" method="GET">
+        ${form.word(placeholder=u"イベント名、会場名など")}
+        <div class="moreInfo">
+        <input id="details" type="submit" class="btn-secondary btn-large" value="検索"/>
+        </div>
+        % if helper.disp_error(form):
+            <font color="yellow">${helper.disp_error(form)}</font><br/>
+        % endif
+    </form>
+</div>

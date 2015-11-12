@@ -1,0 +1,58 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-title" content="楽天レジャー" />
+<link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
+<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-1.9.1.min.js')}></script>
+<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/RT/smartphone/js/flipsnap.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/default.css')}" />
+<title>楽天レジャー-<%block name="title"/></title>
+</head>
+<body>
+
+<div class="header-navigation">
+  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
+  <a href="/"><img alt="楽天レジャー" width="82" height="45" src="${request.static_url('altaircms:static/RT/smartphone/img/logo.png')}"/></a>
+</div>
+<div id="fb-root"></div>
+
+<%
+    sns_url = u"http://leisure.tstar.jp/"
+    sns_title = u"楽天レジャー-トップ"
+    if sns:
+        sns_url = sns['url']
+        sns_title = sns['title']
+%>
+
+<!--
+<iframe
+    src="//www.facebook.com/plugins/like.php?href=${sns_url}&amp;
+    send=false&amp;layout=standard&amp;width=450&amp;show_faces=false&amp;font&amp;
+    colorscheme=light&amp;action=like&amp;height=35" scrolling="no" frameborder="0"
+    style="border:none; overflow:hidden; width:75px; height:20px;" allowTransparency="true">
+</iframe>
+
+<iframe
+    allowtransparency="true" frameborder="0" scrolling="no"
+    src="https://platform.twitter.com/widgets/tweet_button.html?url=${sns_url}&amp;
+    via=RakutenTicket&amp;count=none&amp;lang=ja&amp;text=${sns_title}&amp;"
+    style="height: 20px; width: 70px;">
+</iframe>
+
+<span>
+    <script type="text/javascript" src="http://media.line.naver.jp/js/line-button.js?v=20130508" ></script>
+    <script type="text/javascript">
+    new jp.naver.line.media.LineButton({"pc":true,"lang":"ja","type":"a","text":"${sns_url}","withUrl":false});
+    </script>
+</span>
+<br/>
+<div>
+     <img class="img_center" src="${request.static_url('altaircms:static/RT/smartphone/img/point.jpg')}"/>
+</div>
+-->
+${self.body()}
+<%block name="fnavi" />
+<%include file="_footer.html"/>

@@ -1,0 +1,19 @@
+<%namespace file="tags_mobile.mako" name="m" />
+<hr />
+<div align="center">
+<font size="-2">
+    <div>
+        <a href="${request.route_path('smartphone.page', kind='help')}">ヘルプ</a>
+        <a href="${request.route_path('smartphone.page', kind='company')}">運営会社</a>
+        <a href="mailto:leisure@tstar.jp">お問い合わせ</a><br/>
+        <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a>
+        <a href="${request.route_path('smartphone.page', kind='legal')}">特定商取引法に基づく表示</a>
+    </div>
+    <div><font color="#888888">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved.</font></div>
+
+## tracking 画像(<browserid>.gif)を取得するhtmlを生成
+<%! from altairsite.tracking import get_tracking_image %>
+${get_tracking_image(request)}
+
+</font>
+</div>

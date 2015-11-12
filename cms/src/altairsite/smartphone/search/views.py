@@ -2,7 +2,7 @@
 from .forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm, HotwordSearchForm
 from .search_query import SearchQuery, AreaSearchQuery, HotwordSearchQuery, DetailSearchQuery, EventOpenInfo, SaleInfo\
     , PerformanceInfo
-from ..common.const import SalesEnum
+from ..common.const import SalesEnum, get_areas
 from ..common.helper import SmartPhoneHelper
 from altairsite.config import smartphone_site_view_config
 from altairsite.separation import selectable_renderer, enable_search_function
@@ -27,6 +27,7 @@ def search(context, request):
     return {
          'form':form
         ,'result':result
+        ,'areas':get_areas()
         ,'helper':SmartPhoneHelper()
     }
 
@@ -70,7 +71,7 @@ def subsubgenre_search(context, request):
 def search_area(context, request):
     # トップ画面のエリア検索
     form = AreaSearchForm(request.GET)
-    query = AreaSearchQuery(area=form.data['area'], genre=None, genre_label=None)
+    query = AreaSearchQuery(area=form.data['area'], genre=None, genre_label=form.word.data)
     result = context.search_area(query, int(form.data['page']), 10)
 
     return {
