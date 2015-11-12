@@ -11,6 +11,10 @@ class EventPrintProgressResource(TicketingAdminResource):
         return self.request.matchdict["event_id"]
 
     @reify
+    def performance_id_list(self):
+        return [p.id for p in self.target.performances]
+
+    @reify
     def target(self):
         return Event.query.filter(Event.id==self.event_id,
                            Event.organization_id==self.organization.id).first()

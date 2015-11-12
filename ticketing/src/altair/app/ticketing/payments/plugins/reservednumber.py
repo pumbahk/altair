@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import hashlib
+import re
 import random
 import string
 from markupsafe import Markup
@@ -26,6 +27,8 @@ from . import logger
 
 from . import RESERVE_NUMBER_DELIVERY_PLUGIN_ID as PLUGIN_ID
 from . import RESERVE_NUMBER_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
+
+tag_re = re.compile(r"<[^>]*?>")
 
 def includeme(config):
     config.add_delivery_plugin(ReservedNumberDeliveryPlugin(), PLUGIN_ID)
@@ -144,9 +147,14 @@ class CompletionMailViewlet(object):
         """ 完了メール表示
         :param context: ICompleteMailDelivery
         """
+        order = self.context.order
+        delivery_method = order.payment_delivery_pair.delivery_method
         notice = self.context.mail_data("D", "notice")
         reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
-        return dict(notice=notice, reserved_number=reserved_number)
+        description = ""
+        if delivery_method.description is not None:
+            description = tag_re.sub("", delivery_method.description)
+        return dict(notice=notice, reserved_number=reserved_number, description=description)
 
 @view_defaults(context=IOrderCancelMailResource)
 class OrderCancelMailViewlet(object):

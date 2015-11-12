@@ -2,6 +2,7 @@
 <% from altairsite import PC_ACCESS_COOKIE_NAME %>
 if(document.cookie.indexOf("${PC_ACCESS_COOKIE_NAME}") > -1){
     var e = $("<a>").text("スマートフォン版へ").attr("href", "${request.route_path("smartphone.goto_sp_page", _query=(dict(next=request.route_path("smartphone.main", _query={PC_ACCESS_COOKIE_NAME: 1}))))}").attr("class", "goto-link btn-primary");
-                  $('body').prepend(e);
+    var dive = $("<div>").attr("class", "visible-xs").prepend(e)
+                  $('body').prepend(dive);
  }
 </script>
