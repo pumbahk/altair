@@ -48,7 +48,26 @@ class IRakutenIDAPI(Interface):
         pass
 
 
+class IRakutenIDAPI2(Interface):
+    def get_open_id():
+        pass
+
+    def get_basic_info():
+        pass
+
+    def get_user_info():
+        pass
+
+    def get_point_account():
+        pass
+
+
 class IRakutenIDAPIFactory(Interface):
+    def __call__(request, access_token):
+        pass
+
+
+class IRakutenIDAPI2Factory(Interface):
     def __call__(request, access_token):
         pass
 
