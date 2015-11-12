@@ -409,19 +409,18 @@ class OurFormField(OurField):
         candidate = getattr(obj, name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults (%r:%s)' % (obj, name))
             candidate = self._obj
-        return getattr(candidate, name)
+        return candidate
 
     def populate_obj(self, obj, name):
         candidate = getattr(obj, name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults (%r:%s)' % (obj, name))
             candidate = self._obj
             setattr(obj, name, candidate)
-
-        self.form.populate_obj(candidate)
+        self._contained_form.populate_obj(candidate)
 
     @property
     def data(self):
