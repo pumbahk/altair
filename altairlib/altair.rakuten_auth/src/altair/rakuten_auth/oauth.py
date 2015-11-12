@@ -2,6 +2,7 @@ import six
 import hmac
 import uuid
 import time
+import json
 import logging
 import urllib
 import urllib2
@@ -9,7 +10,7 @@ import urlparse
 import hashlib
 from zope.interface import implementer
 
-from .interfaces import IRakutenOAuth, IRakutenIDAPI, IRakutenIDAPIFactory
+from .interfaces import IRakutenOAuth, IRakutenIDAPI, IRakutenIDAPIFactory, IRakutenIDAPI2, IRakutenIDAPI2Factory
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,10 @@ def create_oauth_signature(method, url, oauth_consumer_key, secret, oauth_token,
 
 
 class RakutenOAuthNegotiationError(Exception):
+    pass
+
+
+class RakutenIDAPIError(Exception):
     pass
 
 
@@ -152,12 +157,15 @@ class RakutenIDAPI(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("get user_info: %s" % request_url)
-        f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
+            f = urllib2.urlopen(request_url, timeout=self.timeout)
             response_body = f.read()
-        except urllib2.HTTPError, e:
-            logger.debug("get user info error : %s" % e.read())
-            raise e
+        except urllib2.HTTPError as e:
+            try:
+                response_body = e.read()
+                raise RakutenIDAPIError('error occurred during calling %s; code=%s, payload=%r' % (request_url, e.code, response_body))
+            finally:
+                e.close()
         finally:
             f.close()
 
@@ -171,6 +179,54 @@ class RakutenIDAPI(object):
 
     def get_point_account(self):
         return self.parse_rakutenid_pointaccount(self.call_rakutenid_api('rakutenid_pointaccount'))
+
+
+@implementer(IRakutenIDAPI2)
+class RakutenIDAPI2(object):
+    def __init__(self, access_token, encoding='utf-8', timeout=10):
+        self.access_token = access_token
+        self.encoding = encoding
+        self.timeout = int(timeout)
+
+    def call_oauth2_api(self, url, additional_params=None):
+        params = {u'access_token': self.access_token}
+        if additional_params:
+            params.update(additional_params)
+        req = urllib2.Request(url, urllib.urlencode([(six.text_type(k).encode(self.encoding), six.text_type(v).encode(self.encoding)) for k, v in params.items()]))
+        data = payload = res = None
+        try:
+            try:
+                res = urllib2.urlopen(req)
+                payload = res.read()
+                data = json.loads(payload, encoding=self.encoding)
+            except urllib2.HTTPError as res:
+                payload = res.read()
+                data = json.loads(payload, encoding=self.encoding)
+            finally:
+                res.close()
+        except Exception as e:
+            raise RakutenIDAPIError("error occurred during calling %s: payload=%r, original_exception=%r" % (url, data or payload, e))
+        if isinstance(res, urllib2.HTTPError):
+            raise RakutenIDAPIError("error occurred during calling %s: code=%s, payload=%r" % (url, res.code, data or payload))
+        return data
+
+    def get_open_id(self):
+        result = self.call_oauth2_api(u'https://app.rakuten.co.jp/services/api/IdInformation/GetOpenID/20110601')
+        if "openId" in result:
+            return result["openId"]
+        else:
+            raise RakutenIDAPIError("Not supported")
+
+    def get_basic_info(self):
+        return self.call_oauth2_api(u'https://app.rakuten.co.jp/engine/api/MemberInformation/GetBasicInfo/20110901')
+
+    def get_user_info(self):
+        return self.call_oauth2_api(u'https://app.rakuten.co.jp/engine/api/MemberInformation/GetUserInfo/20130831')
+
+    def get_point_accounts(self, term_point_summary_type=1):
+        result = self.call_oauth2_api(u'https://app.rakuten.co.jp/engine/api/MemberInformation/GetPointSummary/20130110', dict(term_point_summary_type=term_point_summary_type))
+        return result[u'data']
+
 
 def get_oauth_consumer_key_from_config(config, prefix):
     settings = config.registry.settings
@@ -226,6 +282,16 @@ def rakuten_id_api_factory_from_config(config, prefix):
             )
     return factory
 
+def rakuten_id_api2_factory_from_config(config, prefix):
+    settings = config.registry.settings
+    def factory(request, access_token):
+        return RakutenIDAPI2(
+            access_token=access_token,
+            encoding=settings.get(prefix + 'oauth.encoding', 'utf-8'),
+            timeout=settings[prefix + 'timeout']
+            )
+    return factory
+
 def includeme(config):
     from . import CONFIG_PREFIX
     config.registry.registerUtility(
@@ -235,4 +301,8 @@ def includeme(config):
     config.registry.registerUtility(
         rakuten_id_api_factory_from_config(config, CONFIG_PREFIX),
         IRakutenIDAPIFactory
+        )
+    config.registry.registerUtility(
+        rakuten_id_api2_factory_from_config(config, CONFIG_PREFIX),
+        IRakutenIDAPI2Factory
         )

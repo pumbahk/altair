@@ -33,7 +33,7 @@ from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_u
 
 from . import AUTH_PLUGIN_NAME
 from .events import Authenticated
-from .api import get_rakuten_oauth, get_rakuten_id_api_factory
+from .api import get_rakuten_oauth, get_rakuten_id_api_factory, get_rakuten_id_api2_factory
 from .interfaces import IRakutenOpenID, IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
@@ -80,9 +80,9 @@ class RakutenOpenIDHTTPSessionFactory(object):
 def sex_no(s, encoding='utf-8'):
     if isinstance(s, str):
         s = s.decode(encoding)
-    if s == u'男性':
+    if s in (u'男性', u'0'):
         return 1
-    elif s == u'女性':
+    elif s == (u'女性', u'1'):
         return 2
     else:
         return 0
@@ -338,36 +338,68 @@ class RakutenOpenID(object):
             )
 
     def _get_extras(self, request, identity):
-        access_token = get_rakuten_oauth(request).get_access_token(request, identity['oauth_request_token'])
-        idapi = get_rakuten_id_api_factory(request)(request, access_token)
-        user_info = idapi.get_basic_info()
-        birthday = None
-        try:
-            birthday = datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
-        except (ValueError, TypeError):
-            # 生年月日未登録
-            pass
+        if 'oauth2_access_token' in identity:
+            # new_api
+            idapi = get_rakuten_id_api2_factory(request)(request, identity['oauth2_access_token'])
+            basic_info = idapi.get_basic_info()
+            contact_info = idapi.get_contact_info()
+            point_accounts = idapi.get_point_accounts()
 
-        contact_info = idapi.get_contact_info()
-        point_account = idapi.get_point_account()
+            birthday = None
+            try:
+                birthday = datetime.strptime(basic_info.get('birthDay'), '%Y/%m/%d')
+            except (ValueError, TypeError):
+                # 生年月日未登録
+                pass
 
-        return dict(
-            email_1=user_info.get('emailAddress'),
-            nick_name=user_info.get('nickName'),
-            first_name=user_info.get('firstName'),
-            last_name=user_info.get('lastName'),
-            first_name_kana=user_info.get('firstNameKataKana'),
-            last_name_kana=user_info.get('lastNameKataKana'),
-            birthday=birthday,
-            sex=sex_no(user_info.get('sex'), 'utf-8'),
-            zip=contact_info.get('zip'),
-            prefecture=contact_info.get('prefecture'),
-            city=contact_info.get('city'),
-            street=contact_info.get('street'), # deprecated
-            address_1=contact_info.get('street'),
-            tel_1=contact_info.get('tel'),
-            rakuten_point_account=point_account.get('pointAccount')
-            )
+            return dict(
+                email_1=contact_info.get('emailAddress'),
+                nick_name=basic_info.get('nickName'),
+                first_name=contact_info.get('firstName'),
+                last_name=contact_info.get('lastName'),
+                first_name_kana=contact_info.get('firstNameKataKana'),
+                last_name_kana=contact_info.get('lastNameKataKana'),
+                birthday=birthday,
+                sex=sex_no(basic_info.get('sex'), 'utf-8'),
+                zip=contact_info.get('zip'),
+                prefecture=contact_info.get('prefecture'),
+                city=contact_info.get('city'),
+                street=contact_info.get('street'), # deprecated
+                address_1=contact_info.get('street'),
+                tel_1=contact_info.get('tel'),
+                rakuten_point_account=point_accounts[0].get('account_number') if point_accounts is not None and 1 <= len(point_accounts) else None
+                )
+        else:
+            access_token = get_rakuten_oauth(request).get_access_token(request, identity['oauth_request_token'])
+            idapi = get_rakuten_id_api_factory(request)(request, access_token)
+            basic_info = idapi.get_basic_info()
+            contact_info = idapi.get_contact_info()
+            point_account = idapi.get_point_account()
+
+            birthday = None
+            try:
+                birthday = datetime.strptime(basic_info.get('birthDay'), '%Y/%m/%d')
+            except (ValueError, TypeError):
+                # 生年月日未登録
+                pass
+
+            return dict(
+                email_1=basic_info.get('emailAddress'),
+                nick_name=basic_info.get('nickName'),
+                first_name=basic_info.get('firstName'),
+                last_name=basic_info.get('lastName'),
+                first_name_kana=basic_info.get('firstNameKataKana'),
+                last_name_kana=basic_info.get('lastNameKataKana'),
+                birthday=birthday,
+                sex=sex_no(basic_info.get('sex'), 'utf-8'),
+                zip=contact_info.get('zip'),
+                prefecture=contact_info.get('prefecture'),
+                city=contact_info.get('city'),
+                street=contact_info.get('street'), # deprecated
+                address_1=contact_info.get('street'),
+                tel_1=contact_info.get('tel'),
+                rakuten_point_account=point_account.get('pointAccount')
+                )
 
     # ILoginHandler
     def get_auth_factors(self, request, auth_context, credentials):
