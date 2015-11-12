@@ -9,8 +9,10 @@ from altair.formhelpers.filters import blank_as_none
 from altair.formhelpers.fields import (
     OurTextField,
     OurSelectField,
+    OurSelectMultipleField,
     OurGenericFieldList,
     OurFormField,
+    OurIntegerField,
     OurBooleanField,
     OurHiddenField,
     NestableElementNameHandler,
@@ -49,6 +51,71 @@ class LoginForm(OurForm):
             Required()
             ]
         )
+
+
+class DictBackedFormField(OurFormField):
+    def fetch_value_from_obj(self, obj, name):
+        candidate = obj.get(name, None)
+        if candidate is None:
+            if self._obj is None:
+                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+            candidate = self._obj
+        return candidate[name]
+
+    def populate_obj(self, obj, name):
+        candidate = obj.get(name, None)
+        if candidate is None:
+            if self._obj is None:
+                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+            candidate = self._obj
+            obj[name] = candidate
+        self.form.populate_obj(candidate)
+
+
+class DictBackedForm(OurForm):
+    def populate_obj(self, obj):
+        for name, field in self._fields.items():
+            obj[name] = field.data
+
+
+class RakutenAuthSettingsForm(DictBackedForm):
+    oauth_consumer_key = OurTextField(
+        label=u'OAuth Consumer Key',
+        filters=[blank_as_none]
+        )
+
+    oauth_consumer_secret = OurTextField(
+        label=u'OAuth Consumer Secret',
+        filters=[blank_as_none]
+        )
+
+    proxy_url_pattern = OurTextField(
+        label=u'Proxy URL pattern',
+        filters=[blank_as_none]
+        )
+    
+
+
+class OrganizationSettingsForm(DictBackedForm):
+    rakuten_auth = DictBackedFormField(RakutenAuthSettingsForm)
+
+
+class OrganizationForm(OurForm):
+    maximum_oauth_scope = OurSelectMultipleField(
+        label=u'デフォルトOAuthスコープ',
+        choices=[
+            (u'user_info', u'user_info'),
+            ],
+        default=[u'user_info']
+        )
+
+    maximum_oauth_client_expiration_time = OurIntegerField(
+        label=u'OAuthクライアント有効期限 (秒)',
+        default=63072000
+        )
+
+    settings = OurFormField(OrganizationSettingsForm)
+
 
 
 class OperatorForm(OurForm):

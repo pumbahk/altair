@@ -13,7 +13,7 @@ from .api import create_operator, lookup_operator_by_credentials
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
-from .forms import LoginForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm
+from .forms import LoginForm, OrganizationForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm
 from .models import Operator
 from . import import_export
 
@@ -79,6 +79,47 @@ def logout(context, request):
     )
 def top(context, request):
     return dict()
+
+
+@view_defaults(
+    decorator=(with_bootstrap,)
+    )
+class OrganizationsView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(
+        route_name='organizations.edit',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def edit(self):
+        session = get_db_session(self.request, 'extauth')
+        form = OrganizationForm(obj=self.context.organization, request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='organizations.edit',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='POST'
+        )
+    def edit_post(self):
+        session = get_db_session(self.request, 'extauth')
+        organization = self.context.organization
+        form = OrganizationForm(formdata=self.request.POST, obj=organization, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        form.populate_obj(organization)
+        session.commit()
+        self.request.session.flash(u'オーガニゼーション %s を変更しました' % organization.short_name)
+        return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
 
 
 @view_defaults(

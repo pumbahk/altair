@@ -82,6 +82,7 @@ def main(global_config, **local_config):
     config.add_route('oauth_clients.index', '/oauth_clients', request_method='GET')
     config.add_route('oauth_clients.new', '/oauth_clients/+')
     config.add_route('oauth_clients.delete', '/oauth_clients', request_method='POST', request_param='doDelete')
+    config.add_route('organizations.edit', '/organizations/{id}/edit', factory='.resources.OrganizationCollectionResource', traverse='/{id}')
     config.scan('.views')
     config.add_request_method(lambda request: datetime.now(), 'now', reify=True)
     config.add_request_method(get_operator, 'operator', reify=True)
