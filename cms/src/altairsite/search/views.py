@@ -68,7 +68,7 @@ def search_by_freeword(context, request):
 
 @usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_by_multi", 
-                      renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html)"))
+                      renderer=selectable_renderer("altaircms:templates/usersite/search/%(prefix)s/result.html"))
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
     """
