@@ -135,6 +135,10 @@
       <td>${organization_setting.lot_asid if organization_setting.lot_asid else u'-'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.lot_entry_user_withdraw)}</th>
+      <td>${u'ON' if organization_setting.lot_entry_user_withdraw else u'OFF'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.famiport_enabled)}</th>
       <td>${u'有効' if organization_setting.famiport_enabled else u'無効'}</td>
     </tr>

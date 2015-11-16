@@ -45,7 +45,10 @@ from altair.app.ticketing.orderreview.views import (
 from . import utils
 from pyramid.session import check_csrf_token
 from altair.app.ticketing.mails.api import get_mail_utility
-from altair.app.ticketing.core.models import MailTypeEnum
+from altair.app.ticketing.core.models import (
+    MailTypeEnum,
+    OrganizationSetting,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -645,10 +648,12 @@ class LotReviewView(object):
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id # いる？
         lot_id = lot_entry.lot.id # いる？
+        organization_id = lot_entry.lot.event.organization.id
         user_point_accounts = lot_entry.user_point_accounts
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
         timestamp = datetime.now()
+        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=organization_id).first().lot_entry_user_withdraw
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
@@ -663,6 +668,7 @@ class LotReviewView(object):
             memo=lot_entry.memo,
             entry_controller=entry_controller,
             timestamp=timestamp,
+            can_withdraw=lot_entry_user_withdraw,
             now=get_now(self.request))
 
 
@@ -730,11 +736,15 @@ class LotReviewWithdrawView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self.entry = context.entry
+        self.organization_id = self.entry.organization_id
 
     @lbr_view_config(route_name='lots.review.withdraw.withdraw',
                      renderer=selectable_renderer("review_withdraw_completion.html"))
     def withdraw(self):
         """申込取消実行"""
+        if not self.can_withdraw():
+            raise HTTPNotFound("page not found")
         check_csrf_token(self.request)
 
         if not self.context.entry:
@@ -749,8 +759,14 @@ class LotReviewWithdrawView(object):
                      renderer=selectable_renderer("review_withdraw_confirm.html"))
     def confirm(self):
         """申込取消確認"""
+        if not self.can_withdraw():
+            raise HTTPNotFound("page not found")
         check_csrf_token(self.request)
         return self.build_response_dict()
+
+    def can_withdraw(self):
+        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().lot_entry_user_withdraw
+        return lot_entry_user_withdraw
 
     def build_response_dict(self):
         lot_entry = self.context.entry
@@ -776,4 +792,5 @@ class LotReviewWithdrawView(object):
             memo=lot_entry.memo,
             entry_controller=entry_controller,
             timestamp=timestamp,
+            can_withdraw=self.can_withdraw(),
         )

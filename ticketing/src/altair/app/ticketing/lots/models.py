@@ -43,6 +43,7 @@ from altair.app.ticketing.core.models import (
     Product,
     ProductItem,
     SalesSegment,
+    OrganizationSetting,
     )
 
 from altair.app.ticketing.users.models import (
@@ -697,6 +698,9 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             wish.cancel(now)
 
     def withdraw(self, request):
+        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().lot_entry_user_withdraw
+        if not lot_entry_user_withdraw:
+            return
         logger.debug("close lot entry {0} ".format(self.entry_no))
         self.close()
         event = LotClosedEvent(request, lot_entry=self)

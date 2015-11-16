@@ -254,6 +254,7 @@ class OrganizationSettings(BaseView):
         organization_setting.asid_mobile = f.asid_mobile.data
         organization_setting.asid_smartphone = f.asid_smartphone.data
         organization_setting.lot_asid = f.lot_asid.data
+        organization_setting.lot_entry_user_withdraw = f.lot_entry_user_withdraw.data
         organization_setting.famiport_enabled = f.famiport_enabled.data
         organization_setting.save()
 
@@ -347,6 +348,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.sales_report_type = f['sales_report_type'].data
                     organization_setting.cart_setting_id = f['cart_setting_id'].data
                     organization_setting.mail_refund_to_user = f['mail_refund_to_user'].data
+                    organization_setting.lot_entry_user_withdraw = f['lot_entry_user_withdraw'].data
 
                     organization_setting.notify_remind_mail = f.notify_remind_mail.data
                     organization_setting.notify_print_remind_mail = f.notify_print_remind_mail.data
