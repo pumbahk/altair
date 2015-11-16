@@ -31,7 +31,7 @@ from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
-from ..models import MemberSet, MemberKind, Member
+from ..models import MemberSet, MemberKind, Member, Host
 from ..utils import period_overlaps
 from .api import lookup_operator_by_auth_identifier
 
@@ -114,8 +114,19 @@ class OrganizationForm(OurForm):
         default=63072000
         )
 
+    canonical_host_name = OurSelectField(
+        label=u'正規ホスト名',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Host.host_name, Host.host_name) \
+                .filter(Host.organization_id == field._form.request.operator.organization_id) \
+                .all()
+        )
     settings = OurFormField(OrganizationSettingsForm)
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(OrganizationForm, self).__init__(*args, **kwargs)
 
 
 class OperatorForm(OurForm):

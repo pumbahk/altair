@@ -79,6 +79,7 @@ def guest_authenticate(request, identity):
         return None
     return {
         'organization': member_kind.member_set.organization.short_name,
+        'host_name': member_kind.member_set.organization.canonical_host_name,
         'member_kind': member_kind.name,
         'member_set': member_set_name,
         'guest': True,
@@ -123,6 +124,7 @@ def nonguest_authenticate(request, identity):
     return {
         'member_id': member.id,
         'organization': member.member_set.organization.short_name,
+        'host_name': member.member_set.organization.canonical_host_name,
         'auth_identifier': auth_identifier, 
         'member_set': member.member_set.name,
         'guest': False,
@@ -150,6 +152,7 @@ def validate_member(request, identity):
     return {
         'member_id': member.id,
         'organization': member.member_set.organization.short_name,
+        'host_name': member.member_set.organization.canonical_host_name,
         'auth_identifier': member.auth_identifier, 
         'member_set': member.member_set.name,
         'guest': False,

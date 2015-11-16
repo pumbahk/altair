@@ -16,13 +16,21 @@ class WithCreatedAt(object):
     def created_at(self):
         return sa.Column(sa.DateTime(), nullable=False, default=datetime.now, server_default=sa.text(u'CURRENT_TIMESTAMP()'))
 
+
 class Organization(Base):
     __tablename__ = 'Organization'
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
     short_name = sa.Column(sa.Unicode(32), nullable=False)
+    canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name'), nullable=True)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
     settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
+    default_host = orm.relationship(
+        'Host',
+        primaryjoin=lambda: (Organization.id == Host.organization_id) & (Organization.canonical_host_name == Host.host_name),
+        foreign_keys=[canonical_host_name],
+        uselist=False
+        )
 
 
 class Host(Base):

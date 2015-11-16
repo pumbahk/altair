@@ -16,6 +16,15 @@
     % endif
   </div>
 </div>
+<div class="control-group">
+  <label class="control-label" for="organization-form--canonical_host_name">${form.canonical_host_name.label.text}</label>
+  <div class="controls">
+    ${form.canonical_host_name(id="organization-form--canonical_host_name")}
+    %if form.canonical_host_name.errors:
+    <span class="help-inline">${u' / '.join(form.canonical_host_name.errors)}</span>
+    % endif
+  </div>
+</div>
 <fieldset>
 <legend>楽天会員認証の設定</legend>
 <div class="control-group">

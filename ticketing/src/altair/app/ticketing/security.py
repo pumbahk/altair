@@ -85,12 +85,15 @@ class AuthModelCallback(object):
                 membership = _membership.name if _membership is not None else None
                 membergroup = identity['authz_kind']
                 is_guest = False
-                if auth_identifier.startswith(u'urn:altair-extauth:'):
+                if auth_identifier.startswith(u'acct:'):
                     try:
                         parsed_auth_identifier = urlparse(auth_identifier)
-                        components = [unquote(component) for component in parsed_auth_identifier.path.split(u':')]
-                        if components[-1] == '*':
-                            is_guest = True
+                        g = re.match(ur'^([^@]+)@([^@]+)$', parsed_auth_identifier.path)
+                        if g is not None:
+                            user_part = unquote(g.group(1))
+                            user, _, memberset = user_part.partition(u'+')
+                            if user == u'*':
+                                is_guest = True
                     except:
                         pass
             else:

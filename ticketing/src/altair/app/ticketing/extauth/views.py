@@ -41,10 +41,10 @@ def extract_identifer(request):
             # InternalAuth will take precedence.
             retval = identity['claimed_id']
         elif isinstance(authenticator, InternalAuthPlugin):
-            retval = u'urn:altair-extauth:%s:%s:%s' % (
-                quote(identity['organization']),
+            retval = u'acct:%s+%s@%s' % (
+                quote(identity.get('auth_identifier') or u'*'),
                 quote(identity['member_set']),
-                quote(identity.get('auth_identifier') or u'*')
+                quote(identity['host_name'])
                 )
             break
     return retval
