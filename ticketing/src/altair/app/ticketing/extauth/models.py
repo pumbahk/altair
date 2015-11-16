@@ -25,6 +25,7 @@ class Organization(Base):
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
     invalidate_client_http_session_on_access_token_revocation = sa.Column(sa.Boolean(), nullable=False, default=False)
+    emergency_exit_url = sa.Column(sa.Unicode(255), nullable=True, default=None)
     settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
     default_host = orm.relationship(
         'Host',

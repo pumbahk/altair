@@ -25,6 +25,40 @@ def setup_auth(config):
     set_auth_policy(config, add_claimed_id_to_principals)
     config.set_authorization_policy(ACLAuthorizationPolicy())
 
+    from pyramid.httpexceptions import HTTPFound
+    from .resources import ExtAuthSubTypeResource
+    from urlparse import urlparse, urlunparse
+    from urllib import urlencode
+    from cgi import parse_qsl
+    def forbidden_handler(context, request):
+        params = None
+        redirect_uri = None
+        if request.organization is not None:
+            redirect_uri = request.organization.emergency_exit_url
+        if redirect_uri is None:
+            redirect_uri = u'/'
+        if request.context is not None and \
+           isinstance(request.context, ExtAuthSubTypeResource):
+            params = { u'altair.extauth.subtype': request.context.subtype }
+        if params is not None:
+            parsed_redirect_uri = urlparse(redirect_uri)
+            if parsed_redirect_uri.query:
+                query = parse_qsl(parsed_redirect_uri.query, keep_blank_values=True)
+            else:
+                query = []
+            query.extend((k.encode('utf-8'), v.encode('utf-8')) for k, v in params.items())
+            redirect_uri = urlunparse((
+                parsed_redirect_uri.scheme,
+                parsed_redirect_uri.netloc,
+                parsed_redirect_uri.path,
+                parsed_redirect_uri.params,
+                urlencode(query, doseq=True).decode('utf-8') if query else None,
+                parsed_redirect_uri.fragment
+                ))
+        logger.debug('forbidden_handler: %s', redirect_uri)
+        return HTTPFound(redirect_uri)
+    config.set_forbidden_handler(forbidden_handler)
+
     # 楽天認証URL
     config.add_route('rakuten_auth.verify', '/.openid/verify', factory=empty_resource_factory)
     config.add_route('rakuten_auth.verify2', '/.openid/verify2', factory=empty_resource_factory)

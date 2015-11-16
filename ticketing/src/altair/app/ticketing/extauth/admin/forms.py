@@ -127,6 +127,10 @@ class OrganizationForm(OurForm):
         label=u'アクセストークンの無効化時にHTTPセッションも無効化する'
         )
 
+    emergency_exit_url = OurTextField(
+        label=u'致命的エラー時の脱出先URL'
+        )
+
     settings = OurFormField(OrganizationSettingsForm)
 
     def __init__(self, *args, **kwargs):
