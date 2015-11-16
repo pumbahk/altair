@@ -285,6 +285,7 @@ margin:10px auto;
 
 .heading-primary {
 	background: #bc001c;
+	background:-ms-gradient(linear, left top, left bottom, color-stop(0%,#bc001c), color-stop(50%,#aa001c), color-stop(51%,#860010), color-stop(100%,#860010));
 	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#bc001c), color-stop(50%,#aa001c), color-stop(51%,#860010), color-stop(100%,#860010));
 	background:-moz-linear-gradient(top, #bc001c 0%, #aa001c 50%, #860010 51%, #860010 100%);
 	filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#bc001c', endColorstr='#860010',GradientType=0 );
@@ -472,6 +473,7 @@ clear: both;
 .clearfix { clear: both; }
 
 .btnA {
+	background: -ms-linear-gradient(top,#de0019 0%,#bd0000 50%);
 	background: -moz-linear-gradient(top,#de0019 0%,#bd0000 50%);
 	background: -webkit-gradient(linear, left top, left bottom,from(#de0019), to(#bd0000));
 	border: none;
@@ -487,6 +489,7 @@ clear: both;
 	cursor: pointer;
 }
 .btnA:hover {
+	background: -ms-linear-gradient(top,#bd0000 0%,#de0019 50%);
 	background: -moz-linear-gradient(top,#bd0000 0%,#de0019 50%);
 	background: -webkit-gradient(linear, left top, left bottom,from(#bd0000), to(#de0019));
 }
@@ -527,6 +530,7 @@ clear: both;
 	top: 1px;
 }
 .btnB {
+background:-ms-gradient( linear, left top, left bottom, color-stop(0.05, #ffcc00), color-stop(1, #f2ab1e) );
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffcc00), color-stop(1, #f2ab1e) );
 background:-moz-linear-gradient( center top, #ffcc00 5%, #f2ab1e 100% );
 filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcc00', endColorstr='#f2ab1e');
@@ -545,6 +549,7 @@ margin-bottom: 8px;
 }
 
 .btnB:hover {
+background:-ms-gradient( linear, left top, left bottom, color-stop(0.05, #f2ab1e), color-stop(1, #ffcc00) );
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f2ab1e), color-stop(1, #ffcc00) );
 background:-moz-linear-gradient( center top, #f2ab1e 5%, #ffcc00 100% );
 filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2ab1e', endColorstr='#ffcc00');
@@ -589,6 +594,7 @@ color:#860010;
 	margin-right: 5px;
 }*/
 .loginBox2 .btnSH {
+	background: -ms-linear-gradient(top,#EFEFEF 0%,#CCC 50%,#BCBCBC 50%,#CCC);
 	background: -moz-linear-gradient(top,#EFEFEF 0%,#CCC 50%,#BCBCBC 50%,#CCC);
 	background: -webkit-gradient(linear, left top, left bottom,from(#EFEFEF), color-stop(0.5,#CCC), color-stop(0.5,#BCBCBC),  to(#CCC));
 	border: 1px solid #CCC;
@@ -605,6 +611,7 @@ color:#860010;
 	width: 60%;
 }
 .loginBox2 .btnSH:hover {
+	background: -ms-linear-gradient(top,#CCC 0%,#BCBCBC 50%,#CCC 50%,#EFEFEF);
 	background: -moz-linear-gradient(top,#CCC 0%,#BCBCBC 50%,#CCC 50%,#EFEFEF);
 	background: -webkit-gradient(linear, left top, left bottom,from(#CCC), color-stop(0.5,#BCBCBC), color-stop(0.5,#CCC),  to(#EFEFEF));
 }
