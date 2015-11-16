@@ -24,6 +24,7 @@ class Organization(Base):
     canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name'), nullable=True)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
+    invalidate_client_http_session_on_access_token_revocation = sa.Column(sa.Boolean(), nullable=False, default=False)
     settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
     default_host = orm.relationship(
         'Host',
@@ -127,6 +128,8 @@ class OAuthClient(Base, WithCreatedAt):
     redirect_uri = sa.Column(sa.Unicode(384), nullable=True)
     valid_since = sa.Column(sa.DateTime(), nullable=True)
     expire_at = sa.Column(sa.DateTime(), nullable=True)
+
+    organization = orm.relationship(Organization, foreign_keys=[organization_id])
 
     def validate_redirect_uri(self, redirect_uri):
         try:

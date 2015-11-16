@@ -90,7 +90,7 @@ class OAuthProvider(object):
             }
         return code
 
-    def issue_access_token(self, code, client_id, client_secret=None, token_type=u'bearer', redirect_uri=None):
+    def issue_access_token(self, code, client_id, client_secret=None, token_type=u'bearer', redirect_uri=None, aux=None):
         now = self.now_getter()
         authreq_descriptor = self._get_authreq_descriptor_by_code(code)
         if authreq_descriptor['client_id'] != client_id:
@@ -109,15 +109,17 @@ class OAuthProvider(object):
         access_token = self._generate_access_token()
         auth_descriptor['access_token'] = access_token
         auth_descriptor['access_token_expire_at'] = ((now + self.access_token_store.expiration_time) if self.access_token_store.expiration_time is not None else None)
-        self.access_token_store[access_token] = auth_descriptor
         refresh_token = None
         refresh_token_expire_in = None
         if self.refresh_token_store is not None:
             refresh_token = self._generate_refresh_token()
             refresh_token_expire_in = self.refresh_token_store.expiration_time
-            self.refresh_token_store[refresh_token] = auth_descriptor
         auth_descriptor['refresh_token'] = refresh_token
         auth_descriptor['refresh_token_expire_at'] = ((now + refresh_token_expire_in) if refresh_token_expire_in is not None else None)
+        auth_descriptor['aux'] = dict(aux) if aux is not None else {}
+        self.access_token_store[access_token] = auth_descriptor
+        if self.refresh_token_store is not None:
+            self.refresh_token_store[refresh_token] = auth_descriptor
         try:
             del self.code_store[code]
         except:

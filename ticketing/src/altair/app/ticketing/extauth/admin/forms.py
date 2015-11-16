@@ -122,6 +122,11 @@ class OrganizationForm(OurForm):
                 .filter(Host.organization_id == field._form.request.operator.organization_id) \
                 .all()
         )
+
+    invalidate_client_http_session_on_access_token_revocation = OurBooleanField(
+        label=u'アクセストークンの無効化時にHTTPセッションも無効化する'
+        )
+
     settings = OurFormField(OrganizationSettingsForm)
 
     def __init__(self, *args, **kwargs):

@@ -6,12 +6,14 @@ from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.exceptions import OAuthBadRequestError, OAuthRenderableError
 from .utils import get_oauth_response_renderer
+from .models import OAuthClient
 
 logger = logging.getLogger(__name__)
 
 oauth_request_parser = WebObOAuthRequestParser()
         
 def invalidate_client_http_session(request, session_id):
+    logger.debug('invalidating http session: %s' % session_id)
     persistence_backend_factory = request.registry.queryUtility(ISessionPersistenceBackendFactory)
     persistence_backend = persistence_backend_factory(request)
     persistence_backend.delete(session_id, {})
@@ -85,7 +87,15 @@ class APIView(object):
             return {}
         provider = get_oauth_provider(self.request)
         try:
-            provider.revoke_access_token(client_id=client_id, client_secret=client_secret, access_token=self.request.matchdict['access_token'])
+            access_token = self.request.matchdict['access_token']
+            auth_descriptor = provider.get_auth_descriptor_by_token(access_token)
+            provider.revoke_access_token(client_id=client_id, client_secret=client_secret, access_token=access_token)
+            client = provider.validated_client(client_id, client_secret)
+            if isinstance(client, OAuthClient):
+                if client.organization.invalidate_client_http_session_on_access_token_revocation:
+                    http_session_id = auth_descriptor['identity']['http_session_id']
+                    if http_session_id is not None:
+                        invalidate_client_http_session(self.request, http_session_id) 
         except OAuthRenderableError as e:
             self.request.response.status = e.http_status
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
@@ -104,7 +114,8 @@ class APIView(object):
                 id_token = self.request.GET['id_token']
             except KeyError:
                 raise OAuthBadRequestError('id_token is not given')
-            openid_provider = get_openid_provider(self.request.matchdict)
+            openid_provider = get_openid_provider(self.request)
+            authn_descriptor = provider.get_authn_descriptor_by_id_token(id_token)
             openid_provider.revoke_id_token(client_id, id_token)
             http_session_id = authn_descriptor['aux']['http_session_id']
             if http_session_id is not None:
