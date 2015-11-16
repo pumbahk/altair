@@ -36,9 +36,11 @@ setup(name='altair.cartbot',
       install_requires=[
           'setuptools>0.7',
           'lxml',
-          'lxmlmechanize >= 0.0.2',
+          'html5lib',
+          'lxmlmechanize >= 0.0.3',
           'python-dateutil',
           'gevent',
+          'configparser',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

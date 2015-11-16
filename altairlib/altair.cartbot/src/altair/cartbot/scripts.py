@@ -9,7 +9,7 @@ monkey.patch_thread()
 import sys
 import time
 from argparse import ArgumentParser
-from ConfigParser import ConfigParser, NoSectionError
+from configparser import ConfigParser, NoSectionError
 from cookielib import CookieJar
 from lxmlmechanize import Mechanize
 from .bot import CartBot
@@ -152,7 +152,7 @@ def main():
                 print >>sys.stderr, 'WARNING: failed to configure logger with the configuration file (%s)' % e.message
 
     config = ConfigParser()
-    config.read(options.config)
+    config.read(options.config, encoding='utf-8')
 
     http_auth_credentials = None
 
@@ -162,6 +162,7 @@ def main():
         pass
     rakuten_auth_credentials = None
     fc_auth_credentials = None
+    extauth_credentials = None
     try:
         rakuten_auth_credentials = dict(config.items('rakuten_auth'))
     except NoSectionError:
@@ -170,15 +171,18 @@ def main():
         fc_auth_credentials = dict(config.items('fc_auth'))
     except NoSectionError:
         pass
+    try:
+        extauth_credentials = dict(config.items('extauth'))
+    except NoSectionError:
+        pass
 
     def run():
-        fail_num = 0
-
         for _ in range(repeat):
             bot = LoggableCartBot(
                 url = options.url[0],
                 rakuten_auth_credentials=rakuten_auth_credentials,
                 fc_auth_credentials=fc_auth_credentials,
+                extauth_credentials=extauth_credentials,
                 shipping_address=dict(config.items('shipping_address')),
                 credit_card_info=dict(config.items('credit_card_info')),
                 http_auth_credentials=http_auth_credentials,
@@ -188,10 +192,6 @@ def main():
                 )
             bot.log_output = options.logging 
             order_no = bot.buy_something()
-            if not order_no:
-                fail_num += 1
-
-            print u'進捗状況:' + str(_ + 1) + u'/' + str(repeat) + u'(Failed ' + str(fail_num) + u')'
 
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
