@@ -128,7 +128,8 @@ class OrganizationForm(OurForm):
         )
 
     emergency_exit_url = OurTextField(
-        label=u'致命的エラー時の脱出先URL'
+        label=u'致命的エラー時の脱出先URL',
+        filters=[blank_as_none]
         )
 
     settings = OurFormField(OrganizationSettingsForm)
