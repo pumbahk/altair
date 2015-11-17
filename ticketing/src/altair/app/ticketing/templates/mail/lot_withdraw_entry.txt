@@ -1,0 +1,53 @@
+${header}
+${name}　様
+
+お申込みいただいておりました以下の抽選受付を取り消しいたしましたのでご連絡いたします。
+
+-----
+%if get("name_kana").status:
+■${get("name_kana").label}
+${get("name_kana").body}
+%endif
+%if get("tel").status:
+■${get("tel").label}
+${get("tel").body}
+%endif
+%if get("mail").status:
+■${get("mail").label}
+${get("mail").body}
+%endif
+
+-----
+%if get("entry_no").status:
+■${get("entry_no").label}
+${get("entry_no").body}
+%endif
+
+%if get("order_datetime").status:
+■${get("order_datetime").label}
+${get("order_datetime").body}
+%endif
+
+-----
+%if get("event_name").status:
+■${get("event_name").label}: ${get("event_name").body}
+%endif
+%if get("lot_name").status:
+■${get("lot_name").label}: ${get("lot_name").body}
+%endif
+%if get("announce_date").status:
+■${get("announce_date").label}: ${get("announce_date").body}
+%endif
+%for wish in lot_entry.wishes:
+
+【第${wish.wish_order+1}希望】
+公演日：${h.performance_datetime(wish.performance)}
+会場：${wish.performance.venue.name}
+申込内容
+  %for product in wish.products:
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
+  %endfor
+%endfor
+${notice}
+
+${footer}

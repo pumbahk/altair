@@ -113,6 +113,9 @@ class ILotsElectedMailResource(ILotMailResource, IOrderMailResource):
 class ILotsRejectedMailResource(ILotMailResource):
     """ 抽選落選通知メールのビューレットのコンテキスト"""
 
+class ILotsWithdrawMailResource(ILotMailResource):
+    """抽選申込ユーザ取消メールのビューレットのコンテキスト"""
+
 class IMessagePartFactory(Interface):
     """ 送信されるメールのメッセージパートを生成する factory """
 
