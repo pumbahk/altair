@@ -135,6 +135,8 @@ def get_entry_status(request, entry):
         return u"当選"
     elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
         return u"落選"
+    elif entry.withdrawn_at:
+        return u"ユーザー取消"
     else:
         return u"結果抽選待ち"
 
