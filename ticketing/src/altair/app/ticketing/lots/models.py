@@ -698,7 +698,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             wish.cancel(now)
 
     def withdraw(self, request):
-        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().lot_entry_user_withdraw
+        organization_setting = OrganizationSetting.query \
+                                    .filter_by(organization_id=self.organization_id) \
+                                    .first()
+        if organization_setting:
+            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
         if not lot_entry_user_withdraw:
             return
         logger.debug("close lot entry {0} ".format(self.entry_no))

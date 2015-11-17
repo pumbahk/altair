@@ -653,7 +653,11 @@ class LotReviewView(object):
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
         timestamp = datetime.now()
-        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=organization_id).first().lot_entry_user_withdraw
+        organization_setting = OrganizationSetting.query \
+                                    .filter_by(organization_id=organization_id) \
+                                    .first()
+        if organization_setting:
+            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
@@ -765,7 +769,11 @@ class LotReviewWithdrawView(object):
         return self.build_response_dict()
 
     def can_withdraw(self):
-        lot_entry_user_withdraw = OrganizationSetting.query.filter_by(organization_id=self.organization_id).first().lot_entry_user_withdraw
+        organization_setting = OrganizationSetting.query \
+                                    .filter_by(organization_id=self.organization_id) \
+                                    .first()
+        if organization_setting:
+            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
         return lot_entry_user_withdraw
 
     def build_response_dict(self):
