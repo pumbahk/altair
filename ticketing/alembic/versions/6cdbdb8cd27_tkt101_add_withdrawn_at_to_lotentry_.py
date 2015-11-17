@@ -20,9 +20,9 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column("LotEntry",
-                  sa.Column("withdrawn_at", sa.DateTime))
+                  sa.Column("withdrawn_at", sa.DateTime, nullable=True, default=None))
     op.add_column("LotEntryWish",
-                  sa.Column("withdrawn_at", sa.DateTime))
+                  sa.Column("withdrawn_at", sa.DateTime, nullable=True, default=None))
 
 def downgrade():
     op.drop_column("LotEntry", "withdrawn_at")
