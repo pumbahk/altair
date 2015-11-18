@@ -12,8 +12,6 @@ from altair.app.ticketing.cart.rendering import selectable_renderer
 def decide_auth_types(request, classification):
     auth_type = request.session.get('orderreview_auth_type_override')
     if auth_type is not None:
-        import sys
-        print >>sys.stderr, auth_type
         return [auth_type]
     auth_type = request.organization.setting.auth_type 
     if auth_type is not None:
