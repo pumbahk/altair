@@ -9,7 +9,7 @@ from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
 from altair.app.ticketing.users.models import Membership
 from altair.sqlahelper import get_db_session
-from altair.auth.api import get_plugin_registry
+from altair.auth.api import get_plugin_registry, decide
 from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
@@ -66,8 +66,13 @@ class AuthModelCallback(object):
 
     def __call__(self, identities, request):
         reorganized_identities = []
-
+        interesting_authenticator_names = decide(request)
+        logger.debug('interesting authenticators={authenticators}'.format(authenticators=interesting_authenticator_names))
         for authenticator_name, identity in identities.items():
+            if authenticator_name not in interesting_authenticator_names:
+                logger.debug('ignoring authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
+                continue
+                
             logger.debug('authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
 
             plugin_registry = get_plugin_registry(request)

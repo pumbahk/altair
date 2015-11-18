@@ -9,7 +9,14 @@ from sqlalchemy.pool import NullPool
 import sqlahelper
 from altair.app.ticketing.cart.rendering import selectable_renderer
 
+class RakutenAuthContext(object):
+    def __init__(self, request):
+        self.request = request
+
 def decide_auth_types(request, classification):
+    if hasattr(request, 'context') and isinstance(request.context, RakutenAuthContext):
+        from altair.rakuten_auth import AUTH_PLUGIN_NAME
+        return [AUTH_PLUGIN_NAME]
     auth_type = request.session.get('orderreview_auth_type_override')
     if auth_type is not None:
         return [auth_type]
@@ -68,9 +75,9 @@ def setup_auth(config):
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.extauth.userside_impl')
-    config.add_route('rakuten_auth.verify', '/verify', factory='.resources.LandingViewResource')
-    config.add_route('rakuten_auth.verify2', '/verify2', factory='.resources.LandingViewResource')
-    config.add_route('rakuten_auth.error', '/error', factory='.resources.LandingViewResource')
+    config.add_route('rakuten_auth.verify', '/verify', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
     from altair.app.ticketing.security import AuthModelCallback
