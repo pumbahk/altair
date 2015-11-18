@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 from pyramid.config import Configurator
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import PredicateMismatch
 from pyramid.authorization import ACLAuthorizationPolicy
 from sqlalchemy import engine_from_config
@@ -61,7 +61,6 @@ def includeme(config):
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
-    config.add_route('order_review.change_auth_type', '/change_auth_type')
     config.add_route('order_review.information', '/information')  # refs 10883
 
 def setup_auth(config):
@@ -75,8 +74,13 @@ def setup_auth(config):
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
     from altair.app.ticketing.security import AuthModelCallback
+    from pyramid.security import forget
     set_auth_policy(config, AuthModelCallback(config))
     config.set_authorization_policy(ACLAuthorizationPolicy())
+    def forbidden_handler(context, request):
+        forget(request)
+        return HTTPFound(request.route_path('order_review.index'))
+    config.set_forbidden_handler(forbidden_handler)
 
 def main(global_config, **local_config):
     settings = dict(global_config)

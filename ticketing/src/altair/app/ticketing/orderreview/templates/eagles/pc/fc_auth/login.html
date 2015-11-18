@@ -27,7 +27,7 @@
       </table>
     </td>
     <td>
-      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
+      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show', _query=dict(auth_type='fc_auth'))))}" method="post">
       <table class="loginbox">
         <thead>
           <tr>

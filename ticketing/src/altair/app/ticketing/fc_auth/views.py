@@ -22,9 +22,11 @@ logger = logging.getLogger(__name__)
 def return_to_url(request):
     passed_return_to_url = request.params.get('return_to')
     if passed_return_to_url is not None:
-        return urlparse(passed_return_to_url).path
-    else:
-        return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(request)
+        parsed_passed_return_to_url = urlparse(passed_return_to_url)
+        if (not parsed_passed_return_to_url.scheme and not parsed_passed_return_to_url.netloc) \
+           or parsed_passed_return_to_url.netloc == request.host:
+            return passed_return_to_url
+    return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(request)
 
 class FCAuthLoginViewMixin(object):
     @property

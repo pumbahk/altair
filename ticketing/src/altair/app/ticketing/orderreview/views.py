@@ -83,6 +83,12 @@ def jump_infomation_page_om_for_10873(orderlike):
         raise HTTPFound('/orderreview/information')
 
 
+def override_auth_type(context, request):
+    if 'auth_type' in request.params:
+        request.session['orderreview_auth_type_override'] = request.params['auth_type']
+    return True
+
+
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
     permission='*'
@@ -102,6 +108,7 @@ class MypageView(object):
     @lbr_view_config(
         route_name='mypage.show',
         request_method="GET",
+        custom_predicates=(override_auth_type,),
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
@@ -432,11 +439,6 @@ def information_view(context, request):
         infomation_tel=infomation_tel,
         )
 
-
-@lbr_view_config(route_name='order_review.change_auth_type')
-def change_auth_type(context, request):
-    request.session['orderreview_auth_type_override'] = request.params['auth_type']
-    return HTTPFound(location=request.route_path('mypage.show'))
 
 class QRView(object):
     def __init__(self, context, request):
