@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from altair.models import Identifier
 from altair.models import MutableSpaceDelimitedList, SpaceDelimitedList, MutationDict, JSONEncodedDict
 from altair.oauth.interfaces import IClient
+from .utils import is_descendant_of
 
 Base = declarative_base()
 
@@ -142,7 +143,15 @@ class OAuthClient(Base, WithCreatedAt):
                 return False
             return True
         else:
-            return self.redirect_uri == redirect_uri
+            if self.redirect_uri == redirect_uri:
+                return True
+            try:
+                parsed_ = urlparse(self.redirect_uri)
+            except:
+                return False
+            return (parsed_.scheme == 'http' or parsed.scheme == parsed_.scheme) and \
+                    parsed.netloc == parsed_.netloc and \
+                    is_descendant_of(parsed.path, parsed_.path)
 
     def validate_secret(self, secret):
         return self.client_secret == secret

@@ -1,6 +1,7 @@
 from os import urandom
 import hashlib
 import six
+import itertools
 from altair.mobile.interfaces import IMobileRequest
 from altair.oauth.response import OAuthResponseRenderer
 
@@ -30,4 +31,11 @@ def period_overlaps(a, b):
         (a[1] is None or (b[0] is not None and b[0] <= a[1]))) \
        or ((a[0] is None or (b[1] is not None and a[0] <= b[1])) and
            (a[1] is None or (b[1] is not None and b[1] <= a[1])))
+
+def is_descendant_of(path, base):
+    path = [c for i, c in enumerate(path.split(u'/')) if i == 0 or c != u'']
+    base = [c for i, c in enumerate(base.split(u'/')) if i == 0 or c != u'']
+    if len(path) < len(base):
+        return False
+    return all(a == b for a, b in itertools.izip(path, base))
 
