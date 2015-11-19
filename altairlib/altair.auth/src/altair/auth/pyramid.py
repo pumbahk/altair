@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import logging
 import itertools
-from zope.interface import implementer, providedBy, directlyProvides
+from zope.interface import implementer, providedBy, alsoProvides
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.interfaces import IAuthenticationPolicy, IRequest, IViewClassifier, IView, IMultiView
 from pyramid.security import Everyone, Authenticated, principals_allowed_by_permission
@@ -127,7 +127,7 @@ class AuthenticationPolicy(object):
             if api is None:
                 return None
             identities, auth_factors, metadata = api.authenticate()
-        directlyProvides(request, IAltairAuthRequest)
+        alsoProvides(request, IAltairAuthRequest)
         request.altair_auth_metadata = metadata
         return identities, auth_factors
 
