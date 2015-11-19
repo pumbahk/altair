@@ -12,7 +12,7 @@ class create_oauth_signatureTests(unittest.TestCase):
         oauth_consumer_key = "dpf43f3p2l4k3l03"
         oauth_token = "nnch734d00sl2jdk"
         oauth_signature_method = "HMAC-SHA1"
-        oauth_timestamp = 1191242096
+        oauth_timestamp = "1191242096"
         oauth_nonce = "kllo9940pd9333jh"
         oauth_version = "1.0"
         form_params = [ 
@@ -47,7 +47,7 @@ class create_signature_baseTests(unittest.TestCase):
         oauth_consumer_key = "dpf43f3p2l4k3l03"
         oauth_token = "nnch734d00sl2jdk"
         oauth_signature_method = "HMAC-SHA1"
-        oauth_timestamp = 1191242096
+        oauth_timestamp = "1191242096"
         oauth_nonce = "kllo9940pd9333jh"
         oauth_version = "1.0"
         form_params = [ 
@@ -55,15 +55,12 @@ class create_signature_baseTests(unittest.TestCase):
             ('size', 'original'),
         ]
 
-        secret = 'kd94hf93k423kf44&pfkkdhi9sl3r4s00'
-
         method = "GET"
         url = "http://photos.example.net/photos"
         result = self._callFUT(
             method=method,
             url=url,
             oauth_consumer_key=oauth_consumer_key,
-            secret=secret,
             oauth_token=oauth_token,
             oauth_signature_method=oauth_signature_method,
             oauth_timestamp=oauth_timestamp,
@@ -237,7 +234,7 @@ ns:http://specs.openid.net/auth/2.0"""
         self.assertFalse(result)
 
         self.assertEqual(mock_urlopen.mock_calls, [
-            call("https://api.id.rakuten.co.jp/openid/auth?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0"
+            call(u"https://api.id.rakuten.co.jp/openid/auth?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0"
                 "&openid.op_endpoint=https%3A%2F%2Fapi.id.rakuten.co.jp%2Fopenid%2Fauth"
                 "&openid.claimed_id=https%3A%2F%2Fmyid.rakuten.co.jp%2Fopenid%2Fuser%2F9Whpri7C2SulpKTnGlWg%3D"
                 "&openid.response_nonce=2008-09-04T04%3A58%3A20Z0"
@@ -290,10 +287,10 @@ class checkdigitTests(unittest.TestCase):
 class parse_rakutenid_basicinfoTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from .oauth import RakutenIDAPI
-        return RakutenIDAPI.parse_rakutenid_basicinfo(*args, **kwargs)
+        return RakutenIDAPI(endpoint=u'', consumer_key=u'', secret=u'', access_token={u'oauth_token': u'', u'oauth_token_secret': u''}, encoding='utf-8').parse_rakutenid_basicinfo(*args, **kwargs)
 
     def test_it(self):
-        data = """\
+        data = u"""\
 emailAddress:aodag@beproud.jp
 nickName:aodagbp
 firstName:篤
@@ -303,7 +300,7 @@ lastNameKataKana:オダギリ
 birthDay:1979/08/02
 sex:男性"""
 
-        data = unicode(data, 'utf-8')
+        data = data.encode('utf-8')
         result = self._callFUT(data)
         self.assertEqual(result, 
             {
