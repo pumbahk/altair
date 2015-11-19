@@ -61,11 +61,14 @@ def csv_renderer_factory(info):
             f = StringIO.StringIO()
             writer = csv.writer(f, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
             row_num = 0
-            for line in value['data']:
-                if not row_num:
-                    writer.writerow([safe_encode(stringize(s), encoding) for s in line.keys()])
-                row_num += 1
-                writer.writerow([_value(item, encoding) for item in line.items()])
+            if value['data']:
+                for line in value['data']:
+                    if not line:
+                        continue
+                    if not row_num:
+                        writer.writerow([safe_encode(stringize(s), encoding) for s in line.keys()])
+                    row_num += 1
+                    writer.writerow([_value(item, encoding) for item in line.items()])
             output = f.getvalue()
             f.close()
             ct = response.content_type
