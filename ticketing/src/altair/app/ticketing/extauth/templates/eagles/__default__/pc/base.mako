@@ -47,18 +47,11 @@ $(function(){
 <header class="content_l header">
 <div class="content_m">
 <h1 class="header-logo"><a href="http://eagles.tstar.jp/"><img src="${view_context.static_url('images/eticket_logo.png')}" alt="イーグルスチケット"></a></h1>
-<p class="history-btnbox"><a href="https://eagles.tstar.jp/orderreview" class="btnB">購入履歴の確認</a></p>
 </div>
 <nav class="content_l nav-global">
 <div id="toggle"><a href="#">&nbsp;</a></div>
 <ul class="content_m clearfix">
 <li><a href="http://eagles.tstar.jp/">TOP</a></li>
-<li><a href="http://eagles.tstar.jp/price">価格・座席図</a></li>
-<li><a href="http://eagles.tstar.jp/help">購入方法</a></li>
-<li><a href="http://eagles.tstar.jp/payment">支払・受取方法</a></li>
-<li><a href="http://eagles.tstar.jp/faq">よくあるご質問</a></li>
-<li><a target="_blank" href="http://www.rakuteneagles.jp/">オフィシャルサイト</a></li>
-<span class="none-pc"><li class=" history-btnbox-sp"><a href="https://eagles.tstar.jp/orderreview">購入履歴の確認</a></li></span>
 </ul>
 </nav>
 </header>

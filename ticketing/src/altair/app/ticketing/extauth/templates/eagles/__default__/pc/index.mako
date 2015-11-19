@@ -37,7 +37,7 @@
 % if member_kind.show_in_landing_page and member_kind.enable_guests:
 <dt class="login-name" id="guestlogintitle"><span>${member_kind.display_name}の方</span>はこちらから</dt>
 <dd class="login-inbox" id="guestlogin">
-<p><button class="btnA btnA_l login-guest-btn" name="doGuestLoginAs${member_kind.name}">チケット購入</button></p>
+<p><button class="btnA btnA_l login-guest-btn" name="doGuestLoginAs${member_kind.name}">次へ進む</button></p>
 </dd>
 % endif
 % endfor
