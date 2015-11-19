@@ -189,6 +189,7 @@ class AuthAPI(object):
         metadata = self._get_metadata(request, classification, identities)
         request.environ['altair.auth.auth_factors'] = merged_auth_factors
         request.environ['altair.auth.identities'] = identities
+        request.environ['altair.auth.metadata'] = metadata
         return identities, merged_auth_factors, metadata
 
     def _get_metadata(self, request, classification, identities):

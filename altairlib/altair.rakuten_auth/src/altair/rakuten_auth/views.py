@@ -2,7 +2,7 @@
 import logging
 from pyramid import security
 from .interfaces import IRakutenOpenID
-from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPUnauthorized, HTTPInternalServerError 
 
 logger = logging.getLogger(__name__)
 
@@ -25,4 +25,4 @@ class RootView(object):
         return impl.on_extra_verify(self.request)
 
     def error(self):
-        return Response(body="auth error")
+        return HTTPInternalServerError(body="auth error")

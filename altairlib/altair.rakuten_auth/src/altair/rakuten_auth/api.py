@@ -15,7 +15,7 @@ from zope.interface import implementer
 from pyramid import security
 from pyramid.interfaces import IRequest
 
-from .interfaces import IRakutenOpenID, IRakutenOAuth, IRakutenIDAPIFactory
+from .interfaces import IRakutenOpenID, IRakutenOAuth, IRakutenIDAPIFactory, IRakutenIDAPI2Factory
 
 from .events import Authenticated
 
@@ -55,3 +55,11 @@ def get_rakuten_id_api_factory(request_or_registry):
     else:
         registry = request_or_registry
     return registry.queryUtility(IRakutenIDAPIFactory)
+
+def get_rakuten_id_api2_factory(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IRakutenIDAPI2Factory)
+

@@ -31,7 +31,7 @@ def hook(event):
     user.user_profile.country = None
     user.user_profile.prefecture = metadata['prefecture']
     user.user_profile.city = metadata['city']
-    user.user_profile.address_1 = metadata['street']
+    user.user_profile.address_1 = metadata['address_1']
     user.user_profile.address_2 = None
     user.user_profile.tel_1 = metadata['tel_1']
     user.user_profile.tel_2 = None

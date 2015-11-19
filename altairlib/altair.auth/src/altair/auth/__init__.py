@@ -4,6 +4,7 @@ import os
 import six
 import logging
 from pyramid.response import Response
+from pyramid.tweens import MAIN
 from zope.interface import implementer
 from zope.interface.verify import verifyObject
 from .interfaces import (
@@ -15,6 +16,7 @@ from .interfaces import (
     IAuthenticator,
     IAuthFactorProvider,
     IMetadataProvider,
+    IRequestInterceptor,
     )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +32,7 @@ class PluginRegistry(object):
         IAuthenticator,
         IChallenger,
         IMetadataProvider,
+        IRequestInterceptor,
         ]
 
     def __init__(self, config):
@@ -112,4 +115,5 @@ def includeme(config):
     register_decider(config)
     register_auth_policy(config)
     register_session_keeper(config)
+    config.add_tween(__name__ + '.pyramid.InterceptorTween', over=MAIN, under='pyramid_tm.tm_tween_factory')
     config.add_forbidden_view('.pyramid.challenge_view')

@@ -1,9 +1,11 @@
 # encoding: utf-8
 
 import sys
+import six
+import re
 import urllib
 import urllib2
-from urlparse import urljoin
+from urlparse import urlparse, urlunparse, urljoin
 import logging
 import uuid
 import pickle
@@ -31,8 +33,8 @@ from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_u
 
 from . import AUTH_PLUGIN_NAME
 from .events import Authenticated
-from .api import get_rakuten_oauth, get_rakuten_id_api_factory
-from .interfaces import IRakutenOpenID
+from .api import get_rakuten_oauth, get_rakuten_id_api_factory, get_rakuten_id_api2_factory
+from .interfaces import IRakutenOpenID, IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +80,9 @@ class RakutenOpenIDHTTPSessionFactory(object):
 def sex_no(s, encoding='utf-8'):
     if isinstance(s, str):
         s = s.decode(encoding)
-    if s == u'男性':
+    if s in (u'男性', u'0'):
         return 1
-    elif s == u'女性':
+    elif s == (u'女性', u'1'):
         return 2
     else:
         return 0
@@ -96,30 +98,34 @@ class RakutenOpenID(object):
     METADATA_KEY = '%s.metadata' % __name__
     DEFAULT_CACHE_REGION_NAME = '%s.metadata' % __name__
 
+    NS_OAUTHv1 = u'http://specs.openid.net/extenstions/oauth/1.0'
+    NS_OPENIDv2 = u'http://specs.openid.net/auth/2.0'
+    OPENID_IDENTIFIER_SELECT = u'http://specs.openid.net/auth/2.0/identifier_select'
+
     cache_manager = cache_manager
 
     def __init__(self,
             plugin_name,
             endpoint,
-            verify_url,
-            extra_verify_url,
-            error_to,
+            url_builder,
             consumer_key,
             session_factory,
             cache_region=None,
-            return_to=None,
+            oauth_scope=None,
+            encoding='utf-8',
             timeout=10):
         if cache_region is None:
             cache_region = self.DEFAULT_CACHE_REGION_NAME
         self.name = plugin_name
         self.cache_region = cache_region
-        self.endpoint = endpoint
-        self.verify_url = verify_url
-        self.extra_verify_url = extra_verify_url
-        self.error_to = error_to
+        self.endpoint = urlparse(endpoint)
+        self.url_builder = url_builder
         self.consumer_key = consumer_key
         self.session_factory = session_factory
-        self.return_to = return_to or verify_url
+        if oauth_scope is None:
+            oauth_scope = (u'rakutenid_basicinfo', u'rakutenid_contactinfo', u'rakutenid_pointaccount')
+        self.oauth_scope = oauth_scope
+        self.encoding = encoding
         self.timeout = int(timeout)
 
     def get_session_id(self, request):
@@ -138,52 +144,82 @@ class RakutenOpenID(object):
         return session
 
     def combine_session_id(self, request, session, url):
-        q = '?ak=' + urllib.quote(session.id)
+        q = u'?ak=' + urllib.quote(session.id)
         if IMobileRequest.providedBy(request):
             key = HybridHTTPBackend.get_query_string_key(request)
             session_restorer = HybridHTTPBackend.get_session_restorer(request)
             if key and session_restorer:
                 # webobは"&"の他に";"文字もデリミタと見なしてくれる
-                q += ';%s=%s' % (urllib.quote(key), urllib.quote(session_restorer))
+                q += u';%s=%s' % (urllib.quote(key), urllib.quote(session_restorer))
         return urljoin(url, q)
 
+    def get_oauth_scope(self, request):
+        if callable(self.oauth_scope):
+            return self.oauth_scope(request)
+        else:
+            return self.oauth_scope
+
+    def build_endpoint_request_url(self, query, params=()):
+        params_str = \
+            (self.endpoint.params + u';' if self.endpoint.params else u'') \
+            + u';'.join(
+                six.text_type(urllib.quote(k.encode(self.encoding))) \
+                + u'=' \
+                + six.text_type(urllib.quote(v.encode(self.encoding)))
+                for k, v in params
+                )
+        query_str = \
+            (self.endpoint.query + u'&' if self.endpoint.query else u'') \
+            + u'&'.join(
+                six.text_type(urllib.quote(k.encode(self.encoding))) \
+                + u'='
+                + six.text_type(urllib.quote(v.encode(self.encoding)))
+                for k, v in query
+                )
+        return urlunparse((
+            self.endpoint.scheme,
+            self.endpoint.netloc,
+            self.endpoint.path,
+            params_str,
+            query_str,
+            self.endpoint.fragment,
+            ))
+
     def get_redirect_url(self, request, session):
-        return self.endpoint + "?" + urllib.urlencode([
-            ('openid.ns', 'http://specs.openid.net/auth/2.0'),
-            ('openid.return_to', self.combine_session_id(request, session, self.return_to)),
-            ('openid.claimed_id', 'http://specs.openid.net/auth/2.0/identifier_select'),
-            ('openid.identity', 'http://specs.openid.net/auth/2.0/identifier_select'),
-            ('openid.mode', 'checkid_setup'),
-            ('openid.ns.oauth', 'http://specs.openid.net/extenstions/oauth/1.0'),
-            ('openid.oauth.consumer', self.consumer_key),
-            ('openid.oauth.scope', 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount'),
-            # ('openid.ns.ax', 'http://openid.net/srv/ax/1.0'),
-            # ('openid.ax.mode', 'fetch_request'),
-            # ('openid.ax.type.nickname', 'http://schema.openid.net/namePerson/friendly'),
-            # ('openid.ax.required', 'nickname'),
-        ])
+        return_to = self.url_builder.build_return_to_url(request)
+        consumer_key = self.consumer_key
+        if callable(consumer_key):
+            consumer_key = consumer_key(request)
+        query = [
+            (u'openid.ns', self.NS_OPENIDv2),
+            (u'openid.return_to', self.combine_session_id(request, session, return_to)),
+            (u'openid.claimed_id', self.OPENID_IDENTIFIER_SELECT),
+            (u'openid.identity', self.OPENID_IDENTIFIER_SELECT),
+            (u'openid.mode', u'checkid_setup'),
+            (u'openid.ns.oauth', self.NS_OAUTHv1),
+            (u'openid.oauth.consumer', consumer_key),
+            (u'openid.oauth.scope', ','.join(self.get_oauth_scope(request))),
+            ]
+        return self.build_endpoint_request_url(query)
 
     def verify_authentication(self, request, params):
-        url = self.endpoint + "?" + urllib.urlencode(
-           [('openid.ns', params['ns']),
-            ('openid.op_endpoint', params['op_endpoint']),
-            ('openid.claimed_id', params['claimed_id']),
-            ('openid.response_nonce',params['response_nonce']),
-            ('openid.mode', params['mode']),
-            ('openid.identity', params['identity']),
-            ('openid.return_to', params['return_to']),
-            ('openid.assoc_handle', params['assoc_handle']),
-            ('openid.signed', params['signed']),
-            ('openid.sig', params['sig']),
-            ('openid.ns.oauth', params['ns_oauth']),
-            ('openid.oauth.request_token', params['oauth_request_token']),
-            ('openid.oauth.scope', params['oauth_scope']),
-            # ('openid.ns.ax', params['ns_ax']),
-            # ('openid.ax.mode', params['ax_mode']),
-            # ('openid.ax.type.nickname', params['ax_type_nickname']),
-            # ('openid.ax.value.nickname', params['ax_value_nickname'].encode('utf-8')),
-        ])
-
+        query = [
+            (u'openid.ns', params['ns']),
+            (u'openid.op_endpoint', params['op_endpoint']),
+            (u'openid.claimed_id', params['claimed_id']),
+            (u'openid.response_nonce',params['response_nonce']),
+            (u'openid.mode', params['mode']),
+            (u'openid.identity', params['identity']),
+            (u'openid.return_to', params['return_to']),
+            (u'openid.assoc_handle', params['assoc_handle']),
+            (u'openid.signed', params['signed']),
+            (u'openid.sig', params['sig']),
+            (u'openid.ns.oauth', params['ns_oauth']),
+            (u'openid.oauth.request_token', params['oauth_request_token']),
+            (u'openid.oauth.scope', params['oauth_scope']),
+            ]
+        url = self.build_endpoint_request_url(query)
+        logger.debug('endpoint_request_url=%s' % url)
         f = urllib2.urlopen(url, timeout=self.timeout)
         try:
             response_body = f.read()
@@ -205,19 +241,15 @@ class RakutenOpenID(object):
             op_endpoint = request_get['openid.op_endpoint'],
             claimed_id = request_get['openid.claimed_id'],
             response_nonce = request_get['openid.response_nonce'],
-            mode = 'check_authentication',
+            mode = u'check_authentication',
             identity = request_get['openid.identity'],
             return_to = request_get['openid.return_to'],
             assoc_handle = request_get['openid.assoc_handle'],
             signed = request_get['openid.signed'],
             sig = request_get['openid.sig'],
-            ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
+            ns_oauth = self.NS_OAUTHv1,
             oauth_request_token = request_get['openid.oauth.request_token'],
-            oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount',
-            # ns_ax = request_get['openid.ns.ax'],
-            # ax_mode = request_get['openid.ax.mode'],
-            # ax_type_nickname = request_get['openid.ax.type.nickname'],
-            # ax_value_nickname = request_get['openid.ax.value.nickname'],
+            oauth_scope = u','.join(self.get_oauth_scope(request))
             )
 
     def get_return_url(self, session):
@@ -226,19 +258,13 @@ class RakutenOpenID(object):
     def set_return_url(self, session, url):
         session[self.__class__.__name__ + '.return_url'] = url
 
-    def extra_verification_phase(self, request):
-        return request.path_url == self.extra_verify_url
-
-    def extra_verification_phase_exists(self, request):
-        return self.extra_verify_url is not None 
-
     def on_verify(self, request):
         logger.debug('openid verify GET: {0}\nPOST: {1}'.format(request.GET.items(), request.POST.items()))
         params = self.openid_params(request)
         session = self.get_session(request)
         if session is None:
             logger.info('could not retrieve the temporary session')
-            return HTTPFound(location=self.error_to)
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
         auth_api = get_auth_api(request)
         identities, auth_factors, metadata = auth_api.login(
             request,
@@ -248,37 +274,38 @@ class RakutenOpenID(object):
             )
         response = request.response
         if identities:
-            if self.extra_verification_phase_exists(request):
+            if self.url_builder.extra_verify_url_exists(request):
                 session[self.SESSION_IDENT_KEY] = auth_factors
                 session.save()
                 return HTTPFound(
                     self.combine_session_id(
                         request, session,
-                        self.extra_verify_url))
+                        self.url_builder.build_extra_verify_url(request)))
             else:
                 identity = identities.get(AUTH_PLUGIN_NAME)
                 if identity is not None:
                     return self._on_success(request, session, identity, metadata, response)
                 else:
                     logger.info('authentication failure on verify. temporary session timeout, oauth API failures etc.')
-                    return HTTPFound(location=self.error_to)
+                    return HTTPFound(location=self.url_builder.build_error_to_url(request))
         else:
             logger.info('who_api.login failed')
-            return HTTPFound(location=self.error_to)
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
 
     def on_extra_verify(self, request):
-        if not self.extra_verification_phase(request):
-            logger.error('authentication failure on extra_verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, self.extra_verify_url))
-            return HTTPFound(location=self.error_to)
+        extra_verify_url = self.url_builder.build_extra_verify_url(request)
+        if request.path_url != extra_verify_url:
+            logger.error('authentication failure on extra_verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, extra_verify_url))
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
 
         session = self.get_session(request)
         if session is None:
             logging.info('could not retrieve the temporary session')
-            return HTTPFound(location=self.error_to)
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
         auth_factors = session.get(self.SESSION_IDENT_KEY)
         if auth_factors is None:
             logging.info('no identity stored in the temporary session')
-            return HTTPFound(location=self.error_to)
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
         auth_api = get_auth_api(request)
         identities, auth_factors, metadata = auth_api.authenticate(request, auth_factors=auth_factors, auth_factor_provider_name=self.name)
         identity = identities.get(AUTH_PLUGIN_NAME) if identities is not None else None
@@ -287,7 +314,7 @@ class RakutenOpenID(object):
             return self._on_success(request, session, identity, metadata, request.response)
         else:
             logger.info('authentication failure on extra_verify. temporary session timeout, oauth API failures etc.')
-            return HTTPFound(location=self.error_to)
+            return HTTPFound(location=self.url_builder.build_error_to_url(request))
 
     def _on_success(self, request, session, identity, metadata, response):
         if identity is None:
@@ -311,35 +338,68 @@ class RakutenOpenID(object):
             )
 
     def _get_extras(self, request, identity):
-        access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
-        idapi = get_rakuten_id_api_factory(request)(access_token)
-        user_info = idapi.get_basic_info()
-        birthday = None
-        try:
-            birthday = datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
-        except (ValueError, TypeError):
-            # 生年月日未登録
-            pass
+        if 'oauth2_access_token' in identity:
+            # new_api
+            idapi = get_rakuten_id_api2_factory(request)(request, identity['oauth2_access_token'])
+            basic_info = idapi.get_basic_info()
+            contact_info = idapi.get_user_info()
+            point_accounts = idapi.get_point_accounts()
 
-        contact_info = idapi.get_contact_info()
-        point_account = idapi.get_point_account()
+            birthday = None
+            try:
+                birthday = datetime.strptime(basic_info.get('birthDay'), '%Y/%m/%d')
+            except (ValueError, TypeError):
+                # 生年月日未登録
+                pass
 
-        return dict(
-            email_1=user_info.get('emailAddress'),
-            nick_name=user_info.get('nickName'),
-            first_name=user_info.get('firstName'),
-            last_name=user_info.get('lastName'),
-            first_name_kana=user_info.get('firstNameKataKana'),
-            last_name_kana=user_info.get('lastNameKataKana'),
-            birthday=birthday,
-            sex=sex_no(user_info.get('sex'), 'utf-8'),
-            zip=contact_info.get('zip'),
-            prefecture=contact_info.get('prefecture'),
-            city=contact_info.get('city'),
-            street=contact_info.get('street'),
-            tel_1=contact_info.get('tel'),
-            rakuten_point_account=point_account.get('pointAccount')
-            )
+            return dict(
+                email_1=contact_info.get('emailAddress'),
+                nick_name=basic_info.get('nickName'),
+                first_name=contact_info.get('firstName'),
+                last_name=contact_info.get('lastName'),
+                first_name_kana=contact_info.get('firstNameKataKana'),
+                last_name_kana=contact_info.get('lastNameKataKana'),
+                birthday=birthday,
+                sex=sex_no(basic_info.get('sex'), 'utf-8'),
+                zip=contact_info.get('zip'),
+                prefecture=contact_info.get('prefecture'),
+                city=contact_info.get('city'),
+                street=contact_info.get('street'), # deprecated
+                address_1=contact_info.get('street'),
+                tel_1=contact_info.get('tel'),
+                rakuten_point_account=point_accounts[0].get('account_number') if point_accounts is not None and 1 <= len(point_accounts) else None
+                )
+        else:
+            access_token = get_rakuten_oauth(request).get_access_token(request, identity['oauth_request_token'])
+            idapi = get_rakuten_id_api_factory(request)(request, access_token)
+            basic_info = idapi.get_basic_info()
+            contact_info = idapi.get_contact_info()
+            point_account = idapi.get_point_account()
+
+            birthday = None
+            try:
+                birthday = datetime.strptime(basic_info.get('birthDay'), '%Y/%m/%d')
+            except (ValueError, TypeError):
+                # 生年月日未登録
+                pass
+
+            return dict(
+                email_1=basic_info.get('emailAddress'),
+                nick_name=basic_info.get('nickName'),
+                first_name=basic_info.get('firstName'),
+                last_name=basic_info.get('lastName'),
+                first_name_kana=basic_info.get('firstNameKataKana'),
+                last_name_kana=basic_info.get('lastNameKataKana'),
+                birthday=birthday,
+                sex=sex_no(basic_info.get('sex'), 'utf-8'),
+                zip=contact_info.get('zip'),
+                prefecture=contact_info.get('prefecture'),
+                city=contact_info.get('city'),
+                street=contact_info.get('street'), # deprecated
+                address_1=contact_info.get('street'),
+                tel_1=contact_info.get('tel'),
+                rakuten_point_account=point_account.get('pointAccount')
+                )
 
     # ILoginHandler
     def get_auth_factors(self, request, auth_context, credentials):
@@ -435,7 +495,7 @@ class RakutenOpenID(object):
     def challenge(self, request, auth_context, response):
         logger.debug('challenge')
         session = self.new_session(request)
-        return_url = request.url
+        return_url = request.environ.get('altair.rakuten_auth.return_url', request.url)
         _session = request.session # Session gets created here!
         if _session is not None and IMobileRequest.providedBy(request):
             key = HybridHTTPBackend.get_query_string_key(request)
@@ -451,33 +511,91 @@ class RakutenOpenID(object):
         return True
 
 
-def openid_consumer_from_settings(settings, prefix):
+@implementer(IRakutenOpenIDURLBuilder)
+class URLBuilder(object):
+    def __init__(self, verify_url, extra_verify_url, error_to_url, return_to_url):
+        self.verify_url = verify_url
+        self.extra_verify_url = extra_verify_url
+        self.error_to_url = error_to_url
+        self.return_to_url = return_to_url
+
+    def extra_verify_url_exists(self, request):
+        return self.extra_verify_url is not None
+
+    def build_verify_url(self, request):
+        return self.verify_url
+
+    def build_extra_verify_url(self, request):
+        return self.extra_verify_url
+
+    def build_error_to_url(self, request):
+        return self.error_to_url
+
+    def build_return_to_url(self, request):
+        if self.return_to_url is not None:
+            return self.return_to_url
+        return self.build_verify_url(request)
+
+
+def openid_consumer_from_config(config, prefix):
+    from .oauth import get_oauth_consumer_key_from_config
+    settings = config.registry.settings
     session_args = {}
     for k, v in settings.items():
         if k.startswith(prefix + 'session.'):
             session_args[k[len(prefix + 'session.'):]] = v
     persistence_backend = settings[prefix + 'session']
 
+    consumer_key = get_oauth_consumer_key_from_config(config, prefix)
+    url_builder_factory = settings.get(prefix + 'url_builder_factory')
+    if url_builder_factory is None:
+        verify_url = settings.get(prefix + 'verify_url')
+        extra_verify_url = settings.get(prefix + 'extra_verify_url')
+        error_to_url = settings.get(prefix + 'error_to_url')
+        if error_to_url is None:
+            error_to_url = settings.get(prefix + 'error_to')
+        return_to_url = settings.get(prefix + 'return_to_url')
+        if return_to_url is None:
+            return_to_url = settings.get(prefix + 'return_to')
+        logger.debug('{prefix}url.builder_factory is not given; verify_url={verify_url}, extra_verify_url={extra_verify_url}, error_to_url={error_to_url}, return_to={return_to_url}'.format(
+            prefix=prefix,
+            verify_url=verify_url,
+            extra_verify_url=extra_verify_url,
+            error_to_url=error_to_url,
+            return_to_url=return_to_url
+            ))
+        url_builder = URLBuilder(
+            verify_url=verify_url,
+            extra_verify_url=extra_verify_url,
+            error_to_url=error_to_url,
+            return_to_url=return_to_url
+            )
+    else:
+        url_builder_factory = config.maybe_dotted(url_builder_factory)
+        url_builder_factory_param_prefix = prefix + 'url_builder_factory.'
+        params = {}
+        for k, v in settings.items():
+            if k.startswith(url_builder_factory_param_prefix):
+                params[k[len(url_builder_factory_param_prefix):]] = v
+        url_builder = url_builder_factory(**params)
     return RakutenOpenID(
         plugin_name=AUTH_PLUGIN_NAME,
         cache_region=None,
         endpoint=settings[prefix + 'endpoint'],
-        verify_url=settings.get(prefix + 'verify_url'),
-        extra_verify_url=settings.get(prefix + 'extra_verify_url'),
-        error_to=settings.get(prefix + 'error_to'),
-        consumer_key=settings[prefix + 'oauth.consumer_key'],
+        url_builder=url_builder,
+        consumer_key=consumer_key,
         session_factory=RakutenOpenIDHTTPSessionFactory(
             persistence_backend,
             session_args
             ),
-        return_to=settings.get(prefix + 'return_to'),
-        timeout=settings.get(prefix + 'timeout')
+        timeout=settings.get(prefix + 'timeout'),
+        oauth_scope=[c.strip() for c in re.split(ur'\s*,\s*|\s+', settings.get(prefix + 'oauth.scope', u''))] or None
         )
 
 def includeme(config):
     from . import CONFIG_PREFIX
-    rakuten_auth = openid_consumer_from_settings(
-        config.registry.settings,
+    rakuten_auth = openid_consumer_from_config(
+        config,
         prefix=CONFIG_PREFIX
         )
     config.registry.registerUtility(rakuten_auth, IRakutenOpenID)
