@@ -76,10 +76,12 @@ def setup_auth(config):
     config.set_forbidden_handler(forbidden_handler)
 
     # 楽天認証コールバック
-    config.add_route('rakuten_auth.login', '/login', factory=".resources.lot_resource_factory")
-    config.add_route('rakuten_auth.verify', '/verify', factory=".resources.lot_resource_factory")
-    config.add_route('rakuten_auth.verify2', '/verify2', factory=".resources.lot_resource_factory")
-    config.add_route('rakuten_auth.error', '/error', factory=".resources.lot_resource_factory")
+    def empty_resource_factory(request):
+        return None
+    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
 
 
 def forbidden_handler(context, request):
