@@ -429,6 +429,14 @@ class SearchEntryForm(Form):
         ],
     )
 
+    withdrawn = BooleanField(
+        label=u"ユーザ取消",
+        default=False,
+        validators=[
+            Required(),
+        ],
+    )
+
     entried = BooleanField(
         label=u"申込",
         default=True,
