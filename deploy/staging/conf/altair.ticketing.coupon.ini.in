@@ -14,14 +14,14 @@ get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
 
 ; altair.rakuten_auth
-altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
-altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}
-altair.rakuten_auth.verify_url = ${altair:rakuten_auth.verify_url}
-altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
+altair.rakuten_auth.url_builder_factory = altair.app.ticketing.security.RakutenAuthURLBuilder
+altair.rakuten_auth.url_builder_factory.proxy_url_pattern = ${altair:rakuten_auth.proxy_url_base}/{subdomain}
 altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/data
 altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/lock
+altair.rakuten_auth.oauth.consumer_key = ${altair:rakuten_auth.oauth.consumer_key}
+altair.rakuten_auth.oauth.secret = ${altair:rakuten_auth.oauth.secret}
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/

@@ -1,4 +1,4 @@
-from zope.interface import Interface
+from zope.interface import Interface, Attribute
 
 class IRakutenOpenID(Interface):
     def get_session_id(request):
@@ -33,8 +33,9 @@ class IRakutenOpenID(Interface):
 
 
 class IRakutenOAuth(Interface):
-    def get_access_token(oauth_consumer_key, oauth_token, secret):
+    def get_access_token(request, token):
         pass
+
 
 class IRakutenIDAPI(Interface):
     def get_basic_info():
@@ -46,7 +47,43 @@ class IRakutenIDAPI(Interface):
     def get_point_account():
         pass
 
-class IRakutenIDAPIFactory(Interface):
-    def __call__(access_token):
+
+class IRakutenIDAPI2(Interface):
+    def get_open_id():
         pass
 
+    def get_basic_info():
+        pass
+
+    def get_user_info():
+        pass
+
+    def get_point_account():
+        pass
+
+
+class IRakutenIDAPIFactory(Interface):
+    def __call__(request, access_token):
+        pass
+
+
+class IRakutenIDAPI2Factory(Interface):
+    def __call__(request, access_token):
+        pass
+
+
+class IRakutenOpenIDURLBuilder(Interface):
+    def extra_verify_url_exists(request):
+        pass
+
+    def build_verify_url(request):
+        pass
+
+    def build_extra_verify_url(request):
+        pass
+
+    def build_error_to_url(request):
+        pass
+
+    def build_return_to_url(request):
+        pass

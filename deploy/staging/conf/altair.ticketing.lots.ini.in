@@ -20,38 +20,41 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 altair.ticketing.lots.sitecatalyst.dynamicAccountSelection = false
 
 ; altair.rakuten_auth
-altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
-altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}
-altair.rakuten_auth.verify_url = ${altair:rakuten_auth.verify_url}
-altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
+altair.rakuten_auth.url_builder_factory = altair.app.ticketing.security.RakutenAuthURLBuilder
+altair.rakuten_auth.url_builder_factory.proxy_url_pattern = ${altair:rakuten_auth.proxy_url_base}/{subdomain}
 altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
-altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/data
-altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/lock
+altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/altair.rakuten_auth/data
+altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/altair.rakuten_auth/lock
+altair.rakuten_auth.oauth.consumer_key = ${altair:rakuten_auth.oauth.consumer_key}
+altair.rakuten_auth.oauth.secret = ${altair:rakuten_auth.oauth.secret}
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
-session.data_dir = %(here)s/tmp/beaker/data
-session.lock_dir = %(here)s/tmp/beaker/lock
+session.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/data
+session.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/lock
 
 cache.type = ${altair:beaker_backend_type}
-cache.data_dir = %(here)s/tmp/beaker/data
-cache.lock_dir = %(here)s/tmp/beaker/lock
+cache.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/data
+cache.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/lock
 
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
+altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/data
+altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.lots/lock
 altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
 altair.httpsession.http_backend.query_string_key = JSESSIONID
 
 ; altair.queryprofile
 altair.queryprofile.summary_path = cart/__queryprofile
 
-; altair.nogizaka46_auth
-altair.nogizaka46_auth.key = nogizaka_test
-altair.lots.nogizaka_lot_id = 1128,1088,1042,1041,996,570,979,462,1110,261,404,396,253,240,1146,1206,1248
+; dogpile.cache
+dogpile_cache.altair_oauth_auth_plugin_metadata.backend = ${altair:dogpile_cache_backend_type}
+dogpile_cache.altair_oauth_auth_plugin_metadata.expiration_time = 900
+dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.filename = %(here)s/../tmp/altair_oauth_auth
+dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.host = 127.0.0.1
+dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 
 [app:www-check]
 use = egg:Paste#static

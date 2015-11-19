@@ -98,6 +98,14 @@ class IMetadataProvider(IPlugin):
         pass
 
 
+class IRequestInterceptor(IPlugin):
+    def intercept(request):
+        pass 
+
+
 class IForbiddenHandler(Interface):
     def __call__(context, request):
         pass
+
+class IAltairAuthRequest(Interface):
+    altair_auth_metadata = Attribute('''''')
