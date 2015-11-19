@@ -342,7 +342,7 @@ class RakutenOpenID(object):
             # new_api
             idapi = get_rakuten_id_api2_factory(request)(request, identity['oauth2_access_token'])
             basic_info = idapi.get_basic_info()
-            contact_info = idapi.get_contact_info()
+            contact_info = idapi.get_user_info()
             point_accounts = idapi.get_point_accounts()
 
             birthday = None
