@@ -46,6 +46,8 @@ def setup_routes(config):
     config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
     config.add_route('lots.entry.logout', 'events/logout', factory='.resources.LotLogoutResource')
+    config.add_route('lots.review.withdraw.withdraw', 'review/withdraw/withdraw', factory='.resources.LotReviewWithdrawResource')
+    config.add_route('lots.review.withdraw.confirm', 'review/withdraw/confirm', factory='.resources.LotReviewWithdrawResource')
 
     config.add_route('lots.review.index', 'review', factory='.resources.LotReviewResource')
 

@@ -327,6 +327,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
+            LotEntry.withdrawn_at==None
+        ).filter(
             LotEntry.entry_no!=None
         ).count()
         return total_entries
@@ -428,6 +430,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
+            LotEntry.withdrawn_at==None
+        ).filter(
             LotEntry.entry_no != None
         ).scalar()
         return total_quantity
@@ -446,6 +450,8 @@ class LotEntryStatus(object):
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.withdrawn_at==None
         ).filter(
             LotEntry.entry_no != None
         ).group_by(LotEntryWish.wish_order).all()
@@ -471,7 +477,11 @@ class LotEntryStatus(object):
             Performance.id.label('performance_id'),
             StockType.id.label('stock_type_id'),
             LotEntryWish.wish_order.label('wish_order'),
-            LotEntryProduct.quantity.label('entry_quantity'),
+            case([
+                (LotEntry.withdrawn_at == None,
+                 LotEntryProduct.quantity)
+            ],
+            else_=0).label('entry_quantity'),
             case([
                 (and_(LotEntry.elected_at != None,
                       LotEntryWish.elected_at != None),
@@ -612,3 +622,39 @@ class LotEntryPerformanceSeatTypesWishStatus(object):
         self.wish_order = wish_order
 
         self.performance_seat_type = (performance, seat_type)
+
+class LotEntryController(object):
+    def __init__(self, request=None):
+        self._request = request
+        self._entry = None
+
+    def load(self, obj_or_id):
+        if isinstance(obj_or_id, LotEntry):
+            self._entry = obj_or_id
+        else:
+            try:
+                obj_or_id = int(obj_or_id)
+            except (ValueError, TypeError) as err:
+                raise ValueError(err)
+
+            self._entry = LotEntry.query.filter(LotEntry.id == obj_or_id).one()
+
+        return self._entry
+
+    @property
+    def lot(self):
+        return self._entry and self._entry.lot
+
+    def can_withdraw(self, now):
+        """
+        抽選申込がwithdrawできる状態かどうかを判定する
+        当落が確定しておらず受付期間中の抽選申込のみ取消できる
+        """
+        return (
+            self.lot.available_on(now) and
+            not self._entry.is_elected and
+            not self._entry.is_rejected and
+            not self._entry.is_canceled and
+            not self._entry.is_withdrawn and
+            not self._entry.is_ordered
+        )

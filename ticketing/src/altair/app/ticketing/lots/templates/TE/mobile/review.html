@@ -17,9 +17,11 @@ ${h.lot_entry_status_as_string(entry)}
 </span>
 %endif
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'当選表示':
-抽選の結果、お客様はご当選されました。<br />
-<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。
+%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%elif h.lot_entry_display_status(entry, now) == u'当選表示':
+抽選の結果、お客様はご当選されました。
+<a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
 %elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。<br />
 %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
@@ -113,3 +115,14 @@ ${h.japanese_date(birthday)}
 <div>
 ${memo|h.nl2br}
 </div>
+
+%if entry_controller.can_withdraw(timestamp) and can_withdraw:
+<form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
+    <div align="center">
+    <input type="submit" style="background-color:#FF6C0D;font-size:16px;padding: 5px 20px 5px 20px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">
+    </div>
+    <input type="hidden" name="entry_no" value=${entry_no}>
+    <input type="hidden" name="tel_no" value=${tel_no}>
+    <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+</form>
+%endif

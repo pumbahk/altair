@@ -351,6 +351,9 @@ class OrganizationSettingSimpleForm(OurForm):
     mail_refund_to_user = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.mail_refund_to_user)['label']
     )
+    lot_entry_user_withdraw = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.lot_entry_user_withdraw)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
