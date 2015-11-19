@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import logging
-logger  = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 from datetime import datetime
 from pyramid.view import view_config
 from altaircms.modellib import DBSession as session
