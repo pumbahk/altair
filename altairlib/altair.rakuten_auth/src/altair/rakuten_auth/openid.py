@@ -40,6 +40,10 @@ logger = logging.getLogger(__name__)
 
 cache_manager = CacheManager(cache_regions=cache_regions)
 
+def strip_query_string_and_fragment(url):
+    parsed_url = urlparse(url)
+    url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, parsed_url.params, None, None))
+    return url
 
 class RakutenOpenIDHTTPSessionContext(object):
     http_backend = None
@@ -293,7 +297,7 @@ class RakutenOpenID(object):
             return HTTPFound(location=self.url_builder.build_error_to_url(request))
 
     def on_extra_verify(self, request):
-        extra_verify_url = self.url_builder.build_extra_verify_url(request)
+        extra_verify_url = strip_query_string_and_fragment(self.url_builder.build_extra_verify_url(request))
         if request.path_url != extra_verify_url:
             logger.error('authentication failure on extra_verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, extra_verify_url))
             return HTTPFound(location=self.url_builder.build_error_to_url(request))
