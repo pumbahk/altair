@@ -30,7 +30,8 @@ class CouponView(object):
 
         return dict(
             reserved_number=self.context.reserved_number,
-            order=self.context.order
+            order=self.context.order,
+            coupon_security=self.context.coupon_security
             )
 
     @lbr_view_config(
@@ -41,7 +42,8 @@ class CouponView(object):
 
         return dict(
             reserved_number=self.context.reserved_number,
-            order=self.context.order
+            order=self.context.order,
+            coupon_security=self.context.coupon_security
             )
 
     @lbr_view_config(
@@ -59,5 +61,6 @@ class CouponView(object):
 
         return dict(
             reserved_number=self.context.reserved_number,
-            order=order
+            order=order,
+            coupon_security=self.context.coupon_security
             )

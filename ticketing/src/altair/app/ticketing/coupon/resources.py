@@ -9,6 +9,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting
+from .security import CouponSecurity
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,10 @@ class CouponViewResource(CouponResourceBase):
                 join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
                 filter(Order.organization_id == self.organization.id). \
                 filter(Order.order_no == self.reserved_number.order_no).first()
+
+    @property
+    def coupon_security(self):
+        return CouponSecurity()
 
     @property
     def all_coupon_used(self):
