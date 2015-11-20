@@ -84,13 +84,25 @@ def get_performance_list_query(session, request, organization_id):
     # todo: paramsのフォーマットチェックが必要
     # キーワード検索
     if params.get('keyword'):
-        pattern = u'%{}%'.format(escape_wildcard_for_like(params.get('keyword')))
-        query = query.filter(or_(Performance.title.like(pattern, escape="\\"),
-                                 Event.title.like(pattern, escape="\\"),
-                                 Event.subtitle.like(pattern, escape="\\"),
-                                 Event.description.like(pattern, escape="\\"),
-                                 Event.notice.like(pattern, escape="\\"),
-                                 Event.performers.like(pattern, escape="\\")))
+        esc_words = escape_wildcard_for_like(params.get('keyword'))
+        if params.get('keyword-op') == 'AND':
+            for keyword in esc_words.split():
+                pattern = u'%{}%'.format(keyword)
+                query = query.filter(Performance.title.like(pattern, escape="\\"),
+                                     Event.title.like(pattern, escape="\\"),
+                                     Event.subtitle.like(pattern, escape="\\"),
+                                     Event.description.like(pattern, escape="\\"),
+                                     Event.notice.like(pattern, escape="\\"),
+                                     Event.performers.like(pattern, escape="\\"))
+        elif params.get('keyword-op') == 'OR':
+            for keyword in esc_words.split():
+                pattern = u'%{}%'.format(keyword)
+                query = query.filter(or_(Performance.title.like(pattern, escape="\\"),
+                                         Event.title.like(pattern, escape="\\"),
+                                         Event.subtitle.like(pattern, escape="\\"),
+                                         Event.description.like(pattern, escape="\\"),
+                                         Event.notice.like(pattern, escape="\\"),
+                                         Event.performers.like(pattern, escape="\\")))
 
     # 地域検索
     if params.get('area'):
