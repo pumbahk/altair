@@ -88,21 +88,24 @@ def get_performance_list_query(session, request, organization_id):
         if params.get('keyword-op') == 'AND':
             for keyword in esc_words.split():
                 pattern = u'%{}%'.format(keyword)
-                query = query.filter(Performance.title.like(pattern, escape="\\"),
-                                     Event.title.like(pattern, escape="\\"),
-                                     Event.subtitle.like(pattern, escape="\\"),
-                                     Event.description.like(pattern, escape="\\"),
-                                     Event.notice.like(pattern, escape="\\"),
-                                     Event.performers.like(pattern, escape="\\"))
+                query = query.filter(or_(Performance.title.like(pattern, escape=u"\\"),
+                                         Event.title.like(pattern, escape=u"\\"),
+                                         Event.subtitle.like(pattern, escape=u"\\"),
+                                         Event.description.like(pattern, escape=u"\\"),
+                                         Event.notice.like(pattern, escape=u"\\"),
+                                         Event.performers.like(pattern, escape=u"\\")))
         elif params.get('keyword-op') == 'OR':
+            conditions = []
             for keyword in esc_words.split():
                 pattern = u'%{}%'.format(keyword)
-                query = query.filter(or_(Performance.title.like(pattern, escape="\\"),
-                                         Event.title.like(pattern, escape="\\"),
-                                         Event.subtitle.like(pattern, escape="\\"),
-                                         Event.description.like(pattern, escape="\\"),
-                                         Event.notice.like(pattern, escape="\\"),
-                                         Event.performers.like(pattern, escape="\\")))
+                conditions.append(Performance.title.like(pattern, escape="\\"))
+                conditions.append(Event.title.like(pattern, escape=u"\\"))
+                conditions.append(Event.subtitle.like(pattern, escape=u"\\"))
+                conditions.append(Event.description.like(pattern, escape=u"\\"))
+                conditions.append(Event.notice.like(pattern, escape=u"\\"))
+                conditions.append(Event.performers.like(pattern, escape=u"\\"))
+
+            query = query.filter(or_(*conditions))
 
     # 地域検索
     if params.get('area'):
