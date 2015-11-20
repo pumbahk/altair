@@ -9,6 +9,7 @@ from altaircms.event.models import Event
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Promotion, TopicCore, Topic, Topcontent
 from altaircms.plugins.widget.summary.models import SummaryWidget
+from altaircms.helpers.search import escape_wildcard_for_like
 from datetime import datetime as dt
 import datetime
 
@@ -83,13 +84,13 @@ def get_performance_list_query(session, request, organization_id):
     # todo: paramsのフォーマットチェックが必要
     # キーワード検索
     if params.get('keyword'):
-        pattern = u'%{}%'.format(params.get('keyword'))
-        query = query.filter(or_(Performance.title.like(pattern),
-                                 Event.title.like(pattern),
-                                 Event.subtitle.like(pattern),
-                                 Event.description.like(pattern),
-                                 Event.notice.like(pattern),
-                                 Event.performers.like(pattern)))
+        pattern = u'%{}%'.format(escape_wildcard_for_like(params.get('keyword')))
+        query = query.filter(or_(Performance.title.like(pattern, escape="\\"),
+                                 Event.title.like(pattern, escape="\\"),
+                                 Event.subtitle.like(pattern, escape="\\"),
+                                 Event.description.like(pattern, escape="\\"),
+                                 Event.notice.like(pattern, escape="\\"),
+                                 Event.performers.like(pattern, escape="\\")))
 
     # 地域検索
     if params.get('area'):
