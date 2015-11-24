@@ -14,6 +14,7 @@ from .builders import (
 )
 import webhelpers.paginate as paginate
 
+
 @view_config(route_name="api.top_page", request_method="GET", renderer='json')
 def api_top_page(self, request):
     d = datetime.now()
@@ -25,6 +26,7 @@ def api_top_page(self, request):
 
     return res
 
+
 @view_config(route_name="api.genre_list", request_method="GET", renderer='json')
 def api_genre_list(self, request):
     genres = api.get_genre_list(session, request, organization_id=8)
@@ -33,6 +35,7 @@ def api_genre_list(self, request):
     res = builder.build_response(request, genres)
 
     return res
+
 
 @view_config(route_name="api.performance_list", request_method="GET", renderer='json')
 def api_performance_list(self, request):
@@ -48,6 +51,7 @@ def api_performance_list(self, request):
 
     return res
 
+
 @view_config(route_name="api.event_detail", request_method="GET", renderer='json')
 def api_event_detail(self, request):
     event = api.get_event(session, request)
@@ -56,8 +60,9 @@ def api_event_detail(self, request):
     res = builder.build_response(request, event, widget_summary)
     return res
 
+
 @view_config(route_name="api.bookmark_events", request_method="GET", renderer='json')
-def api_performance_list(self, request):
+def api_bookmark_performance_list(self, request):
     pquery = api.get_bookmarked_performances(session, request, organization_id=8)
     performances = pquery.all() if pquery else []
 
