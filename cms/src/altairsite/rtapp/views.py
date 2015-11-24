@@ -55,3 +55,13 @@ def api_event_detail(self, request):
     builder = EventDetailResponseBuilder()
     res = builder.build_response(request, event, widget_summary)
     return res
+
+@view_config(route_name="api.bookmark_events", request_method="GET", renderer='json')
+def api_performance_list(self, request):
+    pquery = api.get_bookmarked_performances(session, request, organization_id=8)
+    performances = pquery.all() if pquery else []
+
+    builder = PerformanceGroupListResponseBuilder()
+    res = builder.build_response(request, performances)
+
+    return res

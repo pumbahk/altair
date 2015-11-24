@@ -196,3 +196,18 @@ def get_performance_list_query(session, request, organization_id):
                      .filter(SalesSegment.end_on >= dt.now())
 
     return query
+
+
+def get_bookmarked_performances(session, request, organization_id):
+    params = request.GET
+    query = None
+    if params.get('bookmarks[]'):
+        event_ids = params.get('bookmarks[]').split(',')
+        query = session.query(Performance) \
+                       .join(Event, Performance.event_id == Event.id) \
+                       .filter(Event.organization_id == organization_id) \
+                       .filter(Event.id.in_(event_ids)) \
+                       .order_by(Performance.updated_at.desc()) \
+                       .group_by(Performance.id)
+
+    return query
