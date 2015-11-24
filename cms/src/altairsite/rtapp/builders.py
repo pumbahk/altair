@@ -112,7 +112,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
         for pg in pgroups:
             edict = dict()
             edict["event_id"] = pg[0].event_id
-            edict["event_name"] = pg[0].event.title
+            edict["title"] = pg[0].event.title
             edict["performances"] = self._make_performance_list(pg)
             res["events"].append(edict)
         return res
