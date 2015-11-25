@@ -2,11 +2,11 @@
 
 import logging
 from pyramid.decorator import reify
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.cart import api as cart_api
-from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.orders.models import Order, Performance
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting
 from .security import CouponSecurity
@@ -56,6 +56,15 @@ class CouponViewResource(CouponResourceBase):
                 join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
                 filter(Order.organization_id == self.organization.id). \
                 filter(Order.order_no == self.reserved_number.order_no).first()
+
+    @property
+    def can_use(self):
+        if not self.order:
+            return False
+
+        perf = self.session.query(Performance).filter(Performance.id==self.order.performance_id).first()
+        if perf.start_on.date() > datetime.today() + timedelta(minutes=1):
+            return True
 
     @property
     def coupon_security(self):

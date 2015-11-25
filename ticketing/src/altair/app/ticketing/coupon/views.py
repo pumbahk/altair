@@ -15,6 +15,10 @@ class CouponErrorView(object):
     def notfound(self):
         return dict()
 
+    @lbr_view_config(route_name='coupon.out_term', renderer=selectable_renderer("out_term.html"))
+    def out_term(self):
+        return dict()
+
 
 @view_defaults(renderer=selectable_renderer("coupon.html"))
 class CouponView(object):
@@ -24,9 +28,11 @@ class CouponView(object):
 
     @lbr_view_config(route_name='coupon')
     def show(self):
-
         if self.context.order is None:
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
+
+        if not self.context.can_use:
+            return HTTPFound(location=self.request.route_path('coupon.out_term'))
 
         return dict(
             reserved_number=self.context.reserved_number,
@@ -40,6 +46,9 @@ class CouponView(object):
         if self.context.order is None:
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
+        if not self.context.can_use:
+            return HTTPFound(location=self.request.route_path('coupon.out_term'))
+
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
@@ -49,9 +58,11 @@ class CouponView(object):
     @lbr_view_config(
         route_name='coupon.admission', request_method='POST')
     def admission(self):
-        order = self.context.order
-        if order is None:
+        if self.context.order is None:
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
+
+        if not self.context.can_use:
+            return HTTPFound(location=self.request.route_path('coupon.out_term'))
 
         self.context.use_coupon()
 
@@ -61,6 +72,6 @@ class CouponView(object):
 
         return dict(
             reserved_number=self.context.reserved_number,
-            order=order,
+            order=self.context.order,
             coupon_security=self.context.coupon_security
             )
