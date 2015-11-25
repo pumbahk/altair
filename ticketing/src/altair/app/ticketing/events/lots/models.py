@@ -549,6 +549,7 @@ ORDER BY 申し込み番号, 希望順序, attribute_name
         cur = self.session.bind.execute(self.sql, self.lot_id, self.lot_id)
         try:
             prev_row = None
+            row = None
             attribute_dict = OrderedDict()
             for row in cur.fetchall():
                 if not prev_row:
@@ -568,7 +569,7 @@ ORDER BY 申し込み番号, 希望順序, attribute_name
 
     @staticmethod
     def update_attribute_dict(prev_row, attribute_dict):
-        if prev_row[u'attribute_name']:
+        if prev_row and prev_row[u'attribute_name']:
             attribute_dict[prev_row[u'attribute_name']] = prev_row[u'attribute_value']
 
     def get_ordered_dict(self, row):
@@ -578,6 +579,8 @@ ORDER BY 申し込み番号, 希望順序, attribute_name
         )
 
     def get_ordered_attribute_dict(self, row, attribute_dict):
+        if not row:
+            return None
         order_dict = self.get_ordered_dict(row)
         if attribute_dict:
             order_dict.update(attribute_dict)
