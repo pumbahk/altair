@@ -2,7 +2,7 @@
 
 import logging
 from pyramid.decorator import reify
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.cart import api as cart_api
@@ -63,7 +63,7 @@ class CouponViewResource(CouponResourceBase):
             return False
 
         perf = self.session.query(Performance).filter(Performance.id==self.order.performance_id).first()
-        if perf.start_on.date() > datetime.today() + timedelta(minutes=1):
+        if perf.start_on > datetime.today() + timedelta(minutes=1):
             return True
 
     @property

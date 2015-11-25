@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-__author__ = 'ts-keiichi.okada'
 from math import fabs
 import datetime
 
