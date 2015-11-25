@@ -48,14 +48,15 @@ def get_topcontents(session, request, now, organization_id, limit=5):
                          .limit(limit)
     return topcontents.all()
 
-def get_topics(session, request, now, organization_id):
+def get_topics(session, request, now, organization_id, limit=5):
     topics = session.query(Topic) \
                     .filter(Topic.organization_id == organization_id,
                             Topic.publish_open_on <= now,
                             Topic.publish_close_on >= now,
                             Topic.is_vetoed == 0
                             ) \
-                    .order_by(Topic.display_order)
+                    .order_by(Topic.display_order) \
+                    .limit(limit)
     return topics.all()
 
 def get_genre_list(session, request, organization_id):
