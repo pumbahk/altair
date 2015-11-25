@@ -250,3 +250,7 @@ class MobileOnlyExcView(object):
     @lbr_view_config(context=InvalidCSRFTokenException)
     def invalid_csrf_token_exception(self):
         return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
+
+@lbr_view_config(route_name='rakuten_auth.error', renderer=selectable_renderer('message.html'))
+def rakuten_auth_error(context, request):
+    return dict(message=u"認証に失敗しました。最初から操作をしてください。")
