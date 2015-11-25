@@ -107,5 +107,5 @@ class AltairFamiPortNotificationProcessor(object):
                 action(self, order, notification, now)
                 notification.reflected_at = now
             except:
-                raise AltairFamiPortNotificationProcessorError('error occurred during processing notification %s' % notification.process_number, nested_exc_info=sys.exc_info())
-
+                raise AltairFamiPortNotificationProcessorError('error occurred during processing notification (id: %s, type: %s, order_no: %s)' %
+                                                              (notification.id, notification.type, notification.order_no), nested_exc_info=sys.exc_info())
