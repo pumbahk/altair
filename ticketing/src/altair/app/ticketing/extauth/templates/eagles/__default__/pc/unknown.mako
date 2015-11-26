@@ -9,6 +9,8 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 
 <div class="box clearfix">
 
+<%doc>
+<!--一時的に隠します-->
 <!-- FC LOGIN BOX -->
 <div class="col2_1 tile2 login-box">
 <dl>
@@ -18,17 +20,21 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 </dd>
 </dl>
 </div>
-
+</%doc>
 
 <!-- guest LOGIN BOX -->
 % if guest_member_kinds:
+<%doc>
+<!--元の２カラムバージョン-->
 <div class="col2_2 tile2 login-box">
+</%doc>
+<div class="tile2 login-box" style="width:48%; margin:0 auto;">
 <form action="${_context.route_path('extauth.login')}" method="POST">
 <dl>
 <dt class="login-name"><span>一般の方</span>はこちら</dt>
 <dd class="login-inbox">
 % for member_kind in guest_member_kinds:
-<p class="mgt20 mgb20"><button class="btnA btnA_l" name="doGuestLoginAs${member_kind.name}">購入する</button></p>
+<p class="mgt20 mgb20"><button class="btnA btnA_l" name="doGuestLoginAs${member_kind.name}">次に進む</button></p>
 % endfor
 </dd>
 </dl>
@@ -38,4 +44,7 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 </div>
 % endif
 
+<p style="text-align:center">
+※ファンクラブに入会をご希望の方は<a href="http://www.rakuteneagles.jp/fanclub/" target="_blank">こちら</a>から
+</p>
 </div>

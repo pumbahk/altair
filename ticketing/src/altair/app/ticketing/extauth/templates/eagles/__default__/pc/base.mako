@@ -74,7 +74,7 @@ ${self.body()}
 <li><a href="http://eagles.tstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
 </ul>
 </nav>
-<p class="copyright clear">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved.</p>
+<p class="copyright clear">&copy; TicketStar Inc.</p>
 </div>
 </footer>
 <!-- ========== FOOTER [end] ========== -->
