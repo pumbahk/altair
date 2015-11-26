@@ -52,6 +52,7 @@ def get_altair_auth_info(request):
     else:
         retval['is_guest'] = True
         retval['membership'] = None
+        retval['membership_source'] = None
     if 'auth_identifier' in retval:
         # XXX: 互換性のため? もう不要なんじゃないかという気もする
         retval['user_id'] = retval['auth_identifier']
