@@ -418,6 +418,14 @@ def notfound_view(context, request):
     return dict()
 
 @lbr_view_config(
+    route_name='rakuten_auth.error',
+    renderer=selectable_renderer("errors/error.html")
+    )
+def rakuten_auth_error(context, request):
+    return dict()
+
+
+@lbr_view_config(
     route_name="contact",
     renderer=selectable_renderer("contact.html")
     )

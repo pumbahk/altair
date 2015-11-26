@@ -538,7 +538,6 @@ def download(request):
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .options(undefer(Order.deleted_at))\
         .outerjoin(Seat.status_) \
-        .outerjoin(Seat.attributes_) \
         .outerjoin(Seat.stock) \
         .outerjoin(Stock.stock_holder) \
         .outerjoin(Stock.stock_type) \
@@ -550,7 +549,7 @@ def download(request):
         .filter(Stock.deleted_at == None) \
         .filter(StockHolder.deleted_at == None) \
         .filter(StockType.deleted_at == None) \
-        .order_by(asc(Seat.id), desc(Order.id))
+        .order_by(asc(Seat.id), desc(Order.id), asc(Order.canceled_at), asc(Order.deleted_at), asc(Order.refunded_at))
 
 
     seats_csv = SeatCSV(seats_q)

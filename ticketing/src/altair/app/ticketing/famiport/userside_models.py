@@ -88,15 +88,15 @@ class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
 
     @property
     def end_at(self):
-        end_at = 0
+        end_at_list = []
         for altair_famiport_performance in self.altair_famiport_performances.values():
-            _end_at = altair_famiport_performance.performance.end_on
-            if end_at is 0 or _end_at is None or end_at > _end_at:
-                end_at = _end_at
-        if end_at is 0:
-            end_at = None
-        if end_at is None:
+            if altair_famiport_performance.performance.end_on is not None:
+                end_at_list.append(altair_famiport_performance.performance.end_on)
+
+        if len(end_at_list) == 0:
             end_at = datetime(2035, 12, 31, 23, 59, 59)
+        else:
+            end_at = max(end_at_list)
         return end_at
 
     @property

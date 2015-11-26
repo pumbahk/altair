@@ -79,7 +79,7 @@ class LotResourceBase(object):
                         for membergroup in self.lot.sales_segment.membergroups:
                             if membergroup.is_guest:
                                 required_principals.add('membership:%s' % membergroup.membership.name)
-                            else: 
+                            else:
                                 required_principals.add('membergroup:%s' % membergroup.name)
                         effective_principals = self.request.effective_principals
                         logger.debug('required principals: %r, provided: %r' % (required_principals, effective_principals))
@@ -175,7 +175,7 @@ class LotResource(LotResourceBase):
 
     def check_entry_limit(self, wishes, user=None, email=None):
         logger.debug('user.id=%r, email=%r', user.id if user else None, email)
-        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
+        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None, LotEntry.withdrawn_at==None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:
@@ -318,3 +318,17 @@ class LotLogoutResource(LotResourceBase):
         if not lot:
             return None
         return lot
+
+class LotReviewWithdrawResource(LotReviewResource):
+    def __init__(self, request):
+        self.request = request
+        self.organization = self.request.organization
+
+    def get_lot_entry(self):
+        entry_no = self.request.params['entry_no']
+        tel_no = self.request.params['tel_no']
+        return api.get_entry(self.request, entry_no, tel_no)
+
+    @reify
+    def entry(self):
+        return self.get_lot_entry()

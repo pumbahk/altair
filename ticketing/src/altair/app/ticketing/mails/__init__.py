@@ -46,6 +46,9 @@ def install_mail_utility(config):
     from altair.app.ticketing.mails.lots_mail import LotsRejectedMail
     config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail,
                                   ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.txt")
+    from altair.app.ticketing.mails.lots_mail import LotsWithdrawMail
+    config.add_lot_entry_mail_utility(MailTypeEnum.LotsWithdrawMail,
+                                  ".lots_mail", LotsWithdrawMail, "altair.app.ticketing:templates/mail/lot_withdraw_entry.txt")
 
     ## point granting
     from altair.app.ticketing.mails.point_granting_failure import PointGrantingFailureMail

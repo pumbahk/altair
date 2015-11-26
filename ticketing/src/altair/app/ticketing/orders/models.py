@@ -452,6 +452,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return 'canceled'
         elif self.delivered_at:
             return 'delivered'
+        elif self.deleted_at:
+            return 'deleted'
+        elif self.refunded_at:
+            return 'refunded'
         else:
             return 'ordered'
 

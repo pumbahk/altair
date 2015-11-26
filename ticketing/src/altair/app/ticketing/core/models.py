@@ -3425,6 +3425,7 @@ class MailTypeEnum(StandardEnum):
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
+    LotsWithdrawMail = 14
     PointGrantingFailureMail = 21
     PurchaseRefundMail = 31
     TicketPrintRemindMail = 41
@@ -3436,6 +3437,7 @@ _mail_type_labels = {
     MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了",
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知",
+    MailTypeEnum.LotsWithdrawMail.v: u"抽選申込ユーザ取消",
     MailTypeEnum.PointGrantingFailureMail.v: u"ポイント付与失敗通知",
     MailTypeEnum.PurchaseRefundMail.v: u"払戻通知",
     MailTypeEnum.TicketPrintRemindMail.v: u"コンビニ未発券リマインド",
@@ -3909,6 +3911,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_asid_mobile = AnnotatedColumn(Unicode(255), doc=u"lot_asid_mobile", _a_label=u"lot_asid_mobile")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
     mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
+    lot_entry_user_withdraw = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"抽選申込ユーザ取消", _a_label=u"抽選申込ユーザ取消")
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
