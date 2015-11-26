@@ -71,7 +71,6 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.mobile')
     config.include('altair.app.ticketing.cart.request')
-    config.include('altair.app.ticketing.cart.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)
     return config.make_wsgi_app()

@@ -740,4 +740,5 @@ def make_order_from_cart(request, cart):
         order.attributes = coerce_extra_form_data(request, extra_form_data)
 
     notify_order_completed(request, order)
+    clear_extra_form_data(request)
     return order
