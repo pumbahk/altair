@@ -1,1 +1,1 @@
-INSERT INTO FamiPortTenant (organization_id, name, code) VALUES (56, '横浜ビー・コルセアーズ', '00001');
+INSERT INTO FamiPortTenant (organization_id, name, code) VALUES (56, '横浜ビー・コルセアーズ', '00002');

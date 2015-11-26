@@ -48,7 +48,7 @@ class SeatCSV(object):
         ('order_no', u'予約番号'),
     ])
 
-    excluded_order_statuses = ['canceled']
+    excluded_order_statuses = ['canceled', 'deleted', 'refunded']
 
     def __init__(self, seat_order_pairs):
         self.header = self.seat_header.values()\
@@ -69,9 +69,9 @@ class SeatCSV(object):
     def _convert_to_csv(self, seat_order_pair):
         seat, order = seat_order_pair
         valid_order = order and (order.deleted_at is None) and order.status not in self.excluded_order_statuses
-        if (not valid_order) and (seat.id in self.seat_rendered):
+        if seat.id in self.seat_rendered:
             return None
-
+        self.seat_rendered.add(seat.id)
         seat_data = (
             (u'座席ID', seat.id),
             (u'l0_id', seat.l0_id),
