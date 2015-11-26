@@ -1,14 +1,14 @@
 """add_auth_identifier_and_auth_secret_to_member
 
 Revision ID: 4bd8fee92199
-Revises: 4f0f7a1dc72e
+Revises: 313b31142eb7
 Create Date: 2015-10-06 09:46:47.077791
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4bd8fee92199'
-down_revision = '4f0f7a1dc72e'
+down_revision = '313b31142eb7'
 
 from alembic import op
 import sqlalchemy as sa
