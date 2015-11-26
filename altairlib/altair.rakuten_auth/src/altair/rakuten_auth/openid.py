@@ -167,17 +167,17 @@ class RakutenOpenID(object):
         params_str = \
             (self.endpoint.params + u';' if self.endpoint.params else u'') \
             + u';'.join(
-                six.text_type(urllib.quote(k.encode(self.encoding))) \
+                six.text_type(urllib.quote(k.encode(self.encoding), safe='')) \
                 + u'=' \
-                + six.text_type(urllib.quote(v.encode(self.encoding)))
+                + six.text_type(urllib.quote(v.encode(self.encoding), safe=''))
                 for k, v in params
                 )
         query_str = \
             (self.endpoint.query + u'&' if self.endpoint.query else u'') \
             + u'&'.join(
-                six.text_type(urllib.quote(k.encode(self.encoding))) \
+                six.text_type(urllib.quote(k.encode(self.encoding), safe='')) \
                 + u'='
-                + six.text_type(urllib.quote(v.encode(self.encoding)))
+                + six.text_type(urllib.quote(v.encode(self.encoding), safe=''))
                 for k, v in query
                 )
         return urlunparse((
