@@ -106,6 +106,11 @@ def no_cart_error(context, request):
     request.response.status = 404
     return {}
 
+@lbr_view_config(route_name='rakuten_auth.error', renderer=selectable_renderer("message.html"))
+@lbr_view_config(route_name='rakuten_auth.error', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("error.html"))
+def rakuten_auth_error(context, request):
+    return dict(message=u"認証に失敗しました。最初から操作をしてください。")
+
 @view_defaults(route_name='lots.entry.agreement', permission="lots")
 class AgreementLotView(object):
     def __init__(self, context, request):
