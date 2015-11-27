@@ -1,4 +1,5 @@
 <%inherit file="layout.html" />
+<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
 <div id="modal-content">
   <h2>チケット情報</h2>
   <form id="coupon_form" action="" method="POST">
@@ -58,36 +59,7 @@
       </tr>
     </tbody>
 
-    % for item in order.items:
-      <tr>
-        <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
-        ${item.product.name} × ${item.quantity}枚</td>
-      </tr>
-      % for element in item.elements:
-        % for token in element.tokens:
-        <tr>
-          <td class="textR ticket_col">${element.product_item.name}</td>
-          <td class="textR">
-            % if order.payment_status != 'paid':
-              ご入金後、利用が可能となります
-            % elif token.printed_at is not None:
-              利用済みです<br/>
-              ${token.printed_at}
-            % elif order.payment_status == 'paid' and token.printed_at is None:
-              <div class="confirm_not_exist">
-                <form method="POST" action="${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}">
-                  <input class="btnCoupon" type="submit" value="利用する" />
-                </form>
-              </div>
-              <div class="confirm_exist">
-                <input class="btnCoupon coupon_button" type="button" value="利用する" next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)} />
-              </div>
-            % endif
-          </td>
-        </tr>
-        % endfor
-      % endfor
-    % endfor
+    ${h.render_coupon(order)}
   </table>
   <p/>
 </div>

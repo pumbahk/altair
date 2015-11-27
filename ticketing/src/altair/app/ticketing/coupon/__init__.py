@@ -56,8 +56,6 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart.import_mail_module')
     config.include('altair.app.ticketing.cart.setup_payment_renderers')
 
-    config.add_subscriber('..orderreview.subscribers.add_helpers', 'pyramid.events.BeforeRender')
-
     config.include(setup_static_views)
     config.include('.view_context')
     config.include('.')
