@@ -509,7 +509,7 @@ def get_or_create_user(info):
             .first()
 
     if membership is None:
-        logger.error("could not found membership %s" % info['membership'])
+        logger.error("could not find membership %s" % info['membership'])
         return None
 
     credential = u_models.UserCredential(
