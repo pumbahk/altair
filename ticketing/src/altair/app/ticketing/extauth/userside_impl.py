@@ -179,16 +179,18 @@ class OAuthAPIClient(OAuthAPIBase):
 
 
 class Authenticated(object):
-    def __init__(self, request, id, metadata):
+    def __init__(self, request, plugin, identity, metadata):
         self.request = request
-        self.id = id
+        self.plugin = plugin
+        self.identity = identity
         self.metadata = metadata
 
 
-def on_login(request, identity, metadata):
+def on_login(request, plugin, identity, metadata):
     request.registry.notify(
         Authenticated(
             request,
+            plugin,
             identity,
             metadata['profile']
             )

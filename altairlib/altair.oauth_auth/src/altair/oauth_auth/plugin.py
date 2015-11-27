@@ -201,7 +201,7 @@ class OAuthAuthPlugin(object):
             response = request.response
             identities, _, metadata = auth_api.login(request, response, { 'access_token': access_token }, auth_factor_provider_name=self.name)
             if self.on_login is not None:
-                self.on_login(request, identities[self.name], metadata)
+                self.on_login(request, self, identities[self.name], metadata)
             response.location = request.session[self.SESSION_RETURN_TO_URL_KEY]
             response.status = 302
             return response

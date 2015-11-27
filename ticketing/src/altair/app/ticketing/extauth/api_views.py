@@ -4,7 +4,7 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPUnauthorized, HTTPInterna
 from altair.httpsession.pyramid.interfaces import ISessionPersistenceBackendFactory
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.api import get_oauth_provider, get_openid_provider
-from altair.oauth.exceptions import OAuthBadRequestError, OAuthRenderableError
+from altair.oauth.exceptions import OAuthBadRequestError, OAuthRenderableError, OAuthNoSuchAccessTokenError
 from .utils import get_oauth_response_renderer
 from .models import OAuthClient
 
@@ -123,6 +123,9 @@ class APIView(object):
         except OAuthRenderableError as e:
             self.request.response.status = e.http_status
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
+        except OAuthNoSuchAccessTokenError:
+            self.request.response.status = 404
+            return {}
         return {}
 
 

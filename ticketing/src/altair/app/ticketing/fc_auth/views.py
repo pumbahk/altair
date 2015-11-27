@@ -2,8 +2,9 @@
 import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_defaults
+from pyramid.decorator import reify
 from urlparse import urlparse
-from altair.auth.api import get_auth_api
+from altair.auth.api import get_auth_api, get_plugin_registry
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mobile.api import is_mobile_request
@@ -33,6 +34,10 @@ class FCAuthLoginViewMixin(object):
     def auth_api(self):
         return get_auth_api(self.request)
 
+    @reify
+    def plugin(self):
+        return get_plugin_registry(self.request).lookup('fc_auth')
+
     def do_login(self, membership):
         username = self.request.POST['username']
         password = self.request.POST['password']
@@ -51,7 +56,7 @@ class FCAuthLoginViewMixin(object):
 
         identities = None
         if credentials is not None:
-            identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
+            identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
             return {'username': username,
@@ -60,8 +65,8 @@ class FCAuthLoginViewMixin(object):
         self.request.registry.notify(
             Authenticated(
                 self.request,
-                membership,
-                username,
+                self.plugin,
+                identities[self.plugin.name],
                 None
                 )
             )
@@ -74,7 +79,7 @@ class FCAuthLoginViewMixin(object):
             'membership': membership,
             'is_guest': True,
             }
-        identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
+        identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
             return {'username': '',

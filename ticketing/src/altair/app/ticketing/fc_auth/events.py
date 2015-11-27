@@ -1,6 +1,6 @@
 class Authenticated(object):
-    def __init__(self, request, membership, id, metadata):
+    def __init__(self, request, plugin, identity, metadata):
         self.request = request
-        self.membership = membership
-        self.id = id
+        self.plugin = plugin
+        self.identity = identity
         self.metadata = metadata

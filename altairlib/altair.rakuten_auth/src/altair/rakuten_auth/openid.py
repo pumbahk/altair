@@ -325,6 +325,7 @@ class RakutenOpenID(object):
             return HTTPUnauthorized()
         request.registry.notify(Authenticated(
             request,
+            self,
             identity['claimed_id'],
             metadata
             ))

@@ -34,6 +34,45 @@ DISPLAY_NAMES = {
     OAuthAuthPlugin: _(u'OAuth認可APIを使った認証'),
     }
 
+def reorganize_identity(request, authenticator, identity):
+    if isinstance(authenticator, RakutenOpenID):
+        auth_identifier = authz_identifier = identity['claimed_id']
+        membership = 'rakuten'
+        membergroup = None
+        is_guest = False
+    elif isinstance(authenticator, OAuthAuthPlugin):
+        auth_identifier = identity['id']
+        authz_identifier = identity.get('authz_id') or auth_identifier
+        _membership = get_db_session(request, 'slave').query(Membership).filter_by(organization_id=request.organization.id).first()
+        membership = _membership.name if _membership is not None else None
+        membergroup = identity['authz_kind']
+        is_guest = False
+        if auth_identifier.startswith(u'acct:'):
+            try:
+                parsed_auth_identifier = urlparse(auth_identifier)
+                g = re.match(ur'^([^@]+)@([^@]+)$', parsed_auth_identifier.path)
+                if g is not None:
+                    user_part = unquote(g.group(1))
+                    user, _, memberset = user_part.partition(u'+')
+                    if user == u'*':
+                        is_guest = True
+            except:
+                pass
+    else:
+        authz_identifier = auth_identifier = identity.get('username', None)
+        membership = identity.get('membership', None)
+        membergroup = identity.get('membergroup', None)
+        is_guest = identity.get('is_guest', False)
+    return {
+        'authenticator': authenticator,
+        'authenticator_name': authenticator.name,
+        'auth_identifier': auth_identifier,
+        'authz_identifier': authz_identifier,
+        'membership': membership,
+        'membergroup': membergroup,
+        'is_guest': is_guest,
+        }
+
 class AuthModelCallback(object):
     def __init__(self, config):
         self.registry = config.registry
@@ -68,6 +107,7 @@ class AuthModelCallback(object):
         reorganized_identities = []
         interesting_authenticator_names = decide(request)
         logger.debug('interesting authenticators={authenticators}'.format(authenticators=interesting_authenticator_names))
+        plugin_registry = get_plugin_registry(request)
         for authenticator_name, identity in identities.items():
             if authenticator_name not in interesting_authenticator_names:
                 logger.debug('ignoring authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
@@ -75,46 +115,9 @@ class AuthModelCallback(object):
                 
             logger.debug('authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
 
-            plugin_registry = get_plugin_registry(request)
             authenticator = plugin_registry.lookup(authenticator_name)
-
-            if isinstance(authenticator, RakutenOpenID):
-                auth_identifier = authz_identifier = identity['claimed_id']
-                membership = 'rakuten'
-                membergroup = None
-                is_guest = False
-            elif isinstance(authenticator, OAuthAuthPlugin):
-                auth_identifier = identity['id']
-                authz_identifier = identity.get('authz_id') or auth_identifier
-                _membership = get_db_session(request, 'slave').query(Membership).filter_by(organization_id=request.organization.id).first()
-                membership = _membership.name if _membership is not None else None
-                membergroup = identity['authz_kind']
-                is_guest = False
-                if auth_identifier.startswith(u'acct:'):
-                    try:
-                        parsed_auth_identifier = urlparse(auth_identifier)
-                        g = re.match(ur'^([^@]+)@([^@]+)$', parsed_auth_identifier.path)
-                        if g is not None:
-                            user_part = unquote(g.group(1))
-                            user, _, memberset = user_part.partition(u'+')
-                            if user == u'*':
-                                is_guest = True
-                    except:
-                        pass
-            else:
-                authz_identifier = auth_identifier = identity.get('username', None)
-                membership = identity.get('membership', None)
-                membergroup = identity.get('membergroup', None)
-                is_guest = identity.get('is_guest', False)
-            reorganized_identities.append({
-                'authenticator': authenticator,
-                'authenticator_name': authenticator_name,
-                'auth_identifier': auth_identifier,
-                'authz_identifier': authz_identifier,
-                'membership': membership,
-                'membergroup': membergroup,
-                'is_guest': is_guest,
-                })
+            reorganized_identity = reorganize_identity(request, authenticator, identity)
+            reorganized_identities.append(reorganized_identity)
 
         reorganized_identities.sort(key=lambda identity: self.priorities.get(identity['authenticator'].__class__) or 0)
         logger.debug('reorganized_identities=%r' % reorganized_identities)
