@@ -17,7 +17,7 @@ import webhelpers.paginate as paginate
 @view_config(route_name="api.top_page", request_method="GET", renderer='json')
 def api_top_page(self, request):
     d = datetime.now()
-    topcontents = api.get_topcontents(session, request, d, organization_id=8, limit=5)
+    topcontents = api.get_topcontents(session, request, d, organization_id=8, limit=6)
     topics = api.get_topics(session, request, d, organization_id=8, limit=5)
 
     builder = TopPageResponseBuilder()
