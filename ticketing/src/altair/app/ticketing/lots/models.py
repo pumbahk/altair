@@ -53,6 +53,7 @@ from altair.app.ticketing.cart.models import (
     Cart,
 )
 from .events import LotClosedEvent
+from .exceptions import LotEntryWithdrawException
 
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
@@ -698,14 +699,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             wish.cancel(now)
 
     def withdraw(self, request):
-        organization_setting = OrganizationSetting.query \
-                                    .filter_by(organization_id=self.organization_id) \
-                                    .first()
-        if organization_setting:
-            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
-        if not lot_entry_user_withdraw:
-            return
+        self.check_withdraw(request)
         logger.debug("close lot entry {0} ".format(self.entry_no))
+        self.withdraw_electing()
+        self.withdraw_rejecting()
         self.close()
         event = LotClosedEvent(request, lot_entry=self)
         request.registry.notify(event)
@@ -713,6 +710,37 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.withdrawn_at = now
         for wish in self.wishes:
             wish.withdraw(now)
+
+    def withdraw_electing(self):
+        LotElectWork.query.filter(
+            LotElectWork.lot_id == self.lot_id
+        ).filter(
+            LotElectWork.lot_entry_no == self.entry_no
+        ).delete()
+
+    def withdraw_rejecting(self):
+        LotRejectWork.query.filter(
+            LotRejectWork.lot_id == self.lot_id
+        ).filter(
+            LotRejectWork.lot_entry_no == self.entry_no
+        ).delete()
+
+    def check_withdraw(self, request):
+        organization_setting = OrganizationSetting.query \
+                                    .filter_by(organization_id=self.organization_id) \
+                                    .first()
+        if organization_setting:
+            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
+        if not lot_entry_user_withdraw:
+            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
+        now = datetime.now()
+        if not self.lot.available_on(now):
+            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
+        if self.is_canceled or self.is_withdrawn:
+            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
+        if self.is_elected or self.is_ordered:
+            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。")
+
 
     def delete(self):
         self.deleted_at = datetime.now()
