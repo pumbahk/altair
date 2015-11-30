@@ -1,6 +1,5 @@
 <%inherit file="base.mako" />
 <% member_set = selected_member_set %>
-<h2 class="box heading-primary">イーグルスチケット各種優待会員ログイン</h2>
 
 
 <div class="box clearfix">
