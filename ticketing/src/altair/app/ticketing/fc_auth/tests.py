@@ -282,9 +282,14 @@ class LoginViewTests(unittest.TestCase):
         get_auth_api_patch = mock.patch('altair.auth.api.get_auth_api')
         self.get_auth_api = get_auth_api_patch.start()
         self.get_auth_api_patch = get_auth_api_patch
+        get_plugin_registry_patch = mock.patch('altair.auth.api.get_plugin_registry')
+        self.get_plugin_registry = get_plugin_registry_patch.start()
+        self.get_plugin_registry_patch = get_plugin_registry_patch
+        self.get_plugin_registry.return_value.lookup.return_value.name = 'fc_auth'
 
     def tearDown(self):
-        self.get_auth_api_patch.stop() 
+        self.get_auth_api_patch.stop()
+        self.get_plugin_registry_patch.stop()
         testing.tearDown()
 
     def _getTarget(self):

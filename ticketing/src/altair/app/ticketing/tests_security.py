@@ -93,7 +93,8 @@ class AuthModelCallbackTest(unittest.TestCase):
             }
         request = testing.DummyRequest()
 
-        dummy_plugin = mock.Mock(name='unknown')
+        dummy_plugin = mock.Mock()
+        dummy_plugin.name = 'unknown'
         from altair.auth.interfaces import IAuthenticator
         from zope.interface import directlyProvides
         directlyProvides(dummy_plugin, IAuthenticator)

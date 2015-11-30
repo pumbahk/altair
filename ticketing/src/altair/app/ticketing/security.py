@@ -109,7 +109,7 @@ class AuthModelCallback(object):
         logger.debug('interesting authenticators={authenticators}'.format(authenticators=interesting_authenticator_names))
         plugin_registry = get_plugin_registry(request)
         for authenticator_name, identity in identities.items():
-            if authenticator_name not in interesting_authenticator_names:
+            if interesting_authenticator_names is not None and authenticator_name not in interesting_authenticator_names:
                 logger.debug('ignoring authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
                 continue
                 
