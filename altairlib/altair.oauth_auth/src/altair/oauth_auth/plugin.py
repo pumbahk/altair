@@ -31,7 +31,7 @@ class OAuthAuthPlugin(object):
     SESSION_RETURN_TO_URL_KEY = '%s.return_to_url' % __name__
     SESSION_VERIFICATION_TOKEN_KEY = '%s.verification_token' % __name__
 
-    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, scope=None, openid_prompt=None, cache_region=None, on_login=None):
+    def __init__(self, client_id, authz_endpoint, api_endpoint, callback_path, error_url, scope=None, openid_prompt=None, cache_region=None, challenge_success_callback=None):
         self.client_id = client_id
         self.name = '%s.%s' % (__name__, self.__class__.__name__)
         self.authz_endpoint = authz_endpoint
@@ -43,7 +43,7 @@ class OAuthAuthPlugin(object):
         if cache_region is None:
             cache_region = self.DEFAULT_CACHE_REGION_NAME
         self.cache_region = cache_region
-        self.on_login = on_login
+        self.challenge_success_callback = challenge_success_callback
 
     def _get_cache(self):
         return get_region(self.cache_region)
@@ -200,8 +200,8 @@ class OAuthAuthPlugin(object):
             auth_api = get_auth_api(request)
             response = request.response
             identities, _, metadata = auth_api.login(request, response, { 'access_token': access_token }, auth_factor_provider_name=self.name)
-            if self.on_login is not None:
-                self.on_login(request, self, identities[self.name], metadata)
+            if self.challenge_success_callback is not None:
+                self.challenge_success_callback(request, self, identities[self.name], metadata)
             response.location = request.session[self.SESSION_RETURN_TO_URL_KEY]
             response.status = 302
             return response

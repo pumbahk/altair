@@ -15,9 +15,6 @@ import altair.app.ticketing.users.models as u_m
 
 logger = logging.getLogger(__name__)
 
-def make_plugin():
-    return FCAuthPlugin()
-
 def get_db_session_from_request(request):
     return get_db_session(request, 'slave') # XXX
 
@@ -25,8 +22,8 @@ def get_db_session_from_request(request):
 class FCAuthPlugin(object):
     name = 'fc_auth'
 
-    def __init__(self):
-        pass
+    def __init__(self, challenge_success_callback=None):
+        self.challenge_success_callback = challenge_success_callback
 
     # ILoginHandler
     def get_auth_factors(self, request, auth_context, credentials):
@@ -51,6 +48,13 @@ class FCAuthPlugin(object):
                 session_keeper.name: { 'fc_auth': userdata }
                 for session_keeper in auth_context.session_keepers
                 }
+            if self.challenge_success_callback is not None:
+                self.challenge_success_callback(
+                    request,
+                    plugin=self,
+                    identity=userdata,
+                    metadata={}
+                    )
             return userdata, auth_factors
         else:
             userdata = None

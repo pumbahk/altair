@@ -17,7 +17,6 @@ from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.exceptions import OAuthRenderableError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
 from altair.rakuten_auth.openid import RakutenOpenID
-from altair.rakuten_auth.events import Authenticated as RakutenOpenIDAuthenticated
 from altair.exclog.api import log_exception_message, build_exception_message
 from altair.sqlahelper import get_db_session
 from .rendering import selectable_renderer
@@ -51,9 +50,8 @@ def extract_identifer(request):
 
 JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 
-@subscriber(RakutenOpenIDAuthenticated)
-def authenticated(event):
-    event.request.session[JUST_AUTHENTICATED_KEY] = True
+def rakuten_auth_challenge_succeeded(request, plugin, identity, metadata):
+    request.session[JUST_AUTHENTICATED_KEY] = True
 
 def challenge_rakuten_id(request):
     api = get_auth_api(request)

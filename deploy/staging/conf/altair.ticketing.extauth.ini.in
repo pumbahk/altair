@@ -67,15 +67,16 @@ cache.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/lock
 
 ; altair.rakuten_auth
 altair.rakuten_auth.url_builder_factory = ${altair:extauth.rakuten_auth.url_builder_factory}
+altair.rakuten_auth.url_builder_factory.proxy_url_pattern = ${altair:rakuten_auth.proxy_url_base}/{subdomain}
 altair.rakuten_auth.oauth.consumer_key_builder = ${altair:extauth.rakuten_auth.oauth.consumer_key_builder}
 altair.rakuten_auth.oauth.consumer_secret_builder = ${altair:extauth.rakuten_auth.oauth.consumer_secret_builder}
-altair.rakuten_auth.url_builder_factory.proxy_url_pattern = ${altair:rakuten_auth.proxy_url_base}/{subdomain}
+altair.rakuten_auth.oauth.consumer_key = ${altair:extauth.rakuten_auth.oauth.consumer_key}
+altair.rakuten_auth.oauth.secret = ${altair:extauth.rakuten_auth.oauth.secret}
+altair.rakuten_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded
 altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/altair.rakuten_auth/data
 altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/altair.rakuten_auth/lock
-altair.rakuten_auth.oauth.consumer_key = ${altair:extauth.rakuten_auth.oauth.consumer_key}
-altair.rakuten_auth.oauth.secret = ${altair:extauth.rakuten_auth.oauth.secret}
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence

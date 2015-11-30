@@ -178,21 +178,14 @@ class OAuthAPIClient(OAuthAPIBase):
             )
 
 
-class Authenticated(object):
-    def __init__(self, request, plugin, identity, metadata):
-        self.request = request
-        self.plugin = plugin
-        self.identity = identity
-        self.metadata = metadata
-
-
-def on_login(request, plugin, identity, metadata):
+def challenge_success_callback(request, plugin, identity, user_info):
+    from ..security import Authenticated
     request.registry.notify(
         Authenticated(
             request,
-            plugin,
-            identity,
-            metadata['profile']
+            plugin=plugin,
+            identity=identity,
+            metadata=user_info['profile']
             )
         )
 
@@ -253,7 +246,7 @@ def includeme(config):
         error_url=error_url,
         scope=oauth_scope,
         openid_prompt=openid_prompt,
-        on_login=on_login
+        challenge_success_callback=challenge_success_callback
         )
     opener_factory = urllib2ext.opener_factory_from_config(config, 'altair.extauth.oauth.urllib2_opener_fatory')
     registry.registerUtility(

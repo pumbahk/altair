@@ -250,3 +250,19 @@ class RakutenAuthNoExtraVerifyURLBuilder(object):
     def build_extra_verify_url(self, request):
         return None
 
+
+class Authenticated(object):
+    def __init__(self, request, plugin, identity, metadata):
+        self.request = request
+        self.plugin = plugin
+        self.identity = identity
+        self.metadata = metadata
+
+
+def rakuten_auth_challenge_success_callback(request, plugin, identity, metadata):
+    request.registry.notify(Authenticated(
+        request,
+        plugin=plugin,
+        identity=identity,
+        metadata=metadata
+        ))
