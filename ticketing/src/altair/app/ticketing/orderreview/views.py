@@ -11,6 +11,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
 from pyramid.interfaces import IRouteRequest, IRequest
+from pyramid.security import forget
 
 from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
@@ -205,6 +206,17 @@ class MypageView(object):
 
         return dict(
         )
+
+    @lbr_view_config(route_name="mypage.logout")
+    def logout(self):
+        return_to = self.request.params.get('return_to', '')
+        if not return_to.startswith('/'):
+            return_to = None
+        if return_to is None:
+            return_to = self.request.route_path('order_review.index')
+        headers = forget(self.request)
+        return HTTPFound(location=return_to, headers=headers)
+
 
 class OrderReviewView(object):
     def __init__(self, context, request):
