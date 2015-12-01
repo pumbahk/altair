@@ -144,7 +144,7 @@ def get_entry_status_image(request, entry):
     now = get_now(request)
     if entry.withdrawn_at:
         return u"icon_withdraw.gif"
-    if entry.canceled_at and entry.lot.lotting_announce_datetime <= now:
+    if entry.canceled_at:
         return u"icon_cancel.gif"
     elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u"icon_tousen.gif"
