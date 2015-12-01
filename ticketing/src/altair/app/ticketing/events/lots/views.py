@@ -800,14 +800,23 @@ class LotEntries(BaseView):
         closer = LotCloser(lot, self.request)
         return dict(lot=lot,
                     closer=closer,
-                    process_possible=self.check_lot_entries_process_possible(),
+                    process_possible=self._check_lot_entries_process_possible(),
                     electing=electing)
 
-    def check_lot_entries_process_possible(self):
+    def _check_lot_entries_process_possible(self):
         lot = self.context.lot
-        lot_entry_user_withdraw = lot.lot_entry_user_withdraw
+        lot_withdraw = lot.lot_entry_user_withdraw
         lot_available = lot.available_on(datetime.now())
-        return not lot_entry_user_withdraw or not lot_available
+        event = self.context.event
+        organization = event.organization
+        organization_setting = OrganizationSetting.query \
+                                .filter_by(organization_id=organization.id) \
+                                .first()
+        if organization_setting:
+            org_withdraw = organization_setting.lot_entry_user_withdraw
+        if not org_withdraw or not lot_available or not lot_withdraw:
+            return True
+        return False
 
     @view_config(route_name='lots.entries.close',
                  renderer="string",
@@ -834,7 +843,7 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        if not self.check_lot_entries_process_possible():
+        if not self._check_lot_entries_process_possible():
             self.request.session.flash(u"抽選申込ユーザ取消受付中のため当選確定処理実行できません。")
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         lots_api.elect_lot_entries(self.request, lot.id)
@@ -855,7 +864,7 @@ class LotEntries(BaseView):
 
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        if not self.check_lot_entries_process_possible():
+        if not self._check_lot_entries_process_possible():
             self.request.session.flash(u"抽選申込ユーザ取消受付中のため落選確定処理実行できません。")
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
