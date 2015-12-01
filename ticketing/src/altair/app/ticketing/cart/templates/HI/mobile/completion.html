@@ -15,7 +15,11 @@ ${order.performance.event.title} ${order.performance.name} ${h.performance_datet
 % for idx, product in enumerate(order.ordered_products):
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
-${product.product.name} ${product.seat_quantity} 枚<br/>
+% if len(product.elements) == 1:
+  ${product.product.name} ${product.seat_quantity} 枚<br/>
+% else:
+  ${product.product.name} × ${product.quantity}<br/>
+% endif
 &yen;${h.format_number(product.product.price * product.quantity)}<br/>
 % if product.product.sales_segment.setting.display_seat_no:
   % for seat in product.seats:

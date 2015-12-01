@@ -234,20 +234,27 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     inCartProductList.find("tr").last().addClass("last-child");
     totalAmount.text(cart.util.format_currency(reservationData.cart.total_amount));
 
-    var body = "";
+    var body = "合計金額 ¥" + reservationData.cart.total_amount + "\n";
     for (var product_index=0; product_index<products.length; product_index++) {
+
         // 席種
-        body += products[product_index].name + " "
-        body += "¥" + products[product_index].price + " "
-        body += products[product_index].quantity + "枚\n"
+        body += products[product_index].name
+        body += "(¥" + products[product_index].price + ") "
+
+        if (products[product_index].product_item_count == 1) {
+            if (products[product_index].first_product_item_quantity > 1) {
+                body += products[product_index].first_product_item_quantity
+            }
+            body += "×" + products[product_index].quantity + "枚\n"
+        } else {
+            body += "×" + products[product_index].quantity + "\n"
+        }
 
         // シート
         for (var seat_index=0; seat_index<products[product_index].seats.length; seat_index ++) {
             body += reservationData.cart.products[product_index].seats[seat_index].name + "\n";
         }
-        body += "\n";
     }
-    body += "合計金額 ¥" + reservationData.cart.total_amount
 
     if (confirm(body)) {
         window.location.href = reservationData.payment_url;

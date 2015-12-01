@@ -55,7 +55,11 @@
         <table id="contentsOfShopping" class="methodArea" summary="席種、金額などのお買い物内容">
           %for product in order.ordered_products:
             <tr id="commission">
-              <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/VS/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+              % if len(product.elements) == 1:
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/VS/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+              % else:
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/VS/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+              % endif
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
