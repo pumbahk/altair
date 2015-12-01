@@ -120,6 +120,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = orm.relationship('Organization', backref='lots')
 
     mail_send_now = sa.Column('mail_send_now', sa.Boolean(), nullable=False, default=False)
+    lot_entry_user_withdraw = sa.Column('lot_entry_user_withdraw', sa.Boolean(), nullable=False, default=False)
 
     @staticmethod
     def create_from_template(template, **kwds):
@@ -731,6 +732,9 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                     .first()
         if organization_setting:
             lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
+
+        if not self.lot.lot_entry_user_withdraw:
+            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
         if not lot_entry_user_withdraw:
             raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
         now = datetime.now()
