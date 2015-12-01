@@ -12,11 +12,13 @@
 
     <p class="red">携帯電話へQRコードを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
-% if paid:
+%if paid or free:
 
     % for ticket in tickets:
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            %if ticket.product:
             商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            %endif
             %if ticket.seat:
             席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
             %endif
