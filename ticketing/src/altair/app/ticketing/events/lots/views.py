@@ -28,7 +28,8 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     StockHolder,
     Stock,
-    ReportRecipient
+    ReportRecipient,
+    OrganizationSetting,
     )
 from altair.app.ticketing.orders.forms import ClientOptionalForm
 from altair.app.ticketing.lots.models import (
@@ -215,7 +216,14 @@ class Lots(BaseView):
         ticket_bundle_options = {"value": ';'.join(options)}
         from altair.grid import altair_grid
         altair_grid.need()
+        event = self.context.event
+        organization = event.organization
 
+        organization_setting = OrganizationSetting.query \
+                                .filter_by(organization_id=organization.id) \
+                                .first()
+        if organization_setting:
+            org_withdraw = organization_setting.lot_entry_user_withdraw
         _query={'sales_segment_id': lot.sales_segment.id}
         product_grid = {
             "url": self.request.route_url('products.api.get',
@@ -347,6 +355,7 @@ class Lots(BaseView):
 
         return dict(
             lot=lot,
+            org_withdraw=org_withdraw,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
             lots_cart_now_url=self.context.lots_cart_now_url,
@@ -360,6 +369,13 @@ class Lots(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         event = self.context.event
+        organization = event.organization
+
+        organization_setting = OrganizationSetting.query \
+                                .filter_by(organization_id=organization.id) \
+                                .first()
+        if organization_setting:
+            org_withdraw = organization_setting.lot_entry_user_withdraw
         sales_segment_groups = event.sales_segment_groups
         sales_segment_group_choices = [
             (str(s.id), s.name)
@@ -376,6 +392,7 @@ class Lots(BaseView):
         return dict(
             lot=lot,
             event=event,
+            org_withdraw=org_withdraw,
             form=form,
             manage_sales_segment_group_link=manage_sales_segment_group_link,
             )

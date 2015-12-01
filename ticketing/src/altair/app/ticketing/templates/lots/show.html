@@ -83,7 +83,7 @@ ${tabs.tabs(request)}
         </tr>
         <tr>
             <th>抽選申込ユーザ取消</th>
-            <td>${u'ON' if lot.lot_entry_user_withdraw else u'OFF'}</td>
+            <td>${u'ON' if lot.lot_entry_user_withdraw and org_withdraw else u'OFF'}</td>
         </tr>
        </tbody>
     </table>
