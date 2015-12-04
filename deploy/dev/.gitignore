@@ -2,6 +2,7 @@ bin/*
 var/*
 log/*
 *.pid
+altair*.ini
 develop-eggs
 eggs
 parts
