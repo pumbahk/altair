@@ -19,8 +19,8 @@
       % endif
       金額: &yen;${product['price']}<br />
       数量:
-      % if product['quantity_power'] > 1:
-        ${product['quantity_power']}x
+      % if product['product_items_count'] == 1 and product['first_product_item_sell_unit'] > 1:
+        ${product['first_product_item_sell_unit']} ×
       % endif
       <select name="product-${product['id']}">
         % for num in product['possible_quantities']:

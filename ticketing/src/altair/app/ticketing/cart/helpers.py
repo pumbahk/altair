@@ -152,19 +152,8 @@ def build_unit_template(product_items):
             return u"{{num}}枚"
         else:
             return u"%d×{{num}}枚" % product_items[0].quantity
-    else:
-        stock_type_dict = dict()
-        for product_item in product_items:
-            id = product_item.stock_type.id
-            if id in stock_type_dict:
-                stock_type = stock_type_dict[id]
-                stock_type['quantity'] += product_item.quantity
-            else:
-                stock_type = dict(name=escape(product_item.stock_type.name), quantity=product_item.quantity)
-            stock_type_dict[id] = stock_type
-        return u"(%s)×{{num}}" % u" + ".join(
-            u"%s:%d枚" % (stock_type.get('name'), stock_type.get('quantity'))
-            for stock_type in stock_type_dict.values())
+    # 複数枚の場合販売単位などは出さない
+    return u"×{{num}}"
 
 def render_delivery_confirm_viewlet(request, cart):
     plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
@@ -206,14 +195,6 @@ def render_payment_finished_viewlet(request, order):
         raise ValueError('could not render payment_finished_viewlet for payment plugin id=%d' % plugin_id)
     return Markup(response.text)
 
-
-def product_name_with_unit(product_items):
-    if len(product_items) == 1:
-        return None
-    else:
-        return u"(%s)" % (u" + ".join(
-            u"%s:%d枚" % (escape(product_item.stock_type.name), product_item.quantity)
-            for product_item in product_items))
 
 def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle_stock_threshold_percent):
     if middle_stock_threshold_percent is None:

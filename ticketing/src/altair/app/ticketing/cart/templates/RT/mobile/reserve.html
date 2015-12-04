@@ -10,10 +10,11 @@
     ${product['detail']}<br />
   % endif
   金額: &yen;${product['price']}<br />
-  数量: ${product['quantity']}
-  % if product['quantity'] != product['seat_quantity']:
-    (${product['seat_quantity']}枚)
+  数量:
+  % if product['product_items_count'] == 1 and product['first_product_item_sell_unit'] > 1:
+    ${product['first_product_item_sell_unit']} ×
   % endif
+  ${product['quantity']}
   <br />
   % if product['seats']:
   座席番号:<br />

@@ -40,8 +40,13 @@ ${self.widget.flow_widget(3)}
 	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
     % for product in cart.items:
 		<tr>
+		  % if len(product.items) == 1:
 		  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/KH/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-		  <td><strong>${product.seat_quantity}</strong>枚</td>
+			<td><strong>${product.seat_quantity}</strong>枚</td>
+		  % else:
+		  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/KH/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
+			<td>×<strong>${product.quantity}</strong></td>
+		  % endif
 		  <td>
         % if product.product.sales_segment.setting.display_seat_no:
           % for seat in product.seats:

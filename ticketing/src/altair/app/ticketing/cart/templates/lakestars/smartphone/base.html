@@ -28,7 +28,7 @@
 
       <div class="side-action-buttons">
           <div style="text-align: right">
-            % if hasattr(request, 'context') and hasattr(request.context, 'switch_pc_url'):
+            % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
               <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
             % endif
           </div>

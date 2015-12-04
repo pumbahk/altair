@@ -32,7 +32,11 @@ ${self.widget.flow_widget(4)}
       %for product in order.ordered_products:
       <tr>
         <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/WB/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-        <td><strong>${product.seat_quantity}</strong>枚</td>
+        % if len(product.elements) == 1:
+          <td><strong>${product.seat_quantity}</strong>枚</td>
+        % else:
+          <td>× <strong>${product.quantity}</strong></td>
+        % endif
         <td>
           % if product.product.sales_segment.setting.display_seat_no:
             % for seat in product.seats:
