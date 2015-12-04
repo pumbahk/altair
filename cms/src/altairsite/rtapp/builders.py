@@ -98,7 +98,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
         ''' performanceをevent_id毎にグルーピングする '''
         pglist = []
 
-        sorted(performances, key=lambda x: x.event_id)
+        performances.sort(key=lambda x: x.event_id)
         for k, g in groupby(performances, key=lambda x: x.event_id):
             pglist.append(list(g))
 
