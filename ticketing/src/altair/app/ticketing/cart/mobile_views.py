@@ -525,7 +525,7 @@ class MobileReserveView(object):
                         seats=p.seats if p.product.sales_segment.setting.display_seat_no else [],
                         seat_quantity=p.seat_quantity,
                         product_items_count=len(p.items),
-                        first_product_item_sell_unit=p.items[0].quantity if len(p.items) >= 1 else None
+                        first_product_item_sell_unit=p.items[0].product_item.quantity if len(p.items) >= 1 else None
                         )
                     for p in cart.items
                     ],
