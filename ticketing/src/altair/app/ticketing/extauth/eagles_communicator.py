@@ -81,7 +81,7 @@ class EaglesCommunicator(object):
     def resolve_style_name(self, member_dict):
         return self.style_classes.get(six.text_type(member_dict['course_id']), u'')
 
-    def get_user_profile(self, openid_claimed_id):
+    def get_user_profile(self, openid_claimed_id, ticket_only=True):
         h = hashlib.sha224()
         h.update(openid_claimed_id)
         h.update(self.client_name)
@@ -89,13 +89,14 @@ class EaglesCommunicator(object):
         token = six.text_type(h.hexdigest())
         this_year = six.text_type(datetime.now().year)
         data = self._do_request(
-            urljoin(self.endpoint_base, '/user/memberships'),
+            urljoin(self.endpoint_base, '/api/members-check'),
             {
                 u'open_id': openid_claimed_id,
                 u'client_name': self.client_name,
                 u'token': token,
                 u'start_year': this_year,
                 u'end_year':  this_year,
+                u'ticket_only': u'1' if ticket_only else u'0',
                 }
             )
         try:
