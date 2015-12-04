@@ -78,7 +78,8 @@ def get_performance_list_query(session, request, organization_id):
     query = session.query(Performance) \
                    .join(Event, Performance.event_id == Event.id) \
                    .filter(Event.organization_id == organization_id) \
-                   .filter(Performance.end_on >= datetime.now()) \
+                   .filter(or_(Performance.start_on >= datetime.now(),
+                               Performance.end_on >= datetime.now())) \
                    .order_by(Performance.start_on) \
                    .group_by(Performance.id)
 
