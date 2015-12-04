@@ -71,6 +71,7 @@ class BaseListResponseBuilder(object):
             for p in performances:
                 pdict = dict()
                 pdict["id"] = p.id
+                pdict["backend_id"] = p.backend_id
                 pdict["name"] = p.title
                 pdict["open"] = p.start_on.strftime("%Y-%m-%d %H:%M:%S") if p.start_on else None
                 pdict["close"] = p.end_on.strftime("%Y-%m-%d %H:%M:%S") if p.end_on else None
@@ -112,6 +113,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
         for pg in pgroups:
             edict = dict()
             edict["event_id"] = pg[0].event_id
+            edict["backend_id"] = pg[0].backend_id
             edict["title"] = pg[0].event.title
             edict["performances"] = self._make_performance_list(pg)
             res["events"].append(edict)
