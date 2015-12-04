@@ -31,8 +31,8 @@ altair.rakuten_auth.oauth.secret = ${altair:rakuten_auth.oauth.secret}
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
-session.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/data
-session.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/lock
+session.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/data
+session.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/lock
 
 cache.type = ${altair:beaker_backend_type}
 cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/data
@@ -41,8 +41,8 @@ cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/lock
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/data
-altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.lots/lock
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/lock
 altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
 altair.httpsession.http_backend.query_string_key = JSESSIONID
 
