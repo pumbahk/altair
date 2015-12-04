@@ -85,7 +85,8 @@ def get_performance_list_query(session, request, organization_id):
     # キーワード検索
     if params.get('keyword'):
         esc_words = escape_wildcard_for_like(params.get('keyword'))
-        if params.get('keyword-op') == 'AND':
+        cond = 'OR' if (params.get('keyword-op') == 'OR') else 'AND'
+        if cond == 'AND':
             for keyword in esc_words.split():
                 pattern = u'%{}%'.format(keyword)
                 query = query.filter(or_(Performance.title.like(pattern, escape=u"\\"),
@@ -94,7 +95,7 @@ def get_performance_list_query(session, request, organization_id):
                                          Event.description.like(pattern, escape=u"\\"),
                                          Event.notice.like(pattern, escape=u"\\"),
                                          Event.performers.like(pattern, escape=u"\\")))
-        elif params.get('keyword-op') == 'OR':
+        elif cond == 'OR':
             conditions = []
             for keyword in esc_words.split():
                 pattern = u'%{}%'.format(keyword)
