@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
 [app:main]
 use = config:%(here)s/../../baseconf/common.ini#zea-admin
-pyramid.includes = altair.findable_label altair.queryprofile
+pyramid.includes = altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url

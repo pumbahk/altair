@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
 [app:whattime]
 use = config:%(here)s/../../baseconf/common.ini#whattime
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.queryprofile
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url

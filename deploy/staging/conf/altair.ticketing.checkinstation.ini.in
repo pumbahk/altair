@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
 [app:checkinstation]
 use = config:%(here)s/../../baseconf/common.ini#checkinstation
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url

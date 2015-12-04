@@ -8,7 +8,7 @@ altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
 
 [app:ticketing]
 use = config:%(here)s/../../baseconf/common.ini#ticketing
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label altair.queryprofile
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url

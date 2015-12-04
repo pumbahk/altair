@@ -202,6 +202,8 @@ def includeme(config):
     settings = registry.settings
     from altair.oauth_auth.plugin import OAuthAuthPlugin
 
+    config.include('pyramid_dogpile_cache')
+
     def client_id(request):
         return request.session[CLIENT_CREDENTIALS_KEY][0]
 

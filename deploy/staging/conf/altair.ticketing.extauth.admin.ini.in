@@ -13,7 +13,7 @@ altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/altair.app.ticketi
 
 [app:extauth_admin]
 use = config:%(here)s/../../baseconf/common.ini#extauth_admin
-pyramid.includes = altair_gaq altair.findable_label
+pyramid.includes = altair_gaq altair.findable_label ${altair:extra_pyramid_includes}
 
 get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.url
 get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
