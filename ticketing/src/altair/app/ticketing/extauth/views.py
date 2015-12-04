@@ -115,6 +115,7 @@ def require_oauth_params_in_session(fn):
     return _
 
 
+@view_defaults(http_cache=0)
 class View(object):
     def __init__(self, context, request):
         self.context = context
