@@ -113,7 +113,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
         for pg in pgroups:
             edict = dict()
             edict["event_id"] = pg[0].event_id
-            edict["backend_id"] = pg[0].backend_id
+            edict["backend_id"] = None  # FIXME: mm...
             edict["title"] = pg[0].event.title
             edict["performances"] = self._make_performance_list(pg)
             res["events"].append(edict)
@@ -124,6 +124,7 @@ class EventDetailResponseBuilder(BaseListResponseBuilder):
     def build_response(self, request, event, widget_summary):
         res = dict()
         res['event_id'] = event.id
+        res['backend_id'] = event.backend_id
         res['title'] = event.title
         res['subtitle'] = event.subtitle
         res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
