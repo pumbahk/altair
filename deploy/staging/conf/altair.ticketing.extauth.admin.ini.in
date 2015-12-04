@@ -7,8 +7,8 @@ altair.sqlahelper.sessions.extauth_slave.url = ${altair:extauth.db_url.slave}
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/lock
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
 
 
 [app:extauth_admin]
@@ -20,8 +20,8 @@ get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.ex
 
 ; Beaker
 cache.type = file
-cache.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth.admin/data
-cache.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth.admin/lock
+cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth.admin/data
+cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth.admin/lock
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence

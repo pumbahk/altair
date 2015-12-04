@@ -7,8 +7,8 @@ altair.sqlahelper.sessions.extauth_slave.url = ${altair:extauth.db_url.slave}
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/lock
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
 
 ; dogpile.cache
 dogpile_cache.altair_extauth_oauth_code.backend = ${altair:dogpile_cache_backend_type}
@@ -62,8 +62,8 @@ get dogpile_cache.altair_extauth_openid_id_token.arguments.db = dogpile_cache.al
 
 ; Beaker
 cache.type = file
-cache.data_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/data
-cache.lock_dir = %(here)s/tmp/beaker/altair.app.ticketing.extauth/lock
+cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
+cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
 
 ; altair.rakuten_auth
 altair.rakuten_auth.url_builder_factory = ${altair:extauth.rakuten_auth.url_builder_factory}
@@ -75,8 +75,8 @@ altair.rakuten_auth.oauth.secret = ${altair:extauth.rakuten_auth.oauth.secret}
 altair.rakuten_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded
 altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
-altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/altair.rakuten_auth/data
-altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/altair.rakuten_auth/lock
+altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/data
+altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence

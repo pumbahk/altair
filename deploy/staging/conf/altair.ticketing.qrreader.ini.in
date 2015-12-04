@@ -20,18 +20,18 @@ orion.search_url = http://orion-dev.eventgate.jp/ticket_api/search
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
-session.data_dir = %(here)s/tmp/beaker/data
-session.lock_dir = %(here)s/tmp/beaker/lock
+session.data_dir = %(here)s/../tmp/beaker/data
+session.lock_dir = %(here)s/../tmp/beaker/lock
 
 cache.type = ${altair:beaker_backend_type}
-cache.data_dir = %(here)s/tmp/beaker/data
-cache.lock_dir = %(here)s/tmp/beaker/lock
+cache.data_dir = %(here)s/../tmp/beaker/data
+cache.lock_dir = %(here)s/../tmp/beaker/lock
 
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
 [app:www-check]
 use = egg:Paste#static
