@@ -68,6 +68,19 @@ def get_link_from_topic(request, topic):
 get_link_from_topcontent = get_link_from_topic
 get_link_from_promotion = get_link_from_topic
 
+def get_mobile_link_from_topic(request, topic):
+    if topic.mobile_link:
+        return topic.mobile_link
+    elif topic.link:
+        return topic.link
+    elif topic.linked_page:
+        return "%s?event_id=%d" % (request.route_path("smartphone.detail"), topic.linked_page.event.id)
+    else:
+        return ""
+
+get_mobile_link_from_topcontent = get_mobile_link_from_topic
+get_mobile_link_from_promotion = get_mobile_link_from_topic
+
 def get_trackingcode_from_topic(request, topic):
     if topic.trackingcode:
         return topic.trackingcode

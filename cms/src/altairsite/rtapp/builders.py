@@ -2,7 +2,7 @@
 
 from itertools import groupby
 from urlparse import urljoin
-from altaircms.helpers.link import get_link_from_topic
+from altaircms.helpers.link import get_link_from_topic, get_mobile_link_from_topic
 from altaircms.linklib import add_params_to_url
 from altair.pyramid_assets import get_resolver
 import json
@@ -29,7 +29,7 @@ class TopPageResponseBuilder(object):
             tcdict = dict()
             tcdict["title"] = tc.title
             tcdict["copy_text"] = tc.text
-            tcdict["detail_url"] = get_link_from_topic(request, tc)
+            tcdict["detail_url"] = get_mobile_link_from_topic(request, tc)
             tcdict["detail_url"] = self._complete_url(request, tcdict["detail_url"])
             if tc.trackingcode:
                 params = {"l-id": tc.trackingcode}
@@ -39,7 +39,7 @@ class TopPageResponseBuilder(object):
         for t in topics:
             tdict = dict()
             tdict["text"] = t.text
-            tdict["detail_url"] = get_link_from_topic(request, t)
+            tdict["detail_url"] = get_mobile_link_from_topic(request, t)
             tdict["detail_url"] = self._complete_url(request, tdict["detail_url"])
             if t.trackingcode:
                 params = {"l-id": t.trackingcode}
