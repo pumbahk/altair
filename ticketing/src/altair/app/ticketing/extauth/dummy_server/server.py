@@ -5,7 +5,7 @@ from pyramid.decorator import reify
 logger = logging.getLogger(__name__)
 
 def setup_routes(config):
-    config.add_route('eagles_extauth.check_memberships', '/user/memberships')
+    config.add_route('eagles_extauth.check_memberships', '/api/members-check')
 
 def setup_renderers(config):
     config.include('pyramid_mako')
