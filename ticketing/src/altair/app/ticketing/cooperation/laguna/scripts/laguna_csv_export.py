@@ -324,7 +324,7 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
             if order.channel:
                 channel = order.channel
             sex = order.user.user_profile.sex if order.user and order.user.user_profile else ''
-            auth_identifier = order.user.first_user_credential.auth_identifier if order.user and order.user.user_credential else ''
+            auth_identifier = order.user.member.auth_identifier if order.user else ''
             member = order.user.member if order.user else None
             quantity = sum(ordered_product.quantity for ordered_product in order.ordered_products)
             products = list(set(ordered_product.product for ordered_product in order.ordered_products))

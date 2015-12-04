@@ -2,8 +2,9 @@
 import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_defaults
+from pyramid.decorator import reify
 from urlparse import urlparse
-from altair.auth.api import get_auth_api
+from altair.auth.api import get_auth_api, get_plugin_registry
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mobile.api import is_mobile_request
@@ -21,14 +22,20 @@ logger = logging.getLogger(__name__)
 def return_to_url(request):
     passed_return_to_url = request.params.get('return_to')
     if passed_return_to_url is not None:
-        return urlparse(passed_return_to_url).path
-    else:
-        return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(request)
+        parsed_passed_return_to_url = urlparse(passed_return_to_url)
+        if (not parsed_passed_return_to_url.scheme and not parsed_passed_return_to_url.netloc) \
+           or parsed_passed_return_to_url.netloc == request.host:
+            return passed_return_to_url
+    return request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(request)
 
 class FCAuthLoginViewMixin(object):
     @property
     def auth_api(self):
         return get_auth_api(self.request)
+
+    @reify
+    def plugin(self):
+        return get_plugin_registry(self.request).lookup('fc_auth')
 
     def do_login(self, membership):
         username = self.request.POST['username']
@@ -48,12 +55,11 @@ class FCAuthLoginViewMixin(object):
 
         identities = None
         if credentials is not None:
-            identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
+            identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
-
         return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)
    
     def do_guest_login(self, membership):
@@ -63,7 +69,7 @@ class FCAuthLoginViewMixin(object):
             'membership': membership,
             'is_guest': True,
             }
-        identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name='fc_auth')
+        identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
             return {'username': '',

@@ -117,6 +117,7 @@ class MobileMiddleware(object):
                 html.append(u'"/ >')
             return Markup(u''.join(html))
         request.open_form_tag_for_get = open_form_tag_for_get
+        request.io_codec = self.codec
 
     def _attach_smartphone_request_if_necessary(self, mobile_ua, request):
         if smartphone_support_enabled_for(request):

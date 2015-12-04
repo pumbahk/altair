@@ -17,11 +17,19 @@ import sqlahelper
 from .interfaces import ILotResource
 
 
+class RakutenAuthContext(object):
+    def __init__(self, request):
+        self.request = request
+
 def decide_auth_types(request, classification):
     """ WHO API 選択
     """
-    if hasattr(request, "context") and ILotResource.providedBy(request.context) and request.context.lot is not None:
-        return [request.context.lot.auth_type]
+    if hasattr(request, "context"):
+        if ILotResource.providedBy(request.context) and request.context.lot is not None:
+            return [request.context.lot.auth_type]
+        elif isinstance(request.context, RakutenAuthContext):
+            from altair.rakuten_auth import AUTH_PLUGIN_NAME
+            return [AUTH_PLUGIN_NAME]
     else:
         return []
 
@@ -63,7 +71,6 @@ def setup_nogizaka_auth(config):
     config.add_nogizaka_entrypoint('lots.entry.agreement.compat')
     config.add_nogizaka_entrypoint('lots.entry.index')
 
-
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
@@ -78,12 +85,9 @@ def setup_auth(config):
     config.set_forbidden_handler(forbidden_handler)
 
     # 楽天認証コールバック
-    def empty_resource_factory(request):
-        return None
-    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify', '/verify', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
 
 
 def forbidden_handler(context, request):
@@ -206,7 +210,6 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
     config.include('altair.app.ticketing.mails')
-    config.include('altair.app.ticketing.renderers')
     config.include('altair.app.ticketing.cart.request')
     config.include('altair.app.ticketing.cart.view_context')
     config.include('altair.app.ticketing.cart.setup__renderers')

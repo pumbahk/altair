@@ -18,7 +18,7 @@ class OurHTTPSConnection(httplib.HTTPSConnection):
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
         self.ca_certs = ca_certs
         self.cert_reqs = cert_reqs
-        self.ssl_version = ssl_version
+        self.ssl_version = ssl_version or ssl.PROTOCOL_SSLv23
 
     def connect(self):
         logger.debug('key_file=%s, cert_file=%s, cert_reqs=%d, ca_certs=%s, ssl_version=%d' % (self.key_file, self.cert_file, self.cert_reqs, self.ca_certs, self.ssl_version))

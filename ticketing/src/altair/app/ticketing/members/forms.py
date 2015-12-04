@@ -9,7 +9,7 @@ from wtforms import widgets
 from wtforms import validators
 from collections import namedtuple, OrderedDict
 
-from altair.app.ticketing.core.models import UserCredential
+from altair.app.ticketing.users.models import Member
 
 logger = logging.getLogger(__name__)
 
@@ -79,11 +79,11 @@ class MemberGroupChoicesForm(Form):
         coerce=unicode
     )
 
-    user_id_list = fields.HiddenField(
+    member_id_list = fields.HiddenField(
         label=u"",
     )
 
-    def validate_user_id_list(form, field):
+    def validate_member_id_list(form, field):
         field.data = json.loads(field.data)
 
     def configure(self, membergroups):
@@ -107,8 +107,8 @@ class LoginUserEditForm(Form):
         if not self.validate():
             return False
         another = user_qs.filter(
-            UserCredential.id != loginuser.id,
-            UserCredential.auth_identifier == self.data["auth_identifier"]).first()
+            Member.id != loginuser.id,
+            Member.auth_identifier == self.data["auth_identifier"]).first()
         if another:
             self.errors["auth_identifier"] = [u"同じ名前が既に登録されています"]
             return False

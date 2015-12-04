@@ -1,42 +1,50 @@
-<%page args="user"/>
+<%page args="order"/>
           <table class="table table-striped table-bordered">
             <tr>
               <th>ユーザーID</th>
               <td>
-                % if user:
-                  ${user.id}
+                % if order.user:
+                  ${order.user.id}
                 % endif
               </td>
             </tr>
             <tr>
               <th>会員種別</th>
               <td>
-                % if user and user.user_credential:
-                  ${user.user_credential[0].membership.name}
+                % if order.membership:
+                  ${order.membership.name}
                 % endif
               </td>
             </tr>
             <tr>
               <th>会員区分</th>
               <td>
-                % if user and user.member:
-                  ${user.member.membergroup.name}
+                % if order.membergroup:
+                  ${order.membergroup.name}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>ログインID</th>
+              <td>
+                % if order.user and order.user.user_credential:
+                  ${order.user.user_credential[0].auth_identifier}
                 % endif
               </td>
             </tr>
             <tr>
               <th>会員番号</th>
               <td>
-                % if user and user.user_credential:
-                  ${user.user_credential[0].auth_identifier}
+                % if order.user and order.user.user_credential:
+                  ${order.user.user_credential[0].authz_identifier}
                 % endif
               </td>
             </tr>
             <tr>
               <th class="span2">氏名</th>
               <td class="span3">
-                % if user and user.user_profile:
-                  <% up = user.user_profile %>
+                % if order.user and order.user.user_profile:
+                  <% up = order.user.user_profile %>
                   ${up.last_name} ${up.first_name} (${up.last_name_kana} ${up.first_name_kana})
                 % endif
               </td>
@@ -44,24 +52,24 @@
             <tr>
               <th>ニックネーム</th>
               <td>
-                % if user and user.user_profile:
-                  ${user.user_profile.nick_name or ''}
+                % if order.user and order.user.user_profile:
+                  ${order.user.user_profile.nick_name or ''}
                 % endif
               </td>
             </tr>
             <tr>
               <th>メールアドレス (PC)</th>
               <td>
-                % if user and user.user_profile:
-                  ${user.user_profile.email_pc or u''}
+                % if order.user and order.user.user_profile:
+                  ${order.user.user_profile.email_pc or u''}
                 % endif
               </td>
             </tr>
             <tr>
               <th>メールアドレス (携帯)</th>
               <td>
-                % if user and user.user_profile:
-                  ${user.user_profile.email_mobile or u''}
+                % if order.user and order.user.user_profile:
+                  ${order.user.user_profile.email_mobile or u''}
                 % endif
               </td>
             </tr>

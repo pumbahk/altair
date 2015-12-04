@@ -74,44 +74,41 @@ logger = logging.getLogger(__name__)
 
 
 class SummarizedUser(object):
-    def __init__(self, session, id, membership_id, membership_name, user_profile):
+    def __init__(self, session, id, membership_id, membergroup_id, user_profile):
         self.session = session
         self.id = id
         self.membership_id = membership_id
-        self.membership_name = membership_name
+        self.membergroup_id = membergroup_id
         self.user_profile = user_profile
 
     @reify
     def _user_credential_member_pairs(self):
         return self.session.query(UserCredential, Member) \
-            .outerjoin(Member, UserCredential.user_id == Member.user_id) \
-            .outerjoin(MemberGroup,
+            .outerjoin(Member,
                 and_(
-                    Member.membergroup_id == MemberGroup.id,
-                    UserCredential.membership_id == MemberGroup.membership_id
+                    Member.auth_identifier == UserCredential.auth_identifier,
+                    Member.membership_id == self.membership_id,
+                    Member.membergroup_id == self.membergroup_id
                     )
                 ) \
-            .options(orm.contains_eager(Member.membergroup)) \
-            .filter(
-                UserCredential.user_id == self.id,
-                UserCredential.membership_id == self.membership_id
-                ) \
+            .filter(UserCredential.user_id == self.id) \
             .distinct() \
             .all()
 
     @reify
     def user_credential(self):
-        return [user_credential for user_credential, _ in self._user_credential_member_pairs]
+        return self._user_credential_member_pairs[0][0] if len(self._user_credential_member_pairs) > 0 else None
 
     @reify
     def member(self):
         return self._user_credential_member_pairs[0][1] if len(self._user_credential_member_pairs) > 0 else None
 
-    @property
-    def first_user_credential(self):
-        return self.user_credential[0] if len(self.user_credential) > 0 else None
 
 class SummarizedMembership(object):
+    def __init__(self, name):
+        self.name = name
+
+class SummarizedMemberGroup(object):
     def __init__(self, name):
         self.name = name
 
@@ -258,7 +255,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         sa.UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment', 'order_notification', 'proto_order', 'membership', 'cart_setting']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment', 'order_notification', 'proto_order', 'membership', 'membergroup', 'cart_setting']
 
     id = sa.Column(Identifier, primary_key=True)
     user_id = sa.Column(Identifier, sa.ForeignKey("User.id"))
@@ -311,6 +308,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
+    membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
+    membergroup = orm.relationship('MemberGroup')
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=order_user_point_account_table)
 
@@ -741,6 +740,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             payment_due_at=cart.payment_due_at,
             cart_setting_id=cart.cart_setting_id,
             membership_id=cart.membership_id,
+            membergroup_id=cart.membergroup_id,
             user_point_accounts=cart.user_point_accounts
             )
 
@@ -1183,6 +1183,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             operator=order_like.operator,
             user=order_like.user,
             membership=order_like.membership,
+            membergroup=order_like.membergroup,
             issuing_start_at=order_like.issuing_start_at,
             issuing_end_at=order_like.issuing_end_at,
             payment_due_at=order_like.payment_due_at,
@@ -1336,6 +1337,8 @@ class OrderSummary(Base):
     delivery_plugin_id = DeliveryMethod.__table__.c.delivery_plugin_id
     membership_id = Membership.__table__.c.id
     membership_name = Membership.__table__.c.name
+    membergroup_id = MemberGroup.__table__.c.id
+    membergroup_name = MemberGroup.__table__.c.name
     cart_setting_id = Order.cart_setting_id
 
     __table__ = Order.__table__ \
@@ -1378,6 +1381,11 @@ class OrderSummary(Base):
             Membership.__table__,
             and_(Order.membership_id==Membership.id,
                  Membership.deleted_at==None)
+            ) \
+        .outerjoin(
+            MemberGroup.__table__,
+            and_(Order.membergroup_id==MemberGroup.id,
+                 MemberGroup.deleted_at==None)
             )
 
     @property
@@ -1426,7 +1434,7 @@ class OrderSummary(Base):
             session_partaken_by(self),
             self.user_id,
             self.membership_id,
-            self.membership_name,
+            self.membergroup_id,
             SummarizedUserProfile(
                 self.user_profile_last_name,
                 self.user_profile_first_name,
@@ -1507,6 +1515,10 @@ class OrderSummary(Base):
     @reify
     def membership(self):
         return SummarizedMembership(self.membership_name)
+
+    @reify
+    def membergroup(self):
+        return SummarizedMemberGroup(self.membergroup_name)
 
     def _init_on_load(self, context):
         self.request = context.query._request

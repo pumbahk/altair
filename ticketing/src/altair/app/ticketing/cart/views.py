@@ -984,34 +984,27 @@ class PaymentView(object):
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
-        user = api.get_or_create_user(self.context.authenticated_user())
-        user_profile = None
-        if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form and user is not None:
-            user_profile = user.user_profile
-
-        if user_profile is not None:
-            formdata = MultiDict(
-                last_name=user_profile.last_name,
-                last_name_kana=user_profile.last_name_kana,
-                first_name=user_profile.first_name,
-                first_name_kana=user_profile.first_name_kana,
-                tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None),
-                zip=user_profile.zip,
-                prefecture=user_profile.prefecture,
-                city=user_profile.city,
-                address_1=user_profile.address_1,
-                address_2=user_profile.address_2,
-                email_1=user_profile.email_1,
-                email_2=user_profile.email_2
-                )
-        else:
-            formdata = None
-
+        metadata = getattr(self.request, 'altair_auth_metadata', {})
+        if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            metadata = metadata[u'profile']
         form = schemas.ClientForm(
-            formdata=formdata,
             context=self.context,
-            flavors=(self.context.cart_setting.flavors or {})
+            flavors=(self.context.cart_setting.flavors or {}),
+            _data=dict(
+                last_name=metadata.get('last_name'),
+                last_name_kana=metadata.get('last_name_kana'),
+                first_name=metadata.get('first_name'),
+                first_name_kana=metadata.get('first_name_kana'),
+                tel_1=metadata.get('tel_1'),
+                fax=metadata.get('fax'),
+                zip=metadata.get('zip'),
+                prefecture=metadata.get('prefecture'),
+                city=metadata.get('city'),
+                address_1=metadata.get('address_1'),
+                address_2=metadata.get('address_2'),
+                email_1=metadata.get('email_1'),
+                email_2=metadata.get('email_2')
+                )
             )
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
@@ -1242,8 +1235,17 @@ class PointAccountEnteringView(object):
             form['accountno'].data = accountno.replace('-', '')
         else:
             if self.context.membershipinfo is not None and self.context.membershipinfo.enable_auto_input_form:
-                if self.existing_user_point_account is not None:
-                    form.accountno.data = self.existing_user_point_account.account_number
+                accountno = None
+                if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+                    metadata = getattr(self.request, 'altair_auth_metadata', None)
+                    if metadata is not None:
+                        profile = metadata.get(u'profile')
+                        if profile is not None:
+                            accountno = profile.get(u'rakuten_point_account')
+                if accountno is None:
+                    if self.existing_user_point_account is not None:
+                        accountno = self.existing_user_point_account.account_number
+                form.accountno.data = accountno
 
         return dict(
             form=form,

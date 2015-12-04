@@ -319,10 +319,14 @@ def get_valid_sales_url(request, event):
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
-    headers = forget(request)
-    if response is None:
-        response = request.response
-    response.headerlist.extend(headers)
+    try:
+        headers = forget(request)
+        if response is None:
+            response = request.response
+        response.headerlist.extend(headers)
+    except:
+        logger.exception('failed to logout; will invalidate session to minimize the side effect')
+        request.session.invalidate()
 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, datetime_format, *args, **kwargs):
@@ -467,6 +471,7 @@ def get_member_group(request, info):
 def lookup_user_credential(d):
     q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
+        .filter(u_models.UserCredential.authz_identifier==d['authz_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
         .filter(u_models.Membership.name==d['membership']) \
         .filter(u_models.Membership.organization_id == d['organization_id'])
@@ -508,12 +513,13 @@ def get_or_create_user(info):
             .first()
 
     if membership is None:
-        logger.error("could not found membership %s" % info['membership'])
+        logger.error("could not find membership %s" % info['membership'])
         return None
 
     credential = u_models.UserCredential(
         user=user,
         auth_identifier=info['auth_identifier'],
+        authz_identifier=info['authz_identifier'],
         membership=membership
         )
     DBSession.add(credential)

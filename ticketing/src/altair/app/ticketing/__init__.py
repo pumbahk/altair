@@ -194,6 +194,7 @@ def main(global_config, **local_config):
 
         ## auth plugins
         config.include('altair.rakuten_auth.openid')
+        config.include('altair.app.ticketing.extauth.userside_impl')
         config.include('altair.app.ticketing.fc_auth:register_auth_plugin')
         config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
 

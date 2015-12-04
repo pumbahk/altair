@@ -89,7 +89,7 @@ japanese_columns = {
     u'user_profile.sex': u'性別',
     u'membership.name': u'会員種別名',
     u'membergroup.name': u'会員グループ名',
-    u'user_credential.auth_identifier': u'会員種別ID',
+    u'user_credential.authz_identifier': u'会員種別ID',
     u'shipping_address.last_name': u'配送先姓',
     u'shipping_address.first_name': u'配送先名',
     u'shipping_address.last_name_kana': u'配送先姓(カナ)',
@@ -380,7 +380,7 @@ class OrderCSV(object):
         PlainTextRenderer(u'user_profile.sex'),
         PlainTextRenderer(u'membership.name'),
         PlainTextRenderer(u'membergroup.name'),
-        PlainTextRenderer(u'user_credential.auth_identifier'),
+        PlainTextRenderer(u'user_credential.authz_identifier'),
         PlainTextRenderer(u'shipping_address.last_name'),
         PlainTextRenderer(u'shipping_address.first_name'),
         PlainTextRenderer(u'shipping_address.last_name_kana'),
@@ -530,14 +530,14 @@ class OrderCSV(object):
         return self._mailsubscription_cache
 
     def iter_records_for_order(self, order):
-        user_credential = order.user.first_user_credential if order.user else None
+        user_credential = order.user.user_credential if order.user else None
         member = order.user.member if order.user and order.user.member else None
         common_record = {
             u'order': order,
             u'sej_order': order.sej_order if order.sej_order else None,
             u'user_profile': order.user.user_profile if order.user else None,
             u'membership': order.membership,
-            u'membergroup': member.membergroup if member else None,
+            u'membergroup': order.membergroup,
             u'user_credential': user_credential,
             u'shipping_address': order.shipping_address,
             u'payment_method': order.payment_delivery_pair.payment_method,

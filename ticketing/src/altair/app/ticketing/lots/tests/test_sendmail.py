@@ -13,7 +13,6 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
         self.config.add_mako_renderer('.html')
         self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
-        self.config.include('altair.app.ticketing.renderers')
         self.registerDummyMailer()
 
     def tearDown(self):

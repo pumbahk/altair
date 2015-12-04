@@ -123,7 +123,6 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
             'altair.sej.template_file': ''
             })
         self.config.include('altair.pyramid_dynamic_renderer')
-        self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.config.registry.registerUtility(lambda request, organization_id: sej_models.ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている
@@ -836,7 +835,6 @@ class ProtoOrderTests(unittest.TestCase, CoreTestMixin):
             'altair.sej.template_file': ''
             })
         self.config.include('altair.pyramid_dynamic_renderer')
-        self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.config.registry.registerUtility(lambda request, organization_id: sej_models.ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている

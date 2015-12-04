@@ -21,12 +21,15 @@ from altair.formhelpers.translations import Translations
 from altair.formhelpers.fields import (
     OurSelectField,
     OurSelectMultipleDictField,
+    OurSelectMultipleField,
+    DelimitedTextsField,
     OurTextField,
     JSONField,
     )
 from altair.formhelpers.fields.select import WTFormsChoicesWrapper
 from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
+    OurTextInput,
     OurTextArea,
     )
 from altair.app.ticketing.models import DBSession
@@ -293,6 +296,79 @@ class CartSettingForm(OurForm):
     embedded_html_complete_page_smartphone = OurTextField(
         label=_(u'埋め込みHTML文言(スマートフォン)'),
         widget=OurTextArea()
+        )
+
+    oauth_client_id = OurTextField(
+        label=_(u'OAuthクライアントID'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_client_secret = OurTextField(
+        label=_(u'OAuthクライアントシークレット'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_endpoint_authz = OurTextField(
+        label=_(u'OAuth認可エンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_endpoint_token = OurTextField(
+        label=_(u'OAuthトークン発行エンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_endpoint_token_revocation = OurTextField(
+        label=_(u'OAuthトークン無効化エンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_endpoint_api = OurTextField(
+        label=_(u'OAuthAPIエンドポイント'),
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    oauth_scope = DelimitedTextsField(
+        label=_(u'OAuthスコープ (スペース区切り)'),
+        delimiter_pattern=ur'\s+',
+        canonical_delimiter=u' ',
+        widget=OurTextInput()
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
+    openid_prompt = OurSelectMultipleField(
+        label=_(u'OpenID Connectのログインプロンプト設定'),
+        choices=[
+            (u'none', u'一切のユーザーへのプロンプトを許可しない'),
+            (u'login', u'すでにOPで認証済みでもログイン画面を出す'),
+            (u'select_account', u'アカウントの選択を要求'),
+            ],
+        widget=CheckboxMultipleSelect(multiple=True)
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
         )
 
     def validate_secondary_auth_type(self, field):

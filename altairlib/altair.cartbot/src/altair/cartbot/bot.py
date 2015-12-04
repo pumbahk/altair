@@ -96,7 +96,7 @@ class CartBot(object):
 
     def fill_shipping_address_form(self, form):
         for k in ('last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'email_1', 'email_1_confirm', 'zip', 'prefecture', 'city', 'address_1', 'address_2', 'tel_1'):
-            set_form_value(form, k, self.shipping_address[k].decode('utf-8'))
+            set_form_value(form, k, self.shipping_address[k])
 
     def do_secure_3d_auth(self):
         host = urlparse(self.m.location).netloc
@@ -117,7 +117,7 @@ class CartBot(object):
         initial_location = self.m.location
         form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
         for k in ('card_number', 'exp_month', 'exp_year', 'card_holder_name', 'secure_code'):
-            set_form_value(form, k, self.credit_card_info[k].decode('utf-8'))
+            set_form_value(form, k, self.credit_card_info[k])
         self.m.submit_form(form)
         if self.m.location == initial_location:
             form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
@@ -162,6 +162,24 @@ class CartBot(object):
             self.do_fc_auth_nonguest_login()
         else:
             self.do_fc_auth_guest_login()
+
+    def do_extauth_open_id_login(self):
+        if self.rakuten_auth_credentials is None:
+            raise CartBotError('No Rakuten auth credentials provided')
+        a = self.m.page.root.xpath('.//*[@id="rakulogin"]//*[local-name()="a" and contains(@class,"btnA")]')[0]
+        self.m.navigate(a.get('href'))
+        self.do_open_id_login()
+        memberships = {
+            a.xpath('*[@class="member_kind"]')[0].text: a
+            for a in self.m.page.root.xpath('.//*[@class="statusBox"]//*[local-name()="ul" and contains(@class,"statusList")]/*[local-name()="li"]/*[local-name()="a"]')
+            }
+        if len(memberships) == 1:
+            membership = next(iter(memberships.values()))
+        else:
+            if self.extauth_credentials is None:
+                raise CartBotError('No extauth settings provided')
+            membership = memberships[self.extauth_credentials['member_kind']]
+        self.m.navigate(membership.get('href'))
 
     def do_rsp_form(self):
         form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
@@ -214,12 +232,18 @@ class CartBot(object):
         self.print_('buy something start')
         self.m.navigate(self.first_page_url)
         #self.wait()
-        actual_first_page_url = urlparse(self.m.location)
-        if re.match("/cart/fc/.*/login", actual_first_page_url.path) is not None:
-            self.do_fc_auth_login()
-        if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
-               actual_first_page_url.path == '/rms/nid/login':
-            self.do_open_id_login()
+        while True:
+            actual_first_page_url = urlparse(self.m.location)
+            if re.match("^/cart/fc/.*/login", actual_first_page_url.path) is not None:
+                self.do_fc_auth_login()
+            elif re.match("^/extauth", actual_first_page_url.path) is not None:
+                self.do_extauth_open_id_login()
+                break
+            elif actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
+                   actual_first_page_url.path == '/rms/nid/login':
+                self.do_open_id_login()
+            else:
+                break
         #self.wait()
         sales_segment_selection = None
         for script in self.m.page.root.findall('head/script'):
@@ -402,7 +426,7 @@ class CartBot(object):
         time.sleep(self._sleep_sec)
 
     def __init__(self, url, shipping_address, credit_card_info, rakuten_auth_credentials=None,
-                 fc_auth_credentials=None, http_auth_credentials=None, cookiejar=None, sleep_sec=0, fail_percent=0):
+                 fc_auth_credentials=None, extauth_credentials=None, http_auth_credentials=None, cookiejar=None, sleep_sec=0, fail_percent=0):
         keychain = KeyChain()
 
         if cookiejar is None:
@@ -422,6 +446,7 @@ class CartBot(object):
         self.all_sales_segments = None
         self.rakuten_auth_credentials = rakuten_auth_credentials
         self.fc_auth_credentials = fc_auth_credentials
+        self.extauth_credentials = extauth_credentials
         self.seat_type_choices_map = {}
         self.pdmp_choices_map = {}
         self._sleep_sec = float(sleep_sec)

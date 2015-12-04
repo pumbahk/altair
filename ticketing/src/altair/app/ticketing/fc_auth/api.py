@@ -27,21 +27,20 @@ def do_authenticate(request, membership, username, password):
        成功したときは認証時に得られた何らかのメタデータなどをdictで。
        空のdictが返ることもあるので、is not None でチェックする必要がある"""
     session = get_db_session(request, 'slave')
-    user_query = session.query(u_m.User) \
-        .filter(u_m.User.id == u_m.UserCredential.user_id) \
-        .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
-        .filter(u_m.UserCredential.auth_identifier == username) \
-        .filter(u_m.UserCredential.auth_secret == password) \
+    member_query = session.query(u_m.Member) \
+        .join(u_m.Member.membership) \
+        .filter(u_m.Member.auth_identifier == username) \
+        .filter(u_m.Member.auth_secret == password) \
         .filter(u_m.Membership.name == membership)
     try:
-        user = user_query.one()
+        member = member_query.one()
     except NoResultFound:
         logger.debug('no user found for user: %s' % username)
         return None
     except MultipleResultsFound:
         logger.error('multiple records found for user: %s' % username)
         return None
-    return { 'user_id': user.id }
+    return { 'member_id': member.id }
 
 def login_url(request):
     organization = cart_api.get_organization(request)

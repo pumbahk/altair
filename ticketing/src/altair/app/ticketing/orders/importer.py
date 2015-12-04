@@ -458,15 +458,22 @@ class ImportCSVParserContext(object):
                 if membership is None:
                     logger.info(u'[%s] user information is not specified; using that of the original order' % original_order.order_no)
                     membership = original_order.membership
+                    membergroup = original_order.membergroup
                     user = original_order.user
-                    if user is not None and sales_segment is not None and membership is not None:
-                        membergroup = None
+                    if membergroup is None and user is not None and sales_segment is not None and membership is not None:
                         try:
                             membergroup = self.session.query(MemberGroup) \
-                                .join(Member) \
-                                .join(MemberGroup_SalesSegment) \
-                                .filter(MemberGroup.membership_id == membership.id) \
-                                .filter(Member.user_id == user.id) \
+                                .join(Member, MemberGroup.id == Member.membergroup_id) \
+                                .join(
+                                    UserCredential,
+                                    sql_expr.and_(
+                                        UserCredential.auth_identifier == Member.auth_identifier,
+                                        UserCredential.membership_id == Member.membership_id
+                                        )
+                                    ) \
+                                .join(MemberGroup_SalesSegment, MemberGroup.id == MemberGroup_SalesSegment.c.membergroup_id) \
+                                .filter(Member.membership_id == membership.id) \
+                                .filter(UserCredential.user_id == user.id) \
                                 .filter(MemberGroup_SalesSegment.c.sales_segment_id == sales_segment.id) \
                                 .one()
                         except NoResultFound:
@@ -786,7 +793,7 @@ class ImportCSVParserContext(object):
         return pdmp
 
     def get_user(self, row):
-        auth_identifier = row.get(u'user_credential.auth_identifier')
+        authz_identifier = row.get(u'user_credential.authz_identifier')
         membership_name = row.get(u'membership.name')
         membergroup_name = row.get(u'membergroup.name', '')
         if not membership_name:
@@ -813,18 +820,18 @@ class ImportCSVParserContext(object):
             except NoResultFound:
                 raise self.exc_factory(u'会員グループが見つかりません (membergroup_name=%s)' % membergroup_name)
 
-        if auth_identifier: # 空欄は未指定であるので、is not None ではない
+        if authz_identifier: # 空欄は未指定であるので、is not None ではない
             try:
                 q = self.session.query(UserCredential) \
                     .filter(
-                        UserCredential.auth_identifier == auth_identifier,
+                        UserCredential.authz_identifier == authz_identifier,
                         UserCredential.membership_id == membership.id
                         )
-                if membergroup is not None: 
-                    q = q.join(Member, (Member.user_id == UserCredential.user_id) & (Member.membergroup_id == membergroup.id))
                 credential = q.one()
             except NoResultFound:
-                raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
+                raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, authz_identifier=%s)' % (membership_name, authz_identifier))
+            except MultipleResultsFound:
+                raise self.exc_factory(u'同じユーザIDを持つ複数のユーザがいます (membership_name=%s, authz_identifier=%s)' % (membership_name, authz_identifier))
         return membership, membergroup, (credential.user if credential else None)
 
     def get_product(self, row, sales_segment, performance):

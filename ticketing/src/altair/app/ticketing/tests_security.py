@@ -73,7 +73,7 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
+        self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
         
     def test_claimed_id(self):
         identities = { 'rakuten': {'claimed_id': 'http://example.com'} }
@@ -84,7 +84,7 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
+        self.assertEqual(result, ['auth_identifier:http://example.com', 'authz_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
 
     def test_priority_implicit(self):
         identities = {
@@ -93,7 +93,8 @@ class AuthModelCallbackTest(unittest.TestCase):
             }
         request = testing.DummyRequest()
 
-        dummy_plugin = mock.Mock(name='unknown')
+        dummy_plugin = mock.Mock()
+        dummy_plugin.name = 'unknown'
         from altair.auth.interfaces import IAuthenticator
         from zope.interface import directlyProvides
         directlyProvides(dummy_plugin, IAuthenticator)
@@ -108,21 +109,21 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
+        self.assertEqual(result, ['auth_identifier:http://example.com', 'authz_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
 
         identities = {
             'fc_auth': {'username': 'test', 'membership': 'test-membership', 'membergroup': 'test-membergroup' },
             'nogizaka46': {'membership': 'nogizaka46'},
             }
         result = target(identities, request)
-        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
+        self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
 
         identities = {
             'nogizaka46': {'membership': 'nogizaka46'},
             'unknown': {'username': 'test', 'membership': 'test-membership', 'membergroup': 'test-membergroup' },
             }
         result = target(identities, request)
-        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:unknown', 'membergroup:test-membergroup'])
+        self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:unknown', 'membergroup:test-membergroup'])
         
     def test_priority_from_settings(self):
         identities = {
@@ -145,7 +146,7 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
+        self.assertEqual(result, ['auth_identifier:http://example.com', 'authz_identifier:http://example.com', 'membership:rakuten', 'membership_source:rakuten'])
         
         self.config.registry.settings = {
             'altair.app.ticketing.security.auth_priorities': '''
@@ -156,7 +157,7 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
+        self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
         
         self.config.registry.settings = {
             'altair.app.ticketing.security.auth_priorities': '''
@@ -167,5 +168,5 @@ class AuthModelCallbackTest(unittest.TestCase):
         target = self._makeOne(self.config)
         result = target(identities, request)
 
-        self.assertEqual(result, ['auth_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
+        self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
 

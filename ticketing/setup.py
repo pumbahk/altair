@@ -28,6 +28,7 @@ requires = [
     'wtforms-recaptcha',
     'sqlalchemy',
     'zope.sqlalchemy',
+    'zope.proxy',
     'transaction',
     'pastescript',
     'sadisplay',
@@ -113,10 +114,13 @@ requires = [
     'altair.httpsession',
     'altair.samarker',
     'altair.pyramid_dynamic_renderer',
+    'altair.pyramid_extra_renderers',
     'altair.timeparse',
     'altair.mailhelpers',
     'altair.jis',
     'altair.types',
+    'altair.oauth[openid]',
+    'altair.oauth_auth',
     ]
 
 tests_require = [

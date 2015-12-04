@@ -1,5 +1,6 @@
 import urllib
 import logging
+from altair.httpsession.factory import parameters
 from altair.httpsession.cookies import PlainCookie, SignedCookie
 from altair.httpsession.api import CookieSessionBinder
 from .interfaces import IMobileRequest
@@ -115,6 +116,11 @@ class HybridHTTPBackend(object):
         return request.environ.get(cls.ENV_SESSION_RESTORER_KEY)
 
 
+@parameters(
+    CookieSessionBinder,
+    query_string_key='str',
+    secret='str?'
+    )
 def http_backend_factory(request, query_string_key, secret=None, key='beaker.session.id', **kwargs):
     if IMobileRequest.providedBy(request):
         return HybridHTTPBackend(request, query_string_key=query_string_key, secret=secret, key=key, **kwargs)

@@ -19,7 +19,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from altair.models.nervous import NervousList
-from altair.models import Identifier, WithTimestamp
+from altair.models import Identifier, WithTimestamp, MutableSpaceDelimitedList, SpaceDelimitedList
 from . import events
 from .exc import (
     FamiPortError,
@@ -199,38 +199,6 @@ class FamiPortVenue(Base, WithTimestamp):
     name          = sa.Column(sa.Unicode(50), nullable=False)
     name_kana     = sa.Column(sa.Unicode(200), nullable=False)
     prefecture    = sa.Column(sa.Integer, nullable=False, default=0)
-
-
-class SpaceDelimitedList(TypeDecorator):
-    impl = sa.Unicode
-
-    def process_bind_param(self, value, dialect):
-        if value is None:
-            return value
-        else:
-            return u' '.join(unicode(v).strip() for v in value)
-
-    def process_result_value(self, value, dialect):
-        if value is None:
-            return None
-        else:
-            return value.split(u' ')
-
-
-class MutableSpaceDelimitedList(Mutable, NervousList):
-    @classmethod
-    def coerce(cls, key, value):
-        if not isinstance(value, MutableSpaceDelimitedList):
-            try:
-                i = iter(value)
-            except TypeError:
-                return Mutable.coerce(key, value)
-            return MutableSpaceDelimitedList(i)
-        else:
-            return value
-
-    def _changed(self, modified):
-        self.changed()
 
 
 class FamiPortEvent(Base, WithTimestamp):

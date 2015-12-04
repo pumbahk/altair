@@ -9,6 +9,7 @@ from pyramid.events import subscriber
 import urllib2
 from .models import FamiPortReceiptType
 from .interfaces import IReceiptCompleted, IReceiptCanceled, IOrderCanceled, IOrderExpired
+from altair.app.ticketing.urllib2ext import opener_factory_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -37,21 +38,7 @@ class OrderStatusReflector(object):
             if v is None:
                 raise ConfigurationError('%s is not provided' % k_)
             endpoints[k] = v
-        opener_factory_ref = settings.get(self.OPENER_FACTORY_KEY, '').strip()
-        opener_factory_args = {}
-        if not opener_factory_ref:
-            opener_factory_ref = self.DEFAULT_OPENER_FACTORY
-            logger.info('%s is not specified; defaulting to %s and opener_factory arguments will be ignored too!' % (self.OPENER_FACTORY_KEY, opener_factory_ref))
-        else:
-            # opener_factory が明示的に指定されたときのみ opener_factory_args を populate する
-            # そうでないと、予期せぬ引数がデフォルトの opener_factory に渡されることになるため
-            for k, v in six.iteritems(settings):
-                if k.startswith(self.OPENER_FACTORY_KEY):
-                    k = k[len(self.OPENER_FACTORY_KEY) + 1:]
-                    if k:
-                        opener_factory_args[k] = v
-        opener_factory = config.maybe_dotted(opener_factory_ref)
-        self.new_opener = lambda: opener_factory(**opener_factory_args) 
+        self.new_opener = opener_factory_from_config(config, self.OPENER_FACTORY_KEY, self.DEFAULT_OPENER_FACTORY)
         self.endpoints = endpoints
         logger.info('endpoints=%r' % endpoints)
 

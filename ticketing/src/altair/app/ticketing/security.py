@@ -2,20 +2,26 @@
 import logging
 import re
 
-from urlparse import urljoin
+from urlparse import urljoin, urlparse
+from urllib import unquote
 from zope.interface import implementer
 from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
-from altair.auth.api import get_plugin_registry
+from altair.app.ticketing.users.models import Membership
+from altair.sqlahelper import get_db_session
+from altair.auth.api import get_plugin_registry, decide
 from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
 from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
 from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
+from altair.oauth_auth.plugin import OAuthAuthPlugin
+from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 
 logger = logging.getLogger(__name__)
 
 HARDCODED_PRIORITIES = {
+    OAuthAuthPlugin: -4,
     RakutenOpenID: -3,
     FCAuthPlugin: -2,
     NogizakaAuthPlugin: 1,
@@ -25,7 +31,47 @@ DISPLAY_NAMES = {
     RakutenOpenID: _(u'楽天会員認証'),
     FCAuthPlugin: _(u'FC会員認証'),
     NogizakaAuthPlugin: _(u'キーワード認証'),
+    OAuthAuthPlugin: _(u'OAuth認可APIを使った認証'),
     }
+
+def reorganize_identity(request, authenticator, identity):
+    if isinstance(authenticator, RakutenOpenID):
+        auth_identifier = authz_identifier = identity['claimed_id']
+        membership = 'rakuten'
+        membergroup = None
+        is_guest = False
+    elif isinstance(authenticator, OAuthAuthPlugin):
+        auth_identifier = identity['id']
+        authz_identifier = identity.get('authz_id') or auth_identifier
+        _membership = get_db_session(request, 'slave').query(Membership).filter_by(organization_id=request.organization.id).first()
+        membership = _membership.name if _membership is not None else None
+        membergroup = identity['authz_kind']
+        is_guest = False
+        if auth_identifier.startswith(u'acct:'):
+            try:
+                parsed_auth_identifier = urlparse(auth_identifier)
+                g = re.match(ur'^([^@]+)@([^@]+)$', parsed_auth_identifier.path)
+                if g is not None:
+                    user_part = unquote(g.group(1))
+                    user, _, memberset = user_part.partition(u'+')
+                    if user == u'*':
+                        is_guest = True
+            except:
+                pass
+    else:
+        authz_identifier = auth_identifier = identity.get('username', None)
+        membership = identity.get('membership', None)
+        membergroup = identity.get('membergroup', None)
+        is_guest = identity.get('is_guest', False)
+    return {
+        'authenticator': authenticator,
+        'authenticator_name': authenticator.name,
+        'auth_identifier': auth_identifier,
+        'authz_identifier': authz_identifier,
+        'membership': membership,
+        'membergroup': membergroup,
+        'is_guest': is_guest,
+        }
 
 class AuthModelCallback(object):
     def __init__(self, config):
@@ -59,27 +105,19 @@ class AuthModelCallback(object):
 
     def __call__(self, identities, request):
         reorganized_identities = []
-
+        interesting_authenticator_names = decide(request)
+        logger.debug('interesting authenticators={authenticators}'.format(authenticators=interesting_authenticator_names))
+        plugin_registry = get_plugin_registry(request)
         for authenticator_name, identity in identities.items():
+            if interesting_authenticator_names is not None and authenticator_name not in interesting_authenticator_names:
+                logger.debug('ignoring authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
+                continue
+                
             logger.debug('authenticator={authenticator_name}, identity={identity}'.format(authenticator_name=authenticator_name, identity=identity))
 
-            plugin_registry = get_plugin_registry(request)
             authenticator = plugin_registry.lookup(authenticator_name)
-
-            membership = identity.get('membership', None)
-            if isinstance(authenticator, RakutenOpenID):
-                membership = 'rakuten'
-                auth_identifier = identity['claimed_id']
-            else:
-                auth_identifier = identity.get('username', None)
-            reorganized_identities.append({
-                'authenticator': authenticator,
-                'authenticator_name': authenticator_name,
-                'auth_identifier': auth_identifier,
-                'membership': membership,
-                'membergroup': identity.get('membergroup', None),
-                'is_guest': identity.get('is_guest', False),
-                })
+            reorganized_identity = reorganize_identity(request, authenticator, identity)
+            reorganized_identities.append(reorganized_identity)
 
         reorganized_identities.sort(key=lambda identity: self.priorities.get(identity['authenticator'].__class__) or 0)
         logger.debug('reorganized_identities=%r' % reorganized_identities)
@@ -90,10 +128,13 @@ class AuthModelCallback(object):
         membergroup = None
         is_guest = None
         auth_identifier = None
+        authz_identifier = None
 
         for identity in reorganized_identities:
             if auth_identifier is None:
                 auth_identifier = identity['auth_identifier'] 
+            if authz_identifier is None:
+                authz_identifier = identity['authz_identifier'] 
             if membership is None:
                 membership = identity['membership']
                 membership_source = identity['authenticator_name']
@@ -103,6 +144,8 @@ class AuthModelCallback(object):
 
         if auth_identifier is not None:
             principals.append('auth_identifier:%s' % auth_identifier)
+        if authz_identifier is not None:
+            principals.append('authz_identifier:%s' % authz_identifier)
         if membership is not None:
             principals.append('membership:%s' % membership)
             principals.append('membership_source:%s' % membership_source)
@@ -115,6 +158,7 @@ class AuthModelCallback(object):
 
 def get_extra_auth_info_from_principals(principals):
     auth_identifier = None
+    authz_identifier = None
     membership = None
     membership_source = None
     membergroup = None
@@ -128,10 +172,11 @@ def get_extra_auth_info_from_principals(principals):
         elif principal.startswith('membership_source:'):
             membership_source = principal[18:]
         elif principal.startswith('membergroup:'):
-            # membergroup は fc_auth でのみ提供されることを期待
             membergroup = principal[12:]
         elif principal.startswith('auth_identifier:'):
             auth_identifier = principal[16:]
+        elif principal.startswith('authz_identifier:'):
+            authz_identifier = principal[17:]
         elif principal == 'altair_guest':
             is_guest = True
         elif principal.startswith(authenticator_prefix):
@@ -140,6 +185,7 @@ def get_extra_auth_info_from_principals(principals):
         'authenticators': authenticators,
         'membership_source': membership_source,
         'auth_identifier': auth_identifier,
+        'authz_identifier': authz_identifier,
         'membership': membership,
         'membergroup': membergroup,
         'is_guest': is_guest,
@@ -204,3 +250,19 @@ class RakutenAuthNoExtraVerifyURLBuilder(object):
     def build_extra_verify_url(self, request):
         return None
 
+
+class Authenticated(object):
+    def __init__(self, request, plugin, identity, metadata):
+        self.request = request
+        self.plugin = plugin
+        self.identity = identity
+        self.metadata = metadata
+
+
+def rakuten_auth_challenge_success_callback(request, plugin, identity, metadata):
+    request.registry.notify(Authenticated(
+        request,
+        plugin=plugin,
+        identity=identity,
+        metadata=metadata
+        ))
