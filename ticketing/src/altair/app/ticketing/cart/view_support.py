@@ -292,7 +292,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     description=product.description,
                     must_be_chosen=product.must_be_chosen,
                     price=h.format_number(product.price, ","),
-                    detail=h.product_name_with_unit(product_items_for_product[product.id]),
+                    detail=None,
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
                     max_quantity=max_product_quantity_per_product,
@@ -301,7 +301,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product,
-                    elements=per_stock_element_descs
+                    elements=per_stock_element_descs,
+                    product_items_count=len(product.items),
+                    first_product_item_sell_unit=product.items[0].quantity if len(product.items) >= 1 else None
                     )
                 )
 

@@ -923,6 +923,8 @@ class ReserveView(object):
                                              price=int(p.product.price),
                                              seats=p.seats if sales_segment.setting.display_seat_no else [],
                                              unit_template=h.build_unit_template(p.product.items),
+                                             product_item_count=len(p.items),
+                                             first_product_item_quantity=p.items[0].product_item.quantity if len(p.items) == 1 else 0,
                                         )
                                         for p in cart.items],
                               total_amount=h.format_number(get_amount_without_pdmp(cart)),

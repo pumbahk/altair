@@ -51,13 +51,11 @@ ${(view_context.embedded_html_complete_page or u'')|n}
       %for product in order.ordered_products:
       <tr>
         <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-        <td>
-          % if product.seats:
-          <strong>${product.seat_quantity}</strong>枚
-          % else:
-          <strong>${product.quantity}</strong>枚
-          % endif
-        </td>
+        % if len(product.elements) == 1:
+          <td><strong>${product.seat_quantity}</strong>枚</td>
+        % else:
+          <td>× <strong>${product.quantity}</strong></td>
+        % endif
         <td>
           % if product.product.sales_segment.setting.display_seat_no:
             % for seat in product.seats:
