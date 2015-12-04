@@ -8,7 +8,7 @@ from pyramid.config import ConfigurationError
 from pyramid.path import DottedNameResolver
 from pyramid.settings import asbool
 from ..api import HTTPSession, BasicHTTPSessionManager, CookieSessionBinder
-from ..factory import BackendFactoryFactory
+from ..factory import BackendFactoryFactory, parameters
 from .interfaces import ISessionHTTPBackendFactory, ISessionPersistenceBackendFactory
 
 __all__ = [
@@ -79,6 +79,11 @@ class ResponseWrapper(object):
         self.resp.headerlist.append((key, value))
 
 
+@parameters(
+    CookieSessionBinder,
+    secret='str?',
+    cookie_factory='callable?'
+    )
 def cookies(request, secret=None, cookie_factory=None, **kwargs):
     if cookie_factory is not None:
         cookie_factory = DottedNameResolver().maybe_dotted(cookie_factory)

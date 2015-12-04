@@ -4,6 +4,7 @@ import time
 
 from .exceptions import *
 from .cookies import PlainCookie, SignedCookie
+from .factory import parameters
 from pytz import UTC
 
 __all__ = [
@@ -228,9 +229,18 @@ class DummyHTTPBackend(object):
         pass
 
 
+@parameters(
+    cookie='str',
+    key='str?',
+    cookie_expires='timedelta?',
+    cookie_domain='str?',
+    cookie_path='str?',
+    secure='bool?',
+    httponly='bool?'
+    )
 class CookieSessionBinder(object):
     def __init__(self, cookie, key='beaker.session.id', cookie_expires=None, cookie_domain=None, cookie_path='/', secure=False, httponly=False, now=None, **kwargs):
-        self.key = key
+        self.key = str(key)
         self.cookie_expires = cookie_expires
         self.cookie_domain = cookie_domain
         self.cookie_path = cookie_path

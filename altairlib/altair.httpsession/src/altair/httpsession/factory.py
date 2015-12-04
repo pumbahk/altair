@@ -1,8 +1,16 @@
 from .utils import asbool
+import altair.timeparse
 
-def parameters(**params):
+def parameters(*inherits, **params):
     def _(factory):
-        factory._altair_httpsession_parameter_annotations = params
+        __params = params
+        if inherits:
+            _params = {}
+            for inherit in inherits:
+                _params.update(inherit._altair_httpsession_parameter_annotations)
+            _params.update(params)
+            __params = _params
+        factory._altair_httpsession_parameter_annotations = __params
         return factory
     return _
 
@@ -17,6 +25,7 @@ class BackendFactoryFactory(object):
         'class': None,
         'instance': None,
         'callable': None,
+        'timedelta': altair.timeparse.parse_time_spec,
         }
 
     def __init__(self, coercers=default_coercers):

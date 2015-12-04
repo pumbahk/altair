@@ -56,6 +56,8 @@ altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/data
 altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.userapp/lock
 altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
+altair.httpsession.http_backend.secure = ${altair:userapp_secure_cookie}
+altair.httpsession.http_backend.httponly = ${altair:userapp_httponly_cookie}
 altair.httpsession.http_backend.query_string_key = JSESSIONID
 
 ; altair.queryprofile
