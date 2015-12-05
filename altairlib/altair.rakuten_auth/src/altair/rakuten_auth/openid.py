@@ -483,7 +483,7 @@ class RakutenOpenID(object):
             self._get_cache().remove_value(claimed_id)
         except:
             import sys
-            logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
+            logger.warning("failed to flush metadata cache for %s" % claimed_id, exc_info=sys.exc_info())
 
     # IMetadataProvider
     def get_metadata(self, request, auth_context, identities):
