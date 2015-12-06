@@ -32,7 +32,6 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
 
 from . import AUTH_PLUGIN_NAME
-from .events import Authenticated
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory, get_rakuten_id_api2_factory
 from .interfaces import IRakutenOpenID, IRakutenOpenIDURLBuilder
 
@@ -117,7 +116,8 @@ class RakutenOpenID(object):
             cache_region=None,
             oauth_scope=None,
             encoding='utf-8',
-            timeout=10):
+            timeout=10,
+            challenge_success_callback=None):
         if cache_region is None:
             cache_region = self.DEFAULT_CACHE_REGION_NAME
         self.name = plugin_name
@@ -131,6 +131,7 @@ class RakutenOpenID(object):
         self.oauth_scope = oauth_scope
         self.encoding = encoding
         self.timeout = int(timeout)
+        self.challenge_success_callback = challenge_success_callback
 
     def get_session_id(self, request):
         return request.params.get('ak')
@@ -323,11 +324,8 @@ class RakutenOpenID(object):
     def _on_success(self, request, session, identity, metadata, response):
         if identity is None:
             return HTTPUnauthorized()
-        request.registry.notify(Authenticated(
-            request,
-            identity['claimed_id'],
-            metadata
-            ))
+        if self.challenge_success_callback is not None:
+            self.challenge_success_callback(request, plugin=self, identity=identity, metadata=metadata)
         return_url = self.get_return_url(session)
         if not return_url:
             # TODO: デフォルトURLをHostからひいてくる
@@ -485,7 +483,7 @@ class RakutenOpenID(object):
             self._get_cache().remove_value(claimed_id)
         except:
             import sys
-            logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
+            logger.warning("failed to flush metadata cache for %s" % claimed_id, exc_info=sys.exc_info())
 
     # IMetadataProvider
     def get_metadata(self, request, auth_context, identities):
@@ -582,6 +580,9 @@ def openid_consumer_from_config(config, prefix):
             if k.startswith(url_builder_factory_param_prefix):
                 params[k[len(url_builder_factory_param_prefix):]] = v
         url_builder = url_builder_factory(**params)
+    challenge_success_callback = settings.get(prefix + 'challenge_success_callback')
+    if challenge_success_callback is not None and not callable(challenge_success_callback):
+        challenge_success_callback = config.maybe_dotted(challenge_success_callback)
     return RakutenOpenID(
         plugin_name=AUTH_PLUGIN_NAME,
         cache_region=None,
@@ -593,7 +594,8 @@ def openid_consumer_from_config(config, prefix):
             session_args
             ),
         timeout=settings.get(prefix + 'timeout'),
-        oauth_scope=[c.strip() for c in re.split(ur'\s*,\s*|\s+', settings.get(prefix + 'oauth.scope', u''))] or None
+        oauth_scope=[c.strip() for c in re.split(ur'\s*,\s*|\s+', settings.get(prefix + 'oauth.scope', u''))] or None,
+        challenge_success_callback=challenge_success_callback
         )
 
 def includeme(config):

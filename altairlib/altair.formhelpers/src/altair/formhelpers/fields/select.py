@@ -19,6 +19,7 @@ __all__ = [
     'SelectMultipleFieldDataMixin',
     'WTFormsChoiceGroupsWrapper',
     'WTFormsChoicesWrapper',
+    'SimpleChoices',
     ]
 
 class AttributeStore(object):
@@ -193,13 +194,48 @@ class WTFormsChoiceGroupsWrapper(object):
             for encoded_value, label in group:
                 yield encoded_value
 
+
+class SimpleChoices(object):
+    def __init__(self, choices, decoder, encoder=None):
+        self.choices = choices
+        self.decoder = decoder
+        self.encoder = encoder or text_type
+
+    def items(self):
+        for value, label in self.choices:
+            yield self.encoder(value), value, label
+
+    def __len__(self):
+        return len(self.choices)
+
+    def __getitem__(self, v):
+        for value, _ in self.choices:
+            if v == value:
+                return self.encoder(value)
+        raise KeyError(v)
+
+    def __contains__(self, v):
+        for value, _ in self.choices:
+            if v == value:
+                return True
+        else:
+            return False
+
+    def __iter__(self):
+        for value, label in self.choices:
+            yield self.encoder(value)
+
+
 class SelectFieldDataMixin(object):
     def process_data(self, value):
-        coerce = self.coerce
-        try:
-            self.data = coerce(value)
-        except (ValueError, TypeError):
-            self.data = None
+        coerce = self._coerce # B/C
+        if coerce is not None:
+            try:
+                self.data = coerce(value)
+            except (ValueError, TypeError):
+                self.data = None
+        else:
+             self.data = value
 
     def process_formdata(self, valuelist):
         for raw_input_filter in self.raw_input_filters:
@@ -216,11 +252,21 @@ class SelectFieldDataMixin(object):
 
 class SelectMultipleFieldDataMixin(object):
     def process_data(self, value):
-        coerce = self.coerce
-        try:
-            self.data = [coerce(v) for v in value]
-        except (ValueError, TypeError):
-            self.data = None
+        if value is not None:
+            coerce = self._coerce
+            if coerce is not None:
+                data = []
+                for v in value:
+                    try:
+                        v = coerce(v)
+                    except (ValueError, TypeError):
+                        v = None
+                    data.append(v)
+            else:
+                data = list(value)
+        else:
+            data = None
+        self.data = data
 
     def process_formdata(self, valuelist):
         coerce = self.coerce
@@ -231,27 +277,34 @@ class SelectMultipleFieldDataMixin(object):
 
 class SelectMultipleDictFieldDataMixin(object):
     def process_data(self, value):
-        coerce = self.coerce
-        data = { k: False for k in self.model }
-        try:
-            if hasattr(value, 'items'):
-                for k, v in value.items():
-                    data[k] = bool(v)
-            else:
-                for k in value:
-                    data[k] = True
-        except (ValueError, TypeError) as e:
+        if value is not None:
+            coerce = self.coerce
+            data = { k: False for k in self.model }
+            try:
+                if hasattr(value, 'items'):
+                    for k, v in value.items():
+                        data[k] = bool(v)
+                else:
+                    for k in value:
+                        data[k] = True
+            except (ValueError, TypeError) as e:
+                data = None
+        else:
             data = None
         self.data = data
 
     def process_formdata(self, valuelist):
         coerce = self.coerce
         data = { k: False for k in self.model }
-        try:
+        if coerce is not None:
+            try:
+                for v in valuelist:
+                    data[coerce(v)] = True
+            except (ValueError, TypeError):
+                data = None
+        else:
             for v in valuelist:
-                data[coerce(v)] = True
-        except (ValueError, TypeError):
-            data = None
+                data[v] = True
         self.data = data
         if data is None:
             raise ValueError(self.gettext('Invalid Choice(s): one or more data inputs could not be coerced'))

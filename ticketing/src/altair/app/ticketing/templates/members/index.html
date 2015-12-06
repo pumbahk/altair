@@ -63,7 +63,7 @@ ${ch.breadcrumbs(
   ##ここpanel使いたい
   %if membergroup_id:
     <ul class="nav nav-tabs">
-    <li><a href="${request.current_route_path()}">すべて</a></li>
+    <li><a href="${request.current_route_path(_query={})}">すべて</a></li>
     %for g in membergroups:
       %if unicode(g.id) == unicode(membergroup_id):
         <li class="active"><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
@@ -84,29 +84,27 @@ ${ch.breadcrumbs(
   <div class="tab-content">
     <div class="tab-page-active">
 
-        <p> ${max(users.items_per_page * (users.page-1) + 1,0)}～${min(users.items_per_page * users.page, users.item_count)} / ${users.item_count}件</p>
-        ${users.pager()}
+        <p> ${max(members.items_per_page * (members.page-1) + 1,0)}～${min(members.items_per_page * members.page, members.item_count)} / ${members.item_count}件</p>
+        ${members.pager()}
           <table class="table fullwidth checkboxed_table">
             <thead>
               <tr>
                 <th class="minwidth"></th>
                 <th><a href="#" class="sortable">membergroup</a></th>
-                <th><a href="#" class="sortable">user id</a></th>
                 <th><a href="#" class="sortable">名前</a></th>
                 <th><a href="#" class="sortable">password</a></th>
               </tr>
             </thead>
             <tbody>
-            % for user in users:
+            % for member in members:
               <tr>
-                <td class="checkbox-row"><input type="checkbox" name="user_id" value="${user.id}" /></td>
-                <td>${user.member.membergroup.name}</td>
-                <td>${user.id}</td>
-                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a>
+                <td class="checkbox-row"><input type="checkbox" name="member_id" value="${member.id}" /></td>
+                <td>${member.membergroup.name}</td>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=member.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${member.auth_identifier}</a>
                 </td>
-                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
-                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_secret}</a>
+                <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=member.id, action="edit")}"
+                       class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${member.auth_secret}</a>
                 </td>
               </tr>
             % endfor
@@ -148,8 +146,8 @@ ${ch.breadcrumbs(
     // pre-hook
     $("#member_edit,#member_delete").data("preload", function(cont){
       var checkeds = $('input[type="checkbox"]:checked');
-      var user_id_list = $.makeArray(checkeds.map(function(i,e){return $(e).val();}));
-      return cont({user_id_list: JSON.stringify(user_id_list)});
+      var member_id_list = $.makeArray(checkeds.map(function(i,e){return $(e).val();}));
+      return cont({member_id_list: JSON.stringify(member_id_list)});
     });
 
   // click by selectable

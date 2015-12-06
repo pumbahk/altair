@@ -128,6 +128,9 @@ class Cart(Base, c_models.CartMixin):
     membership_id = sa.Column(Identifier, sa.ForeignKey('Membership.id'), nullable=True)
     membership = orm.relationship('Membership')
 
+    membergroup_id = sa.Column(Identifier, sa.ForeignKey('MemberGroup.id'), nullable=True)
+    membergroup = orm.relationship('MemberGroup')
+
     user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
 
     @property
@@ -946,3 +949,85 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         if self.data is None:
             self.data = {}
         self.data['nogizaka46_auth_key'] = value
+
+    @property
+    def oauth_client_id(self):
+        return self.data.get('oauth_client_id')
+
+    @oauth_client_id.setter
+    def oauth_client_id(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_client_id'] = value
+
+    @property
+    def oauth_client_secret(self):
+        return self.data.get('oauth_client_secret')
+
+    @oauth_client_secret.setter
+    def oauth_client_secret(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_client_secret'] = value
+
+    @property
+    def oauth_endpoint_authz(self):
+        return self.data.get('oauth_endpoint_authz')
+
+    @oauth_endpoint_authz.setter
+    def oauth_endpoint_authz(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_authz'] = value
+
+    @property
+    def oauth_endpoint_api(self):
+        return self.data.get('oauth_endpoint_api')
+
+    @oauth_endpoint_api.setter
+    def oauth_endpoint_api(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_api'] = value
+
+    @property
+    def oauth_endpoint_token(self):
+        return self.data.get('oauth_endpoint_token')
+
+    @oauth_endpoint_token.setter
+    def oauth_endpoint_token(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_token'] = value
+
+    @property
+    def oauth_endpoint_token_revocation(self):
+        return self.data.get('oauth_endpoint_token_revocation')
+
+    @oauth_endpoint_token_revocation.setter
+    def oauth_endpoint_token_revocation(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_endpoint_token_revocation'] = value
+
+    @property
+    def oauth_scope(self):
+        return self.data.get('oauth_scope')
+
+    @oauth_scope.setter
+    def oauth_scope(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['oauth_scope'] = value
+
+    @property
+    def openid_prompt(self):
+        return self.data.get('openid_prompt')
+
+    @openid_prompt.setter
+    def openid_prompt(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['openid_prompt'] = value
+
+

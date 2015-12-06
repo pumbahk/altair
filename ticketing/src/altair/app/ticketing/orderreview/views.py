@@ -11,6 +11,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
 from pyramid.interfaces import IRouteRequest, IRequest
+from pyramid.security import forget
 
 from altair.auth.api import get_who_api
 from altair.mobile.api import is_mobile_request
@@ -83,6 +84,12 @@ def jump_infomation_page_om_for_10873(orderlike):
         raise HTTPFound('/orderreview/information')
 
 
+def override_auth_type(context, request):
+    if 'auth_type' in request.params:
+        request.session['orderreview_auth_type_override'] = request.params['auth_type']
+    return True
+
+
 @view_defaults(
     custom_predicates=(is_mypage_organization, ),
     permission='*'
@@ -102,6 +109,7 @@ class MypageView(object):
     @lbr_view_config(
         route_name='mypage.show',
         request_method="GET",
+        custom_predicates=(override_auth_type,),
         renderer=selectable_renderer("mypage/show.html")
         )
     def show(self):
@@ -198,6 +206,17 @@ class MypageView(object):
 
         return dict(
         )
+
+    @lbr_view_config(route_name="mypage.logout")
+    def logout(self):
+        return_to = self.request.params.get('return_to', '')
+        if not return_to.startswith('/'):
+            return_to = None
+        if return_to is None:
+            return_to = self.request.route_path('order_review.index')
+        headers = forget(self.request)
+        return HTTPFound(location=return_to, headers=headers)
+
 
 class OrderReviewView(object):
     def __init__(self, context, request):

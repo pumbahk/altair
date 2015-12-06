@@ -517,7 +517,7 @@ class CartFactoryTests(unittest.TestCase):
         user = User()
         self.session.add(user)
         self.session.add(UserCredential(user=user, auth_identifier='XXX'))
-        self.session.add(Member(user=user, membergroup=membergroup))
+        self.session.add(Member(auth_identifier='XXX', membergroup=membergroup))
         sales_segment.membergroups.append(membergroup)
         sales_segment.sales_segment_group.membergroups.append(membergroup)
         self.session.flush()
@@ -529,6 +529,7 @@ class CartFactoryTests(unittest.TestCase):
         seat5 = seats[4]
 
         request = testing.DummyRequest()
+        request.organization = membership.organization
         ordered_products = [
             (product1, 2),
             (product2, 3),
@@ -563,7 +564,7 @@ class CartFactoryTests(unittest.TestCase):
         user = User()
         self.session.add(user)
         self.session.add(UserCredential(user=user, auth_identifier='XXX'))
-        self.session.add(Member(user=user, membergroup=membergroup))
+        self.session.add(Member(auth_identifier='XXX', membergroup=membergroup))
         other_sales_segment.membergroups.append(membergroup)
         other_sales_segment.sales_segment_group.membergroups.append(membergroup)
         self.session.flush()
@@ -921,7 +922,7 @@ class UserApiTest(unittest.TestCase):
         from ..users.models import User, UserCredential, Membership
         user = User()
         membership = Membership(name="rakuten", organization_id=1)
-        credential = UserCredential(user=user, auth_identifier=claimed_id, membership=membership)
+        credential = UserCredential(user=user, auth_identifier=claimed_id, authz_identifier=claimed_id, membership=membership)
         self.session.add(user)
         self.session.flush()
         return user
@@ -933,6 +934,7 @@ class UserApiTest(unittest.TestCase):
             'membership': 'rakuten',
             'claimed_id': 'http://example.com/claimed_id',
             'auth_identifier': 'http://example.com/claimed_id',
+            'authz_identifier': 'http://example.com/claimed_id',
             'organization_id': 1,
             })
         self.assertIsNone(result.id)
@@ -948,6 +950,7 @@ class UserApiTest(unittest.TestCase):
             'membership': 'rakuten',
             'claimed_id': 'http://example.com/claimed_id',
             'auth_identifier': 'http://example.com/claimed_id',
+            'authz_identifier': 'http://example.com/claimed_id',
             'organization_id': 1,
             })
         self.assertEqual(result.id, user.id)

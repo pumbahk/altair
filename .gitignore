@@ -7,7 +7,6 @@ ticket-designer/doc/build
 altairlib/altair.versiontools/setup.cfg
 *.swp
 *.swo
-*.ini
 cms/doc/build
 cms/src/.idea
 cms/src/schema.*

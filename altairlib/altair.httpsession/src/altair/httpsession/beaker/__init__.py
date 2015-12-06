@@ -87,10 +87,13 @@ class BeakerHTTPSessionBackend(object):
             namespace = self.namespace_cache
         else:
             namespace = self.namespace_cache = self.namespace_manager_factory(namespace=id_, **self.namespace_manager_factory_args)
+        namespace.acquire_write_lock(replace=True)
         try:
             del namespace['session']
         except KeyError:
             pass
+        finally:
+            namespace.release_write_lock()
 
     def get_creation_time(self, id_, data):
         return data.get('_creation_time', None)

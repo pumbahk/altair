@@ -1,0 +1,218 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.extauth
+
+altair.sqlahelper.sessions.extauth.url = ${altair:extauth.db_url.master}
+altair.sqlahelper.sessions.extauth_slave.url = ${altair:extauth.db_url.slave}
+
+; altair.httpsession
+altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
+
+; dogpile.cache
+dogpile_cache.altair_extauth_oauth_code.backend = ${altair:dogpile_cache_backend_type}
+dogpile_cache.altair_extauth_oauth_code.expiration_time = 600
+dogpile_cache.altair_extauth_oauth_code.key_mangler = altair.app.ticketing.extauth:key_mangler_oauth_code
+dogpile_cache.altair_extauth_oauth_code.arguments.filename = %(here)s/../tmp/altair_extauth
+dogpile_cache.altair_extauth_oauth_code.arguments.host = 127.0.0.1
+dogpile_cache.altair_extauth_oauth_code.arguments.db = 7
+
+dogpile_cache.altair_extauth_oauth_access_token.backend = ${altair:dogpile_cache_backend_type}
+dogpile_cache.altair_extauth_oauth_access_token.expiration_time = 900
+dogpile_cache.altair_extauth_oauth_access_token.key_mangler = altair.app.ticketing.extauth:key_mangler_oauth_access_token
+dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = %(here)s/../tmp/altair_extauth
+dogpile_cache.altair_extauth_oauth_access_token.arguments.host = 127.0.0.1
+dogpile_cache.altair_extauth_oauth_access_token.arguments.db = 7
+
+dogpile_cache.altair_extauth_openid_id_token.backend = ${altair:dogpile_cache_backend_type}
+dogpile_cache.altair_extauth_openid_id_token.expiration_time = 900
+dogpile_cache.altair_extauth_openid_id_token.key_mangler = altair.app.ticketing.extauth:key_mangler_openid_id_token
+dogpile_cache.altair_extauth_openid_id_token.arguments.filename = %(here)s/../tmp/altair_extauth
+dogpile_cache.altair_extauth_openid_id_token.arguments.host = 127.0.0.1
+dogpile_cache.altair_extauth_openid_id_token.arguments.db = 7
+
+[app:extauth_webapp]
+use = config:%(here)s/../../baseconf/common.ini#extauth_webapp
+pyramid.includes = altair_gaq altair.findable_label ${altair:extra_pyramid_includes}
+
+get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.url
+get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
+
+get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
+get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
+get dogpile_cache.altair_extauth_oauth_code.key_mangler = dogpile_cache.altair_extauth_oauth_code.key_mangler
+get dogpile_cache.altair_extauth_oauth_code.arguments.filename = dogpile_cache.altair_extauth_oauth_code.arguments.filename
+get dogpile_cache.altair_extauth_oauth_code.arguments.host = dogpile_cache.altair_extauth_oauth_code.arguments.host
+get dogpile_cache.altair_extauth_oauth_code.arguments.db = dogpile_cache.altair_extauth_oauth_code.arguments.db
+
+get dogpile_cache.altair_extauth_oauth_access_token.backend = dogpile_cache.altair_extauth_oauth_access_token.backend
+get dogpile_cache.altair_extauth_oauth_access_token.expiration_time = dogpile_cache.altair_extauth_oauth_access_token.expiration_time
+get dogpile_cache.altair_extauth_oauth_access_token.key_mangler = dogpile_cache.altair_extauth_oauth_access_token.key_mangler
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = dogpile_cache.altair_extauth_oauth_access_token.arguments.filename
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.host = dogpile_cache.altair_extauth_oauth_access_token.arguments.host
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.db = dogpile_cache.altair_extauth_oauth_access_token.arguments.db
+
+get dogpile_cache.altair_extauth_openid_id_token.backend = dogpile_cache.altair_extauth_openid_id_token.backend
+get dogpile_cache.altair_extauth_openid_id_token.expiration_time = dogpile_cache.altair_extauth_openid_id_token.expiration_time
+get dogpile_cache.altair_extauth_openid_id_token.key_mangler = dogpile_cache.altair_extauth_openid_id_token.key_mangler
+get dogpile_cache.altair_extauth_openid_id_token.arguments.filename = dogpile_cache.altair_extauth_openid_id_token.arguments.filename
+get dogpile_cache.altair_extauth_openid_id_token.arguments.host = dogpile_cache.altair_extauth_openid_id_token.arguments.host
+get dogpile_cache.altair_extauth_openid_id_token.arguments.db = dogpile_cache.altair_extauth_openid_id_token.arguments.db
+
+; Beaker
+cache.type = file
+cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
+cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
+
+; altair.rakuten_auth
+altair.rakuten_auth.url_builder_factory = ${altair:extauth.rakuten_auth.url_builder_factory}
+altair.rakuten_auth.url_builder_factory.proxy_url_pattern = ${altair:rakuten_auth.proxy_url_base}/{subdomain}
+altair.rakuten_auth.oauth.consumer_key_builder = ${altair:extauth.rakuten_auth.oauth.consumer_key_builder}
+altair.rakuten_auth.oauth.consumer_secret_builder = ${altair:extauth.rakuten_auth.oauth.consumer_secret_builder}
+altair.rakuten_auth.oauth.consumer_key = ${altair:extauth.rakuten_auth.oauth.consumer_key}
+altair.rakuten_auth.oauth.secret = ${altair:extauth.rakuten_auth.oauth.secret}
+altair.rakuten_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded
+altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
+altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
+altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/data
+altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
+
+; altair.httpsession
+get altair.httpsession.persistence = altair.httpsession.persistence
+get altair.httpsession.persistence.type = altair.httpsession.persistence.type
+get altair.httpsession.persistence.data_dir = altair.httpsession.persistence.data_dir
+get altair.httpsession.persistence.lock_dir = altair.httpsession.persistence.lock_dir
+altair.httpsession.http_backend = altair.mobile.session.http_backend_factory
+altair.httpsession.http_backend.key = tstar-extauth
+altair.httpsession.http_backend.secure = ${altair:userapp_secure_cookie}
+altair.httpsession.http_backend.httponly = ${altair:userapp_httponly_cookie}
+altair.httpsession.http_backend.query_string_key = JSESSIONID
+
+[app:extauth_api]
+use = config:%(here)s/../../baseconf/common.ini#extauth_api
+
+get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.url
+get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
+
+get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
+get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
+get dogpile_cache.altair_extauth_oauth_code.arguments.filename = dogpile_cache.altair_extauth_oauth_code.arguments.filename
+get dogpile_cache.altair_extauth_oauth_code.arguments.host = dogpile_cache.altair_extauth_oauth_code.arguments.host
+get dogpile_cache.altair_extauth_oauth_code.arguments.db = dogpile_cache.altair_extauth_oauth_code.arguments.db
+
+get dogpile_cache.altair_extauth_oauth_access_token.backend = dogpile_cache.altair_extauth_oauth_access_token.backend
+get dogpile_cache.altair_extauth_oauth_access_token.expiration_time = dogpile_cache.altair_extauth_oauth_access_token.expiration_time
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = dogpile_cache.altair_extauth_oauth_access_token.arguments.filename
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.host = dogpile_cache.altair_extauth_oauth_access_token.arguments.host
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.db = dogpile_cache.altair_extauth_oauth_access_token.arguments.db
+
+; altair.httpsession
+get altair.httpsession.persistence = altair.httpsession.persistence
+get altair.httpsession.persistence.type = altair.httpsession.persistence.type
+get altair.httpsession.persistence.data_dir = altair.httpsession.persistence.data_dir
+get altair.httpsession.persistence.lock_dir = altair.httpsession.persistence.lock_dir
+
+[app:www-check]
+use = egg:Paste#static
+document_root = %(www_check_docroot)s
+
+[filter:prefix_extauth_webapp]
+use = egg:PasteDeploy#prefix
+prefix = /extauth/
+
+[filter:prefix_extauth_api]
+use = egg:PasteDeploy#prefix
+prefix = /extauth/api/
+
+[filter:browserid]
+use = egg:altair.browserid#browserid
+cookie_name = browserid
+env_key = repoze.browserid
+
+[pipeline:pipeline_extauth_webapp]
+pipeline =
+    prefix_extauth_webapp
+    browserid
+    extauth_webapp
+
+[pipeline:pipeline_extauth_api]
+pipeline =
+    prefix_extauth_api
+    browserid
+    extauth_api
+
+[composite:main]
+use = egg:Paste#urlmap
+/extauth = pipeline_extauth_webapp
+/extauth/api = pipeline_extauth_api
+/.www-check = www-check
+
+[server:main]
+use  = egg:gunicorn#main
+host = 0.0.0.0
+port = %(http_port)s
+workers = 1
+timeout = 180
+graceful_timeout = 180
+
+[alembic]
+script_location = %(here)s/../../../ticketing/src/altair/app/ticketing/extauth/alembic
+get sqlalchemy.url = altair.sqlahelper.sessions.extauth.url
+sqlalchemy.echo = true
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altair, ticketing, sqlalchemy
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altair]
+level = DEBUG
+handlers = console, fluent
+qualname = altair
+propagate = 0
+
+[logger_ticketing]
+level = DEBUG
+handlers = console, fluent
+qualname = altair.app.ticketing
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = ${altair:console_loglevel}
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.ticketing.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.ticketing.extauth', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

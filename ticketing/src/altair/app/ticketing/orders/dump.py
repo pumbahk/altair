@@ -401,16 +401,12 @@ class OrderExportContext(Context):
         self.user = order.user
         self.user_credential = None
         self.user_profile = None
-        self.member = None
-        self.membergroup = None
-        self.membership = None
+        self.membergroup = order.membergroup
+        self.membership = order.membership
 
         if self.user:
             self.user_credential = self.user.user_credential
             self.user_profile = self.user.user_profile
-            self.member = self.user.member
-            self.membergroup = self.member.membergroup if self.member else None
-            self.membership = self.membergroup.membership if self.membergroup else None
 
         self._sej_orders = sej_orders
         self._subscribed_emails = subscribed_emails
@@ -434,16 +430,12 @@ class OrderExportAdapter(object):
 
         self._user_credential = None
         self._user_profile = None
-        self._member = None
-        self._membergroup = None
-        self._membership = None
+        self._membergroup = self._order.membergroup
+        self._membership = self._order.membership
 
         if self._user:
             self._user_credential = self._user.user_credential
             self._user_profile = self._user.user_profile
-            self._member = self._user.member
-            self._membergroup = self._member.membergroup if self._member else None
-            self._membership = self._membergroup.membership if self._membergroup else None
 
     def get(self, compiler):
         return compiler.get(
@@ -453,7 +445,6 @@ class OrderExportAdapter(object):
             shipping_address=self._shipping_address,
             sej_order=self.sej_order,
             user=self._user,
-            member=self._member,
             membergroup=self._membergroup,
             membership=self._membership,
             performance=self._performance,
@@ -795,20 +786,30 @@ class OrderExporter(object):
         self.organization_id = organization_id
 
     def _build_query(self, filters):
-        qs = self._session.query(Order)
-        qs = qs\
-          .join(SalesSegment)\
-          .join(Event)\
-          .outerjoin(ShippingAddress)\
-          .outerjoin(OrderedProduct)\
-          .outerjoin(PaymentDeliveryMethodPair)\
-          .outerjoin(PaymentMethod)\
-          .outerjoin(DeliveryMethod)\
-          .outerjoin(OrderedProductItem)\
-          .outerjoin(User, Order.user_id==User.id)\
-          .outerjoin(Member)\
-          .outerjoin(MemberGroup)\
-          .outerjoin(Membership)
+        qs = self._session.query(Order) \
+          .join(Order.sales_segment) \
+          .join(SalesSegment.sales_segment_group)\
+          .join(SalesSegmentGroup.event) \
+          .outerjoin(Order.shipping_address)\
+          .outerjoin(Order.payment_delivery_pair)\
+          .outerjoin(PaymentDeliveryMethodPair.payment_method)\
+          .outerjoin(PaymentDeliveryMethodPair.delivery_method)\
+          .outerjoin(Order.items)\
+          .outerjoin(OrderedProduct.elements)\
+          .outerjoin(Order.user)\
+          .outerjoin(User.user_credential)\
+          .outerjoin(Order.membergroup)\
+          .outerjoin(Order.membership)\
+          .options(
+            sa_orm.contains_eager('sales_segment'),
+            sa_orm.contains_eager('shipping_address'),
+            sa_orm.contains_eager('items'),
+            sa_orm.contains_eager('membergroup'),
+            sa_orm.contains_eager('membership'),
+            sa_orm.contains_eager('items', 'elements'),
+            sa_orm.contains_eager('payment_delivery_pair'),
+            sa_orm.contains_eager('payment_delivery_pair', 'payment_method'),
+            sa_orm.contains_eager('payment_delivery_pair', 'delivery_method'))
 
 
         # order_noが重複しているモノを消し去る こんなコード入れたら遅いかな...
@@ -824,17 +825,6 @@ class OrderExporter(object):
         filters = filter_factory.creates(filters)
         for filter_ in filters:
             qs = filter_.filter(qs)
-
-        joinedload_targets = (
-            'sales_segment',
-            'shipping_address',
-            'user',
-            'user.member',
-            'user.member.membergroup',
-            'user.member.membergroup.membership',
-            )
-        for target in joinedload_targets:
-            qs = qs.options(sa_orm.joinedload(target))
         qs = qs.order_by(sa.desc(Order.id))
         return qs
 

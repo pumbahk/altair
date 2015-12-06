@@ -26,7 +26,6 @@ def main(global_config, **local_config):
         config.include("pyramid_mako")
         config.add_mako_renderer('.html')
         config.add_mako_renderer('.txt')
-        config.include('altair.app.ticketing.renderers')
         config.include("pyramid_fanstatic")
         config.include('pyramid_tm')
         config.include('pyramid_mailer')

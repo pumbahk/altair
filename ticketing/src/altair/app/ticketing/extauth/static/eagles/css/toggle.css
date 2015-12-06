@@ -1,0 +1,64 @@
+@charset "utf-8";
+
+@media only screen and (min-width: 480px) {
+#toggle{ display: none; }
+}
+
+@media only screen and (max-width: 480px) {
+.nav-global{ border: none; }
+.nav-global ul{ display: none; }
+.nav-global ul li{
+	width: 100%;
+	border-bottom: 1px solid #DEDEDE;
+	background: #EFEFEF;
+}
+.nav-global ul li a{
+	display: block;
+	color: #000;
+}
+
+#toggle{
+	position: absolute;
+	top: -50px;
+	right: 0;
+	display: block;
+	width: 43px;
+	background: #860010;
+}
+#toggle a{
+	display: block;
+	position: relative;
+	padding: 12px 0 10px;
+	color: #000;
+	text-align: center;
+	text-decoration: none;
+	font-weight: bold;
+}
+#toggle:before{
+  display: block;
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  background: #FFF;
+}
+#toggle a:before, #toggle a:after{
+  display: block;
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 20px;
+  height: 4px;
+  background: #860010;
+}
+#toggle a:before{
+  margin-top: -6px;
+}
+#toggle a:after{
+  margin-top: 2px;
+}
+}

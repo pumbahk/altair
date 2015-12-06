@@ -7,7 +7,7 @@
 
  <form method="POST" action="${request.route_path("members.member", membership_id=membership_id, action="delete")}">
   <div class="modal-body">
-    <input type="hidden" name="user_id_list" value='${user_id_list|n}'>
+    <input type="hidden" name="member_id_list" value='${member_id_list|n}'>
       選択されたユーザ
       <ul>
       <table class="table">
@@ -17,11 +17,11 @@
           </tr>
         </thead>
         <tbody>
-          %for user in users:
+          %for member in members:
           <tr>
-            <td>${user.first_user_credential.auth_identifier}</td>
-            <td>${user.member.membergroup.membership.name}</td>
-            <td>${user.member.membergroup.name}</td>
+            <td>${member.auth_identifier}</td>
+            <td>${member.membergroup.membership.name}</td>
+            <td>${member.membergroup.name}</td>
           </tr>
           %endfor
         </tbody>

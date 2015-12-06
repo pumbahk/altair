@@ -15,9 +15,6 @@ import altair.app.ticketing.users.models as u_m
 
 logger = logging.getLogger(__name__)
 
-def make_plugin():
-    return FCAuthPlugin()
-
 def get_db_session_from_request(request):
     return get_db_session(request, 'slave') # XXX
 
@@ -25,8 +22,8 @@ def get_db_session_from_request(request):
 class FCAuthPlugin(object):
     name = 'fc_auth'
 
-    def __init__(self):
-        pass
+    def __init__(self, challenge_success_callback=None):
+        self.challenge_success_callback = challenge_success_callback
 
     # ILoginHandler
     def get_auth_factors(self, request, auth_context, credentials):
@@ -51,6 +48,13 @@ class FCAuthPlugin(object):
                 session_keeper.name: { 'fc_auth': userdata }
                 for session_keeper in auth_context.session_keepers
                 }
+            if self.challenge_success_callback is not None:
+                self.challenge_success_callback(
+                    request,
+                    plugin=self,
+                    identity=userdata,
+                    metadata={}
+                    )
             return userdata, auth_factors
         else:
             userdata = None
@@ -121,14 +125,13 @@ def nonguest_authenticate(request, identity):
         logger.debug('identity could not be retrieved because either membership or username is not provided: %r' % identity)
         return None
 
-    user_query =  get_db_session_from_request(request).query(u_m.User) \
-        .filter(u_m.UserCredential.auth_identifier == username) \
-        .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
-        .filter(u_m.Membership.name == membership_name) \
-        .filter(u_m.User.id == u_m.UserCredential.user_id) \
+    member_query = get_db_session_from_request(request).query(u_m.Member) \
+        .filter(u_m.Member.auth_identifier == username) \
+        .filter(u_m.Membership.id == u_m.Member.membership_id) \
+        .filter(u_m.Membership.name == membership_name)
 
     try:
-        user = user_query.one()
+        member = member_query.one()
     except NoResultFound:
         logger.debug('no user found for identity: %r' % identity)
         return None
@@ -136,13 +139,9 @@ def nonguest_authenticate(request, identity):
         logger.error('multiple records found for identity: %r' % identity)
         return None
 
-    if user.member is None:
-        logger.debug('no corresponding member record for identity: %r' % identity)
-        return None
-
     return {
         'username': username, 
-        'membergroup': user.member.membergroup.name,
-        'membership': user.member.membergroup.membership.name,
+        'membergroup': member.membergroup.name,
+        'membership': member.membergroup.membership.name,
         'is_guest': False,
         }
