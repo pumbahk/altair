@@ -28,7 +28,7 @@ def upgrade():
     #    bop.create_index('auth_identifier', ['auth_identifier'])
     op.execute('ALTER TABLE Member DROP FOREIGN KEY Member_ibfk_2, MODIFY COLUMN user_id BIGINT NULL, ADD COLUMN auth_identifier VARCHAR(64) NULL, ADD COLUMN auth_secret VARCHAR(64) NULL, ADD COLUMN membership_id BIGINT, ADD INDEX auth_identifier (auth_identifier);')
     op.execute('UPDATE Member JOIN MemberGroup ON Member.membergroup_id=MemberGroup.id SET Member.membership_id=MemberGroup.membership_id WHERE Member.deleted_at IS NULL;')
-    op.execute('UPDATE Member JOIN UserCredential ON Member.user_id=UserCredential.user_id AND Member.membership_id=UserCredential.membership_id SET Member.auth_identifier=UserCredential.auth_identifier, Member.auth_secret=UserCredential.auth_secret WHERE Member.deleted_at IS NULL AND UserCredential.deleted_at IS NULL AND UserCredential.auth_secret IS NULL;')
+    op.execute('UPDATE Member JOIN UserCredential ON Member.user_id=UserCredential.user_id AND Member.membership_id=UserCredential.membership_id SET Member.auth_identifier=UserCredential.auth_identifier, Member.auth_secret=UserCredential.auth_secret WHERE Member.deleted_at IS NULL AND UserCredential.deleted_at IS NULL AND UserCredential.auth_secret IS NOT NULL;')
     op.alter_column('Member', 'membership_id', existing_type=Identifier(), nullable=False)
     op.create_foreign_key('Member_ibfk_3', 'Member', 'Membership', ['membership_id'], ['id'], ondelete='cascade')
 
