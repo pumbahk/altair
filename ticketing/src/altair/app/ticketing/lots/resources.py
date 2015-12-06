@@ -58,7 +58,7 @@ class LotResourceBase(object):
 
     @reify
     def cart_setting(self):
-        return self.event.setting.cart_setting or self.event.organization.setting.cart_setting
+        return self.event and (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
 
     @reify
     def host_base_url(self):
