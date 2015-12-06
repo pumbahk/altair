@@ -78,7 +78,7 @@ class HybridHTTPBackend(object):
             session_restorer = pop_session_restorer(request.environ, query_string_key)
 
         if session_restorer is not None:
-            cookie_header_value = b'%s=%s' % (key, urllib.quote(session_restorer))
+            cookie_header_value = str(u'%s=%s' % (key, urllib.quote(session_restorer)))
         else:
             cookie_header_value = request.environ.get('HTTP_COOKIE')
 
