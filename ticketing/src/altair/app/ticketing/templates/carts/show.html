@@ -52,8 +52,8 @@
     <tr>
       <th>会員区分</th>
       <td>
-        % if user and user.member:
-          ${user.member.membergroup.name}
+        % if cart.membergroup and cart.membergroup.name:
+          ${cart.membergroup.name}
         % endif
       </td>
     </tr>
