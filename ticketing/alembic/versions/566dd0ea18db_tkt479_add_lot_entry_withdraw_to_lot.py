@@ -1,14 +1,14 @@
 """#tkt479 add lot_entry_user_withdraw to Lot
 
 Revision ID: 566dd0ea18db
-Revises: 313b31142eb7
+Revises: 26c3735d7c92
 Create Date: 2015-12-01 09:29:18.551316
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '566dd0ea18db'
-down_revision = '313b31142eb7'
+down_revision = '26c3735d7c92'
 
 from alembic import op
 import sqlalchemy as sa
