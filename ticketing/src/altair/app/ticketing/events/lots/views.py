@@ -218,6 +218,7 @@ class Lots(BaseView):
         altair_grid.need()
         event = self.context.event
         organization = event.organization
+        org_withdraw = False
 
         organization_setting = OrganizationSetting.query \
                                 .filter_by(organization_id=organization.id) \
@@ -370,6 +371,7 @@ class Lots(BaseView):
         lot = self.context.lot
         event = self.context.event
         organization = event.organization
+        org_withdraw = False
 
         organization_setting = OrganizationSetting.query \
                                 .filter_by(organization_id=organization.id) \
@@ -809,6 +811,7 @@ class LotEntries(BaseView):
         lot_available = lot.available_on(datetime.now())
         event = self.context.event
         organization = event.organization
+        org_withdraw = False
         organization_setting = OrganizationSetting.query \
                                 .filter_by(organization_id=organization.id) \
                                 .first()
