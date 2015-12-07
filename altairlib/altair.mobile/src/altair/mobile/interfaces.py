@@ -43,6 +43,10 @@ class IMobileCarrierDetector(Interface):
 class IMobileRequest(Interface):
     """ mobile request interface"""
     mobile_ua = Attribute('''Mobile user agent object''')
+    io_codec = Attribute('''Codec name used for I/O''')
+
+    def open_form_tag_for_get(**attrs):
+        pass
 
 class ISmartphoneRequest(Interface):
     """ smartphone request interface"""

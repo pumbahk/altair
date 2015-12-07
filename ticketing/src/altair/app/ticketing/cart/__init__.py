@@ -34,8 +34,9 @@ FC_AUTH_CDN_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
 
 
-def empty_resource_factory(request):
-    return None
+class RakutenAuthContext(object):
+    def __init__(self, request):
+        self.request = request
 
 def exception_message_renderer_factory(show_traceback):
     def exception_message_renderer(request, exc_info, message):
@@ -174,6 +175,9 @@ def decide_auth_types(request, classification):
                 return context.cart_setting.auth_types
             except CartException:
                 pass
+        elif isinstance(context, RakutenAuthContext):
+            from altair.rakuten_auth import AUTH_PLUGIN_NAME
+            return [AUTH_PLUGIN_NAME]
     return []
 
 def setup_nogizaka_auth(config):
@@ -190,6 +194,7 @@ def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
+    config.include('altair.app.ticketing.extauth.userside_impl')
 
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
@@ -198,10 +203,9 @@ def setup_auth(config):
     config.set_authorization_policy(ACLAuthorizationPolicy())
 
     # 楽天認証URL
-    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
-    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify', '/verify', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
 
     config.include(setup_nogizaka_auth)

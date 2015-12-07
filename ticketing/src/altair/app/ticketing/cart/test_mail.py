@@ -153,7 +153,6 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.config.include('pyramid_mako')
         self.config.add_mako_renderer('.html')
         self.config.add_mako_renderer('.txt')
-        self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
 
         ## TBA

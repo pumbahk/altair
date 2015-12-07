@@ -17,8 +17,6 @@ from pyramid.interfaces import IRequest
 
 from .interfaces import IRakutenOpenID, IRakutenOAuth, IRakutenIDAPIFactory, IRakutenIDAPI2Factory
 
-from .events import Authenticated
-
 logger = logging.getLogger(__name__)
 
 def gen_reseve_no(order_no):

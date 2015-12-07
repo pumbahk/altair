@@ -4,25 +4,25 @@ altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.queryprofile
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
-session.data_dir = %(here)s/tmp/beaker/data
-session.lock_dir = %(here)s/tmp/beaker/lock
+session.data_dir = %(here)s/../tmp/beaker/data
+session.lock_dir = %(here)s/../tmp/beaker/lock
 
 cache.type = ${altair:beaker_backend_type}
-cache.data_dir = %(here)s/tmp/beaker/data
-cache.lock_dir = %(here)s/tmp/beaker/lock
+cache.data_dir = %(here)s/../tmp/beaker/data
+cache.lock_dir = %(here)s/../tmp/beaker/lock
 
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-altair.httpsession.persistence.data_dir = %(here)s/tmp/beaker/data
-altair.httpsession.persistence.lock_dir = %(here)s/tmp/beaker/lock
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
 [loggers]
 keys = root, ticketing

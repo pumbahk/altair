@@ -41,6 +41,7 @@ setup(name='altair.httpsession',
           'setuptools',
           'pytz',
           'redis',
+          'altair.timeparse',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

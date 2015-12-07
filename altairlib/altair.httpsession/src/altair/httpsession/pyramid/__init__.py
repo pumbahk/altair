@@ -1,5 +1,6 @@
 import os
 import binascii
+import logging
 from zope.interface import implementer
 from pyramid.interfaces import ISession
 from pyramid.compat import text_
@@ -7,14 +8,16 @@ from pyramid.config import ConfigurationError
 from pyramid.path import DottedNameResolver
 from pyramid.settings import asbool
 from ..api import HTTPSession, BasicHTTPSessionManager, CookieSessionBinder
-from ..factory import BackendFactoryFactory
+from ..factory import BackendFactoryFactory, parameters
 from .interfaces import ISessionHTTPBackendFactory, ISessionPersistenceBackendFactory
 
 __all__ = [
     'PyramidSession',
     'PyramidSessionFactory',
+    'register_utilities',
     ]
 
+logger = logging.getLogger(__name__)
 
 @implementer(ISession)
 class PyramidSession(HTTPSession):
@@ -76,6 +79,11 @@ class ResponseWrapper(object):
         self.resp.headerlist.append((key, value))
 
 
+@parameters(
+    CookieSessionBinder,
+    secret='str?',
+    cookie_factory='callable?'
+    )
 def cookies(request, secret=None, cookie_factory=None, **kwargs):
     if cookie_factory is not None:
         cookie_factory = DottedNameResolver().maybe_dotted(cookie_factory)
@@ -111,7 +119,7 @@ class PyramidSessionFactory(object):
         return session
 
 
-def register_utilities(config, prefix='altair.httpsession'):
+def register_utilities(config, prefix='altair.httpsession', skip_http_backend_registration=False):
     if prefix[-1] != '.':
         prefix += '.'
 
@@ -137,20 +145,25 @@ def register_utilities(config, prefix='altair.httpsession'):
         elif k.startswith(prefix):
             settings[k[len(prefix):]] = v
 
-    http_backend_factory_value = settings.get('http_backend', cookies)
-    http_backend_factory = config.maybe_dotted(http_backend_factory_value)
-    if http_backend_factory is None:
-        raise ConfigurationError('Could not find http backend factory (%s)' % http_backend_factory_value)
+    http_backend_factory = None
+    if not skip_http_backend_registration:
+        http_backend_factory_value = settings.get('http_backend', cookies)
+        http_backend_factory = config.maybe_dotted(http_backend_factory_value)
+        if http_backend_factory is None:
+            raise ConfigurationError('Could not find http backend factory (%s)' % http_backend_factory_value)
 
     persistence_value = settings.get('persistence')
     persistence_backend_factory = config.maybe_dotted(persistence_value)
     if persistence_backend_factory is None:
         raise ConfigurationError('Could not find persistence backend factory (%s)' % persistence_value)
 
-    config.registry.registerUtility(
-        backend_factory_factory(http_backend_factory, http_backend_settings),
-        ISessionHTTPBackendFactory
-        )
+    if http_backend_factory is not None:
+        config.registry.registerUtility(
+            backend_factory_factory(http_backend_factory, http_backend_settings),
+            ISessionHTTPBackendFactory
+            )
+    else:
+        logger.info('skipping HTTP backend registration')
 
     config.registry.registerUtility(
         backend_factory_factory(persistence_backend_factory, persistence_backend_settings),

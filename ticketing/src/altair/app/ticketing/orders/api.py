@@ -1017,6 +1017,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         operator=proto_order.operator,
         user=proto_order.user,
         membership=proto_order.membership,
+        membergroup=proto_order.membergroup,
         issuing_start_at=proto_order.issuing_start_at,
         issuing_end_at=proto_order.issuing_end_at,
         payment_start_at=proto_order.payment_start_at,
@@ -1476,7 +1477,9 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         cart_setting_id=original_order.cart_setting_id,
         note=original_order.note,
         attributes=attributes,
-        user_point_accounts=original_order.user_point_accounts
+        user_point_accounts=original_order.user_point_accounts,
+        membership=original_order.membership,
+        membergroup=original_order.membergroup
         )
     # item => OrderedProduct, element => OrderedProductItem になる
     # この分かりにくい対応は歴史的経緯によるものです...

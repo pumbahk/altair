@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 from pyramid.config import Configurator
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import PredicateMismatch
 from pyramid.authorization import ACLAuthorizationPolicy
 from sqlalchemy import engine_from_config
@@ -9,12 +9,21 @@ from sqlalchemy.pool import NullPool
 import sqlahelper
 from altair.app.ticketing.cart.rendering import selectable_renderer
 
+class RakutenAuthContext(object):
+    def __init__(self, request):
+        self.request = request
+
 def decide_auth_types(request, classification):
-    auth_type = request.organization.setting.auth_type 
+    if hasattr(request, 'context') and isinstance(request.context, RakutenAuthContext):
+        from altair.rakuten_auth import AUTH_PLUGIN_NAME
+        return [AUTH_PLUGIN_NAME]
+    auth_type = request.session.get('orderreview_auth_type_override')
     if auth_type is not None:
         return [auth_type]
-    else:
-        return None
+    auth_type = request.organization.setting.cart_setting.auth_type
+    if auth_type is not None:
+        return [auth_type]
+    return None
 
 
 def setup_static_views(config):
@@ -56,6 +65,7 @@ def includeme(config):
     config.add_route('mypage.mailmag.confirm', '/mypage/mailmag/confirm', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.mailmag.complete', '/mypage/mailmag/complete', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
+    config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
@@ -65,15 +75,20 @@ def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
-    config.add_route('rakuten_auth.login', '/login', factory='.resources.LandingViewResource')
-    config.add_route('rakuten_auth.verify', '/verify', factory='.resources.LandingViewResource')
-    config.add_route('rakuten_auth.verify2', '/verify2', factory='.resources.LandingViewResource')
-    config.add_route('rakuten_auth.error', '/error', factory='.resources.LandingViewResource')
+    config.include('altair.app.ticketing.extauth.userside_impl')
+    config.add_route('rakuten_auth.verify', '/verify', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy
     from altair.app.ticketing.security import AuthModelCallback
+    from pyramid.security import forget
     set_auth_policy(config, AuthModelCallback(config))
     config.set_authorization_policy(ACLAuthorizationPolicy())
+    def forbidden_handler(context, request):
+        forget(request)
+        return HTTPFound(request.route_path('order_review.index'))
+    config.set_forbidden_handler(forbidden_handler)
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -89,6 +104,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.setup_beaker_cache')
 
     config.include('pyramid_layout')
+    config.include('pyramid_dogpile_cache')
 
     ### include altair.*
     config.include('altair.browserid')

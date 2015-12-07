@@ -36,9 +36,10 @@ class CompatibilityBackendFactory(object):
         if context is not None:
             if ICartResource.providedBy(context) or ILotResource.providedBy(context):
                 cart_setting = context.cart_setting
-                auth_key_from_cart_setting = cart_setting.nogizaka46_auth_key
-                if auth_key_from_cart_setting is not None:
-                    auth_key = auth_key_from_cart_setting
+                if cart_setting is not None:
+                    auth_key_from_cart_setting = cart_setting.nogizaka46_auth_key
+                    if auth_key_from_cart_setting is not None:
+                        auth_key = auth_key_from_cart_setting
         if opaque == auth_key:
             return {
                 'username': self.username,

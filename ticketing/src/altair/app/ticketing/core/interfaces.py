@@ -43,6 +43,7 @@ class IOrderLike(IPurchase):
     operator              = Attribute(u"")
     user                  = Attribute(u"")
     membership            = Attribute(u"")
+    membergroup           = Attribute(u"")
     user_point_accounts   = Attribute(u"")
 
 class IShippingAddress(Interface):

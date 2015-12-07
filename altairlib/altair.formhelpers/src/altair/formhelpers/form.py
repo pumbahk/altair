@@ -44,12 +44,21 @@ class OurForm(form.Form):
                 raise TypeError("formdata should be a multidict-type wrapper that supports the 'getlist' method: ")
 
         for name, field in iteritems(self._fields):
-            if obj is not None and hasattr(obj, name):
-                field.process(formdata, getattr(obj, name))
-            elif name in kwargs:
+            if name in kwargs:
                 field.process(formdata, kwargs[name])
             elif _data is not None and field.short_name in _data:
                 field.process(formdata, _data[field.short_name])
+            elif obj is not None:
+                if hasattr(field, 'process_obj'):
+                    field.process_obj(formdata, name)
+                elif hasattr(obj, name):
+                    if hasattr(field, 'fetch_value_from_obj'):
+                        value = field.fetch_value_from_obj(obj, name)
+                    else:
+                        value = getattr(obj, name)
+                    field.process(formdata, value)
+                else:
+                    field.process(formdata)
             else:
                 field.process(formdata)
 

@@ -1,0 +1,2 @@
+class OAuthAPICommunicationError(Exception):
+    pass
