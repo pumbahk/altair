@@ -8,7 +8,7 @@
   <hr />
   <a href="mailto:bigbulls@tstar.jp">お問い合わせ</a> / <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
   <div>
-    Copyright (C) 2010-2013 TicketStar, Inc. All Rights Reserved. 
+    &copy; TicketStar, Inc.
   </div>
 </body>
 </html>
