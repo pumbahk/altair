@@ -49,6 +49,7 @@ from altair.app.ticketing.core.models import (
     MailTypeEnum,
     OrganizationSetting,
     )
+from .exceptions import LotEntryWithdrawException
 
 logger = logging.getLogger(__name__)
 
@@ -677,7 +678,7 @@ class LotReviewView(object):
             memo=lot_entry.memo,
             entry_controller=entry_controller,
             timestamp=timestamp,
-            can_withdraw=lot_entry_user_withdraw,
+            can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
             now=get_now(self.request))
 
 
@@ -747,39 +748,36 @@ class LotReviewWithdrawView(object):
         self.request = request
         self.entry = context.entry
         self.organization_id = self.entry.organization_id
+        self.error_msg = ""
+        self.can_withdraw = False
 
     @lbr_view_config(route_name='lots.review.withdraw.withdraw',
                      renderer=selectable_renderer("review_withdraw_completion.html"))
     def withdraw(self):
         """申込取消実行"""
-        if not self.can_withdraw():
-            raise HTTPNotFound("page not found")
         check_csrf_token(self.request)
-
         if not self.context.entry:
             raise ValueError()
-        if not self.context.entry.is_withdrawn:
+        try:
             self.context.entry.withdraw(self.request)
+            self.can_withdraw = True
             mutil = get_mail_utility(self.request, MailTypeEnum.LotsWithdrawMail)
             mutil.send_mail(self.request, (self.context.entry, None))
+        except LotEntryWithdrawException as e:
+            self.error_msg = e.message
         return self.build_response_dict()
 
     @lbr_view_config(route_name='lots.review.withdraw.confirm',
                      renderer=selectable_renderer("review_withdraw_confirm.html"))
     def confirm(self):
         """申込取消確認"""
-        if not self.can_withdraw():
-            raise HTTPNotFound("page not found")
+        try:
+            self.context.entry.check_withdraw(self.request)
+            self.can_withdraw = True
+        except LotEntryWithdrawException as e:
+            self.error_msg = e.message
         check_csrf_token(self.request)
         return self.build_response_dict()
-
-    def can_withdraw(self):
-        organization_setting = OrganizationSetting.query \
-                                    .filter_by(organization_id=self.organization_id) \
-                                    .first()
-        if organization_setting:
-            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
-        return lot_entry_user_withdraw
 
     def build_response_dict(self):
         lot_entry = self.context.entry
@@ -805,5 +803,6 @@ class LotReviewWithdrawView(object):
             memo=lot_entry.memo,
             entry_controller=entry_controller,
             timestamp=timestamp,
-            can_withdraw=self.can_withdraw(),
+            can_withdraw=self.can_withdraw,
+            error_msg=self.error_msg,
         )

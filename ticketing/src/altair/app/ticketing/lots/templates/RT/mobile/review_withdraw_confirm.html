@@ -1,6 +1,6 @@
 <%inherit file="./base.html" />
 <%namespace file="./tags_mobile.html" name="mobile" />
-%if entry_controller.can_withdraw(timestamp):
+%if can_withdraw:
 <div align="center">
 <h3>この抽選申込を取消しますか?</h3>
 <form method="POST" id="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
@@ -11,6 +11,9 @@
 </form>
 </div>
 <span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+%endif
+%if error_msg:
+<div align="center" style="font-size:20px">${error_msg}</div>
 %endif
 
 <%mobile:header>詳細</%mobile:header>
