@@ -357,8 +357,8 @@ def create_event_dict(view, performance_id, sales_segments):
         sales_start_on = u''
         sales_end_on = u''
         if sales_segment:
-            sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M"))
-            sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M"))
+            sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+            sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
 
         return dict(
             id=view.context.event.id,
@@ -376,8 +376,8 @@ def create_event_dict(view, performance_id, sales_segments):
         code=view.context.event.code,
         title=view.context.event.title,
         abbreviated_title=view.context.event.abbreviated_title,
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M")),
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M")),
+        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
+        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
         venues=set(p.venue.name for p in view.context.event.performances if p.public==True),
         product=view.context.event.products
         )
