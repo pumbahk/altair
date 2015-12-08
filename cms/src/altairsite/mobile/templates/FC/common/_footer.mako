@@ -1,7 +1,7 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <div align="center">
 <font size="-2">
-    <div><font color="#888888">Copyright &copy; 2010-2015 TicketStar Inc. All Rights Reserved.</font></div>
+    <div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
 </font>
 </div>
 
