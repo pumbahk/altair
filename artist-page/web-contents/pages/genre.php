@@ -509,7 +509,7 @@ gif" alt="検索" />
 					<li><a href="http://corp.rakuten.co.jp/csr/">社会的責任[CSR]</a></li>
 					<li class="grpLast"><a href="http://www.rakuten.co.jp/recruit/">採用情報</a></li>
 				</ul>
-				<p id="copyright">Copyright &copy; 1997-2011 Rakuten, Inc. All Rights Reserved.</p>
+				<p id="copyright">&copy; Rakuten, Inc.</p>
 			</div><!-- /div#companyFooter -->
 		</div><!-- /div#grpFooter -->
 	</div><!-- /div#grpRakutenLinkArea -->
