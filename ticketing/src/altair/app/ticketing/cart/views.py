@@ -354,11 +354,11 @@ def create_event_dict(view, performance_id, sales_segments):
             if s.performance.id == performance.id:
                 sales_segment = s
 
-        sales_start_on=u''
-        sales_end_on=u''
+        sales_start_on = u''
+        sales_end_on = u''
         if sales_segment:
-            sales_start_on=str(sales_segment.start_at),
-            sales_end_on=str(sales_segment.end_at),
+            sales_start_on = unicode(sales_segment.start_at.strftime("%Y/%m/%d %H:%M"))
+            sales_end_on = unicode(sales_segment.end_at.strftime("%Y/%m/%d %H:%M"))
 
         return dict(
             id=view.context.event.id,
