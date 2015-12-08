@@ -6,6 +6,7 @@ from datetime import datetime
 from pyramid.view import view_config
 from altaircms.modellib import DBSession as session
 from . import api
+from .helpers import grep_prfms_in_sales
 from .builders import (
     GenreListResponseBuilder,
     PerformanceGroupListResponseBuilder,
@@ -55,9 +56,10 @@ def api_performance_list(self, request):
 @view_config(route_name="api.event_detail", request_method="GET", renderer='json')
 def api_event_detail(self, request):
     event = api.get_event(session, request)
+    performances = grep_prfms_in_sales(event.performances)
     widget_summary = api.get_widget_summary(session, event)
     builder = EventDetailResponseBuilder()
-    res = builder.build_response(request, event, widget_summary)
+    res = builder.build_response(request, event, performances, widget_summary)
     return res
 
 

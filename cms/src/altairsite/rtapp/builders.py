@@ -68,6 +68,8 @@ class GenreListResponseBuilder(object):
 class BaseListResponseBuilder(object):
     def _make_performance_list(self, performances):
             plist = []
+            if performances is None:
+                return plist
             for p in performances:
                 pdict = dict()
                 pdict["id"] = p.id
@@ -121,13 +123,13 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
 
 class EventDetailResponseBuilder(BaseListResponseBuilder):
-    def build_response(self, request, event, widget_summary):
+    def build_response(self, request, event, performances, widget_summary):
         res = dict()
         res['event_id'] = event.id
         res['backend_id'] = event.backend_id
         res['title'] = event.title
         res['subtitle'] = event.subtitle
         res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
-        res['performances'] = self._make_performance_list(event.performances)
+        res['performances'] = self._make_performance_list(performances)
 
         return res
