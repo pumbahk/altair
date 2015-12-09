@@ -3,6 +3,7 @@
 import re
 from webob.multidict import MultiDict
 import itertools
+from datetime import datetime
 import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
@@ -298,6 +299,8 @@ def lot_entry_status_as_string(entry):
     return u'???' # never get here
 
 def lot_entry_display_status(entry, now):
+    if not now:
+        now = datetime.now()
     if entry.is_withdrawn:
         return u'抽選申込取消'
     # 当選or注文済み

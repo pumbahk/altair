@@ -790,6 +790,7 @@ class LotReviewWithdrawView(object):
         entry_controller.load(lot_entry)
         tel_no = lot_entry.shipping_address.tel_1 or lot_entry.shipping_address.tel_2
         timestamp = datetime.now()
+        now = datetime.now()
 
         return dict(
             entry=lot_entry,
@@ -805,4 +806,5 @@ class LotReviewWithdrawView(object):
             timestamp=timestamp,
             can_withdraw=self.can_withdraw,
             error_msg=self.error_msg,
+            now = now,
         )

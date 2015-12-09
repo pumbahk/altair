@@ -9,7 +9,10 @@
     <input type="hidden" name="tel_no" value=${tel_no}>
     <input type="submit" style="width:100px;height:30px;background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="はい">
 </form>
-<form method="GET" action="${request.route_path('lots.review.index')}">
+<form method="POST" action="${request.route_path('lots.review.index')}">
+    <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+    <input type="hidden" name="entry_no" value=${entry_no}>
+    <input type="hidden" name="tel_no" value=${tel_no}>
     <input type="submit" style="width:100px;height:30px;background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="いいえ">
 </form>
 </div>
