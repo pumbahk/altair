@@ -129,7 +129,7 @@ def is_disabled_order(entry):
 
 def get_entry_status(request, entry):
     now = get_now(request)
-    if entry.canceled_at and entry.lot.lotting_announce_datetime <= now:
+    if entry.canceled_at:
         return u"無効"
     elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
         return u"当選"
