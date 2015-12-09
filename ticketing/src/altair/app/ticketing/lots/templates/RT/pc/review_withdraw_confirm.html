@@ -2,13 +2,28 @@
 %if can_withdraw:
 <div align="center">
 <h1>この抽選申込を取消しますか?</h1>
+</div>
+<div align="center">
+<table>
+<tr><td style="width:200px" align="center">
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
     <a href="javascript: void(0)" onclick="document.withdrawForm.submit();" class="withdrawConfirmButtonPC">はい</a>
-    <a href="${request.route_path('lots.review.index')}" class="withdrawConfirmButtonPC">いいえ</a>
 </form>
+</td>
+<td style="width:200px" align="center">
+<form method="POST" id="withdrawBackForm" name="withdrawBackForm" action="${request.route_path('lots.review.index')}">
+    <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+    <input type="hidden" name="entry_no" value=${entry_no}>
+    <input type="hidden" name="tel_no" value=${tel_no}>
+    <a href="javascript: void(0)" onclick="document.withdrawBackForm.submit();" class="withdrawConfirmButtonPC">いいえ</a>
+</form>
+</td></tr>
+</table>
+</div>
+<div align="center">
 <span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
 </div>
 %endif
