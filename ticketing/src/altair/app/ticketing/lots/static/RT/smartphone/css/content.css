@@ -411,37 +411,24 @@ label.required:after {
 }
 
 
-
-
-
-
-
-
 /* お問い合わせ
 ----------------------------------------------------------- */
 
+a.withdrawConfirmButtonSM{
+    background-color:#FF6C0D;
+    font-size:16px;
+    padding: 5px 40px 5px 40px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align:center;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+a.withdrawBackButtonSM{
+    background-color:#FF6C0D;
+    font-size:16px;
+    padding: 10px 20px 10px 20px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+}

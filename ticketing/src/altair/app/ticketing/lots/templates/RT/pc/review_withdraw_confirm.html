@@ -6,8 +6,8 @@
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
-    <a href="javascript: void(0)" onclick="document.withdrawForm.submit();" style="background-color:#FF6C0D;font-size:16px;padding: 5px 40px 5px 40px;color:white;border-radius: 7px;text-decoration: none; text-align:center;">はい</a>
-    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:16px;padding: 5px 40px 5px 40px;color:white;border-radius: 7px;text-decoration: none; text-align:center;">いいえ</a>
+    <a href="javascript: void(0)" onclick="document.withdrawForm.submit();" class="withdrawConfirmButtonPC">はい</a>
+    <a href="${request.route_path('lots.review.index')}" class="withdrawConfirmButtonPC">いいえ</a>
 </form>
 <span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
 </div>
@@ -15,7 +15,7 @@
 %if error_msg:
 <div align="center" style="font-size:20px">${error_msg}</div>
 <div align="center">
-    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:16px;padding: 10px 20px 10px 20px;color:white;border-radius: 7px;text-decoration: none;">入力画面に戻る</a>
+    <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonPC">入力画面に戻る</a>
 </div>
 %endif
 
