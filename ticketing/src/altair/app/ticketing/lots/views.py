@@ -679,6 +679,7 @@ class LotReviewView(object):
             entry_controller=entry_controller,
             timestamp=timestamp,
             can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
+            can_withdraw_show=self.context.check_withdraw_show(self.request),
             now=get_now(self.request))
 
 
