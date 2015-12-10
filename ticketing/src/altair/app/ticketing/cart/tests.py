@@ -1034,6 +1034,8 @@ class ReserveViewTests(unittest.TestCase):
                         'seats': [{'l0_id': 's0', 'name': u''},
                                   {'l0_id': 's1', 'name': u''}],
                         'unit_template': u'{{num}}枚',
+                        'first_product_item_quantity': 1,
+                        'product_item_count': 1
                         }
                     ],
                 'total_amount': '200',

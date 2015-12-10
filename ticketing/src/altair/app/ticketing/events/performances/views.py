@@ -370,7 +370,7 @@ class Performances(BaseView):
             direction = 'asc'
 
         query = slave_session.query(Performance) \
-            .join(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
+            .outerjoin(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
             .filter(Performance.event_id == self.context.event.id)
 
         if self.request.params.get('format') == 'xml':

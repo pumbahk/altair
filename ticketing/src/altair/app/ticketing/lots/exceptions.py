@@ -21,3 +21,6 @@ class OverEntryLimitPerPerformanceException(OverEntryLimitException):
     def __init__(self, performance_name, entry_limit, *args, **kwargs):
         super(OverEntryLimitPerPerformanceException, self).__init__(entry_limit, *args, **kwargs)
         self.performance_name = performance_name
+
+class LotEntryWithdrawException(Exception):
+    pass

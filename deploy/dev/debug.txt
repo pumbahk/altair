@@ -1,0 +1,356 @@
+Installing 'zc.buildout', 'setuptools'.
+We have the distribution that satisfies 'zc.buildout==2.3.1'.
+We have the distribution that satisfies 'setuptools==12.2'.
+Adding find link 'https://pypi.python.org/packages/source/c/certifi/certifi-1.0.1.tar.gz#md5=45f5cb94b8af9e1df0f9450a8f61b790' from setuptools 12.2
+Adding find link 'https://pypi.python.org/packages/source/w/wincertstore/wincertstore-0.2.zip#md5=ae728f2f007185648d0c7a8679b361e2' from setuptools 12.2
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.versiontools'
+Not found: ['file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0']
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../ticketing'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'paster_plugins'
+  warnings.warn(msg)
+/Users/yukiko.kumabe/altair/deploy/dev/eggs/setuptools-12.2-py2.7.egg/setuptools/dist.py:291: UserWarning: The version specified ('201509181709.dca34e4') is an invalid version, this may not work as expected with newer versions of setuptools, pip, and PyPI. Please see PEP 440 for more details.
+  "details." % self.metadata.version
+warning: no files found matching '*.ico' under directory 'ticketing'
+warning: no files found matching '*.png' under directory 'ticketing'
+warning: no files found matching '*.css' under directory 'ticketing'
+warning: no files found matching '*.gif' under directory 'ticketing'
+warning: no files found matching '*.jpg' under directory 'ticketing'
+warning: no files found matching '*.pt' under directory 'ticketing'
+warning: no files found matching '*.txt' under directory 'ticketing'
+warning: no files found matching '*.mak' under directory 'ticketing'
+warning: no files found matching '*.mako' under directory 'ticketing'
+warning: no files found matching '*.js' under directory 'ticketing'
+warning: no files found matching '*.html' under directory 'ticketing'
+warning: no files found matching '*.xml' under directory 'ticketing'
+/Users/yukiko.kumabe/altair/deploy/dev/eggs/setuptools-12.2-py2.7.egg/pkg_resources/__init__.py:2512: PEP440Warning: 'altair.app.ticketing (201509181709.dca34e4)' is being parsed as a legacy, non PEP 440, version. You may find odd behavior and sort order. In particular it will be sorted as less than 0.0. It is recommend to migrate to PEP 440 compatible versions.
+  PEP440Warning,
+use_date_versioning
+version = 201509181709.dca34e4
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../cms'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'paster_plugins'
+  warnings.warn(msg)
+warning: no files found matching '*.rst'
+warning: no files found matching '*.ico' under directory 'altaircms'
+warning: no files found matching '*.png' under directory 'altaircms'
+warning: no files found matching '*.css' under directory 'altaircms'
+warning: no files found matching '*.gif' under directory 'altaircms'
+warning: no files found matching '*.jpg' under directory 'altaircms'
+warning: no files found matching '*.pt' under directory 'altaircms'
+warning: no files found matching '*.txt' under directory 'altaircms'
+warning: no files found matching '*.mak' under directory 'altaircms'
+warning: no files found matching '*.mako' under directory 'altaircms'
+warning: no files found matching '*.js' under directory 'altaircms'
+warning: no files found matching '*.html' under directory 'altaircms'
+warning: no files found matching '*.xml' under directory 'altaircms'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../newsletter'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'paster_plugins'
+  warnings.warn(msg)
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../commons'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'paster_plugins'
+  warnings.warn(msg)
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.acquisition'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.alembic_paste'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.auth'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.augus'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'test_require'
+  warnings.warn(msg)
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.browserid'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.cartbot'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.cdnpath'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.devproxy'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.encodingfixer'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.exclog'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.extracodecs'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.findable_label'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.formhelpers'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.gaq'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.grid'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.httpsession'
+/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/distutils/dist.py:267: UserWarning: Unknown distribution option: 'extra_require'
+  warnings.warn(msg)
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.keybreak'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.log'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.logicaldeleting'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.metadata'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.mobile'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.models'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.mq'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.multicheckout'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.now'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.preview'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.pshell'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.pyramid_assets'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.pyramid_boto'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.pyramid_tz'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.queryprofile'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.rakuten_auth'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.request'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.saannotation'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.sqla'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.sqlahelper'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.viewhelpers'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.preview'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.extracodecs'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.metadata'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.svg'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.response'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.multilock'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.samarker'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.dynpredicate'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.pyramid_dynamic_renderer'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.timeparse'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.httphelpers'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.mailhelpers'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.jis'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.types'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.devproxy'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../altairlib/altair.cartbot'
+Develop: '/Users/yukiko.kumabe/altair/deploy/dev/../../tools/alshain'
+Installing 'zc.recipe.egg'.
+We have the distribution that satisfies 'zc.recipe.egg==1.3.2'.
+Installing 'z3c.recipe.filetemplate'.
+We have the distribution that satisfies 'z3c.recipe.filetemplate==2.2.0'.
+Installing 'z3c.recipe.mkdir'.
+We have the distribution that satisfies 'z3c.recipe.mkdir==0.5'.
+Installing 'collective.recipe.cmd'.
+We have the distribution that satisfies 'collective.recipe.cmd==0.6'.
+Installing 'collective.recipe.supervisor'.
+We have the distribution that satisfies 'collective.recipe.supervisor==0.20.post1'.
+Installing 'hexagonit.recipe.download'.
+We have the distribution that satisfies 'hexagonit.recipe.download==1.7'.
+Installing 'collective.recipe.solrinstance'.
+We have the distribution that satisfies 'collective.recipe.solrinstance==5.0.1'.
+Getting required 'Genshi==0.7'
+We have the distribution that satisfies 'Genshi==0.7'.
+Installing 'collective.recipe.omelette'.
+We have the distribution that satisfies 'collective.recipe.omelette==0.15'.
+Installing egg-scripts.
+Installing 'altair.app.ticketing', 'altair_cms', 'altair_newsletter', 'pyramid', 'gunicorn', 'altair.acquisition', 'altair.alembic_paste', 'altair.augus', 'altair.auth', 'altair.browserid', 'altair.cartbot', 'altair.cdnpath', 'altair.devproxy', 'altair.encodingfixer', 'altair.exclog', 'altair.extracodecs', 'altair.findable_label', 'altair.formhelpers', 'altair.grid', 'altair.httpsession', 'altair.keybreak', 'altair.log', 'altair.logicaldeleting', 'altair.metadata', 'altair.mobile', 'altair.models', 'altair.mq', 'altair.multicheckout', 'altair.now', 'altair.preview', 'altair.pyramid_assets', 'altair.pyramid_boto', 'altair.pyramid_tz', 'altair.queryprofile', 'altair.rakuten_auth', 'altair.request', 'altair.saannotation', 'altair.sqla', 'altair.sqlahelper', 'altair.versiontools', 'altair.viewhelpers', 'altair_gaq', 'altair_pshell', 'altair.response', 'altair.multilock', 'altair.samarker', 'altair.dynpredicate', 'altair.pyramid_dynamic_renderer', 'altair.timeparse', 'altair.httphelpers', 'altair.mailhelpers', 'altair.jis', 'altair.types', 'alembic'.
+We have a develop egg: altair.app.ticketing 201509181709.dca34e4
+Adding find link 'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0' from altair.app.ticketing 201509181709.dca34e4
+We have a develop egg: altair-cms 0.0
+We have a develop egg: altair-newsletter 0.0
+We have the distribution that satisfies 'pyramid==1.5.1'.
+We have the distribution that satisfies 'gunicorn==18.2moriyoshi1'.
+We have a develop egg: altair.acquisition 0.0
+We have a develop egg: altair.alembic-paste 0.0.1
+We have a develop egg: altair.augus 0.1.1
+We have a develop egg: altair.auth 1.0
+We have a develop egg: altair.browserid 1.0
+We have a develop egg: altair.cartbot 0.0.0
+We have a develop egg: altair.cdnpath 0.0
+We have a develop egg: altair.devproxy 0.2.0
+We have a develop egg: altair.encodingfixer 0.0
+We have a develop egg: altair.exclog 0.1
+We have a develop egg: altair.extracodecs 0.0.0
+We have a develop egg: altair.findable-label 0.0.0
+We have a develop egg: altair.formhelpers 0.0.1
+We have a develop egg: altair.grid 0.0
+We have a develop egg: altair.httpsession 0.0.0
+We have a develop egg: altair.keybreak 0.1
+We have a develop egg: altair.log 0.0.1
+We have a develop egg: altair.logicaldeleting 0.0
+We have a develop egg: altair.metadata 0.0
+We have a develop egg: altair.mobile 0.0.1
+We have a develop egg: altair.models 0.0
+We have a develop egg: altair.mq 1.0
+We have a develop egg: altair.multicheckout 0.0
+We have a develop egg: altair.now 0.0
+We have a develop egg: altair.preview 0.0
+We have a develop egg: altair.pyramid-assets 0.0.1
+We have a develop egg: altair.pyramid-boto 0.0.2
+We have a develop egg: altair.pyramid-tz 0.0.0
+We have a develop egg: altair.queryprofile 0.0
+We have a develop egg: altair.rakuten-auth 0.0.0
+We have a develop egg: altair.request 0.0.0
+We have a develop egg: altair.saannotation 0.0
+We have a develop egg: altair.sqla 1.0
+We have a develop egg: altair.sqlahelper 0.0
+We have a develop egg: altair.versiontools 1.0
+We have a develop egg: altair.viewhelpers 0.0
+We have a develop egg: altair-gaq 0.0.0
+We have a develop egg: altair-pshell 0.0.0
+We have a develop egg: altair.response 0.1
+We have a develop egg: altair.multilock 0.0
+Develop distribution: altair.multilock 0.0
+uses namespace packages but the distribution does not require setuptools.
+We have the distribution that satisfies 'setuptools==12.2'.
+Adding find link 'https://pypi.python.org/packages/source/c/certifi/certifi-1.0.1.tar.gz#md5=45f5cb94b8af9e1df0f9450a8f61b790' from setuptools 12.2
+Adding find link 'https://pypi.python.org/packages/source/w/wincertstore/wincertstore-0.2.zip#md5=ae728f2f007185648d0c7a8679b361e2' from setuptools 12.2
+We have a develop egg: altair.samarker 0.0.1
+We have a develop egg: altair.dynpredicate 0.0.0
+We have a develop egg: altair.pyramid-dynamic-renderer 0.0.0
+We have a develop egg: altair.timeparse 0.0
+We have a develop egg: altair.httphelpers 0.0.0
+We have a develop egg: altair.mailhelpers 0.0.0
+We have a develop egg: altair.jis 0.0
+We have a develop egg: altair.types 0.0.0
+We have the distribution that satisfies 'alembic==0.6.3'.
+Getting required 'Mako==1.0.0'
+We have the distribution that satisfies 'Mako==1.0.0'.
+Getting required 'SQLAlchemy==0.7.9'
+We have the distribution that satisfies 'SQLAlchemy==0.7.9'.
+Getting required 'pyOpenSSL==0.14'
+We have the distribution that satisfies 'pyOpenSSL==0.14'.
+Getting required 'parsedatetime==1.4'
+We have the distribution that satisfies 'parsedatetime==1.4'.
+Getting required 'mock==1.0.0'
+We have the distribution that satisfies 'mock==1.0.0'.
+Getting required 'coverage==3.5.3'
+We have the distribution that satisfies 'coverage==3.5.3'.
+Getting required 'nose==1.2.1'
+We have the distribution that satisfies 'nose==1.2.1'.
+Getting required 'sqlahelper==1.0'
+We have the distribution that satisfies 'sqlahelper==1.0'.
+Getting required 'pastedeploy==1.5.0'
+We have the distribution that satisfies 'pastedeploy==1.5.0'.
+Getting required 'zope.interface==4.0.1'
+We have the distribution that satisfies 'zope.interface==4.0.1'.
+Getting required 'webob==1.4.post1'
+We have the distribution that satisfies 'webob==1.4.post1'.
+Getting required 'repoze.who==2.0'
+We have the distribution that satisfies 'repoze.who==2.0'.
+Getting required 'pyramid-dogpile-cache==0.0.1'
+We have the distribution that satisfies 'pyramid-dogpile-cache==0.0.1'.
+Getting required 'js.bootstrap==2.1.1'
+  required by altair.app.ticketing 201509181709.dca34e4.
+We have the distribution that satisfies 'js.bootstrap==2.1.1'.
+Getting required 'fanstatic==0.14a'
+We have the distribution that satisfies 'fanstatic==0.14a'.
+Getting required 'pytz==2013b'
+We have the distribution that satisfies 'pytz==2013b'.
+Getting required 'beaker==1.6.4'
+We have the distribution that satisfies 'beaker==1.6.4'.
+Getting required 'boto==2.6.0'
+We have the distribution that satisfies 'boto==2.6.0'.
+Getting required 'standardenum==0.1'
+We have the distribution that satisfies 'standardenum==0.1'.
+Getting required 'six==1.5.2'
+We have the distribution that satisfies 'six==1.5.2'.
+Getting required 'venusian==1.0a7'
+We have the distribution that satisfies 'venusian==1.0a7'.
+Getting required 'tornado==3.0.1'
+We have the distribution that satisfies 'tornado==3.0.1'.
+Getting required 'pika==0.9.12'
+We have the distribution that satisfies 'pika==0.9.12'.
+Getting required 'markupsafe==0.15'
+We have the distribution that satisfies 'markupsafe==0.15'.
+Getting required 'uamobile==0.3.0moriyoshi4'
+We have the distribution that satisfies 'uamobile==0.3.0moriyoshi4'.
+Getting required 'radix==0.5'
+We have the distribution that satisfies 'radix==0.5'.
+Getting required 'zope.sqlalchemy==0.7.1'
+We have the distribution that satisfies 'zope.sqlalchemy==0.7.1'.
+Getting required 'redis==2.7.1'
+We have the distribution that satisfies 'redis==2.7.1'.
+Getting required 'js.jqgrid-ts==4.4.4ts0'
+We have the distribution that satisfies 'js.jqgrid-ts==4.4.4ts0'.
+Getting required 'zope.deprecation==4.0.0'
+We have the distribution that satisfies 'zope.deprecation==4.0.0'.
+Getting required 'wtforms==1.0.2'
+We have the distribution that satisfies 'wtforms==1.0.2'.
+Getting required 'twisted==13.0.0'
+We have the distribution that satisfies 'twisted==13.0.0'.
+Getting required 'gevent==1.0'
+We have no distributions for gevent that satisfies 'gevent==1.0'.
+Getting distribution for 'gevent==1.0'.
+Running easy_install:
+"/usr/bin/python" "-c" "from setuptools.command.easy_install import main; main()" "-mZUNxd" "/Users/yukiko.kumabe/altair/deploy/dev/eggs/tmpRFFXLl" "-q" "/var/folders/3q/99s4b4kj1299fkxgzjd1wzchfx574j/T/tmpehSV3xget_dist/gevent-1.0.tar.gz"
+path=/Users/yukiko.kumabe/altair/deploy/dev/eggs/setuptools-12.2-py2.7.egg
+
+In file included from gevent/gevent.core.c:302:
+In file included from gevent/libev.h:2:
+libev/ev.c:467:48: warning: '/*' within block comment [-Wcomment]
+/*#define MIN_INTERVAL  0.00000095367431640625 /* 1/2**20, good till 2200 */
+                                               ^
+libev/ev.c:935:42: error: '_Noreturn' keyword must precede function declarator
+  ecb_inline void ecb_unreachable (void) ecb_noreturn;
+                                         ^~~~~~~~~~~~
+  _Noreturn 
+libev/ev.c:738:26: note: expanded from macro 'ecb_noreturn'
+  #define ecb_noreturn   _Noreturn
+                         ^
+libev/ev.c:1311:31: warning: 'extern' variable has an initializer [-Wextern-initializer]
+  EV_API_DECL struct ev_loop *ev_default_loop_ptr = 0; /* needs to be initialised to make it a definition despite extern */
+                              ^
+libev/ev.c:1482:7: warning: unused variable 'ocur_' [-Wunused-variable]
+      array_needsize (ANPENDING, pendings [pri], pendingmax [pri], w_->pending, EMPTY2);
+      ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:1493:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (W, rfeeds, rfeedmax, rfeedcnt + 1, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:1620:7: warning: unused variable 'ocur_' [-Wunused-variable]
+      array_needsize (int, fdchanges, fdchangemax, fdchangecnt, EMPTY2);
+      ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+In file included from gevent/gevent.core.c:302:
+In file included from gevent/libev.h:2:
+In file included from libev/ev.c:2168:
+libev/ev_kqueue.c:50:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (struct kevent, kqueue_changes, kqueue_changemax, kqueue_changecnt, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+In file included from gevent/gevent.core.c:302:
+In file included from gevent/libev.h:2:
+In file included from libev/ev.c:2174:
+libev/ev_poll.c:66:7: warning: unused variable 'ocur_' [-Wunused-variable]
+      array_needsize (struct pollfd, polls, pollmax, pollcnt, EMPTY2);
+      ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:3332:34: warning: '&' within '|' [-Wbitwise-op-parentheses]
+  fd_change (EV_A_ fd, w->events & EV__IOFDSET | EV_ANFD_REIFY);
+                       ~~~~~~~~~~^~~~~~~~~~~~~ ~
+libev/ev.c:3332:34: note: place parentheses around the '&' expression to silence this warning
+  fd_change (EV_A_ fd, w->events & EV__IOFDSET | EV_ANFD_REIFY);
+                                 ^
+                       (                      )
+libev/ev.c:3371:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (ANHE, timers, timermax, ev_active (w) + 1, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:4041:5: warning: unused variable 'ocur_' [-Wunused-variable]
+    array_needsize (ev_idle *, idles [ABSPRI (w)], idlemax [ABSPRI (w)], active, EMPTY2);
+    ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:4081:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (ev_prepare *, prepares, preparemax, preparecnt, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:4266:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (ev_fork *, forks, forkmax, forkcnt, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+libev/ev.c:4349:3: warning: unused variable 'ocur_' [-Wunused-variable]
+  array_needsize (ev_async *, asyncs, asyncmax, asynccnt, EMPTY2);
+  ^
+libev/ev.c:1444:22: note: expanded from macro 'array_needsize'
+      int ecb_unused ocur_ = (cur);                                     \
+                     ^
+13 warnings and 1 error generated.
+Running '/bin/sh /private/var/folders/3q/99s4b4kj1299fkxgzjd1wzchfx574j/T/easy_install-gP48Ot/gevent-1.0/libev/configure > configure-output.txt' in /private/var/folders/3q/99s4b4kj1299fkxgzjd1wzchfx574j/T/easy_install-gP48Ot/gevent-1.0/build/temp.macosx-10.10-intel-2.7/libev
+error: Setup script exited with error: command 'cc' failed with exit status 1
+An error occurred when trying to install gevent 1.0. Look above this message for any errors that were output by easy_install.
+While:
+  Installing egg-scripts.
+  Getting distribution for 'gevent==1.0'.
+Error: Couldn't install: gevent 1.0

@@ -1,8 +1,12 @@
 <%inherit file="${context['main_template'].uri}" />
+%if not error_msg:
 <div align="center" style="font-size:20px">以下の抽選申込を取消いたしました</div>
+%else:
+<div align="center" style="font-size:20px">${error_msg}</div>
+%endif
 <br/>
 <div align="center">
-    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:16px;padding: 10px 20px 10px 20px;color:white;border-radius: 7px;text-decoration: none;">予約の詳細ページに戻る</a>
+    <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonPC">入力画面に戻る</a>
 </div>
 <br/>
 <div class="confirmBox">
@@ -11,7 +15,6 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">

@@ -84,6 +84,11 @@ function updateSalesSegmentGroupById(j) {
       ${ch.form_item(form.custom_timezone_label)}
       ${ch.form_item(form.auth_type)}
       ${ch.form_item(form.mail_send_now)}
+      %if org_withdraw:
+      ${ch.form_item(form.lot_entry_user_withdraw)}
+      %else:
+      ${ch.form_item(form.lot_entry_user_withdraw, disabled='disabled')}
+      %endif
     </fieldset>
     <fieldset>
         <legend>販売区分情報</legend>

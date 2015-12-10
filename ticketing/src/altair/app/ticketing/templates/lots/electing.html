@@ -91,15 +91,15 @@ ${tabs.tabs(request)}
   </p>
   <div class="pull-left">
     <p>
-      <button ${"disabled" if electing.blockers else ""} id="btn-election"
+      <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
               class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
         当選確定する
       </button>
-      <button ${"disabled" if electing.blockers else ""} id="btn-rejection"
+      <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
               class="btn btn-large btn-info" style="margin-right: 5px;">
         落選確定する
       </button>
-      <button id="btn-entries-close" ${"disabled" if not closer.can_close() else ""} class="btn btn-large btn-warning"
+      <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
               style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-original-title=""
               data-content="当落の確定していない申込があるか、メールが未送信のためオーソリ開放できません" >
         オーソリ開放する
