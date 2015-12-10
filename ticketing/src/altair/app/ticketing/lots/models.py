@@ -745,6 +745,27 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.is_elected or self.is_ordered:
             raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。")
 
+    def check_withdraw_show(self, request):
+        organization_setting = OrganizationSetting.query \
+                                    .filter_by(organization_id=self.organization_id) \
+                                    .first()
+        if organization_setting:
+            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
+
+        if not self.lot.lot_entry_user_withdraw:
+            return False
+        if not lot_entry_user_withdraw:
+            return False
+        now = datetime.now()
+        if not self.lot.available_on(now):
+            return False
+        if self.is_canceled or self.is_withdrawn:
+            return False
+        if self.is_elected or self.is_ordered:
+            return True
+        return True
+
+
 
     def delete(self):
         self.deleted_at = datetime.now()
