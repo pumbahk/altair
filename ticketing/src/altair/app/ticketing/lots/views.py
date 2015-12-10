@@ -790,8 +790,8 @@ class LotReviewWithdrawView(object):
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
         tel_no = lot_entry.shipping_address.tel_1 or lot_entry.shipping_address.tel_2
-        timestamp = get_now(self.request)
-        now = get_now(self.request)
+        timestamp = datetime.now()
+        now = datetime.now()
 
         return dict(
             entry=lot_entry,
