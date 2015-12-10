@@ -28,8 +28,8 @@
 </div>
 %endif
 %if error_msg:
-<div align="center" style="font-size:20px">${error_msg}</div>
-<div align="center">
+<div align="center" style="font-size:16px;height:60px;margin:10px;">${error_msg}</div>
+<div align="center" style="height:30px;margin:10px;">
     <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonSP">入力画面に戻る</a>
 </div>
 %endif
@@ -40,22 +40,38 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
-    <div class="confirmBoxText">
-      % if entry.is_ordered:
-抽選の結果、お客様はご当選されました。
-<a href="/orderreview/guest" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
-      % elif entry.is_rejected:
-抽選の結果、お客様は残念ながら落選となりました。
-      % elif not entry.lot.is_elected():
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
-      % endif
-    </div>
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+  <div class="confirmBox">
+    <dl>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dd>
+        <div class="confirmBoxText">
+        お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+        </div>
+      </dd>
+    </dl>
   </div>
-</div>
+%else:
+  <div class="confirmBox">
+    <dl>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dd>
+        <div class="confirmBoxText">
+        % if h.lot_entry_display_status(entry, now) == u'当選表示':
+抽選の結果、お客様はご当選されました。
+<a href="/orderreview/guest" target="_blank">■購入履歴確認ページ</a>をご確認ください。<br/>
+予約番号は ${entry.entry_no} です。
+        % elif h.lot_entry_display_status(entry, now) == u'落選表示':
+抽選の結果、お客様は残念ながら落選となりました。
+        % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+        % endif
+        </div>
+      </dd>
+    </dl>
+  </div>
+%endif
+
 
 <div class="settlementBox">
   <div class="settlementBoxInner">

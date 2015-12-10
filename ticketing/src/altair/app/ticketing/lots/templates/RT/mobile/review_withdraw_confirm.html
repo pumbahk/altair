@@ -19,9 +19,9 @@
 <span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
 %endif
 %if error_msg:
-<div align="center" style="font-size:10px">${error_msg}</div>
-<div align="center" style="height:10px;margin:5px;">
-    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:16px;padding: 10px 20px 10px 20px;color:white;border-radius: 7px;text-decoration: none;">入力画面に戻る</a>
+<div align="center" style="font-size:10px;height:30px;margin:5px;">${error_msg}</div>
+<div align="center" style="height:30px;margin:8px;">
+    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none;">入力画面に戻る</a>
 </div>
 %endif
 
@@ -31,15 +31,28 @@
 
 <%mobile:form_header>抽選結果</%mobile:form_header>
 <div>
-% if entry.is_ordered:
+%if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選待ち
+%else:
+<span style="color:red;">
+${h.lot_entry_status_as_string(entry)}
+</span>
+%endif
+<%mobile:band bgcolor="#ffffdd">
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
-<a href="/orderreview/guest" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
-% elif entry.is_rejected:
-抽選の結果、お客様は残念ながら落選となりました。
-% elif not entry.lot.is_elected():
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
-% endif
-</div>
+<a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
+予約番号は ${entry.entry_no} です。
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
+抽選の結果、お客様は残念ながら落選となりました。<br />
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
+抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+%endif
+</%mobile:band>
+
 
 <div>
 <%mobile:header>お申込内容</%mobile:header>
