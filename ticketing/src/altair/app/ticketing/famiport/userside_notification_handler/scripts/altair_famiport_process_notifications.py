@@ -53,7 +53,7 @@ def main(argv=sys.argv[1:]):
                         notification.payment_reserve_number,
                         notification.ticketing_reserve_number))
     except AlreadyStartUpError:
-        logger.error('another instance of sej_notification is running')
+        logger.error('another instance of altair_famiport_process_notifications is running')
 
 if __name__ == u"__main__":
     main(sys.argv[1:])

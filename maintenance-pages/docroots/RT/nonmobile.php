@@ -241,7 +241,7 @@
 			<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
 			<li class="grpLast"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
 		  </ul>
-		  <p id="copyright">Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. </p>
+		  <p id="copyright">&copy; TicketStar, Inc. </p>
 		</div><!-- /div#companyFooter -->
 	  </div><!-- /div#grpFooter -->
 	</div><!-- /div#grpRakutenLinkArea -->

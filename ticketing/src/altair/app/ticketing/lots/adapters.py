@@ -652,6 +652,7 @@ class LotEntryController(object):
         """
         return (
             self.lot.available_on(now) and
+            self.lot.lot_entry_user_withdraw and
             not self._entry.is_elected and
             not self._entry.is_rejected and
             not self._entry.is_canceled and

@@ -3,6 +3,7 @@
 import re
 from webob.multidict import MultiDict
 import itertools
+from datetime import datetime
 import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
@@ -298,6 +299,8 @@ def lot_entry_status_as_string(entry):
     return u'???' # never get here
 
 def lot_entry_display_status(entry, now):
+    if not now:
+        now = datetime.now()
     if entry.is_withdrawn:
         return u'抽選申込取消'
     # 当選or注文済み
@@ -372,11 +375,7 @@ def announce_time_label(lot):
 def withdraw_time_label(entry):
     if not entry or not entry.lot:
         return ""
-    if not timezone_label(entry.lot):
-        return japanese_datetime(entry.withdrawn_at)
-    withdrawn_datetime = japanese_datetime(entry.withdrawn_at)
-    withdrawn_datetime = withdrawn_datetime[0:withdrawn_datetime.find(')', 0) +1]
-    return withdrawn_datetime + ' ' + timezone_label(entry.lot)
+    return japanese_datetime(entry.withdrawn_at)
 
 def render_label(field):
     required = is_required(field)
