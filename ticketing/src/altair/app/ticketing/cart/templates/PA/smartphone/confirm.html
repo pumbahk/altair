@@ -78,9 +78,9 @@
             %for product in cart.products:
                 <tr id="commission">
                   % if len(product.items) == 1:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/GM/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/PA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
                   % else:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/GM/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/PA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
                   % endif
                   <td>&nbsp;</td>
                   <td>&nbsp;</td>
@@ -215,7 +215,7 @@
           <div id="mailMagazineBoxInner">
             <div class="dispBox">
               <%m:header>メールマガジンの配信</%m:header>
-              ご利用いただいた方には、GreeN Musicからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
+              ご利用いただいた方には、パンクラスからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
                 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
                 <div${subscribed and u' class="subscribed"' or u''|n}>
                   <div>
