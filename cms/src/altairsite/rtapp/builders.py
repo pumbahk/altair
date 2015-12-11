@@ -123,7 +123,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
             edict["event_id"] = pg[0].event_id
             edict["backend_id"] = None  # FIXME: mm...
             edict["title"] = pg[0].event.title
-            edict["performances"] = self._make_performance_list(pg)
+            edict["performances"] = self._make_performance_list(request, pg)
             res["events"].append(edict)
         return res
 
