@@ -189,20 +189,23 @@ class OrderInfoForm(Form):
     payment_due_at = DateTimeField(
         label=u'支払期日',
         validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M:%S',
-        widget=OurDateTimeWidget()
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+        missing_value_defaults=dict(year='1900', month='1', day='1', hour='0', minute='0', second='59')
     )
     issuing_start_at = DateTimeField(
         label=u'発券開始日時',
         validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M:%S',
-        widget=OurDateTimeWidget()
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+        missing_value_defaults=dict(year='1900', month='1', day='1', hour='0', minute='0', second='00')
     )
     issuing_end_at = DateTimeField(
         label=u'発券期限日時',
         validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M:%S',
-        widget=OurDateTimeWidget()
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+        missing_value_defaults=dict(year='1900', month='1', day='1', hour='0', minute='0', second='59')
     )
 
 
