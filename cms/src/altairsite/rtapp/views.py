@@ -41,14 +41,17 @@ def api_genre_list(self, request):
 @view_config(route_name="api.performance_list", request_method="GET", renderer='json')
 def api_performance_list(self, request):
     pquery = api.get_performance_list_query(session, request, organization_id=8)
+
+    '''FIXME:ページネーションのいい解が見つかるまで保留
     performances = paginate.Page(
             pquery,
             page=int(request.params.get('page', 0)),
             items_per_page=50
         )
-
+    '''
+    
     builder = PerformanceGroupListResponseBuilder()
-    res = builder.build_response(request, performances.items)
+    res = builder.build_response(request, pquery.all())
 
     return res
 
