@@ -5,6 +5,10 @@ from urlparse import urljoin
 from altaircms.helpers.link import get_link_from_topic, get_mobile_link_from_topic
 from altaircms.linklib import add_params_to_url
 from altair.pyramid_assets import get_resolver
+from .helpers import (
+    get_lot_id_from_url,
+    is_performance_on_sale
+)
 import json
 import re
 
@@ -66,7 +70,7 @@ class GenreListResponseBuilder(object):
 
 
 class BaseListResponseBuilder(object):
-    def _make_performance_list(self, performances):
+    def _make_performance_list(self, request, performances):
             plist = []
             if performances is None:
                 return plist
@@ -80,6 +84,8 @@ class BaseListResponseBuilder(object):
                 pdict["venue"] = p.venue
                 pdict["prefecture"] = p.prefecture
                 pdict["sales_segments"] = self._make_sales_segment_list(p)
+                pdict["lot_id"] = get_lot_id_from_url(p.purchase_link)
+                pdict["on_sale"] = is_performance_on_sale(p, request.now)
                 plist.append(pdict)
 
             return plist
@@ -130,6 +136,6 @@ class EventDetailResponseBuilder(BaseListResponseBuilder):
         res['title'] = event.title
         res['subtitle'] = event.subtitle
         res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
-        res['performances'] = self._make_performance_list(performances)
+        res['performances'] = self._make_performance_list(request, performances)
 
         return res

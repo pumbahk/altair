@@ -59,10 +59,10 @@ def api_performance_list(self, request):
 @view_config(route_name="api.event_detail", request_method="GET", renderer='json')
 def api_event_detail(self, request):
     event = api.get_event(session, request)
-    performances = grep_prfms_in_sales(event.performances)
+    # performances = grep_prfms_in_sales(event.performances)
     widget_summary = api.get_widget_summary(session, event)
     builder = EventDetailResponseBuilder()
-    res = builder.build_response(request, event, performances, widget_summary)
+    res = builder.build_response(request, event, event.performances, widget_summary)
     return res
 
 
