@@ -1,0 +1,23 @@
+<html>
+<head>
+  <title>パンクラス 購入確認ページ</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+  <div style="text-align: center; background-color: #46D21B">
+    <a href="http://pancrase.tstar.jp/">
+      <img src="${request.static_url('altair.app.ticketing.orderreview:static/PA/mobile/images/logo_mobile.gif')}"
+           alt="パンクラス" width="100%"/>
+    </a>
+  </div>
+  
+<%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a>
+  <div>
+     &copy; TicketStar, Inc. 
+  </div>
+</body>
+</html>

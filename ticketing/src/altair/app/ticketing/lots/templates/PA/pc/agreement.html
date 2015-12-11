@@ -1,0 +1,27 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+<form id="form1" name="form1" method="post" action="${request.current_route_path()}">
+  <input type="hidden" name="return_to" value=${return_to} />
+
+  ${agreement_body}
+
+  <input type="checkbox" name="agree" value="agree" id="agree" />
+  <label for="agree">上記の注意事項を確認、同意し、公演に申し込みます。</label><br>
+
+  <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.lots:static/PA/pc/img/common/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+</form>

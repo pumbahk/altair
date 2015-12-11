@@ -320,7 +320,7 @@ class _89ersExtraForm(ExtraForm):
         u"会員種別選択",
         validators=[Required()],
         description=SwitchingMarkup(
-            pc_or_smartphone_text=u'<a href="http://www.89ers.jp/booster/index.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>',
+            pc_or_smartphone_text=u'<a href="http://www.89ers.jp/booster/index.html" target="_blank"><span><small>会員種別についてはこちら</small></span></a>',
             mobile_text=u'<a href="http://www.mobile89ers.jp/imode/cgi-bin/pgget.dll?pg=/i/booster/club/cont/club_p01_00">※会員種別についてはこちら</a>'
             )
         )
