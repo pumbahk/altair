@@ -18,7 +18,7 @@
 %else:
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
     <div class="confirmBoxText">
       % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
@@ -144,10 +144,10 @@
   </div>
 </div>
 
-%if entry_controller.can_withdraw(timestamp) and can_withdraw:
+%if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">
-        <input type="submit" style="background-color:#FF6C0D;font-size:20px;padding: 10px 60px 10px 60px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">
+        <input type="submit" class="withdrawSubmit" value="取消">
     </div>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
