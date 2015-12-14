@@ -3,9 +3,9 @@
 <div align="center">
 <h1>この抽選申込を取消しますか?</h1>
 </div>
-<div align="center" style="height:30px;margin:10px;">
+<div class="withdrawConfirmBox">
 <table>
-<tr><td style="width:200px" align="center">
+<tr><td>
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
@@ -13,7 +13,7 @@
     <a href="javascript: void(0)" onclick="document.withdrawForm.submit();" class="withdrawConfirmButtonSP">はい</a>
 </form>
 </td>
-<td style="width:200px" align="center">
+<td>
 <form method="POST" id="withdrawBackForm" name="withdrawBackForm" action="${request.route_path('lots.review.index')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
@@ -28,8 +28,8 @@
 </div>
 %endif
 %if error_msg:
-<div align="center" style="font-size:16px;height:60px;margin:10px;">${error_msg}</div>
-<div align="center" style="height:30px;margin:10px;">
+<div class="withdrawErrorInfoBox">${error_msg}</div>
+<div class="withdrawBackBox">
     <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonSP">入力画面に戻る</a>
 </div>
 %endif
