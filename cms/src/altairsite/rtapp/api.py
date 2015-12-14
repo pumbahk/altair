@@ -82,7 +82,7 @@ def get_performance_list_query(session, request, organization_id):
                    .filter(Performance.public == 1) \
                    .filter(or_(Performance.start_on >= dt.now(),
                                Performance.end_on >= dt.now())) \
-                   .order_by(Performance.start_on) \
+                   .order_by(Event.deal_close) \
                    .group_by(Performance.id)
 
     # todo: paramsのフォーマットチェックが必要
