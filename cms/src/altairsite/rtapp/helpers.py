@@ -2,6 +2,9 @@
 
 from datetime import datetime as dt
 from urlparse import urlparse
+import logging
+
+logger = logging.getLogger()
 
 def grep_prfms_in_sales(performances):
     prfms_in_sales = []
@@ -23,8 +26,12 @@ def is_performance_on_sale(performance, dt):
 
 
 def get_lot_id_from_url(url):
+    lot_id = None
     if url is None:
         return None
-    path = urlparse(url).path
-    lot_id = path.split('/entry/')[1]
+    try:
+        path = urlparse(url).path
+        lot_id = path.split('/entry/')[1]
+    except:
+        logger.warn("warn occured while getting lot_id from url: %s", url)
     return lot_id

@@ -113,17 +113,15 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
         return pglist
 
-    def build_response(self, request, performances):
+    def build_response(self, request, events):
         res = {"events": []}
 
-        pgroups = self._grouping_performances(performances)
-
-        for pg in pgroups:
+        for event in events:
             edict = dict()
-            edict["event_id"] = str(pg[0].event_id) if pg[0].event_id else None
-            edict["backend_id"] = str(pg[0].event.backend_id) if pg[0].event.backend_id else None
-            edict["title"] = pg[0].event.title
-            edict["performances"] = self._make_performance_list(request, pg)
+            edict["event_id"] = str(event.id) if event.id else None
+            edict["backend_id"] = str(event.backend_id) if event.backend_id else None
+            edict["title"] = event.title
+            edict["performances"] = self._make_performance_list(request, event.performances)
             res["events"].append(edict)
         return res
 
