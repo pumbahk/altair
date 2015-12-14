@@ -24,7 +24,7 @@ def is_performance_on_sale(performance, dt):
 
 def get_lot_id_from_url(url):
     if url is None:
-        return u""
+        return None
     path = urlparse(url).path
     lot_id = path.split('/entry/')[1]
     return lot_id

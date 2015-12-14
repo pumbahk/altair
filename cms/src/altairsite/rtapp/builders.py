@@ -76,8 +76,8 @@ class BaseListResponseBuilder(object):
                 return plist
             for p in performances:
                 pdict = dict()
-                pdict["id"] = p.id
-                pdict["backend_id"] = p.backend_id
+                pdict["id"] = str(p.id) if p.id else None
+                pdict["backend_id"] = str(p.backend_id) if p.backend_id else None
                 pdict["name"] = p.title
                 pdict["open"] = p.start_on.strftime("%Y-%m-%d %H:%M:%S") if p.start_on else None
                 pdict["close"] = p.end_on.strftime("%Y-%m-%d %H:%M:%S") if p.end_on else None
@@ -120,8 +120,8 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
         for pg in pgroups:
             edict = dict()
-            edict["event_id"] = pg[0].event_id
-            edict["backend_id"] = None  # FIXME: mm...
+            edict["event_id"] = str(pg[0].event_id) if pg[0].event_id else None
+            edict["backend_id"] = str(pg[0].event.backend_id) if pg[0].event.backend_id else None
             edict["title"] = pg[0].event.title
             edict["performances"] = self._make_performance_list(request, pg)
             res["events"].append(edict)
@@ -131,8 +131,8 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 class EventDetailResponseBuilder(BaseListResponseBuilder):
     def build_response(self, request, event, performances, widget_summary):
         res = dict()
-        res['event_id'] = event.id
-        res['backend_id'] = event.backend_id
+        res['event_id'] = str(event.id) if event.id else None
+        res['backend_id'] = str(event.backend_id) if event.backend_id else None
         res['title'] = event.title
         res['subtitle'] = event.subtitle
         res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
