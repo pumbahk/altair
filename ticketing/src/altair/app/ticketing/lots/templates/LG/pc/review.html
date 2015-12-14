@@ -156,10 +156,10 @@
   </div>
 </div>
 % endif
-%if entry_controller.can_withdraw(timestamp) and can_withdraw:
+%if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">
-        <input type="submit" style="background-color:#FF6C0D;font-size:20px;padding: 10px 60px 10px 60px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">
+        <input type="submit" class="withdrawSubmit" value="取消">
     </div>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
