@@ -66,10 +66,10 @@ def api_event_detail(self, request):
 
 @view_config(route_name="api.bookmark_events", request_method="GET", renderer='json')
 def api_bookmark_performance_list(self, request):
-    pquery = api.get_bookmarked_performances(session, request, organization_id=8)
-    performances = pquery.all() if pquery else []
+    equery = api.get_bookmarked_events(session, request, organization_id=8)
+    events = equery.all() if equery else []
 
     builder = PerformanceGroupListResponseBuilder()
-    res = builder.build_response(request, performances)
+    res = builder.build_response(request, events)
 
     return res

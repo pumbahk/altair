@@ -83,7 +83,7 @@ def get_performance_list_query(session, request, organization_id):
                    .filter(or_(Performance.start_on >= dt.now(),
                                Performance.end_on >= dt.now())) \
                    .order_by(Event.deal_close) \
-                   .group_by(Performance.id)
+                   .group_by(Event.id)
 
     # todo: paramsのフォーマットチェックが必要
     # キーワード検索
@@ -203,16 +203,16 @@ def get_performance_list_query(session, request, organization_id):
     return query
 
 
-def get_bookmarked_performances(session, request, organization_id):
+def get_bookmarked_events(session, request, organization_id):
     params = request.GET
     query = None
     if params.get('bookmarks[]'):
         event_ids = params.get('bookmarks[]').split(',')
-        query = session.query(Performance) \
-                       .join(Event, Performance.event_id == Event.id) \
+        query = session.query(Event) \
+                       .join(Performance, Performance.event_id == Event.id) \
                        .filter(Event.organization_id == organization_id) \
                        .filter(Event.id.in_(event_ids)) \
-                       .order_by(Performance.updated_at.desc()) \
-                       .group_by(Performance.id)
+                       .order_by(Event.deal_close) \
+                       .group_by(Event.id)
 
     return query
