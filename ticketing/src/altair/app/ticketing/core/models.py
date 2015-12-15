@@ -516,9 +516,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     code = Column(String(12))
     abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
     subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
-    subtitle2 = Column(Unicode(255), doc=u"公演名副題２", default=u"")
-    subtitle3 = Column(Unicode(255), doc=u"公演名副題３", default=u"")
-    subtitle4 = Column(Unicode(255), doc=u"公演名副題４", default=u"")
+    subtitle2 = Column(Unicode(255), doc=u"公演名副題2", default=u"")
+    subtitle3 = Column(Unicode(255), doc=u"公演名副題3", default=u"")
+    subtitle4 = Column(Unicode(255), doc=u"公演名副題4", default=u"")
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
     open_on = AnnotatedColumn(DateTime, _a_label=_(u"開場"))

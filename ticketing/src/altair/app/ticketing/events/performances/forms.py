@@ -137,21 +137,21 @@ class PerformanceForm(OurForm):
     )
 
     subtitle2 = NullableTextField(
-        label=u'公演名副題２',
+        label=u'公演名副題2',
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
 
     subtitle3 = NullableTextField(
-        label=u'公演名副題３',
+        label=u'公演名副題3',
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
 
     subtitle4 = NullableTextField(
-        label=u'公演名副題４',
+        label=u'公演名副題4',
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
