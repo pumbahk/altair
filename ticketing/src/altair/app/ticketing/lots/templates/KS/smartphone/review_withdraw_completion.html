@@ -13,7 +13,7 @@
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KS/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
@@ -21,7 +21,7 @@
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/KS/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
       <dd>
         <div class="subinner2">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
@@ -32,7 +32,7 @@
 %else:
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/KS/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
       <dd>
       <div class="confirmBoxText">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
@@ -126,7 +126,7 @@
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KS/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
