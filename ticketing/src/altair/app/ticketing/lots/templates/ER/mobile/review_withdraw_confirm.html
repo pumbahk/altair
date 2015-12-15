@@ -1,17 +1,31 @@
 <%inherit file="./base.html" />
 <%namespace file="./tags_mobile.html" name="mobile" />
-%if entry_controller.can_withdraw(timestamp):
+
+%if can_withdraw:
 <div align="center">
 <h3>この抽選申込を取消しますか?</h3>
 <form method="POST" id="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
-    <input type="submit" style="background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="はい">
+    <input type="submit" style="width:100px;height:30px;background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="はい">
+</form>
+<form method="POST" action="${request.route_path('lots.review.index')}">
+    <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+    <input type="hidden" name="entry_no" value=${entry_no}>
+    <input type="hidden" name="tel_no" value=${tel_no}>
+    <input type="submit" style="width:100px;height:30px;background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="いいえ">
 </form>
 </div>
 <span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
 %endif
+%if error_msg:
+<div align="center" style="font-size:10px;height:30px;margin:5px;">${error_msg}</div>
+<div align="center" style="height:30px;margin:8px;">
+    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none;">入力画面に戻る</a>
+</div>
+%endif
+
 
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>

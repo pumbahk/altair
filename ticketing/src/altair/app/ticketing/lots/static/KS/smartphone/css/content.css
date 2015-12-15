@@ -412,11 +412,6 @@ label.required:after {
 
 
 
-
-
-
-
-
 /* お問い合わせ
 ----------------------------------------------------------- */
 
@@ -424,24 +419,51 @@ label.required:after {
 
 
 
+a.withdrawConfirmButtonSP{
+    background-color:#FF6C0D;
+    font-size:16px;
+    padding: 5px 40px 5px 40px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align:center;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+a.withdrawBackButtonSP{
+    background-color:#FF6C0D;
+    font-size:16px;
+    padding: 10px 20px 10px 20px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+}
+.withdrawSubmit{
+    background-color:#FF6C0D;
+    font-size:20px;
+    padding: 10px 60px 10px 60px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align:center;
+}
+.withdrawConfirmBox{
+    height:30px;
+    margin:10px;
+    text-align:center;
+}
+.withdrawConfirmBox table tr td{
+    width:200px;
+    text-align:center;
+}
+.withdrawErrorInfoBox{
+    font-size:16px;
+    height:60px;
+    margin:10px;
+    text-align:center;
+}
+.withdrawBackBox{
+    text-align:center;
+    height:30px;
+    margin:10px;
+}
 

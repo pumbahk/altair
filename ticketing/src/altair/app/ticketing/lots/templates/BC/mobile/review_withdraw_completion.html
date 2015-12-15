@@ -1,10 +1,15 @@
 <%inherit file="./base.html" />
 <%namespace file="./tags_mobile.html" name="mobile" />
+%if not error_msg:
 <div align="center">以下の抽選申込を取消いたしました</div><br/>
-<div align="center">
-<a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 5px 10px 5px 10px;color:white;border-radius: 2px;text-decoration: none;">予約の詳細ページに戻る</a>
+%else:
+<div align="center" style="font-size:10px;margin:10px;">${error_msg}</div>
+%endif
+<div align="center" style="height:10px;magin:5px;">
+<a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 5px 10px 5px 10px;color:white;border-radius: 2px;text-decoration: none;">入力画面に戻る</a>
 </div>
 <br/>
+
 
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>
@@ -20,7 +25,7 @@ ${h.lot_entry_status_as_string(entry)}
 </span>
 %endif
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。

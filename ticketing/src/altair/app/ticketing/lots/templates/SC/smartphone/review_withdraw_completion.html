@@ -1,21 +1,27 @@
 <%inherit file="${context['main_template'].uri}" />
+<div class="withdrawErrorInfoBox">
+%if not error_msg:
 <div align="center">以下の抽選申込を取消いたしました</div><br/>
-<div align="center">
-    <a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 10px 20px 10px 20px;color:white;border-radius: 4px;text-decoration: none;">予約の詳細ページに戻る</a>
+%else:
+<div align="center" style="font-size:18px">${error_msg}</div>
+%endif
+</div>
+<div class="withdrawBackBox">
+    <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonSP">入力画面に戻る</a>
     </div>
 </div>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
 
-%if h.lot_entry_display_status(entry, now) == u'抽選取消':
-  <div class="subbox">
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+  <div class="confirmBox">
     <dl>
-      <dt><p class="linered">抽選取消</p></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
       <dd>
         <div class="subinner2">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
@@ -24,11 +30,11 @@
     </dl>
   </div>
 %else:
-  <div class="subbox">
+  <div class="confirmBox">
     <dl>
-      <dt><p class="linered">抽選結果</p></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
       <dd>
-        <div class="subinner2">
+      <div class="confirmBoxText">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
 払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
@@ -120,7 +126,7 @@
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SC/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">

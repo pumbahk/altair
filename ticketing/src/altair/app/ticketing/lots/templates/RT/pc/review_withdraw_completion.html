@@ -1,9 +1,11 @@
 <%inherit file="${context['main_template'].uri}" />
+<div class="withdrawErrorInfoBox">
 %if not error_msg:
-<div align="center" style="font-size:20px">以下の抽選申込を取消いたしました</div>
+<div>以下の抽選申込を取消いたしました</div>
 %else:
-<div align="center" style="font-size:20px">${error_msg}</div>
+<div>${error_msg}</div>
 %endif
+</div>
 <br/>
 <div align="center">
     <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonPC">入力画面に戻る</a>
