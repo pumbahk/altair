@@ -589,7 +589,7 @@ class FamiPortPaymentPlugin(object):
 
     def validate_order(self, request, order_like, update=False):
         """予約を作成する前にvalidationする"""
-        validate_order_like(request, order_like, self)
+        validate_order_like(request, order_like, self, update)
 
     def prepare(self, request, cart):
         """前処理"""
@@ -701,7 +701,7 @@ def lot_delivery_elect_entry_notice_viewlet(context, request):
 class FamiPortDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
+        validate_order_like(request, order_like, self, update)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -742,7 +742,7 @@ class FamiPortDeliveryPlugin(object):
 class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
-        validate_order_like(request, order_like, self)
+        validate_order_like(request, order_like, self, update)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -789,7 +789,7 @@ FAMIPORT_MAX_ADDRESS_1_LENGTH = 200
 FAMIPORT_MAX_ADDRESS_2_LENGTH = 200
 
 
-def validate_order_like(request, order_like, plugin):
+def validate_order_like(request, order_like, plugin, update=False):
     """FamiPort用の予約として作成しても問題ないかどうか検証する
 
     検証するポイント
@@ -805,6 +805,14 @@ def validate_order_like(request, order_like, plugin):
     tenant = lookup_famiport_tenant(request, order_like)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+
+    # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
+    famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
+    if update and famiport_order['type'] == FamiPortOrderType.Payment.value:
+        if order_like.issuing_start_at <= order_like.payment_start_at:
+            raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
+            (order_like.issuing_start_at.strftime("%Y/%m/%d %H:%M:%S"), order_like.payment_start_at.strftime("%Y/%m/%d %H:%M:%S")), 'order_like.issuing_start_at')
+
     famiport_order_dict = build_famiport_order_dict_customer_address(request, order_like, tenant.code, famiport_order_type)
     if order_like.shipping_address is not None:
         # お客様氏名
