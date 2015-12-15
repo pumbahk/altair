@@ -15,20 +15,34 @@
       <td width="12%">${vh.datetime(performance.open_on, with_weekday=True)}</td>
     </tr>
     <tr>
-      <th>公演名副題</th>
-      <td>${performance.subtitle or u"-"}</td>
+      <th rowspan="2">公演名略称</th>
+      <td rowspan="2">${performance.abbreviated_title or u"-"}</td>
       <th rowspan="2">公演名備考</th>
       <td rowspan="2">${performance.note or u"-"}</td>
       <th>開演</th>
       <td>${vh.datetime(performance.start_on, with_weekday=True)}</td>
     </tr>
     <tr>
-      <th>公演名略称</th>
-      <td>${performance.abbreviated_title or u"-"}</td>
       <th>終演</th>
       ## styleを指定しないと下部の枠線だけ消えた状態になってしまう
       <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
     </tr>
+    <tr>
+      <th>公演名副題</th>
+      <td colspan="7">${performance.subtitle or u"-"}</td>
+    </tr>
+      <th>公演名副題２</th>
+      <td colspan="7">${performance.subtitle2 or u"-"}</td>
+    </tr>
+    <tr>
+      <th>公演名副題３</th>
+      <td colspan="7">${performance.subtitle3 or u"-"}</td>
+    </tr>
+    <tr>
+      <th>公演名副題４</th>
+      <td colspan="7">${performance.subtitle4 or u"-"}</td>
+    </tr>
+
 % if expanded:
     <tr>
       <th rowspan="2">リダイレクト先</th>

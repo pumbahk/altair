@@ -411,11 +411,14 @@ class CoreModelCloner(object):
         performance_id = self.handler.emit_insert_and_fetch_id(
             Performance.__table__,
             {
-                'id': None, 
+                'id': None,
                 'name': performance.name,
                 'code': performance.code,
                 'abbreviated_title': performance.abbreviated_title,
                 'subtitle': performance.subtitle,
+                'subtitle2': performance.subtitle2,
+                'subtitle3': performance.subtitle3,
+                'subtitle4': performance.subtitle4,
                 'note': performance.note,
                 'open_on': performance.open_on,
                 'start_on': performance.start_on,
