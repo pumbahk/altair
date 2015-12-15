@@ -113,8 +113,8 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
         return pglist
 
-    def build_response(self, request, events):
-        res = {"events": []}
+    def build_response(self, request, events, page_count):
+        res = {"page_count": page_count, "events": []}
 
         for event in events:
             edict = dict()

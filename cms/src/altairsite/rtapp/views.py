@@ -47,9 +47,9 @@ def api_performance_list(self, request):
             page=int(request.params.get('page', 0)),
             items_per_page=50
         )
-    
+
     builder = PerformanceGroupListResponseBuilder()
-    res = builder.build_response(request, events.items)
+    res = builder.build_response(request, events.items, events.page_count)
 
     return res
 
@@ -67,9 +67,15 @@ def api_event_detail(self, request):
 @view_config(route_name="api.bookmark_events", request_method="GET", renderer='json')
 def api_bookmark_performance_list(self, request):
     equery = api.get_bookmarked_events(session, request, organization_id=8)
-    events = equery.all() if equery else []
+    #events = equery.all() if equery else []
+
+    events = paginate.Page(
+            equery,
+            page=int(request.params.get('page', 0)),
+            items_per_page=50
+        )
 
     builder = PerformanceGroupListResponseBuilder()
-    res = builder.build_response(request, events)
+    res = builder.build_response(request, events.items, events.page_count)
 
     return res
