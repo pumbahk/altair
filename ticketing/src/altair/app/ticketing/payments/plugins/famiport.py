@@ -807,11 +807,12 @@ def validate_order_like(request, order_like, plugin, update=False):
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
 
     # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
-    famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
-    if update and famiport_order['type'] == FamiPortOrderType.Payment.value:
-        if order_like.issuing_start_at <= order_like.payment_start_at:
-            raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
-            (order_like.issuing_start_at.strftime("%Y/%m/%d %H:%M:%S"), order_like.payment_start_at.strftime("%Y/%m/%d %H:%M:%S")), 'order_like.issuing_start_at')
+    if update:
+        famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
+        if famiport_order['type'] == FamiPortOrderType.Payment.value:
+            if order_like.issuing_start_at <= order_like.payment_start_at:
+                raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
+                (order_like.issuing_start_at.strftime("%Y/%m/%d %H:%M:%S"), order_like.payment_start_at.strftime("%Y/%m/%d %H:%M:%S")), 'order_like.issuing_start_at')
 
     famiport_order_dict = build_famiport_order_dict_customer_address(request, order_like, tenant.code, famiport_order_type)
     if order_like.shipping_address is not None:
