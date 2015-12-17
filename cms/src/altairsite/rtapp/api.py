@@ -128,17 +128,14 @@ def get_performance_list_query(session, request, organization_id):
                                             .filter('genre.origin is NULL') \
                                             .all()
         genre_cond = [ ]
-        origin_genre = filter(lambda og: og.id == int(params.get('genre')), origin_genres)
         for genre in params.getall('genre'):
-            if origin_genre and genre in origin_genre:
-                # クエリがorigin_genreである場合は、配下のジャンル全てで検索
-                for subgenre in origin_genre[genre]:
-                    genre_cond.append(PageSet.genre_id == int(subgenre))
+            genre_cond.append(PageSet.genre_id == int(genre))
+            origin_genre = filter(lambda og: og.id == int(genre), origin_genres)
+            if origin_genre:
                 genre_cond.append(Genre.origin == origin_genre[0].name)
-            else:
-                genre_cond.append(PageSet.genre_id == int(genre))
         if 0 < len(genre_cond):
-            query = query.join(PageSet, PageSet.event_id == Event.id) \
+            query = query \
+                .join(PageSet, PageSet.event_id == Event.id) \
                 .join(Genre, Genre.id == PageSet.genre_id) \
                 .filter(or_(*genre_cond))
 
