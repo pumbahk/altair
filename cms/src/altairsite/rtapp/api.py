@@ -114,26 +114,33 @@ def get_performance_list_query(session, request, organization_id):
 
     # 地域検索
     if params.get('area'):
-        if params.get('area') in PREF_LIST.keys():
-            query = query.filter(Performance.prefecture.in_(PREF_LIST[params.get('area')]))
-        else:
-            query = query.filter(Performance.prefecture == params.get('area'))
+        area_cond = [ ]
+        for area in params.getall('area'):
+            if area in PREF_LIST.keys():
+                area_cond.extend(PREF_LIST[area])
+            else:
+                area_cond.append(area)
+        query = query.filter(Performance.prefecture.in_(area_cond))
 
     # ジャンル検索
     if params.get('genre'):
         origin_genres = session.query(Genre).filter(Genre.organization_id == 8) \
                                             .filter('genre.origin is NULL') \
                                             .all()
-        # クエリがorigin_genreである場合は、配下のジャンル全てで検索
+        genre_cond = [ ]
         origin_genre = filter(lambda og: og.id == int(params.get('genre')), origin_genres)
-        if origin_genre:
+        for genre in params.getall('genre'):
+            if origin_genre and genre in origin_genre:
+                # クエリがorigin_genreである場合は、配下のジャンル全てで検索
+                for subgenre in origin_genre[genre]:
+                    genre_cond.append(PageSet.genre_id == int(subgenre))
+                genre_cond.append(Genre.origin == origin_genre[0].name)
+            else:
+                genre_cond.append(PageSet.genre_id == int(genre))
+        if 0 < len(genre_cond):
             query = query.join(PageSet, PageSet.event_id == Event.id) \
-                         .join(Genre, Genre.id == PageSet.genre_id) \
-                         .filter(or_(PageSet.genre_id == int(params.get('genre')),
-                                     Genre.origin == origin_genre[0].name))
-        else:
-            query = query.join(PageSet, PageSet.event_id == Event.id) \
-                         .filter(PageSet.genre_id == int(params.get('genre')))
+                .join(Genre, Genre.id == PageSet.genre_id) \
+                .filter(or_(*genre_cond))
 
     # 公演日検索
     if params.get('open') or params.get('close') or params.get('event_open_in'):
