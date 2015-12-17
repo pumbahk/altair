@@ -12,6 +12,9 @@ from .helpers import (
 import json
 import re
 
+import logging
+logger = logging.getLogger(__name__)
+
 def resolve_url(url):
     pat = re.compile('s3://([^/]+)/(.*)')
     match = pat.match(url)
@@ -55,16 +58,28 @@ class TopPageResponseBuilder(object):
 class GenreListResponseBuilder(object):
     def build_response(self, request, genres):
         res = {}
-
         for g in genres:
             if g.origin is None:
                 if not res.has_key("origin"):
                     res["origin"] = []
-                res["origin"].append({"id": g.id, "name": g.name, "label": g.label})
+                ancestors = g.ancestors
+                res["origin"].append({"id": g.id,
+                                      "name": g.name,
+                                      "label": g.label,
+                                      "parent_id": None,
+                                      "hierarchy": len(ancestors)})
             else:
                 if not res.has_key(g.origin):
                     res[g.origin] = []
-                res[g.origin].append({"id": g.id, "name": g.name, "label": g.label})
+                ancestors = g.ancestors
+                parent_id = ancestors[0].id if ancestors else None
+                # mm...ジャンルツリーに組み込まれていない奴がたまにいる
+                if ancestors:
+                    res[g.origin].append({"id": g.id,
+                                          "name": g.name,
+                                          "label": g.label,
+                                          "parent_id": parent_id,
+                                          "hierarchy": len(ancestors)})
 
         return res
 
