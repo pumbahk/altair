@@ -644,6 +644,9 @@ class Performances(BaseView):
             new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
             new_performance.abbreviated_title = origin_performance.abbreviated_title
             new_performance.subtitle = origin_performance.subtitle
+            new_performance.subtitle2 = origin_performance.subtitle2
+            new_performance.subtitle3 = origin_performance.subtitle3
+            new_performance.subtitle4 = origin_performance.subtitle4
             new_performance.note = origin_performance.note
 
             if new_performance.setting is None:

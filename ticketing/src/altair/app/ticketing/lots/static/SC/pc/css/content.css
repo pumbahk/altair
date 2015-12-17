@@ -2342,3 +2342,44 @@ a:active.headerLink {
     font-weight: bold;
 }
 */
+
+a.withdrawBackButtonPC{
+    background-color:#FF6C0D;
+    font-size:16px;padding: 10px 20px 10px 20px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+}
+
+a.withdrawConfirmButtonPC{
+    background-color:#FF6C0D;
+    font-size:16px;padding: 5px 40px 5px 40px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align:center;
+}
+.withdrawSubmit{
+    background-color:#FF6C0D;
+    font-size:20px;
+    padding: 10px 60px 10px 60px;
+    color:white;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align:center;
+}
+.withdrawConfirmBox table tr td{
+    width:200px;
+    text-align:center;
+}
+.withdrawErrorInfoBox{
+    font-size:20px;
+    margin:10px;
+    text-align:center;
+}
+.withdrawBackBox{
+    text-align:center;
+    height:30px;
+    margin:10px;
+}
+

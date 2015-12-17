@@ -13,7 +13,7 @@
 ${h.lot_entry_status_as_string(request, entry.status)}
 </%self:enclose_if>
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'抽選取消':
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
@@ -112,7 +112,7 @@ ${h.japanese_date(birthday)}
 ${memo|h.nl2br}
 </div>
 
-%if entry_controller.can_withdraw(timestamp) and can_withdraw:
+%if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">
     <input type="submit" style="background-color:#FF6C0D;font-size:16px;padding: 5px 20px 5px 20px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">

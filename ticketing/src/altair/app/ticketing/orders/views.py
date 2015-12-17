@@ -65,6 +65,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductAttribute,
     ProtoOrder,
     )
+from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
@@ -1261,6 +1262,16 @@ class OrderDetailView(OrderBaseView):
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
+
+        sejOrder = sej_api.get_sej_order(order.order_no)
+        if sejOrder:
+            if order.payment_due_at < datetime.now():
+                self.request.session.flash(u'セブン予約(%s)の支払期限を過ぎているためキャンセルできません' % order.order_no)
+                raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+            if order.issuing_end_at < datetime.now():
+                self.request.session.flash(u'セブン予約(%s)の発券期限を過ぎているためキャンセルできません' % order.order_no)
+                raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
         if order.cancel(self.request):
             notify_order_canceled(self.request, order)
