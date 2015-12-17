@@ -256,12 +256,15 @@ class SelectMultipleFieldDataMixin(object):
             coerce = self._coerce
             if coerce is not None:
                 data = []
-                for v in value:
-                    try:
-                        v = coerce(v)
-                    except (ValueError, TypeError):
-                        v = None
-                    data.append(v)
+                try:
+                    for v in value:
+                        try:
+                            v = coerce(v)
+                        except (ValueError, TypeError):
+                            v = None
+                        data.append(v)
+                except (ValueError, TypeError):
+                    data = None
             else:
                 data = list(value)
         else:
