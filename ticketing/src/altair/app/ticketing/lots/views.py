@@ -756,7 +756,14 @@ class LotReviewWithdrawView(object):
                      renderer=selectable_renderer("review_withdraw_completion.html"))
     def withdraw(self):
         """申込取消実行"""
-        check_csrf_token(self.request)
+        try:
+            check_csrf_token(self.request)
+        except:
+            logger.debug("csrf token error: {0} {1}" . format(self.context.entry.entry_no, self.request.session.get_csrf_token()))
+            raise HTTPNotFound()
+        if '_csrft_' in self.request.session:
+            del self.request.session['_csrft_']
+            self.request.session.persist()
         if not self.context.entry:
             raise ValueError()
         try:
@@ -777,7 +784,14 @@ class LotReviewWithdrawView(object):
             self.can_withdraw = True
         except LotEntryWithdrawException as e:
             self.error_msg = e.message
-        check_csrf_token(self.request)
+        try:
+            check_csrf_token(self.request)
+        except:
+            logger.debug("csrf token error: {0} {1}" . format(self.context.entry.entry_no, self.request.session.get_csrf_token()))
+            raise HTTPNotFound()
+        if '_csrft_' in self.request.session:
+            del self.request.session['_csrft_']
+            self.request.session.persist()
         return self.build_response_dict()
 
     def build_response_dict(self):

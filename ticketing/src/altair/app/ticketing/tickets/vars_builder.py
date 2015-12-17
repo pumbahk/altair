@@ -330,6 +330,9 @@ class TicketDictBuilder(object):
             u'終了時刻s': safe_format(self.formatter.format_time_short, performance.end_on),
             u"公演名略称": performance.abbreviated_title if performance.abbreviated_title else u"",
             u"公演名副題": performance.subtitle if performance.subtitle else u"",
+            u"公演名副題2": performance.subtitle2 if performance.subtitle2 else u"",
+            u"公演名副題3": performance.subtitle3 if performance.subtitle3 else u"",
+            u"公演名副題4": performance.subtitle4 if performance.subtitle4 else u"",
             u"公演名備考": performance.note if performance.note else u"",
             })
         return self.build_dict_from_performance_setting(setting, retval=retval)

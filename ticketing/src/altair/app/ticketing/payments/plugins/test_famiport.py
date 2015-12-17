@@ -228,6 +228,7 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         from . import FAMIPORT_PAYMENT_PLUGIN_ID
         request = DummyRequest()
         cart = DummyModel(
+            order_no='',
             total_amount=0,
             delivery_fee=0,
             transaction_fee=0,
