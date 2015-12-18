@@ -66,6 +66,7 @@ def includeme(config):
     config.add_route('mypage.mailmag.complete', '/mypage/mailmag/complete', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
+    config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
 
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')

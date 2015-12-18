@@ -108,6 +108,7 @@ def main(global_config, **local_config):
     config.include("altairsite.inquiry")
     config.include("altairsite.order")
     config.include("altairsite.preview")
+    config.include("altairsite.rtapp")
     config.include(add_request_properties)
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
