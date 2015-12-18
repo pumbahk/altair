@@ -14,6 +14,7 @@ from pyramid.interfaces import IRouteRequest, IRequest
 from pyramid.security import forget
 
 from altair.auth.api import get_who_api
+from altair.rakuten_auth.api import get_rakuten_id_api2_factory
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core.api import get_default_contact_url
@@ -83,6 +84,36 @@ def jump_infomation_page_om_for_10873(orderlike):
     if is_suspicious_order(orderlike):
         raise HTTPFound('/orderreview/information')
 
+@lbr_view_config(
+    route_name='mypage.autologin',
+    request_method="POST"
+    )
+def autologin(request):
+    from altair.auth.api import get_auth_api
+    auth_api = get_auth_api(request)
+    #identities, auth_factors, metadata = auth_api.login(
+    #    request,
+    #    request.response,
+    #    credentials={ },
+    #    auth_factor_provider_name="rakuten"
+    #    )
+    #identity = identities.get("rakuten")
+    access_token = request.params.get("access_token", "")
+    if access_token != "":
+        idapi = get_rakuten_id_api2_factory(request)(request, access_token)
+        open_id = idapi.get_open_id()
+        auth_factors = {'pyramid_session:altair.auth.pyramid': {'claimed_id': open_id, 'oauth2_access_token': access_token}}
+        auth_api.remember(request, request.response, auth_factors)
+
+        authenticated_user = request.altair_auth_info
+        user = cart_api.get_or_create_user(authenticated_user)
+        
+        if user is not None:
+            path = request.params.get("next", "/orderreview/mypage")
+            # nextのチェックがad hocky...
+            if ':' in path or '//' in path:
+                path = "/orderreview/mypage"
+            return HTTPFound(path)
 
 def override_auth_type(context, request):
     if 'auth_type' in request.params:
