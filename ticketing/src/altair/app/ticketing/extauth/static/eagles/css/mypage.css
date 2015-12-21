@@ -196,6 +196,11 @@ body {
 	top: 15px;
 	right: 0;
 }
+.logout-btnbox {
+	position: absolute;
+	top: 15px;
+	right: 0;
+}
 .nav-global {
 	background: #FFF;
 	background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
@@ -557,7 +562,31 @@ background-color:#f2ab1e;
 color:#860010;
 }
 
-
+.logoutBtn {
+    background: -ms-linear-gradient(center top, #DEDEDE  0%, #CCC 100%);
+    background:-moz-linear-gradient( center top, #DEDEDE  0%, #CCC 100% );
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0, #DEDEDE ), color-stop(1, #CCC) );
+    background-color:#CCC;
+    color: #333 !important;
+    border-radius:6px;
+    text-indent:0;
+    display:inline-block;
+    color:#860010 ;
+    font-size:16px;
+    height:50px;
+    line-height:50px;
+    width:210px;
+    text-decoration:none;
+    text-align:center;
+    margin-bottom: 8px;
+}
+.logoutBtn:hover {
+    background: -ms-linear-gradient(center top, #CCC 0%, #DEDEDE  100%);
+    background: -moz-linear-gradient(top,#CCC 0%,#DEDEDE  50%);
+    background: -webkit-gradient( linear, left top, left bottom, color-stop(0, #CCC), color-stop(1, #DEDEDE ));
+    background-color: #DEDEDE ;
+    color: #333 !important;
+}
 
 /*  loginBox2
 -----------------------------------------*/
@@ -792,6 +821,10 @@ color:#860010;
 .statusList li img { width: 100%; }
 .history-btnbox { display: none; }
 .history-btnbox-sp {
+background: #ffcc00 !important;
+}
+.logout-btnbox { display: none; }
+.logout-btnbox-sp {
 background: #ffcc00 !important;
 }
 .history-btnbox-sp2 {

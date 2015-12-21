@@ -47,6 +47,9 @@ $(function(){
 <header class="content_l header">
 <div class="content_m">
 <h1 class="header-logo"><a href="http://eagles.tstar.jp/"><img src="${view_context.static_url('images/eticket_logo.png')}" alt="イーグルスチケット"></a></h1>
+% if request.authenticated_userid and hasattr(_context, 'route_path'):
+<p class="logout-btnbox"><a href="${_context.route_path('extauth.logout')}" class="logoutBtn">ログアウト</a></p>
+% endif
 </div>
 <nav class="content_l nav-global">
 <div id="toggle"><a href="#">&nbsp;</a></div>
