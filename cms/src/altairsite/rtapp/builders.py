@@ -142,13 +142,13 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
 
 class EventDetailResponseBuilder(BaseListResponseBuilder):
-    def build_response(self, request, event, performances, widget_summary):
+    def build_response(self, request, event, performances, event_info):
         res = dict()
         res['event_id'] = str(event.id) if event.id else None
         res['backend_id'] = str(event.backend_id) if event.backend_id else None
         res['title'] = event.title
         res['subtitle'] = event.subtitle
-        res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
+        res['display_items'] = event_info['event'] if event_info ['event'] else [ ]
         res['performances'] = self._make_performance_list(request, performances)
 
         return res
