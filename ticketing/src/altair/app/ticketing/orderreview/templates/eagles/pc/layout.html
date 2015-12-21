@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
   <title>イーグルスチケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/css/mypage_import2.css')}" media="all" />
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/css/mypage.css')}" media="all" />
 </head>
 <body>
 <div class="header" id="top">
@@ -14,6 +14,9 @@
         <img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eticket_logo.png')}" alt="イーグルスチケット" height="70"/>
       </a>
     </h1>
+    % if request.authenticated_userid:
+    <p class="logout-btnbox"><a href="${request.route_path('mypage.logout')}" class="logoutBtn">ログアウト</a></p>
+    % endif
   </div>
 </div>
 
