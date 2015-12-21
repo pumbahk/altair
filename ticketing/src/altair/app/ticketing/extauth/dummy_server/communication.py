@@ -20,6 +20,7 @@ class MembershipCheckAPIRequestHandler(object):
             token = request.params['token']
             start_year = request.params['start_year']
             end_year = request.params['end_year']
+            is_eternal = request.params['is_eternal']
         except KeyError as e:
             raise BadParamError(u'missing attribute %s' % e.message)
         openid_claimed_id = request.params.get('open_id')
@@ -42,6 +43,13 @@ class MembershipCheckAPIRequestHandler(object):
             raise BadParamError(u'end_year <= 9999')
         if end_year < start_year:
             raise BadParamError(u'end_year >= start_year')
+        is_eternal = is_eternal.strip()
+        if is_eternal == u'0':
+            is_eternal = False
+        elif is_eternal == u'1':
+            is_eternal = True
+        else:
+            raise BadParamError(u'is_eternal must be either 0 or 1')
         h = hashlib.sha224()
         if openid_claimed_id is not None:
             h.update(openid_claimed_id)
@@ -61,7 +69,8 @@ class MembershipCheckAPIRequestHandler(object):
             start_year=start_year,
             end_year=end_year,
             openid_claimed_id=openid_claimed_id,
-            rakuten_easy_id=rakuten_easy_id
+            rakuten_easy_id=rakuten_easy_id,
+            include_permanent_memberships=is_eternal 
             )
 
     def format_datetime(self, value):

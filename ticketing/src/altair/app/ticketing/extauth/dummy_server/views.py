@@ -45,20 +45,25 @@ class EaglesExtauthCheckMembershipAPI(object):
         handler = self.get_request_handler('check_memberships')
         params = handler.handle_request(self.request)
         openid_claimed_id = params['openid_claimed_id']
+        include_permanent_memberships = params['include_permanent_memberships']
         user = self.request.sa_session.query(EaglesUser) \
             .filter(EaglesUser.openid_claimed_id == openid_claimed_id) \
             .one()
+        cond = sa.and_(
+            (EaglesMembership.valid_since == None) \
+            | sa.and_(EaglesMembership.valid_since >= datetime(params['start_year'], 1, 1),
+                   EaglesMembership.valid_since < datetime(params['end_year'] + 1, 1, 1)),
+            (EaglesMembership.expire_at == None) \
+            | (EaglesMembership.expire_at >= self.request.now)
+            )
+        if not include_permanent_memberships:
+            cond = sa.and_(
+                cond,
+                (EaglesMembership.valid_since != None) | (EaglesMembership.expire_at != None)
+                )
         memberships = self.request.sa_session.query(EaglesMembership) \
             .filter(EaglesMembership.user_id == user.id) \
-            .filter(
-                sa.and_(
-                    (EaglesMembership.valid_since == None) \
-                    | sa.and_(EaglesMembership.valid_since >= datetime(params['start_year'], 1, 1),
-                           EaglesMembership.valid_since < datetime(params['end_year'] + 1, 1, 1)),
-                    (EaglesMembership.expire_at == None) \
-                    | (EaglesMembership.expire_at >= self.request.now)
-                    )
-                ) \
+            .filter(cond) \
             .all()
         return handler.build_response(
             self.request,
