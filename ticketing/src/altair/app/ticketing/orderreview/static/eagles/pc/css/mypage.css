@@ -111,7 +111,7 @@ font-family:"Helvetica Neue",Helvetica,Meiryo,"メイリオ",HiraKakuPro-W3,"ヒ
 .flr{ float:right !important; }
 .fll{ float: left !important; }
 
-.cc:after{ clear: both !important; }
+.cc:after { clear: both !important; }
 
 .clear{ clear: both !important; }
 
@@ -133,7 +133,6 @@ padding: 10px 10px;
 color: #fff;
 font-size: 24px;
 line-height: 24px;
-
 }
 
 h3 {
@@ -363,6 +362,7 @@ text-decoration:none;
 text-align:center;
 text-shadow:1px 1px 0px #810e05;
 }
+
 .btnR:hover {
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #860010), color-stop(1, #f24537) );
 background:-moz-linear-gradient( center top, #860010 5%, #f24537 100% );
@@ -370,6 +370,7 @@ filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#860010', endCo
 background-color:#860010;
 color:#ffffff !important;
 }
+
 .btnR:active {
 position:relative;
 top:1px;
@@ -410,6 +411,7 @@ text-decoration:none;
 text-align:center;
 text-shadow:1px 1px 0px #ffffff;
 }
+
 .btnGray:hover {
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
 background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
@@ -417,6 +419,7 @@ filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endCo
 background-color:#dfdfdf;
 color:#777777 !important;
 }
+
 .btnGray:active {
 position:relative;
 top:1px;
@@ -447,6 +450,7 @@ text-align:center;
 text-shadow:1px 1px 0px #debaaf;
 margin-bottom: 8px;
 }
+
 .historySearchBtn:hover {
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f2ab1e), color-stop(1, #ffcc00) );
 background:-moz-linear-gradient( center top, #f2ab1e 5%, #ffcc00 100% );
@@ -454,12 +458,13 @@ filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2ab1e', endCo
 background-color:#f2ab1e;
 color:#860010;
 }
+
 .historySearchBtn:active {
 position:relative;
 top:1px;
 }
 
-table.nobdr, table.nobdr td, table.nobdr tr, table.nobdr th, table.nobdr td:last-child{
+table.nobdr, table.nobdr td, table.nobdr tr, table.nobdr th, table.nobdr td:last-child {
 border: none;
 }
 
@@ -478,13 +483,10 @@ border-bottom: 1px solid #860010;
 }
 
 table th {
-color:#fff;
-background:rgba(134,0,16,0.6);
 font-weight:700;
 border-left:1px solid #860010;
 line-height:120%;
 text-align:center;
-background:rgba(255,255,255,0.3);
 padding:8px 15px;
 cursor: default;
 }
@@ -528,15 +530,15 @@ font-size: 12px;
 width: 740px;
 }
 
-table.pricelist td{
+table.pricelist td {
 padding: 5px;
 cursor: default;
 }
 
-table.pricelist tr:hover{
-
+table.pricelist tr:hover {
 }
-table.pricelist th{
+
+table.pricelist th {
 padding: 5px;
 font-weight: bold;
 }
@@ -562,7 +564,7 @@ padding:5px;
 text-align: center;
 }
 
-table.default td a:hover{
+table.default td a:hover {
 color: #860010;
 position:relative;
 top:1px;
@@ -595,11 +597,11 @@ margin: 0 auto;
 display: block;
 }
 
-.notes li{
+.notes li {
 margin: 7px 0;
 }
 
-dl.faq dt{
+dl.faq dt {
 color: #860010;
 border-left: 5px #860010 solid;
 padding: 0px 0 0 10px;
@@ -608,19 +610,19 @@ font-weight: bold;
 margin: 20px 0 5px 0;
 }
 
-dl.faq dd{
+dl.faq dd {
 background: #fff9d2;
 padding: 10px;
 line-height: 180%;
 }
 
-.pageTop{
+.pageTop {
 display: block;
 margin: 20px 0;
 text-align: right;
 }
 
-.card{
+.card {
 display: inline-block;
 padding: 5px;
 float: right;
@@ -648,6 +650,7 @@ text-decoration:none;
 text-align: center;
 text-shadow:0px 2px 1px #ffffff;
 }
+
 a.sidebtnA:hover {
 border-left: 5px #fc0 solid;
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #e9e9e9), color-stop(1, #f9f9f9) );
@@ -655,6 +658,7 @@ background:-moz-linear-gradient( center top, #e9e9e9 5%, #f9f9f9 100% );
 filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#e9e9e9', endColorstr='#f9f9f9');
 background-color:#e9e9e9;
 }
+
 a.sidebtnA:active {
 position:relative;
 top:1px;
@@ -664,8 +668,6 @@ top:1px;
 position:relative;
 top:1px;
 }
-
-
 
 .footer {
 background:#000;
@@ -752,46 +754,48 @@ background: #f5a667;
 background: #f3a9c9;
 }
 
-
-.guestbox{
+.guestbox {
 border: 1px #555 solid;
 width: 420px;
 height: 215px;
 }
-.guestbox thead th{
+
+.guestbox thead th {
 background: #860010;
 font-size: 20px;
 height: 30px;
 }
 
-.guestbox td{
+.guestbox td {
 background: #fffecb;
 }
 
-.guestbox th{
+.guestbox th {
 background: #fffecb;
 }
 
-.loginbox{
+.loginbox {
 border: 1px #555 solid;
 width: 420px;
 height: 450px;
 }
-.loginbox thead th{
-background: #860010;
+
+.loginbox thead th {
+background-color: #860010;
+color: #fff;
 font-size: 20px;
 height: 30px;
 }
 
-.loginbox td{
+.loginbox td {
 background: #fffecb;
 }
 
-.loginbox th{
+.loginbox th {
 background: #fffecb;
 }
 
-.member th{
+.member th {
 color: #860010;
 text-align: right;
 }
@@ -799,7 +803,7 @@ text-align: right;
 .clubnames {
 border: none;
 }
-.clubnames td{
+.clubnames td {
 padding: 5px 3px;
 border: 2px #fffecb solid !important;
 width: 20%;
@@ -842,6 +846,7 @@ text-decoration:none;
 text-align:center;
 text-shadow:1px 1px 0px #810e05;
 }
+
 .btnLogin:hover {
 background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #470009), color-stop(1, #a30016) );
 background:-moz-linear-gradient( center top, #470009 5%, #a30016 100% );
@@ -849,6 +854,7 @@ filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#470009', endCo
 background-color:#470009;
 color: #fff;
 }
+
 .btnLogin:active {
 position:relative;
 top:1px;
@@ -859,29 +865,29 @@ margin: 0 auto;
 display: block;
 }
 
-.notes li ul li{
+.notes li ul li {
 margin-left: 20px;
 }
 
 .small{
-	font-size: x-small;
+font-size: x-small;
 }
 
 .red{
-	color:#f00;
+color:#f00;
 }
 
 ul.cancel-list-style {
-    margin: 1em 0 0 1em;
-    padding: 0 0 0 1em;
+margin: 1em 0 0 1em;
+padding: 0 0 0 1em;
 }
 
 div.section-inner {
-    margin-left: 1em;
+margin-left: 1em;
 }
 
 div.section-inner h4 {
-    margin-left: -1em;
+margin-left: -1em;
 }
 
 .section table.form ul {
@@ -964,239 +970,189 @@ background-color:#ffcc00;
 }
 
 table.formeagles input.submit:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #fb9e25), color-stop(1, #ffcc00) );
-	background:-moz-linear-gradient( center top, #fb9e25 5%, #ffcc00 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fb9e25', endColorstr='#ffcc00');
-	background-color:#fb9e25;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #fb9e25), color-stop(1, #ffcc00) );
+background:-moz-linear-gradient( center top, #fb9e25 5%, #ffcc00 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fb9e25', endColorstr='#ffcc00');
+background-color:#fb9e25;
 }
 
 
 /* マイページ
 ----------------------------------------------------------- */
 #mypageHistory {
-	margin-bottom: 30px;
+margin-bottom: 30px;
 }
 
 #mypageHistory form {
-	height: 40px;
-	padding: 5px 15px 0;
-	background: url(images/mypage/bg_search.gif) no-repeat 0 0;
+height: 70px;
+padding: 5px 15px 0;
+background: url(images/mypage/bg_search.gif) no-repeat 0 0;
 }
 
 #mypageHistory form input {
-	vertical-align: middle;
+vertical-align: middle;
 }
 
-#mypageHistory div {
-	clear: both;
-	overflow: hidden;
-	padding: 10px 0 5px;
-	border-bottom: 1px dashed #cccccc;
+#mypageHistory div .box {
+clear: both;
+overflow: hidden;
+padding: 10px 0 5px;
+border-bottom: 1px dashed #cccccc;
 }
 
 * html #mypageHistory div {
-	height: 1%;
+height: 1%;
 }
 
 #mypageHistory p {
-	float: left;
-	margin: 0;
-	padding-left: 5px;
+float: left;
+margin: 0;
+padding-left: 5px;
 }
 
 #mypageHistory dl {
-	float: left;
-	width: 650px;
-	padding-left: 20px;
+float: left;
+width: 650px;
+padding-left: 20px;
 }
 
 #mypageHistory dt {
-	/* font-size: 116.7%; */
-	font-size: 14px;
-	font-weight: bold;
+font-size: 14px;
+font-weight: bold;
 }
 
 #mypageHistory dd {
-	padding-bottom: 5px;
-	font-size: 14px;
-	/* font-size: 83.3%; */
-}
-/*
-#mypageCancel {
-	margin-bottom: 30px;
+padding-bottom: 5px;
+font-size: 14px;
 }
 
-#mypageCancel div {
-	clear: both;
-	position: relative;
-	overflow: hidden;
-	padding: 10px 0;
-	border-bottom: 1px dashed #cccccc;
-}
-
-* html #mypageCancel div {
-	height: 1%;
-}
-
-#mypageCancel p {
-	float: left;
-	margin: 0;
-	padding-left: 5px;
-}
-
-#mypageCancel dl {
-	float: left;
-	width: 630px;
-	padding-left: 20px;
-}
-
-#mypageCancel dt {
-	font-size: 116.7%;
-	font-weight: bold;
-}
-
-#mypageCancel dd {
-	font-size: 91.7%;;
-}
-
-.btnCancelDelete {
-	position: absolute;
-	top: 10px;
-	right: 5px;
-	padding: 0;
-}
-*/
-/*
-#mypageAgentMail h3 {
-	float: left;
-}
-
-#mypageAgentMail p {
-	float: right;
-	margin-bottom: 10px;
-}
-
-#mypageAgentMail ul {
-	clear: both;
-	overflow: hidden;
-	padding: 15px 10px 10px;
-	background-color: #f7f7ea;
-}
-
-* html #mypageAgentMail ul {
-	height: 1%;
-}
-
-#mypageAgentMail li {
-	float: left;
-	margin: 0 10px 5px 0;
-	white-space: nowrap;
-}
-
-#mypageAgentMail li img {
-	vertical-align: top;
-}
-
-#mypageAgentMail li a {
-	text-decoration: none;
-}
-
-#mypageAgentMail li a:hover {
-	text-decoration: underline;
-}
-*/
 .mypagePaging {
-	clear: both;
-	font-weight: bold;
-	text-align: right;
+clear: both;
+font-weight: bold;
+text-align: right;
 }
 
 .mypageBox1 {
-	height: 1%;
-	margin-bottom: 30px;
-	padding: 8px;
-	border: 2px solid #cccccc;
+height: 1%;
+margin-bottom: 30px;
+padding: 8px;
+border: 2px solid #cccccc;
 }
 
 .mypageBox1 div {
-	position: relative;
-	float: right;
-	width: 640px;
-	margin-bottom: 15px;
+position: relative;
+float: right;
+width: 640px;
+margin-bottom: 15px;
 }
 
 .mypageBox1 h3 {
-	font-size: 116.7%;
+font-size: 116.7%;
 }
 
 .mypageBox1 div dt {
-	margin-bottom: 5px;
+margin-bottom: 5px;
 }
 
 .mypageBox1 div dd {
-	font-size: 91.7%;
+font-size: 91.7%;
 }
 
 .mypageBox1 div dd a {
-	padding: 2px 0 2px 15px;
-	background: url(images/mypage/icon_map.gif) no-repeat 0 0;
+padding: 2px 0 2px 15px;
+background: url(images/mypage/icon_map.gif) no-repeat 0 0;
 }
 
 .mypageBox1 div ul {
-	position: absolute;
-	right: 0;
-	bottom: 0;
+position: absolute;
+right: 0;
+bottom: 0;
 }
 
 .mypageBox1 div li {
-	float: right;
-	margin-left: 5px;
+float: right;
+margin-left: 5px;
 }
 
 .mypageBox1 div li .twitter-share-button {
-	display: block;
-	width: 70px !important;
+display: block;
+width: 70px !important;
 }
 
 .mypageBox1 table {
-	width: 100%;
-	margin-bottom: 10px;
-	background-color: #fcfcf7;
+width: 100%;
+margin-bottom: 10px;
+background-color: #fcfcf7;
 }
 
 .mypageBox1 th {
-	width: 20%;
-	padding: 10px;
-	border: 1px solid #e6e6da;
-	font-size: 91.7%;
-	font-weight: normal;
+width: 20%;
+padding: 10px;
+border: 1px solid #e6e6da;
+font-size: 91.7%;
+font-weight: normal;
 }
 
 .mypageBox1 td {
-	padding: 10px;
-	border: 1px solid #e6e6da;
-	font-weight: bold;
+padding: 10px;
+border: 1px solid #e6e6da;
+font-weight: bold;
 }
 
 .mypageBox1 td.align1 {
-	border-left: none;
-	font-weight: normal;
+border-left: none;
+font-weight: normal;
 }
 
 .mypageBox1 td span {
-	font-size: 91.7%;
-	font-weight: normal;
+font-size: 91.7%;
+font-weight: normal;
 }
 
 .mypageBox1 th.waitingPayment,
 .mypageBox1 td.waitingPayment {
-	background-color: #fccac6;
+background-color: #fccac6;
 }
 
 .mypageBox1 p {
-	margin: 0;
+margin: 0;
 }
 
 .mypageBuy {
-	border-right: none !important;
+border-right: none !important;
+}
+
+table td.display_value ul li {
+  margin-left: 1em;
+}
+
+.logout-btnbox {
+	position: absolute;
+	top: 15px;
+	right: 0;
+}
+.logoutBtn {
+    background: -ms-linear-gradient(center top, #DEDEDE  0%, #CCC 100%);
+    background:-moz-linear-gradient( center top, #DEDEDE  0%, #CCC 100% );
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0, #DEDEDE ), color-stop(1, #CCC) );
+    background-color:#CCC;
+    color: #333 !important;
+    border-radius:6px;
+    text-indent:0;
+    display:inline-block;
+    color:#860010 ;
+    font-size:16px;
+    height:50px;
+    line-height:50px;
+    width:210px;
+    text-decoration:none;
+    text-align:center;
+    margin-bottom: 8px;
+}
+.logoutBtn:hover {
+    background: -ms-linear-gradient(center top, #CCC 0%, #DEDEDE  100%);
+    background: -moz-linear-gradient(top,#CCC 0%,#DEDEDE  50%);
+    background: -webkit-gradient( linear, left top, left bottom, color-stop(0, #CCC), color-stop(1, #DEDEDE ));
+    background-color: #DEDEDE ;
+    color: #333 !important;
 }
