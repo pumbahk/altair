@@ -1,6 +1,7 @@
 <%inherit file="../layout.html" />
 
 <h2>購入履歴の確認</h2>
+<p><a href="${request.route_path('mypage.show', _query=dict(auth_type='altair.oauth_auth.plugin.OAuthAuthPlugin'))}">ファンクラブ会員・各種優待の方はこちらから</a></p>
 <form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
   <!-- wrapper -->
   <div class="formWrapper">
