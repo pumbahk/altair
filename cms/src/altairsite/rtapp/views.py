@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 from datetime import datetime
 from pyramid.view import view_config
 from altaircms.modellib import DBSession as session
+from altaircms.event.event_info import get_event_notify_info
 from . import api
 from .helpers import grep_prfms_in_sales
 from .builders import (
@@ -58,9 +59,9 @@ def api_performance_list(self, request):
 def api_event_detail(self, request):
     event = api.get_event(session, request)
     performances = sorted(event.performances, key=lambda p:p.start_on, reverse=True)
-    widget_summary = api.get_widget_summary(session, event)
+    event_info = get_event_notify_info(event)
     builder = EventDetailResponseBuilder()
-    res = builder.build_response(request, event, performances, widget_summary)
+    res = builder.build_response(request, event, performances, event_info)
     return res
 
 
