@@ -7,7 +7,7 @@ import sqlalchemy as sa
 from markupsafe import Markup
 from sqlalchemy import sql
 from sqlalchemy.sql import func as sqlf
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
@@ -116,7 +116,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             altair_famiport_venue = session.query(AltairFamiPortVenue) \
                 .join(AltairFamiPortVenue.sites) \
                 .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
-                .filter(Site.name == performance.venue.site.name) \
+                .filter(Site.id == performance.venue.site.id) \
+                .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
                 .distinct() \
                 .one()
         except NoResultFound:
@@ -126,6 +127,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             altair_famiport_venue = AltairFamiPortVenue(
                 organization_id=event.organization_id,
                 famiport_venue_id=None,
+                venue_name=performance.venue.name,
                 name=performance.venue.site.name,
                 name_kana=u'',
                 status=AltairFamiPortReflectionStatus.Editing.value,
@@ -139,7 +141,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 client_code=client_code,
                 id=None,
                 userside_id=altair_famiport_venue.id,
-                name=performance.venue.site.name,
+                name=performance.venue.name,
                 name_kana=u'',
                 prefecture=prefecture,
                 update_existing=False
@@ -168,7 +170,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                         client_code=client_code,
                         id=famiport_venue_id,
                         userside_id=altair_famiport_venue.id,
-                        name=performance.venue.site.name,
+                        name=performance.venue.name,
                         name_kana=u'',
                         prefecture=prefecture,
                         update_existing=True
@@ -385,7 +387,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 client_code=tenant.code,
                 id=None,
                 userside_id=altair_famiport_performance_group.altair_famiport_venue.id,
-                name=altair_famiport_performance_group.altair_famiport_venue.site.name,
+                name=altair_famiport_performance_group.altair_famiport_venue.venue_name,
                 name_kana=u'',
                 prefecture=prefecture,
                 update_existing=True

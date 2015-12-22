@@ -42,7 +42,8 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
     organization_id = AnnotatedColumn(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
     famiport_venue_id = AnnotatedColumn(Identifier, nullable=False)
-    name  = AnnotatedColumn(sa.Unicode(50), nullable=False)
+    venue_name = AnnotatedColumn(sa.Unicode(50), nullable=False) # Venue.name
+    name  = AnnotatedColumn(sa.Unicode(50), nullable=False) # Site.name
     name_kana = AnnotatedColumn(sa.Unicode(100), nullable=False)
     status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
     last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
