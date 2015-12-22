@@ -845,12 +845,7 @@ class ExportNumberOfPerformanceReporter(object):
             .join(SalesSegment, SalesSegment.performance_id == Performance.id)\
             .filter(SalesSegment.public == True)\
             .filter(Event.organization_id == self.organization.id)\
-            .filter(
-                (self.export_time_from <= SalesSegment.start_at) & (SalesSegment.start_at <= self.export_time_to) & (self.export_time_to <= SalesSegment.end_at)|
-                (self.export_time_from <= SalesSegment.end_at) & (SalesSegment.end_at <= self.export_time_to) |
-                (SalesSegment.start_at <= self.export_time_from) & (self.export_time_to <= SalesSegment.end_at) |
-                (self.export_time_from <= SalesSegment.start_at) & (SalesSegment.end_at <= self.export_time_to )
-            )
+            .filter((self.export_time_from <= SalesSegment.end_at) & (self.export_time_to >= SalesSegment.start_at))
         return q
 
     def fetch(self):
