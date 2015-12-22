@@ -151,7 +151,7 @@ class EventDetailResponseBuilder(BaseListResponseBuilder):
         res['subtitle'] = event.subtitle
         res['page_paths'] = [pageset.url for pageset in pagesets]
         res['genre_id'] = pagesets[0].genre_id if pagesets else None
-        res['display_items'] = event_info if event_info is not None else [ ]
+        res['display_items'] = event_info["event"] if event_info else [ ]
         res['performances'] = self._make_performance_list(request, performances)
 
         return res
