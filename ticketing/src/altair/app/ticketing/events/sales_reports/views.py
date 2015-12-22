@@ -24,9 +24,10 @@ from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
     ReportSettingForm,
+    NumberOfPerformanceReportExportForm,
     )
 
-from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, ExportableReporter, sendmail
+from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, ExportableReporter, sendmail, ExportNumberOfPerformanceReporter
 from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 from altair.app.ticketing.utils import get_safe_filename
 
@@ -47,6 +48,7 @@ class SalesReports(BaseView):
 
         return {
             'form':form,
+            'export_form':NumberOfPerformanceReportExportForm(),
             }
 
     @view_config(route_name='sales_reports.index', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/index.html')
@@ -61,6 +63,7 @@ class SalesReports(BaseView):
         else:
             return {
                 'form':form,
+                'export_form':NumberOfPerformanceReportExportForm(),
                 }
 
     @view_config(route_name='sales_reports.event', renderer='altair.app.ticketing:templates/sales_reports/event.html')
@@ -134,6 +137,25 @@ class SalesReports(BaseView):
             r.headers['Content-Type'] = 'text/plain'
             return r
         filename = u"%s.csv" % get_safe_filename(event.title)
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        return Response(r.text.encode('cp932'), headers=headers)
+
+    @view_config(route_name='sales_reports.export_number_of_performance')
+    def export_number_of_performance(self):
+        form = NumberOfPerformanceReportExportForm(self.request.params)
+        if not form.validate():
+            self.request.session.flash(u'期間は必ず必要です。')
+            return HTTPFound(self.request.route_url('sales_reports.index'))
+
+        render_param = dict(reporter=ExportNumberOfPerformanceReporter(self.request, form.export_time_from.data, form.export_time_to.data), encoding="cp932")
+        r = render_to_response('altair.app.ticketing:templates/sales_reports/number_of_performance_export.txt', render_param, request=self.request)
+        if self.request.params.get('view'):
+            r.headers['Content-Type'] = 'text/plain'
+            return r
+        filename = u"販売公演数{0}.csv".format(get_safe_filename(form.export_time_from.data.strftime('%Y-%m-%d')))
         headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
             ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))

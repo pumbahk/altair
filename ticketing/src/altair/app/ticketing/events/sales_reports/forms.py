@@ -106,6 +106,35 @@ class SalesReportSearchForm(OurForm):
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
 
 
+class NumberOfPerformanceReportExportForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(NumberOfPerformanceReportExportForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    def _get_translations(self):
+        return Translations()
+
+    export_time_from = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Required(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    export_time_to = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Required(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
+        format='%Y-%m-%d %H:%M',
+    )
+
+    def validate_export_time_from(form, field):
+        if not form.data['export_time_from'] or not form.data['export_time_to']:
+            raise ValidationError(u'期間は必ず指定してください')
+
+        if form.data['export_time_from'] > form.data['export_time_to']:
+            raise ValidationError(u'指定した期間が、不正です')
+
 class SalesReportForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

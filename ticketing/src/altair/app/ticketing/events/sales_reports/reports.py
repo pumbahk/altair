@@ -814,6 +814,58 @@ class ExportableReporter(object):
 
         return ElementTree.tostring(root)
 
+
+class ExportNumberOfPerformanceReporter(object):
+    def __init__(self, request, export_time_from, export_time_to):
+        self.slave_session = get_db_session(request, name="slave")
+        self.request = request
+
+        self.organization = request.context.user.organization
+        self.accounts = Account.query.filter(Account.user_id==self.organization.user_id, Account.organization_id==self.organization.id).all()
+        self.export_time_from = export_time_from
+        self.export_time_to = export_time_to
+
+    def make_query(self):
+        """
+        請求明細のデータを出力するクエリを返す
+        """
+        if not self.export_time_from or not self.export_time_to:
+            raise
+
+        """
+        指定された期間に、販売期間が入っているか比較しているため複雑
+
+        ・指定された期間が、販売開始をまたいでいる、かつ、販売終了していない
+        ・販売終了が、指定された期間をまたいでいるとき
+        ・指定された期間が、販売期間にはさまれているとき
+        ・販売期間が、指定された期間にはさまれているとき
+        """
+        q = self.slave_session.query(Performance)\
+            .join(Event, Event.id == Performance.event_id)\
+            .join(SalesSegment, SalesSegment.performance_id == Performance.id)\
+            .filter(SalesSegment.public == True)\
+            .filter(Event.organization_id == self.organization.id)\
+            .filter(
+                (self.export_time_from <= SalesSegment.start_at) & (SalesSegment.start_at <= self.export_time_to) & (self.export_time_to <= SalesSegment.end_at)|
+                (self.export_time_from <= SalesSegment.end_at) & (SalesSegment.end_at <= self.export_time_to) |
+                (SalesSegment.start_at <= self.export_time_from) & (self.export_time_to <= SalesSegment.end_at) |
+                (self.export_time_from <= SalesSegment.start_at) & (SalesSegment.end_at <= self.export_time_to )
+            )
+        return q
+
+    def fetch(self):
+        """
+        CSV出力用のデータを準備
+        """
+        return self.make_query().all()
+
+    def get(self):
+        """
+        CSV出力用のデータを準備
+        """
+        return self.fetch()
+
+
 class EventReporter(object):
 
     def __init__(self, request, form, event):
