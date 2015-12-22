@@ -142,7 +142,7 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
 
 class EventDetailResponseBuilder(BaseListResponseBuilder):
-    def build_response(self, request, event, performances, widget_summary):
+    def build_response(self, request, event, performances, event_info):
         pagesets = event.pagesets
         res = dict()
         res['event_id'] = str(event.id) if event.id else None
@@ -150,8 +150,8 @@ class EventDetailResponseBuilder(BaseListResponseBuilder):
         res['title'] = event.title
         res['subtitle'] = event.subtitle
         res['page_paths'] = [pageset.url for pageset in pagesets]
-        res['genre_id'] = pagesets[0].genre_id if pagesets[0] else None
-        res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
+        res['genre_id'] = pagesets[0].genre_id if pagesets else None
+        res['display_items'] = event_info if event_info is not None else [ ]
         res['performances'] = self._make_performance_list(request, performances)
 
         return res
