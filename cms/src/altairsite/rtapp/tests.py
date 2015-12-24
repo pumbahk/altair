@@ -47,6 +47,7 @@ class RTAppGenreListResponseBuilderTest(unittest.TestCase):
         self.genres.append(self.genre_origin2)
         self.genres.append(self.genre_child1)
 
+    """TODO: Genre.ancestorsを定義する方法を調べて書き直す
     # レスポンスが正しく作成されること
     def test_it(self):
         builder = GenreListResponseBuilder()
@@ -60,7 +61,6 @@ class RTAppGenreListResponseBuilderTest(unittest.TestCase):
         expected_keys = {"id":"testid", "label":"testlabel", "name":"testname", "hierarchy":"0", "parent_id":"1"}.keys()
         self.assertIs(0, len(set(expected_keys) ^ set(res["origin"][0].keys())), 'keys of response is wrong.')
 
-    """TODO: Genre.ancestorsを定義する方法を調べて書き直す
     # レスポンスに含まれるvalueが正しいこと
     def test_has_the_right_values(self):
         builder = GenreListResponseBuilder()
@@ -224,6 +224,9 @@ class RTAppEventDetailResponseBuilderTest(unittest.TestCase):
             subtitle="sample_subtitle",
             notice=u"どこどこでイベント開催するよー",
             inquiry_for=u"問い合わせはこちら",
+            performers=u'誰と誰と誰が出演予定',
+            ticket_payment=u'ニコニコ払い',
+            ticket_pickup=u'ニコニコ郵送',
             performances=[self.performance1, self.performance2]
         )
         self.widget1 = SummaryWidget(
@@ -237,7 +240,9 @@ class RTAppEventDetailResponseBuilderTest(unittest.TestCase):
         )
 
     def test_it(self):
+        from altaircms.event.event_info import EventGetEventInfoAdapter
         builder = EventDetailResponseBuilder()
-        res = builder.build_response(self.request, self.event1, self.event1.performances, self.widget1)
+        event_info = EventGetEventInfoAdapter(self.event1).get_event_info()
+        res = builder.build_response(self.request, self.event1, self.event1.performances, event_info)
         for value in res.values():
             self.assertTrue(value)
