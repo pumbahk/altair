@@ -71,13 +71,14 @@ class OAuthProvider(object):
 
     def grant_authorization_code(self, client_id, redirect_uri=None, scope=None, identity=None):
         client = self.validated_client(client_id, None)
+        authorized_scope = set(client.authorized_scope)
         if scope is not None:
             scope = set(scope)
             self.validate_scope(scope)
-            if not (client.authorized_scope & scope):
+            if not (authorized_scope & scope):
                 raise OAuthAccessDeniedError(u'scope error')
         else:
-            scope = client.authorized_scope
+            scope = authorized_scope
         if redirect_uri is not None:
             if not client.validate_redirect_uri(redirect_uri):
                 raise OAuthAccessDeniedError(u'redirect_uri does not match')
