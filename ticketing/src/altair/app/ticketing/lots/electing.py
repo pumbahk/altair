@@ -191,6 +191,7 @@ class Electing(object):
             .join(LotEntry) \
             .join(Lot) \
             .filter(Lot.id == lot_id) \
+            .filter(LotEntry.withdrawn_at == None) \
             .filter(LotEntry.ordered_mail_sent_at == None) \
             .all()
 

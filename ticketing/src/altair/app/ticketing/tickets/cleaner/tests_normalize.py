@@ -159,7 +159,7 @@ class EliminatedTagNormalizeUnitTests(NormalizerTestCase):
         """
         from altair.app.ticketing.tickets.preview.fillvalues import template_fillvalues
         result = template_fillvalues("<doc><a>{{xxx}}</a></doc>", {"xxx": "{{xxx}}{{yyy}}"})
-        self.assertEquals("<doc><a>{{xxx}}{{yyy}}</a></doc>", result)
+        self.assertEquals("<doc><a>{{xxx}}{{yyy}}{{yyy}}</a></doc>", result)
 
 
 if __name__ == "__main__":
