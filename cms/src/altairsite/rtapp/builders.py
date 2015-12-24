@@ -2,7 +2,8 @@
 
 from itertools import groupby
 from urlparse import urljoin
-from altaircms.helpers.link import get_link_from_topic, get_mobile_link_from_topic
+from urlparse import urlparse
+from altaircms.helpers.link import get_link_from_topic
 from altaircms.linklib import add_params_to_url
 from altair.pyramid_assets import get_resolver
 from .helpers import (
@@ -22,12 +23,33 @@ def resolve_url(url):
         return 'http://%s.s3.amazonaws.com/%s' % (match.group(1), match.group(2))
     return url
 
-class TopPageResponseBuilder(object):
-    def _complete_url(self, request, url):
-        if not url.startswith("http://") and not url.startswith("https://"):
-            url = urljoin(request.host_url, url)
-        return url
 
+def build_detail_url(request, topic):
+    url = get_link_from_topic(request, topic)
+    pc_search_path = request.route_path('page_search_by_freeword')
+    sp_search_path = request.route_path('smartphone.search')
+    # SPリンク化
+    if pc_search_path in url:
+        url = url.replace(pc_search_path, sp_search_path)
+        url = url.replace('?q=', '?word=')
+
+    # host名がデータとリクエストで相違する場合は合わせる
+    if not url.startswith(request.host_url):
+        # データがpathの場合はホスト名を補完する
+        if not urlparse(url).hostname:
+            url = urljoin(request.host_url, url)
+        else:
+            url = urlparse(url)._replace(scheme=u"http").geturl()
+            url = urlparse(url)._replace(netloc=request.host).geturl()
+
+    # トラッキングコードクエリ追加
+    if topic.trackingcode:
+        params = {"l-id": topic.trackingcode}
+        url = add_params_to_url(url, params)
+
+    return url
+
+class TopPageResponseBuilder(object):
     def build_response(self, request, topcontents, topics):
         res = dict()
         res["topcontents"] = []
@@ -36,21 +58,13 @@ class TopPageResponseBuilder(object):
             tcdict = dict()
             tcdict["title"] = tc.title
             tcdict["copy_text"] = tc.text
-            tcdict["detail_url"] = get_mobile_link_from_topic(request, tc)
-            tcdict["detail_url"] = self._complete_url(request, tcdict["detail_url"])
-            if tc.trackingcode:
-                params = {"l-id": tc.trackingcode}
-                tcdict["detail_url"] = add_params_to_url(tcdict["detail_url"], params)
+            tcdict["detail_url"] = build_detail_url(request, tc)
             tcdict["image_url"] = resolve_url(tc.image_asset.file_url) if tc.image_asset else None
             res["topcontents"].append(tcdict)
         for t in topics:
             tdict = dict()
             tdict["text"] = t.text
-            tdict["detail_url"] = get_mobile_link_from_topic(request, t)
-            tdict["detail_url"] = self._complete_url(request, tdict["detail_url"])
-            if t.trackingcode:
-                params = {"l-id": t.trackingcode}
-                tdict["detail_url"] = add_params_to_url(tdict["detail_url"], params)
+            tdict["detail_url"] = build_detail_url(request, t)
             res["topics"].append(tdict)
 
         return res
@@ -142,13 +156,16 @@ class PerformanceGroupListResponseBuilder(BaseListResponseBuilder):
 
 
 class EventDetailResponseBuilder(BaseListResponseBuilder):
-    def build_response(self, request, event, performances, widget_summary):
+    def build_response(self, request, event, performances, event_info):
+        pagesets = event.pagesets
         res = dict()
         res['event_id'] = str(event.id) if event.id else None
         res['backend_id'] = str(event.backend_id) if event.backend_id else None
         res['title'] = event.title
         res['subtitle'] = event.subtitle
-        res['display_items'] = json.loads(widget_summary.items) if widget_summary is not None else [ ]
+        res['page_paths'] = [pageset.url for pageset in pagesets]
+        res['genre_id'] = pagesets[0].genre_id if pagesets else None
+        res['display_items'] = event_info["event"] if event_info else [ ]
         res['performances'] = self._make_performance_list(request, performances)
 
         return res
