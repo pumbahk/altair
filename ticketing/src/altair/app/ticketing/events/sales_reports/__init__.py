@@ -8,6 +8,7 @@ def includeme(config):
     config.add_route('sales_reports.preview','/preview/', factory=SalesReportAdminResource)
     config.add_route('sales_reports.mail_body','/mail_body/', factory=SalesReportAdminResource)
     config.add_route('sales_reports.export','/export/', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.export_number_of_performance','/export_number_of_performance/', factory=SalesReportAdminResource)
     config.add_route('sales_reports.export_xml','/export_xml/', factory=SalesReportAdminResource)
     config.add_route('sales_reports.send_mail','/send_mail/', factory=SalesReportAdminResource)
 

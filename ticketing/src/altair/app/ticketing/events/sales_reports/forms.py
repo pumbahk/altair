@@ -106,6 +106,33 @@ class SalesReportSearchForm(OurForm):
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
 
 
+class NumberOfPerformanceReportExportForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(NumberOfPerformanceReportExportForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    def _get_translations(self):
+        return Translations()
+
+    export_time_from = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Required(u"公演数CSV出力の販売開始日を入力して下さい。"), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    export_time_to = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Required(u"公演数CSV出力の販売終了日を入力して下さい。"), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
+        format='%Y-%m-%d %H:%M',
+    )
+
+    def validate_export_time_from(form, field):
+        if form.data['export_time_from'] and form.data['export_time_to']:
+            if form.data['export_time_from'] > form.data['export_time_to']:
+                raise ValidationError(u'公演数CSV出力の指定した期間が、不正です')
+
 class SalesReportForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
