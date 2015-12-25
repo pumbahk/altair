@@ -118,22 +118,22 @@ class NumberOfPerformanceReportExportForm(OurForm):
 
     export_time_from = OurDateTimeField(
         label=u'絞り込み期間',
-        validators=[Required(), after1900],
+        validators=[Required(u"公演数CSV出力の販売期間を入力してください。"), after1900],
         format='%Y-%m-%d %H:%M',
     )
     export_time_to = OurDateTimeField(
         label=u'絞り込み期間',
-        validators=[Required(), after1900],
+        validators=[Required(u"公演数CSV出力の販売期間を入力してください。"), after1900],
         missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
 
     def validate_export_time_from(form, field):
         if not form.data['export_time_from'] or not form.data['export_time_to']:
-            raise ValidationError(u'期間は必ず指定してください')
+            raise ValidationError(u'公演数CSV出力の販売期間を入力してください。')
 
         if form.data['export_time_from'] > form.data['export_time_to']:
-            raise ValidationError(u'指定した期間が、不正です')
+            raise ValidationError(u'公演数CSV出力の指定した期間が、不正です')
 
 class SalesReportForm(OurForm):
 

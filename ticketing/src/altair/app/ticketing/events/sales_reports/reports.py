@@ -821,7 +821,6 @@ class ExportNumberOfPerformanceReporter(object):
         self.request = request
 
         self.organization = request.context.user.organization
-        self.accounts = Account.query.filter(Account.user_id==self.organization.user_id, Account.organization_id==self.organization.id).all()
         self.export_time_from = export_time_from
         self.export_time_to = export_time_to
 
@@ -843,7 +842,6 @@ class ExportNumberOfPerformanceReporter(object):
         q = self.slave_session.query(Performance)\
             .join(Event, Event.id == Performance.event_id)\
             .join(SalesSegment, SalesSegment.performance_id == Performance.id)\
-            .filter(SalesSegment.public == True)\
             .filter(Event.organization_id == self.organization.id)\
             .filter((self.export_time_from <= SalesSegment.end_at) & (self.export_time_to >= SalesSegment.start_at))
         return q
