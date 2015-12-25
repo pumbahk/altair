@@ -63,3 +63,21 @@
     <input name="performance_id" type="hidden" value="${performance_id}">
   </div>
 </form>
+
+<br/><br/>
+<form action="${request.route_path('sales_reports.export_number_of_performance')}" method="POST" style="margin-bottom: 0;">
+  <div class="control-group">
+    <div class="controls">
+      <h4>公演数CSV出力</h4>
+      <table>
+        <tr>
+          <td valign="top" style="padding-top: 10px; width: 50px;">販売期間</td>
+          <td valign="top" style="padding-top: 10px;">${ch.form_item(export_form.export_time_from, label=False, error_next_line=True)}</td>
+          <td valign="top" style="padding-top: 10px; width: 30px;"> 〜 </td>
+          <td valign="top" style="padding-top: 10px;">${ch.form_item(export_form.export_time_to, label=False, error_next_line=True)}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <input type="submit" class="btn" value="CSV出力" >
+</form>

@@ -1,0 +1,29 @@
+<%page args="reporter" /><%
+
+import cStringIO
+from altair.app.ticketing.csvutils import UnicodeWriter
+
+queue = cStringIO.StringIO()
+writer = UnicodeWriter(queue)
+
+writer.writerow([
+    u"イベント名",
+    u"公演名",
+    u"公演コード",
+    u"公演日時",
+])
+
+
+for performance in reporter.get():
+    sale_time = performance.start_on.strftime('%Y/%m/%d %H:%M')
+    if performance.end_on:
+        sale_time = u"{0}-{1}".format(performance.start_on.strftime('%Y/%m/%d %H:%M'), performance.end_on.strftime('%Y/%m/%d %H:%M:%S'))
+
+    writer.writerow([
+        performance.event.title,
+        performance.name,
+        performance.code,
+        sale_time
+    ])
+
+%>${queue.getvalue().decode("utf-8") | n}
