@@ -81,7 +81,7 @@ class EaglesCommunicator(object):
     def resolve_style_name(self, member_dict):
         return self.style_classes.get(six.text_type(member_dict['course_id']), u'')
 
-    def get_user_profile(self, openid_claimed_id, ticket_only=True, is_eternal=False):
+    def get_user_profile(self, openid_claimed_id, ticket_only=True, is_eternal=True):
         h = hashlib.sha224()
         h.update(openid_claimed_id)
         h.update(self.client_name)
