@@ -59,6 +59,7 @@ class SalesReports(BaseView):
             return {
                 'form':form,
                 'event_total_reporter':event_total_reporter,
+                'export_form':NumberOfPerformanceReportExportForm(),
                 }
         else:
             return {
