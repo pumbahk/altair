@@ -184,7 +184,9 @@ class FamiPortTicketXMLBuilder(object):
         ti = self._get_template_info(name)
         for element_name, t in ti.mappings:
             e = etree.Element(element_name)
+            #tkt330 プレースホルダーを二重交換
             e.text = render(t, dicts)
+            e.text = render(e.text, dicts)
             root.append(e)
         return root, ti.template_code, ti.logically_subticket
 
@@ -325,7 +327,9 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
         if payment_sheet_text_template is not None:
             dict_ = build_cover_dict_from_order(order_like)
+            #tkt330 プレースホルダーを二重交換
             payment_sheet_text = pystache.render(payment_sheet_text_template, dict_)
+            payment_sheet_text = pystache.render(payment_sheet_text, dict_)
 
     event_code_1 = None
     event_code_2 = None
