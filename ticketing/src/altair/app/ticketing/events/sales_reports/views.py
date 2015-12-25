@@ -147,8 +147,9 @@ class SalesReports(BaseView):
     def export_number_of_performance(self):
         form = NumberOfPerformanceReportExportForm(self.request.params)
         if not form.validate():
-            if form.errors:
-                self.request.session.flash(form.errors[form.errors.keys()[0]][0])
+            for field, errors in form.errors.items():
+                for err in errors:
+                    self.request.session.flash(err)
             return HTTPFound(self.request.route_url('sales_reports.index'))
 
         render_param = dict(reporter=ExportNumberOfPerformanceReporter(self.request, form.export_time_from.data, form.export_time_to.data), encoding="cp932")
