@@ -124,10 +124,13 @@ def get_tickets(request, order, ticket_template_id=None):
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
+                    #tkt330 プレースホルダーを二重交換
+                    ticket_drawing_data = pystache.render(ticket.data['drawing'], dict_)
+                    ticket_drawing_data = pystache.render(ticket_drawing_data, dict_)
                     svg = etree.tostring(
                         convert_svg(
                             etree.ElementTree(
-                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                etree.fromstring(ticket_drawing_data)
                                 ),
                             global_transform=transform,
                             notation_version=notation_version
@@ -156,10 +159,13 @@ def get_tickets_from_cart(request, cart, now):
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     template_record = sej_api.get_ticket_template_record(request, ticket_template_id)
                     notation_version = template_record.notation_version if template_record is not None else 1
+                    #tkt330 プレースホルダーを二重交換
+                    ticket_drawing_data = pystache.render(ticket.data['drawing'], dict_)
+                    ticket_drawing_data = pystache.render(ticket_drawing_data, dict_)
                     svg = etree.tostring(
                         convert_svg(
                             etree.ElementTree(
-                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                etree.fromstring(ticket_drawing_data)
                                 ),
                             global_transform=transform,
                             notation_version=notation_version
