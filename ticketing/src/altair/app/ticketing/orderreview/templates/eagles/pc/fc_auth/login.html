@@ -27,7 +27,7 @@
       </table>
     </td>
     <td>
-      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
+      <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show', _query=dict(auth_type='fc_auth'))))}" method="post">
       <table class="loginbox">
         <thead>
           <tr>
@@ -92,6 +92,7 @@
     </td>
   </tr>
 </table>
+<p style="text-align:right"><a href="/extauth/-/"><span>2016年度以降のファンクラブの方はこちら</span></a></p>
 <h3>注意事項</h3>
 <ul class="notes">
     <li>会員の方も、受付番号（REから始まる12ケタ）から確認することができます。</li>
