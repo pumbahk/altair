@@ -123,6 +123,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
         except NoResultFound:
             pass
         logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Site.name=%s' % (performance.venue.site_id, performance.venue.site.name))
+        result = {}
         if altair_famiport_venue is None:
             altair_famiport_venue = AltairFamiPortVenue(
                 organization_id=event.organization_id,
