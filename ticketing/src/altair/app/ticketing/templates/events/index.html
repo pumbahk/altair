@@ -87,6 +87,26 @@
             </a>
           % endif
         </td>
+        % if event.organization.setting.famiport_enabled:
+        <td>
+          <div class="btn-group" style="float: left;">
+            <% fm_performance_ids = is_famiport_cooperation[event.id] %>
+            % if not fm_performance_ids:
+              <a class="btn btn-danger" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                Famiポート連携
+              </a>
+            % elif len(fm_performance_ids) == len(event.performances):
+              <a class="btn btn-success" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                Famiポート連携
+              </a>
+            % else:
+              <a class="btn btn-warning" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                Famiポート連携
+              </a>
+            % endif
+          </div>
+        </td>
+        % endif
       </tr>
       <% row_no += 1 %>
     % endfor
