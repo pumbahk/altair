@@ -150,6 +150,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     )
             except FamiPortAPIError as famiport_api_error:
                 logs.append(famiport_api_error)
+                return logs
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
@@ -182,6 +183,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             )
                     except FamiPortAPIError as famiport_api_error:
                         logs.append(famiport_api_error)
+                        return logs
                     if result['new']:
                         logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.site.name)
 
