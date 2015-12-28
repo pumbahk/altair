@@ -11,7 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
-from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
+from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError, FamiPortAPIError
 from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
@@ -136,16 +136,19 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             session.add(altair_famiport_venue)
             session.flush()
             prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture.strip())
-            result = create_or_update_famiport_venue(
-                request,
-                client_code=client_code,
-                id=None,
-                userside_id=altair_famiport_venue.id,
-                name=performance.venue.name,
-                name_kana=u'',
-                prefecture=prefecture,
-                update_existing=False
-                )
+            try:
+                result = create_or_update_famiport_venue(
+                    request,
+                    client_code=client_code,
+                    id=None,
+                    userside_id=altair_famiport_venue.id,
+                    name=performance.venue.name,
+                    name_kana=u'',
+                    prefecture=prefecture,
+                    update_existing=False
+                    )
+            except FamiPortAPIError as famiport_api_error:
+                logs.append(famiport_api_error)
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
@@ -165,16 +168,19 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.site.name)
                     prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
                     altair_famiport_venue.name = performance.venue.site.name
-                    result = create_or_update_famiport_venue(
-                        request,
-                        client_code=client_code,
-                        id=famiport_venue_id,
-                        userside_id=altair_famiport_venue.id,
-                        name=performance.venue.name,
-                        name_kana=u'',
-                        prefecture=prefecture,
-                        update_existing=True
-                        )
+                    try:
+                        result = create_or_update_famiport_venue(
+                            request,
+                            client_code=client_code,
+                            id=famiport_venue_id,
+                            userside_id=altair_famiport_venue.id,
+                            name=performance.venue.name,
+                            name_kana=u'',
+                            prefecture=prefecture,
+                            update_existing=True
+                            )
+                    except FamiPortAPIError as famiport_api_error:
+                        logs.append(famiport_api_error)
                     if result['new']:
                         logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.site.name)
 
