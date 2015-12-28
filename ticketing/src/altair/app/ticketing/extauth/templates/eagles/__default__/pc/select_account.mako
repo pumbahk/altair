@@ -14,4 +14,10 @@
 %endfor
 </ul>
 </div>
-
+<!-- SiteCatalyst -->
+<script type="text/javascript">
+var trackingParam = {};
+trackingParam.pageName="extauth:select_account"
+trackingParam.channel="extauth"
+</script>
+<!-- SiteCatalyst -->

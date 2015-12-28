@@ -156,3 +156,14 @@ ${(view_context.embedded_html_complete_page or u'')|n}
     <a href="${request.context.host_base_url}"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_back_to_top.gif')}"/></a>
   </div>
 </div>
+
+<!-- SiteCatalyst -->
+<script type="text/javascript">
+var trackingParam = {};
+trackingParam.pageName="cart:completed "
+trackingParam.channel="cart"
+trackingParam.products="[Category];[Product];[Quality];[Price]"
+trackingParam.events="purchase"
+trackingParam.purchaseID="[orderNo]"
+</script>
+<!-- SiteCatalyst -->

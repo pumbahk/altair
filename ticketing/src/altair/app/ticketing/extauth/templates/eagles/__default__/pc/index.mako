@@ -14,7 +14,7 @@
 
 <ul class="fcType clearfix">
 <li class="fcType-L" style="background:#D3D1D0;"><img src="${view_context.static_url('images/status_booster.png')}" alt="ブースタークラブ"></li>
-<li class="fcType-L" style="background:#FDEECC"><img src="${view_context.static_url('images/status_gold.png')}" alt="ゴールドクラブ"></li>
+<li class="fcType-L" style="background:#FDEECC;"><img src="${view_context.static_url('images/status_gold.png')}" alt="ゴールドクラブ"></li>
 <li class="fcType-L" style="background:#E7E7E7;"><img src="${view_context.static_url('images/status_regular.png')}" alt="レギュラークラブ"></li>
 <li class="fcType-L" style="background:#FAD5E8;"><img src="${view_context.static_url('images/status_ladies.png')}" alt="レディースクラブ"></li>
 <li class="fcType-L" style="background:#CCECFA;"><img src="${view_context.static_url('images/status_e25.png')}" alt="E25クラブ"></li>
@@ -76,3 +76,11 @@
 TEL: 050-5817-8192（平日10時～18時）※不定休</li>
 </ul>
 </article>
+
+<!-- SiteCatalyst -->
+<script type="text/javascript">
+var trackingParam = {};
+trackingParam.pageName="extauth:index"
+trackingParam.channel="extauth"
+</script>
+<!-- SiteCatalyst -->
