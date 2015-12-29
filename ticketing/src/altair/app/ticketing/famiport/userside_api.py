@@ -12,7 +12,7 @@ from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
 from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError, FamiPortAPIError
-from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
+from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -150,13 +150,12 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     )
             except FamiPortAPIError as famiport_api_error:
                 logs.append(famiport_api_error)
-                return logs
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
             logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.site.name)
         else:
-            famiport_venue_info = get_famiport_venue_by_userside_id(request, client_code, altair_famiport_venue.id)
+            famiport_venue_info = get_famiport_venue_by_userside_id_or_name(request, client_code, altair_famiport_venue.id, altair_famiport_venue.venue_name)
             famiport_venue_id = famiport_venue_info['venue_id']
             prefecture = famiport_venue_info['prefecture']
             if performance.venue.site not in altair_famiport_venue.sites:

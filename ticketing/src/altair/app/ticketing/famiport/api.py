@@ -197,7 +197,7 @@ def get_famiport_venue_by_name(request, client_code, name):
         famiport_venue = internal.get_famiport_venue_by_name(session, client_code, name)
         return famiport_venue_to_dict(famiport_venue)
     except NoResultFound:
-        raise FamiPortAPINotFoundError('no such venue corresponds to userside_id: %d' % userside_id)
+        raise FamiPortAPINotFoundError('no such venue corresponds to name: %d' % name)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
@@ -211,6 +211,17 @@ def get_famiport_venue_by_userside_id(request, client_code, userside_id):
         return famiport_venue_to_dict(famiport_venue)
     except NoResultFound:
         raise FamiPortAPINotFoundError('no such venue corresponds to userside_id: %d' % userside_id)
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
+def get_famiport_venue_by_userside_id_or_name(request, client_code, userside_id, name):
+    sys.exc_clear()
+    try:
+        return get_famiport_venue_by_userside_id(request, client_code, userside_id)
+    except FamiPortAPINotFoundError:
+        return get_famiport_venue_by_name(request, client_code, name)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
@@ -294,7 +305,7 @@ def create_or_update_famiport_venue(
         sys.exc_clear()
 
         if not update_existing and venue is not None:
-            raise FamiPortAPIError('venue (id: %s, name: %s) already exists' % (venue.id, venue.name))
+            return dict(new=False, venue_id=venue.id)
         if venue is None:
             venue = FamiPortVenue(client_code=client_code)
             new = True
