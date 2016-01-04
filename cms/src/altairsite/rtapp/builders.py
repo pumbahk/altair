@@ -28,6 +28,7 @@ def build_detail_url(request, topic):
     url = get_link_from_topic(request, topic)
     pc_search_path = request.route_path('page_search_by_freeword')
     sp_search_path = request.route_path('smartphone.search')
+
     # SPリンク化
     if pc_search_path in url:
         url = url.replace(pc_search_path, sp_search_path)
@@ -45,7 +46,7 @@ def build_detail_url(request, topic):
     # トラッキングコードクエリ追加
     if topic.trackingcode:
         params = {"l-id": topic.trackingcode}
-        url = add_params_to_url(url, params)
+        url = add_params_to_url(url, params, parse_qs_opts={ "keep_blank_values": True })
 
     return url
 
