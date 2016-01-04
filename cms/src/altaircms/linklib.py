@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 def quote(x):
     return urllib.quote(x.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if x else None
 
-def add_params_to_url(url, params_dict, parse_qs_opts=None):
+def add_params_to_url(url, params_dict, parse_qs_opts=dict()):
     if not isinstance(url, ParseResult):
         url = urlparse(url)
     qs_dict = parse_qs(str(url.query), **parse_qs_opts)
