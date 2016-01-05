@@ -146,12 +146,12 @@ table.nowrap td { white-space: nowrap; }
 		% endif
 	  </td>
       <td>
-        % if item.seat.attributes.get("gate") != None:
+        % if item.seat.attributes.get("gate", ""):
 			${item.seat.attributes.get("gate")}
 		% endif
 	  </td>
       <td>
-        % if item.seat.attributes.get("block") != None:
+        % if item.seat.attributes.get("block", ""):
 			${item.seat.attributes.get("block")}
 		% endif
 	  </td>
