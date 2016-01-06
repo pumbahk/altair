@@ -40,6 +40,7 @@
         <td>
         % for p in refund.performances:
           ${p.name}<br>
+          公演日:${p.start_on}<br>
         % endfor
         </td>
         <td>${refund.order_count}</td>
@@ -114,6 +115,7 @@ ${m.delete_modal(label_cancel=u'戻る')}
       <thead>
         <tr>
           <th>公演</th>
+          <th>公演日</th>
           <th>決済方法</th>
           <th>引取方法</th>
           <th>発券</th>
@@ -126,6 +128,7 @@ ${m.delete_modal(label_cancel=u'戻る')}
         % for bd in refund.breakdowns():
         <tr>
           <td>${bd.performance_name}</td>
+          <td>${bd.performance_start_on}</td>
           <td>${bd.payment_method_name}</td>
           <td>${bd.delivery_method_name}</td>
           <td>${u'済' if bd.issued else u'未'}</td>
