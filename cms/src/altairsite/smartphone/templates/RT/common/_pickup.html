@@ -30,7 +30,7 @@ $(function() {
     });
 
     var $pickup = $('#pickup');
-    $pickup.bind('touchstart', function(e) { e.preventDefault() });
+    $pickup.bind('touchmove', function(e) { e.preventDefault() });
     var $next = $pickup.find(".next").click(function() {
         flipsnap.toNext();
     });
@@ -141,7 +141,7 @@ $(function() {
         target.prop('height', true_height);
         target.prop('width', true_width);
     }
-});
+})();
 
 </script>
 

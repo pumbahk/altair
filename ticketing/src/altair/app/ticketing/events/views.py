@@ -134,11 +134,21 @@ class Events(BaseView):
         if self.request.params.get('format') == 'xml':
             return self.index_xml(query, 50)
 
+        is_famiport_cooperation = {}
+        for event in events:
+            fm_performance_ids = [] # FM連携済みのperformance_id
+            altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
+                .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in event.performances])).all()
+            for altair_famiport_performance in altair_famiport_performances:
+                fm_performance_ids.append(altair_famiport_performance.performance_id)
+            is_famiport_cooperation[event.id] = fm_performance_ids
+
         return {
             'form_search': form_search,
             'form':EventForm(context=self.context),
             'events':events,
             'search_query':search_query,
+            'is_famiport_cooperation': is_famiport_cooperation,
             'h':EventHelper()
         }
 

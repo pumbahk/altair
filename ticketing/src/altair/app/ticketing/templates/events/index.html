@@ -69,7 +69,8 @@
         <td>
           ${event.display_order}
         </td>
-        <td class="span3">
+        <td class="span4">
+          <div class="btn-group" style="float: left;">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
           % if event.cms_send_at:
             % if event.updated_at > event.cms_send_at:
@@ -86,6 +87,26 @@
                 <i class="icon-refresh icon-white"></i> CMSへ送信
             </a>
           % endif
+
+          % if event.organization.setting.famiport_enabled:
+            <% fm_performance_ids = is_famiport_cooperation[event.id] %>
+              % if not fm_performance_ids:
+                <a class="btn btn-danger" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                  Famiポート連携
+                </a>
+              % elif len(fm_performance_ids) == len(event.performances):
+                <a class="btn btn-success" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                  Famiポート連携
+                </a>
+              % else:
+                <a class="btn btn-warning" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+                  Famiポート連携
+                </a>
+              % endif
+          % else:
+            <input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 10px;"/>
+          % endif
+          </div>
         </td>
       </tr>
       <% row_no += 1 %>
