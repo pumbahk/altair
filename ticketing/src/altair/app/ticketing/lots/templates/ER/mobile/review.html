@@ -128,7 +128,7 @@ ${h.sensible_coerce(request, display_value)}
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">
-    <input type="submit" style="background-color:#FF6C0D;font-size:16px;padding: 5px 20px 5px 20px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="取消">
+    <input type="submit" style="background-color:#FF6C0D;font-size:16px;padding: 5px 20px 5px 20px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="この申込を取り消す">
     </div>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
