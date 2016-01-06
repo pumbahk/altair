@@ -72,6 +72,7 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     """
     try:
         rendered = FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+        rendered = FillValuesRenderer(IdentityVariation()).render(rendered, convert_to_nested_dict(params))
         return rendered.replace(u"｛", u"{").replace(u"｝", u"}")
     except Exception, e:
         logger.exception(e)

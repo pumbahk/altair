@@ -68,4 +68,5 @@ class SVGBuilder(object):
         if transform:
             template = transform(template)
         vals = self.control.get_vals(template_model, vals)
-        return self.renderer.render(template, vals)
+        rendered = self.renderer.render(template, vals)
+        return self.renderer.render(rendered, vals)
