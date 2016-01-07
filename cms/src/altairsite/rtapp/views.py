@@ -6,6 +6,8 @@ from datetime import datetime
 from pyramid.view import view_config
 from altaircms.modellib import DBSession as session
 from altaircms.event.event_info import get_event_notify_info
+from pyramid.httpexceptions import HTTPNotFound
+from sqlalchemy.orm.exc import NoResultFound
 from . import api
 from .helpers import grep_prfms_in_sales
 from .builders import (
@@ -57,7 +59,13 @@ def api_performance_list(self, request):
 
 @view_config(route_name="api.event_detail", request_method="GET", renderer='json')
 def api_event_detail(self, request):
-    event = api.get_event(session, request)
+    try:
+        event = api.get_event(session, request)
+    except NoResultFound:
+        res = HTTPNotFound()
+        res.content_type = 'application/json'
+        res.text = u'{"message": "event not found"}'
+        return res
     performances = sorted(event.performances, key=lambda p:p.start_on, reverse=True)
     event_info = get_event_notify_info(event)
     builder = EventDetailResponseBuilder()

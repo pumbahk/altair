@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from sqlalchemy import or_
 from altaircms.models import Performance, Genre, SalesSegment
 from altaircms.event.models import Event
-from altaircms.page.models import PageSet
+from altaircms.page.models import PageSet, Page
 from altaircms.topic.models import Promotion, TopicCore, Topic, Topcontent
 from altaircms.plugins.widget.summary.models import SummaryWidget
 from altaircms.helpers.search import escape_wildcard_for_like
@@ -67,7 +67,12 @@ def get_genre_list(session, request, organization_id):
 
 def get_event(session, request):
     event_id = request.matchdict['event_id']
-    event = session.query(Event).filter(Event.id == event_id).one()
+    event = session.query(Event) \
+                   .join(Page, Event.id == Page.event_id) \
+                   .filter(Event.id == event_id) \
+                   .filter(Page.published == 1) \
+                   .group_by(Event.id) \
+                   .one()
     return event
 
 def get_widget_summary(session, event):
