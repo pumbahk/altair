@@ -70,7 +70,9 @@ def get_event(session, request):
     event = session.query(Event) \
                    .join(Page, Event.id == Page.event_id) \
                    .filter(Event.id == event_id) \
-                   .filter(Page.published == 1) \
+                   .filter(Event.is_searchable == True) \
+                   .filter(Page.published == True) \
+                   .filter(Page.in_term(dt.now())) \
                    .group_by(Event.id) \
                    .one()
     return event
@@ -81,12 +83,18 @@ def get_widget_summary(session, event):
 
 def get_performance_list_query(session, request, organization_id):
     params = request.GET
+    now = dt.now()
+    import ipdb;ipdb.set_trace()
     query = session.query(Event) \
                    .join(Performance, Performance.event_id == Event.id) \
+                   .join(Page, Event.id == Page.event_id) \
                    .filter(Event.organization_id == organization_id) \
+                   .filter(Event.is_searchable == True) \
+                   .filter(Page.published == True) \
+                   .filter(Page.in_term(now)) \
                    .filter(Performance.public == 1) \
-                   .filter(or_(Performance.start_on >= dt.now(),
-                               Performance.end_on >= dt.now())) \
+                   .filter(or_(Performance.start_on >= now,
+                               Performance.end_on >= now)) \
                    .order_by(Event.deal_close) \
                    .group_by(Event.id)
 
