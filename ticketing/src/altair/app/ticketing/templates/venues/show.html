@@ -112,6 +112,8 @@ table.nowrap td { white-space: nowrap; }
     <th>L0 ID</th>
     <th>席名称</th>
     <th>席番号</th>
+    <th>ゲート</th>
+    <th>ブロック</th>
     <th>優先度</th>
     <th>状態</th>
   </tr>
@@ -142,6 +144,12 @@ table.nowrap td { white-space: nowrap; }
         % if item.seat.seat_no != None:
 			${item.seat.seat_no}
 		% endif
+	  </td>
+      <td>
+          ${item.seat.attributes.get("gate", "")}
+	  </td>
+      <td>
+          ${item.seat.attributes.get("block", "")}
 	  </td>
 	  <td>
 		% if item.index != None:
