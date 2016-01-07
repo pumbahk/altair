@@ -207,10 +207,22 @@ $(function(){
 
 % if event.organization.setting.famiport_enabled:
 <div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
-    Famiポート連携
-  </a>
+  % if not fm_performance_ids:
+    <a class="btn btn-danger" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+      Famiポート連携
+    </a>
+  % elif len(fm_performance_ids) == len(performances):
+    <a class="btn btn-success" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+      Famiポート連携
+    </a>
+  % else:
+    <a class="btn btn-warning" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
+      Famiポート連携
+    </a>
+  % endif
 </div>
+% else:
+  <input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 10px;"/>
 % endif
 
 <%include file="./_send_event_mixin.html" />

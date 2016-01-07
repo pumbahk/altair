@@ -1493,6 +1493,7 @@
 .settlementSelectBox form.bigform input.text {
     width: 20em;
     font-size: 1.5em;
+    display: block;
 }
 
 .settlementSelectBox td {
