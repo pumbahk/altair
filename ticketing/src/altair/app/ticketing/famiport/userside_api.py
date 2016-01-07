@@ -112,17 +112,20 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
     altair_famiport_performances_just_added = set()
     for performance in event.performances:
         altair_famiport_venue = None
-        try:
-            altair_famiport_venue = session.query(AltairFamiPortVenue) \
-                .join(AltairFamiPortVenue.sites) \
-                .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
-                .filter(Site.id == performance.venue.site.id) \
-                .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
-                .distinct() \
-                .one()
-        except NoResultFound:
-            pass
-        logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Site.name=%s' % (performance.venue.site_id, performance.venue.site.name))
+        # Look up existing AltairFamiPortVenue with same event_id and venue_name
+        for altair_famiport_performance_group in altair_famiport_performance_groups:
+            if altair_famiport_performance_group.altair_famiport_venue.venue_name == performance.venue.name:
+                altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
+        if altair_famiport_venue is None:
+            try:
+                # Look up existing AltairFamiPortVenue with same venue_name
+                altair_famiport_venue = session.query(AltairFamiPortVenue) \
+                    .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
+                    .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
+                    .distinct() \
+                    .one()
+            except NoResultFound:
+                logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Venue.name=%s' % (performance.venue.site_id, performance.venue.name))
         result = {}
         if altair_famiport_venue is None:
             altair_famiport_venue = AltairFamiPortVenue(
