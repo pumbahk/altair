@@ -170,6 +170,7 @@ def webapp_main(global_config, **local_config):
     config.add_route('extauth.entry', '/{subtype}/', traverse='/{subtype}')
     config.add_route('extauth.rakuten.entry', '/{subtype}/rid', traverse='/{subtype}')
     config.add_route('extauth.unknown_user', '/{subtype}/unknown', traverse='/{subtype}')
+    config.add_route('extauth.no_valid_memberships', '/{subtype}/none', traverse='/{subtype}')
     config.add_route('extauth.select_account', '/{subtype}/select_account', traverse='/{subtype}')
     config.add_route('extauth.authorize', '/{subtype}/authz', traverse='/{subtype}')
     config.add_route('extauth.login', '/{subtype}/login', traverse='/{subtype}')
