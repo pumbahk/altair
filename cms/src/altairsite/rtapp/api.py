@@ -84,7 +84,6 @@ def get_widget_summary(session, event):
 def get_performance_list_query(session, request, organization_id):
     params = request.GET
     now = dt.now()
-    import ipdb;ipdb.set_trace()
     query = session.query(Event) \
                    .join(Performance, Performance.event_id == Event.id) \
                    .join(Page, Event.id == Page.event_id) \
@@ -215,7 +214,7 @@ def get_performance_list_query(session, request, organization_id):
     if not(params.get('sales_start') or params.get('sales_end') or
            params.get('sales_start_in') or params.get('sales_end_in')):
         query = query.join(SalesSegment, Performance.id == SalesSegment.performance_id) \
-                     .filter(SalesSegment.end_on >= dt.now())
+                     .filter(SalesSegment.end_on >= now)
 
     return query
 

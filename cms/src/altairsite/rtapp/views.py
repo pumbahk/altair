@@ -50,8 +50,7 @@ def api_performance_list(self, request):
             page=int(request.params.get('page', 0)),
             items_per_page=50
         )
-    for e in events.items:
-        logger.info(e.id)
+
     builder = PerformanceGroupListResponseBuilder()
     res = builder.build_response(request, events.items, events.page_count)
 
