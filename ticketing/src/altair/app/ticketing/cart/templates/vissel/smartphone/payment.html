@@ -203,7 +203,7 @@ form {
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "payment"}
+    self.sc = {"pagename": "payment", "events": "scCheckout"}
 %>
 <%include file="../common/sc_basic.html" args="sc=self.sc" />
 <!--/SiteCatalyst-->
