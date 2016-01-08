@@ -340,7 +340,9 @@ class BundleAttributeView(BaseView):
                 attr.save()
 
         self.request.session.flash(u'属性(TicketBundleAttribute)を更新しました')
-        return HTTPFound(self.request.route_url("events.tickets.index", event_id=self.request.matchdict["event_id"]))
+        return HTTPFound(self.request.route_url("events.tickets.bundles.show",
+                                                bundle_id=self.request.matchdict["bundle_id"],
+                                                event_id=self.request.matchdict["event_id"]))
 
     @view_config(route_name='events.tickets.attributes.delete', request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/_deleteform.html")
