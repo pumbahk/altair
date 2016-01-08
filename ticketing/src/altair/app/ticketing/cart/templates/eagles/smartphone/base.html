@@ -12,7 +12,9 @@
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/smartphone/css/default2.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
+% if request.organization.setting.sitecatalyst_use:
   <%include file="../common/sc_scripts.html" />
+% endif
 </head>
 
 <body id="settlement">
