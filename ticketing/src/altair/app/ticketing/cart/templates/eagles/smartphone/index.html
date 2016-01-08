@@ -303,9 +303,11 @@ $(function () {
       </div>
     </div>
 
+% if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
     self.sc = {"pagename": "index", "events": "scCheckout", "products": str(event['id']) + '_' + event["title"] }
 %>
 <%include file="../common/sc_basic.html" args="sc=self.sc" />
+% endif
 <!--/SiteCatalyst-->
