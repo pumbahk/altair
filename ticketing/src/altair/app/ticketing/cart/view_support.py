@@ -568,7 +568,7 @@ class DynamicFormBuilder(object):
             description=field_desc['description'] and Markup(field_desc['description']),
             note=field_desc['note'] and Markup(field_desc['note']),
             validators=self._build_validators(field_desc),
-            default=(date.today() if field_desc['required'] else None),
+            default=None,
             missing_value_defaults=dict(year=None, month=None, day=None),
             widget=widgets.OurDateWidget(
                 input_builder=build_date_input_select
