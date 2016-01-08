@@ -10,8 +10,11 @@
 	<li id="errorBtnTop"><a href="#">イベントトップに戻る</a></li>
 </ul>
   
-<!-- SiteCatalyst-->
-var trackingParam = {};
-trackingParam.pageName="cart:error-stock"
-trackingParam.channel="cart"
-<!--/ SiteCatalyst-->
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "error-stock"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

@@ -7,14 +7,9 @@
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/css/mypage.css')}" media="all" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
-  <!-- SiteCatalyst tags -->
-  <script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/rakuteneagles.jp/s_accountSetting.js?v=20151120"></script>
-  <script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/sc/s_codeCommon.js?v=20151120"></script>
-  <script type="text/javascript" src="//www.rakuten.co.jp/com/rat/rakuteneagles.jp/s_customTracking.js?v=20151120"></script>
-  <!-- /SiteCatalyst tags -->
-  <!-- RAT tags -->
-  <script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/eagles.tstar.jp/ral-eagles.tstar.jp.js?v=20151120" async defer></script>
-  <!-- /RAT tags -->
+% if request.organization.setting.sitecatalyst_use:
+<%include file="../../common/sc_scripts.html" />
+% endif
 </head>
 <body id="settlement">
   <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>

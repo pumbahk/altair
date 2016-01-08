@@ -100,10 +100,12 @@ ${self.widget.flow_widget(2)}
     <input id="btn-next" type="submit" value="" />
   </p>
 </form>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:card_form"
-trackingParam.channel="cart"
-</script>
-<!-- /SiteCatalyst -->
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "card_form"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

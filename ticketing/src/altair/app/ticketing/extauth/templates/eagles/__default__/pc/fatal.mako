@@ -2,10 +2,9 @@
 <div class="errorBox">
 <p class="errorText">致命的なエラーが発生しました</p>
 </div>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="extauth:error-fatal"
-trackingParam.channel="extauth"
-</script>
-<!-- SiteCatalyst -->
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "error-fatal"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->

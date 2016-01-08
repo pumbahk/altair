@@ -14,10 +14,10 @@
 %endfor
 </ul>
 </div>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="extauth:select_account"
-trackingParam.channel="extauth"
-</script>
-<!-- SiteCatalyst -->
+
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "select_account"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->

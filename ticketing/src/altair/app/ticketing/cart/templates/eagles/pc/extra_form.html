@@ -54,11 +54,11 @@
   <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/ticketstar/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:extra_form"
-trackingParam.channel="cart"
-</script>
-<!-- SiteCatalyst -->
-
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "extra_form"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

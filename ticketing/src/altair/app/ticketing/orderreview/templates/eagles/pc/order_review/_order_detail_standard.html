@@ -145,10 +145,12 @@
     </tbody>
   </table>
 </div>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="orderreview:detail_standard"
-trackingParam.channel="orderreview"
-</script>
-<!-- SiteCatalyst -->
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "detail_standard"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

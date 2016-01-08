@@ -8,9 +8,11 @@
 </ul>
 
 <!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="orderreview:error-not_found"
-trackingParam.channel="orderreview"
-</script>
-<!-- SiteCatalyst -->
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "error-notfound"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

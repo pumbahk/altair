@@ -70,10 +70,11 @@
 ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
 </%def>
 
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="orderreview:show"
-trackingParam.channel="orderreview"
-</script>
-<!-- SiteCatalyst -->
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "show"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

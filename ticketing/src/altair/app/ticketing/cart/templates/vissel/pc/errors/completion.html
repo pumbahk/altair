@@ -13,3 +13,12 @@ trackingParam.pageName="cart:error-completion"
 trackingParam.channel="cart"
 </script>
 <!-- SiteCatalyst -->
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "error-completion"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

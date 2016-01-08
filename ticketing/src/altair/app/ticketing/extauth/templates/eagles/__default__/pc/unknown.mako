@@ -44,10 +44,10 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 ※ファンクラブに入会をご希望の方は<a href="http://www.rakuteneagles.jp/fanclub/">こちら</a>から
 </p>
 </div>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="extauth:error-unknown"
-trackingParam.channel="extauth"
-</script>
-<!-- SiteCatalyst -->
+
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "error-unknown"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->

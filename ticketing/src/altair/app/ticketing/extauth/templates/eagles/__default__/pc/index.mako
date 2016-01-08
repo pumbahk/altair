@@ -77,10 +77,9 @@ TEL: 050-5817-8192（平日10時～18時）※不定休</li>
 </ul>
 </article>
 
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="extauth:index"
-trackingParam.channel="extauth"
-</script>
-<!-- SiteCatalyst -->
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "index" }
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->

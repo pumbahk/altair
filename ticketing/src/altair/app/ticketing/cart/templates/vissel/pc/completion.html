@@ -138,13 +138,29 @@ ${self.widget.flow_widget(4)}
 <noscript>
   <iframe src="//b.yjtag.jp/iframe?c=L0u40M6" width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
 </noscript>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:completed "
-trackingParam.channel="cart"
-trackingParam.products="[Category];[Product];[Quality];[Price]"
-trackingParam.events="purchase"
-trackingParam.purchaseID="[orderNo]"
-</script>
-<!-- SiteCatalyst -->
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc_product = []
+    for product in order.ordered_products:
+        tmp = []
+        # event_id + イベント名
+        tmp.append(str(order.performance.event.id) + '_' + order.performance.event.title)
+        # パフォーマンス名 + 公演日(日付と時間の間のスペース排除) + 商品名
+        tmp.append(order.performance.name + '_' + h.performance_datetime(order.performance).replace(' ','') + '_'+ product.product.name)
+        # 単価
+        tmp.append(str(product.quantity))
+        # 単価 * 枚数 (金額のカンマ排除)
+        tmp.append(h.format_number(product.product.price * product.quantity).replace(',',''))
+
+        # 明細内情報は;で連結
+        sc_product.append(";".join(tmp))
+
+    # 各明細は,で連結
+    sproduct = ",".join(sc_product)
+    self.sc = {"pagename": "completed", "events": "purchase", "order_no": order.order_no, "products": ",".join(sc_product)}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

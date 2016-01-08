@@ -199,10 +199,12 @@ form {
     <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
 </div>
 </form>
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:payment"
-trackingParam.channel="cart"
-</script>
-<!-- /SiteCatalyst -->
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "payment"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

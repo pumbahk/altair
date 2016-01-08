@@ -216,10 +216,11 @@ ${self.widget.flow_widget(3)}
   </table>
 </form>
 
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:confirm"
-trackingParam.channel="cart"
-</script>
-<!-- SiteCatalyst -->
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "confirm"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

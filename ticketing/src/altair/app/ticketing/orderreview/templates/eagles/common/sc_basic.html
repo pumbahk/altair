@@ -1,0 +1,15 @@
+<%page args="sc"/>
+<script type="text/javascript">
+var trackingParam = {};
+trackingParam.pageName="orderreview:${sc['pagename']}"
+trackingParam.channel="orderreview"
+% if "products" in sc:
+trackingParam.products="${sc['products']}"
+% endif
+% if "events" in sc:
+rackingParam.events="${sc['events']}"
+% endif
+% if "order_no" in sc:
+trackingParam.purchaseID="${sc['order_no']}"
+% endif
+</script>

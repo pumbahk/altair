@@ -52,10 +52,11 @@ ${self.widget.flow_widget(2)}
 <p class="align2"><image onclick="document.getElementById('form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 
-<!-- SiteCatalyst -->
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:rsp"
-trackingParam.channel="cart"
-</script>
-<!-- /SiteCatalyst -->
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "point"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

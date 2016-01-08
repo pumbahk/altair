@@ -1,3 +1,12 @@
 <%inherit file="./base.html"/>
 <h4>${title or ''}</h4>
 ${message}
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "message"}
+%>
+<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif
