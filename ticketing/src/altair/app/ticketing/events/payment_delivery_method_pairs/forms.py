@@ -294,7 +294,10 @@ class PaymentDeliveryMethodPairForm(OurForm):
         label=get_annotations_for(PaymentDeliveryMethodPair.system_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     system_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.system_fee_type)['label'],
@@ -313,7 +316,10 @@ class PaymentDeliveryMethodPairForm(OurForm):
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     special_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_type)['label'],
@@ -326,35 +332,53 @@ class PaymentDeliveryMethodPairForm(OurForm):
         label=get_annotations_for(PaymentDeliveryMethodPair.transaction_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     delivery_fee_per_order = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_order)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     delivery_fee_per_principal_ticket = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_principal_ticket)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     delivery_fee_per_subticket = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_subticket)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     discount = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.discount)['label'],
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
     discount_unit = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.discount_unit)['label'],
-        validators=[Optional()]
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+            ]
         )
 
     def _payment_methods(field):
