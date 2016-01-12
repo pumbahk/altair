@@ -5,7 +5,7 @@ from datetime import datetime, date
 from pyramid.path import AssetResolver
 from sqlalchemy.sql import func, and_
 
-from altair.app.ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import Stock, StockType, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
 from altair.app.ticketing.formatter import Japanese_Japan_Formatter
 
 from . import xls_export
@@ -75,6 +75,7 @@ def export_for_sold_seats(event, stock_holder, report_type, performanceids=None)
             sheet = exporter.add_sheet(sheet_name)
         table_creator = report_sheet.SoldTableCreator(performance, stock_holder, today)
         tables = table_creator.generate_table()
+
         report_sheet.process_sheet(exporter, formatter, sheet, report_title, event, performance, stock_holder, tables)
     return exporter
 
@@ -109,9 +110,11 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
 
         # PerformanceごとのStockを取得
         stock_records = []
-        stocks = Stock.filter_by(performance_id=performance.id)\
-                      .filter_by(stock_holder_id=stock_holder.id)\
-                      .order_by(Stock.stock_type_id).all()
+        stocks = Stock.query \
+                      .join(StockType, StockType.id == Stock.stock_type_id)\
+                      .filter(Stock.performance_id == performance.id)\
+                      .filter(Stock.stock_holder_id == stock_holder.id)\
+                      .order_by(StockType.display_order).all()
 
         # 席種ごとのオブジェクトを作成
         for stock in stocks:
