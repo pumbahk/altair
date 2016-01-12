@@ -5,7 +5,6 @@
 	<title>ヴィッセル神戸 購入確認ページ</title>
     <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/css/style2.css')}" media="all" />
 % if request.organization.setting.sitecatalyst_use:
-<%include file="../common/sc_scripts.html" />
 % endif
 </head>
 <body>
@@ -53,9 +52,9 @@
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "contact"}
+    sc = {"pagename": "contact"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
 </body>

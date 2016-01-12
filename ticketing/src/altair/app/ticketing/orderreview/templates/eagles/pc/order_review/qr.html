@@ -10,9 +10,6 @@
   height: 100px;
 }
 </style>
-% if request.organization.setting.sitecatalyst_use:
-<%include file="../../common/sc_scripts.html" />
-% endif
 </head>
 <body>
 <div align="center" style="text-align:center">
@@ -122,9 +119,9 @@
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "qr"}
+    sc = {"pagename": "qr"}
 %>
-<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
 

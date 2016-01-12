@@ -4,9 +4,6 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/css/common/qr2.css')}" media="all" />
-% if request.organization.setting.sitecatalyst_use:
-<%include file="../../common/sc_scripts.html" />
-% endif
 </head>
 <body>
 <div align="center" style="text-align:center">
@@ -47,9 +44,9 @@
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "qr"}
+    sc = {"pagename": "qr"}
 %>
-<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
 

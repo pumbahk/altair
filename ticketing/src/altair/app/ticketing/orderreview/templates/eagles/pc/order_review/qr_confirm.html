@@ -2,9 +2,6 @@
 <html>
 <head>
   <title>${event.title} - ${performance.name}</title>
-% if request.organization.setting.sitecatalyst_use:
-<%include file="../../common/sc_scripts.html" />
-% endif
 </head>
 <body>
 <div><font color="#872434">■</font>イベント名</div>
@@ -38,9 +35,9 @@
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "qr_confirm"}
+    sc = {"pagename": "qr_confirm"}
 %>
-<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
 </body>
