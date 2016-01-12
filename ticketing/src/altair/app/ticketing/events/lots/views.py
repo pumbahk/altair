@@ -470,6 +470,7 @@ class LotEntries(BaseView):
             LotEntryReportSetting.lot_id==lot.id
         ).all()
 
+        lot_available = lot.available_on(datetime.now())
         return dict(
             lot=lot,
             performances = lot_status.performances,
@@ -477,6 +478,7 @@ class LotEntries(BaseView):
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
             report_settings=report_settings,
+            lot_available=lot_available,
             )
 
 
