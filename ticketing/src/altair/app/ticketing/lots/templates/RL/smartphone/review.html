@@ -163,7 +163,7 @@ dl.cost-detail > dd {
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">
-        <input type="submit" class="withdrawSubmit" value="取消">
+        <input type="submit" class="withdrawSubmit" value="この申込を取り消す">
     </div>
     <input type="hidden" name="entry_no" value=${entry_no}>
     <input type="hidden" name="tel_no" value=${tel_no}>
