@@ -2,9 +2,10 @@
 <div class="errorBox">
 <p class="errorText">致命的なエラーが発生しました</p>
 </div>
+
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "error-fatal"}
+    sc = {"pagename": "error-fatal"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->

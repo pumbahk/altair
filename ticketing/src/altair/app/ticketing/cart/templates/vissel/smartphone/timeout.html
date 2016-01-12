@@ -16,8 +16,8 @@
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "timeout"}
+    sc = {"pagename": "timeout"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

@@ -17,7 +17,7 @@
 
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "select_account"}
+    sc = {"pagename": "select_account"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->

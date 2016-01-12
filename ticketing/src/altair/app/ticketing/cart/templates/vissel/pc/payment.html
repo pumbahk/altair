@@ -245,8 +245,8 @@ ${self.widget.flow_widget(2)}
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "payment", "events": "scCheckout"}
+    sc = {"pagename": "payment", "events": "scCheckout"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

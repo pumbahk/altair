@@ -47,7 +47,7 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "error-unknown"}
+    sc = {"pagename": "error-unknown"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->

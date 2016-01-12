@@ -218,8 +218,8 @@ ${self.widget.flow_widget(3)}
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "confirm"}
+    sc = {"pagename": "confirm"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

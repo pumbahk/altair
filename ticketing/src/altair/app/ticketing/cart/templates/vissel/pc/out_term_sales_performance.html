@@ -37,8 +37,8 @@ ${h.japanese_datetime(start_at)}
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "out_term_sales_performance"}
+    sc = {"pagename": "out_term_sales_performance"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

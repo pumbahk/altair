@@ -5,7 +5,7 @@
 
 <!--SiteCatalyst-->
 <%
-    self.sc = {"pagename": "error-notfound"}
+    sc = {"pagename": "error-notfound"}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->

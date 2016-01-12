@@ -145,10 +145,10 @@ ${self.widget.flow_widget(4)}
     sc_product = []
     for product in order.ordered_products:
         tmp = []
-        # event_id + イベント名
-        tmp.append(str(order.performance.event.id) + '_' + order.performance.event.title)
-        # パフォーマンス名 + 公演日(日付と時間の間のスペース排除) + 商品名
-        tmp.append(order.performance.name + '_' + h.performance_datetime(order.performance).replace(' ','') + '_'+ product.product.name)
+        # event_id
+        tmp.append(str(order.performance.event.id))
+        # パフォーマンスID + 公演開始時刻 + 商品ID
+        tmp.append(str(order.performance.id) + '_' + str(order.performance.start_on) + '_' + str(product.product.id))
         # 単価
         tmp.append(str(product.quantity))
         # 単価 * 枚数 (金額のカンマ排除)
@@ -159,8 +159,8 @@ ${self.widget.flow_widget(4)}
 
     # 各明細は,で連結
     sproduct = ",".join(sc_product)
-    self.sc = {"pagename": "completed", "events": "purchase", "order_no": order.order_no, "products": ",".join(sc_product)}
+    sc = {"pagename": "completed", "events": "purchase", "order_no": order.order_no, "products": ",".join(sc_product)}
 %>
-<%include file="../common/sc_basic.html" args="sc=self.sc" />
+<%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
