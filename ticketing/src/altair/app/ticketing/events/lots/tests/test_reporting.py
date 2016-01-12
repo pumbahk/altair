@@ -191,6 +191,7 @@ class LotEntryReporterTests(unittest.TestCase):
                 start_at=now,
                 end_at=now,
                 ),
+            available_on=lambda now: True,
         )
         recipients=[
             ReportRecipient(
