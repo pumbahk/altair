@@ -57,10 +57,11 @@
       beforeEditCell: function (id, name, val, iRow, iCol){
         $('#sales-segment-${sales_segment.id}-save_button').attr('disabled', true);
       },
-      onSelectCell: function (id, name, val, iRow, iCol){
+      afterRestoreCell: function (id, name, val, iRow, iCol){
         $('#sales-segment-${sales_segment.id}-save_button').attr('disabled', false);
       },
       afterSaveCell: function (id, name, val, iRow, iCol){
+        $('#sales-segment-${sales_segment.id}-save_button').attr('disabled', false);
         grid.setCell(id, name, '', {background:'#F89406'});
         grid.setRetainChanges();
       },

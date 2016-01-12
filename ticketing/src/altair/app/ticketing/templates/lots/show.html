@@ -162,13 +162,14 @@ $(function() {
 
   productGrid['beforeEditCell'] = function (id, name, val, iRow, iCol){
     $('#sales-segment-save_button').attr('disabled', true);
-  }
+  };
 
-  productGrid['onSelectCell'] = function (id, name, val, iRow, iCol){
+  productGrid['afterRestoreCell'] = function (id, name, val, iRow, iCol){
     $('#sales-segment-save_button').attr('disabled', false);
-  }
+  };
 
   productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
+    $('#sales-segment-save_button').attr('disabled', false);
     grid.setCell(id, name, '', {background:'#F89406'});
     grid.setRetainChanges();
   };
