@@ -52,3 +52,11 @@ ${self.widget.flow_widget(2)}
 <p class="align2"><image onclick="document.getElementById('form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "point"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

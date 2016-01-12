@@ -12,3 +12,12 @@
 	再度、最初からご購入をお試しください。<a href="${request.context.host_base_url}">トップに戻る</a>
   </div>
 </div>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-timeout"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

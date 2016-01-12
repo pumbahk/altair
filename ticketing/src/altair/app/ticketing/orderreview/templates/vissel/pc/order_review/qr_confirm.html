@@ -31,6 +31,13 @@
 ※携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。<br />
 ※QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。<br />
 ※QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。<br />
-
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "qr_confirm"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
 </body>
 </html>

@@ -215,3 +215,11 @@ ${self.widget.flow_widget(3)}
     </tr>
   </table>
 </form>
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "confirm"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

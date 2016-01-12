@@ -15,3 +15,9 @@
 </ul>
 </div>
 
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "select_account"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->

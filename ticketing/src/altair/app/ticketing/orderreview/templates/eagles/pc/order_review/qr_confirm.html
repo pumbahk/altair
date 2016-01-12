@@ -32,5 +32,13 @@
 ※QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。<br />
 ※QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。<br />
 
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "qr_confirm"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
 </body>
 </html>

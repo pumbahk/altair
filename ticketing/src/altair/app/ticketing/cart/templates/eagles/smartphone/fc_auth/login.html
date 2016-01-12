@@ -106,3 +106,12 @@
 
 </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    self.sc = {"pagename": "fc_login" }
+%>
+<%include file="../../common/sc_basic.html" args="sc=self.sc" />
+<!--/SiteCatalyst-->
+% endif

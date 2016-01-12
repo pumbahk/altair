@@ -109,3 +109,11 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
     <input id="btn-next" type="submit" value="" />
   </p>
 </form>
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "card_form"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

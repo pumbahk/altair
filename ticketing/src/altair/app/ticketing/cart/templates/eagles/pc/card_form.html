@@ -100,3 +100,12 @@ ${self.widget.flow_widget(2)}
     <input id="btn-next" type="submit" value="" />
   </p>
 </form>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "card_form"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
