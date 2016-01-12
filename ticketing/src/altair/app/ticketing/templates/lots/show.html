@@ -167,7 +167,6 @@ $(function() {
 
   productGrid['afterEditCell'] = function (id, name, val, iRow, iCol){
     $('#sales-segment-save_button').attr('disabled', true);
-    console.log(grid.find(".edit-cell").children());
     grid.find(".edit-cell").children().blur(function () {
         var e = $.Event("keydown");
         e.which = $.ui.keyCode.ENTER;

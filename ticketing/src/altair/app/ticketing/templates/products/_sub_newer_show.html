@@ -57,6 +57,15 @@
       beforeEditCell: function (id, name, val, iRow, iCol){
         $('#sales-segment-${sales_segment.id}-save_button').attr('disabled', true);
       },
+      afterEditCell: function (id, name, val, iRow, iCol){
+        $('#sales-segment-save_button').attr('disabled', true);
+        grid.find(".edit-cell").children().blur(function () {
+            var e = $.Event("keydown");
+            e.which = $.ui.keyCode.ENTER;
+            e.keyCode = $.ui.keyCode.ENTER;
+            grid.find(".edit-cell").children().trigger(e);
+        });
+      },
       afterRestoreCell: function (id, name, val, iRow, iCol){
         $('#sales-segment-${sales_segment.id}-save_button').attr('disabled', false);
       },
