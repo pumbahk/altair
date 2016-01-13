@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,user-scalable=no">
+<meta name = "format-detection" content = "telephone=no">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="content-script-type" content="text/javascript">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/RT/smartphone/css/import.css')}" type="text/css" media="all">
+<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.lots:static/RT/common/img/favicon.ico')}">
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/underscore-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit();
+  });
+</script>
+<title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+</head>
+<body>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/RT/smartphone/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
+<div id="container">
+
+<div id="header">
+<h1><img src="${request.static_url('altair.app.ticketing.lots:static/RT/smartphone/img/common/logo.gif')}" width="113" height="57" alt="楽天チケット"></h1>
+<h2>チケット申込</h2>
+</div>
+
+  <!-- ========== main ========== -->
+    ${next.body()}
+  <!-- ========== /main ========== -->
+  <div class="footerCopy">
+    <div class="footernav">
+      <ul>
+        <li class="first"><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
+        <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+        <li class="last"><a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
+      </ul>
+    </div>
+    <div class="copyright">
+       &copy; TicketStar, Inc.
+    </div>
+  </div>
+
+<%def name="error(form, field, enclose=False)">
+%if form.errors.get(field):
+  %if enclose:
+  <div>
+  %endif
+  %for e in form.errors[field]:
+  <span class="validation-error">${e}</span>
+  %endfor
+  %if enclose:
+  </div>
+  %endif
+%endif
+</%def>
+
+</div>
+% if request.organization.setting.sitecatalyst_use:
+  <%include file="altair.app.ticketing.lots:templates/RT/common/sitecatalyst.html"/>
+% endif
+</body>
+</html>

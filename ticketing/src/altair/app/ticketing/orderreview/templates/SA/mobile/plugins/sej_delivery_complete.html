@@ -1,0 +1,15 @@
+<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
+<div>セブン-イレブン</div>
+% if sej_order.payment_and_delivery_done_at_once:
+チケットは代金と引換です。
+% else:
+<%mobile:form_header>引換票番号</%mobile:form_header>
+<div>${sej_order.exchange_number or sej_order.billing_number}</div>
+<%mobile:form_header>引取受付期間</%mobile:form_header>
+<div>${h.japanese_datetime(sej_order.ticketing_start_at)} から ${h.japanese_datetime(sej_order.ticketing_due_at)}</div>
+<div>引取受付期間内に、引換票または引換票番号をお持ちの上、セブン-イレブン店頭レジにてチケットをお引取り下さい。</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="引換票印刷">
+</form>
+% endif
