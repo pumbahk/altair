@@ -5,7 +5,8 @@
     <h3>チケット券面を追加</h3>
   </div>
 
-  <form class="form-horizontal"
+  <form id="ticket_form"
+        class="form-horizontal"
 		action="${request.route_path("events.tickets.bind.ticket", event_id=request.matchdict["event_id"])}"
 		method="POST">
 	<div class="modal-body">
@@ -36,6 +37,9 @@
             onchange();
           }
         })();
+        $('form#ticket_form').submit(function(){
+            $(this).find('input[type=submit]').prop('disabled', true);
+        });
       </script>
 		</fieldset>
 	</div>
