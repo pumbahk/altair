@@ -1,7 +1,9 @@
 <%def name="qr_print()">
    % for ticket in tickets:
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            % if ticket.product:
             商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            % endif
             %if ticket.seat:
             席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
             %endif
@@ -30,18 +32,13 @@
 
 <div>
 <!-- mobile -->
-試合当日会場専用窓口でのお受け取りです。<br/>
+QRコードでの入場<br/>
 
-%if paid:
- 表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
-<br/>
+QRコードを印刷、あるいは携帯へメール送信の上、試合当日、指定の入場ゲートにてご提示ください。<br />
 
-${qr_print()}
-
-%else:
-支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
-
-%endif
-
+% if paid:
+    ${qr_print()}
+% else:
+お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+% endif
 </div>
-

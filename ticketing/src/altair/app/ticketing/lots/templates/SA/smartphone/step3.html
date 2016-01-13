@@ -1,6 +1,6 @@
 <%inherit file="${context['main_template'].uri}" />
 <div id="main">
-  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
   %if request.session.peek_flash():
   <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
     <ul>
@@ -15,7 +15,7 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
         %for m in payment_delivery_pairs:
         <div class="settlementPayBox">
           <div class="settlementPayBoxInner">
@@ -73,7 +73,7 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
         <div class="settlementSelectBox">
           <div class="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
@@ -125,11 +125,6 @@
                     ${form['tel_1'].label}
                     ${form['tel_1']}
                     ${self.error(form, 'tel_1')}
-                  </div>
-                  <div class="form-field">
-                    ${form['tel_2'].label}
-                    ${form['tel_2']}
-                    ${self.error(form, 'tel_2')}
                   </div>
                 </td>
               </tr>
@@ -187,8 +182,8 @@
         </div>
       </div>
     </div>
-    <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
-  </form>      
+    <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  </form>
 </div>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />
@@ -314,7 +309,7 @@ var selected_performance_id = 0;
                 var stockTypeSelectUpdated = false;
                 if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
                     refreshStockTypeSelection(dateSelect, stockTypeSelect);
-                    stockTypeSelectUpdated = true;                    
+                    stockTypeSelectUpdated = true;
                 }
 
                 if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
@@ -352,7 +347,7 @@ var selected_performance_id = 0;
         refreshProducts(dateSelect, stockTypeSelect);
     });
 
-    $(function() { 
+    $(function() {
         $wishForm.find("select.performance-name-select").each(function(_, n) {
             var performanceNameSelect = $(n);
             var wishOrder = performanceNameSelect.data('wishorder');
@@ -360,7 +355,7 @@ var selected_performance_id = 0;
             refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
         });
         $wishForm.find("select.performance-date-select").each(function(_, n) {
-            var dateSelect = $(n); 
+            var dateSelect = $(n);
             var wishOrder = dateSelect.data('wishorder');
             var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
             refreshStockTypeSelection(dateSelect, stockTypeSelect);

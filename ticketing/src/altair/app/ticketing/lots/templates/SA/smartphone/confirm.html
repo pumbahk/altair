@@ -1,4 +1,10 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+
 <div id="main">
 <form id="form1" name="form1" method="post" action="">
     <input type="hidden" name="token" value="${token}" />
@@ -15,10 +21,8 @@
 ご注文内容をご確認いただき「確定する」ボタンで購入してください</dt>
 
 %for wish in wishes:
-<dt class="creditHl">第${wish.wish_order + 1}希望 ${wish.performance.name}</dt>
+<dt class="creditHl">購入内容</dt>
 <dd>
-<p>${h.performance_date_label(wish.performance)}
-</p>
 <div class="detailBox">
 <table>
 %for i, lot_product in enumerate(wish.products):
@@ -75,8 +79,7 @@
 <li>氏名(漢字)&nbsp;${shipping_address['last_name']}&nbsp;${shipping_address['first_name']}</li>
 <li>氏名(カナ)&nbsp;${shipping_address['last_name_kana']}&nbsp;${shipping_address['first_name_kana']}</li>
 <li>メールアドレス&nbsp;${shipping_address['email_1']}</li>
-<li>電話番号&nbsp;(自宅)&nbsp;${shipping_address['tel_1']}</li>
-<li>電話番号&nbsp;(携帯)&nbsp;${shipping_address['tel_2']}</li>
+<li>電話番号&nbsp;&nbsp;${shipping_address['tel_1']}</li>
 <li>住所<br>
 ※配達受取を選択した場合<br>
 〒${shipping_address['zip']}&nbsp;
@@ -91,10 +94,25 @@ ${shipping_address['address_2']}
 </div>
 </dd>
 
+% if extra_form_data:
+<dt class="creditHl">追加情報</dt>
+<dd>
+  <div class="detailBox">
+    <ul>
+      % for _, (display_name, display_value) in extra_form_data:
+      <li>
+        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
+      </li>
+      % endfor
+    </ul>
+  </div>
+</dd>
+% endif
+
 % if mailmagazines_to_subscribe:
 <dt class="creditHl">メールマガジンの配信</dt>
 <dd>
-<p>ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
+<p>ご利用いただいた方には、静岡朝日テレビからのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />

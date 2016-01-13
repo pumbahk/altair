@@ -1,7 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
@@ -18,13 +18,11 @@
 %else:
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
     <div class="confirmBoxText">
       % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
-払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
-<a href="/orderreview/guest" target="_blank">■購入履歴確認ページ</a>をご確認ください。<br/>
-予約番号は ${entry.entry_no} です。
+<a href="/orderreview" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
       % elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。
       % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
@@ -55,29 +53,8 @@
     %for wish in wishes:
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-
-        <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
-        <table summary="第一希望">
-          <tr>
-            <th>抽選結果</th>
-            <td>
-              %if h.lot_entry_display_status(entry, now) == u'当選表示':
-                %if wish.elected_at:
-                  ご用意できました
-                %else:
-                  ご用意できませんでした
-                %endif
-              %elif h.lot_entry_display_status(entry, now) == u'落選表示':
-                ご用意できませんでした
-              %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-                抽選処理前です
-              %endif
-            </td>
-          </tr>
-          <tr>
-            <th>公演日・会場</th>
-            <td>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
-          </tr>
+        <p class="header"><span>${wish.performance.name}</span></p>
+        <table>
           <tr class="settlementSelectEnd">
             <th>希望内容と手数料</th>
             <td>
@@ -106,11 +83,11 @@
     </div>
     %endfor
   </div>
-</div>
+</div> 
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
@@ -158,6 +135,28 @@
     </div>
   </div>
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2 class="title">追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+            <table summary="追加情報">
+                % for _, (display_name, display_value) in extra_form_data:
+                <tr>
+                    <th>${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                </tr>
+                % endfor
+            </table>
+        </div>
+      </div>
+  </div>
+</div>
+% endif
+
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">

@@ -26,6 +26,7 @@
 </%block>
 
 購入を完了いたしました。<br/>
+<div>${(view_context.embedded_html_complete_page_smartphone or u'')|n}</div>
 下記の受付番号はとても大切な番号です。すぐにメモして保管してください。
 
 <div class="confirmBox">
@@ -48,7 +49,7 @@
       <div class="dispBoxInner">
         <div id="name">
             ${order.performance.event.title}<br/>
-            ${h.performance_datetime(order.performance)}(予定)<br/>
+            ${h.performance_datetime(order.performance)}<br/>
             ${order.performance.venue.name}
         </div>
 
@@ -56,9 +57,9 @@
           %for product in order.ordered_products:
             <tr id="commission">
               % if len(product.elements) == 1:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/SA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
               % else:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/SA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
               % endif
               <td>&nbsp;</td>
               <td>&nbsp;</td>
@@ -162,10 +163,8 @@
       <%m:header>注意事項</%m:header>
       <div class="confirm-message dispBoxInner">
         <div class="methodArea">
-        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="/inquiry">お問い合わせフォーム</a> までご連絡ください。<br />
-       （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br/><br/>
-
-        お申込内容は、「<a target="_blank" href="https://rt.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:satv@tstar.jp">こちら</a> までご連絡ください。<br />
+        お申込内容は、「<a target="_blank" href="https://hawaiians.tstar.jp/orderreview/">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
         </div>
       </div>
     </div>
@@ -180,6 +179,3 @@
     <button class="btn btn-primary" style="width: 49%; height: 46px">他のチケットを購入</button>
   </a>
 </div>
-
-${(view_context.embedded_html_complete_page_smartphone or u'')|n}
-<%include file="./_dsp.html" />

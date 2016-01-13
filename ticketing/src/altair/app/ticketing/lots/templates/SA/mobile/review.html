@@ -7,24 +7,17 @@
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>
 <div>${entry.entry_no}</div>
-
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
-%if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選待ち
-%else:
-<span style="color:red;">
+<%self:enclose_if tag="font" color="red" condition="${entry.is_elected}">
 ${h.lot_entry_status_as_string(entry)}
-</span>
-%endif
+</%self:enclose_if>
 <%mobile:band bgcolor="#ffffdd">
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
-払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
 <a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
-予約番号は ${entry.entry_no} です。
 %elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。<br />
 %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
@@ -32,7 +25,6 @@ ${h.lot_entry_status_as_string(entry)}
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 %endif
 </%mobile:band>
-
 </div>
 <%mobile:form_header>対象公演・試合</%mobile:form_header>
 <div>
@@ -49,19 +41,6 @@ ${entry.lot.name}<br />
 %for wish in entry.wishes:
 <%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
 <div>
-抽選結果
-%if h.lot_entry_display_status(entry, now) == u'当選表示':
-  %if wish.elected_at:
-    ご用意できました
-  %else:
-    ご用意できませんでした
-  %endif
-%elif h.lot_entry_display_status(entry, now) == u'落選表示':
-  ご用意できませんでした
-%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-  抽選処理前です
-%endif
-<br/>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
 会場 ${wish.performance.venue.name}<br />
@@ -71,7 +50,7 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込) 
 </div>
 % endfor
 ・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
@@ -132,6 +111,19 @@ ${h.japanese_date(birthday)}
 <div>
 ${memo|h.nl2br}
 </div>
+
+<%mobile:header>追加情報</%mobile:header>
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+% for _, (display_name, display_value) in extra_form_data:
+<div>
+<%mobile:form_header>${display_name}</%mobile:form_header>
+</div>
+<div>
+${h.sensible_coerce(request, display_value)}
+</div>
+% endfor
+% endif
 
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">

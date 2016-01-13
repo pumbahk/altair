@@ -1,8 +1,8 @@
-<%inherit file="${context['main_template'].uri}" />  
+<%inherit file="${context['main_template'].uri}" />
 <p class="pageTitle">申込内容をご確認ください。</p>
 <div class="settlementBox2" id="settlementEventDetail">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
     <table class="border" summary="イベント詳細情報">
       <tr>
         <th colspan="2" scope="row"><span>${cart.performance.name}</span></th>
@@ -14,7 +14,7 @@
       <tr>
         <th scope="row">会場</th>
         <td>${cart.performance.venue.name}</td>
-      </tr> 
+      </tr>
       <tr>
         <td colspan="2" scope="row">
           <table border="0">
@@ -27,7 +27,7 @@
             <tr>
               <th>決済手数料</th>
               <td>${h.format_currency(cart.payment_delivery_pair.transaction_fee)}</td>
-            </tr> 
+            </tr>
             <tr>
               <th>発券/配達手数料</th>
               <td>${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</td>
@@ -45,18 +45,18 @@
             <tr>
               <th><strong>合計金額</strong></th>
               <td><strong>${h.format_currency(cart.total_amount)}</strong></td>
-            </tr>         
+            </tr>
           </table>
         </td>
-      </tr>                  
+      </tr>
     </table>
   </div>
 </div>
 
-<form id="form1" name="form1" method="post" action="">        
+<form id="form1" name="form1" method="post" action="">
   <div class="confirmBox">
     <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
       <div class="confirmBoxText">
         <p>${cart.payment_delivery_pair.payment_method.name}　${h.format_currency(cart.payment_delivery_pair.transaction_fee)}</p>
         <p>${cart.payment_delivery_pair.delivery_method.name}　${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</p>
@@ -66,7 +66,7 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
@@ -79,12 +79,8 @@
               <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
             </tr>
             <tr>
-              <th><label>電話番号（自宅）</label></th>
+              <th><label>電話番号</label></th>
               <td>${cart.shipping_address.tel_1}</td>
-            </tr>
-            <tr>
-              <th><label>電話番号（携帯電話）</label></th>
-              <td>${cart.shipping_address.tel_2}</td>
             </tr>
             <tr>
               <th><label>住所</label></th>
@@ -106,15 +102,15 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_magazine.gif')}" alt="メールマガジンの登録" width="177" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_magazine.gif')}" alt="メールマガジンの登録" width="177" height="30" /></h2>
       <div id="mailMagazineBox">
         <div id="mailMagazineBoxInner">
           <ul>
-            <li><strong>ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</strong></li>
+            <li><strong>ご利用いただいた方には、静岡朝日テレビからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。</strong></li>
             <li>
               <label>
                 <input type="checkbox" name="checkbox" id="checkbox" />
-                楽天チケットからのお知らせ</label>
+                静岡朝日テレビからのお知らせ</label>
             </li>
             <li>
               <dl>
@@ -147,6 +143,6 @@
       </div>
     </div>
   </div>
-    
-  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" value="back" alt="戻る" width="236" height="46" />　<input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
+
+  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/btn_back.gif')}" value="back" alt="戻る" width="236" height="46" />　<input type="image" src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
 </form>
