@@ -151,7 +151,7 @@ $(function() {
   };
 
   var productGrid = ${grid|n};
-  var grid = $('#products-grid')
+  var grid = $('#products-grid');
 
   productGrid.colModel.push({
     "label": ' ',
@@ -162,6 +162,16 @@ $(function() {
 
   productGrid['beforeEditCell'] = function (id, name, val, iRow, iCol){
     $('#sales-segment-save_button').attr('disabled', true);
+  };
+
+  productGrid['afterEditCell'] = function (id, name, val, iRow, iCol){
+    $('#sales-segment-save_button').attr('disabled', true);
+    grid.find(".edit-cell").children().blur(function () {
+        var e = $.Event("keydown");
+        e.which = $.ui.keyCode.ENTER;
+        e.keyCode = $.ui.keyCode.ENTER;
+        grid.find(".edit-cell").children().trigger(e);
+    });
   };
 
   productGrid['afterRestoreCell'] = function (id, name, val, iRow, iCol){
