@@ -363,10 +363,12 @@ class LotEntryStatus(object):
     def ordered_count(self):
         """ 決済件数 注文があって決済済みのもの"""
 
-        ordered_count = LotElectedEntry.query.filter(
-            LotElectedEntry.lot_entry_id==LotEntry.id
-        ).filter(
+        ordered_count = LotEntry.query.filter(
             LotEntry.lot_id==self.lot.id
+        ).filter(
+            Order.id == LotEntry.order_id
+        ).filter(
+            Order.paid_at != None
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
@@ -384,8 +386,6 @@ class LotEntryStatus(object):
             LotElectedEntry.lot_entry_id==LotEntry.id
         ).filter(
             LotEntry.lot_id==self.lot.id
-        ).filter(
-            LotEntry.canceled_at==None
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
