@@ -114,6 +114,15 @@
   <hr size="10" color="#872434" />
   <a href="javascript:window.close();">閉じる</a>
 </div>
-
 </body>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "qr"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
+
 </html>

@@ -302,3 +302,10 @@ $(function () {
         </div>
       </div>
     </div>
+
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "index", "events": "prodView", "products": str(event['id']) + '_' + event["title"] }
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->

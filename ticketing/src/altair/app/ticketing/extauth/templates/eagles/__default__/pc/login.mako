@@ -72,3 +72,10 @@
 TEL: 050-5817-8192（平日10時～18時）※不定休</li>
 </ul>
 </article>
+
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "login"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->

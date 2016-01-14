@@ -199,3 +199,12 @@ form {
     <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
 </div>
 </form>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "payment", "events": "scCheckout"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

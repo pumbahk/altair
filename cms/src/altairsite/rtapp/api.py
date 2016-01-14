@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from sqlalchemy import or_
 from altaircms.models import Performance, Genre, SalesSegment
 from altaircms.event.models import Event
-from altaircms.page.models import PageSet
+from altaircms.page.models import PageSet, Page
 from altaircms.topic.models import Promotion, TopicCore, Topic, Topcontent
 from altaircms.plugins.widget.summary.models import SummaryWidget
 from altaircms.helpers.search import escape_wildcard_for_like
@@ -67,7 +67,14 @@ def get_genre_list(session, request, organization_id):
 
 def get_event(session, request):
     event_id = request.matchdict['event_id']
-    event = session.query(Event).filter(Event.id == event_id).one()
+    event = session.query(Event) \
+                   .join(Page, Event.id == Page.event_id) \
+                   .filter(Event.id == event_id) \
+                   .filter(Event.is_searchable == True) \
+                   .filter(Page.published == True) \
+                   .filter(Page.in_term(dt.now())) \
+                   .group_by(Event.id) \
+                   .one()
     return event
 
 def get_widget_summary(session, event):
@@ -76,12 +83,17 @@ def get_widget_summary(session, event):
 
 def get_performance_list_query(session, request, organization_id):
     params = request.GET
+    now = dt.now()
     query = session.query(Event) \
                    .join(Performance, Performance.event_id == Event.id) \
+                   .join(Page, Event.id == Page.event_id) \
                    .filter(Event.organization_id == organization_id) \
+                   .filter(Event.is_searchable == True) \
+                   .filter(Page.published == True) \
+                   .filter(Page.in_term(now)) \
                    .filter(Performance.public == 1) \
-                   .filter(or_(Performance.start_on >= dt.now(),
-                               Performance.end_on >= dt.now())) \
+                   .filter(or_(Performance.start_on >= now,
+                               Performance.end_on >= now)) \
                    .order_by(Event.deal_close) \
                    .group_by(Event.id)
 
@@ -202,7 +214,7 @@ def get_performance_list_query(session, request, organization_id):
     if not(params.get('sales_start') or params.get('sales_end') or
            params.get('sales_start_in') or params.get('sales_end_in')):
         query = query.join(SalesSegment, Performance.id == SalesSegment.performance_id) \
-                     .filter(SalesSegment.end_on >= dt.now())
+                     .filter(SalesSegment.end_on >= now)
 
     return query
 

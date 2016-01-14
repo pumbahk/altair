@@ -20,7 +20,7 @@ def grep_prfms_in_sales(performances):
 def is_performance_on_sale(performance, dt):
     if performance is not None:
         for s in performance.sales:
-            if s.start_on <= dt <= s.end_on:
+            if s.start_on <= dt <= s.end_on and s.publicp and s.group.publicp:
                 return True
     return False
 

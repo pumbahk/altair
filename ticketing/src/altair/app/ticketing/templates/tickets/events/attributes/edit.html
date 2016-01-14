@@ -19,6 +19,9 @@ ${ch.breadcrumbs(
 </%block>
 
 <div class="page-header">
+  %if event:
+  <h3>${event.title}</h3>
+  %endif
   <h3>属性(TicketBundleAttribute)一括編集</h3>
 </div>
 

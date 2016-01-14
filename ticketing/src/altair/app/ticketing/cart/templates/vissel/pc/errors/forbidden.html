@@ -27,3 +27,12 @@
     </tr>
   </body>
 </table>
+  
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-forbidden"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

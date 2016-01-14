@@ -6,3 +6,12 @@
   <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
   <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
 </ul>
+  
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-notfound"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

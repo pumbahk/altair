@@ -44,3 +44,10 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 ※ファンクラブに入会をご希望の方は<a href="http://www.rakuteneagles.jp/fanclub/">こちら</a>から
 </p>
 </div>
+
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-unknown"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->

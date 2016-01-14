@@ -166,7 +166,12 @@ if label is None or label is True:
       % for field in form['extra']._contained_form:
       % if not field.short_name in {'member_type'}:
       <tr>
-        <th scope="row"><label for="${field.id}">${field.label}</label></th>
+        <th scope="row">
+            <label for="${field.id}">${field.label}</label>
+            % if field.flags.required:
+            <span class="red">*</span>
+            % endif
+        </th>
         <td>
           ${render_field(field)}
         </td>
