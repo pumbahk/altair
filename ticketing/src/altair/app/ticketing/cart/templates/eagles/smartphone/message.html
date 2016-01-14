@@ -4,3 +4,11 @@
     <dt>システムエラーが発生しました</dt>
     <dd>${message}</dd>
 </dl>
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "systemerror"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

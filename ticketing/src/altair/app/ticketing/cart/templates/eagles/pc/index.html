@@ -259,3 +259,12 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         </table>
       </div>
     </div>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<% 
+    sc = {"pagename": "index", "events": "prodView", "products": str(event['id']) + '_' + event["title"] }
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

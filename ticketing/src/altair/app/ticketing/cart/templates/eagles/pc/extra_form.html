@@ -53,3 +53,12 @@
   </div>
   <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/ticketstar/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "extra_form"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

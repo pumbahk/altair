@@ -6,3 +6,12 @@
 <h4 style="color:#800; font-size: 1.25em; margin: 1.25em 0 0.5em 0;">ご注意</h4>
 <p style="font-weight:bold">混雑時などに、正常な購入処理が行われた際にも、まれにこの画面が表示されることがございます。</p>
 <p>そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href="${default_contact_url}">こちら</a>にお問い合わせください。</p>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-completion"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
