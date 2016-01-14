@@ -376,7 +376,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
     discount_unit = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.discount_unit)['label'],
         validators=[
-            Required(),
+            Optional(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
             ]
         )
