@@ -10,8 +10,10 @@ import pyramid.paster
 import pyramid.threadlocal
 
 import altair.sqlahelper
+from altair.sqlahelper import get_db_session
 from sqlalchemy import (
     and_,
+    or_,
 )
 import altair.multilock
 from altair.app.ticketing.models import DBSession
@@ -27,11 +29,12 @@ from altair.app.ticketing.core.models import (
     PaymentDeliveryMethodPair,
     )
 from altair.app.ticketing.sej.models import SejOrder
+from altair.app.ticketing.famiport.models import FamiPortOrder
 from altair.app.ticketing.orders.models import (
     Order,
     OrderNotification,
     )
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID,FAMIPORT_DELIVERY_PLUGIN_ID,FAMIPORT_PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +45,22 @@ def get_target_order_nos(today, skip_already_notified=True):
     # 今日の24時
     tomorrow = today + datetime.timedelta(1)
     # 明日の24時
-    day_after_tomorrow = today + datetime.timedelta(2)
+    day_after_tomorrow = today + datetime.timedelta(120)
     # 明後日の24時
     # two_day_after_tomorrow = today + datetime.timedelta(3)
 
-    subqs = DBSession.query(SejOrder)\
+    sej_q = DBSession.query(SejOrder)\
         .filter(SejOrder.ticketing_start_at <= now)\
         .filter(SejOrder.ticketing_due_at > now)\
         .with_entities(SejOrder.order_no)
+    sej_order_no = [o[0] for o in sej_q]
+
+    session = get_db_session(pyramid.threadlocal.get_current_request(), 'famiport')
+    famiport_q = session.query(FamiPortOrder)\
+        .filter(FamiPortOrder.ticketing_start_at <= now)\
+        .filter(FamiPortOrder.ticketing_end_at > now)\
+        .with_entities(FamiPortOrder.order_no)
+    famiport_order_no = [o[0] for o in famiport_q]
 
     q = DBSession.query(Order)\
         .join(Performance)\
@@ -58,21 +69,21 @@ def get_target_order_nos(today, skip_already_notified=True):
         .join(PaymentDeliveryMethodPair)\
         .join(DeliveryMethod, and_(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id))\
         .join(PaymentMethod, and_(PaymentDeliveryMethodPair.payment_method_id==PaymentMethod.id))\
-        .filter(DeliveryMethod.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID)\
         .filter(Performance.start_on.between(tomorrow, day_after_tomorrow))\
         .filter(OrganizationSetting.notify_print_remind_mail == True)\
         .filter(Order.canceled_at == None)\
         .filter(Order.refunded_at == None)\
         .filter(Order.refund_id == None)\
         .filter(Order.paid_at != None)\
-        .filter((Order.issued_at == None) | (Order.issued_at >= today))\
-        .filter(Order.order_no.in_(subqs))
+        .filter((Order.issued_at == None) | (Order.issued_at >= today))
 
-    q1 = q.filter(PaymentMethod.payment_plugin_id != SEJ_PAYMENT_PLUGIN_ID)
+    q1 = q.filter(and_(DeliveryMethod.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID, Order.order_no.in_(sej_order_no)))\
+        .filter(or_((PaymentMethod.payment_plugin_id != SEJ_PAYMENT_PLUGIN_ID),
+                and_(PaymentMethod.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID,Order.issuing_start_at != Order.payment_start_at)))##代引きを除く
 
-    ##代引きを除く
-    q2 = q.filter(PaymentMethod.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID)\
-        .filter(Order.issuing_start_at != Order.payment_start_at)
+    q2 = q.filter(and_(DeliveryMethod.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID, Order.order_no.in_(famiport_order_no)))\
+        .filter(or_((PaymentMethod.payment_plugin_id != FAMIPORT_PAYMENT_PLUGIN_ID),
+                and_(PaymentMethod.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID,Order.issuing_start_at != Order.payment_start_at)))##代引きを除く
 
     if skip_already_notified:
         q1 = q1.join(OrderNotification).filter(OrderNotification.print_remind_at == None)

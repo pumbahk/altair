@@ -66,10 +66,10 @@ def get_mailtype_description():
 @implementer(IRemindMailResource, ICompleteMailResource)
 class RemindMailResource(MailForOrderContext):
     """ リマインドメール """
-    mtype = c_models.MailTypeEnum.PurcacheSejRemindMail
+    mtype = c_models.MailTypeEnum.PurchaseRemindMail
 
 @implementer(IRemindMail)
-class SejRemindMail(object):
+class PurchaseRemindMail(object):
     def __init__(self, mail_template):
         self.mail_template = mail_template
 
@@ -92,7 +92,7 @@ class SejRemindMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=RemindInfoDefault)
         title=order.performance.event.title
-        payment_due_at = DefaultDateTimeFormatter().format_datetime(order.sej_order.payment_due_at)
+        payment_due_at = DefaultDateTimeFormatter().format_datetime(order.payment_due_at)
         value = dict(h=ch,
                      payment_du_at=payment_due_at,
                      order=order,
