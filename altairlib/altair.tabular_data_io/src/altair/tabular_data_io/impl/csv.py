@@ -26,6 +26,7 @@ class CSVWriterWrapper(object):
 
     def close(self):
         self.f.close()
+        self.f = None
 
     def __call__(self, cols):
         self.writer.writerow([col.encode(self.encoding) for col in cols]) 
