@@ -4,6 +4,7 @@ import json
 import logging
 import hashlib
 import six
+import socket
 from urllib import urlencode
 from urlparse import urljoin
 from datetime import datetime
@@ -16,13 +17,16 @@ logger = logging.getLogger(__name__)
 
 @implementer(ICommunicator)
 class EaglesCommunicator(object):
-    def __init__(self, endpoint_base, opener_factory, client_name, hash_key, style_classes={}, request_charset='utf-8'):
+    def __init__(self, endpoint_base, opener_factory, client_name, hash_key, style_classes={}, request_charset='utf-8', timeout=None):
         self.endpoint_base = endpoint_base
         self.opener_factory = opener_factory
         self.client_name = client_name
         self.hash_key = hash_key
         self.style_classes = style_classes
         self.request_charset = request_charset
+        if timeout is None:
+            timeout = socket._GLOBAL_DEFAULT_TIMEOUT
+        self.timeout = timeout
 
     def _do_request(self, endpoint, data):
         req = urllib2.Request(endpoint)
@@ -36,7 +40,7 @@ class EaglesCommunicator(object):
             )
         opener = self.opener_factory()
         try:
-            resp = opener.open(req)
+            resp = opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
             mime_type, charset = parse_content_type(e.info()['content-type'])
             if mime_type == 'application/json':
@@ -144,7 +148,8 @@ def includeme(config):
             opener_factory=opener_factory_from_config(config, 'altair.eagles_extauth.urllib2_opener_factory'),
             client_name=config.registry.settings['altair.eagles_extauth.client_name'],
             hash_key=config.registry.settings['altair.eagles_extauth.hash_key'],
-            style_classes=style_classes
+            style_classes=style_classes,
+            timeout=int(config.registry.settings.get('altair.eagles_extauth.timeout', 10))
             ),
         ICommunicator,
         name='eagles'
