@@ -57,6 +57,7 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
+    config.include('..setup_communicators')
     config.add_static_view('static', '%s:static' % __name__, cache_max_age=3600)
 
     config.add_route('top',  '/')

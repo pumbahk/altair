@@ -27,12 +27,14 @@ from altair.formhelpers.widgets import (
 )
 from altair.formhelpers.fields.select import SimpleChoices
 from altair.formhelpers.validators import RequiredOnNew
+from altair.formhelpers.validators.optional import SwitchOptionalBase
 from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
 from ..models import MemberSet, MemberKind, Member, Host
 from ..utils import period_overlaps
+from ..interfaces import ICommunicator
 from .api import lookup_operator_by_auth_identifier
 
 ONE_SECOND = timedelta(seconds=1)
@@ -132,7 +134,19 @@ class OrganizationForm(OurForm):
         filters=[blank_as_none]
         )
 
+    fanclub_api_type = OurSelectField(
+        label=u'ファンクラブAPIの種類',
+        choices=lambda field: [(name, name) for name, _ in field._form.request.registry.getUtilitiesFor(ICommunicator)],
+        validators=[
+            SwitchOptionalBase(predicate=lambda form, field: not form.fanclub_api_available),
+            ]
+        )
+
     settings = OurFormField(OrganizationSettingsForm)
+
+    @property
+    def fanclub_api_available(self):
+        return self.request and self.request.operator and self.request.operator.organization.fanclub_api_available
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

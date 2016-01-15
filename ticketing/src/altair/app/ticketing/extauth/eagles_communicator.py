@@ -146,5 +146,6 @@ def includeme(config):
             hash_key=config.registry.settings['altair.eagles_extauth.hash_key'],
             style_classes=style_classes
             ),
-        ICommunicator
+        ICommunicator,
+        name='eagles'
         )

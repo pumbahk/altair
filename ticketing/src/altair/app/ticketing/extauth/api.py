@@ -4,12 +4,12 @@ from .models import Member
 from altair.sqlahelper import get_db_session
 from .utils import generate_salt, digest_secret
 
-def get_communicator(request_or_registry):
+def get_communicator(request_or_registry, name):
     if IRequest.providedBy(request_or_registry):
         registry = request_or_registry.registry
     else:
         registry = request_or_registry
-    return registry.queryUtility(ICommunicator)
+    return registry.queryUtility(ICommunicator, name=name)
 
 def create_member(request, member_set, name, auth_identifier, auth_secret):
     salt = generate_salt()

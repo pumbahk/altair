@@ -147,7 +147,7 @@ class View(object):
         openid_claimed_id = get_openid_claimed_id(self.request)
         if openid_claimed_id is not None:
             try:
-                data = get_communicator(self.request).get_user_profile(openid_claimed_id)
+                data = get_communicator(self.request, self.request.organization.fanclub_api_type).get_user_profile(openid_claimed_id)
             except GenericError as e:
                 logger.info('get_user_profile failed: %r' % e)
                 data = None
