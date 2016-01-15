@@ -8,7 +8,7 @@
 <a href="${request.route_path('operators.new')}">新規オペレーター</a>
 ${h.render_bootstrap_pager(operators)}
 <form action="${request.route_path('operators.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" />
+<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたオペレーターを削除します。よろしいですか?" />
 <table class="table">
   <thead>
     <tr>

@@ -15,7 +15,7 @@
 <a href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
 ${h.render_bootstrap_pager(members)}
 <form action="${request.route_path('members.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" />
+<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたメンバーを削除します。よろしいですか?" />
 <table class="table members">
   <thead>
     <tr>

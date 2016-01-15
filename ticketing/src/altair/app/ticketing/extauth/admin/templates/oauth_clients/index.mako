@@ -46,7 +46,7 @@
 % endfor
 <a href="#modal-new-oauth-client" data-toggle="modal" class="btn">新規OAuthクライアント</a>
 <form action="${request.route_path('oauth_clients.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" />
+<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたOAuthクライアントを削除します。よろしいですか?" />
 <table class="table">
   <thead>
     <tr>
