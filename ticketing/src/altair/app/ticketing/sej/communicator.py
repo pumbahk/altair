@@ -21,11 +21,11 @@ class SejPaymentAPICommunicator(object):
     url = ''
     secret_key = ''
 
-    timeout = 120
+    timeout = None
     retry_count = 3
     retry_interval = 5
 
-    def __init__(self, secret_key, url, shop_id, timeout=120, retry_count=3, retry_interval=5, opener=None):
+    def __init__(self, secret_key, url, shop_id, timeout=None, retry_count=3, retry_interval=5, opener=None):
         assert isinstance(secret_key, basestring)
         assert isinstance(url, basestring)
         assert isinstance(shop_id, basestring)
@@ -113,7 +113,7 @@ class SejPaymentAPICommunicatorFactory(object):
         self.default_api_key = \
             settings.get('altair.sej.api_key') or \
             settings.get('sej.api_key') # B/C
-        timeout = settings.get('altair.sej.timeout', '120')
+        timeout = settings.get('altair.sej.timeout', '20')
         self.timeout = timeout and int(timeout) or None
         retry_count = settings.get('altair.sej.retry_count', '3')
         self.retry_count = retry_count and int(retry_count) or None
