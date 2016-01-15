@@ -50,6 +50,7 @@ from altair.app.ticketing.core.models import (
     ChannelEnum,
     SeatStatusEnum,
     SalesSegment,
+    FamiPortTenant,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -69,6 +70,7 @@ from altair.app.ticketing.models import (
 )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
+from altair.app.ticketing.famiport import api as famiport_api
 
 logger = logging.getLogger(__name__)
 
@@ -447,6 +449,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sej_api.get_sej_order(self.order_no)
 
     @property
+    def famiport_order(self):
+        request = get_current_request()
+        tenant = FamiPortTenant.query.filter_by(organization_id=self.organization_id).first()
+        import pdb; pdb.set_trace()
+        return famiport_api.get_famiport_order(request, tenant.code, self.order_no)
+
+    @property
     def status(self):
         if self.canceled_at:
             return 'canceled'
@@ -807,7 +816,7 @@ class OrderNotification(Base, BaseModel):
 
     id = sa.Column(Identifier, primary_key=True)
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id", ondelete='CASCADE'), nullable=False, unique=True)
-    payment_remind_at = sa.Column(sa.DateTime(), nullable=True) # SEJ 支払い期限リマインドメール送信日時
+    payment_remind_at = sa.Column(sa.DateTime(), nullable=True) # 支払い期限リマインドメール送信日時
     print_remind_at = sa.Column(sa.DateTime(), nullable=True)
 
     order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))

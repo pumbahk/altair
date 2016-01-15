@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 def get_target_order_nos(today, skip_already_notified=True):
     today = datetime.datetime.combine(today, datetime.time())
     tomorrow = today + datetime.timedelta(1)
-    day_after_tomorrow = today + datetime.timedelta(20)
+    day_after_tomorrow = today + datetime.timedelta(2)
 
     sej_q = DBSession.query(SejOrder)\
       .filter(SejOrder.payment_due_at.between(tomorrow, day_after_tomorrow))\

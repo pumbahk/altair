@@ -45,7 +45,7 @@ def get_target_order_nos(today, skip_already_notified=True):
     # 今日の24時
     tomorrow = today + datetime.timedelta(1)
     # 明日の24時
-    day_after_tomorrow = today + datetime.timedelta(120)
+    day_after_tomorrow = today + datetime.timedelta(2)
     # 明後日の24時
     # two_day_after_tomorrow = today + datetime.timedelta(3)
 

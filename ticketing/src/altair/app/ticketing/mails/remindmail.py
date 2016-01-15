@@ -22,6 +22,8 @@ from .api import (
     create_mail_request,
     )
 from .utils import unescape
+from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID,FAMIPORT_PAYMENT_PLUGIN_ID
+from datetime import datetime
 
 class RemindInfoDefault(OrderInfoDefault):
     def get_shipping_address_info(request, order):
@@ -92,7 +94,11 @@ class PurchaseRemindMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=RemindInfoDefault)
         title=order.performance.event.title
-        payment_due_at = DefaultDateTimeFormatter().format_datetime(order.payment_due_at)
+        payment_due_at = datetime(2099,1,1)
+        if pair.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID:
+            payment_due_at = DefaultDateTimeFormatter().format_datetime(order.sej_order.payment_due_at)
+        elif pair.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID:
+            payment_due_at = DefaultDateTimeFormatter().format_datetime(order.famiport_order['payment_due_at'])
         value = dict(h=ch,
                      payment_du_at=payment_due_at,
                      order=order,
