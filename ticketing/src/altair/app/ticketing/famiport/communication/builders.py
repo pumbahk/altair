@@ -941,6 +941,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                 else:
                     famiport_order = famiport_receipt.famiport_order
                     famiport_sales_segment = famiport_order.famiport_sales_segment
+                    famiport_sales_segment_code = famiport_sales_segment.code if famiport_sales_segment else None
                     famiport_performance = famiport_order.famiport_performance
                     famiport_event = famiport_performance.famiport_event
                     criteria = [
@@ -973,7 +974,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                                 FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
                                 FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
                                 FamiPortInformationMessage.performance_code == famiport_performance.code,
-                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment.code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment_code,
                                 FamiPortInformationMessage.reserve_number == None
                                 ),
                         lambda q: \
@@ -981,7 +982,7 @@ class FamiPortInformationResponseBuilder(FamiPortResponseBuilder):
                                 FamiPortInformationMessage.event_code_1 == famiport_event.code_1,
                                 FamiPortInformationMessage.event_code_2 == famiport_event.code_2,
                                 FamiPortInformationMessage.performance_code == famiport_performance.code,
-                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment.code,
+                                FamiPortInformationMessage.sales_segment_code == famiport_sales_segment_code,
                                 FamiPortInformationMessage.reserve_number == famiport_receipt.reserve_number
                                 ),
                         ]
