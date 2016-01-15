@@ -452,7 +452,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def famiport_order(self):
         request = get_current_request()
         tenant = FamiPortTenant.query.filter_by(organization_id=self.organization_id).first()
-        import pdb; pdb.set_trace()
         return famiport_api.get_famiport_order(request, tenant.code, self.order_no)
 
     @property
