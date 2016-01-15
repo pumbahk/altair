@@ -89,6 +89,9 @@ altair.httpsession.http_backend.secure = ${altair:userapp_secure_cookie}
 altair.httpsession.http_backend.httponly = ${altair:userapp_httponly_cookie}
 altair.httpsession.http_backend.query_string_key = JSESSIONID
 
+; altair.extauth
+altair.eagles_extauth.endpoint_base = ${altair:extauth.eagles_endpoint_base}
+
 [app:extauth_api]
 use = config:%(here)s/../../baseconf/common.ini#extauth_api
 

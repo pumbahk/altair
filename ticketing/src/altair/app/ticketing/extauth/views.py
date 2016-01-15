@@ -139,6 +139,8 @@ class View(object):
         elif len(data['memberships']) > 1:
             if 'select_account' not in oauth_params['prompt']:
                 raise OpenIDAccountSelectionRequired()
+        elif len(data['memberships']) == 0:
+            raise HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
         return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
 
     def navigate_to_select_account_rakuten_auth(self):
@@ -146,7 +148,8 @@ class View(object):
         if openid_claimed_id is not None:
             try:
                 data = get_communicator(self.request).get_user_profile(openid_claimed_id)
-            except GenericError:
+            except GenericError as e:
+                logger.info('get_user_profile failed: %r' % e)
                 data = None
             if data is None:
                 return HTTPFound(
@@ -428,7 +431,16 @@ class View(object):
         request_method='GET',
         permission='authenticated'
         )
-    def entry(self):
+    def unknown_user(self):
+        return dict()
+
+    @lbr_view_config(
+        route_name='extauth.no_valid_memberships',
+        renderer=selectable_renderer('no_valid_memberships.mako'),
+        request_method='GET',
+        permission='authenticated'
+        )
+    def no_valid_memberships(self):
         return dict()
 
 
