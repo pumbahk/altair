@@ -66,7 +66,7 @@ def get_mailtype_description():
 @implementer(IPrintRemindMailResource, ICompleteMailResource)
 class PrintRemindMailResource(MailForOrderContext):
     """ リマインドメール """
-    mtype = c_models.MailTypeEnum.PurcacheSejRemindMail
+    mtype = c_models.MailTypeEnum.PurchaseRemindMail
 
 @implementer(IPrintRemindMail)
 class PrintRemindMail(object):

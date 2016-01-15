@@ -3424,7 +3424,7 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class MailTypeEnum(StandardEnum):
     PurchaseCompleteMail = 1
     PurchaseCancelMail = 2
-    PurcacheSejRemindMail = 3
+    PurchaseRemindMail = 3
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
@@ -3436,7 +3436,7 @@ class MailTypeEnum(StandardEnum):
 _mail_type_labels = {
     MailTypeEnum.PurchaseCompleteMail.v: u"購入完了",
     MailTypeEnum.PurchaseCancelMail.v: u"購入キャンセル",
-    MailTypeEnum.PurcacheSejRemindMail.v: u"コンビニ入金期限前リマインド",
+    MailTypeEnum.PurchaseRemindMail.v: u"コンビニ入金期限前リマインド",
     MailTypeEnum.LotsAcceptedMail.v: u"抽選申し込み完了",
     MailTypeEnum.LotsElectedMail.v: u"抽選当選通知",
     MailTypeEnum.LotsRejectedMail.v: u"抽選落選通知",

@@ -29,7 +29,7 @@ class TestGetTargetOrderNos(unittest.TestCase, CoreTestMixin):
         _teardown_db()
 
     def _getTarget(self):
-        from .send_sej_remind_mail import get_target_order_nos
+        from .send_payment_remind_mail import get_target_order_nos
         return get_target_order_nos
 
     def _callFUT(self, *args, **kwargs):
@@ -128,13 +128,13 @@ class TestScript(unittest.TestCase, CoreTestMixin, MailTestMixin):
         tearDown()
 
     def _getTarget(self):
-        from .send_sej_remind_mail import send_sej_remind_mail
-        return send_sej_remind_mail
+        from .send_payment_remind_mail import send_payment_remind_mail
+        return send_payment_remind_mail
 
     def _callFUT(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.mails.scripts.send_sej_remind_mail.datetime')
+    @mock.patch('altair.app.ticketing.mails.scripts.send_payment_remind_mail.datetime')
     def test_it(self, _datetime):
         from datetime import date, time, datetime, timedelta
         from altair.app.ticketing.sej.models import SejOrder
