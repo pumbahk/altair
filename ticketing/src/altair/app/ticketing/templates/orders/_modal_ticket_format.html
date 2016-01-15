@@ -25,7 +25,6 @@
         null,
         function ($form, status) {
           if (status != 'error') {
-            $modal.find('.btn-proceed').attr('disabled', null);
             $modal.find('.btn-proceed').click(function () {
               $modal.find('.btn-proceed').attr('disabled', 'disabled');
               $form.submit();
