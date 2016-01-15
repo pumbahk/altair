@@ -13,6 +13,7 @@
 % endfor
 <a href="${request.route_path('members.new')}">新規メンバー</a>
 <a href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
+<a href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
 ${h.render_bootstrap_pager(members)}
 <form action="${request.route_path('members.delete')}" method="POST">
 <input type="submit" name="doDelete" class="btn" value="削除する" />
@@ -38,7 +39,7 @@ ${h.render_bootstrap_pager(members)}
         % for membership in member.memberships:
           <li>
             ${membership.member_kind.name}${u': ' + membership.membership_identifier if membership.membership_identifier else u''}
-            (${h.term(membership.valid_since, membership.expire_at)})
+            (${h.term(membership.valid_since, membership.expire_at, inclusive=False)})
           </li>
         % endfor
         </ul>
@@ -71,3 +72,19 @@ ${h.render_bootstrap_pager(members)}
     <button class="btn btn-primary" name="doBulkAdd">インポート</button>
   </div>
 </form>
+<div id="modal-csv-export" class="modal hide" role="dialog" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>CSVエクスポート</h3>
+  </div>
+  <div class="modal-body">
+    <ul>
+      <li><a href="${request.route_path('members.export', ext='xlsx')}">.xlsx形式 (Microsoft Excel 2007以降)</a></li>
+      <li><a href="${request.route_path('members.export', ext='xls')}">.xls形式 (Microsoft Excel 2007より前)</a></li>
+      <li><a href="${request.route_path('members.export', ext='csv')}">CSV形式</a></li>
+    </ul>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">閉じる</button>
+  </div>
+</div>
