@@ -1,6 +1,12 @@
+import tempfile
+import shutil
 import openpyxl
 
+PREFERRED_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
 class XlsxTabularDataReader(object):
+    preferred_mime_type = PREFERRED_MIME_TYPE
+
     def __init__(self, exts, names):
         self.exts = exts
         self.names = names
@@ -16,16 +22,25 @@ class XlsxTabularDataReader(object):
 
 
 class XlsxTabularDataWriter(object):
+    preferred_mime_type = PREFERRED_MIME_TYPE
+
     class Helper(object):
-        def __init__(self, wb, ws, f):
+        def __init__(self, wb, ws, f, max_inmemory_buf_size):
             self.wb = wb
             self.ws = ws
             self.f = f
+            self.max_inmemory_buf_size = max_inmemory_buf_size or 16777216
             self.r = 0
 
         def close(self):
             if self.wb is not None:
-                self.wb.save(self.f)
+                if not hasattr(self.f, 'tell'):
+                    with tempfile.SpooledTemporaryFile(max_size=self.max_inmemory_buf_size) as f:
+                        self.wb.save(f)
+                        f.seek(0)
+                        shutil.copyfileobj(f, self.f)
+                else:
+                    self.wb.save(self.f)
             self.wb = self.ws = None
 
         def __call__(self, cols):
@@ -39,5 +54,5 @@ class XlsxTabularDataWriter(object):
 
     def open(self, f, encoding=u'UTF-8', sheet_name=u'Sheet1', **options):
         wb = openpyxl.Workbook(encoding=encoding, write_only=True)
-        ws = wb.create_sheet(sheet_name)
-        return Helper(wb, ws, f)
+        ws = wb.create_sheet(None, sheet_name)
+        return self.Helper(wb, ws, f, max_inmemory_buf_size=options.get('max_inmemory_buf_size'))

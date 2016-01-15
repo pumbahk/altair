@@ -1,4 +1,8 @@
+PREFERRED_MIME_TYPE = 'application/vnd.ms-excel'
+
 class XlsTabularDataReader(object):
+    preferred_mime_type = PREFERRED_MIME_TYPE
+
     def __init__(self, exts, names):
         self.exts = exts
         self.names = names
@@ -27,6 +31,8 @@ class XlsTabularDataReader(object):
 
 
 class XlsTabularDataWriter(object):
+    preferred_mime_type = PREFERRED_MIME_TYPE
+
     class Helper(object):
         def __init__(self, wb, ws, f):
             self.wb = wb
@@ -39,7 +45,7 @@ class XlsTabularDataWriter(object):
                 self.wb.save(self.f)
             self.wb = self.ws = None
 
-        def __call__(self, cols);
+        def __call__(self, cols):
             for c, col in enumerate(cols):
                 self.ws.write(self.r, c, col)
             self.r += 1
@@ -53,4 +59,4 @@ class XlsTabularDataWriter(object):
         from xlwt.Workbook import Workbook
         wb = Workbook(encoding=encoding, style_compression=style_compression)
         ws = wb.add_sheet(sheet_name)
-        return Helper(wb, ws, f) 
+        return self.Helper(wb, ws, f) 
