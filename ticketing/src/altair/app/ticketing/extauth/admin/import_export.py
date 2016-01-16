@@ -6,7 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import sql
 from dateutil.parser import parse as parsedate
 from ..models import MemberSet, MemberKind, Member, Membership
-from ..utils import generate_salt, digest_secret
+from ..utils import generate_salt, digest_secret, DIGESTED_SECRET_LEN
 from altair.tabular_data_io import lookup_reader, lookup_writer
 from altair.tabular_data_io.impl.csv import CsvTabularDataReader, CsvTabularDataWriter
 
@@ -35,6 +35,8 @@ japanese_columns = OrderedDict([
     ])
 
 ONE_SECOND = timedelta(seconds=1)
+
+HASH_SIGNATURE = u'$hash$'
 
 class TabularDataReader(object):
     def __init__(self, file, filename, column_name_map, type=None, csv_encoding='cp932'):
@@ -358,6 +360,15 @@ class MemberDataParser(object):
         auth_identifier = record['auth_identifier']
         member_desc = self.members.get(auth_identifier)
         member_id = None
+        if record['auth_secret'] is not Unspecified and \
+           record['auth_secret'].startswith(HASH_SIGNATURE) and \
+           len(record['auth_secret']) != len(HASH_SIGNATURE) + DIGESTED_SECRET_LEN:
+            errors.append(
+                MemberImportExportError.from_reader(
+                    reader, [u'auth_secret'],
+                    message=u'「%s」の値が不正です' % reader.column_name_map[u'auth_secret']
+                    )
+                )
         if member_desc is not None:
             if record['auth_secret'] is not Unspecified and \
                member_desc['auth_secret'] is not Unspecified and  \
@@ -482,12 +493,17 @@ class MemberDataImporter(object):
         self.members_reflected = {}
 
     def map_to_member_column(self, record):
+        auth_secret = record['auth_secret']
+        if auth_secret.startswith(HASH_SIGNATURE):
+            auth_secret = auth_secret[len(HASH_SIGNATURE):]
+        else:
+            auth_secret = digest_secret(auth_secret, generate_salt())
         return dict(
             id=record['member_id'],
             name=record['name'] or u'',
             member_set_id=record['member_set'].id,
             auth_identifier=record['auth_identifier'],
-            auth_secret=record['auth_secret'] and digest_secret(record['auth_secret'], generate_salt()),
+            auth_secret=auth_secret
             ) 
 
     def map_to_membership_column(self, record):
@@ -599,4 +615,7 @@ class MemberDataExporter(object):
             .select_from(self.select_from) \
             .where(MemberSet.organization_id == self.organization_id)
         for raw_record in self.slave_session.execute(q):
-            yield {k: v for (k, _), v in zip(self.record_spec, raw_record)}
+            record = {k: v for (k, _), v in zip(self.record_spec, raw_record)}
+            if record['auth_secret']:
+                record['auth_secret'] = HASH_SIGNATURE + record['auth_secret']
+            yield record
