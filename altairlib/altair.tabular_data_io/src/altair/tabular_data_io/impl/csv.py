@@ -19,13 +19,16 @@ class CsvTabularDataReader(object):
 
 
 class CSVWriterWrapper(object):
-    def __init__(self, writer, f, encoding):
+    def __init__(self, writer, f, encoding, need_close):
         self.writer = writer
         self.f = f
         self.encoding = encoding
+        self.need_close = need_close
 
     def close(self):
-        self.f.close()
+        if self.f is not None:
+            if self.need_close:
+                self.f.close()
         self.f = None
 
     def __call__(self, cols):
@@ -42,4 +45,7 @@ class CsvTabularDataWriter(object):
     def open(self, f, encoding='ASCII', dialect='excel', **options):
         if isinstance(f, (str, text_type)):
             f = open(f, 'wb')
-        return CSVWriterWrapper(csv.writer(f, dialect=dialect, **options), f, encoding)
+            need_close = True
+        else:
+            need_close = False
+        return CSVWriterWrapper(csv.writer(f, dialect=dialect, **options), f, encoding, need_close)

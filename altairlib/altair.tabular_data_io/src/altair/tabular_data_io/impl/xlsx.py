@@ -35,9 +35,7 @@ class XlsxTabularDataWriter(object):
 
         def close(self):
             if self.wb is not None:
-                if not isinstance(self.f, (str, text_type)):
-                    maybe_filelike = True
-                if maybe_filelike and not hasattr(self.f, 'tell'):
+                if not isinstance(self.f, (str, text_type)) and not hasattr(self.f, 'tell'):
                     with tempfile.SpooledTemporaryFile(max_size=self.max_inmemory_buf_size) as f:
                         self.wb.save(f)
                         f.seek(0)
@@ -45,8 +43,6 @@ class XlsxTabularDataWriter(object):
                 else:
                     self.wb.save(self.f)
                 self.wb = self.ws = None
-                if maybe_filelike and hasattr(self.f, 'close'):
-                    self.f.close()
 
         def __call__(self, cols):
             self.ws.append(cols)

@@ -46,8 +46,6 @@ class XlsTabularDataWriter(object):
             if self.wb is not None:
                 self.wb.save(self.f)
             self.wb = self.ws = None
-            if not isinstance(self.f, (str, text_type)) and hasattr(self.f, 'close'):
-                self.f.close()
 
         def __call__(self, cols):
             for c, col in enumerate(cols):
