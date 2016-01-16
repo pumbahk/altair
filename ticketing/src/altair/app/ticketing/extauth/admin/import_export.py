@@ -287,7 +287,7 @@ class MemberDataParser(object):
                     .one()
             except NoResultFound:
                 pass
-            self.member_set_cache[name] = (member_set, [])
+            self.member_set_cache[name] = (member_set, {})
 
         if member_set is None:
             raise MemberImportExportError.from_reader(
@@ -309,6 +309,7 @@ class MemberDataParser(object):
                     .filter_by(member_set_id=member_set.id,
                                name=name) \
                     .one()
+                member_kinds[member_kind.name] = member_kind
             except NoResultFound:
                 pass
         if member_kind is None:
