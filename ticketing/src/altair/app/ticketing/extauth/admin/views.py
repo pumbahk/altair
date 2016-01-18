@@ -1,8 +1,10 @@
 # encoding: utf-8
 
 import logging
+import functools
 from datetime import timedelta
 from pyramid.view import view_config, view_defaults, forbidden_view_config
+from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
@@ -623,6 +625,22 @@ class MembersView(object):
                 self.request.session.flash(u'%s (インポート件数:%d)' % (m, e.num_records))
         return HTTPFound(location=self.request.route_path('members.index'))
 
+    @view_config(route_name='members.export')
+    def export(self):
+        master_session = get_db_session(self.request, 'extauth')
+        slave_session = get_db_session(self.request, 'extauth_slave')
+        type_ = self.request.matchdict.get('ext', 'csv')
+        organization_id = self.request.operator.organization_id
+        resp = Response(status=200)
+        exporter = import_export.MemberDataExporter(slave_session, organization_id)
+        writer = import_export.TabularDataWriter(resp.body_file, import_export.japanese_columns.values(), import_export.japanese_columns.keys(), type=type_)
+        date_time_formatter = lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S").decode("ASCII")
+        resp.content_type = writer.preferred_mime_type
+        if resp.content_type.startswith('text/'):
+            resp.charset = 'Windows-31J' if writer.encoding.lower() == 'cp932' else writer.encoding
+        num_records = import_export.MemberDataWriterAdapter(date_time_formatter)(writer, exporter, ignore_close_error=True)
+        self.request.session.flash(u'%d件をエクスポートしました' % num_records)
+        return resp
 
 @view_defaults(
     permission='manage_oauth_clients',
