@@ -348,7 +348,7 @@ class MemberDataParser(object):
             b['valid_since'] = parse_datetime(reader, raw_record, u'valid_since')
             expire_at = parse_datetime(reader, raw_record, u'expire_at')
             if expire_at is not None and expire_at is not Unspecified:
-                expire_at = expire_at.replace(microsecond=0)
+                expire_at = expire_at.replace(second=59, microsecond=0)
                 expire_at += ONE_SECOND
             b['expire_at'] = expire_at
             b['deleted'] = bool(strip(raw_record.get(u'deleted', u'')))
