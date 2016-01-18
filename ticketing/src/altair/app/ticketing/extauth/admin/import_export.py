@@ -614,7 +614,8 @@ class MemberDataExporter(object):
     def __iter__(self):
         q = sql.select([c for _, c in self.record_spec]) \
             .select_from(self.select_from) \
-            .where(MemberSet.organization_id == self.organization_id)
+            .where(MemberSet.organization_id == self.organization_id) \
+            .order_by(Member.id)
         for raw_record in self.slave_session.execute(q):
             record = {k: v for (k, _), v in zip(self.record_spec, raw_record)}
             if record['auth_secret']:

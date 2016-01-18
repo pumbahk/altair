@@ -473,7 +473,7 @@ class MembersView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id)
+        query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id).order_by(Member.id)
         members = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
