@@ -305,7 +305,7 @@ def create_or_update_famiport_venue(
         sys.exc_clear()
 
         if not update_existing and venue is not None:
-            return dict(new=False, venue_id=venue.id)
+            raise FamiPortAPIError('venue already exists')
         if venue is None:
             venue = FamiPortVenue(client_code=client_code)
             new = True
