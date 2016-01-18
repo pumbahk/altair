@@ -126,9 +126,9 @@ class FCIndexView(object):
         return self.context.available_sales_segments[0]
 
     def product_form(self, params=None, data=None):
+        from altair.app.ticketing.cart.view_support import get_extra_form_class
+        extra_form_type = get_extra_form_class(self.request, self.context.cart_setting)
         def form_factory(formdata, name_builder, **kwargs):
-            from altair.app.ticketing.cart.view_support import get_extra_form_class
-            extra_form_type = get_extra_form_class(self.request, self.context.cart_setting)
             form = extra_form_type(formdata=formdata, name_builder=name_builder, context=self.context, **kwargs)
             form.member_type.choices = self.build_products_dict()
             return form
@@ -149,7 +149,11 @@ class FCIndexView(object):
                     f[k].data = v
         if params is None and data is not None:
             _(retval, data)
-        return retval
+        if issubclass(extra_form_type, schemas.DynamicExtraForm):
+            extra_form_fields = retval['extra']._contained_form._form_schema
+        else:
+            extra_form_fields = None
+        return retval, extra_form_fields
 
     def product_form_from_user_profile(self, user_profile):
         data = {}
@@ -163,16 +167,16 @@ class FCIndexView(object):
     @lbr_view_config(request_method='GET')
     def get(self):
         jump_maintenance_page_for_trouble(self.request.organization)
-        form = self.product_form_from_user_profile(load_user_profile(self.request))
-        return dict(form=form)
+        form, extra_form_fields = self.product_form_from_user_profile(load_user_profile(self.request))
+        return dict(form=form, extra_form_fields=extra_form_fields)
 
     @lbr_view_config(request_method='POST')
     def post(self):
         jump_maintenance_page_for_trouble(self.request.organization)
-        form = self.product_form(UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        form, extra_form_fields = self.product_form(UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         if not form.validate():
             self.request.errors = form.errors
-            return dict(form=form)
+            return dict(form=form, extra_form_fields=extra_form_fields)
 
         member_type = form['extra']._contained_form.member_type.data
         q = c_models.Product.query \
@@ -187,7 +191,7 @@ class FCIndexView(object):
             )
         if cart is None:
             logger.debug('cart is None')
-            return dict(form=form)
+            return dict(form=form, extra_form_fields=extra_form_fields)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         data = extract_form_data(form)

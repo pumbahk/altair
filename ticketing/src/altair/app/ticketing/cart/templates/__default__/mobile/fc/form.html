@@ -72,11 +72,27 @@ ${render_field(form['tel_1'], size="12", istyle="4")}
 % endif
 ${render_field(form['email_1'], size="12", istyle="3", iprof="mail1")}
 ${render_field(form['email_1_confirm'], size="12", istyle="3", iprof="mail1")}
+% if extra_form_fields is not None:
+% for field_desc in extra_form_fields:
+<%
+try:
+    field = form['extra']._contained_form[field_desc['name']]
+except:
+    field = None
+%>
+% if field is not None:
+${render_field(field)}
+% else:
+<p>${field_desc['description']}</p>
+% endif
+% endfor
+% else:
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 ${render_field(field)}
 % endif
 % endfor
+% endif
 <div><font color="red">
 *は入力必須項目です。
 % if view_context.flavors.get('mobile_and_landline_phone_number'):
