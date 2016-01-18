@@ -115,7 +115,11 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
         # Look up existing AltairFamiPortVenue with same event_id and venue_name
         for altair_famiport_performance_group in altair_famiport_performance_groups:
             if altair_famiport_performance_group.altair_famiport_venue.venue_name == performance.venue.name:
-                altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
+                if altair_famiport_venue is None:
+                    altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
+                else:
+                    logs.append(u'会場「%s」と同じ名前の会場が複数連携されています。システム管理者に連絡してください' % performance.venue.name)
+                    return logs
         if altair_famiport_venue is None:
             try:
                 # Look up existing AltairFamiPortVenue with same venue_name
@@ -152,7 +156,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     update_existing=False
                     )
             except FamiPortAPIError as famiport_api_error:
-                logs.append(famiport_api_error)
+                logs.append(famiport_api_error.message)
+                return logs
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
@@ -184,7 +189,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             update_existing=True
                             )
                     except FamiPortAPIError as famiport_api_error:
-                        logs.append(famiport_api_error)
+                        logs.append(famiport_api_error.message)
                         return logs
                     if result['new']:
                         logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.site.name)
