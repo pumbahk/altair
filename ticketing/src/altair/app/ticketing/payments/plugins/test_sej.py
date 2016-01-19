@@ -2659,7 +2659,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             commission_fee=order.system_fee,
             ticketing_fee=order.delivery_fee,
             branch_no=1,
-            exchange_sheet_url=u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url=u'https://inticket.nrir1test.jp/order/hi.do',
             exchange_sheet_number=u'11111111',
             exchange_number=u'22222222',
             order_at=order.created_at,
