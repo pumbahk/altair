@@ -73,7 +73,7 @@
 <h3 class="heading-bline">お問い合わせ</h3>
 <ul class="list-disc">
 <li>楽天野球団チケットセンター<br>
-TEL: 050-5817-8192（平日10時～18時）※不定休</li>
+TEL: 050-5817-8192（10時～18時）※不定休</li>
 </ul>
 </article>
 
