@@ -57,7 +57,11 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
       % for id in subscribe_ids:
         <input type="hidden" name="mailmagazine" value="${id}" />
       % endfor
-      <input type="submit" value="設定変更" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+
+      <div class="confirm-btnBox">
+        <input class="btn btn-primary" type="submit" value="設定変更"></p>
+      </div>
+
       <a href="${request.route_path('mypage.show')}">
         <input type="button" value="戻る" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
       </a>

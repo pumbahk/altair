@@ -1,70 +1,15 @@
 <%inherit file="../layout.html" />
 
-<style type="text/css">
-.OrderBox .settlementBoxInner2 {
-    padding: 0 0 10px;
-}
-
-.OrderBox table {
-    line-height: 1.5em;
-}
-
-
-.OrderBox h2 {
-    text-align: left;
-    margin: 0 3px 5px 2px;
-    padding: 8px 0 10px 12px;
-    background: url(${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/bg_line.gif")}) repeat-x left bottom;
-}
-
-.OrderBox .confirmBoxText{
-    margin-left: 20px;
-}
-
-table {
-	margin: 0 0 0 1em;
-  padding; 0 0;
-  width: 100%;
-}
-
-table th,
-table td {
-	padding: 2px 20px 2px 2px;
-}
-
-table th {
-  width: 10em;
-}
-
-.itemize th,
-.commission th {
-	vertical-align: top;
-	padding: 2px 20px 2px 2px;
-	border-bottom: 1px solid .e6e6e6;
-	font-weight: normal;
-	white-space: nowrap;
-}
-
-.itemize td {
-	padding: 2px;
-	border-bottom: 1px solid .e6e6e6;
-}
-
-.itemize tr:last-child th,
-.itemize tr:last-child td {
-	border: none;
-}
-
-</style>
-<h2>受付履歴確認 検索結果</h2>
 <%
 shipping =order.shipping_address
 %>
 
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h3>受付番号</h3>
-    <table class="itemize">
+<h1 class="heading heading-primary">チケット購入</h1>
+
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">受付番号</h2>
+<table class="customer-table" summary="受付番号">
+<tbody>
       <tr>
         <th scope="row">受付番号</th>
         <td>${order.order_no}</td>
@@ -89,20 +34,21 @@ shipping =order.shipping_address
         <td>${h.japanese_datetime(order.issued_at)}</td>
       </tr>
       % endif
-    </table>
-  </div>
-</div>
+</tbody>
+</table>
+</div><!-- ===== / 受付番号 ===== -->
 
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h3>購入者情報</h3>
-    <table class="itemize" summary="配送先情報">
+<!-- ===== 購入者情報 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">購入者情報</h2>
+<table class="customer-table" summary="購入者情報">
+<tbody>
       <tr>
-        <th scope="row">氏名（漢字）</th>
+        <th scope="row">購入者氏名<br><span>漢字</span></th>
         <td>${shipping.last_name} ${shipping.first_name}</td>
       </tr>
       <tr>
-        <th scope="row">氏名（カナ）</th>
+        <th scope="row">購入者氏名<br><span>カナ</span></th>
         <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
       </tr>
       <tr>
@@ -119,23 +65,18 @@ shipping =order.shipping_address
           <td>000-0000-0000</td>
         </tr>
         -->
-        <tr>
-          <th scope="row">住所</th>
-          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
-        </tr>
-        <tr>
-          <td colspan="2">※ご購入時に入力された情報が表示されております。<br/>
-登録情報変更をご希望の場合は、<a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">問合せフォームより</a>ご連絡下さい。
-</td>
-        </tr>
+      </tbody>
     </table>
-  </div>
-</div>
+<p class="mgt10">※ご購入時に入力された情報が表示されております。
+登録情報変更をご希望の場合は、お問合せフォームよりご連絡下さい。 </p>
+<p>&raquo; <a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">お問合せフォームはこちらから</a></p>
+</div><!-- ===== / 購入者情報 ===== -->
 
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h3>購入したイベントの情報</h3>
-    <table class="itemize">
+<!-- ===== 購入したイベントの情報 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">購入したイベントの情報</h2>
+<table class="customer-table" summary="購入したイベントの情報">
+<tbody>
       <tr>
         <th scope="row">イベント名</th>
         <td>${order.performance.event.title}</td>
@@ -166,79 +107,86 @@ shipping =order.shipping_address
         <th scope="row">会場</th>
         <td>${order.performance.venue.name}</td>
       </tr>
-    </table>
-  </div>
-</div>
+</tbody>
+</table>
+</div><!-- ===== / 購入したイベントの情報 ===== -->
 
-<div class="settlementBox OrderBox">
-  <div class="settlementBoxInner">
-    <h3>注文内容</h3>
+<!-- ===== 注文内容 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">注文内容</h2>
+<table class="purchase-table" summary="注文内容">
+<tbody>
+<tr>
+<td colspan="4">
+<p class="tac bold">${order.performance.event.title}</p>
+<p class="tac bold">${order.performance.name}</p>
+<p class="tac bold">
+<span class="br">${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)}</span>
+<span>${order.performance.venue.name}</span>
+</p>
+</td>
+</tr>
 
-    <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
        %for product in order.items:
         <tr>
-          <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
-          </th>
-          % if product.seats:
-          % if product.product.sales_segment.setting.display_seat_no:
-          <td><strong>${product.seat_quantity}</strong>枚</td>
-          <td>
-          % for seat in product.seats:
-            ${seat['name']}<br/>
-          % endfor
+          <td><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
           </td>
+          % if product.seats:
+            % if product.product.sales_segment.setting.display_seat_no:
+              <td><strong>${product.seat_quantity}</strong>枚</td>
+              <td>
+              % for seat in product.seats:
+                ${seat['name']}<br/>
+              % endfor
+              </td>
+            % else:
+              <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+            % endif
           % else:
-          <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+            <td colspan="2"><strong>${product.quantity}</strong>枚</td>
           % endif
-          % else:
-          <td colspan="2"><strong>${product.quantity}</strong>枚</td>
-          % endif
-          <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
+          <td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
         </tr>
         %endfor
         <tr class="commission">
-          <th scope="row">決済手数料</th>
+          <th scope="row" colspan="2">決済手数料</th>
           <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
+          <td class="tar">￥${h.format_number(order.transaction_fee)}</td>
         </tr>
         <tr class="commission">
-          <th scope="row">発券/引取手数料</th>
+          <th scope="row" colspan="2">発券/引取手数料</th>
           <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
+          <td class="tar">￥${h.format_number(order.delivery_fee)}</td>
         </tr>
         <tr class="commission">
-          <th scope="row">システム利用料</th>
+          <th scope="row" colspan="2">システム利用料</th>
           <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.system_fee)}</td>
+          <td class="tar">￥${h.format_number(order.system_fee)}</td>
         </tr>
         %if order.special_fee > 0:
         <tr class="commission">
           <th scope="row">${order.special_fee_name}</th>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.special_fee)}</td>
+          <td class="tar">￥${h.format_number(order.special_fee)}</td>
         </tr>
         %endif
-        <tr id="total">
+        <tr class="purchase-table-total">
           <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td class="align1">￥${h.format_number(order.total_amount)}</td>
         </tr>
-    </table>      
-  </div>
-</div>
+</tbody></table>
+</div><!-- ===== / 注文内容 ===== -->
 
 <% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
-<div class="settlementBox OrderBox">
-  <div class="settlementBoxInner">
-    <h3>追加情報</h3>
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">追加情報</h2>
 
-    <table class="itemize" summary="追加情報">
+<table class="purchase-table" summary="追加情報">
+<tbody>
       %for _, (display_name, display_value) in extra_form_data:
       <tr>
         <th scope="row" class="display_name">
@@ -247,15 +195,15 @@ shipping =order.shipping_address
         <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
       </tr>
       %endfor
-    </table>      
-  </div>
+</tbody>
+</table>
+
 </div>
 % endif
 
 
 % if order.status == 'canceled':
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
+<div class="confirm-wrap">
       <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
       <div class="confirmBoxText">
         <p>
@@ -264,23 +212,15 @@ shipping =order.shipping_address
       ・弊社判断によるキャンセル処理を行ったため<br />
         </p>
       </div>
-    </div>
-  </div>
+</div>
 % elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
-      <h3>お支払</h3>
-      <div class="confirmBoxText">
-        ${h.render_payment_finished_viewlet(request, order)}
-      </div>
-    </div>
-  </div>
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">お支払い</h2>
+${h.render_payment_finished_viewlet(request, order)}
 
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
-      <h3>お引取</h3>
-      <div class="confirmBoxText">
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">お引き取り</h2>
         % if order.payment_delivery_pair.delivery_method.id == 71:
          <div>
            <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
@@ -291,19 +231,18 @@ shipping =order.shipping_address
         % else:
           ${h.render_delivery_finished_viewlet(request, order)}
         % endif
-      </div>
-    </div>
-  </div>
+</div><!-- ===== / お引き取り ===== -->
 % endif
 
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h3>注意事項</h3>
-    <div class="confirmBoxText">
-      <p>
-        入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。
-      </p>
-    </div>
-  </div>
-</div>
+<!-- ===== 注意事項 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">注意事項</h2>
+<p>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。 </p>
+</div><!-- ===== / 注意事項 ===== -->
 
+<br>
+<br>
+
+<div>
+<a href="javascript:history.back();">戻る</a>
+</div>

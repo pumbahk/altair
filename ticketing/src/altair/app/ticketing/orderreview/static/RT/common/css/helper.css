@@ -1,0 +1,57 @@
+﻿@charset "utf-8";
+
+
+/* common
+--------------------------------------------------- */
+
+.fs10 { font-size: 1.0rem; }
+.fs12 { font-size: 1.2rem; }
+.fs14 { font-size: 1.4rem; }
+.fs16 { font-size: 1.6rem; }
+.fs18 { font-size: 1.8rem; }
+.fs20 { font-size: 2.0rem; }
+.fs22 { font-size: 2.2rem; }
+.fs24 { font-size: 2.4rem; }
+
+.mg5 { margin: 5px; }
+.mg10 { margin: 10px; }
+.mg20 { margin: 20px; }
+.mg30 { margin: 30px; }
+.mg40 { margin: 40px; }
+.mg50 { margin: 50px; }
+.mgtb5 { margin: 5px; }
+.mgtb10 { margin: 10px 0; }
+.mgtb20 { margin: 20px 0; }
+.mgtb30 { margin: 30px 0; }
+.mgtb40 { margin: 40px 0; }
+.mgtb50 { margin: 50px 0; }
+.mgt5 { margin-top: 5px; }
+.mgt10 { margin-top: 10px; }
+.mgt20 { margin-top: 20px; }
+.mgt30 { margin-top: 30px; }
+.mgt40 { margin-top: 40px; }
+.mgt50 { margin-top: 50px; }
+.mgb5 { margin-bottom: 5px; }
+.mgb10 { margin-bottom: 10px; }
+.mgb20 { margin-bottom: 20px; }
+.mgb30 { margin-bottom: 30px; }
+.mgb40 { margin-bottom: 40px; }
+.mgb50 { margin-bottom: 50px; }
+.mgl5 { margin-left: 5px; }
+.mgl10 { margin-left: 10px; }
+.mgl20 { margin-left: 20px; }
+.mgl30 { margin-left: 30px; }
+.mgl40 { margin-left: 40px; }
+.mgl50 { margin-left: 50px; }
+.mgr5 { margin-right: 5px; }
+.mgr10 { margin-right: 10px; }
+.mgr20 { margin-right: 20px; }
+.mgr30 { margin-right: 30px; }
+.mgr40 { margin-right: 40px; }
+.mgr50 { margin-right: 50px; }
+
+
+
+.tac { text-align: center; }
+.bold { font-weight: bold; }
+.clr_red { color: red; }
