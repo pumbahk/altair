@@ -4,6 +4,7 @@ import urllib2
 import time
 import logging
 import six
+import socket
 
 from zope.interface import implementer
 from .exceptions import SejServerError
@@ -20,18 +21,20 @@ class SejPaymentAPICommunicator(object):
     url = ''
     secret_key = ''
 
-    time_out = 120
+    timeout = None
     retry_count = 3
     retry_interval = 5
 
-    def __init__(self, secret_key, url, shop_id, time_out=120, retry_count=3, retry_interval=5, opener=None):
+    def __init__(self, secret_key, url, shop_id, timeout=None, retry_count=3, retry_interval=5, opener=None):
         assert isinstance(secret_key, basestring)
         assert isinstance(url, basestring)
         assert isinstance(shop_id, basestring)
         self.secret_key = secret_key
         self.url = url
         self.shop_id = shop_id
-        self.time_out = time_out
+        if timeout is None:
+            timeout = socket._GLOBAL_DEFAULT_TIMEOUT
+        self.timeout = timeout
         self.retry_count = retry_count
         self.retry_interval = retry_interval
         self.opener = opener or urllib2.build_opener()
@@ -80,7 +83,7 @@ class SejPaymentAPICommunicator(object):
         req = create_sej_request(self.url, request_params)
 
         try:
-            res = self.opener.open(req)
+            res = self.opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
             res = e
 
@@ -110,7 +113,7 @@ class SejPaymentAPICommunicatorFactory(object):
         self.default_api_key = \
             settings.get('altair.sej.api_key') or \
             settings.get('sej.api_key') # B/C
-        timeout = settings.get('altair.sej.timeout', '120')
+        timeout = settings.get('altair.sej.timeout', '20')
         self.timeout = timeout and int(timeout) or None
         retry_count = settings.get('altair.sej.retry_count', '3')
         self.retry_count = retry_count and int(retry_count) or None
@@ -127,7 +130,7 @@ class SejPaymentAPICommunicatorFactory(object):
             secret_key=api_key,
             url=(inticket_api_url + path),
             shop_id=shop_id,
-            time_out=self.timeout,
+            timeout=self.timeout,
             retry_count=self.retry_count,
             retry_interval=self.retry_interval,
             opener=self.opener_factory()
