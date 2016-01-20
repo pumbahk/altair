@@ -1323,7 +1323,6 @@ class RefreshFamiPortOrderTest(TestCase):
         altair_famiport_venue = AltairFamiPortVenue(
             organization=self.organization,
             famiport_venue_id=famiport_venue.id,
-            venue_name=u'venue_name',
             name=u'venue',
             name_kana=u'venue_kana',
             sites=[Site()]
