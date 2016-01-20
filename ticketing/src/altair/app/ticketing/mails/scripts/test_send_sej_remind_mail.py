@@ -29,8 +29,8 @@ class TestGetTargetOrderNos(unittest.TestCase, CoreTestMixin):
         _teardown_db()
 
     def _getTarget(self):
-        from .send_payment_remind_mail import get_target_order_nos
-        return get_target_order_nos
+        from .send_payment_remind_mail import get_sej_target_order_nos
+        return get_sej_target_order_nos
 
     def _callFUT(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -128,8 +128,8 @@ class TestScript(unittest.TestCase, CoreTestMixin, MailTestMixin):
         tearDown()
 
     def _getTarget(self):
-        from .send_payment_remind_mail import send_payment_remind_mail
-        return send_payment_remind_mail
+        from .send_payment_remind_mail import send_sej_payment_remind_mail
+        return send_sej_payment_remind_mail
 
     def _callFUT(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
