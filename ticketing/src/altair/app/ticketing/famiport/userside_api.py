@@ -7,12 +7,12 @@ import sqlalchemy as sa
 from markupsafe import Markup
 from sqlalchemy import sql
 from sqlalchemy.sql import func as sqlf
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
 from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
-from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
+from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -112,30 +112,20 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
     altair_famiport_performances_just_added = set()
     for performance in event.performances:
         altair_famiport_venue = None
-        # Look up existing AltairFamiPortVenue with same event_id and venue_name
-        for altair_famiport_performance_group in altair_famiport_performance_groups:
-            if altair_famiport_performance_group.altair_famiport_venue.venue_name == performance.venue.name:
-                if altair_famiport_venue is None:
-                    altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
-                else:
-                    logs.append(u'会場「%s」と同じ名前の会場が複数連携されています。システム管理者に連絡してください' % performance.venue.name)
-                    return logs
-        if altair_famiport_venue is None:
-            try:
-                # Look up existing AltairFamiPortVenue with same venue_name
-                altair_famiport_venue = session.query(AltairFamiPortVenue) \
-                    .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
-                    .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
-                    .distinct() \
-                    .one()
-            except NoResultFound:
-                logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Venue.name=%s' % (performance.venue.site_id, performance.venue.name))
-        result = {}
+        try:
+            altair_famiport_venue = session.query(AltairFamiPortVenue) \
+                .join(AltairFamiPortVenue.sites) \
+                .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
+                .filter(Site.name == performance.venue.site.name) \
+                .distinct() \
+                .one()
+        except NoResultFound:
+            pass
+        logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Site.name=%s' % (performance.venue.site_id, performance.venue.site.name))
         if altair_famiport_venue is None:
             altair_famiport_venue = AltairFamiPortVenue(
                 organization_id=event.organization_id,
                 famiport_venue_id=None,
-                venue_name=performance.venue.name,
                 name=performance.venue.site.name,
                 name_kana=u'',
                 status=AltairFamiPortReflectionStatus.Editing.value,
@@ -144,25 +134,22 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             session.add(altair_famiport_venue)
             session.flush()
             prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture.strip())
-            try:
-                result = get_famiport_venue_by_name(request, client_code, performance.venue.name)
-            except FamiPortAPINotFoundError:
-                result = create_or_update_famiport_venue(
-                    request,
-                    client_code=client_code,
-                    id=None,
-                    userside_id=altair_famiport_venue.id,
-                    name=performance.venue.name,
-                    name_kana=u'',
-                    prefecture=prefecture,
-                    update_existing=False
-                    )
+            result = create_or_update_famiport_venue(
+                request,
+                client_code=client_code,
+                id=None,
+                userside_id=altair_famiport_venue.id,
+                name=performance.venue.site.name,
+                name_kana=u'',
+                prefecture=prefecture,
+                update_existing=False
+                )
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
             logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.site.name)
         else:
-            famiport_venue_info = get_famiport_venue_by_userside_id_or_name(request, client_code, altair_famiport_venue.id, altair_famiport_venue.venue_name)
+            famiport_venue_info = get_famiport_venue_by_userside_id(request, client_code, altair_famiport_venue.id)
             famiport_venue_id = famiport_venue_info['venue_id']
             prefecture = famiport_venue_info['prefecture']
             if performance.venue.site not in altair_famiport_venue.sites:
@@ -398,7 +385,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 client_code=tenant.code,
                 id=None,
                 userside_id=altair_famiport_performance_group.altair_famiport_venue.id,
-                name=altair_famiport_performance_group.altair_famiport_venue.venue_name,
+                name=altair_famiport_performance_group.altair_famiport_venue.site.name,
                 name_kana=u'',
                 prefecture=prefecture,
                 update_existing=True
