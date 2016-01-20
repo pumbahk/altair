@@ -26,7 +26,7 @@ class PrintedReportSettingAdminResource(TicketingAdminResource):
         self.printed_report_setting.start_on = form.start_on.data
         self.printed_report_setting.end_on = form.end_on.data
 
-    def update_recipient_update(self):
+    def update_recipient(self):
         form = forms.PrintedReportRecipientForm(self.request.POST)
         self.printed_report_setting.recipients = []
         for line in form.recipients.data.splitlines():

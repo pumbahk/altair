@@ -35,7 +35,7 @@ def upgrade():
 
     op.create_table('PrintedReportRecipient',
         sa.Column('id', Identifier(), primary_key=True),
-        sa.Column('name', sa.String(255), nullable=True),
+        sa.Column('name', sa.String(255), nullable=False),
         sa.Column('email', sa.String(255), nullable=False),
         sa.Column('organization_id', Identifier(), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),

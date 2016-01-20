@@ -60,7 +60,7 @@ class PrintedReports(BaseView):
 
     @view_config(route_name='printed_reports.recipients_update', request_method='POST')
     def recipient_update(self):
-        self.context.update_recipient_update()
+        self.context.update_recipient()
         self.request.session.flash(u"発券進捗メールの送信先を変更しました。")
         return dict(
             event=self.context.event,
