@@ -46,8 +46,6 @@ def get_sej_target_order_nos(today, skip_already_notified=True):
     tomorrow = today + datetime.timedelta(1)
     # 明日の24時
     day_after_tomorrow = today + datetime.timedelta(2)
-    # 明後日の24時
-    # two_day_after_tomorrow = today + datetime.timedelta(3)
 
     sej_q = DBSession.query(SejOrder)\
         .filter(SejOrder.ticketing_start_at <= now)\
@@ -86,8 +84,6 @@ def get_famiport_target_order_nos(today, skip_already_notified=True):
     tomorrow = today + datetime.timedelta(1)
     # 明日の24時
     day_after_tomorrow = today + datetime.timedelta(2)
-    # 明後日の24時
-    # two_day_after_tomorrow = today + datetime.timedelta(3)
 
     session = get_db_session(pyramid.threadlocal.get_current_request(), 'famiport')
     famiport_q = session.query(FamiPortOrder)\
