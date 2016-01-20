@@ -43,6 +43,17 @@
     % endif
   </div>
 </div>
+% if form.fanclub_api_available:
+<div class="control-group">
+  <label class="control-label" for="organization-form--fanclub_api_type">${form.fanclub_api_type.label.text}</label>
+  <div class="controls">
+    ${form.fanclub_api_type(id="organization-form--fanclub_api_type")}
+    %if form.fanclub_api_type.errors:
+    <span class="help-inline">${u' / '.join(form.fanclub_api_type.errors)}</span>
+    % endif
+  </div>
+</div>
+% endif
 <fieldset>
 <legend>楽天会員認証の設定</legend>
 <div class="control-group">
@@ -60,6 +71,15 @@
     ${form.settings.rakuten_auth.oauth_consumer_secret(id="organization-settings-rakuten_auth-form--oauth_consumer_secret")}
     %if form.settings.rakuten_auth.oauth_consumer_secret.errors:
     <span class="help-inline">${u' / '.join(form.settings.rakuten_auth.oauth_consumer_secret.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="organization-settings-rakuten_auth-form--proxy_url_pattern">${form.settings.rakuten_auth.proxy_url_pattern.label.text}</label>
+  <div class="controls">
+    ${form.settings.rakuten_auth.proxy_url_pattern(id="organization-settings-rakuten_auth-form--proxy_url_pattern")}
+    %if form.settings.rakuten_auth.proxy_url_pattern.errors:
+    <span class="help-inline">${u' / '.join(form.settings.rakuten_auth.proxy_url_pattern.errors)}</span>
     % endif
   </div>
 </div>
