@@ -197,7 +197,7 @@ def get_famiport_venue_by_name(request, client_code, name):
         famiport_venue = internal.get_famiport_venue_by_name(session, client_code, name)
         return famiport_venue_to_dict(famiport_venue)
     except NoResultFound:
-        raise FamiPortAPINotFoundError('no such venue corresponds to name: %d' % name)
+        raise FamiPortAPINotFoundError('no such venue corresponds to name: %s' % name)
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
