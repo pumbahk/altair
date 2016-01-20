@@ -891,6 +891,42 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def format_emails(self):
         return u', '.join([r.email for r in self.recipients])
 
+
+class PrinttedReportSetting_PrintedReportRecipient(Base):
+    __tablename__   = 'PrintedReportSetting_PrintedReportRecipient'
+    report_setting_id = Column(Identifier, ForeignKey('PrintedReportSetting.id', ondelete='CASCADE'), primary_key=True)
+    report_recipient_id = Column(Identifier, ForeignKey('PrintedReportRecipient.id', ondelete='CASCADE'), primary_key=True)
+
+
+class PrintedReportRecipient(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = 'PrintedReportRecipient'
+    id = Column(Identifier(), primary_key=True)
+    name = Column(String(255), nullable=True)
+    email = Column(String(255), nullable=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+    organization = relationship('Organization', backref='printed_report_recipients')
+
+    def format_recipient(self):
+        return u'{0} <{1}>'.format(self.name, self.email)
+
+
+class PrintedReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'PrintedReportSetting'
+    id = Column(Identifier, primary_key=True)
+    event = relationship('Event', backref='printed_report_settings')
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=True)
+    operator_id = Column(Identifier, nullable=False)
+    start_on = Column(DateTime, nullable=True, default=None)
+    end_on = Column(DateTime, nullable=True, default=None)
+    recipients = relationship('PrintedReportRecipient', secondary=PrinttedReportSetting_PrintedReportRecipient.__table__, backref='settings')
+
+    def format_recipients(self):
+        return u', '.join([r.format_recipient() for r in self.recipients])
+
+    def format_emails(self):
+        return u', '.join([r.email for r in self.recipients])
+
+
 def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, user=None, now=None, type='available'):
     if all(not x for x in [event_id, performance_id, sales_segment_group_id, sales_segment_id]):
         raise ValueError("any of event_id, performance_id, sales_segment_group_id or sales_segment_id must be non-null value")

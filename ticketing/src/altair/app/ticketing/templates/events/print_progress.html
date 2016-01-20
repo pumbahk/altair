@@ -17,9 +17,6 @@
   });
 </script>
 
-<div class="page-header">
-  <h1 style="word-wrap: break-word;">発券進捗状況</h1>
-</div>
 <h3>イベント情報</h3>
 
 <table class="table table-bordered fullwidth">
@@ -89,12 +86,39 @@
   </tbody>
 </table>
 
+
+<h3>発券進捗メール設定</h3>
+<a class="btn" href="${request.route_path('printed_reports.edit', event_id=event.id)}">
+設定画面
+</a>
+<p/>
+
+<div>現在の送信設定時刻</div>
+<div>${printed_report_setting.start_on.strftime('%Y-%m-%d 00:00')}〜${printed_report_setting.end_on.strftime('%Y-%m-%d 00:00')}</div>
+<br/>
+
+送信対象者<br/>
+<table class="table table-striped table-bordered table-condensed" style="width:50%">
+  <tr>
+    <th class="span3">送信先</th>
+    <th class="span6">メールアドレス</th>
+  </tr>
+  % for recipient in printed_report_setting.recipients:
+  <tr>
+    <td>${recipient.name}</td>
+    <td>${recipient.email}</td>
+  </tr>
+  % endfor
+</table>
+<p/>
+
 <h3>発券進捗状況</h3>
+
 <form method="POST">
 絞込開始時刻:${print_progress_form.start_on}
 絞込終了時刻:${print_progress_form.end_on}<p/>
 ${print_progress_form.product_item_id}
-<input type="submit" value="選択"/>
+<input type="submit" class="btn" value="選択"/>
 </form>
 
 <%include file="/print_progress/_list.html" args="progress=progress"/>

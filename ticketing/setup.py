@@ -173,6 +173,7 @@ setup(name='altair.app.ticketing',
       check_multicheckout_orders=altair.app.ticketing.scripts.check_multicheckout_orders:main
       populate_order_no=altair.app.ticketing.scripts.populate_order_no:main
       send_sales_reports=altair.app.ticketing.events.sales_reports.commands:main
+      send_printed_reports=altair.app.ticketing.events.printed_reports.commands:main
       send_lots_reports=altair.app.ticketing.events.lots.commands.send_lot_report_mails:main
       cancel_auth=altair.app.ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
