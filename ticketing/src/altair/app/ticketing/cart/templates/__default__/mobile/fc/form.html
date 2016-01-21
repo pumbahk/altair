@@ -83,7 +83,7 @@ except:
 % if field is not None:
 ${render_field(field)}
 % else:
-<p>${field_desc['description']}</p>
+<p>${field_desc['description']|n}</p>
 % endif
 % endfor
 % else:
