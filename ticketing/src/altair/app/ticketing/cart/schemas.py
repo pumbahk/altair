@@ -581,13 +581,13 @@ class DynamicExtraForm(ExtraForm):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        fields = build_dynamic_form.unbound_fields(
-            filter_extra_form_schema(
-                context.cart_setting.extra_form_fields or [],
-                mode='entry'
-                )
+        form_schema = filter_extra_form_schema(
+            context.cart_setting.extra_form_fields or [],
+            mode='entry'
             )
+        fields = build_dynamic_form.unbound_fields(form_schema)
         super(DynamicExtraForm, self).__init__(*args, _fields=fields, **kwargs)
+        self._form_schema = form_schema
 
 
 extra_form_type_map = {

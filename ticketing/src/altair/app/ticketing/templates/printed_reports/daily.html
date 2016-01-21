@@ -1,0 +1,51 @@
+<%namespace file="/common/helpers.html" name="ch" />
+<style>
+table {
+    width: 100%;
+}
+table th {
+    white-space: nowrap;
+    width: 100px;
+}
+</style>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div style="margin-left:20px;">
+      <br>
+      <p>いつもお世話になっております。</p>
+      <br>
+      <p>以下の内容で最新の発券（入場）情報をお送りいたします。</p>
+      <p>ご査収のほど、宜しくお願いいたします。</p>
+      <p>集計期間:${period}
+      </p>
+      <br>
+
+      % for perf in event.performances:
+      <h2 style="color:#004040">${perf.name} 発券状況</h2>
+      <table border="1">
+        <tr>
+          <th bgcolor="gray">席種名</th>
+          <th bgcolor="gray">商品名</th>
+          <th bgcolor="gray">商品明細名</th>
+          <th bgcolor="gray">発券進捗数</th>
+        </tr>
+          % for printed_num in performance_printed_num[perf.id]:
+            <tr>
+              <td>${printed_num[0].product_item.stock.stock_type.name}</td>
+              <td>${printed_num[0].product_item.product.name}</td>
+              <td>${printed_num[0].product_item.name}</td>
+              <td>${printed_num[1]}枚</td>
+            </tr>
+          % endfor
+      </table>
+      <p/>
+      % endfor
+
+    </div>
+  </body>
+</html>

@@ -31,7 +31,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, PerformanceSetting, StockType, StockTypeEnum, SalesSegment
-from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -136,11 +136,12 @@ class Events(BaseView):
 
         is_famiport_cooperation = {}
         for event in events:
-            fm_performance_ids = [] # FM連携済みのperformance_id
-            altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
-                .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in event.performances])).all()
-            for altair_famiport_performance in altair_famiport_performances:
-                fm_performance_ids.append(altair_famiport_performance.performance_id)
+            altair_famiport_performances = slave_session.query(AltairFamiPortPerformance) \
+                .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in event.performances])) \
+                .filter(AltairFamiPortPerformance.status == AltairFamiPortReflectionStatus.Reflected.value) \
+                .all()
+            # FM連携済みのperformance_idリスト
+            fm_performance_ids = [p.performance_id for p in altair_famiport_performances]
             is_famiport_cooperation[event.id] = fm_performance_ids
 
         return {
@@ -202,11 +203,12 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        fm_performance_ids = [] # FM連携済みのperformance_id
         altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
-            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances])).all()
-        for altair_famiport_performance in altair_famiport_performances:
-            fm_performance_ids.append(altair_famiport_performance.performance_id)
+            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances]))\
+            .filter(AltairFamiPortPerformance.status == AltairFamiPortReflectionStatus.Reflected.value) \
+            .all()
+        # FM連携済みのperformance_idリスト
+        fm_performance_ids = [p.performance_id for p in altair_famiport_performances]
 
         return {
             'event':event,

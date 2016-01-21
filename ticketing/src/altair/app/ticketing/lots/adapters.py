@@ -345,9 +345,7 @@ class LotEntryStatus(object):
     def elected_count(self):
         """ 当選件数 当選フラグON """
 
-        elected_count = LotElectedEntry.query.filter(
-            LotElectedEntry.lot_entry_id==LotEntry.id
-        ).filter(
+        elected_count = LotEntry.query.filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
@@ -363,10 +361,13 @@ class LotEntryStatus(object):
     def ordered_count(self):
         """ 決済件数 注文があって決済済みのもの"""
 
-        ordered_count = LotElectedEntry.query.filter(
-            LotElectedEntry.lot_entry_id==LotEntry.id
-        ).filter(
+        ordered_count = LotEntry.query.filter(
             LotEntry.lot_id==self.lot.id
+        ).join(
+            Order,
+            Order.order_no==LotEntry.entry_no
+        ).filter(
+            Order.paid_at != None
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
@@ -380,18 +381,14 @@ class LotEntryStatus(object):
     def canceled_count(self):
         """ キャンセル件数 キャンセル済みの注文を持っているもの"""
 
-        canceled_count = LotElectedEntry.query.filter(
-            LotElectedEntry.lot_entry_id==LotEntry.id
-        ).filter(
+        canceled_count = LotEntry.query.filter(
             LotEntry.lot_id==self.lot.id
-        ).filter(
-            LotEntry.canceled_at==None
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
             LotEntry.entry_no != None
         ).filter(
-            Order.id==LotEntry.order_id
+            Order.order_no==LotEntry.entry_no
         ).filter(
             Order.canceled_at!=None
         ).count()
@@ -521,7 +518,7 @@ class LotEntryStatus(object):
         ).join(
             LotEntry,
             LotEntry.id==LotEntryWish.lot_entry_id
-        ).outerjoin(Order, Order.id==LotEntry.order_id
+        ).outerjoin(Order, Order.order_no==LotEntry.entry_no
         ).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(

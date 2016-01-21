@@ -29,9 +29,9 @@ def install_mail_utility(config):
     from altair.app.ticketing.mails.order_refund import RefundMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseRefundMail,
                                   ".order_refund", RefundMail, "altair.app.ticketing:templates/mail/order_refund.%(cart_type)s.txt")
-    from altair.app.ticketing.mails.remindmail import SejRemindMail
-    config.add_order_mail_utility(MailTypeEnum.PurcacheSejRemindMail,
-                                  ".remindmail", SejRemindMail, "altair.app.ticketing:templates/mail/remindmail.txt")
+    from altair.app.ticketing.mails.remindmail import PurchaseRemindMail
+    config.add_order_mail_utility(MailTypeEnum.PurchaseRemindMail,
+                                  ".remindmail", PurchaseRemindMail, "altair.app.ticketing:templates/mail/remindmail.txt")
     from altair.app.ticketing.mails.printremindmail import PrintRemindMail
     config.add_order_mail_utility(MailTypeEnum.TicketPrintRemindMail,
                                   ".printremindmail", PrintRemindMail, "altair.app.ticketing:templates/mail/printremindmail.txt")
