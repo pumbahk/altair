@@ -365,10 +365,9 @@ class LotEntryStatus(object):
 
         ordered_count = LotEntry.query.filter(
             LotEntry.lot_id==self.lot.id
-        ).filter(
-            Order.id == LotEntry.order_id
-        ).filter(
-            Order.paid_at != None
+        ).join(
+            Order,
+            Order.order_no==LotEntry.entry_no
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
@@ -521,7 +520,7 @@ class LotEntryStatus(object):
         ).join(
             LotEntry,
             LotEntry.id==LotEntryWish.lot_entry_id
-        ).outerjoin(Order, Order.id==LotEntry.order_id
+        ).outerjoin(Order, Order.order_no==LotEntry.entry_no
         ).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
