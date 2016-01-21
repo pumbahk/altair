@@ -99,6 +99,7 @@ class PrintRemindMail(object):
                      name=u"{0} {1}".format(s_a.last_name, s_a.first_name) if s_a else u"inner",
                      payment_method_name=pair.payment_method.name,
                      delivery_method_name=pair.delivery_method.name,
+                     delivery_plugin_id=pair.delivery_method.delivery_plugin_id,
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
