@@ -51,8 +51,6 @@ ${history_link}
 ※当ご案内と入れ違いにてお引き取りいただいておりました節は
 　何卒ご容赦くださいますようお願い申しあげます
 
-plugin_id = ${get("delivery_plugin_id").body}
-aaa = ${delivery_plugin_id}
 %if len(inquiry_link) > 0:
 ※このメールに返信をされましても対応はいたしかねます。問合せフォームよりお問合せください。
 ■お問い合わせ
