@@ -54,7 +54,7 @@ class SejTest(unittest.TestCase):
             billing_number        = u'00000001',
             exchange_number       = u'00001111',
             ticket_count          = 1,
-            exchange_sheet_url    = u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url    = u'https://inticket.nrir1test.jp/order/hi.do',
             order_no              = u'orderid00001',
             exchange_sheet_number = u'11111111',
             order_at              = datetime.datetime.now()
@@ -88,7 +88,7 @@ class SejTest(unittest.TestCase):
             billing_number        = u'00000001',
             exchange_number       = u'00001111',
             ticket_count          = 1,
-            exchange_sheet_url    = u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url    = u'https://inticket.nrir1test.jp/order/hi.do',
             order_no              = u'orderid00001',
             exchange_sheet_number = u'11111111',
             order_at              = datetime.datetime.now()
@@ -125,7 +125,7 @@ class SejTest(unittest.TestCase):
             = '<SENBDATA>' + \
                 'X_shop_order_id=%(order_no)s&'+ \
                 'X_haraikomi_no=%(haraikomi_no)s&' + \
-                'X_url_info=https://www.r1test.com/order/hi.do&' +\
+                'X_url_info=https://inticket.nrir1test.jp/order/hi.do&' +\
                 'iraihyo_id_00=%(iraihyo_id_00)s&' + \
                 'X_ticket_cnt=%(ticket_total_num)02d&' + \
                 'X_ticket_hon_cnt=%(ticket_num)02d&' + \
@@ -259,7 +259,7 @@ class SejTest(unittest.TestCase):
         assert sej_order.ticket_count == 2
         assert sej_order.exchange_sheet_number == u'11111111'
         assert sej_order.billing_number == u'0000000001'
-        assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
+        assert sej_order.exchange_sheet_url == u'https://inticket.nrir1test.jp/order/hi.do'
         assert sej_tickets[0].barcode_number == '00001'
 
         assert sej_tickets[0].ticket_idx           == 1
@@ -358,7 +358,7 @@ class SejTest(unittest.TestCase):
             'X_shop_order_id=%(order_no)s&'+ \
             'X_haraikomi_no=%(haraikomi_no)s&' + \
             'X_hikikae_no=%(hikikae_no)s&' + \
-            'X_url_info=https://www.r1test.com/order/hi.do&' +\
+            'X_url_info=https://inticket.nrir1test.jp/order/hi.do&' +\
             'iraihyo_id_00=%(iraihyo_id_00)s&' + \
             'X_ticket_cnt=%(ticket_total_num)02d&' + \
             'X_ticket_hon_cnt=%(ticket_num)02d&'+ \
@@ -480,7 +480,7 @@ class SejTest(unittest.TestCase):
             idx+=1
         assert sej_order.exchange_sheet_number == u'11111111'
         assert sej_order.billing_number == u'0000000001'
-        assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
+        assert sej_order.exchange_sheet_url == u'https://inticket.nrir1test.jp/order/hi.do'
 
         sej_tickets = sej_order.tickets
 
@@ -503,7 +503,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.payment import request_update_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://inticket.nrir1test.jp/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
         sej_order = SejOrder(
             payment_type='%d' % SejPaymentType.CashOnDelivery.v,
@@ -516,7 +516,7 @@ class SejTest(unittest.TestCase):
             ticket_price      = 13000,
             commission_fee    = 1000,
             ticketing_fee     = 1000,
-            exchange_sheet_url      = u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url      = u'https://inticket.nrir1test.jp/order/hi.do',
             order_no      = u'orderid00001',
             exchange_sheet_number = u'11111111',
             order_at      = datetime.datetime.now(),
@@ -590,7 +590,7 @@ class SejTest(unittest.TestCase):
             ticket_price      = 13000,
             commission_fee    = 1000,
             ticketing_fee     = 1000,
-            exchange_sheet_url      = u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url      = u'https://inticket.nrir1test.jp/order/hi.do',
             order_no      = u'orderid00001',
             exchange_sheet_number = u'11111111',
             order_at      = datetime.datetime.now(),
@@ -655,7 +655,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.payment import request_update_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=02&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=02&X_ticket_hon_cnt=01&X_url_info=https://inticket.nrir1test.jp/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
         sej_order = SejOrder(
             payment_type='%d' % SejPaymentType.CashOnDelivery.v,
@@ -668,7 +668,7 @@ class SejTest(unittest.TestCase):
             ticket_price      = 13000,
             commission_fee    = 1000,
             ticketing_fee     = 1000,
-            exchange_sheet_url      = u'https://www.r1test.com/order/hi.do',
+            exchange_sheet_url      = u'https://inticket.nrir1test.jp/order/hi.do',
             order_no      = u'orderid00001',
             exchange_sheet_number = u'11111111',
             order_at      = datetime.datetime.now(),

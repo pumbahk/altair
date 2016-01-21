@@ -132,7 +132,7 @@ class SejApiTest(unittest.TestCase):
         sejOrder.process_type          = SejOrderUpdateReason.Change.v
         sejOrder.billing_number        = u'00000001'
         sejOrder.ticket_count          = 1
-        sejOrder.exchange_sheet_url    = u'https://www.r1test.com/order/hi.do'
+        sejOrder.exchange_sheet_url    = u'https://inticket.nrir1test.jp/order/hi.do'
         sejOrder.order_no              = u'orderid00001'
         sejOrder.exchange_sheet_number = u'11111111'
         sejOrder.exchange_number       = u'22222222'

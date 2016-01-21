@@ -787,7 +787,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
 
         if old_order.order_notification:
             old_notification = old_order.order_notification
-            self.assertEqual(old_notification.sej_remind_at, new_notification.sej_remind_at)
+            self.assertEqual(old_notification.payment_remind_at, new_notification.payment_remind_at)
         self.assertEqual(new_order.id, new_notification.order_id)
 
 

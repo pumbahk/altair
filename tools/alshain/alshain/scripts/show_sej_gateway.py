@@ -15,7 +15,7 @@ import pyramid.paster
 import pyramid.testing
 import transaction
 
-TEST_GATEWAY = 'https://pay.r1test.com/'
+TEST_GATEWAY = 'https://inticket.nrir1test.jp/'
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()

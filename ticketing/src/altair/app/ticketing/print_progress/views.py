@@ -25,6 +25,7 @@ def show_event_print_progress(context, request):
     )
     return dict(
         event=event,
+        printed_report_setting=context.printed_report_setting,
         form=EventForm(context=context),
         progress=progress,
         print_progress_form=print_progress_form

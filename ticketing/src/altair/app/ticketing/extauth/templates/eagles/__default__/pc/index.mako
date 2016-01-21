@@ -23,7 +23,7 @@
 </ul>
 <p class="tac mgt20 mgb10"><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnA btnA_l"><span class="login-fc-btn">楽天会員IDでログイン</span></a></p>
 <p class="fs12" style="color: red;">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</p>
-<p>※会員ID・パスワードを忘れてしまった方は<a href="https://eagles.tstar.jp/idpw" target="_blank">こちら</a></p>
+<p>※会員ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
 <%doc>
 <!--一時的に隠します-->
 <p class="tac mgt20"><a href="#" class="btnID">楽天会員ID連携がお済でない方はコチラ</a></p>
@@ -63,8 +63,8 @@
 <article class="box">
 <h3 class="heading-bline">注意事項</h3>
 <ul class="list-disc">
-<li>会員の方も、受付番号（REから始まる12ケタ）から確認することができます。</li>
 <li>会員ID・パスワードは半角でご入力ください。</li>
+<li>購入履歴の確認は、会員の方も、受付番号（REから始まる12ケタ）から確認することができます。</li>
 </ul>
 </article>
 
@@ -73,7 +73,7 @@
 <h3 class="heading-bline">お問い合わせ</h3>
 <ul class="list-disc">
 <li>楽天野球団チケットセンター<br>
-TEL: 050-5817-8192（平日10時～18時）※不定休</li>
+TEL: 050-5817-8192（10時～18時）※不定休</li>
 </ul>
 </article>
 

@@ -163,6 +163,35 @@ if label is None or label is True:
         </td>
       </tr>
       % endif
+      % if extra_form_fields is not None:
+      % for field_desc in extra_form_fields:
+      <%
+try:
+    field = form['extra']._contained_form[field_desc['name']]
+except:
+    field = None
+%>
+      % if field is not None:
+      <tr>
+        <th scope="row">
+            <label for="${field.id}">${field.label}</label>
+            % if field.flags.required:
+            <span class="red">*</span>
+            % endif
+        </th>
+        <td>
+          ${render_field(field)}
+        </td>
+      </tr>
+      % elif field_desc['description']:
+      <tr>
+        <td colspan="2">
+          ${field_desc['description']|n}
+        </td>
+      </tr>
+      % endif
+      % endfor
+      % else:
       % for field in form['extra']._contained_form:
       % if not field.short_name in {'member_type'}:
       <tr>
@@ -178,6 +207,7 @@ if label is None or label is True:
       </tr>
       % endif
       % endfor
+      % endif
     </tbody>
     <tfoot>
       <tr>
