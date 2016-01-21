@@ -8,7 +8,7 @@
 <a href="${request.route_path('member_sets.new')}">新規会員種別</a>
 ${h.render_bootstrap_pager(member_sets)}
 <form action="${request.route_path('member_sets.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" />
+<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択された会員種別を削除します。よろしいですか?" />
 <table class="table">
   <thead>
     <tr>

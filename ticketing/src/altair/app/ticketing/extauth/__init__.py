@@ -109,6 +109,9 @@ def setup_oauth_provider(config):
         IOpenIDProvider
         )
 
+def setup_communicators(config):
+    config.include('.eagles_communicator')
+
 def register_template_globals(event):
     from altair.viewhelpers import Namespace
     from .helpers import Helpers
@@ -164,12 +167,13 @@ def webapp_main(global_config, **local_config):
     config.include('.view_context')
     config.include('.rendering')
     config.include('.request')
-    config.include('.eagles_communicator')
+    config.include(setup_communicators)
     config.include(setup_oauth_provider)
     config.add_route('extauth.reset_and_continue', '/reset/*path', factory=empty_resource_factory)
     config.add_route('extauth.entry', '/{subtype}/', traverse='/{subtype}')
     config.add_route('extauth.rakuten.entry', '/{subtype}/rid', traverse='/{subtype}')
     config.add_route('extauth.unknown_user', '/{subtype}/unknown', traverse='/{subtype}')
+    config.add_route('extauth.no_valid_memberships', '/{subtype}/none', traverse='/{subtype}')
     config.add_route('extauth.select_account', '/{subtype}/select_account', traverse='/{subtype}')
     config.add_route('extauth.authorize', '/{subtype}/authz', traverse='/{subtype}')
     config.add_route('extauth.login', '/{subtype}/login', traverse='/{subtype}')

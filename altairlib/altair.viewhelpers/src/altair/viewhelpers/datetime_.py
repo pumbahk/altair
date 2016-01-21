@@ -1,6 +1,8 @@
 # encoding: utf-8
 
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
+
+TIMEDELTA_MINIMUM_RESOLUTION = timedelta(microseconds=1)
 
 HARF_YEAR = 365 / 2 # harf a year
 
@@ -61,7 +63,7 @@ class DateTimeHelper(object):
             time: self.time
             }
 
-    def term(self, beg, end, none_label=u'指定なし', formatter=None, **flavor):
+    def term(self, beg, end, none_label=u'指定なし', formatter=None, inclusive=True, **flavor):
         """ dateオブジェクトを受け取り期間を表す文字列を返す
         e.g. 2012年3月3日(土)〜7月12日(木)
         """
@@ -72,11 +74,15 @@ class DateTimeHelper(object):
             if end is None:
                 return none_label
             else:
+                if not inclusive:
+                    end -= TIMEDELTA_MINIMUM_RESOLUTION
                 return u"〜 %s" % (formatter(end, with_weekday=with_weekday, **flavor))
         else:
             if end is None:
                 return u"%s 〜" % formatter(beg, with_weekday=with_weekday, **flavor)
             else:
+                if not inclusive:
+                    end -= TIMEDELTA_MINIMUM_RESOLUTION
                 end_flavor = dict(without_year=(beg.year == end.year), **flavor)
                 return u'%s 〜 %s' % (
                     formatter(beg, with_weekday=with_weekday, **flavor),

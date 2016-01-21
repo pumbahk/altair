@@ -7,6 +7,8 @@ from altair.oauth.response import OAuthResponseRenderer
 
 ALNUM = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
+DIGESTED_SECRET_LEN = 32 + 64
+
 def get_oauth_response_renderer(request):
     if IMobileRequest.providedBy(request):
         encoding = request.io_codec

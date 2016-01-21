@@ -34,6 +34,8 @@ class Organization(Base):
         foreign_keys=[canonical_host_name],
         uselist=False
         )
+    fanclub_api_available = sa.Column(sa.Boolean(), nullable=False, default=False)
+    fanclub_api_type = sa.Column(sa.Unicode(32), nullable=True, default=None)
 
 
 class Host(Base):
