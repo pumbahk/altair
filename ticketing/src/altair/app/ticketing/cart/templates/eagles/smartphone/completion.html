@@ -191,7 +191,8 @@ ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
         # event_id
         tmp.append(str(order.performance.event.id))
         # performance_id + 公演開始時刻 + 商品ID
-        tmp.append(str(order.performance.id) + '_' + str(order.performance.start_on) + '_' + str(product.product.id))
+        start_on_str = str(order.performance.start_on).replace(':','').replace('-','').replace(' ','')
+        tmp.append(str(order.performance.id) + '_' + start_on_str[:-2] + '_' + str(product.product.id))
         # 単価
         tmp.append(str(product.quantity))
         # 単価 * 枚数 (金額のカンマ排除)
