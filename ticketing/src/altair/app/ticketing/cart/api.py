@@ -325,7 +325,7 @@ def logout(request, response=None):
             response = request.response
         response.headerlist.extend(headers)
     except:
-        logger.exception('failed to logout; will invalidate session to minimize the side effect')
+        logger.info('failed to logout; will invalidate session to minimize the side effect')
         request.session.invalidate()
 
 class JSONEncoder(json.JSONEncoder):
