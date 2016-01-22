@@ -160,34 +160,34 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
-            logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.site.name)
+            logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.name)
         else:
             famiport_venue_info = get_famiport_venue_by_userside_id_or_name(request, client_code, altair_famiport_venue.id, altair_famiport_venue.venue_name)
             famiport_venue_id = famiport_venue_info['venue_id']
             prefecture = famiport_venue_info['prefecture']
             if performance.venue.site not in altair_famiport_venue.sites:
                 altair_famiport_venue.sites.append(performance.venue.site)
-            if not altair_famiport_venue.id not in altair_famiport_venues_just_added:
+            if altair_famiport_venue.id in altair_famiport_venues_just_added:
                 if altair_famiport_venue.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
-                    logs.append(u'会場「%s」は、反映待ちとなっており自動更新できません' % performance.venue.site.name)
+                    logs.append(u'会場「%s」は、反映待ちとなっており自動更新できません' % performance.venue.name)
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Reflected.value:
-                    logs.append(u'会場「%s」は、反映済となっており自動更新できません。一度編集状態に戻してください' % performance.venue.site.name)
+                    logs.append(u'会場「%s」は、反映済となっており自動更新できません。一度編集状態に戻してください' % performance.venue.name)
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
-                    logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.site.name)
+                    logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.name)
                     prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
-                    altair_famiport_venue.name = performance.venue.site.name
+                    altair_famiport_venue.name = performance.venue.name
                     result = create_or_update_famiport_venue(
                         request,
                         client_code=client_code,
                         id=famiport_venue_id,
                         userside_id=altair_famiport_venue.id,
-                        name=performance.venue.site.name,
+                        name=performance.venue.name,
                         name_kana=u'',
                         prefecture=prefecture,
                         update_existing=True
                         )
                     if result['new']:
-                        logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.site.name)
+                        logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.name)
 
         performances_for_venue = performances_by_venue.get(altair_famiport_venue)
         if performances_for_venue is None:
