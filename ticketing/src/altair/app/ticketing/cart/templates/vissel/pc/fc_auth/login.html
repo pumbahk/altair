@@ -26,7 +26,7 @@
           <tbody><tr>
             <td>
               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-                <table class="login" style="margin-right:5px; height: 200px;">
+                <table class="login" style="margin-right:5px; height: 240px;">
                   <thead>
                     <tr>
                       <th>
@@ -49,8 +49,7 @@
             </td>
             <td>
               <form action="${request.url}" method="post">
-                <input type="hidden" name="password" value="vissel" />
-                <table class="login" style="height: 200px;">
+                <table class="login" style="height: 240px;">
                   <thead>
                     <tr>
                       <th>
@@ -70,8 +69,17 @@
                               </td>
                               <td>
                                 <input type="text" class="text" name="username" style="width:120px" value="">
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                パスワード
+                                <br><span class="small red">※ 半角英数</span>
+                              </td>
+                              <td>
+                                <input type="password" class="text" name="password" style="width:120px" value="">
                                 %if message:
-                                <br/><span class="small red">IDが一致しません</span>
+                                <br/><span class="small red">IDまたはパスワードが一致しません</span>
                                 %endif
                               </td>
                             </tr>
@@ -79,7 +87,7 @@
                               <td colspan="2" class="textC"> <input type="submit" class="redBtn" name="login" value="ログイン"></td>
                             </tr>
                             <tr>
-                              <td colspan="2" class="textC"><small>モバイルファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:vmfc@m.msgs.jp?body=※ご注意※モバイルファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。</small></td>
+                              <td colspan="2" class="textL"><small>モバイルファンクラブ会員ログインの際は、パスワード欄にもご自身のIDをご入力ください。<br>モバイルファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:vmfc@m.msgs.jp?body=※ご注意※モバイルファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。</small></td>
                             </tr>
                           </tbody>
                         </table>              
