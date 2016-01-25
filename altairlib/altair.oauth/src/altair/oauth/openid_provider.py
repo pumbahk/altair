@@ -1,9 +1,12 @@
+import logging
 import jwt
 from time import mktime
 from datetime import timedelta
 from dateutil.tz import tzlocal
 from .interfaces import IOpenIDProvider
 from .exceptions import OpenIDServerError, OpenIDNoSuchIDTokenError, OAuthAccessDeniedError
+
+logger = logging.getLogger(__name__)
 
 def assume_naive_as_local(dt):
     if dt.tzinfo is None:
@@ -112,8 +115,10 @@ class OpenIDProvider(object):
         try:
             retval = self.id_token_store[id_token]
         except:
+            logger.info('id_token (%s) does not exist' % id_token)
             raise OpenIDNoSuchIDTokenError(id_token) 
         now = self.oauth_provider.now_getter()
         if retval['expire_at'] >= now:
+            logger.info('id_token (%s) expired at %s' % (id_token, retval['expire_at']))
             raise OpenIDNoSuchIDTokenError(id_token) 
         return retval
