@@ -39,29 +39,35 @@ class EaglesCommunicator(object):
                 ])
             )
         opener = self.opener_factory()
+        logger.info('making request to %s...' % endpoint)
+        request_start_time = datetime.now()
         try:
-            resp = opener.open(req, timeout=self.timeout)
-        except urllib2.HTTPError as e:
-            mime_type, charset = parse_content_type(e.info()['content-type'])
-            if mime_type == 'application/json':
-                try:
-                    data = json.load(e, encoding=charset)
-                    status = data.get('status')
-                    if status != u'NG':
-                        raise InvalidPayloadError('"status" field is not "NG" (or does not exist) while the response status is not 200 OK', status=e.code)
-                    message = data.get('message', None)
-                    if message is not None:
-                        raise GenericError(message, status=e.code)
-                except CommunicationError:
-                    raise
-                except:
-                    logger.exception('oops')
-            raise GenericHTTPError('HTTP error: status=%d' % e.code, status=e.code)
+            try:
+                resp = opener.open(req, timeout=self.timeout)
+            except urllib2.HTTPError as e:
+                mime_type, charset = parse_content_type(e.info()['content-type'])
+                if mime_type == 'application/json':
+                    try:
+                        data = json.load(e, encoding=charset)
+                        status = data.get('status')
+                        if status != u'NG':
+                            raise InvalidPayloadError('"status" field is not "NG" (or does not exist) while the response status is not 200 OK', status=e.code)
+                        message = data.get('message', None)
+                        if message is not None:
+                            raise GenericError(message, status=e.code)
+                    except CommunicationError:
+                        raise
+                    except:
+                        logger.exception('oops')
+                raise GenericHTTPError('HTTP error: status=%d' % e.code, status=e.code)
 
-        mime_type, charset = parse_content_type(resp.info()['content-type'])
-        if mime_type != 'application/json':
-            raise CommunicationError("content_type is not 'application/json' (got %s)" % mime_type)
-        data = json.load(resp, encoding=charset)
+            mime_type, charset = parse_content_type(resp.info()['content-type'])
+            if mime_type != 'application/json':
+                raise CommunicationError("content_type is not 'application/json' (got %s)" % mime_type)
+            data = json.load(resp, encoding=charset)
+        finally:
+            elapsed = datetime.now() - request_start_time
+            logger.info('request to %s completed in %ss' % (endpoint, elapsed.total_seconds()))
         try:
             status = data.pop(u'status')
         except KeyError:
