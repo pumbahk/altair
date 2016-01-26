@@ -842,11 +842,17 @@ class OrderSearchBase(list):
                             t_shipping_address.c.email_2==value,
                         ))
 
-        # 会員番号 member_id:
+        # ログインID login_id:
+        if condition.login_id.data:
+            value = condition.login_id.data
+            cond = and_(cond,
+                        t_user_credential.c.auth_identifier == value)
+
+        # 会員番号 member_id
         if condition.member_id.data:
             value = condition.member_id.data
             cond = and_(cond,
-                        t_user_credential.c.auth_identifier == value)
+                        t_user_credential.c.authz_identifier == value)
 
         # 予約日時(開始)
         if condition.ordered_from.data:
