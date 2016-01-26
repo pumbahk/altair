@@ -1,6 +1,8 @@
 import logging
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPUnauthorized, HTTPInternalServerError, HTTPFound
+from pyramid.compat import string_types
+from pyramid.renderers import RendererHelper
 from altair.httpsession.pyramid.interfaces import ISessionPersistenceBackendFactory
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.api import get_oauth_provider, get_openid_provider
@@ -18,25 +20,45 @@ def invalidate_client_http_session(request, session_id):
     persistence_backend = persistence_backend_factory(request)
     persistence_backend.delete(session_id, {})
 
-def verify_access_token(fn):
-    def _(context, request):
-        provider = get_oauth_provider(request)
-        auth_descriptor = None
-        access_token = None
-        try:
-            access_token = oauth_request_parser.get_access_token(request)
-        except:
-            pass
-        if access_token is not None:
-            auth_descriptor = provider.get_auth_descriptor_by_token(access_token)
+def verify_access_token(renderer):
+    def _(fn):
+        def _(context, request):
+            provider = get_oauth_provider(request)
+            auth_descriptor = None
+            access_token = None
+            try:
+                access_token = oauth_request_parser.get_access_token(request)
+            except:
+                pass
+            if access_token is not None:
+                try:
+                    auth_descriptor = provider.get_auth_descriptor_by_token(access_token)
+                except OAuthNoSuchAccessTokenError:
+                    def render(response):
+                        _renderer = renderer
+                        if isinstance(_renderer, string_types):
+                            _renderer = RendererHelper(name=_renderer)
+                        attrs = getattr(request, '__dict__', {})
+                        if '__view__' in attrs:
+                            view_inst = attrs.pop('__view__')
+                        else:
+                            view_inst = getattr(fn, '__original_view__', fn)
+                        return _renderer.render_view(request, response, view_inst, context)
+                    request.response.status = 401
+                    return render({
+                        u'error': u'invalid_request',
+                        u'error_description': u'invalid access token',
+                        u'message': u'invalid access token'
+                        })
+                if auth_descriptor is None:
+                    logger.debug('no corresponding auth descriptor for access_token=%s' % access_token)
+            else:
+                logger.debug('access token is not provided')
             if auth_descriptor is None:
-                logger.debug('no corresponding auth descriptor for access_token=%s' % access_token)
-        else:
-            logger.debug('access token is not provided')
-        if auth_descriptor is None:
-            return HTTPUnauthorized('no access token provided')
-        request.auth_descriptor = auth_descriptor
-        return fn(context, request)
+                return HTTPUnauthorized('no access token provided')
+            request.auth_descriptor = auth_descriptor
+            return fn(context, request)
+        return _
     return _
 
 @view_defaults(renderer='json')
@@ -129,6 +151,6 @@ class APIView(object):
         return {}
 
 
-    @view_config(route_name='extauth.api.v0.user', decorator=(verify_access_token,))
+    @view_config(route_name='extauth.api.v0.user', decorator=(verify_access_token('json'),))
     def user(self):
         return self.request.auth_descriptor['identity']
