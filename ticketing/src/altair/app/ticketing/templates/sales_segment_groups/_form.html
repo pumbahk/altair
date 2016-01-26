@@ -1,6 +1,14 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <form class="form-horizontal" action="${action}" method="POST">
+  <div class="copy-fields">
+    <span class="copy-products-fields" style="display: none;">
+      ${ch.form_item(form.copy_to_stock_holder)}
+    </span>
+    ${ch.form_item(form.copy, style="display: none;")}
+    ${ch.form_item(form.copy_payment_delivery_method_pairs)}
+    ${ch.form_item(form.copy_products)}
+  </div>
   ${ch.form_item(form.id)}
   ${ch.form_item(form.event_id)}
   ${ch.form_item(form.kind, help=ch.help(form.kind))}
@@ -30,15 +38,6 @@
   ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
   ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
   ${ch.form_item(form.extra_form_fields, class_="btn")}
-  <div class="copy-fields">
-    <hr />
-    ${ch.form_item(form.copy, style="display: none;")}
-    ${ch.form_item(form.copy_payment_delivery_method_pairs)}
-    ${ch.form_item(form.copy_products)}
-    <span class="copy-products-fields" style="display: none;">
-      ${ch.form_item(form.copy_to_stock_holder)}
-    </span>
-  </div>
 
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
