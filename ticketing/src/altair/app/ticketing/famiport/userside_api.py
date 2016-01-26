@@ -144,19 +144,16 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             session.add(altair_famiport_venue)
             session.flush()
             prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture.strip())
-            try:
-                result = get_famiport_venue_by_name(request, client_code, performance.venue.name)
-            except FamiPortAPINotFoundError:
-                result = create_or_update_famiport_venue(
-                    request,
-                    client_code=client_code,
-                    id=None,
-                    userside_id=altair_famiport_venue.id,
-                    name=performance.venue.name,
-                    name_kana=u'',
-                    prefecture=prefecture,
-                    update_existing=False
-                    )
+            result = create_or_update_famiport_venue(
+                request,
+                client_code=client_code,
+                id=None,
+                userside_id=altair_famiport_venue.id,
+                name=performance.venue.name,
+                name_kana=u'',
+                prefecture=prefecture,
+                update_existing=False
+                )
             famiport_venue_id = result['venue_id']
             altair_famiport_venue.famiport_venue_id = famiport_venue_id
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
